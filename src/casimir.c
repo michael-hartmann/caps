@@ -71,12 +71,6 @@ Further options:\n\
     -v, --verbose\n\
         Be more verbose. This will output additional information.\n\
 \n\
-    --extrapolate\n\
-        Achieve better results by extrapolating the contributions F_n.\n\
-        This feature is experimental! Use it on your own risk! This feature might\n\
-        cause your computer to explode or even worse: It may cause wrong results!\n\
-        Don't blame me, I have warned you!\n\
-\n\
     -q, --quiet\n\
         The progress is printed to stderr unless this flag is set.\n\
 \n\
@@ -148,7 +142,7 @@ int main(int argc, char *argv[])
     int i, iT, iLbyR;
     int cores = 1;
     int lmax = 0;
-    int buffering_flag = 0, quiet_flag = 0, verbose_flag = 0, extrapolate_flag = 0;
+    int buffering_flag = 0, quiet_flag = 0, verbose_flag = 0;
 
     /* parse command line options */
     while (1)
@@ -159,7 +153,6 @@ int main(int argc, char *argv[])
           { "verbose",     no_argument,       &verbose_flag,     1 },
           { "quiet",       no_argument,       &quiet_flag,       1 },
           { "buffering",   no_argument,       &buffering_flag,   1 },
-          { "extrapolate", no_argument,       &extrapolate_flag, 1 },
           { "help",        no_argument,       0, 'h' },
           { "LbyR",        required_argument, 0, 'x' },
           { "lscale",      required_argument, 0, 'l' },
@@ -312,7 +305,6 @@ int main(int argc, char *argv[])
             printf("# T=%g\n", lT[0]);
         else
             printf("# T=%g...%g (%d)\n", lT[0],lT[1],(int)lT[2]);
-        printf("# extrapolate=%s\n", extrapolate_flag ? "yes" : "no");
 
         printf("#\n");
         printf("# LbyR, T, F, lmax, nmax, time\n");
@@ -344,7 +336,6 @@ int main(int argc, char *argv[])
             casimir_set_cores(&casimir, cores);
             casimir_set_precision(&casimir, precision);
             casimir_set_verbose(&casimir, verbose_flag);
-            casimir_set_extrapolate(&casimir, extrapolate_flag);
 
             if(gamma_ > 0)
             {

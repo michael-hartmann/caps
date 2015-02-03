@@ -71,7 +71,6 @@ void casimir_info(casimir_t *self, FILE *stream, const char *prefix)
 
     fprintf(stream, "%slmax = %d\n",        prefix, self->lmax);
     fprintf(stream, "%sverbose = %d\n",     prefix, self->verbose);
-    fprintf(stream, "%sextrapolate = %d\n", prefix, self->extrapolate);
     fprintf(stream, "%scores = %d\n",       prefix, self->cores);
     fprintf(stream, "%sprecision = %g\n",   prefix, self->precision);
 }
@@ -296,7 +295,6 @@ int casimir_init(casimir_t *self, double RbyScriptL, double T)
     self->T           = T;
     self->RbyScriptL  = RbyScriptL;
     self->precision   = CASIMIR_DEFAULT_PRECISION;
-    self->extrapolate = 0;
     self->verbose     = 0;
     self->cores       = 1;
     self->threads     = NULL;
@@ -480,36 +478,6 @@ double casimir_get_gamma_sphere(casimir_t *self)
 double casimir_get_gamma_plane(casimir_t *self)
 {
     return self->gamma_plane;
-}
-
-
-/**
- * @brief Get extrapolation flag
- *
- * Extrapolation is experimental and considered dangerous at the moment.
- *
- * @param [in,out] self Casimir object
- * @retval Extrapolation flag
- */
-int casimir_get_extrapolate(casimir_t *self)
-{
-    return self->extrapolate;
-}
-
-
-/**
- * @brief Set extrapolation flag
- *
- * Extrapolation is experimental and considered dangerous at the moment.
- *
- * @param [in,out] self Casimir object
- * @param extrapolate extrapolation flag
- * @retval 1
- */
-int casimir_set_extrapolate(casimir_t *self, int extrapolate)
-{
-    self->extrapolate = extrapolate ? 1 : 0;
-    return 1;
 }
 
 
@@ -1165,16 +1133,7 @@ double casimir_F(casimir_t *self, int *nmax)
                         usleep(CASIMIR_IDLE);
 
                 sum_n = _sum(values, n);
-                if(self->extrapolate && n > 20)
-                {
-                    double r1 = values[n-1]/values[n-2];
-                    double r2 = values[n-2]/values[n-3];
-                    double r3 = values[n-3]/values[n-4];
-                    double r4 = values[n-4]/values[n-5];
-                    double r5 = values[n-5]/values[n-6];
-                    double r  = (r1+r2+r3+r4+r5)/5;
-                    sum_n += values[n-1]*r/(1-r);
-                }
+
                 /* get out of here */
                 if(nmax != NULL)
                     *nmax = n-1; // we calculated n term from n=0,...,nmax=n-1

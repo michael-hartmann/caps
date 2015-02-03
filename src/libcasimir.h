@@ -47,7 +47,6 @@ typedef struct
     int integration;     /**< 0: use perfect reflectors, >0: order of Gauss-Laguerre integration */
     int lmax;            /**< truncation value for vector space \f$\ell_\mathrm{max}\f$ */
     int verbose;         /**< flag that indicates to be verbose */
-    int extrapolate;     /**< flag that indicates to use extrapolation */
     int cores;           /**< number of thread that should be used */
     double precision;    /**< precision */
     pthread_t **threads; /**< list of pthread objects */
@@ -146,9 +145,6 @@ int    casimir_set_precision(casimir_t *self, double precision);
 
 int casimir_get_verbose(casimir_t *self);
 int casimir_set_verbose(casimir_t *self, int verbose);
-
-int casimir_get_extrapolate(casimir_t *self);
-int casimir_set_extrapolate(casimir_t *self, int extrapolate);
 
 void casimir_lnab0(int l, double *a0, int *sign_a0, double *b0, int *sign_b0);
 void casimir_lnab(casimir_t *self, const int n, const int l, double *lna, double *lnb, int *sign_a, int *sign_b);
