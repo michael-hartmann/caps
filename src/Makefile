@@ -8,14 +8,11 @@ OBJECTS=$(SOURCES:.c=.o)
 # quadrupule precision, but should be much faster.
 EXTENDED_DOUBLE = 1
 
-# use fftw3
-FFTW3 = 1
-
 # compile. You may use gcc or icc.
 CC = gcc
 #CC = icc
 
-SOURCES = sfunc.c integration.c libcasimir.c matrix.c utils.c tests/unittest.c
+SOURCES = sfunc.c integration.c libcasimir.c matrix.c utils.c cache.c tests/unittest.c
 CFLAGS += -Werror -Wall -Wmissing-prototypes -Wstrict-prototypes -Wshadow -Wpointer-arith -Wcast-qual -Wwrite-strings -fshort-enums -fno-common
 
 # -DNDEBUG will disable asserts. This hardly increases performance and in case
@@ -30,11 +27,6 @@ ifeq ($(CC),gcc)
 endif
 ifeq ($(CC),icc)
     OPTIMIZATION = -fast
-endif
-
-ifdef FFTW3
-    CFLAGS += -DFFT_POLYMULT
-    LDFLAGS += -lfftw3
 endif
 
 # if we need quadrupole precision
