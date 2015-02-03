@@ -851,12 +851,11 @@ void casimir_lnab(casimir_t *self, const int n_mat, const int l, double *lna, do
  * @param [out] cache cache for Mie coefficients
  * @param [in] n Matsubara term, \f$\xi=nT\f$
  */
-void casimir_mie_cache_init(casimir_mie_cache_t *cache, int n)
+void casimir_mie_cache_init(casimir_mie_cache_t *cache)
 {
     cache->al = cache->bl = NULL;
     cache->al_sign = cache->bl_sign = NULL;
     cache->lmax = 0;
-    cache->n = n;
 }
 
 
@@ -870,10 +869,10 @@ void casimir_mie_cache_init(casimir_mie_cache_t *cache, int n)
  * @param [in,out] self Casimir object
  * @param [in,out] cache Mie cache
  */
-int casimir_mie_cache_alloc(casimir_t *self, casimir_mie_cache_t *cache)
+int casimir_mie_cache_alloc(casimir_t *self, casimir_mie_cache_t *cache, int n)
 {
-    int n = cache->n;
-    int l, lmax = self->lmax;
+    const int lmax = self->lmax;
+    int l;
 
     if(n == 0)
     {
@@ -997,7 +996,7 @@ static int _join_threads(casimir_t *self, double values[], int *ncalc)
  * @brief Calculate free energy for Matsubara term n
  *
  * This function calculates the free energy for the Matsubara term n. If mmax
- * is not NULL, the maximum used value of m is stored in mmax.
+ * is not NULL, the maximum usedd value of m is stored in mmax.
  *
  * @param [in,out] self Casimir object
  * @param [in] n Matsubara term, \f$\xi=nT\f$
@@ -1007,7 +1006,7 @@ static int _join_threads(casimir_t *self, double values[], int *ncalc)
 double casimir_F_n(casimir_t *self, const int n, int *mmax)
 {
     double precision = self->precision;
-    casimir_mie_cache_t cache;
+    casimir_mie_cache_t mie_cache;
     double sum_n = 0;
     int m;
     const int lmax = self->lmax;
@@ -1016,12 +1015,12 @@ double casimir_F_n(casimir_t *self, const int n, int *mmax)
     for(m = 0; m <= lmax; m++)
         values[m] = 0;
 
-    casimir_mie_cache_init(&cache, n);
-    casimir_mie_cache_alloc(self, &cache);
+    casimir_mie_cache_init(&mie_cache);
+    casimir_mie_cache_alloc(self, &mie_cache, n);
 
     for(m = 0; m <= self->lmax; m++)
     {
-        values[m] = casimir_logdetD(self,n,m,&cache);
+        values[m] = casimir_logdetD(self,n,m,&mie_cache);
 
         if(self->verbose)
             fprintf(stderr, "# n=%d, m=%d, value=%.15g\n", n, m, values[m]);
@@ -1036,7 +1035,7 @@ double casimir_F_n(casimir_t *self, const int n, int *mmax)
             break;
     }
 
-    casimir_mie_cache_free(&cache);
+    casimir_mie_cache_free(&mie_cache);
 
     if(self->verbose)
         fprintf(stderr, "# n=%d, value=%.15g\n", n, sum_n);

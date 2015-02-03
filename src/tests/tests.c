@@ -84,8 +84,8 @@ int test_logdet()
     AssertAlmostEqual(&test, logdet, -0.0276563864490425);
     */
 
-    casimir_mie_cache_init(&cache, 1);
-    casimir_mie_cache_alloc(&casimir, &cache);
+    casimir_mie_cache_init(&cache);
+    casimir_mie_cache_alloc(&casimir, &cache, 1);
 
     logdet = casimir_logdetD(&casimir, 1, 1, &cache);
     AssertAlmostEqual(&test, logdet, -2.63900987016801);

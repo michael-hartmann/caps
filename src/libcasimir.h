@@ -77,9 +77,15 @@ typedef struct
     double *bl;   /**< list of Mie coefficients \f$b_\ell\f$ (logarithms) */
     int *bl_sign; /**< list of signs of Mie coefficients \f$b_\ell\f$ */
     int lmax;     /**< truncation value for vector space \f$\ell_\mathrm{max}\f$ */
-    int n;        /**< Matsubara term */
 } casimir_mie_cache_t;
 
+/*
+typedef struct {
+    int nmax;
+    int lmax;
+    casimir_mie_cache_entry_t *entries;
+} casimir_mie_cache_t;
+*/
 
 /*
 typedef struct
@@ -154,8 +160,8 @@ double casimir_lnb_perf(casimir_t *self, const int l, const int n, int *sign);
 double casimir_F_n(casimir_t *self, const int n, int *mmax);
 double casimir_F(casimir_t *self, int *nmax);
 
-void casimir_mie_cache_init(casimir_mie_cache_t *cache, int n);
-int casimir_mie_cache_alloc(casimir_t *self, casimir_mie_cache_t *cache);
+void casimir_mie_cache_init(casimir_mie_cache_t *cache);
+int casimir_mie_cache_alloc(casimir_t *self, casimir_mie_cache_t *cache, int n);
 void casimir_mie_cache_free(casimir_mie_cache_t *cache);
 
 void casimir_logdetD0(casimir_t *self, int m, double *EE, double *MM);

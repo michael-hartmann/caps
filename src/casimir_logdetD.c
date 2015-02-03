@@ -169,8 +169,8 @@ int main(int argc, char *argv[])
         casimir_set_verbose(&casimir, verbose_flag);
         casimir_set_lmax(&casimir, lmax);
 
-        casimir_mie_cache_init(&cache, nTRbyScriptL);
-        casimir_mie_cache_alloc(&casimir, &cache);
+        casimir_mie_cache_init(&cache);
+        casimir_mie_cache_alloc(&casimir, &cache, nTRbyScriptL);
         value = casimir_logdetD(&casimir, n, m, &cache);
         casimir_mie_cache_free(&cache);
         casimir_free(&casimir);
