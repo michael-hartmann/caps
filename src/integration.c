@@ -289,11 +289,12 @@ void casimir_integrate_perf(casimir_integrals_t *cint, int l1, int l2, int m, do
 {
     edouble lnA, lnB, lnC, lnD;
     int signA, signB, signC, signD;
-    edouble xi = 2*nT;
+    edouble tau = 2*nT;
+    edouble ln_tau = logq(2*nT);
     edouble pdpl1m[l1-m+2];
     edouble pdpl2m[l2-m+2];
 
-    polydplm(pdpl1m,pdpl2m,l1,l2,m,xi);
+    polydplm(pdpl1m,pdpl2m,l1,l2,m,tau);
 
     if(m == 0)
     {
@@ -304,17 +305,17 @@ void casimir_integrate_perf(casimir_integrals_t *cint, int l1, int l2, int m, do
         lnA = lnC = lnD = -INFINITY;
         signA = signC = signD = 0;
 
-        polym(pm, 2, xi);
+        polym(pm, 2, tau);
 
         polymult(pm, 3, pdpl1m, l1, interim);
         polymult(interim, l1+2, pdpl2m, l2, result);
 
-        lnB = -xi-3*logq(xi)+log_polyintegrate(result, l1+l2+1, l1,l2,m, &signB);
+        lnB = -tau-3*ln_tau+log_polyintegrate(result, l1+l2+1, l1,l2,m, &signB);
         signB *= MPOW(l2+1);
     }
     else
     {
-        edouble logprefactor = -xi+logq(xi)-2*m*logq(xi)-m*logq(4);
+        edouble logprefactor = -tau+ln_tau-2*m*ln_tau-m*LOG4;
         edouble pm[2*m-1];
         edouble ppl1m[l1-m+1];
         edouble ppl2m[l2-m+1];
@@ -327,15 +328,9 @@ void casimir_integrate_perf(casimir_integrals_t *cint, int l1, int l2, int m, do
         edouble pmppl1mpdpl2m[(sizeof(pmppl1m)+sizeof(pdpl2m))/sizeof(edouble)-1];
         edouble pmpdpl1mppl2m[(sizeof(pmpdpl1m)+sizeof(ppl2m))/sizeof(edouble)-1];
 
-        polym(pm, m,xi);
-        polyplm(ppl1m,ppl2m,l1,l2,m,xi);
+        polym(pm, m,tau);
+        polyplm(ppl1m,ppl2m,l1,l2,m,tau);
 
-        #ifdef FFT_POLYMULT
-        polymult3(pm, sizeof(pm)/sizeof(edouble), ppl1m, sizeof(ppl1m)/sizeof(edouble),   ppl2m,  sizeof(ppl2m)/sizeof(edouble),  pmppl1mppl2m);
-        polymult3(pm, sizeof(pm)/sizeof(edouble), ppl1m, sizeof(ppl1m)/sizeof(edouble),   pdpl2m, sizeof(pdpl2m)/sizeof(edouble), pmppl1mpdpl2m);
-        polymult3(pm, sizeof(pm)/sizeof(edouble), pdpl1m, sizeof(pdpl1m)/sizeof(edouble), ppl2m,  sizeof(ppl2m)/sizeof(edouble),  pmpdpl1mppl2m);
-        polymult3(pm, sizeof(pm)/sizeof(edouble), pdpl1m, sizeof(pdpl1m)/sizeof(edouble), pdpl2m, sizeof(pdpl2m)/sizeof(edouble), pmpdpl1mpdpl2m);
-        #else
         polymult(pm, sizeof(pm)/sizeof(edouble), ppl1m, sizeof(ppl1m)/sizeof(edouble), pmppl1m);
         polymult(pm, sizeof(pm)/sizeof(edouble), pdpl1m, sizeof(pdpl1m)/sizeof(edouble), pmpdpl1m);
 
@@ -343,7 +338,6 @@ void casimir_integrate_perf(casimir_integrals_t *cint, int l1, int l2, int m, do
         polymult(pmppl1m, sizeof(pmppl1m)/sizeof(edouble), pdpl2m, sizeof(pdpl2m)/sizeof(edouble), pmppl1mpdpl2m);
         polymult(pmpdpl1m, sizeof(pmpdpl1m)/sizeof(edouble), ppl2m, sizeof(ppl2m)/sizeof(edouble), pmpdpl1mppl2m);
         polymult(pmpdpl1m, sizeof(pmpdpl1m)/sizeof(edouble), pdpl2m, sizeof(pdpl2m)/sizeof(edouble), pmpdpl1mpdpl2m);
-        #endif
 
         lnA = 2*logq(m)+logprefactor+log_polyintegrate(pmppl1mppl2m, sizeof(pmppl1mppl2m)/sizeof(edouble), l1,l2,m,&signA);
         signA *= MPOW(l2);
