@@ -14,6 +14,24 @@
 
 const char *casimir_compile_info(void);
 
+
+/**
+ * Cache for Mie coefficients.
+ */
+typedef struct
+{
+    double *ln_al; /**< list of Mie coefficients \f$a_\ell\f$ (logarithms) */
+    int *sign_al;  /**< list of signs of Mie coefficients \f$a_\ell\f$ */
+    double *ln_bl; /**< list of Mie coefficients \f$b_\ell\f$ (logarithms) */
+    int *sign_bl;  /**< list of signs of Mie coefficients \f$b_\ell\f$ */
+} casimir_mie_cache_entry_t;
+
+typedef struct {
+    int nmax;
+    int lmax;
+    casimir_mie_cache_entry_t **entries;
+} casimir_mie_cache_t;
+
 /**
  * The Casimir object. This structure stores all essential information about
  * temperature, geometry and the reflection properties of the mirrors.
@@ -50,6 +68,8 @@ typedef struct
     int cores;           /**< number of thread that should be used */
     double precision;    /**< precision */
     pthread_t **threads; /**< list of pthread objects */
+
+    casimir_mie_cache_t *mie_cache;
     /*@}*/
 } casimir_t;
 
@@ -65,27 +85,6 @@ typedef struct
     double value;    /**< free energy for Matsubara term n*/
 } casimir_thread_t;
 
-
-
-/**
- * Cache for Mie coefficients.
- */
-typedef struct
-{
-    double *al;   /**< list of Mie coefficients \f$a_\ell\f$ (logarithms) */
-    int *al_sign; /**< list of signs of Mie coefficients \f$a_\ell\f$ */
-    double *bl;   /**< list of Mie coefficients \f$b_\ell\f$ (logarithms) */
-    int *bl_sign; /**< list of signs of Mie coefficients \f$b_\ell\f$ */
-    int lmax;     /**< truncation value for vector space \f$\ell_\mathrm{max}\f$ */
-} casimir_mie_cache_t;
-
-/*
-typedef struct {
-    int nmax;
-    int lmax;
-    casimir_mie_cache_entry_t *entries;
-} casimir_mie_cache_t;
-*/
 
 /*
 typedef struct
@@ -160,12 +159,13 @@ double casimir_lnb_perf(casimir_t *self, const int l, const int n, int *sign);
 double casimir_F_n(casimir_t *self, const int n, int *mmax);
 double casimir_F(casimir_t *self, int *nmax);
 
-void casimir_mie_cache_init(casimir_mie_cache_t *cache);
-int casimir_mie_cache_alloc(casimir_t *self, casimir_mie_cache_t *cache, int n);
-void casimir_mie_cache_free(casimir_mie_cache_t *cache);
+void casimir_mie_cache_init(casimir_t *self);
+int casimir_mie_cache_alloc(casimir_t *self, int n);
+void caismir_mie_cache_get(casimir_t *self, int l, int n, double *ln_a, int *sign_a, double *ln_b, int *sign_b);
+void casimir_mie_cache_free(casimir_t *self);
 
 void casimir_logdetD0(casimir_t *self, int m, double *EE, double *MM);
-double casimir_logdetD(casimir_t *self, int n, int m, casimir_mie_cache_t *cache);
+double casimir_logdetD(casimir_t *self, int n, int m);
 
 void casimir_rp(casimir_t *self, edouble nT, edouble k, edouble *r_TE, edouble *r_TM);
 

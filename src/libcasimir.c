@@ -298,6 +298,7 @@ int casimir_init(casimir_t *self, double RbyScriptL, double T)
     self->verbose     = 0;
     self->cores       = 1;
     self->threads     = NULL;
+    casimir_mie_cache_init(self);
     
     /* perfect reflectors */
     self->integration = -1; /* perfect reflectors */
@@ -640,6 +641,8 @@ int casimir_set_precision(casimir_t *self, double precision)
  */
 void casimir_free(casimir_t *self)
 {
+    casimir_mie_cache_free(self);
+
     if(self->threads != NULL)
     {
         xfree(self->threads);
@@ -851,11 +854,18 @@ void casimir_lnab(casimir_t *self, const int n_mat, const int l, double *lna, do
  * @param [out] cache cache for Mie coefficients
  * @param [in] n Matsubara term, \f$\xi=nT\f$
  */
-void casimir_mie_cache_init(casimir_mie_cache_t *cache)
+void casimir_mie_cache_init(casimir_t *self)
 {
-    cache->al = cache->bl = NULL;
-    cache->al_sign = cache->bl_sign = NULL;
-    cache->lmax = 0;
+    casimir_mie_cache_t *cache = self->mie_cache = xmalloc(sizeof(casimir_mie_cache_t *));
+
+    cache->lmax = self->lmax;
+    cache->nmax = 0;
+
+    cache->entries = xmalloc(sizeof(casimir_mie_cache_entry_t *));
+    cache->entries[0]->ln_al   = NULL;
+    cache->entries[0]->sign_al = NULL;
+    cache->entries[0]->ln_bl   = NULL;
+    cache->entries[0]->sign_bl = NULL;
 }
 
 
@@ -869,30 +879,50 @@ void casimir_mie_cache_init(casimir_mie_cache_t *cache)
  * @param [in,out] self Casimir object
  * @param [in,out] cache Mie cache
  */
-int casimir_mie_cache_alloc(casimir_t *self, casimir_mie_cache_t *cache, int n)
+int casimir_mie_cache_alloc(casimir_t *self, int n)
 {
-    const int lmax = self->lmax;
     int l;
+    const int nmax = self->mie_cache->nmax;
+    const int lmax = self->mie_cache->lmax;
+    casimir_mie_cache_t *cache = self->mie_cache;
 
-    if(n == 0)
-    {
-        cache->al = cache->bl = NULL;
-        cache->al_sign = cache->bl_sign = NULL;
-        return 0;
-    }
+    if(n <= nmax)
+        return 1;
 
-    cache->al      = (double *)xrealloc(cache->al,      (lmax+1)*sizeof(double));
-    cache->bl      = (double *)xrealloc(cache->bl,      (lmax+1)*sizeof(double));
-    cache->al_sign =    (int *)xrealloc(cache->al_sign, (lmax+1)*sizeof(int));
-    cache->bl_sign =    (int *)xrealloc(cache->bl_sign, (lmax+1)*sizeof(int));
+    cache->entries = xrealloc(cache->entries, n*sizeof(casimir_mie_cache_entry_t *));
 
-    cache->al[0] = cache->bl[0] = 0;
+    for(l = nmax+1; l <= n; l++)
+        cache->entries[l] = NULL;
+
+    cache->entries[n] = xmalloc(sizeof(casimir_mie_cache_entry_t));
+    casimir_mie_cache_entry_t *entry = cache->entries[n];
+
+    entry->ln_al   = (double *)xrealloc(entry->ln_al,   (lmax+1)*sizeof(double));
+    entry->ln_bl   = (double *)xrealloc(entry->ln_bl,   (lmax+1)*sizeof(double));
+    entry->sign_al =    (int *)xrealloc(entry->sign_al, (lmax+1)*sizeof(int));
+    entry->sign_bl =    (int *)xrealloc(entry->sign_bl, (lmax+1)*sizeof(int));
+
+    entry->ln_al[0] = entry->ln_bl[0] = 0;
     for(l = MAX(1,cache->lmax); l <= lmax; l++)
-        casimir_lnab(self, n, l, &cache->al[l], &cache->bl[l], &cache->al_sign[l], &cache->bl_sign[l]);
+        casimir_lnab(self, n, l, &entry->ln_al[l], &entry->ln_bl[l], &entry->sign_al[l], &entry->sign_bl[l]);
 
-    cache->lmax = lmax;
 
     return 1;
+}
+
+void caismir_mie_cache_get(casimir_t *self, int l, int n, double *ln_a, int *sign_a, double *ln_b, int *sign_b)
+{
+    const int nmax = self->mie_cache->nmax;
+    casimir_mie_cache_entry_t *entry;
+
+    if(n > nmax || self->mie_cache->entries[n] == NULL)
+        casimir_mie_cache_alloc(self, n);
+
+    entry = self->mie_cache->entries[n];
+    *ln_a   = entry->ln_al[l];
+    *sign_a = entry->sign_al[l];
+    *ln_b   = entry->ln_bl[l];
+    *sign_b = entry->sign_bl[l];
 }
 
 /**
@@ -902,18 +932,28 @@ int casimir_mie_cache_alloc(casimir_t *self, casimir_mie_cache_t *cache, int n)
  *
  * @param [in, out] cache Mie cache
  */
-void casimir_mie_cache_free(casimir_mie_cache_t *cache)
+void casimir_mie_cache_free(casimir_t *self)
 {
-    if(cache->al != NULL)
-        xfree(cache->al);
-    if(cache->bl != NULL)
-        xfree(cache->bl);
-    if(cache->al_sign != NULL)
-        xfree(cache->al_sign);
-    if(cache->bl_sign != NULL)
-        xfree(cache->bl_sign);
+    int n;
+    casimir_mie_cache_t *cache = self->mie_cache;
+    casimir_mie_cache_entry_t **entries = cache->entries;
 
-    cache->al = cache->bl = NULL;
+    xfree(entries[0]);
+    for(n = 0; n < cache->nmax; n++)
+    {
+        if(entries[n] != NULL)
+        {
+            xfree(entries[n]->ln_al);
+            xfree(entries[n]->sign_al);
+            xfree(entries[n]->ln_bl);
+            xfree(entries[n]->sign_bl);
+        }
+
+        xfree(entries[n]);
+    }
+
+    cache->entries = NULL;
+    xfree(self->mie_cache);
 }
 
 /*@}*/
@@ -1006,7 +1046,6 @@ static int _join_threads(casimir_t *self, double values[], int *ncalc)
 double casimir_F_n(casimir_t *self, const int n, int *mmax)
 {
     double precision = self->precision;
-    casimir_mie_cache_t mie_cache;
     double sum_n = 0;
     int m;
     const int lmax = self->lmax;
@@ -1015,12 +1054,9 @@ double casimir_F_n(casimir_t *self, const int n, int *mmax)
     for(m = 0; m <= lmax; m++)
         values[m] = 0;
 
-    casimir_mie_cache_init(&mie_cache);
-    casimir_mie_cache_alloc(self, &mie_cache, n);
-
     for(m = 0; m <= self->lmax; m++)
     {
-        values[m] = casimir_logdetD(self,n,m,&mie_cache);
+        values[m] = casimir_logdetD(self,n,m);
 
         if(self->verbose)
             fprintf(stderr, "# n=%d, m=%d, value=%.15g\n", n, m, values[m]);
@@ -1034,8 +1070,6 @@ double casimir_F_n(casimir_t *self, const int n, int *mmax)
         if(values[0] != 0 && fabs(values[m]/sum_n) < precision)
             break;
     }
-
-    casimir_mie_cache_free(&mie_cache);
 
     if(self->verbose)
         fprintf(stderr, "# n=%d, value=%.15g\n", n, sum_n);
@@ -1216,10 +1250,9 @@ void casimir_logdetD0(casimir_t *self, int m, double *logdet_EE, double *logdet_
  * @param [in,out] self Casimir object
  * @param [in] n Matsubara term
  * @param [in] m
- * @param [in] cache Mie cache
  * @retval log det D(xi=nT)
  */
-double casimir_logdetD(casimir_t *self, int n, int m, casimir_mie_cache_t *cache)
+double casimir_logdetD(casimir_t *self, int n, int m)
 {
     int min,max,dim,l1,l2;
     double logdet = 0;
@@ -1256,24 +1289,20 @@ double casimir_logdetD(casimir_t *self, int n, int m, casimir_mie_cache_t *cache
             int Delta_ij = (l1 == l2 ? 1 : 0);
             const int i = l1-min, j = l2-min;
             casimir_integrals_t cint;
-            double lnal1 = cache->al[l1];
-            double lnbl1 = cache->bl[l1];
-            double lnal2 = cache->al[l2];
-            double lnbl2 = cache->bl[l2];
+            double ln_al1, ln_bl1, ln_al2, ln_bl2;
+            int sign_al1, sign_bl1, sign_al2, sign_bl2;
 
-            double al1_sign = cache->al_sign[l1];
-            double bl1_sign = cache->bl_sign[l1];
-            double al2_sign = cache->al_sign[l2];
-            double bl2_sign = cache->bl_sign[l2];
+            caismir_mie_cache_get(self, l1, n, &ln_al1, &sign_al1, &ln_bl1, &sign_bl1);
+            caismir_mie_cache_get(self, l2, n, &ln_al2, &sign_al2, &ln_bl2, &sign_bl2);
 
             if(nTRbyScriptL < 1)
             {
                 double lognTRbyScriptL = log(nTRbyScriptL);
-                lnal1 -= (l1-l2)*lognTRbyScriptL;
-                lnbl1 -= (l1-l2)*lognTRbyScriptL;
+                ln_al1 -= (l1-l2)*lognTRbyScriptL;
+                ln_bl1 -= (l1-l2)*lognTRbyScriptL;
 
-                lnal2 -= (l2-l1)*lognTRbyScriptL;
-                lnbl2 -= (l2-l1)*lognTRbyScriptL;
+                ln_al2 -= (l2-l1)*lognTRbyScriptL;
+                ln_bl2 -= (l2-l1)*lognTRbyScriptL;
             }
 
             if(self->integration > 0)
@@ -1282,22 +1311,22 @@ double casimir_logdetD(casimir_t *self, int n, int m, casimir_mie_cache_t *cache
                 casimir_integrate_perf(&cint, l1, l2, m, n*self->T);
 
             /* EE */
-            matrix_set(M, i,j, Delta_ij -             al1_sign*( cint.signA_TE*expq(lnal1+cint.lnA_TE) + cint.signB_TM*expq(lnal1+cint.lnB_TM) ));
-            matrix_set(M, j,i, Delta_ij - MPOW(l1+l2)*al2_sign*( cint.signA_TE*expq(lnal2+cint.lnA_TE) + cint.signB_TM*expq(lnal2+cint.lnB_TM) ));
+            matrix_set(M, i,j, Delta_ij -             sign_al1*( cint.signA_TE*expq(ln_al1+cint.lnA_TE) + cint.signB_TM*expq(ln_al1+cint.lnB_TM) ));
+            matrix_set(M, j,i, Delta_ij - MPOW(l1+l2)*sign_al2*( cint.signA_TE*expq(ln_al2+cint.lnA_TE) + cint.signB_TM*expq(ln_al2+cint.lnB_TM) ));
 
             /* MM */
-            matrix_set(M, i+dim,j+dim, Delta_ij -             bl1_sign*( cint.signA_TM*expq(lnbl1+cint.lnA_TM) + cint.signB_TE*expq(lnbl1+cint.lnB_TE) ));
-            matrix_set(M, j+dim,i+dim, Delta_ij - MPOW(l1+l2)*bl2_sign*( cint.signA_TM*expq(lnbl2+cint.lnA_TM) + cint.signB_TE*expq(lnbl2+cint.lnB_TE) ));
+            matrix_set(M, i+dim,j+dim, Delta_ij -             sign_bl1*( cint.signA_TM*expq(ln_bl1+cint.lnA_TM) + cint.signB_TE*expq(ln_bl1+cint.lnB_TE) ));
+            matrix_set(M, j+dim,i+dim, Delta_ij - MPOW(l1+l2)*sign_bl2*( cint.signA_TM*expq(ln_bl2+cint.lnA_TM) + cint.signB_TE*expq(ln_bl2+cint.lnB_TE) ));
 
             if(m != 0)
             {
                 /* M_EM */
-                matrix_set(M, dim+i,j, -               al1_sign*( cint.signC_TE*expq(lnal1+cint.lnC_TE) + cint.signD_TM*expq(lnal1+cint.lnD_TM) ));
-                matrix_set(M, dim+j,i, - MPOW(l1+l2+1)*al2_sign*( cint.signD_TE*expq(lnal2+cint.lnD_TE) + cint.signC_TM*expq(lnal2+cint.lnC_TM) ));
+                matrix_set(M, dim+i,j, -               sign_al1*( cint.signC_TE*expq(ln_al1+cint.lnC_TE) + cint.signD_TM*expq(ln_al1+cint.lnD_TM) ));
+                matrix_set(M, dim+j,i, - MPOW(l1+l2+1)*sign_al2*( cint.signD_TE*expq(ln_al2+cint.lnD_TE) + cint.signC_TM*expq(ln_al2+cint.lnC_TM) ));
 
                 /* M_ME */
-                matrix_set(M, i,dim+j, -               bl1_sign*( cint.signC_TM*expq(lnbl1+cint.lnC_TM) + cint.signD_TE*expq(lnbl1+cint.lnD_TE) ));
-                matrix_set(M, j,dim+i, - MPOW(l1+l2+1)*bl2_sign*( cint.signD_TM*expq(lnbl2+cint.lnD_TM) + cint.signC_TE*expq(lnbl2+cint.lnC_TE) ));
+                matrix_set(M, i,dim+j, -               sign_bl1*( cint.signC_TM*expq(ln_bl1+cint.lnC_TM) + cint.signD_TE*expq(ln_bl1+cint.lnD_TE) ));
+                matrix_set(M, j,dim+i, - MPOW(l1+l2+1)*sign_bl2*( cint.signD_TM*expq(ln_bl2+cint.lnD_TM) + cint.signC_TE*expq(ln_bl2+cint.lnC_TE) ));
             }
         }
     }

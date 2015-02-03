@@ -161,18 +161,13 @@ int main(int argc, char *argv[])
 
     {
         casimir_t casimir;
-        casimir_mie_cache_t cache;
         double value, start_time = now();
-        double nTRbyScriptL = n*T*Q;
 
         casimir_init(&casimir, Q, T);
         casimir_set_verbose(&casimir, verbose_flag);
         casimir_set_lmax(&casimir, lmax);
 
-        casimir_mie_cache_init(&cache);
-        casimir_mie_cache_alloc(&casimir, &cache, nTRbyScriptL);
-        value = casimir_logdetD(&casimir, n, m, &cache);
-        casimir_mie_cache_free(&cache);
+        value = casimir_logdetD(&casimir, n, m);
         casimir_free(&casimir);
 
         printf("# Q,T,n,m,value,lmax,time\n");

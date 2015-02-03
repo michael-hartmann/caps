@@ -62,7 +62,6 @@ int test_logdet()
 {
     unittest_t test;
     casimir_t casimir;
-    casimir_mie_cache_t cache;
     const double RbyScriptL = 0.97;
     const double T = 0.1;
     const int lmax = 200;
@@ -84,13 +83,8 @@ int test_logdet()
     AssertAlmostEqual(&test, logdet, -0.0276563864490425);
     */
 
-    casimir_mie_cache_init(&cache);
-    casimir_mie_cache_alloc(&casimir, &cache, 1);
-
-    logdet = casimir_logdetD(&casimir, 1, 1, &cache);
+    logdet = casimir_logdetD(&casimir, 1, 1);
     AssertAlmostEqual(&test, logdet, -2.63900987016801);
-
-    casimir_mie_cache_free(&cache);
 
     casimir_free(&casimir);
 
