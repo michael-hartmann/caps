@@ -10,11 +10,6 @@
 #include "integration.h"
 #include "gausslaguerre.h"
 
-#ifdef FFT_POLYMULT
-#include <complex.h>
-#include <fftw3.h>
-#endif
-
 void integrands_drude(edouble x, integrands_drude_t *integrands, casimir_t *self, double nT, int l1, int l2, int m)
 {
     plm_combination_t comb;
@@ -185,132 +180,6 @@ void casimir_integrate_drude(casimir_t *self, casimir_integrals_t *cint, int l1,
 * Multiply the polynomials p1 and p2. The result is stored in pdest, which
 * must have at least size len_p1+len_p2-1
 */
-#ifdef FFT_POLYMULT
-void polymult3(edouble p1[], size_t len_p1, edouble p2[], size_t len_p2, edouble p3[], size_t len_p3, edouble pdest[]);
-
-void polymult3(edouble p1[], size_t len_p1, edouble p2[], size_t len_p2, edouble p3[], size_t len_p3, edouble pdest[])
-{
-    const int N = len_p1+len_p2+len_p3-1-1;   /* order of resulting polynomial */
-    double in1[N], in2[N], in3[N], out[N];    /* in1, in2, in3: input polynomials */
-    double complex out1[N], out2[N], out3[N]; /* out1, out2, out3: FFT of in1, in2, in3 */
-    fftw_plan plan;
-    int i;
-    edouble max_p1, max_p2, max_p3;
-
-    /* determine maximum (by abs value) of p1 */
-    max_p1 = fabsq(p1[0]);
-    for(i = 1; i < len_p1; i++)
-        max_p1 = MAX(max_p1,fabsq(p1[i]));
-
-    /* determine maximum (by abs value) of p2 */
-    max_p2 = fabsq(p2[0]);
-    for(i = 0; i < len_p2; i++)
-        max_p2 = MAX(max_p2,fabsq(p2[i]));
-
-    /* determine maximum (by abs value) of p3 */
-    max_p3 = fabsq(p3[0]);
-    for(i = 0; i < len_p3; i++)
-        max_p3 = MAX(max_p3,fabsq(p3[i]));
-
-    /* copy p1 to in1, divide by max_p1 and pad with 0 */
-    for(i = 0; i < len_p1; i++)
-        in1[i] = p1[i]/max_p1;
-    for(i = len_p1; i < N; i++)
-        in1[i] = 0;
-
-    /* copy p2 to in2, divide by max_p2 and pad with 0 */
-    for(i = 0; i < len_p2; i++)
-        in2[i] = p2[i]/max_p2;
-    for(i = len_p2; i < N; i++)
-        in2[i] = 0;
-
-    /* copy p3 to in3, divide by max_p3 and pad with 0 */
-    for(i = 0; i < len_p3; i++)
-        in3[i] = p3[i]/max_p3;
-    for(i = len_p3; i < N; i++)
-        in3[i] = 0;
-
-    /* calculate FFT of in1 and in2 */
-    plan = fftw_plan_dft_r2c_1d(N, in1, out1, FFTW_ESTIMATE);
-    fftw_execute(plan);
-    fftw_destroy_plan(plan);
-
-    plan = fftw_plan_dft_r2c_1d(N, in2, out2, FFTW_ESTIMATE);
-    fftw_execute(plan);
-    fftw_destroy_plan(plan);
-
-    plan = fftw_plan_dft_r2c_1d(N, in3, out3, FFTW_ESTIMATE);
-    fftw_execute(plan);
-    fftw_destroy_plan(plan);
-
-    /* make convolution */
-    for(i = 0; i < N; i++)
-        out1[i] *= out2[i]*out3[i];
-
-    /* reverse FFT */
-    plan = fftw_plan_dft_c2r_1d(N, out1, out, FFTW_ESTIMATE);
-    fftw_execute(plan);
-    fftw_destroy_plan(plan);
-
-    /* copy result to pdest, multiply by max_p1 and max_p2 and divide by N */
-    for(i = 0; i < N; i++)
-        pdest[i] = out[i]/N*max_p1*max_p2*max_p3;
-}
-
-void polymult(edouble p1[], size_t len_p1, edouble p2[], size_t len_p2, edouble pdest[])
-{
-    const int N = len_p1+len_p2-1;   /* order of resulting polynomial */
-    double in1[N], in2[N], out[N];   /* in1, in2: input polynomials */
-    double complex out1[N], out2[N]; /* out1, out2: FFT of in1, in2 */
-    fftw_plan plan;
-    int i;
-    edouble max_p1, max_p2;
-
-    /* determine maximum (by abs value) of p1 */
-    max_p1 = fabsq(p1[0]);
-    for(i = 1; i < len_p1; i++)
-        max_p1 = MAX(max_p1,fabsq(p1[i]));
-
-    /* determine maximum (by abs value) of p2 */
-    max_p2 = fabsq(p2[0]);
-    for(i = 0; i < len_p2; i++)
-        max_p2 = MAX(max_p2,fabsq(p2[i]));
-
-    /* copy p1 to in1, divide by max_p1 and pad with 0 */
-    for(i = 0; i < len_p1; i++)
-        in1[i] = p1[i]/max_p1;
-    for(i = len_p1; i < N; i++)
-        in1[i] = 0;
-
-    /* copy p2 to in2, divide by max_p2 and pad with 0 */
-    for(i = 0; i < len_p2; i++)
-        in2[i] = p2[i]/max_p2;
-    for(i = len_p2; i < N; i++)
-        in2[i] = 0;
-
-    /* calculate FFT of in1 and in2 */
-    plan = fftw_plan_dft_r2c_1d(N, in1, out1, FFTW_ESTIMATE);
-    fftw_execute(plan);
-    fftw_destroy_plan(plan);
-
-    plan = fftw_plan_dft_r2c_1d(N, in2, out2, FFTW_ESTIMATE);
-    fftw_execute(plan);
-    fftw_destroy_plan(plan);
-
-    /* make convolution */
-    for(i = 0; i < N; i++)
-        out1[i] *= out2[i];
-
-    /* reverse FFT */
-    plan = fftw_plan_dft_c2r_1d(N, out1, out, FFTW_ESTIMATE);
-    fftw_execute(plan);
-    fftw_destroy_plan(plan);
-
-    /* copy result to pdest, multiply by max_p1 and max_p2 and divide by N */
-    for(i = 0; i < N; i++)
-        pdest[i] = out[i]/N*max_p1*max_p2;
-}
-#else
 void polymult(edouble p1[], size_t len_p1, edouble p2[], size_t len_p2, edouble pdest[])
 {
     size_t power,i;
@@ -324,7 +193,6 @@ void polymult(edouble p1[], size_t len_p1, edouble p2[], size_t len_p2, edouble 
             pdest[power] += p1[i]*p2[power-i];
     }
 }
-#endif
 
 /* Integrate the function f(x)*exp(-x) from 0 to inf
 * f(x) is the polynomial of length len stored in p
