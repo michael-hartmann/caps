@@ -287,6 +287,7 @@ void polydplm(edouble pl1[], edouble pl2[], int l1, int l2, int m, edouble xi)
 */
 void casimir_integrate_perf(casimir_integrals_t *cint, int l1, int l2, int m, double nT)
 {
+    #define XLEN(a) (sizeof((a))/sizeof(edouble))
     edouble lnA, lnB, lnC, lnD;
     int signA, signB, signC, signD;
     edouble tau = 2*nT;
@@ -299,7 +300,7 @@ void casimir_integrate_perf(casimir_integrals_t *cint, int l1, int l2, int m, do
     if(m == 0)
     {
         edouble pm[3];
-        edouble interim[l1+2];
+        edouble pdpl1mpdpl2m[l1+l2-1];
         edouble result[l1+l2+1];
 
         lnA = lnC = lnD = -INFINITY;
@@ -307,15 +308,14 @@ void casimir_integrate_perf(casimir_integrals_t *cint, int l1, int l2, int m, do
 
         polym(pm, 2, tau);
 
-        polymult(pm, 3, pdpl1m, l1, interim);
-        polymult(interim, l1+2, pdpl2m, l2, result);
+        polymult(pdpl1m, l1, pdpl2m, l2, pdpl1mpdpl2m);
+        polymult(pm, XLEN(pm), pdpl1mpdpl2m, XLEN(pdpl1mpdpl2m), result);
 
         lnB = -tau-3*ln_tau+log_polyintegrate(result, l1+l2+1, l1,l2,m, &signB);
         signB *= MPOW(l2+1);
     }
     else
     {
-        #define XLEN(a) (sizeof((a))/sizeof(edouble))
         edouble logprefactor = -tau+ln_tau-2*m*ln_tau-m*LOG4;
         edouble pm[2*m-1];
         edouble ppl1m[l1-m+1];
