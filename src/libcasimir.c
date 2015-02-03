@@ -997,7 +997,7 @@ static int _join_threads(casimir_t *self, double values[], int *ncalc)
  * @brief Calculate free energy for Matsubara term n
  *
  * This function calculates the free energy for the Matsubara term n. If mmax
- * is not NULL, the maximum usedd value of m is stored in mmax.
+ * is not NULL, the maximum used value of m is stored in mmax.
  *
  * @param [in,out] self Casimir object
  * @param [in] n Matsubara term, \f$\xi=nT\f$
