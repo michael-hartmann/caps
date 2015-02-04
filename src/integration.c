@@ -282,36 +282,74 @@ void polydplm(edouble pl1[], edouble pl2[], int l1, int l2, int m)
     }
 }
 
+#define XLEN(a) (sizeof((a))/sizeof(edouble))
+
 /*
-* Returns the integrals A,B,C,D for l1,l2,m,xi and p=TE,TM
-*/
-void casimir_integrate_perf(casimir_integrals_t *cint, int l1, int l2, int m, double nT)
+ * pmppl1mppl2m:  l1+l2-1
+ * pmpdpl1mpdpl2m l1+l2+1
+ * pmpdpl1mppl2m  l1+l2
+ * pmppl1mpdpl2m  l1+l2
+ */
+
+void casimir_integrate_coefficients(int l1, int l2, int m, edouble pmppl1mppl2m[], edouble pmpdpl1mpdpl2m[], edouble pmpdpl1mppl2m[], edouble pmppl1mpdpl2m[])
 {
-    #define XLEN(a) (sizeof((a))/sizeof(edouble))
-    edouble lnA, lnB, lnC, lnD;
-    int signA, signB, signC, signD;
-    edouble tau = 2*nT;
     edouble pdpl1m[l1-m+2];
     edouble pdpl2m[l2-m+2];
-
-    polydplm(pdpl1m,pdpl2m,l1,l2,m);
 
     if(m == 0)
     {
         edouble pm[3];
         edouble pdpl1mpdpl2m[l1+l2-1];
-        edouble result[l1+l2+1];
+
+        polym(pm, 2);
+        polydplm(pdpl1m,pdpl2m,l1,l2,m);
+
+        polymult(pdpl1m, l1, pdpl2m, l2, pdpl1mpdpl2m);
+        polymult(pm, XLEN(pm), pdpl1mpdpl2m, XLEN(pdpl1mpdpl2m), pmpdpl1mpdpl2m);
+    }
+    else
+    {
+        edouble pm[2*m-1];
+        edouble ppl1m[l1-m+1];
+        edouble ppl2m[l2-m+1];
+
+        polym(pm, m);
+        polyplm(ppl1m,ppl2m,l1,l2,m);
+        polydplm(pdpl1m,pdpl2m,l1,l2,m);
+
+        edouble pmppl1m [XLEN(pm)+XLEN(ppl1m) -1];
+        edouble pmpdpl1m[XLEN(pm)+XLEN(pdpl1m)-1];
+
+        polymult(pm, XLEN(pm), ppl1m,  XLEN(ppl1m),  pmppl1m);
+        polymult(pm, XLEN(pm), pdpl1m, XLEN(pdpl1m), pmpdpl1m);
+
+        polymult(pmppl1m,  XLEN(pmppl1m),  ppl2m,  XLEN(ppl2m),  pmppl1mppl2m);
+        polymult(pmppl1m,  XLEN(pmppl1m),  pdpl2m, XLEN(pdpl2m), pmppl1mpdpl2m);
+        polymult(pmpdpl1m, XLEN(pmpdpl1m), ppl2m,  XLEN(ppl2m),  pmpdpl1mppl2m);
+        polymult(pmpdpl1m, XLEN(pmpdpl1m), pdpl2m, XLEN(pdpl2m), pmpdpl1mpdpl2m);
+    }
+}
+
+/*
+* Returns the integrals A,B,C,D for l1,l2,m,xi and p=TE,TM
+*/
+void casimir_integrate_perf(casimir_integrals_t *cint, int l1, int l2, int m, double nT)
+{
+    edouble lnA, lnB, lnC, lnD;
+    int signA, signB, signC, signD;
+    edouble tau = 2*nT;
+
+    if(m == 0)
+    {
+        edouble pmpdpl1mpdpl2m[l1+l2+1];
+
+        casimir_integrate_coefficients(l1, l2, m, NULL, pmpdpl1mpdpl2m, NULL, NULL);
+
+        lnB = -tau+log_polyintegrate(pmpdpl1mpdpl2m, l1+l2+1, l1,l2,m, tau, &signB);
+        signB *= MPOW(l2+1);
 
         lnA = lnC = lnD = -INFINITY;
         signA = signC = signD = 0;
-
-        polym(pm, 2);
-
-        polymult(pdpl1m, l1, pdpl2m, l2, pdpl1mpdpl2m);
-        polymult(pm, XLEN(pm), pdpl1mpdpl2m, XLEN(pdpl1mpdpl2m), result);
-
-        lnB = -tau+log_polyintegrate(result, l1+l2+1, l1,l2,m, tau, &signB);
-        signB *= MPOW(l2+1);
     }
     else
     {
@@ -323,45 +361,7 @@ void casimir_integrate_perf(casimir_integrals_t *cint, int l1, int l2, int m, do
         edouble pmppl1mpdpl2m [l1+l2];
         edouble pmpdpl1mppl2m [l1+l2];
 
-        edouble pm[2*m-1];
-        edouble ppl1m[l1-m+1];
-        edouble ppl2m[l2-m+1];
-
-        polym(pm, m);
-        polyplm(ppl1m,ppl2m,l1,l2,m);
-
-        /*
-        if(use_cache)
-        {
-            edouble ppl1mppl2m  [l1+l2-2*m+1];
-            edouble pdpl1mpdpl2m[l1+l2-2*m+3];
-            edouble ppl1mpdpl2m [l1+l2-2*m+2];
-            edouble pdpl1mppl2m [l1+l2-2*m+2];
-
-            polymult(ppl1m,  l1-m+1, ppl2m,  l2-m+1, ppl1mppl2m);
-            polymult(pdpl1m, l1-m+2, pdpl2m, l2-m+2, pdpl1mpdpl2m);
-            polymult(ppl1m,  l1-m+1, pdpl2m, l2-m+2, ppl1mpdpl2m);
-            polymult(pdpl1m, l1-m+2, ppl2m,  l2-m+1, pdpl1mppl2m);
-
-            polymult(pm, 2*m-1, ppl1mppl2m,   l1+l2-2*m+1, pmppl1mppl2m);
-            polymult(pm, 2*m-1, pdpl1mpdpl2m, l1+l2-2*m+3, pmpdpl1mpdpl2m);
-            polymult(pm, 2*m-1, ppl1mpdpl2m,  l1+l2-2*m+2, pmppl1mpdpl2m);
-            polymult(pm, 2*m-1, pdpl1mppl2m,  l1+l2-2*m+2, pmpdpl1mppl2m);
-        }
-        else
-        */
-        {
-            edouble pmppl1m [XLEN(pm)+XLEN(ppl1m) -1];
-            edouble pmpdpl1m[XLEN(pm)+XLEN(pdpl1m)-1];
-
-            polymult(pm, XLEN(pm), ppl1m,  XLEN(ppl1m),  pmppl1m);
-            polymult(pm, XLEN(pm), pdpl1m, XLEN(pdpl1m), pmpdpl1m);
-
-            polymult(pmppl1m,  XLEN(pmppl1m),  ppl2m,  XLEN(ppl2m),  pmppl1mppl2m);
-            polymult(pmppl1m,  XLEN(pmppl1m),  pdpl2m, XLEN(pdpl2m), pmppl1mpdpl2m);
-            polymult(pmpdpl1m, XLEN(pmpdpl1m), ppl2m,  XLEN(ppl2m),  pmpdpl1mppl2m);
-            polymult(pmpdpl1m, XLEN(pmpdpl1m), pdpl2m, XLEN(pdpl2m), pmpdpl1mpdpl2m);
-        }
+        casimir_integrate_coefficients(l1, l2, m, pmppl1mppl2m, pmpdpl1mpdpl2m, pmpdpl1mppl2m, pmppl1mpdpl2m);
 
         lnA = 2*ln_m+logprefactor+log_polyintegrate(pmppl1mppl2m, XLEN(pmppl1mppl2m), l1,l2,m,tau, &signA);
         signA *= MPOW(l2);

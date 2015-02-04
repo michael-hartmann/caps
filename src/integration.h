@@ -33,4 +33,6 @@ void polym(edouble p[], int m);
 void polyplm(edouble pl1[], edouble pl2[], int l1, int l2, int m);
 void polydplm(edouble pl1[], edouble pl2[], int l1, int l2, int m);
 
+void casimir_integrate_coefficients(int l1, int l2, int m, edouble pmppl1mppl2m[], edouble pmpdpl1mpdpl2m[], edouble pmpdpl1mppl2m[], edouble pmppl1mpdpl2m[]);
+
 #endif
