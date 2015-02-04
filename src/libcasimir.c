@@ -991,6 +991,9 @@ void caismir_mie_cache_get(casimir_t *self, int l, int n, double *ln_a, int *sig
 
     pthread_mutex_unlock(&self->mie_cache->mutex);
 
+    /* at this point all the data is already written and it is safe to read
+     * without lock */
+
     entry = self->mie_cache->entries[n];
     *ln_a   = entry->ln_al[l];
     *sign_a = entry->sign_al[l];
@@ -1198,6 +1201,7 @@ double casimir_F(casimir_t *self, int *nmax)
     size_t len = 0;
     int ncalc = 0;
     const int cores = self->cores;
+    const int delta = MAX(512, cores);
     pthread_t **threads = self->threads;
 
     for(i = 0; i < cores; i++)
@@ -1214,8 +1218,6 @@ double casimir_F(casimir_t *self, int *nmax)
     {
         if(n >= len)
         {
-            const int delta = MAX(512, cores);
-
             values = (double *)xrealloc(values, (len+delta)*sizeof(double));
 
             for(i = len; i < len+delta; i++)
