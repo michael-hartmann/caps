@@ -856,12 +856,14 @@ void casimir_lnab(casimir_t *self, const int n_mat, const int l, double *lna, do
  */
 void casimir_mie_cache_init(casimir_t *self)
 {
-    casimir_mie_cache_t *cache = self->mie_cache = xmalloc(sizeof(casimir_mie_cache_t *));
+    casimir_mie_cache_t *cache = self->mie_cache = (casimir_mie_cache_t *)xmalloc(sizeof(casimir_mie_cache_t));
 
     cache->lmax = self->lmax;
     cache->nmax = 0;
 
     cache->entries = xmalloc(sizeof(casimir_mie_cache_entry_t *));
+
+    cache->entries[0] = xmalloc(sizeof(casimir_mie_cache_entry_t));
     cache->entries[0]->ln_al   = NULL;
     cache->entries[0]->sign_al = NULL;
     cache->entries[0]->ln_bl   = NULL;
@@ -889,7 +891,7 @@ int casimir_mie_cache_alloc(casimir_t *self, int n)
     if(n <= nmax)
         return 1;
 
-    cache->entries = xrealloc(cache->entries, n*sizeof(casimir_mie_cache_entry_t *));
+    cache->entries = xrealloc(cache->entries, (n+1)*sizeof(casimir_mie_cache_entry_t *));
 
     for(l = nmax+1; l <= n; l++)
         cache->entries[l] = NULL;
@@ -897,10 +899,10 @@ int casimir_mie_cache_alloc(casimir_t *self, int n)
     cache->entries[n] = xmalloc(sizeof(casimir_mie_cache_entry_t));
     casimir_mie_cache_entry_t *entry = cache->entries[n];
 
-    entry->ln_al   = (double *)xrealloc(entry->ln_al,   (lmax+1)*sizeof(double));
-    entry->ln_bl   = (double *)xrealloc(entry->ln_bl,   (lmax+1)*sizeof(double));
-    entry->sign_al =    (int *)xrealloc(entry->sign_al, (lmax+1)*sizeof(int));
-    entry->sign_bl =    (int *)xrealloc(entry->sign_bl, (lmax+1)*sizeof(int));
+    entry->ln_al   = (double *)xmalloc((lmax+1)*sizeof(double));
+    entry->ln_bl   = (double *)xmalloc((lmax+1)*sizeof(double));
+    entry->sign_al =    (int *)xmalloc((lmax+1)*sizeof(int));
+    entry->sign_bl =    (int *)xmalloc((lmax+1)*sizeof(int));
 
     entry->ln_al[0] = entry->ln_bl[0] = 0;
     for(l = MAX(1,cache->lmax); l <= lmax; l++)
