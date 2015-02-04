@@ -545,6 +545,11 @@ int casimir_set_lmax(casimir_t *self, int lmax)
         return 0;
 
     self->lmax = lmax;
+
+    /* reinit mie cache */
+    casimir_mie_cache_free(self);
+    casimir_mie_cache_init(self);
+
     return 1;
 }
 
@@ -851,8 +856,7 @@ void casimir_lnab(casimir_t *self, const int n_mat, const int l, double *lna, do
  * imaginary frequency \f$\xi = nT\f$. This function initialized the cache.
  * However, no Mie coefficients will be computed and stored.
  *
- * @param [out] cache cache for Mie coefficients
- * @param [in] n Matsubara term, \f$\xi=nT\f$
+ * @param [in,out] casimir object
  */
 void casimir_mie_cache_init(casimir_t *self)
 {
@@ -888,26 +892,32 @@ int casimir_mie_cache_alloc(casimir_t *self, int n)
     const int lmax = self->mie_cache->lmax;
     casimir_mie_cache_t *cache = self->mie_cache;
 
-    if(n <= nmax)
-        return 1;
+    if(n > nmax)
+    {
+        cache->entries = xrealloc(cache->entries, (n+1)*sizeof(casimir_mie_cache_entry_t *));
 
-    cache->entries = xrealloc(cache->entries, (n+1)*sizeof(casimir_mie_cache_entry_t *));
+        for(l = nmax+1; l <= n; l++)
+            cache->entries[l] = NULL;
 
-    for(l = nmax+1; l <= n; l++)
-        cache->entries[l] = NULL;
+        self->mie_cache->nmax = n;
+    }
 
-    cache->entries[n] = xmalloc(sizeof(casimir_mie_cache_entry_t));
-    casimir_mie_cache_entry_t *entry = cache->entries[n];
+    if(cache->entries[n] == NULL)
+    {
+        cache->entries[n] = xmalloc(sizeof(casimir_mie_cache_entry_t));
+        casimir_mie_cache_entry_t *entry = cache->entries[n];
 
-    entry->ln_al   = (double *)xmalloc((lmax+1)*sizeof(double));
-    entry->ln_bl   = (double *)xmalloc((lmax+1)*sizeof(double));
-    entry->sign_al =    (int *)xmalloc((lmax+1)*sizeof(int));
-    entry->sign_bl =    (int *)xmalloc((lmax+1)*sizeof(int));
+        entry->ln_al   = xmalloc((lmax+1)*sizeof(double));
+        entry->ln_bl   = xmalloc((lmax+1)*sizeof(double));
+        entry->sign_al = xmalloc((lmax+1)*sizeof(int));
+        entry->sign_bl = xmalloc((lmax+1)*sizeof(int));
 
-    entry->ln_al[0] = entry->ln_bl[0] = 0;
-    for(l = MAX(1,cache->lmax); l <= lmax; l++)
-        casimir_lnab(self, n, l, &entry->ln_al[l], &entry->ln_bl[l], &entry->sign_al[l], &entry->sign_bl[l]);
-
+        entry->ln_al[0] = entry->ln_bl[0] = 0;
+        for(l = 1; l <= lmax; l++)
+        {
+            casimir_lnab(self, n, l, &entry->ln_al[l], &entry->ln_bl[l], &entry->sign_al[l], &entry->sign_bl[l]);
+        }
+    }
 
     return 1;
 }
@@ -925,6 +935,7 @@ void caismir_mie_cache_get(casimir_t *self, int l, int n, double *ln_a, int *sig
     *sign_a = entry->sign_al[l];
     *ln_b   = entry->ln_bl[l];
     *sign_b = entry->sign_bl[l];
+
 }
 
 /**
@@ -1300,7 +1311,7 @@ double casimir_logdetD(casimir_t *self, int n, int m)
     {
         for(l2 = min; l2 <= l1; l2++)
         {
-            int Delta_ij = (l1 == l2 ? 1 : 0);
+            const int Delta_ij = (l1 == l2 ? 1 : 0);
             const int i = l1-min, j = l2-min;
             casimir_integrals_t cint;
             double ln_al1, ln_bl1, ln_al2, ln_bl2;
