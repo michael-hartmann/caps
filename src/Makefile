@@ -19,6 +19,9 @@ CFLAGS += -Werror -Wall -Wmissing-prototypes -Wstrict-prototypes -Wshadow -Wpoin
 # of errors the program won't abort.
 #CFLAGS += -DNDEBUG
 
+# rudimentary memory checking
+CFLAGS += -DMEMORY_CHECK
+
 LDFLAGS += -lm -pthread
 
 # use optimization
