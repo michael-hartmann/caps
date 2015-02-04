@@ -1,7 +1,7 @@
 /**
  * @file   libcasimir.c
  * @author Michael Hartmann <michael.hartmann@physik.uni-augsburg.de>
- * @date   October, 2014
+ * @date   February, 2015
  * @brief  library to calculate the free Casimir energy in the plane-sphere geometry
  */
 
