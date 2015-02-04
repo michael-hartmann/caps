@@ -7,6 +7,12 @@
 #include "matrix.h"
 #include "unittest.h"
 
+/* This makes perfectly sense even on a single core machine: This maybe won't
+ * speedup things if you have less than CORES cores, but it will test, if
+ * locking and multithreading is correct.
+ */
+#define CORES 10
+
 
 /* prototypes */
 int test_casimirF(void);
@@ -35,6 +41,7 @@ int test_casimirF()
 
     casimir_init(&casimir, 0.85, 2.7);
     casimir_set_precision(&casimir, 1e-14);
+    casimir_set_cores(&casimir, CORES);
     casimir_set_lmax(&casimir, 30);
     F = casimir_F(&casimir, NULL);
     AssertAlmostEqual(&test, F, -1.34361893570375);
@@ -42,6 +49,7 @@ int test_casimirF()
 
     casimir_init(&casimir, 0.7, 1);
     casimir_set_precision(&casimir, 1e-14);
+    casimir_set_cores(&casimir, CORES);
     casimir_set_lmax(&casimir, 15);
     F = casimir_F(&casimir, NULL);
     AssertAlmostEqual(&test, F, -0.220709222562969);
@@ -49,7 +57,7 @@ int test_casimirF()
 
     casimir_init(&casimir, 0.85, 2.7);
     casimir_set_precision(&casimir, 1e-14);
-    casimir_set_cores(&casimir, 10);
+    casimir_set_cores(&casimir, CORES);
     casimir_set_lmax(&casimir, 30);
     F = casimir_F(&casimir, NULL);
     AssertAlmostEqual(&test, F, -1.34361893570375);
@@ -71,17 +79,16 @@ int test_logdet()
 
     casimir_init(&casimir, RbyScriptL, T);
     casimir_set_lmax(&casimir, lmax);
+    casimir_set_cores(&casimir, CORES);
 
-    /*
-    logdet = casimir_logdetD(&casimir, 0, 0, NULL);
+    logdet = casimir_logdetD(&casimir, 0, 0);
     AssertAlmostEqual(&test, logdet, -3.45236396285874);
 
-    logdet = casimir_logdetD(&casimir, 0, 1, NULL);
+    logdet = casimir_logdetD(&casimir, 0, 1);
     AssertAlmostEqual(&test, logdet, -2.63586999367158);
 
-    logdet = casimir_logdetD(&casimir, 0, 10, NULL);
+    logdet = casimir_logdetD(&casimir, 0, 10);
     AssertAlmostEqual(&test, logdet, -0.0276563864490425);
-    */
 
     logdet = casimir_logdetD(&casimir, 1, 1);
     AssertAlmostEqual(&test, logdet, -2.63900987016801);
@@ -334,9 +341,14 @@ static double _mie_lna_perf(int l, double arg, int *sign)
 
 static double _mie_lnb_perf(int l, double arg, int *sign)
 {
+    double result;
     casimir_t self;
+
     casimir_init(&self, 0.5, 2*arg);
-    return casimir_lnb_perf(&self, l, 1, sign);
+    result = casimir_lnb_perf(&self, l, 1, sign);
+    casimir_free(&self);
+
+    return result;
 }
 
 int test_mie(void)
