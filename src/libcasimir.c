@@ -1073,9 +1073,16 @@ static void *_thread_f(void *p)
     return r;
 }
 
-static pthread_t *_start_thread(casimir_thread_t *r)
+static pthread_t *_start_thread(casimir_t *self, int n)
 {
     pthread_t *t = xmalloc(sizeof(pthread_t));
+    casimir_thread_t *r = xmalloc(sizeof(casimir_thread_t));
+
+    r->self  = self;
+    r->n     = n;
+    r->value = 0;
+    r->nmax  = 0;
+
     pthread_create(t, NULL, _thread_f, (void *)r);
 
     return t;
@@ -1219,22 +1226,9 @@ double casimir_F(casimir_t *self, int *nmax)
 
         if(cores > 1)
         {
-            casimir_thread_t *r;
-
             for(i = 0; i < cores; i++)
-            {
                 if(threads[i] == NULL)
-                {
-                    r = (casimir_thread_t *)xmalloc(sizeof(casimir_thread_t));
-
-                    r->self  = self;
-                    r->n     = n++;
-                    r->value = 0;
-                    r->nmax  = 0;
-
-                    threads[i] = _start_thread(r);
-                }
-            }
+                    threads[i] = _start_thread(self, n++);
 
             if(_join_threads(self, values, &ncalc) == 0)
                 usleep(CASIMIR_IDLE);
