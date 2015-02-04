@@ -30,6 +30,7 @@ typedef struct {
     int nmax;
     int lmax;
     casimir_mie_cache_entry_t **entries;
+    pthread_mutex_t mutex;
 } casimir_mie_cache_t;
 
 /**
@@ -160,7 +161,7 @@ double casimir_F_n(casimir_t *self, const int n, int *mmax);
 double casimir_F(casimir_t *self, int *nmax);
 
 void casimir_mie_cache_init(casimir_t *self);
-int casimir_mie_cache_alloc(casimir_t *self, int n);
+void casimir_mie_cache_alloc(casimir_t *self, int n);
 void caismir_mie_cache_get(casimir_t *self, int l, int n, double *ln_a, int *sign_a, double *ln_b, int *sign_b);
 void casimir_mie_cache_free(casimir_t *self);
 

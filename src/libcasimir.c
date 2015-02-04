@@ -20,6 +20,9 @@
 #include "sfunc.h"
 #include "utils.h"
 
+#ifdef MEMORY_CHECK
+#include <malloc.h>
+#endif
 
 static char CASIMIR_COMPILE_INFO[2048];
 
@@ -289,6 +292,10 @@ int casimir_init(casimir_t *self, double RbyScriptL, double T)
     double LbyR = 1./RbyScriptL - 1;
     if(RbyScriptL < 0 || RbyScriptL >= 1 || T < 0)
         return 0;
+    
+    #ifdef MEMORY_CHECK
+    mallopt(M_CHECK_ACTION, 2);
+    #endif
 
     self->lmax = (int)ceil(CASIMIR_FACTOR_LMAX/LbyR);
 
@@ -865,6 +872,8 @@ void casimir_mie_cache_init(casimir_t *self)
     cache->lmax = self->lmax;
     cache->nmax = 0;
 
+    pthread_mutex_init(&cache->mutex, NULL);
+
     cache->entries = xmalloc(sizeof(casimir_mie_cache_entry_t *));
 
     cache->entries[0] = xmalloc(sizeof(casimir_mie_cache_entry_t));
@@ -885,7 +894,7 @@ void casimir_mie_cache_init(casimir_t *self)
  * @param [in,out] self Casimir object
  * @param [in,out] cache Mie cache
  */
-int casimir_mie_cache_alloc(casimir_t *self, int n)
+void casimir_mie_cache_alloc(casimir_t *self, int n)
 {
     int l;
     const int nmax = self->mie_cache->nmax;
@@ -898,8 +907,6 @@ int casimir_mie_cache_alloc(casimir_t *self, int n)
 
         for(l = nmax+1; l <= n; l++)
             cache->entries[l] = NULL;
-
-        self->mie_cache->nmax = n;
     }
 
     if(cache->entries[n] == NULL)
@@ -914,21 +921,24 @@ int casimir_mie_cache_alloc(casimir_t *self, int n)
 
         entry->ln_al[0] = entry->ln_bl[0] = 0;
         for(l = 1; l <= lmax; l++)
-        {
             casimir_lnab(self, n, l, &entry->ln_al[l], &entry->ln_bl[l], &entry->sign_al[l], &entry->sign_bl[l]);
-        }
     }
 
-    return 1;
+    self->mie_cache->nmax = n;
 }
 
 void caismir_mie_cache_get(casimir_t *self, int l, int n, double *ln_a, int *sign_a, double *ln_b, int *sign_b)
 {
-    const int nmax = self->mie_cache->nmax;
     casimir_mie_cache_entry_t *entry;
+    int nmax;
 
+    pthread_mutex_lock(&self->mie_cache->mutex);
+
+    nmax = self->mie_cache->nmax;
     if(n > nmax || self->mie_cache->entries[n] == NULL)
         casimir_mie_cache_alloc(self, n);
+
+    pthread_mutex_unlock(&self->mie_cache->mutex);
 
     entry = self->mie_cache->entries[n];
     *ln_a   = entry->ln_al[l];
@@ -942,7 +952,6 @@ void caismir_mie_cache_get(casimir_t *self, int l, int n, double *ln_a, int *sig
  * @brief Free memory of cache.
  *
  * This function will free allocated memory for the cache.
- *
  * @param [in, out] Casimir object
  */
 void casimir_mie_cache_free(casimir_t *self)
@@ -950,6 +959,8 @@ void casimir_mie_cache_free(casimir_t *self)
     int n;
     casimir_mie_cache_t *cache = self->mie_cache;
     casimir_mie_cache_entry_t **entries = cache->entries;
+
+    pthread_mutex_destroy(&cache->mutex);
 
     /* free
      * 1) the lists of al, bl, sign_al, sign_bl for every entry
