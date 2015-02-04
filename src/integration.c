@@ -316,6 +316,7 @@ void casimir_integrate_perf(casimir_integrals_t *cint, int l1, int l2, int m, do
     else
     {
         edouble logprefactor = -tau-m*LOG4;
+        edouble ln_m = logq(m);
 
         edouble pmppl1mppl2m  [l1+l2-1];
         edouble pmpdpl1mpdpl2m[l1+l2+1];
@@ -362,16 +363,16 @@ void casimir_integrate_perf(casimir_integrals_t *cint, int l1, int l2, int m, do
             polymult(pmpdpl1m, XLEN(pmpdpl1m), pdpl2m, XLEN(pdpl2m), pmpdpl1mpdpl2m);
         }
 
-        lnA = 2*logq(m)+logprefactor+log_polyintegrate(pmppl1mppl2m, XLEN(pmppl1mppl2m), l1,l2,m,tau, &signA);
+        lnA = 2*ln_m+logprefactor+log_polyintegrate(pmppl1mppl2m, XLEN(pmppl1mppl2m), l1,l2,m,tau, &signA);
         signA *= MPOW(l2);
 
         lnB = logprefactor+log_polyintegrate(pmpdpl1mpdpl2m, XLEN(pmpdpl1mpdpl2m), l1,l2,m,tau, &signB);
         signB *= MPOW(l2+1);
         
-        lnC = logq(m)+logprefactor+log_polyintegrate(pmppl1mpdpl2m, XLEN(pmppl1mpdpl2m), l1,l2,m,tau, &signC);
+        lnC = ln_m+logprefactor+log_polyintegrate(pmppl1mpdpl2m, XLEN(pmppl1mpdpl2m), l1,l2,m,tau, &signC);
         signC *= MPOW(l2+1);
         
-        lnD = logq(m)+logprefactor+log_polyintegrate(pmpdpl1mppl2m, XLEN(pmpdpl1mppl2m), l1,l2,m,tau, &signD);
+        lnD = ln_m+logprefactor+log_polyintegrate(pmpdpl1mppl2m, XLEN(pmpdpl1mppl2m), l1,l2,m,tau, &signD);
         signD *= MPOW(l2);
     }
 
