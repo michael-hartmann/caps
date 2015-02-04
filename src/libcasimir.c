@@ -1193,9 +1193,8 @@ double casimir_F(casimir_t *self, int *nmax)
     const int cores = self->cores;
     pthread_t **threads = self->threads;
 
-    if(cores > 1)
-        for(i = 0; i < cores; i++)
-            threads[i] = NULL;
+    for(i = 0; i < cores; i++)
+        threads[i] = NULL;
 
     /* So, here we sum up all m and n that contribute to F.
      * So, what do we do here?
