@@ -932,7 +932,7 @@ void caismir_mie_cache_get(casimir_t *self, int l, int n, double *ln_a, int *sig
  *
  * This function will free allocated memory for the cache.
  *
- * @param [in, out] cache Mie cache
+ * @param [in, out] Casimir object
  */
 void casimir_mie_cache_free(casimir_t *self)
 {
@@ -940,22 +940,34 @@ void casimir_mie_cache_free(casimir_t *self)
     casimir_mie_cache_t *cache = self->mie_cache;
     casimir_mie_cache_entry_t **entries = cache->entries;
 
-    xfree(entries[0]);
-    for(n = 0; n < cache->nmax; n++)
+    /* free
+     * 1) the lists of al, bl, sign_al, sign_bl for every entry
+     * 2) every entry (casimir_mie_cache_entry_t)
+     * 3) the list of entries
+     * 4) the mie cache object (casimir_mie_cache_t)
+     */
+    for(n = 0; n <= cache->nmax; n++)
     {
         if(entries[n] != NULL)
         {
-            xfree(entries[n]->ln_al);
-            xfree(entries[n]->sign_al);
-            xfree(entries[n]->ln_bl);
-            xfree(entries[n]->sign_bl);
-        }
+            if(entries[n]->ln_al != NULL)
+                xfree(entries[n]->ln_al);
+            if(entries[n]->sign_al != NULL)
+                xfree(entries[n]->sign_al);
+            if(entries[n]->ln_bl != NULL)
+                xfree(entries[n]->ln_bl);
+            if(entries[n]->sign_bl != NULL)
+                xfree(entries[n]->sign_bl);
 
-        xfree(entries[n]);
+            xfree(entries[n]);
+        }
     }
 
+    xfree(cache->entries);
     cache->entries = NULL;
+
     xfree(self->mie_cache);
+    self->mie_cache = NULL;
 }
 
 /*@}*/
