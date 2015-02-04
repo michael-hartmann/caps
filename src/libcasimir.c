@@ -540,6 +540,13 @@ int casimir_set_cores(casimir_t *self, int cores)
  * the dimension has to be limited to a finite value. The accuracy of the
  * result depends on the truncation of the vector space. For more information,
  * cf. chapter 6.1.
+ *
+ * Please note that the cache of the Mie coefficients has to be cleaned. This
+ * means that all Mie coefficients have to be calculated again.
+ *
+ * In order to get meaningful results and to prevent recalculating Mie
+ * coefficients, set the lmax at the beginning before doing expensive
+ * computations.
  * 
  * @param [in,out] self Casimir object
  * @param [in] lmax maximum number of l
@@ -554,8 +561,7 @@ int casimir_set_lmax(casimir_t *self, int lmax)
     self->lmax = lmax;
 
     /* reinit mie cache */
-    casimir_mie_cache_free(self);
-    casimir_mie_cache_init(self);
+    casimir_mie_cache_clean(self);
 
     return 1;
 }
@@ -859,9 +865,16 @@ void casimir_lnab(casimir_t *self, const int n_mat, const int l, double *lna, do
 /**
  * @brief Initialize Mie cache
  *
- * The cache stores all Mie coefficients \f$a_\ell\f$ and \f$b_\ell\f$ for the
- * imaginary frequency \f$\xi = nT\f$. This function initialized the cache.
- * However, no Mie coefficients will be computed and stored.
+ * This will initialize a cache for the Mie coefficients. If a Mie coefficient
+ * \f$a_l(\xi=nT)\f$ or \f$b_l(xi=nT)\f$ is needed, the coefficients only needs
+ * to be calculated the first time. The result will be saved.
+ *
+ * The cache will grow on demand. But it will never shrink - unless you call
+ * casimir_free or casimir_mie_cache_clean.
+ *
+ * The casimir_init function will call this function and the cache will be used
+ * throughout computations. So you usually don't want to use this function
+ * yourself.
  *
  * @param [in,out] casimir object
  */
@@ -889,7 +902,12 @@ void casimir_mie_cache_init(casimir_t *self)
  *
  * This function computes all the Mie coefficients for \f$\xi=nT\f$ and stores
  * it in cache. Make sure you have already initialized the cache (cf.
- * casimir_mie_cache_init).
+ * casimir_mie_cache_init). Initialization is done by casimir_init.
+ *
+ * This function will be called by casimir_mie_cache_get if a Mie coefficient
+ * is not precomputed yet.
+ *
+ * You usually don't want to use this function yourself.
  *
  * @param [in,out] self Casimir object
  * @param [in,out] cache Mie cache
@@ -927,11 +945,44 @@ void casimir_mie_cache_alloc(casimir_t *self, int n)
     self->mie_cache->nmax = n;
 }
 
+
+/**
+ * @brief Clean memory of cache
+ *
+ * This function will free allocated memory for the cache. The cache will still
+ * work, but the precomputed values for the Mie coefficients will be lost.
+ *
+ * You usually don't want to use this function yourself.
+ *
+ * @param [in, out] Casimir object
+ */
+void casimir_mie_cache_clean(casimir_t *self)
+{
+    casimir_mie_cache_free(self);
+    casimir_mie_cache_init(self);
+}
+
+/**
+ * @brief Clean memory of cache
+ *
+ * Get Mie coefficients for l and Matsubara frequency xi=nT. If the Mie
+ * coefficients have not been calculated yet, they will be computed and stored
+ * in the cache.
+ *
+ * @param [in, out] Casimir object
+ * @param [in] l
+ * @param [in] n
+ * @param [out] ln_a logarithm of a_l
+ * @param [out] sign_a sign of a_l
+ * @param [out] ln_b logarithm of b_l
+ * @param [out] sign_b sign of b_l
+ */
 void caismir_mie_cache_get(casimir_t *self, int l, int n, double *ln_a, int *sign_a, double *ln_b, int *sign_b)
 {
     casimir_mie_cache_entry_t *entry;
     int nmax;
 
+    /* this locking is important to prevent memory corruption */
     pthread_mutex_lock(&self->mie_cache->mutex);
 
     nmax = self->mie_cache->nmax;
@@ -951,7 +1002,11 @@ void caismir_mie_cache_get(casimir_t *self, int l, int n, double *ln_a, int *sig
 /**
  * @brief Free memory of cache.
  *
- * This function will free allocated memory for the cache.
+ * This function will free allocated memory for the cache. Don't use the cache
+ * afterwards!
+ *
+ * You usually don't want to use this function yourself.
+ *
  * @param [in, out] Casimir object
  */
 void casimir_mie_cache_free(casimir_t *self)
