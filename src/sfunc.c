@@ -326,10 +326,9 @@ outline how to calculate Gaunt coefficients at the end of the chapter.
 
 Ref.: [1] Y.-L. Xu, J. Comp. Appl. Math. 85, 53 (1997)
 */
-void gaunt(int n, int nu, int m, int mu, edouble *a0_p, edouble a_tilde[])
+void gaunt(int n, int nu, int m, int mu, edouble a_tilde[])
 {
     int q, n4 = n+nu-m-mu;
-    edouble a0;
 
     /* eq. (24) */
     int qmax = GAUNT_QMAX(n,nu,m,mu);
@@ -339,11 +338,6 @@ void gaunt(int n, int nu, int m, int mu, edouble *a0_p, edouble a_tilde[])
 
     /* eq. (3) */
     #define alpha(p) (((p*p-(n+nu+1)*(n+nu+1))*(p*p-(n-nu)*(n-nu)))/(4*p*p-1))
-
-    /* eq. (20) */
-    a0 = GAUNT_a0(n,nu,m,mu);
-    if(a0_p != NULL)
-        *a0_p = a0;
 
     if(a_tilde == NULL)
         return;

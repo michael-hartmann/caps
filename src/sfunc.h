@@ -63,6 +63,6 @@ edouble plm_dPlm  (int l, int m, edouble x);
 
 void plm_PlmPlm(int l1, int l2, int m, edouble x, plm_combination_t *res);
 
-void gaunt(int n, int nu, int m, int mu, edouble *a0_p, edouble a_tilde[]);
+void gaunt(int n, int nu, int m, int mu, edouble a_tilde[]);
 
 #endif
