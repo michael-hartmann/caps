@@ -1,4 +1,5 @@
 #include <assert.h>
+#include <stdlib.h>
 #include <stdio.h>
 #include <math.h>
 
@@ -305,4 +306,96 @@ void plm_PlmPlm(int l1, int l2, int m, edouble x, plm_combination_t *res)
     /* dPl1m*dPl2m */
     res->lndPl1mdPl2m    = lndPl1m + lndPl2m;
     res->sign_dPl1mdPl2m = common_sign * sign_dPl1m * sign_dPl2m;
+}
+
+
+
+/*
+Determine Gaunt coefficients a(m, n, mu, nu, p) for m, n, mu and nu fixed.
+These coefficients can be used to express the product of two associated
+Legendre polynomials:
+
+P_n^m(x)*P_{nu}^{mu}(x) = a0 sum_{q=0}^{qmax} aq_tilde P_{n+nu-2q}^(m+mu)(x)
+
+Returns: qmax, a0, aq_tilde
+qmax is the upper bound of summation, a0 is the prefactor and aq_tilde is a
+list of normalized Gaunt coefficients.
+
+See [1] for more information, especially chapter 3. There is a brief
+outline how to calculate Gaunt coefficients at the end of the chapter.
+
+Ref.: [1] Y.-L. Xu, J. Comp. Appl. Math. 85, 53 (1997)
+*/
+void gaunt(int n, int nu, int m, int mu, edouble *a0_p, edouble a_tilde[])
+{
+    int q, n4 = n+nu-m-mu;
+    edouble a0;
+
+    /* eq. (24) */
+    int qmax = GAUNT_QMAX(n,nu,m,mu);
+
+    /* eq. (28) */
+    #define Ap(p) (p*(p-1)*(m-mu)-(m+mu)*(n-nu)*(n+nu+1))
+
+    /* eq. (3) */
+    #define alpha(p) (((p*p-(n+nu+1)*(n+nu+1))*(p*p-(n-nu)*(n-nu)))/(4*p*p-1))
+
+    /* eq. (20) */
+    a0 = GAUNT_a0(n,nu,m,mu);
+    if(a0_p != NULL)
+        *a0_p = a0;
+
+    if(a_tilde == NULL)
+        return;
+
+    a_tilde[0] = 1;
+    if(qmax == 0)
+        return;
+
+    /* eq. (29) */
+    a_tilde[1] = (n+nu-1.5)*(1-(2*n+2*nu-1)/(n4*(n4-1.))*((m-n)*(m-n+1)/(2*n-1.)+(mu-nu)*(mu-nu+1)/(2*nu-1.)));
+    if(qmax == 1)
+        return;
+
+    /* eq. (35) */
+    a_tilde[2] = (2*n+2*nu-1)*(2*n+2*nu-7)/4.*( (2*n+2*nu-3)/(n4*(n4-1.)) * ( (2*n+2*nu-5)/(2*(n4-2.)*(n4-3.)) \
+                * ( (m-n)*(m-n+1)*(m-n+2)*(m-n+3)/((2*n-1.)*(2*n-3.)) \
+                + 2*(m-n)*(m-n+1)*(mu-nu)*(mu-nu+1)/((2*n-1.)*(2*nu-1.)) \
+                + (mu-nu)*(mu-nu+1)*(mu-nu+2)*(mu-nu+3)/((2*nu-1.)*(2*nu-3.)) ) - (m-n)*(m-n+1)/(2*n-1.) \
+                - (mu-nu)*(mu-nu+1)/(2*nu-1.) ) +0.5);
+
+
+    for(q = 3; q <= qmax; q++)
+    {
+        edouble c0,c1,c2,c3;
+        int p = n+nu-2*q;
+        int p1 = p-m-mu;
+        int p2 = p+m+mu;
+
+        if(Ap(p+4) != 0)
+        {
+            /* eqs. (26), (27) */
+            c0 = (p+2)*(p+3)*(p1+1)*(p1+2)*Ap(p+4)*alpha(p+1);
+            c1 = Ap(p+2)*Ap(p+3)*Ap(p+4) \
+               + (p+1)*(p+3)*(p1+2)*(p2+2)*Ap(p+4)*alpha(p+2) \
+               + (p+2)*(p+4)*(p1+3)*(p2+3)*Ap(p+2)*alpha(p+3);
+            c2 = -(p+2)*(p+3)*(p2+3)*(p2+4)*Ap(p+2)*alpha(p+4);
+            a_tilde[q] = (c1*a_tilde[q-1] + c2*a_tilde[q-2])/c0;
+        }
+        else
+        {
+            if(Ap(p+6) == 0)
+                /* eq. (30) */
+                a_tilde[q] = (p+1)*(p2+2)*alpha(p+2)*a_tilde[q-1] / ((p+2)*(p1+1)*alpha(p+1));
+            else
+            {
+                /* eq. (32), (33) */
+                c0 = (p+2)*(p+3)*(p+5)*(p1+1)*(p1+2)*(p1+4)*Ap(p+6)*alpha(p+1);
+                c1 = (p+5)*(p1+4)*Ap(p+6)*(Ap(p+2)*Ap(p+3)+(p+1)*(p+3)*(p1+2)*(p2+2)*alpha(p+2));
+                c2 = (p+2)*(p2+3)*Ap(p+2)*(Ap(p+5)*Ap(p+6)+(p+4)*(p+6)*(p1+5)*(p2+5)*alpha(p+5));
+                c3 = -(p+2)*(p+4)*(p+5)*(p2+3)*(p2+5)*(p2+6)*Ap(p+2)*alpha(p+6);
+                a_tilde[q] = (c1*a_tilde[q-1] + c2*a_tilde[q-2] + c3*a_tilde[q-3])/c0;
+            }
+        }
+    }
 }
