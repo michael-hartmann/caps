@@ -13,6 +13,7 @@
     #define sinq      sinl
     #define cosq      cosl
     #define gammaq    gammal
+    #define lgammaq   lgammal
     #define copysignq copysignl
     #define isinfq(x) (x/10 == x)
     #define isnanq(x) (x != x)
@@ -20,39 +21,42 @@
     #if defined(__ICC) || defined(__INTEL_COMPILER)
         #define CASIMIR_ARITHMETICS "icc _Quad"
         #define edouble _Quad
-    
+
         /* define isinf and isnan */
         #define isinfq(x) (x/10 == x)
         #define isnanq(x) (x != x)
-    
+
         /* define prototypes. without these prototypes icc will return nan. */
         _Quad __logq(_Quad);
         #define logq __logq
-    
+
         _Quad __cosq(_Quad);
         #define cosq __cosq
-    
+
         _Quad __sinq(_Quad);
         #define sinq __sinq
-    
+
         _Quad __expq(_Quad);
         #define expq __expq
-    
+
         _Quad __gammaq(_Quad);
         #define gammaq __gammaq
-    
+
+        _Quad __lgammaq(_Quad);
+        #define lgammaq __lgammaq
+
         _Quad __sqrtq(_Quad);
         #define sqrtq __sqrtq
-    
+
         _Quad __log1pq(_Quad);
         #define log1pq __log1pq
-    
+
         _Quad __fabsq(_Quad);
         #define fabsq __fabsq
-    
+
         _Quad __copysignq(_Quad, _Quad);
         #define copysignq __copysignq
-    
+
     #elif defined(__GNUC__) || defined(__GNUG__)
         #define CASIMIR_ARITHMETICS "gcc __float128"
 
