@@ -76,19 +76,17 @@ static edouble I(int beta, int nu, int m2, edouble tau)
 {
     // exp(-z*tau) * (z^2+2z)^-1 * (1+z)^beta * Plm(nu, 2m, 1+z)
     int m = m2/2;
-    edouble value;
     edouble p1[m+beta], p2[nu+1-m2], p[-m+beta+nu];
 
     poly1(m-1, beta, p1);
     poly2(nu,m2,p2);
     polymult(p1, m+beta, p2, nu+1-m2, p);
 
-    value = polyintegrate(p, -m+beta+nu, m-1, tau);
-    //printf("beta=%d, nu=%d, m2=%d, tau=%g, value=%.10g\n", beta, nu, m2, (double)tau, (double)value);
-    return value;
+    return polyintegrate(p, -m+beta+nu, m-1, tau);
 }
 
 
+/* TODO: m = 0, check signs! */
 void casimir_integrate_perf(casimir_integrals_t *cint, int l1, int l2, int m, double nT)
 {
     int nu,q;
@@ -109,7 +107,6 @@ void casimir_integrate_perf(casimir_integrals_t *cint, int l1, int l2, int m, do
     if(m == 0)
     {
         // XXX do stuff here
-        return;
         cint->lnA_TM = cint->lnA_TE = -INFINITY;
         cint->lnC_TM = cint->lnC_TE = -INFINITY;
         cint->lnD_TM = cint->lnD_TE = -INFINITY;
@@ -122,6 +119,8 @@ void casimir_integrate_perf(casimir_integrals_t *cint, int l1, int l2, int m, do
         cint->signB_TM = MPOW(l2+m+1);
         cint->signB_TE = -cint->signB_TM;
         */
+
+        return;
     }
 
     /* calculate Gaunt coefficients */
@@ -155,7 +154,6 @@ void casimir_integrate_perf(casimir_integrals_t *cint, int l1, int l2, int m, do
             B1 += a_l1pl2p[q]*I(0,nu,2*m,tau);
         }
         B1 *= gaunt_a0(l1+1,l2+1,m,m);
-        //printf("B1 = %g\n", (double)logq(fabsq(B1)));
         B1 *= (l1-m+1)*(l2-m+1);
 
         B2 = 0;
@@ -165,7 +163,6 @@ void casimir_integrate_perf(casimir_integrals_t *cint, int l1, int l2, int m, do
             B2 += a_l1pl2[q]*I(1,nu,2*m,tau);
         }
         B2 *= -gaunt_a0(l1+1,l2,m,m);
-        //printf("B2 = %g\n", (double)logq(fabsq(B2)));
         B2 *= (l1-m+1)*(l2+1);
 
         B3 = 0;
@@ -174,8 +171,7 @@ void casimir_integrate_perf(casimir_integrals_t *cint, int l1, int l2, int m, do
             nu = l1+l2+1-2*q;
             B3 += a_l1l2p[q]*I(1,nu,2*m,tau);
         }
-        B3 *= -gaunt_a0(l1,l2+1,m,m);//
-        //printf("B3 = %g\n", (double)logq(fabsq(B3)));
+        B3 *= -gaunt_a0(l1,l2+1,m,m);
         B3 *= (l1+1)*(l2-m+1);
 
         B4 = 0;
@@ -185,14 +181,12 @@ void casimir_integrate_perf(casimir_integrals_t *cint, int l1, int l2, int m, do
             B4 += a_l1l2[q]*I(2,nu,2*m,tau);
         }
         B4 *= gaunt_a0(l1,l2,m,m);
-        //printf("B4 = %g\n", (double)logq(fabsq(B4)));
         B4 *= (l1+1)*(l2+1);
 
         B = B1+B2+B3+B4;
+
         log_B  = logq(fabsq(B));
         sign_B = copysignq(1,B);
-
-        //printf("logB=%.10g, sign_B=%d\n", (double)log_B, sign_B);
     }
 
     /* C */
@@ -261,6 +255,6 @@ void casimir_integrate_perf(casimir_integrals_t *cint, int l1, int l2, int m, do
     cint->signC_TE = -cint->signC_TM;
 
     cint->lnD_TM   = cint->lnD_TE = log_m+lnLambda-tau+log_D;
-    cint->signD_TM = -MPOW(l1)*sign_D; // XXX ???
+    cint->signD_TM = -MPOW(l2)*sign_D; // XXX ???
     cint->signD_TE = -cint->signD_TM;
 }
