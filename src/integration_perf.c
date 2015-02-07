@@ -2,7 +2,10 @@
 #include <stdlib.h>
 #include <math.h>
 
+#include "edouble.h"
 #include "sfunc.h"
+#include "libcasimir.h"
+#include "integration_perf.h"
 
 /* p must have length len_p1+len_p2-1 */
 static void polymult(edouble p1[], int len_p1, edouble p2[], int len_p2, edouble p[])
@@ -33,7 +36,7 @@ static void poly1(int m, int n, edouble p[])
 
     for(k = 0; k <= m; k++)
         p1[k] = expq(lgammaq(m+1)-lgammaq(k+1)-lgammaq(m+1-k)+(m-k)*LOG2);
-    
+
     for(k = 0; k <= n; k++)
         p2[k] = expq(lgammaq(n+1)-lgammaq(k+1)-lgammaq(n+1-k));
 
@@ -60,6 +63,7 @@ static edouble polyintegrate(edouble p[], int len_p, int offset, edouble tau)
     int k;
     edouble value = 0;
 
+    // XXX prevent overflows
     for(k = offset; k < len_p+offset; k++)
         //value += gamma(k+1)/tau**(k+1)*p[k-offset]
         value += expq(lgammaq(k+1)-(k+1)*logq(tau))*p[k-offset];
@@ -68,127 +72,195 @@ static edouble polyintegrate(edouble p[], int len_p, int offset, edouble tau)
 }
 
 
-static edouble I(int alpha, int beta, int nu, int m2, edouble tau)
+static edouble I(int beta, int nu, int m2, edouble tau)
 {
-    // exp(-z*tau) * (z^2+2z)^alpha * (1+z)^beta * Plm(nu, 2m, 1+z)
+    // exp(-z*tau) * (z^2+2z)^-1 * (1+z)^beta * Plm(nu, 2m, 1+z)
     int m = m2/2;
-    edouble p1[m+alpha+beta+1], p2[nu+1-m2], p[-m+alpha+beta+1+nu];
+    edouble value;
+    edouble p1[m+beta], p2[nu+1-m2], p[-m+beta+nu];
 
-    poly1(m+alpha, beta, p1);
+    poly1(m-1, beta, p1);
     poly2(nu,m2,p2);
-    polymult(p1, m+alpha+beta+1, p2, nu+1-m2, p);
+    polymult(p1, m+beta, p2, nu+1-m2, p);
 
-    return MPOW(m)*polyintegrate(p, -m+alpha+beta+1+nu, m+alpha, tau);
-}
-
-
-edouble integralA(int l1, int l2, int m, edouble tau)
-{
-    const int qmax = GAUNT_QMAX(l1,l2,m,m);
-    int q,nu;
-    edouble prefactor, value = 0, a0 = GAUNT_a0(l1,l2,m,m);
-    edouble a[qmax];
-
-    if(m == 0)
-        return 0;
-
-    //prefactor = MPOW(l2)*pow_2(m)*expq(-tau);
-    prefactor = 1;
-
-    gaunt(l1, l2, m, m, a);
-    for(q = 0; q <= qmax; q++)
-    {
-        nu = l1+l2-2*q;
-        value += a[q]*I(-1,0,nu,2*m,tau);
-    }
-
-    return prefactor*a0*value;
+    value = polyintegrate(p, -m+beta+nu, m-1, tau);
+    //printf("beta=%d, nu=%d, m2=%d, tau=%g, value=%.10g\n", beta, nu, m2, (double)tau, (double)value);
+    return value;
 }
 
 
 void casimir_integrate_perf(casimir_integrals_t *cint, int l1, int l2, int m, double nT)
 {
+    int nu,q;
     edouble tau = 2*nT;
+    edouble log_m;
+    const int qmax_l1l2   = GAUNT_QMAX(l1,  l2,  m,m);
+    edouble a_l1l2[qmax_l1l2+1];
+    const int qmax_l1pl2  = GAUNT_QMAX(l1+1,l2,  m,m);
+    edouble a_l1pl2[qmax_l1pl2+1];
+    const int qmax_l1l2p  = GAUNT_QMAX(l1,  l2+1,m,m);
+    edouble a_l1l2p[qmax_l1l2p+1];
+    const int qmax_l1pl2p = GAUNT_QMAX(l1+1,l2+1,m,m);
+    edouble a_l1pl2p[qmax_l1pl2p+1];
+    edouble log_A,log_B,log_C,log_D;
+    edouble lnLambda = casimir_lnLambda(l1, l2, m, NULL);
+    int sign_A, sign_B, sign_C, sign_D;
+
+    if(m == 0)
+    {
+        // XXX do stuff here
+        return;
+        cint->lnA_TM = cint->lnA_TE = -INFINITY;
+        cint->lnC_TM = cint->lnC_TE = -INFINITY;
+        cint->lnD_TM = cint->lnD_TE = -INFINITY;
+        cint->signA_TM = cint->signA_TE = +1;
+        cint->signC_TM = cint->signC_TE = +1;
+        cint->signD_TM = cint->signD_TE = +1;
+
+        /* XXX
+        cint->lnB_TM   = cint->lnB_TE = log_m-tau+logq(B);
+        cint->signB_TM = MPOW(l2+m+1);
+        cint->signB_TE = -cint->signB_TM;
+        */
+    }
+
+    /* calculate Gaunt coefficients */
+    gaunt(l1,   l2,   m, m, a_l1l2);
+    gaunt(l1+1, l2,   m, m, a_l1pl2);
+    gaunt(l1,   l2+1, m, m, a_l1l2p);
+    gaunt(l1+1, l2+1, m, m, a_l1pl2p);
+
+    /* A */
+    {
+        edouble A = 0;
+        for(q = 0; q <= qmax_l1l2; q++)
+        {
+            nu = l1+l2-2*q;
+            A += a_l1l2[q]*I(0,nu,2*m,tau);
+        }
+        A *= gaunt_a0(l1,l2,m,m);
+
+        log_A  = logq(fabsq(A));
+        sign_A = copysignq(1, A);
+    }
+
+    /* B */
+    {
+        edouble B, B1, B2, B3, B4;
+
+        B1 = 0;
+        for(q = 0; q <= qmax_l1pl2p; q++)
+        {
+            nu = l1+1+l2+1-2*q;
+            B1 += a_l1pl2p[q]*I(0,nu,2*m,tau);
+        }
+        B1 *= gaunt_a0(l1+1,l2+1,m,m);
+        //printf("B1 = %g\n", (double)logq(fabsq(B1)));
+        B1 *= (l1-m+1)*(l2-m+1);
+
+        B2 = 0;
+        for(q = 0; q <= qmax_l1pl2; q++)
+        {
+            nu = l1+1+l2-2*q;
+            B2 += a_l1pl2[q]*I(1,nu,2*m,tau);
+        }
+        B2 *= -gaunt_a0(l1+1,l2,m,m);
+        //printf("B2 = %g\n", (double)logq(fabsq(B2)));
+        B2 *= (l1-m+1)*(l2+1);
+
+        B3 = 0;
+        for(q = 0; q <= qmax_l1l2p; q++)
+        {
+            nu = l1+l2+1-2*q;
+            B3 += a_l1l2p[q]*I(1,nu,2*m,tau);
+        }
+        B3 *= -gaunt_a0(l1,l2+1,m,m);//
+        //printf("B3 = %g\n", (double)logq(fabsq(B3)));
+        B3 *= (l1+1)*(l2-m+1);
+
+        B4 = 0;
+        for(q = 0; q <= qmax_l1l2; q++)
+        {
+            nu = l1+l2-2*q;
+            B4 += a_l1l2[q]*I(2,nu,2*m,tau);
+        }
+        B4 *= gaunt_a0(l1,l2,m,m);
+        //printf("B4 = %g\n", (double)logq(fabsq(B4)));
+        B4 *= (l1+1)*(l2+1);
+
+        B = B1+B2+B3+B4;
+        log_B  = logq(fabsq(B));
+        sign_B = copysignq(1,B);
+
+        //printf("logB=%.10g, sign_B=%d\n", (double)log_B, sign_B);
+    }
+
+    /* C */
+    {
+        edouble C,C1,C2;
+
+        C1 = 0;
+        for(q = 0; q <= qmax_l1l2p; q++)
+        {
+            nu = l1+l2+1-2*q;
+            C1 += a_l1l2p[q]*I(0,nu,2*m,tau);
+        }
+        C1 *= gaunt_a0(l1,l2+1,m,m)*(l2-m+1);
+
+        C2 = 0;
+        for(q = 0; q <= qmax_l1l2; q++)
+        {
+            nu = l1+l2-2*q;
+            C2 += a_l1l2[q]*I(1,nu,2*m,tau);
+        }
+        C2 *= -gaunt_a0(l1,l2,m,m)*(l2+1);
+
+        C = C1+C2;
+        log_C  = logq(fabsq(C));
+        sign_C = copysignq(1,C);
+    }
+
+    /* D */
+    {
+        edouble D,D1,D2;
+
+        D1 = 0;
+        for(q = 0; q <= qmax_l1pl2; q++)
+        {
+            nu = l1+1+l2-2*q;
+            D1 += a_l1pl2[q]*I(0,nu,2*m,tau);
+        }
+        D1 *= gaunt_a0(l1+1,l2,m,m)*(l1-m+1);
+
+        D2 = 0;
+        for(q = 0; q <= qmax_l1l2; q++)
+        {
+            nu = l1+l2-2*q;
+            D2 += a_l1l2[q]*I(1,nu,2*m,tau);
+        }
+        D2 *= -gaunt_a0(l1,l2,m,m)*(l1+1);
+
+        D = D1+D2;
+        log_D  = logq(fabsq(D));
+        sign_D = copysignq(1,D);
+    }
+
+
+    log_m   = logq(m);
+
+    cint->lnA_TM   = cint->lnA_TE = 2*log_m+lnLambda-tau+log_A;
+    cint->signA_TM = -MPOW(l2)*sign_A; /* - because Lambda(l1,l2,m) is negative */
+    cint->signA_TE = -cint->signA_TM;
+
+    cint->lnB_TM   = cint->lnB_TE = lnLambda-tau+log_B;
+    cint->signB_TM = -MPOW(l2+1)*sign_B;
+    cint->signB_TE = -cint->signB_TM;
+
+    cint->lnC_TM   = cint->lnC_TE = log_m+lnLambda-tau+log_C;
+    cint->signC_TM = -MPOW(l2+1)*sign_C;
+    cint->signC_TE = -cint->signC_TM;
+
+    cint->lnD_TM   = cint->lnD_TE = log_m+lnLambda-tau+log_D;
+    cint->signD_TM = -MPOW(l1)*sign_D; // XXX ???
+    cint->signD_TE = -cint->signD_TM;
 }
-
-int main(int argc, char *argv[])
-{
-    int l1,l2,m;
-    edouble tau;
-
-    l1  = 4;
-    l2  = 3;
-    m   = 1;
-    tau = 2;
-
-    printf("IntegralA = %.14g\n", (double)integralA(l1,l2,m,tau));
-
-    return 0;
-}
-
-/*
-
-def integralB(l1,l2,m,tau):
-    #prefactor = (-1)**(l2+1)*exp(-tau)
-    prefactor = 1
-    alpha = -1
-
-    qmax,a0,a = gaunt(l1+1,l2+1,m,m)
-    sum1 = 0
-    for q in range(qmax+1):
-        nu = l1+1+l2+1-2*q
-        sum1 += a[q]*integral(alpha,0,nu,2*m,tau)
-    sum1 *= a0*(l1-m+1)*(l2-m+1)
-
-    qmax,a0,a = gaunt(l1+1,l2,m,m)
-    sum2 = 0
-    for q in range(qmax+1):
-        nu = l1+1+l2-2*q
-        sum2 += a[q]*integral(alpha,1,nu,2*m,tau)
-    sum2 *= -a0*(l1-m+1)*(l2+1)
-
-    qmax,a0,a = gaunt(l1,l2+1,m,m)
-    sum3 = 0
-    for q in range(qmax+1):
-        nu = l1+1+l2-2*q
-        sum3 += a[q]*integral(alpha,1,nu,2*m,tau)
-    sum3 *= -a0*(l1+1)*(l2-m+1)
-
-    qmax,a0,a = gaunt(l1,l2,m,m)
-    sum4 = 0
-    for q in range(qmax+1):
-        nu = l1+l2-2*q
-        sum4 += a[q]*integral(alpha,2,nu,2*m,tau)
-    sum4 *= a0*(l1+1)*(l2+1)
-
-    return prefactor*(sum1+sum2+sum3+sum4)
-
-
-def integralC(l1,l2,m,tau):
-    if m == 0:
-        return 0
-
-    #prefactor = (-1)**l2*m*exp(-tau)
-    prefactor = 1
-
-    qmax,a0,a = gaunt(l1,l2+1,m,m)
-    sum1 = 0
-    for q in range(qmax+1):
-        nu = l1+l2+1-2*q
-        sum1 += a[q]*integral(-1,0,nu,2*m,tau)
-    sum1 *= a0*(l2-m+1)
-
-    qmax,a0,a = gaunt(l1,l2,m,m)
-    sum2 = 0
-    for q in range(qmax+1):
-        nu = l1+l2-2*q
-        sum2 += a[q]*integral(-1,1,nu,2*m,tau)
-    sum2 *= -a0*(l2+1)
-
-    return prefactor*(sum1+sum2)
-
-
-#print integralA(4,3,2,2)
-#print integralB(4,3,2,2)
-print integralB(4,3,1,2)
-*/
