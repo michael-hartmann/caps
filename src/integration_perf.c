@@ -7,6 +7,8 @@
 #include "libcasimir.h"
 #include "integration_perf.h"
 
+#include "utils.h"
+
 /* p must have length len_p1+len_p2-1 */
 static void polymult(edouble p1[], int len_p1, edouble p2[], int len_p2, edouble p[])
 {
@@ -72,17 +74,39 @@ static edouble polyintegrate(edouble p[], int len_p, int offset, edouble tau)
 }
 
 
-static edouble I(int beta, int nu, int m2, edouble tau)
+static edouble I(int beta, int nu, int m2, int n, double T)
 {
     // exp(-z*tau) * (z^2+2z)^-1 * (1+z)^beta * Plm(nu, 2m, 1+z)
+    static edouble *cache = NULL;
+    int index;
     int m = m2/2;
-    edouble p1[m+beta], p2[nu+1-m2], p[-m+beta+nu];
+    edouble tau = 2*n*T;
+    edouble v;
 
-    poly1(m-1, beta, p1);
-    poly2(nu,m2,p2);
-    polymult(p1, m+beta, p2, nu+1-m2, p);
+    if(cache == NULL)
+    {
+        int i;
+        cache = xmalloc((3*500*500*500)*sizeof(edouble));
+        for( i = 0; i < 3*500*500*500; i++)
+            cache[i] = 0;
+    }
 
-    return polyintegrate(p, -m+beta+nu, m-1, tau);
+    index = 3*(n+500*(m+500*nu))+beta;
+    v = cache[index];
+
+    if(v == 0)
+    {
+        edouble p1[m+beta], p2[nu+1-m2], p[-m+beta+nu];
+
+        poly1(m-1, beta, p1);
+        poly2(nu,m2,p2);
+        polymult(p1, m+beta, p2, nu+1-m2, p);
+
+        v = polyintegrate(p, -m+beta+nu, m-1, tau);
+        cache[index] = v;
+    }
+
+    return v;
 }
 
 static void polydplm(edouble pl1[], edouble pl2[], int l1, int l2, int m)
@@ -124,10 +148,10 @@ static void polydplm(edouble pl1[], edouble pl2[], int l1, int l2, int m)
 
 
 /* TODO: m = 0, check signs! */
-void casimir_integrate_perf(casimir_integrals_t *cint, int l1, int l2, int m, double nT)
+void casimir_integrate_perf(casimir_integrals_t *cint, int l1, int l2, int m, int n, double T)
 {
     int nu,q;
-    edouble tau = 2*nT;
+    edouble tau = 2*n*T;
     edouble log_m;
     const int qmax_l1l2   = GAUNT_QMAX(l1,  l2,  m,m);
     edouble a_l1l2[qmax_l1l2+1];
@@ -183,7 +207,7 @@ void casimir_integrate_perf(casimir_integrals_t *cint, int l1, int l2, int m, do
         for(q = 0; q <= qmax_l1l2; q++)
         {
             nu = l1+l2-2*q;
-            A += a_l1l2[q]*I(0,nu,2*m,tau);
+            A += a_l1l2[q]*I(0,nu,2*m,n,T);
         }
         A *= gaunt_a0(l1,l2,m,m);
 
@@ -199,7 +223,7 @@ void casimir_integrate_perf(casimir_integrals_t *cint, int l1, int l2, int m, do
         for(q = 0; q <= qmax_l1pl2p; q++)
         {
             nu = l1+1+l2+1-2*q;
-            B1 += a_l1pl2p[q]*I(0,nu,2*m,tau);
+            B1 += a_l1pl2p[q]*I(0,nu,2*m,n,T);
         }
         B1 *= gaunt_a0(l1+1,l2+1,m,m);
         B1 *= (l1-m+1)*(l2-m+1);
@@ -208,7 +232,7 @@ void casimir_integrate_perf(casimir_integrals_t *cint, int l1, int l2, int m, do
         for(q = 0; q <= qmax_l1pl2; q++)
         {
             nu = l1+1+l2-2*q;
-            B2 += a_l1pl2[q]*I(1,nu,2*m,tau);
+            B2 += a_l1pl2[q]*I(1,nu,2*m,n,T);
         }
         B2 *= -gaunt_a0(l1+1,l2,m,m);
         B2 *= (l1-m+1)*(l2+1);
@@ -217,7 +241,7 @@ void casimir_integrate_perf(casimir_integrals_t *cint, int l1, int l2, int m, do
         for(q = 0; q <= qmax_l1l2p; q++)
         {
             nu = l1+l2+1-2*q;
-            B3 += a_l1l2p[q]*I(1,nu,2*m,tau);
+            B3 += a_l1l2p[q]*I(1,nu,2*m,n,T);
         }
         B3 *= -gaunt_a0(l1,l2+1,m,m);
         B3 *= (l1+1)*(l2-m+1);
@@ -226,7 +250,7 @@ void casimir_integrate_perf(casimir_integrals_t *cint, int l1, int l2, int m, do
         for(q = 0; q <= qmax_l1l2; q++)
         {
             nu = l1+l2-2*q;
-            B4 += a_l1l2[q]*I(2,nu,2*m,tau);
+            B4 += a_l1l2[q]*I(2,nu,2*m,n,T);
         }
         B4 *= gaunt_a0(l1,l2,m,m);
         B4 *= (l1+1)*(l2+1);
@@ -245,7 +269,7 @@ void casimir_integrate_perf(casimir_integrals_t *cint, int l1, int l2, int m, do
         for(q = 0; q <= qmax_l1l2p; q++)
         {
             nu = l1+l2+1-2*q;
-            C1 += a_l1l2p[q]*I(0,nu,2*m,tau);
+            C1 += a_l1l2p[q]*I(0,nu,2*m,n,T);
         }
         C1 *= gaunt_a0(l1,l2+1,m,m)*(l2-m+1);
 
@@ -253,7 +277,7 @@ void casimir_integrate_perf(casimir_integrals_t *cint, int l1, int l2, int m, do
         for(q = 0; q <= qmax_l1l2; q++)
         {
             nu = l1+l2-2*q;
-            C2 += a_l1l2[q]*I(1,nu,2*m,tau);
+            C2 += a_l1l2[q]*I(1,nu,2*m,n,T);
         }
         C2 *= -gaunt_a0(l1,l2,m,m)*(l2+1);
 
@@ -270,7 +294,7 @@ void casimir_integrate_perf(casimir_integrals_t *cint, int l1, int l2, int m, do
         for(q = 0; q <= qmax_l1pl2; q++)
         {
             nu = l1+1+l2-2*q;
-            D1 += a_l1pl2[q]*I(0,nu,2*m,tau);
+            D1 += a_l1pl2[q]*I(0,nu,2*m,n,T);
         }
         D1 *= gaunt_a0(l1+1,l2,m,m)*(l1-m+1);
 
@@ -278,7 +302,7 @@ void casimir_integrate_perf(casimir_integrals_t *cint, int l1, int l2, int m, do
         for(q = 0; q <= qmax_l1l2; q++)
         {
             nu = l1+l2-2*q;
-            D2 += a_l1l2[q]*I(1,nu,2*m,tau);
+            D2 += a_l1l2[q]*I(1,nu,2*m,n,T);
         }
         D2 *= -gaunt_a0(l1,l2,m,m)*(l1+1);
 
