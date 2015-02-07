@@ -308,6 +308,16 @@ void plm_PlmPlm(int l1, int l2, int m, edouble x, plm_combination_t *res)
     res->sign_dPl1mdPl2m = common_sign * sign_dPl1m * sign_dPl2m;
 }
 
+/* eq. (20) */
+edouble inline gaunt_log_a0(int n, int nu, int m, int mu)
+{
+    return lgamma(2*n+1)-lgamma(n+1)+lgamma(2*nu+1)-lgamma(1+nu)+lgamma(n+nu+1)-lgamma(2*n+2*nu+1)+lgamma(1+n+nu-m-mu)-lgamma(1+n-m)-lgamma(1+nu-mu);
+}
+
+edouble inline gaunt_a0(int n,int nu,int m,int mu)
+{
+    return expq(gaunt_log_a0(n,nu,m,mu));
+}
 
 
 /*
