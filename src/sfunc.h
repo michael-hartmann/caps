@@ -9,7 +9,7 @@
 #define LOG4   1.386294361119890618834464242916353136151001L
 
 // abbrevations for functions
-#define lngamma(x) (gammaq(x))
+#define lngamma(x) (lgammaq(x))
 #define pow_2(x) ((x)*(x))
 #define lnfac(x)  (gammaq(1+(x)))
 
