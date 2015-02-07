@@ -22,8 +22,8 @@ typedef struct {
     edouble lnD_TM;
 } integrands_drude_t;
 
-void casimir_integrate_perf(casimir_integrals_t *cint, int l1, int l2, int m, double nT);
-void casimir_integrate_drude(casimir_t *self, casimir_integrals_t *cint, int l1, int l2, int m, double nT);
+void casimir_integrate_perf(casimir_integrals_t *cint, int l1, int l2, int m, int n, double T);
+void casimir_integrate_drude(casimir_t *self, casimir_integrals_t *cint, int l1, int l2, int m, int n, double T);
 
 void integrands_drude(edouble x, integrands_drude_t *integrands, casimir_t *self, double nT, int l1, int l2, int m);
 

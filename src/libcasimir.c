@@ -1392,9 +1392,9 @@ double casimir_logdetD(casimir_t *self, int n, int m)
             }
 
             if(self->integration > 0)
-                casimir_integrate_drude(self, &cint, l1, l2, m, n*self->T);
+                casimir_integrate_drude(self, &cint, l1, l2, m, n, self->T);
             else
-                casimir_integrate_perf(&cint, l1, l2, m, n*self->T);
+                casimir_integrate_perf(&cint, l1, l2, m, n,self->T);
 
             /* EE */
             matrix_set(M, i,j, Delta_ij -             sign_al1*( cint.signA_TE*expq(ln_al1+cint.lnA_TE) + cint.signB_TM*expq(ln_al1+cint.lnB_TM) ));

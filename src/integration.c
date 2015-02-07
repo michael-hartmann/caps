@@ -64,12 +64,12 @@ void integrands_drude(edouble x, integrands_drude_t *integrands, casimir_t *self
  * @param [in]  m    \f$m\f$
  * @param [in]  nT   \f$nT\f$
  */
-void casimir_integrate_drude(casimir_t *self, casimir_integrals_t *cint, int l1, int l2, int m, double nT)
+void casimir_integrate_drude(casimir_t *self, casimir_integrals_t *cint, int l1, int l2, int m, int n, double T)
 {
     int i;
     integrands_drude_t integrand;
-    const edouble tau = 2*nT;
-    const edouble ln_tau = logq(2*nT);
+    const edouble tau = 2*n*T;
+    const edouble ln_tau = logq(tau);
     const edouble ln_Lambda = casimir_lnLambda(l1, l2, m, NULL); /* sign: -1 */
     edouble prefactor;
     edouble *ln_ABCD, *lnA_TE, *lnA_TM, *lnB_TE, *lnB_TM, *lnC_TE, *lnC_TM, *lnD_TE, *lnD_TM;
@@ -99,7 +99,7 @@ void casimir_integrate_drude(casimir_t *self, casimir_integrals_t *cint, int l1,
 
     for(i = 0; i < N; i++)
     {
-        integrands_drude(xk[i], &integrand, self, nT, l1, l2, m);
+        integrands_drude(xk[i], &integrand, self, n*T, l1, l2, m);
 
         lnA_TE[i]  = ln_wk[i] + integrand.lnA_TE;
         lnA_TM[i]  = ln_wk[i] + integrand.lnA_TM;
@@ -333,11 +333,12 @@ void casimir_integrate_coefficients(int l1, int l2, int m, edouble pmppl1mppl2m[
 /*
 * Returns the integrals A,B,C,D for l1,l2,m,xi and p=TE,TM
 */
-void casimir_integrate_perf(casimir_integrals_t *cint, int l1, int l2, int m, double nT)
+#if 0
+void casimir_integrate_perf(casimir_integrals_t *cint, int l1, int l2, int m, int n, double T)
 {
     edouble lnA, lnB, lnC, lnD;
     int signA, signB, signC, signD;
-    edouble tau = 2*nT;
+    edouble tau = 2*n*T;
 
     if(m == 0)
     {
@@ -400,3 +401,4 @@ void casimir_integrate_perf(casimir_integrals_t *cint, int l1, int l2, int m, do
     cint->lnD_TE   = lnD;
     cint->signD_TE = -signD;
 }
+#endif
