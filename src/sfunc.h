@@ -23,7 +23,7 @@
 #endif
 
 /* eq. (24) */
-#define GAUNT_QMAX(n,nu,m) ( MIN(MIN((n),(nu)),((n)+(nu)-abs((m)+(m)))/2) )
+#define GAUNT_QMAX(n,nu,m) MAX(0, (MIN(MIN((n),(nu)),((n)+(nu)-(2*(m)))/2)) )
 
 typedef struct {
     edouble lnPl1mPl2m;
