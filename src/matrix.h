@@ -264,8 +264,8 @@ MATRIX_TYPEDEF(matrix_edouble_t, edouble);
 
 #define MATRIX_BALANCE_HEADER(FUNCTION_PREFIX, MATRIX_TYPE) void FUNCTION_PREFIX ## _balance(MATRIX_TYPE *A)
 
-#define matrix_get(m, i, j)   (m->M[(i)*m->size+(j)])
-#define matrix_set(m, i, j,v) (m->M[(i)*m->size+(j)]=v)
+#define matrix_get(m, i, j)   ((m)->M[(i)*m->size+(j)])
+#define matrix_set(m, i, j,v) ((m)->M[(i)*m->size+(j)]=(v))
 
 MATRIX_ALLOC_HEADER(matrix, matrix_t);
 MATRIX_FREE_HEADER (matrix, matrix_t);
