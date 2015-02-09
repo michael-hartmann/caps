@@ -15,6 +15,7 @@
 
 #include "edouble.h"
 #include "integration.h"
+#include "integration_perf.h"
 #include "libcasimir.h"
 #include "matrix.h"
 #include "sfunc.h"
@@ -1151,13 +1152,18 @@ double casimir_F_n(casimir_t *self, const int n, int *mmax)
     int m;
     const int lmax = self->lmax;
     double values[lmax+1];
+    integration_perf_t int_perf;
+
+    /* perfect reflectors */
+    if(self->integration <= 0) 
+        casimir_integrate_perf_init(&int_perf, n*self->T, self->lmax);
 
     for(m = 0; m <= lmax; m++)
         values[m] = 0;
 
     for(m = 0; m <= self->lmax; m++)
     {
-        values[m] = casimir_logdetD(self,n,m);
+        values[m] = casimir_logdetD(self,n,m,&int_perf);
 
         if(self->verbose)
             fprintf(stderr, "# n=%d, m=%d, value=%.15g\n", n, m, values[m]);
@@ -1177,6 +1183,9 @@ double casimir_F_n(casimir_t *self, const int n, int *mmax)
 
     if(mmax != NULL)
         *mmax = m;
+
+    if(self->integration <= 0) 
+        casimir_integrate_perf_free(&int_perf);
 
     return sum_n;
 }
@@ -1338,7 +1347,7 @@ void casimir_logdetD0(casimir_t *self, int m, double *logdet_EE, double *logdet_
  * @param [in] m
  * @retval log det D(xi=nT)
  */
-double casimir_logdetD(casimir_t *self, int n, int m)
+double casimir_logdetD(casimir_t *self, int n, int m, void *obj)
 {
     int min,max,dim,l1,l2;
     double logdet = 0;
@@ -1394,7 +1403,7 @@ double casimir_logdetD(casimir_t *self, int n, int m)
             if(self->integration > 0)
                 casimir_integrate_drude(self, &cint, l1, l2, m, n, self->T);
             else
-                casimir_integrate_perf(&cint, l1, l2, m, n,self->T);
+                casimir_integrate_perf(obj, l1, l2, m, &cint);
 
             /* EE */
             matrix_set(M, i,j, Delta_ij -             sign_al1*( cint.signA_TE*expq(ln_al1+cint.lnA_TE) + cint.signB_TM*expq(ln_al1+cint.lnB_TM) ));
