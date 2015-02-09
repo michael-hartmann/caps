@@ -322,14 +322,14 @@ void plm_PlmPlm(int l1, int l2, int m, edouble x, plm_combination_t *res)
 }
 
 /* eq. (20) */
-edouble inline gaunt_log_a0(int n, int nu, int m, int mu)
+edouble inline gaunt_log_a0(int n, int nu, int m)
 {
-    return lgamma(2*n+1)-lgamma(n+1)+lgamma(2*nu+1)-lgamma(1+nu)+lgamma(n+nu+1)-lgamma(2*n+2*nu+1)+lgamma(1+n+nu-m-mu)-lgamma(1+n-m)-lgamma(1+nu-mu);
+    return lgamma(2*n+1)-lgamma(n+1)+lgamma(2*nu+1)-lgamma(1+nu)+lgamma(n+nu+1)-lgamma(2*n+2*nu+1)+lgamma(1+n+nu-2*m)-lgamma(1+n-m)-lgamma(1+nu-m);
 }
 
-edouble inline gaunt_a0(int n,int nu,int m,int mu)
+edouble inline gaunt_a0(int n,int nu,int m)
 {
-    return expq(gaunt_log_a0(n,nu,m,mu));
+    return expq(gaunt_log_a0(n,nu,m));
 }
 
 
@@ -349,15 +349,15 @@ outline how to calculate Gaunt coefficients at the end of the chapter.
 
 Ref.: [1] Y.-L. Xu, J. Comp. Appl. Math. 85, 53 (1997)
 */
-void gaunt(int n, int nu, int m, int mu, edouble a_tilde[])
+void gaunt(int n, int nu, int m, edouble a_tilde[])
 {
-    int q, n4 = n+nu-m-mu;
+    int q, n4 = n+nu-2*m;
 
     /* eq. (24) */
-    int qmax = GAUNT_QMAX(n,nu,m,mu);
+    int qmax = GAUNT_QMAX(n,nu,m);
 
     /* eq. (28) */
-    #define Ap(p) ((p)*((p)-1.)*((m)-(mu))-((m)+(mu))*((n)-(nu))*((n)+(nu)+1.))
+    #define Ap(p) (-2*(m)*((n)-(nu))*((n)+(nu)+1.))
 
     /* eq. (3) */
     #define alpha(p) ((((p)*(p)-((n)+(nu)+1.)*((n)+(nu)+1.))*((p)*(p)-((n)-(nu))*((n)-(nu))))/(4.*(p)*(p)-1.))
@@ -370,24 +370,24 @@ void gaunt(int n, int nu, int m, int mu, edouble a_tilde[])
         return;
 
     /* eq. (29) */
-    a_tilde[1] = (n+nu-1.5)*(1-(2*n+2*nu-1)/(n4*(n4-1.))*((m-n)*(m-n+1)/(2*n-1.)+(mu-nu)*(mu-nu+1)/(2*nu-1.)));
+    a_tilde[1] = (n+nu-1.5)*(1-(2*n+2*nu-1)/(n4*(n4-1.))*((m-n)*(m-n+1)/(2*n-1.)+(m-nu)*(m-nu+1)/(2*nu-1.)));
     if(qmax == 1)
         return;
 
     /* eq. (35) */
     a_tilde[2] = (2*n+2*nu-1)*(2*n+2*nu-7)/4.*( (2*n+2*nu-3)/(n4*(n4-1.)) * ( (2*n+2*nu-5)/(2*(n4-2.)*(n4-3.)) \
                 * ( (m-n)*(m-n+1)*(m-n+2)*(m-n+3)/((2*n-1.)*(2*n-3.)) \
-                + 2*(m-n)*(m-n+1)*(mu-nu)*(mu-nu+1)/((2*n-1.)*(2*nu-1.)) \
-                + (mu-nu)*(mu-nu+1)*(mu-nu+2)*(mu-nu+3)/((2*nu-1.)*(2*nu-3.)) ) - (m-n)*(m-n+1)/(2*n-1.) \
-                - (mu-nu)*(mu-nu+1)/(2*nu-1.) ) +0.5);
+                + 2*(m-n)*(m-n+1)*(m-nu)*(m-nu+1)/((2*n-1.)*(2*nu-1.)) \
+                + (m-nu)*(m-nu+1)*(m-nu+2)*(m-nu+3)/((2*nu-1.)*(2*nu-3.)) ) - (m-n)*(m-n+1)/(2*n-1.) \
+                - (m-nu)*(m-nu+1)/(2*nu-1.) ) +0.5);
 
 
     for(q = 3; q <= qmax; q++)
     {
         edouble c0,c1,c2,c3;
         int p = n+nu-2*q;
-        int p1 = p-m-mu;
-        int p2 = p+m+mu;
+        int p1 = p-2*m;
+        int p2 = p+2*m;
 
         if(Ap(p+4) != 0)
         {

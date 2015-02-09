@@ -172,17 +172,17 @@ void casimir_integrate_perf(integration_perf_t *self, int l1, int l2, int m, cas
         edouble log_m = logq(m);
         edouble log_A,log_B,log_C,log_D;
 
-        const int qmax_l1l2   = GAUNT_QMAX(l1,  l2,  m,m);
+        const int qmax_l1l2   = GAUNT_QMAX(l1,  l2,  m);
 
-        const int qmax_l1pl2  = GAUNT_QMAX(l1+1,l2,  m,m);
-        const int qmax_l1ml2  = GAUNT_QMAX(l1-1,l2,  m,m);
-        const int qmax_l1l2p  = GAUNT_QMAX(l1,  l2+1,m,m);
-        const int qmax_l1l2m  = GAUNT_QMAX(l1,  l2-1,m,m);
+        const int qmax_l1pl2  = GAUNT_QMAX(l1+1,l2,  m);
+        const int qmax_l1ml2  = GAUNT_QMAX(l1-1,l2,  m);
+        const int qmax_l1l2p  = GAUNT_QMAX(l1,  l2+1,m);
+        const int qmax_l1l2m  = GAUNT_QMAX(l1,  l2-1,m);
 
-        const int qmax_l1pl2p = GAUNT_QMAX(l1+1,l2+1,m,m);
-        const int qmax_l1pl2m = GAUNT_QMAX(l1+1,l2-1,m,m);
-        const int qmax_l1ml2p = GAUNT_QMAX(l1-1,l2+1,m,m);
-        const int qmax_l1ml2m = GAUNT_QMAX(l1-1,l2-1,m,m);
+        const int qmax_l1pl2p = GAUNT_QMAX(l1+1,l2+1,m);
+        const int qmax_l1pl2m = GAUNT_QMAX(l1+1,l2-1,m);
+        const int qmax_l1ml2p = GAUNT_QMAX(l1-1,l2+1,m);
+        const int qmax_l1ml2m = GAUNT_QMAX(l1-1,l2-1,m);
 
         /* reserve space for gaunt coefficients on stack */
         edouble a_l1l2[qmax_l1l2+1];
@@ -198,26 +198,26 @@ void casimir_integrate_perf(integration_perf_t *self, int l1, int l2, int m, cas
         edouble a_l1ml2m[qmax_l1ml2m+1];
 
         /* calculate Gaunt coefficients */
-        gaunt(l1,   l2,   m, m, a_l1l2);
+        gaunt(l1,   l2,   m, a_l1l2);
 
-        gaunt(l1-1, l2,  m, m, a_l1ml2);
-        gaunt(l1,   l2-1,m, m, a_l1l2m);
-        gaunt(l1-1, l2-1,m, m, a_l1ml2m);
+        gaunt(l1-1, l2,  m, a_l1ml2);
+        gaunt(l1,   l2-1,m, a_l1l2m);
+        gaunt(l1-1, l2-1,m, a_l1ml2m);
 
         if((l1+1) >= m)
         {
-            gaunt(l1+1, l2,  m, m, a_l1pl2);
-            gaunt(l1+1, l2-1, m, m, a_l1pl2m);
+            gaunt(l1+1, l2,  m, a_l1pl2);
+            gaunt(l1+1, l2-1,m, a_l1pl2m);
         }
 
         if((l2+1) >= m)
         {
-            gaunt(l1,   l2+1,m, m, a_l1l2p);
-            gaunt(l1-1, l2+1, m, m, a_l1ml2p);
+            gaunt(l1,   l2+1,m, a_l1l2p);
+            gaunt(l1-1, l2+1,m, a_l1ml2p);
         }
 
         if((l1+1) >= m && (l2+1) >= m)
-            gaunt(l1+1, l2+1, m, m, a_l1pl2p);
+            gaunt(l1+1, l2+1, m, a_l1pl2p);
 
 
         /* A */
@@ -228,7 +228,7 @@ void casimir_integrate_perf(integration_perf_t *self, int l1, int l2, int m, cas
                 nu = l1+l2-2*q;
                 A += a_l1l2[q]*I(self,nu,2*m);
             }
-            A *= gaunt_a0(l1,l2,m,m);
+            A *= gaunt_a0(l1,l2,m);
 
             log_A  = logq(fabsq(A));
             sign_A = copysignq(1, A);
@@ -246,7 +246,7 @@ void casimir_integrate_perf(integration_perf_t *self, int l1, int l2, int m, cas
                     nu = l1-1+l2-1-2*q;
                     B1 += a_l1ml2m[q]*I(self,nu,2*m);
                 }
-                B1 *= gaunt_a0(l1-1,l2-1,m,m);
+                B1 *= gaunt_a0(l1-1,l2-1,m);
                 B1 *= (l1+1)*(l1+m)*(l2+1)*(l2+m);
             }
 
@@ -258,7 +258,7 @@ void casimir_integrate_perf(integration_perf_t *self, int l1, int l2, int m, cas
                     nu = l1-1+l2+1-2*q;
                     B2 += a_l1ml2p[q]*I(self,nu,2*m);
                 }
-                B2 *= -gaunt_a0(l1-1,l2+1,m,m);
+                B2 *= -gaunt_a0(l1-1,l2+1,m);
                 B2 *= (l1+1)*(l1+m)*l2*(l2-m+1);
             }
 
@@ -270,7 +270,7 @@ void casimir_integrate_perf(integration_perf_t *self, int l1, int l2, int m, cas
                     nu = l1+1+l2-1-2*q;
                     B3 += a_l1pl2m[q]*I(self,nu,2*m);
                 }
-                B3 *= -gaunt_a0(l1+1,l2-1,m,m);
+                B3 *= -gaunt_a0(l1+1,l2-1,m);
                 B3 *= l1*(l1-m+1)*(l2+1)*(l2+m);
             }
 
@@ -280,7 +280,7 @@ void casimir_integrate_perf(integration_perf_t *self, int l1, int l2, int m, cas
                 nu = l1+1+l2+1-2*q;
                 B4 += a_l1pl2p[q]*I(self,nu,2*m);
             }
-            B4 *= gaunt_a0(l1+1,l2+1,m,m);
+            B4 *= gaunt_a0(l1+1,l2+1,m);
             B4 *= l1*(l1-m+1)*l2*(l2-m+1);
 
             B = (B1+B2+B3+B4)/((2*l1+1)*(2*l2+1));
@@ -301,7 +301,7 @@ void casimir_integrate_perf(integration_perf_t *self, int l1, int l2, int m, cas
                     nu = l1+l2-1-2*q;
                     C1 += a_l1l2m[q]*I(self,nu,2*m);
                 }
-                C1 *= gaunt_a0(l1,l2-1,m,m);
+                C1 *= gaunt_a0(l1,l2-1,m);
                 C1 *= (l2+1)*(l2+m);
             }
 
@@ -311,7 +311,7 @@ void casimir_integrate_perf(integration_perf_t *self, int l1, int l2, int m, cas
                 nu = l1+l2+1-2*q;
                 C2 += a_l1l2p[q]*I(self,nu,2*m);
             }
-            C2 *= -gaunt_a0(l1,l2+1,m,m);
+            C2 *= -gaunt_a0(l1,l2+1,m);
             C2 *= l2*(l2-m+1);
 
             C = (C1+C2)/(2*l2+1);
@@ -331,7 +331,7 @@ void casimir_integrate_perf(integration_perf_t *self, int l1, int l2, int m, cas
                     nu = l1-1+l2-2*q;
                     D1 += a_l1ml2[q]*I(self,nu,2*m);
                 }
-                D1 *= gaunt_a0(l1-1,l2,m,m);
+                D1 *= gaunt_a0(l1-1,l2,m);
                 D1 *= (l1+1)*(l1+m);
             }
 
@@ -341,7 +341,7 @@ void casimir_integrate_perf(integration_perf_t *self, int l1, int l2, int m, cas
                 nu = l1+1+l2-2*q;
                 D2 += a_l1pl2[q]*I(self,nu,2*m);
             }
-            D2 *= -gaunt_a0(l1+1,l2,m,m);
+            D2 *= -gaunt_a0(l1+1,l2,m);
             D2 *= l1*(l1-m+1);
 
             D = (D1+D2)/(2*l1+1);

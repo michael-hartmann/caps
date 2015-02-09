@@ -23,7 +23,7 @@
 #endif
 
 /* eq. (24) */
-#define GAUNT_QMAX(n,nu,m,mu) ( MIN(MIN((n),(nu)),((n)+(nu)-abs((m)+(mu)))/2) )
+#define GAUNT_QMAX(n,nu,m) ( MIN(MIN((n),(nu)),((n)+(nu)-abs((m)+(m)))/2) )
 
 typedef struct {
     edouble lnPl1mPl2m;
@@ -62,8 +62,8 @@ edouble plm_dPlm  (int l, int m, edouble x);
 
 void plm_PlmPlm(int l1, int l2, int m, edouble x, plm_combination_t *res);
 
-edouble inline gaunt_log_a0(int n, int nu, int m, int mu);
-edouble inline gaunt_a0(int n,int nu,int m,int mu);
-void gaunt(int n, int nu, int m, int mu, edouble a_tilde[]);
+edouble inline gaunt_log_a0(int n, int nu, int m);
+edouble inline gaunt_a0(int n,int nu,int m);
+void gaunt(int n, int nu, int m, edouble a_tilde[]);
 
 #endif
