@@ -24,25 +24,13 @@ static void polymult(edouble p1[], int len_p1, edouble p2[], int len_p2, edouble
 
 
 /* p must have length m+n+1 */
-static void poly1(int m, int n, edouble p[])
+static void poly1(int m, edouble p[])
 {
-    /* (z+2)^m * (z+1)^n */
-    edouble p1[m+1];
-    edouble p2[n+1];
+    /* (z+2)^m */
     int k;
 
-    for(k = 0; k < m+1; k++)
-        p1[k] = 0;
-    for(k = 0; k < n+1; k++)
-        p2[k] = 0;
-
     for(k = 0; k <= m; k++)
-        p1[k] = expq(lgammaq(m+1)-lgammaq(k+1)-lgammaq(m+1-k)+(m-k)*LOG2);
-
-    for(k = 0; k <= n; k++)
-        p2[k] = expq(lgammaq(n+1)-lgammaq(k+1)-lgammaq(n+1-k));
-
-    polymult(p1,m+1,p2,n+1,p);
+        p[k] = expq(lgammaq(m+1)-lgammaq(k+1)-lgammaq(m+1-k)+(m-k)*LOG2);
 }
 
 
@@ -74,39 +62,19 @@ static edouble polyintegrate(edouble p[], int len_p, int offset, edouble tau)
 }
 
 
-static edouble I(int beta, int nu, int m2, int n, double T)
+static edouble I(int nu, int m2, int n, double T)
 {
-    // exp(-z*tau) * (z^2+2z)^-1 * (1+z)^beta * Plm(nu, 2m, 1+z)
-    static edouble *cache = NULL;
-    int index;
+    // exp(-z*tau) * (z^2+2z)^-1 * Plm(nu, 2m, 1+z)
     int m = m2/2;
     edouble tau = 2*n*T;
-    edouble v;
 
-    if(cache == NULL)
-    {
-        int i;
-        cache = xmalloc((3*500*500*500)*sizeof(edouble));
-        for( i = 0; i < 3*500*500*500; i++)
-            cache[i] = 0;
-    }
+    edouble p1[m], p2[nu+1-m2], p[-m+nu];
 
-    index = 3*(n+500*(m+500*nu))+beta;
-    v = cache[index];
+    poly1(m-1, p1);
+    poly2(nu,m2,p2);
+    polymult(p1, m, p2, nu+1-m2, p);
 
-    if(v == 0)
-    {
-        edouble p1[m+beta], p2[nu+1-m2], p[-m+beta+nu];
-
-        poly1(m-1, beta, p1);
-        poly2(nu,m2,p2);
-        polymult(p1, m+beta, p2, nu+1-m2, p);
-
-        v = polyintegrate(p, -m+beta+nu, m-1, tau);
-        cache[index] = v;
-    }
-
-    return v;
+    return MPOW(m)*polyintegrate(p, -m+nu, m-1, tau);
 }
 
 static void polydplm(edouble pl1[], edouble pl2[], int l1, int l2, int m)
@@ -150,20 +118,8 @@ static void polydplm(edouble pl1[], edouble pl2[], int l1, int l2, int m)
 /* TODO: m = 0, check signs! */
 void casimir_integrate_perf(casimir_integrals_t *cint, int l1, int l2, int m, int n, double T)
 {
-    int nu,q;
     edouble tau = 2*n*T;
-    edouble log_m;
-    const int qmax_l1l2   = GAUNT_QMAX(l1,  l2,  m,m);
-    edouble a_l1l2[qmax_l1l2+1];
-    const int qmax_l1pl2  = GAUNT_QMAX(l1+1,l2,  m,m);
-    edouble a_l1pl2[qmax_l1pl2+1];
-    const int qmax_l1l2p  = GAUNT_QMAX(l1,  l2+1,m,m);
-    edouble a_l1l2p[qmax_l1l2p+1];
-    const int qmax_l1pl2p = GAUNT_QMAX(l1+1,l2+1,m,m);
-    edouble a_l1pl2p[qmax_l1pl2p+1];
-    edouble log_A,log_B,log_C,log_D;
     edouble lnLambda = casimir_lnLambda(l1, l2, m, NULL);
-    int sign_A, sign_B, sign_C, sign_D;
 
     if(m == 0)
     {
@@ -191,142 +147,205 @@ void casimir_integrate_perf(casimir_integrals_t *cint, int l1, int l2, int m, in
         cint->signA_TM = cint->signA_TE = +1;
         cint->signC_TM = cint->signC_TE = +1;
         cint->signD_TM = cint->signD_TE = +1;
-
-        return;
     }
-
-    /* calculate Gaunt coefficients */
-    gaunt(l1,   l2,   m, m, a_l1l2);
-    gaunt(l1+1, l2,   m, m, a_l1pl2);
-    gaunt(l1,   l2+1, m, m, a_l1l2p);
-    gaunt(l1+1, l2+1, m, m, a_l1pl2p);
-
-    /* A */
+    else
     {
-        edouble A = 0;
-        for(q = 0; q <= qmax_l1l2; q++)
-        {
-            nu = l1+l2-2*q;
-            A += a_l1l2[q]*I(0,nu,2*m,n,T);
-        }
-        A *= gaunt_a0(l1,l2,m,m);
+        int nu,q, sign_A, sign_B, sign_C, sign_D;
+        edouble log_m = logq(m);
+        edouble log_A,log_B,log_C,log_D;
 
-        log_A  = logq(fabsq(A));
-        sign_A = copysignq(1, A);
+        const int qmax_l1l2   = GAUNT_QMAX(l1,  l2,  m,m);
+
+        const int qmax_l1pl2  = GAUNT_QMAX(l1+1,l2,  m,m);
+        const int qmax_l1ml2  = GAUNT_QMAX(l1-1,l2,  m,m);
+        const int qmax_l1l2p  = GAUNT_QMAX(l1,  l2+1,m,m);
+        const int qmax_l1l2m  = GAUNT_QMAX(l1,  l2-1,m,m);
+
+        const int qmax_l1pl2p = GAUNT_QMAX(l1+1,l2+1,m,m);
+        const int qmax_l1pl2m = GAUNT_QMAX(l1+1,l2-1,m,m);
+        const int qmax_l1ml2p = GAUNT_QMAX(l1-1,l2+1,m,m);
+        const int qmax_l1ml2m = GAUNT_QMAX(l1-1,l2-1,m,m);
+
+        /* reserve space for gaunt coefficients on stack */
+        edouble a_l1l2[qmax_l1l2+1];
+
+        edouble a_l1pl2[qmax_l1pl2+1];
+        edouble a_l1ml2[qmax_l1ml2+1];
+        edouble a_l1l2p[qmax_l1l2p+1];
+        edouble a_l1l2m[qmax_l1l2m+1];
+
+        edouble a_l1pl2p[qmax_l1pl2p+1];
+        edouble a_l1pl2m[qmax_l1pl2m+1];
+        edouble a_l1ml2p[qmax_l1ml2p+1];
+        edouble a_l1ml2m[qmax_l1ml2m+1];
+
+        /* calculate Gaunt coefficients */
+        gaunt(l1,   l2,   m, m, a_l1l2);
+
+        gaunt(l1-1, l2,  m, m, a_l1ml2);
+        gaunt(l1,   l2-1,m, m, a_l1l2m);
+        gaunt(l1-1, l2-1,m, m, a_l1ml2m);
+
+        if((l1+1) >= m)
+        {
+            gaunt(l1+1, l2,  m, m, a_l1pl2);
+            gaunt(l1+1, l2-1, m, m, a_l1pl2m);
+        }
+
+        if((l2+1) >= m)
+        {
+            gaunt(l1,   l2+1,m, m, a_l1l2p);
+            gaunt(l1-1, l2+1, m, m, a_l1ml2p);
+        }
+
+        if((l1+1) >= m && (l2+1) >= m)
+            gaunt(l1+1, l2+1, m, m, a_l1pl2p);
+
+
+        /* A */
+        {
+            edouble A = 0;
+            for(q = 0; q <= qmax_l1l2; q++)
+            {
+                nu = l1+l2-2*q;
+                A += a_l1l2[q]*I(nu,2*m,n,T);
+            }
+            A *= gaunt_a0(l1,l2,m,m);
+
+            log_A  = logq(fabsq(A));
+            sign_A = copysignq(1, A);
+        }
+
+        /* B */
+        {
+            edouble B, B1, B2, B3, B4;
+
+            B1 = 0;
+            if((l1-1) >= m && (l2-1) >= m)
+            {
+                for(q = 0; q <= qmax_l1ml2m; q++)
+                {
+                    nu = l1-1+l2-1-2*q;
+                    B1 += a_l1ml2m[q]*I(nu,2*m,n,T);
+                }
+                B1 *= gaunt_a0(l1-1,l2-1,m,m);
+                B1 *= (l1+1)*(l1+m)*(l2+1)*(l2+m);
+            }
+
+            B2 = 0;
+            if((l1-1) >= m)
+            {
+                for(q = 0; q <= qmax_l1ml2p; q++)
+                {
+                    nu = l1-1+l2+1-2*q;
+                    B2 += a_l1ml2p[q]*I(nu,2*m,n,T);
+                }
+                B2 *= -gaunt_a0(l1-1,l2+1,m,m);
+                B2 *= (l1+1)*(l1+m)*l2*(l2-m+1);
+            }
+
+            B3 = 0;
+            if((l2-1) >= m)
+            {
+                for(q = 0; q <= qmax_l1pl2m; q++)
+                {
+                    nu = l1+1+l2-1-2*q;
+                    B3 += a_l1pl2m[q]*I(nu,2*m,n,T);
+                }
+                B3 *= -gaunt_a0(l1+1,l2-1,m,m);
+                B3 *= l1*(l1-m+1)*(l2+1)*(l2+m);
+            }
+
+            B4 = 0;
+            for(q = 0; q <= qmax_l1pl2p; q++)
+            {
+                nu = l1+1+l2+1-2*q;
+                B4 += a_l1pl2p[q]*I(nu,2*m,n,T);
+            }
+            B4 *= gaunt_a0(l1+1,l2+1,m,m);
+            B4 *= l1*(l1-m+1)*l2*(l2-m+1);
+
+            B = (B1+B2+B3+B4)/((2*l1+1)*(2*l2+1));
+
+            log_B  = logq(fabsq(B));
+            sign_B = copysignq(1,B);
+        }
+
+        /* C */
+        {
+            edouble C,C1,C2;
+
+            C1 = 0;
+            if((l2-1) >= m)
+            {
+                for(q = 0; q <= qmax_l1l2m; q++)
+                {
+                    nu = l1+l2-1-2*q;
+                    C1 += a_l1l2m[q]*I(nu,2*m,n,T);
+                }
+                C1 *= gaunt_a0(l1,l2-1,m,m);
+                C1 *= (l2+1)*(l2+m);
+            }
+
+            C2 = 0;
+            for(q = 0; q <= qmax_l1l2p; q++)
+            {
+                nu = l1+l2+1-2*q;
+                C2 += a_l1l2p[q]*I(nu,2*m,n,T);
+            }
+            C2 *= -gaunt_a0(l1,l2+1,m,m);
+            C2 *= l2*(l2-m+1);
+
+            C = (C1+C2)/(2*l2+1);
+            log_C  = logq(fabsq(C));
+            sign_C = copysignq(1,C);
+        }
+
+        /* D */
+        {
+            edouble D,D1,D2;
+
+            D1 = 0;
+            if((l1-1) >= m)
+            {
+                for(q = 0; q <= qmax_l1ml2; q++)
+                {
+                    nu = l1-1+l2-2*q;
+                    D1 += a_l1ml2[q]*I(nu,2*m,n,T);
+                }
+                D1 *= gaunt_a0(l1-1,l2,m,m);
+                D1 *= (l1+1)*(l1+m);
+            }
+
+            D2 = 0;
+            for(q = 0; q <= qmax_l1pl2; q++)
+            {
+                nu = l1+1+l2-2*q;
+                D2 += a_l1pl2[q]*I(nu,2*m,n,T);
+            }
+            D2 *= -gaunt_a0(l1+1,l2,m,m);
+            D2 *= l1*(l1-m+1);
+
+            D = (D1+D2)/(2*l1+1);
+            log_D  = logq(fabsq(D));
+            sign_D = copysignq(1,D);
+        }
+
+
+        cint->lnA_TM   = cint->lnA_TE = 2*log_m+lnLambda-tau+log_A;
+        cint->signA_TM = -MPOW(l2+m)*sign_A; /* - because Lambda(l1,l2,m) is negative */
+        cint->signA_TE = -cint->signA_TM;
+
+        cint->lnB_TM   = cint->lnB_TE = lnLambda-tau+log_B;
+        cint->signB_TM = -MPOW(l2+m+1)*sign_B;
+        cint->signB_TE = -cint->signB_TM;
+
+        cint->lnC_TM   = cint->lnC_TE = log_m+lnLambda-tau+log_C;
+        cint->signC_TM = -MPOW(l2+m)*sign_C;
+        cint->signC_TE = -cint->signC_TM;
+
+        cint->lnD_TM   = cint->lnD_TE = log_m+lnLambda-tau+log_D;
+        cint->signD_TM = -MPOW(l2+m+1)*sign_D; // XXX ???
+        cint->signD_TE = -cint->signD_TM;
     }
-
-    /* B */
-    {
-        edouble B, B1, B2, B3, B4;
-
-        B1 = 0;
-        for(q = 0; q <= qmax_l1pl2p; q++)
-        {
-            nu = l1+1+l2+1-2*q;
-            B1 += a_l1pl2p[q]*I(0,nu,2*m,n,T);
-        }
-        B1 *= gaunt_a0(l1+1,l2+1,m,m);
-        B1 *= (l1-m+1)*(l2-m+1);
-
-        B2 = 0;
-        for(q = 0; q <= qmax_l1pl2; q++)
-        {
-            nu = l1+1+l2-2*q;
-            B2 += a_l1pl2[q]*I(1,nu,2*m,n,T);
-        }
-        B2 *= -gaunt_a0(l1+1,l2,m,m);
-        B2 *= (l1-m+1)*(l2+1);
-
-        B3 = 0;
-        for(q = 0; q <= qmax_l1l2p; q++)
-        {
-            nu = l1+l2+1-2*q;
-            B3 += a_l1l2p[q]*I(1,nu,2*m,n,T);
-        }
-        B3 *= -gaunt_a0(l1,l2+1,m,m);
-        B3 *= (l1+1)*(l2-m+1);
-
-        B4 = 0;
-        for(q = 0; q <= qmax_l1l2; q++)
-        {
-            nu = l1+l2-2*q;
-            B4 += a_l1l2[q]*I(2,nu,2*m,n,T);
-        }
-        B4 *= gaunt_a0(l1,l2,m,m);
-        B4 *= (l1+1)*(l2+1);
-
-        B = B1+B2+B3+B4;
-
-        log_B  = logq(fabsq(B));
-        sign_B = copysignq(1,B);
-    }
-
-    /* C */
-    {
-        edouble C,C1,C2;
-
-        C1 = 0;
-        for(q = 0; q <= qmax_l1l2p; q++)
-        {
-            nu = l1+l2+1-2*q;
-            C1 += a_l1l2p[q]*I(0,nu,2*m,n,T);
-        }
-        C1 *= gaunt_a0(l1,l2+1,m,m)*(l2-m+1);
-
-        C2 = 0;
-        for(q = 0; q <= qmax_l1l2; q++)
-        {
-            nu = l1+l2-2*q;
-            C2 += a_l1l2[q]*I(1,nu,2*m,n,T);
-        }
-        C2 *= -gaunt_a0(l1,l2,m,m)*(l2+1);
-
-        C = C1+C2;
-        log_C  = logq(fabsq(C));
-        sign_C = copysignq(1,C);
-    }
-
-    /* D */
-    {
-        edouble D,D1,D2;
-
-        D1 = 0;
-        for(q = 0; q <= qmax_l1pl2; q++)
-        {
-            nu = l1+1+l2-2*q;
-            D1 += a_l1pl2[q]*I(0,nu,2*m,n,T);
-        }
-        D1 *= gaunt_a0(l1+1,l2,m,m)*(l1-m+1);
-
-        D2 = 0;
-        for(q = 0; q <= qmax_l1l2; q++)
-        {
-            nu = l1+l2-2*q;
-            D2 += a_l1l2[q]*I(1,nu,2*m,n,T);
-        }
-        D2 *= -gaunt_a0(l1,l2,m,m)*(l1+1);
-
-        D = D1+D2;
-        log_D  = logq(fabsq(D));
-        sign_D = copysignq(1,D);
-    }
-
-
-    log_m   = logq(m);
-
-    cint->lnA_TM   = cint->lnA_TE = 2*log_m+lnLambda-tau+log_A;
-    cint->signA_TM = -MPOW(l2)*sign_A; /* - because Lambda(l1,l2,m) is negative */
-    cint->signA_TE = -cint->signA_TM;
-
-    cint->lnB_TM   = cint->lnB_TE = lnLambda-tau+log_B;
-    cint->signB_TM = -MPOW(l2+1)*sign_B;
-    cint->signB_TE = -cint->signB_TM;
-
-    cint->lnC_TM   = cint->lnC_TE = log_m+lnLambda-tau+log_C;
-    cint->signC_TM = -MPOW(l2+1)*sign_C;
-    cint->signC_TE = -cint->signC_TM;
-
-    cint->lnD_TM   = cint->lnD_TE = log_m+lnLambda-tau+log_D;
-    cint->signD_TM = -MPOW(l2)*sign_D; // XXX ???
-    cint->signD_TE = -cint->signD_TM;
 }
