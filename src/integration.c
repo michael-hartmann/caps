@@ -204,6 +204,7 @@ double log_polyintegrate(edouble p[], size_t len, int l1, int l2, int m, double 
     *sign = (double)copysignq(1, value) * sign_lnLambda;
     return lnLambda+lnfac_max+logq(fabsq(value));
 }
+#if 0
 
 void polym(edouble p[], int m)
 {
@@ -315,7 +316,6 @@ void casimir_integrate_coefficients(int l1, int l2, int m, edouble pmppl1mppl2m[
 /*
 * Returns the integrals A,B,C,D for l1,l2,m,xi and p=TE,TM
 */
-#if 0
 void casimir_integrate_perf(casimir_integrals_t *cint, int l1, int l2, int m, int n, double T)
 {
     edouble lnA, lnB, lnC, lnD;
