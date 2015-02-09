@@ -4,6 +4,7 @@
 #include <stdlib.h>
 
 #include "libcasimir.h"
+#include "integration_perf.h"
 #include "sfunc.h"
 #include "utils.h"
 
@@ -160,14 +161,19 @@ int main(int argc, char *argv[])
     printf("#\n");
 
     {
+        integration_perf_t int_perf;
         casimir_t casimir;
         double value, start_time = now();
+
+        casimir_integrate_perf_init(&int_perf, T, lmax);
 
         casimir_init(&casimir, Q, T);
         casimir_set_verbose(&casimir, verbose_flag);
         casimir_set_lmax(&casimir, lmax);
 
-        value = casimir_logdetD(&casimir, n, m);
+        value = casimir_logdetD(&casimir, n, m, &int_perf);
+
+        casimir_integrate_perf_free(&int_perf);
         casimir_free(&casimir);
 
         printf("# Q,T,n,m,value,lmax,time\n");
