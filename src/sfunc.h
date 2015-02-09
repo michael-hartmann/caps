@@ -39,6 +39,8 @@ typedef struct {
     int sign_dPl1mdPl2m;
 } plm_combination_t;
 
+void polymult(edouble p1[], int len_p1, edouble p2[], int len_p2, edouble p[]);
+
 edouble inline logadd_s(const edouble a, const int sign_a, const edouble b, const int sign_b, int *sign);
 edouble inline logadd_ms(const edouble list[], const int signs[], const size_t len, int *sign);
 

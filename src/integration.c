@@ -177,24 +177,6 @@ void casimir_integrate_drude(casimir_t *self, casimir_integrals_t *cint, int l1,
 }
 
 
-/*
-* Multiply the polynomials p1 and p2. The result is stored in pdest, which
-* must have at least size len_p1+len_p2-1
-*/
-void polymult(edouble p1[], size_t len_p1, edouble p2[], size_t len_p2, edouble pdest[])
-{
-    size_t power,i;
-
-    for(power = 0; power < len_p1+len_p2-1; power++)
-    {
-        const int min = power-len_p2+1;
-
-        pdest[power] = 0;
-        for(i = MAX(0,min); i <= MIN(power,len_p1-1); i++)
-            pdest[power] += p1[i]*p2[power-i];
-    }
-}
-
 /* Integrate the function f(x)*exp(-x) from 0 to inf
 * f(x) is the polynomial of length len stored in p
 * l1,l2,m are needed to calculate the prefactor Lambda(l1,l2,m)

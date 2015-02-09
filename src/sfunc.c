@@ -6,6 +6,19 @@
 #include "edouble.h"
 #include "sfunc.h"
 
+/* p must have length len_p1+len_p2-1 */
+void polymult(edouble p1[], int len_p1, edouble p2[], int len_p2, edouble p[])
+{
+    int i,j;
+
+    for(i = 0; i < len_p1+len_p2-1; i++)
+        p[i] = 0;
+
+    for(i = 0; i < len_p1; i++)
+        for(j = 0; j < len_p2; j++)
+            p[i+j] += p1[i]*p2[j];
+}
+
 edouble inline logadd_s(const edouble a, const int sign_a, const edouble b, const int sign_b, int *sign)
 {
     if(isinfq(a) && a < 0)
