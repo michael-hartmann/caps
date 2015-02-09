@@ -58,33 +58,6 @@ MATRIX_TYPEDEF(matrix_edouble_t, edouble);
 
 #define MATRIX_FREE_HEADER(FUNCTION_PREFIX, MATRIX_TYPE) void FUNCTION_PREFIX ## _free(MATRIX_TYPE *m)
 
-#define MATRIX_EXP(FUNCTION_PREFIX, MATRIX_TYPE, TYPE, EXPFUNCTION) \
-    void FUNCTION_PREFIX ## _exp(MATRIX_TYPE *m) \
-    { \
-        size_t i, dim = m->size; \
-        TYPE *M = m->M; \
-\
-        for(i = 0; i < dim*dim; i++) \
-            M[i] = EXPFUNCTION(M[i]); \
-    } 
-
-#define MATRIX_EXP_HEADER(FUNCTION_PREFIX, MATRIX_TYPE) void FUNCTION_PREFIX ## _exp(MATRIX_TYPE *m)
-
-#define MATRIX_FROEBENIUS(FUNCTION_PREFIX, MATRIX_TYPE, TYPE, SQRTFUNCTION) \
-    TYPE FUNCTION_PREFIX ## _froebenius(MATRIX_TYPE *M) \
-    { \
-        size_t i,j, dim = M->size; \
-        TYPE norm = 0; \
-\
-        for(i = 0; i < dim; i++) \
-            for(j = 0; j < dim; j++) \
-                norm += pow_2(matrix_get(M, i,j)); \
-\
-        return SQRTFUNCTION(norm); \
-    }
-
-#define MATRIX_FROEBENIUS_HEADER(FUNCTION_PREFIX, MATRIX_TYPE, TYPE) TYPE FUNCTION_PREFIX ## _froebenius(MATRIX_TYPE *M)
-
 #define MATRIX_LOGDET_LAPACK(FUNCTION_PREFIX, MATRIX_TYPE, TYPE, ABS_FUNCTION, COPYSIGN_FUNCTION, SQRT_FUNCTION, LOG_FUNCTION) \
     TYPE FUNCTION_PREFIX ## _logdet(MATRIX_TYPE *M) \
     { \
@@ -296,8 +269,6 @@ MATRIX_TYPEDEF(matrix_edouble_t, edouble);
 
 MATRIX_ALLOC_HEADER(matrix, matrix_t);
 MATRIX_FREE_HEADER (matrix, matrix_t);
-MATRIX_EXP_HEADER  (matrix, matrix_t);
-MATRIX_FROEBENIUS_HEADER(matrix, matrix_t, double);
 MATRIX_LOGDET_HEADER(matrix, matrix_t, double);
 MATRIX_ABSMIN_HEADER(matrix, matrix_t, double);
 MATRIX_ABSMAX_HEADER(matrix, matrix_t, double);
@@ -308,8 +279,6 @@ MATRIX_FREE_HEADER (matrix_char, matrix_char_t);
 
 MATRIX_ALLOC_HEADER(matrix_edouble, matrix_edouble_t);
 MATRIX_FREE_HEADER (matrix_edouble, matrix_edouble_t);
-MATRIX_EXP_HEADER  (matrix_edouble, matrix_edouble_t);
-MATRIX_FROEBENIUS_HEADER(matrix_edouble, matrix_edouble_t, edouble);
 MATRIX_LOGDET_HEADER    (matrix_edouble, matrix_edouble_t, edouble);
 MATRIX_ABSMIN_HEADER    (matrix_edouble, matrix_edouble_t, edouble);
 MATRIX_ABSMAX_HEADER    (matrix_edouble, matrix_edouble_t, edouble);
