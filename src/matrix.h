@@ -22,7 +22,6 @@
 
 
 MATRIX_TYPEDEF(matrix_t, double);
-MATRIX_TYPEDEF(matrix_char_t, char);
 MATRIX_TYPEDEF(matrix_edouble_t, edouble);
 
 #define MATRIX_ALLOC(FUNCTION_PREFIX, MATRIX_TYPE, TYPE) \
@@ -273,9 +272,6 @@ MATRIX_LOGDET_HEADER(matrix, matrix_t, double);
 MATRIX_ABSMIN_HEADER(matrix, matrix_t, double);
 MATRIX_ABSMAX_HEADER(matrix, matrix_t, double);
 MATRIX_BALANCE_HEADER(matrix, matrix_t);
-
-MATRIX_ALLOC_HEADER(matrix_char, matrix_char_t);
-MATRIX_FREE_HEADER (matrix_char, matrix_char_t);
 
 MATRIX_ALLOC_HEADER(matrix_edouble, matrix_edouble_t);
 MATRIX_FREE_HEADER (matrix_edouble, matrix_edouble_t);
