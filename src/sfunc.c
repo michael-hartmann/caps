@@ -349,8 +349,6 @@ void gaunt(int n, int nu, int m, int mu, edouble a_tilde[])
     /* eq. (3) */
     #define alpha(p) ((((p)*(p)-((n)+(nu)+1.)*((n)+(nu)+1.))*((p)*(p)-((n)-(nu))*((n)-(nu))))/(4.*(p)*(p)-1.))
 
-    //printf("n=%d,nu=%d,m=%d,mu=%d\n", n,nu,m,mu);
-
     if(a_tilde == NULL)
         return;
 
@@ -380,8 +378,6 @@ void gaunt(int n, int nu, int m, int mu, edouble a_tilde[])
 
         if(Ap(p+4) != 0)
         {
-            //printf("\n");
-            //printf("(26), (27)\n");
             /* eqs. (26), (27) */
             c0 = (p+2)*(p+3)*(p1+1)*(p1+2)*Ap(p+4)*alpha(p+1);
             c1 = Ap(p+2)*Ap(p+3)*Ap(p+4) \
@@ -389,26 +385,17 @@ void gaunt(int n, int nu, int m, int mu, edouble a_tilde[])
                + (p+2)*(p+4)*(p1+3)*(p2+3)*Ap(p+2)*alpha(p+3);
             c2 = -(p+2)*(p+3)*(p2+3)*(p2+4)*Ap(p+2)*alpha(p+4);
 
-            //printf("alphap=%g\n", alpha(p+1));
-            //printf("Ap=%g\n", Ap(p+4));
-            //printf("\tc0=%g\n", (double)c0);
-            //printf("\tc1=%g\n", (double)c1);
-            //printf("\tc2=%g\n", (double)c2);
-
             a_tilde[q] = (c1*a_tilde[q-1] + c2*a_tilde[q-2])/c0;
-            //printf("\n");
         }
         else
         {
             if(Ap(p+6) == 0)
             {
-                //printf("(30)\n");
                 /* eq. (30) */
                 a_tilde[q] = (p+1)*(p2+2)*alpha(p+2)*a_tilde[q-1] / ((p+2)*(p1+1)*alpha(p+1));
             }
             else
             {
-                //printf("(32), (33)\n");
                 /* eq. (32), (33) */
                 c0 = (p+2)*(p+3)*(p+5)*(p1+1)*(p1+2)*(p1+4)*Ap(p+6)*alpha(p+1);
                 c1 = (p+5)*(p1+4)*Ap(p+6)*(Ap(p+2)*Ap(p+3)+(p+1)*(p+3)*(p1+2)*(p2+2)*alpha(p+2));
