@@ -50,7 +50,7 @@ static edouble polyintegrate(edouble p[], int len_p, int offset, edouble tau)
 
 
 /* evaluete integral I_nu^2m(tau) = exp(-z*tau)/ (z^2+2z) * Plm(nu, 2m, 1+z) */
-static edouble I(integration_perf_t *self, int nu, int m2)
+static inline edouble I(integration_perf_t *self, int nu, int m2)
 {
     const int m = m2/2;
     const int index = m*self->nu_max + nu;
