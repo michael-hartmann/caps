@@ -1347,11 +1347,12 @@ void casimir_logdetD0(casimir_t *self, int m, double *logdet_EE, double *logdet_
  * @param [in] m
  * @retval log det D(xi=nT)
  */
-double casimir_logdetD(casimir_t *self, int n, int m, void *obj)
+double casimir_logdetD(casimir_t *self, int n, int m, void *integration_obj)
 {
     int min,max,dim,l1,l2;
     double logdet = 0;
     double nTRbyScriptL = n*self->T*self->RbyScriptL;
+    gaunt_cache_t gaunt_cache;
 
     min = MAX(m,1);
     max = self->lmax;
@@ -1372,6 +1373,8 @@ double casimir_logdetD(casimir_t *self, int n, int m, void *obj)
         return logdet_EE + logdet_MM;
     }
 
+    if(self->integration <= 0)
+        cache_gaunt_init(&gaunt_cache, self->lmax);
 
     matrix_edouble_t *M = matrix_edouble_alloc(2*dim);
 
@@ -1379,7 +1382,7 @@ double casimir_logdetD(casimir_t *self, int n, int m, void *obj)
        M_ME,  M_MM */
     for(l1 = min; l1 <= max; l1++)
     {
-        for(l2 = min; l2 <= l1; l2++)
+        for(l2 = l1; l2 <= max; l2++)
         {
             const int Delta_ij = (l1 == l2 ? 1 : 0);
             const int i = l1-min, j = l2-min;
@@ -1403,7 +1406,7 @@ double casimir_logdetD(casimir_t *self, int n, int m, void *obj)
             if(self->integration > 0)
                 casimir_integrate_drude(self, &cint, l1, l2, m, n, self->T);
             else
-                casimir_integrate_perf(obj, l1, l2, m, &cint);
+                casimir_integrate_perf(integration_obj, l1, l2, m, &cint, &gaunt_cache);
 
             /* EE */
             matrix_set(M, i,j, Delta_ij -             sign_al1*( cint.signA_TE*expq(ln_al1+cint.lnA_TE) + cint.signB_TM*expq(ln_al1+cint.lnB_TM) ));
@@ -1452,6 +1455,9 @@ double casimir_logdetD(casimir_t *self, int n, int m, void *obj)
         matrix_edouble_balance(M);
         logdet = matrix_edouble_logdet(M);
     }
+
+    if(self->integration <= 0)
+        cache_gaunt_free(&gaunt_cache);
 
     matrix_edouble_free(M);
 
