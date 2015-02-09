@@ -111,7 +111,6 @@ static void polydplm(edouble pl1[], edouble pl2[], int l1, int l2, int m)
     }
 }
 
-
 void casimir_integrate_perf_init(integration_perf_t *self, double nT, int lmax)
 {
     int i,size;
@@ -125,16 +124,26 @@ void casimir_integrate_perf_init(integration_perf_t *self, double nT, int lmax)
 
     for(i = 0; i < size; i++)
         self->cache_I[i] = 0;
+
+/*
+    self->cache_gaunt = xmalloc(sizeof(gaunt_cache_t));
+    cache_gaunt_init(self->cache_gaunt, lmax);
+*/
 }
 
 void casimir_integrate_perf_free(integration_perf_t *self)
 {
+/*
+    cache_gaunt_free(self->cache_gaunt);
+    xfree(self->cache_gaunt);
+*/
+
     xfree(self->cache_I);
     self->cache_I = NULL;
 }
 
 /* TODO: m = 0, check signs! */
-void casimir_integrate_perf(integration_perf_t *self, int l1, int l2, int m, casimir_integrals_t *cint)
+void casimir_integrate_perf(integration_perf_t *self, int l1, int l2, int m, casimir_integrals_t *cint, gaunt_cache_t *cache)
 {
     edouble tau = self->tau;
     edouble lnLambda = casimir_lnLambda(l1, l2, m, NULL);
@@ -184,40 +193,60 @@ void casimir_integrate_perf(integration_perf_t *self, int l1, int l2, int m, cas
         const int qmax_l1ml2p = GAUNT_QMAX(l1-1,l2+1,m);
         const int qmax_l1ml2m = GAUNT_QMAX(l1-1,l2-1,m);
 
-        /* reserve space for gaunt coefficients on stack */
-        edouble a_l1l2[qmax_l1l2+1];
+        edouble *a_l1l2, *a_l1pl2, *a_l1ml2, *a_l1l2p, *a_l1l2m, *a_l1pl2p;
+        edouble *a_l1pl2m, *a_l1ml2p, *a_l1ml2m;
 
-        edouble a_l1pl2[qmax_l1pl2+1];
-        edouble a_l1ml2[qmax_l1ml2+1];
-        edouble a_l1l2p[qmax_l1l2p+1];
-        edouble a_l1l2m[qmax_l1l2m+1];
-
-        edouble a_l1pl2p[qmax_l1pl2p+1];
-        edouble a_l1pl2m[qmax_l1pl2m+1];
-        edouble a_l1ml2p[qmax_l1ml2p+1];
-        edouble a_l1ml2m[qmax_l1ml2m+1];
-
-        /* calculate Gaunt coefficients */
-        gaunt(l1,   l2,   m, a_l1l2);
-
-        gaunt(l1-1, l2,  m, a_l1ml2);
-        gaunt(l1,   l2-1,m, a_l1l2m);
-        gaunt(l1-1, l2-1,m, a_l1ml2m);
-
-        if((l1+1) >= m)
+        if(cache == NULL)
         {
-            gaunt(l1+1, l2,  m, a_l1pl2);
-            gaunt(l1+1, l2-1,m, a_l1pl2m);
-        }
+            /* reserve space for gaunt coefficients on stack */
+            a_l1l2 = alloca((qmax_l1l2+1)*sizeof(edouble));
 
-        if((l2+1) >= m)
+            a_l1pl2 = alloca((qmax_l1pl2+1)*sizeof(edouble));
+            a_l1ml2 = alloca((qmax_l1ml2+1)*sizeof(edouble));
+            a_l1l2p = alloca((qmax_l1l2p+1)*sizeof(edouble));
+            a_l1l2m = alloca((qmax_l1l2m+1)*sizeof(edouble));
+
+            a_l1pl2p = alloca((qmax_l1pl2p+1)*sizeof(edouble));
+            a_l1pl2m = alloca((qmax_l1pl2m+1)*sizeof(edouble));
+            a_l1ml2p = alloca((qmax_l1ml2p+1)*sizeof(edouble));
+            a_l1ml2m = alloca((qmax_l1ml2m+1)*sizeof(edouble));
+
+            /* calculate Gaunt coefficients */
+            gaunt(l1, l2,  m, a_l1l2);
+
+            gaunt(l1-1, l2,  m, a_l1ml2);
+            gaunt(l1,   l2-1,m, a_l1l2m);
+            gaunt(l1-1, l2-1,m, a_l1ml2m);
+
+            if((l1+1) >= m)
+            {
+                gaunt(l1+1, l2,  m, a_l1pl2);
+                gaunt(l1+1, l2-1,m, a_l1pl2m);
+            }
+
+            if((l2+1) >= m)
+            {
+                gaunt(l1,   l2+1,m, a_l1l2p);
+                gaunt(l1-1, l2+1,m, a_l1ml2p);
+            }
+
+            if((l1+1) >= m && (l2+1) >= m)
+                gaunt(l1+1, l2+1, m, a_l1pl2p);
+        }
+        else
         {
-            gaunt(l1,   l2+1,m, a_l1l2p);
-            gaunt(l1-1, l2+1,m, a_l1ml2p);
-        }
+            a_l1l2 = cache_gaunt_get(cache, l1,l2,m);
 
-        if((l1+1) >= m && (l2+1) >= m)
-            gaunt(l1+1, l2+1, m, a_l1pl2p);
+            a_l1pl2 = cache_gaunt_get(cache, l1+1,l2,m);
+            a_l1ml2 = cache_gaunt_get(cache, l1-1,l2,m);
+            a_l1l2p = cache_gaunt_get(cache, l1,l2+1,m);
+            a_l1l2m = cache_gaunt_get(cache, l1,l2-1,m);
+
+            a_l1pl2p = cache_gaunt_get(cache, l1+1,l2+1,m);
+            a_l1pl2m = cache_gaunt_get(cache, l1+1,l2-1,m);
+            a_l1ml2p = cache_gaunt_get(cache, l1-1,l2+1,m);
+            a_l1ml2m = cache_gaunt_get(cache, l1-1,l2-1,m);
+        }
 
 
         /* A */
@@ -366,4 +395,54 @@ void casimir_integrate_perf(integration_perf_t *self, int l1, int l2, int m, cas
         cint->signD_TM = -MPOW(l2+m+1)*sign_D; // XXX ???
         cint->signD_TE = -cint->signD_TM;
     }
+}
+
+void cache_gaunt_init(gaunt_cache_t *cache, int lmax)
+{
+    int i;
+    int N = lmax+2;
+    size_t size = (N*N-N)/2+N;
+
+    cache->N = N;
+    cache->size = size;
+    cache->cache = xmalloc(size*sizeof(edouble *));
+
+    for(i = 0; i < size; i++)
+        cache->cache[i] = NULL;
+}
+
+void cache_gaunt_free(gaunt_cache_t *cache)
+{
+    int i;
+    size_t size = cache->size;
+
+    for(i = 0; i < size; i++)
+        if(cache->cache[i] != NULL)
+            xfree(cache->cache[i]);
+
+    xfree(cache->cache);
+}
+
+edouble *cache_gaunt_get(gaunt_cache_t *cache, int n, int nu, int m)
+{
+    int index;
+    int N = cache->N;
+    edouble *v;
+
+    if(n <= nu)
+        index = n*N - (n-1)*((n-1) + 1)/2 + nu - n;
+    else
+        index = nu*N - (nu-1)*((nu-1) + 1)/2 + n - nu;
+
+    //printf("index=%d, N=%d\n", index, ((N*N-N)/2+N));
+    v = cache->cache[index];
+    if(v == NULL)
+    {
+        int len = GAUNT_QMAX(n,nu,m)+1; // XXX???
+        v = xmalloc(len*sizeof(edouble));
+        gaunt(n, nu, m, v);
+        cache->cache[index] = v;
+    }
+
+    return v;
 }
