@@ -9,19 +9,6 @@
 
 #include "utils.h"
 
-/* p must have length len_p1+len_p2-1 */
-static void polymult(edouble p1[], int len_p1, edouble p2[], int len_p2, edouble p[])
-{
-    int i,j;
-
-    for(i = 0; i < len_p1+len_p2-1; i++)
-        p[i] = 0;
-
-    for(i = 0; i < len_p1; i++)
-        for(j = 0; j < len_p2; j++)
-            p[i+j] += p1[i]*p2[j];
-}
-
 
 /* p must have length m+n+1 */
 static void poly1(int m, edouble p[])
@@ -62,19 +49,29 @@ static edouble polyintegrate(edouble p[], int len_p, int offset, edouble tau)
 }
 
 
-static edouble I(int nu, int m2, int n, double T)
+/* evaluete integral I_nu^2m(tau) = exp(-z*tau)/ (z^2+2z) * Plm(nu, 2m, 1+z) */
+static edouble I(integration_perf_t *self, int nu, int m2)
 {
-    // exp(-z*tau) * (z^2+2z)^-1 * Plm(nu, 2m, 1+z)
-    int m = m2/2;
-    edouble tau = 2*n*T;
+    const int m = m2/2;
+    const int index = m*self->nu_max + nu;
+    edouble v;
 
-    edouble p1[m], p2[nu+1-m2], p[-m+nu];
+    v = self->cache_I[index];
+    if(v == 0)
+    {
+        edouble tau = self->tau;
 
-    poly1(m-1, p1);
-    poly2(nu,m2,p2);
-    polymult(p1, m, p2, nu+1-m2, p);
+        edouble p1[m], p2[nu+1-m2], p[-m+nu];
 
-    return MPOW(m)*polyintegrate(p, -m+nu, m-1, tau);
+        poly1(m-1, p1);
+        poly2(nu,m2,p2);
+        polymult(p1, m, p2, nu+1-m2, p);
+
+        v = MPOW(m)*polyintegrate(p, -m+nu, m-1, tau);
+        self->cache_I[index] = v;
+    }
+
+    return v;
 }
 
 static void polydplm(edouble pl1[], edouble pl2[], int l1, int l2, int m)
@@ -115,10 +112,31 @@ static void polydplm(edouble pl1[], edouble pl2[], int l1, int l2, int m)
 }
 
 
-/* TODO: m = 0, check signs! */
-void casimir_integrate_perf(casimir_integrals_t *cint, int l1, int l2, int m, int n, double T)
+void casimir_integrate_perf_init(integration_perf_t *self, double nT, int lmax)
 {
-    edouble tau = 2*n*T;
+    int i,size;
+    self->tau = 2*nT;
+
+    /* init cache */
+    self->nu_max = 2*lmax+4;
+    self->m2_max = 1*lmax+2;
+    size = self->nu_max*self->m2_max;
+    self->cache_I = xmalloc(size*sizeof(edouble));
+
+    for(i = 0; i < size; i++)
+        self->cache_I[i] = 0;
+}
+
+void casimir_integrate_perf_free(integration_perf_t *self)
+{
+    xfree(self->cache_I);
+    self->cache_I = NULL;
+}
+
+/* TODO: m = 0, check signs! */
+void casimir_integrate_perf(integration_perf_t *self, int l1, int l2, int m, casimir_integrals_t *cint)
+{
+    edouble tau = self->tau;
     edouble lnLambda = casimir_lnLambda(l1, l2, m, NULL);
 
     if(m == 0)
@@ -208,7 +226,7 @@ void casimir_integrate_perf(casimir_integrals_t *cint, int l1, int l2, int m, in
             for(q = 0; q <= qmax_l1l2; q++)
             {
                 nu = l1+l2-2*q;
-                A += a_l1l2[q]*I(nu,2*m,n,T);
+                A += a_l1l2[q]*I(self,nu,2*m);
             }
             A *= gaunt_a0(l1,l2,m,m);
 
@@ -226,7 +244,7 @@ void casimir_integrate_perf(casimir_integrals_t *cint, int l1, int l2, int m, in
                 for(q = 0; q <= qmax_l1ml2m; q++)
                 {
                     nu = l1-1+l2-1-2*q;
-                    B1 += a_l1ml2m[q]*I(nu,2*m,n,T);
+                    B1 += a_l1ml2m[q]*I(self,nu,2*m);
                 }
                 B1 *= gaunt_a0(l1-1,l2-1,m,m);
                 B1 *= (l1+1)*(l1+m)*(l2+1)*(l2+m);
@@ -238,7 +256,7 @@ void casimir_integrate_perf(casimir_integrals_t *cint, int l1, int l2, int m, in
                 for(q = 0; q <= qmax_l1ml2p; q++)
                 {
                     nu = l1-1+l2+1-2*q;
-                    B2 += a_l1ml2p[q]*I(nu,2*m,n,T);
+                    B2 += a_l1ml2p[q]*I(self,nu,2*m);
                 }
                 B2 *= -gaunt_a0(l1-1,l2+1,m,m);
                 B2 *= (l1+1)*(l1+m)*l2*(l2-m+1);
@@ -250,7 +268,7 @@ void casimir_integrate_perf(casimir_integrals_t *cint, int l1, int l2, int m, in
                 for(q = 0; q <= qmax_l1pl2m; q++)
                 {
                     nu = l1+1+l2-1-2*q;
-                    B3 += a_l1pl2m[q]*I(nu,2*m,n,T);
+                    B3 += a_l1pl2m[q]*I(self,nu,2*m);
                 }
                 B3 *= -gaunt_a0(l1+1,l2-1,m,m);
                 B3 *= l1*(l1-m+1)*(l2+1)*(l2+m);
@@ -260,7 +278,7 @@ void casimir_integrate_perf(casimir_integrals_t *cint, int l1, int l2, int m, in
             for(q = 0; q <= qmax_l1pl2p; q++)
             {
                 nu = l1+1+l2+1-2*q;
-                B4 += a_l1pl2p[q]*I(nu,2*m,n,T);
+                B4 += a_l1pl2p[q]*I(self,nu,2*m);
             }
             B4 *= gaunt_a0(l1+1,l2+1,m,m);
             B4 *= l1*(l1-m+1)*l2*(l2-m+1);
@@ -281,7 +299,7 @@ void casimir_integrate_perf(casimir_integrals_t *cint, int l1, int l2, int m, in
                 for(q = 0; q <= qmax_l1l2m; q++)
                 {
                     nu = l1+l2-1-2*q;
-                    C1 += a_l1l2m[q]*I(nu,2*m,n,T);
+                    C1 += a_l1l2m[q]*I(self,nu,2*m);
                 }
                 C1 *= gaunt_a0(l1,l2-1,m,m);
                 C1 *= (l2+1)*(l2+m);
@@ -291,7 +309,7 @@ void casimir_integrate_perf(casimir_integrals_t *cint, int l1, int l2, int m, in
             for(q = 0; q <= qmax_l1l2p; q++)
             {
                 nu = l1+l2+1-2*q;
-                C2 += a_l1l2p[q]*I(nu,2*m,n,T);
+                C2 += a_l1l2p[q]*I(self,nu,2*m);
             }
             C2 *= -gaunt_a0(l1,l2+1,m,m);
             C2 *= l2*(l2-m+1);
@@ -311,7 +329,7 @@ void casimir_integrate_perf(casimir_integrals_t *cint, int l1, int l2, int m, in
                 for(q = 0; q <= qmax_l1ml2; q++)
                 {
                     nu = l1-1+l2-2*q;
-                    D1 += a_l1ml2[q]*I(nu,2*m,n,T);
+                    D1 += a_l1ml2[q]*I(self,nu,2*m);
                 }
                 D1 *= gaunt_a0(l1-1,l2,m,m);
                 D1 *= (l1+1)*(l1+m);
@@ -321,7 +339,7 @@ void casimir_integrate_perf(casimir_integrals_t *cint, int l1, int l2, int m, in
             for(q = 0; q <= qmax_l1pl2; q++)
             {
                 nu = l1+1+l2-2*q;
-                D2 += a_l1pl2[q]*I(nu,2*m,n,T);
+                D2 += a_l1pl2[q]*I(self,nu,2*m);
             }
             D2 *= -gaunt_a0(l1+1,l2,m,m);
             D2 *= l1*(l1-m+1);
