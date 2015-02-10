@@ -333,6 +333,16 @@ edouble inline gaunt_a0(int n,int nu,int m)
 }
 
 
+edouble alpha(const int p, const int n, const int nu);
+edouble alpha(const int p, const int n, const int nu)
+{
+    /* eq. (3) */
+    edouble num   = (pow_2(p)-pow_2(n+nu+1))*(pow_2(p)-pow_2(n-nu));
+    edouble denom = (4*pow_2(p)-1);
+
+    return num/denom;
+}
+
 /*
 Determine Gaunt coefficients a(m, n, mu, nu, p) for m, n, mu and nu fixed.
 These coefficients can be used to express the product of two associated
@@ -349,7 +359,7 @@ outline how to calculate Gaunt coefficients at the end of the chapter.
 
 Ref.: [1] Y.-L. Xu, J. Comp. Appl. Math. 85, 53 (1997)
 */
-void gaunt(int n, int nu, int m, edouble a_tilde[])
+void gaunt(const int n, const int nu, const int m, edouble a_tilde[])
 {
     int q, n4 = n+nu-2*m;
 
@@ -357,17 +367,12 @@ void gaunt(int n, int nu, int m, edouble a_tilde[])
     int qmax = GAUNT_QMAX(n,nu,m);
 
     /* eq. (28) */
-    #define Ap(p) (-2*(m)*((n)-(nu))*((n)+(nu)+1.))
+    int Ap = -2*m*(n-nu)*(n+nu+1);
 
-    /* eq. (3) */
-    #define alpha(p) ((((p)*(p)-((n)+(nu)+1.)*((n)+(nu)+1.))*((p)*(p)-((n)-(nu))*((n)-(nu))))/(4.*(p)*(p)-1.))
-
-    if(a_tilde == NULL)
+    if(qmax <= 0)
         return;
 
     a_tilde[0] = 1;
-    if(qmax == 0)
-        return;
 
     /* eq. (29) */
     a_tilde[1] = (n+nu-1.5)*(1-(2*n+2*nu-1)/(n4*(n4-1.))*((m-n)*(m-n+1)/(2*n-1.)+(m-nu)*(m-nu+1)/(2*nu-1.)));
@@ -375,47 +380,33 @@ void gaunt(int n, int nu, int m, edouble a_tilde[])
         return;
 
     /* eq. (35) */
-    a_tilde[2] = (2*n+2*nu-1)*(2*n+2*nu-7)/4.*( (2*n+2*nu-3)/(n4*(n4-1.)) * ( (2*n+2*nu-5)/(2*(n4-2.)*(n4-3.)) \
-                * ( (m-n)*(m-n+1)*(m-n+2)*(m-n+3)/((2*n-1.)*(2*n-3.)) \
-                + 2*(m-n)*(m-n+1)*(m-nu)*(m-nu+1)/((2*n-1.)*(2*nu-1.)) \
-                + (m-nu)*(m-nu+1)*(m-nu+2)*(m-nu+3)/((2*nu-1.)*(2*nu-3.)) ) - (m-n)*(m-n+1)/(2*n-1.) \
-                - (m-nu)*(m-nu+1)/(2*nu-1.) ) +0.5);
+    a_tilde[2] = (2*n+2*nu-1)*(2*n+2*nu-7)/4.*( (2*n+2*nu-3)/(n4*(n4-1.)) * ( (2*n+2*nu-5)/(2.*(n4-2.)*(n4-3)) \
+                * ( (m-n)*(m-n+1)*(m-n+2)*(m-n+3.)/(2.*n-1.)/(2.*n-3.) \
+                + 2*(m-n)*(m-n+1)*(m-nu)*(m-nu+1.)/((2.*n-1.)*(2.*nu-1.)) \
+                + (m-nu)*(m-nu+1)*(m-nu+2)*(m-nu+3)/(2.*nu-1.)/(2.*nu-3.) ) - (m-n)*(m-n+1)/(2.*n-1.) \
+                - (m-nu)*(m-nu+1)/(2.*nu-1.) ) +0.5);
 
 
     for(q = 3; q <= qmax; q++)
     {
-        edouble c0,c1,c2,c3;
-        int p = n+nu-2*q;
-        int p1 = p-2*m;
-        int p2 = p+2*m;
+        edouble c0,c1,c2;
+        edouble p = n+nu-2*q;
+        edouble p1 = p-2*m;
+        edouble p2 = p+2*m;
 
-        if(Ap(p+4) != 0)
+        if(Ap != 0)
         {
             /* eqs. (26), (27) */
-            c0 = (p+2)*(p+3)*(p1+1)*(p1+2)*Ap(p+4)*alpha(p+1);
-            c1 = Ap(p+2)*Ap(p+3)*Ap(p+4) \
-               + (p+1)*(p+3)*(p1+2)*(p2+2)*Ap(p+4)*alpha(p+2) \
-               + (p+2)*(p+4)*(p1+3)*(p2+3)*Ap(p+2)*alpha(p+3);
-            c2 = -(p+2)*(p+3)*(p2+3)*(p2+4)*Ap(p+2)*alpha(p+4);
+            c0 = (p+2)*(p+3)*(p1+1)*(p1+2)*Ap*alpha(p+1,n,nu);
+            c1 = (edouble)Ap*Ap*Ap \
+               + (p+1)*(p+3)*(p1+2)*(p2+2)*Ap*alpha(p+2,n,nu) \
+               + (p+2)*(p+4)*(p1+3)*(p2+3)*Ap*alpha(p+3,n,nu);
+            c2 = -(p+2)*(p+3)*(p2+3)*(p2+4)*Ap*alpha(p+4,n,nu);
 
             a_tilde[q] = (c1*a_tilde[q-1] + c2*a_tilde[q-2])/c0;
         }
         else
-        {
-            if(Ap(p+6) == 0)
-            {
-                /* eq. (30) */
-                a_tilde[q] = (p+1)*(p2+2)*alpha(p+2)*a_tilde[q-1] / ((p+2)*(p1+1)*alpha(p+1));
-            }
-            else
-            {
-                /* eq. (32), (33) */
-                c0 = (p+2)*(p+3)*(p+5)*(p1+1)*(p1+2)*(p1+4)*Ap(p+6)*alpha(p+1);
-                c1 = (p+5)*(p1+4)*Ap(p+6)*(Ap(p+2)*Ap(p+3)+(p+1)*(p+3)*(p1+2)*(p2+2)*alpha(p+2));
-                c2 = (p+2)*(p2+3)*Ap(p+2)*(Ap(p+5)*Ap(p+6)+(p+4)*(p+6)*(p1+5)*(p2+5)*alpha(p+5));
-                c3 = -(p+2)*(p+4)*(p+5)*(p2+3)*(p2+5)*(p2+6)*Ap(p+2)*alpha(p+6);
-                a_tilde[q] = (c1*a_tilde[q-1] + c2*a_tilde[q-2] + c3*a_tilde[q-3])/c0;
-            }
-        }
+            /* eq. (30) */
+            a_tilde[q] = (p+1)*(p2+2)*alpha(p+2,n,nu)*a_tilde[q-1] / ((p+2)*(p1+1)*alpha(p+1,n,nu));
     }
 }
