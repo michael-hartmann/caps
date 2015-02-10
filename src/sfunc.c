@@ -321,6 +321,12 @@ void plm_PlmPlm(int l1, int l2, int m, edouble x, plm_combination_t *res)
     res->sign_dPl1mdPl2m = common_sign * sign_dPl1m * sign_dPl2m;
 }
 
+int inline gaunt_qmax(const int n, const int nu, const int m)
+{
+    int xi = (n+nu-2*m)/2;
+    return MIN(MIN(n,nu), xi);
+}
+
 /* eq. (20) */
 edouble inline gaunt_log_a0(int n, int nu, int m)
 {
@@ -365,7 +371,7 @@ void gaunt(const int n, const int nu, const int m, edouble a_tilde[])
     const int n4 = n+nu-2*m;
 
     /* eq. (24) */
-    const int qmax = GAUNT_QMAX(n,nu,m);
+    const int qmax = gaunt_qmax(n,nu,m);
 
     /* eq. (28) */
     const int Ap = -2*m*(n-nu)*(n+nu+1);
@@ -397,8 +403,8 @@ void gaunt(const int n, const int nu, const int m, edouble a_tilde[])
         if(Ap != 0)
         {
             /* eqs. (26), (27) */
-            c0 = (p+2.)*(p+3.)*(p1+1.)*(p1+2.)*Ap*(edouble)alpha(p+1,n,nu);
-            c1 = Ap*Ap*Ap \
+            c0 = (p+2.)*(p+3.)*(p1+1.)*(p1+2.)*Ap*alpha(p+1,n,nu);
+            c1 = (edouble)Ap*Ap*Ap \
                + (p+1)*(p+3)*(p1+2)*(p2+2)*Ap*alpha(p+2,n,nu) \
                + (p+2)*(p+4)*(p1+3)*(p2+3)*Ap*alpha(p+3,n,nu);
             c2 = -(p+2)*(p+3)*(p2+3)*(p2+4)*Ap*alpha(p+4,n,nu);

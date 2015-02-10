@@ -22,9 +22,6 @@
 #define MAX(a,b) ((((a))>((b)))?((a)):((b)))
 #endif
 
-/* eq. (24) */
-#define GAUNT_QMAX(n,nu,m) MAX(0, (MIN(MIN((n),(nu)),((n)+(nu)-(2*(m)))/2)) )
-
 typedef struct {
     edouble lnPl1mPl2m;
     int sign_Pl1mPl2m;
@@ -65,5 +62,7 @@ void plm_PlmPlm(int l1, int l2, int m, edouble x, plm_combination_t *res);
 edouble inline gaunt_log_a0(int n, int nu, int m);
 edouble inline gaunt_a0(int n,int nu,int m);
 void gaunt(const int n, const int nu, const int m, edouble a_tilde[]);
+
+int inline gaunt_qmax(const int n, const int nu, const int m);
 
 #endif
