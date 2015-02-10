@@ -125,18 +125,14 @@ void casimir_integrate_perf_init(integration_perf_t *self, double nT, int lmax)
     for(i = 0; i < size; i++)
         self->cache_I[i] = 0;
 
-/*
     self->cache_gaunt = xmalloc(sizeof(gaunt_cache_t));
     cache_gaunt_init(self->cache_gaunt, lmax);
-*/
 }
 
 void casimir_integrate_perf_free(integration_perf_t *self)
 {
-/*
     cache_gaunt_free(self->cache_gaunt);
     xfree(self->cache_gaunt);
-*/
 
     xfree(self->cache_I);
     self->cache_I = NULL;
@@ -257,9 +253,8 @@ void casimir_integrate_perf(integration_perf_t *self, int l1, int l2, int m, cas
                 nu = l1+l2-2*q;
                 A += a_l1l2[q]*I(self,nu,2*m);
             }
-            A *= gaunt_a0(l1,l2,m);
 
-            log_A  = logq(fabsq(A));
+            log_A  = gaunt_log_a0(l1,l2,m)+logq(fabsq(A));
             sign_A = copysignq(1, A);
         }
 
