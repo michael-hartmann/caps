@@ -177,17 +177,17 @@ void casimir_integrate_perf(integration_perf_t *self, int l1, int l2, int m, cas
         edouble log_m = logq(m);
         edouble log_A,log_B,log_C,log_D;
 
-        const int qmax_l1l2   = GAUNT_QMAX(l1,  l2,  m);
+        const int qmax_l1l2   = gaunt_qmax(l1,  l2,  m);
 
-        const int qmax_l1pl2  = GAUNT_QMAX(l1+1,l2,  m);
-        const int qmax_l1ml2  = GAUNT_QMAX(l1-1,l2,  m);
-        const int qmax_l1l2p  = GAUNT_QMAX(l1,  l2+1,m);
-        const int qmax_l1l2m  = GAUNT_QMAX(l1,  l2-1,m);
+        const int qmax_l1pl2  = gaunt_qmax(l1+1,l2,  m);
+        const int qmax_l1ml2  = gaunt_qmax(l1-1,l2,  m);
+        const int qmax_l1l2p  = gaunt_qmax(l1,  l2+1,m);
+        const int qmax_l1l2m  = gaunt_qmax(l1,  l2-1,m);
 
-        const int qmax_l1pl2p = GAUNT_QMAX(l1+1,l2+1,m);
-        const int qmax_l1pl2m = GAUNT_QMAX(l1+1,l2-1,m);
-        const int qmax_l1ml2p = GAUNT_QMAX(l1-1,l2+1,m);
-        const int qmax_l1ml2m = GAUNT_QMAX(l1-1,l2-1,m);
+        const int qmax_l1pl2p = gaunt_qmax(l1+1,l2+1,m);
+        const int qmax_l1pl2m = gaunt_qmax(l1+1,l2-1,m);
+        const int qmax_l1ml2p = gaunt_qmax(l1-1,l2+1,m);
+        const int qmax_l1ml2m = gaunt_qmax(l1-1,l2-1,m);
 
         edouble *a_l1l2, *a_l1pl2, *a_l1ml2, *a_l1l2p, *a_l1l2m, *a_l1pl2p;
         edouble *a_l1pl2m, *a_l1ml2p, *a_l1ml2m;
@@ -195,17 +195,17 @@ void casimir_integrate_perf(integration_perf_t *self, int l1, int l2, int m, cas
         if(cache == NULL)
         {
             /* reserve space for gaunt coefficients on stack */
-            a_l1l2 = alloca((qmax_l1l2+1)*sizeof(edouble));
+            a_l1l2 = alloca(MAX(1,qmax_l1l2+1)*sizeof(edouble));
 
-            a_l1pl2 = alloca((qmax_l1pl2+1)*sizeof(edouble));
-            a_l1ml2 = alloca((qmax_l1ml2+1)*sizeof(edouble));
-            a_l1l2p = alloca((qmax_l1l2p+1)*sizeof(edouble));
-            a_l1l2m = alloca((qmax_l1l2m+1)*sizeof(edouble));
+            a_l1pl2 = alloca(MAX(1,qmax_l1pl2+1)*sizeof(edouble));
+            a_l1ml2 = alloca(MAX(1,qmax_l1ml2+1)*sizeof(edouble));
+            a_l1l2p = alloca(MAX(1,qmax_l1l2p+1)*sizeof(edouble));
+            a_l1l2m = alloca(MAX(1,qmax_l1l2m+1)*sizeof(edouble));
 
-            a_l1pl2p = alloca((qmax_l1pl2p+1)*sizeof(edouble));
-            a_l1pl2m = alloca((qmax_l1pl2m+1)*sizeof(edouble));
-            a_l1ml2p = alloca((qmax_l1ml2p+1)*sizeof(edouble));
-            a_l1ml2m = alloca((qmax_l1ml2m+1)*sizeof(edouble));
+            a_l1pl2p = alloca(MAX(1,qmax_l1pl2p+1)*sizeof(edouble));
+            a_l1pl2m = alloca(MAX(1,qmax_l1pl2m+1)*sizeof(edouble));
+            a_l1ml2p = alloca(MAX(1,qmax_l1ml2p+1)*sizeof(edouble));
+            a_l1ml2m = alloca(MAX(1,qmax_l1ml2m+1)*sizeof(edouble));
 
             /* calculate Gaunt coefficients */
             gaunt(l1, l2,  m, a_l1l2);
@@ -281,6 +281,7 @@ void casimir_integrate_perf(integration_perf_t *self, int l1, int l2, int m, cas
                 {
                     nu = l1-1+l2+1-2*q;
                     B2 += a_l1ml2p[q]*I(self,nu,2*m);
+                    //printf("a[%d] = %.15g (%d,%d)\n", q, (double)a_l1ml2m[q],l1-1,l2+1);
                 }
                 B2 *= -gaunt_a0(l1-1,l2+1,m);
                 B2 *= (l1+1)*(l1+m)*l2*(l2-m+1);
@@ -433,7 +434,7 @@ edouble *cache_gaunt_get(gaunt_cache_t *cache, int n, int nu, int m)
     v = cache->cache[index];
     if(v == NULL)
     {
-        int len = GAUNT_QMAX(n,nu,m)+1; // XXX???
+        int len = gaunt_qmax(n,nu,m)+20; // XXX WTF?!?
         v = xmalloc(len*sizeof(edouble));
         gaunt(n, nu, m, v);
         cache->cache[index] = v;
