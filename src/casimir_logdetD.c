@@ -165,7 +165,7 @@ int main(int argc, char *argv[])
         casimir_t casimir;
         double value, start_time = now();
 
-        casimir_integrate_perf_init(&int_perf, T, lmax);
+        casimir_integrate_perf_init(&int_perf, n*T, lmax);
 
         casimir_init(&casimir, Q, T);
         casimir_set_verbose(&casimir, verbose_flag);
