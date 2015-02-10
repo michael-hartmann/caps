@@ -332,9 +332,9 @@ edouble inline gaunt_a0(int n,int nu,int m)
     return expq(gaunt_log_a0(n,nu,m));
 }
 
-static edouble inline alpha(const int p, const int n, const int nu);
+static edouble inline alpha(const edouble p, const edouble n, const edouble nu);
 
-static edouble inline alpha(const int p, const int n, const int nu)
+static edouble inline alpha(const edouble p, const edouble n, const edouble nu)
 {
     /* eq. (3) */
     edouble num   = (pow_2(p)-pow_2(n+nu+1))*(pow_2(p)-pow_2(n-nu));
@@ -368,7 +368,7 @@ void gaunt(const int n, const int nu, const int m, edouble a_tilde[])
     const int qmax = GAUNT_QMAX(n,nu,m);
 
     /* eq. (28) */
-    const edouble Ap = -2*m*(n-nu)*(n+nu+1);
+    const int Ap = -2*m*(n-nu)*(n+nu+1);
 
     a_tilde[0] = 1;
     if(qmax == 0)
@@ -397,7 +397,7 @@ void gaunt(const int n, const int nu, const int m, edouble a_tilde[])
         if(Ap != 0)
         {
             /* eqs. (26), (27) */
-            c0 = (p+2)*(p+3)*(p1+1)*(p1+2)*Ap*alpha(p+1,n,nu);
+            c0 = (p+2.)*(p+3.)*(p1+1.)*(p1+2.)*Ap*(edouble)alpha(p+1,n,nu);
             c1 = Ap*Ap*Ap \
                + (p+1)*(p+3)*(p1+2)*(p2+2)*Ap*alpha(p+2,n,nu) \
                + (p+2)*(p+4)*(p1+3)*(p2+3)*Ap*alpha(p+3,n,nu);
