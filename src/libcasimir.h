@@ -163,7 +163,7 @@ double casimir_F(casimir_t *self, int *nmax);
 void casimir_mie_cache_init(casimir_t *self);
 void casimir_mie_cache_alloc(casimir_t *self, int n);
 void casimir_mie_cache_clean(casimir_t *self);
-void caismir_mie_cache_get(casimir_t *self, int l, int n, double *ln_a, int *sign_a, double *ln_b, int *sign_b);
+void casimir_mie_cache_get(casimir_t *self, int l, int n, double *ln_a, int *sign_a, double *ln_b, int *sign_b);
 void casimir_mie_cache_free(casimir_t *self);
 
 void casimir_logdetD0(casimir_t *self, int m, double *EE, double *MM);

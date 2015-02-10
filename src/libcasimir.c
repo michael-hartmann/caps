@@ -978,7 +978,7 @@ void casimir_mie_cache_clean(casimir_t *self)
  * @param [out] ln_b logarithm of b_l
  * @param [out] sign_b sign of b_l
  */
-void caismir_mie_cache_get(casimir_t *self, int l, int n, double *ln_a, int *sign_a, double *ln_b, int *sign_b)
+void casimir_mie_cache_get(casimir_t *self, int l, int n, double *ln_a, int *sign_a, double *ln_b, int *sign_b)
 {
     casimir_mie_cache_entry_t *entry;
     int nmax;
@@ -1305,7 +1305,7 @@ void casimir_logdetD0(casimir_t *self, int m, double *logdet_EE, double *logdet_
 
     /* calculate the logarithm of the matrix elements of D */
     for(l1 = min; l1 <= max; l1++)
-        for(l2 = min; l2 <= max; l2++)
+        for(l2 = min; l2 <= l1; l2++)
         {
             /* i: row of matrix, j: column of matrix */
             const int i = l1-min, j = l2-min;
@@ -1382,7 +1382,7 @@ double casimir_logdetD(casimir_t *self, int n, int m, void *integration_obj)
        M_ME,  M_MM */
     for(l1 = min; l1 <= max; l1++)
     {
-        for(l2 = l1; l2 <= max; l2++)
+        for(l2 = min; l2 <= l1; l2++)
         {
             const int Delta_ij = (l1 == l2 ? 1 : 0);
             const int i = l1-min, j = l2-min;
@@ -1390,8 +1390,8 @@ double casimir_logdetD(casimir_t *self, int n, int m, void *integration_obj)
             double ln_al1, ln_bl1, ln_al2, ln_bl2;
             int sign_al1, sign_bl1, sign_al2, sign_bl2;
 
-            caismir_mie_cache_get(self, l1, n, &ln_al1, &sign_al1, &ln_bl1, &sign_bl1);
-            caismir_mie_cache_get(self, l2, n, &ln_al2, &sign_al2, &ln_bl2, &sign_bl2);
+            casimir_mie_cache_get(self, l1, n, &ln_al1, &sign_al1, &ln_bl1, &sign_bl1);
+            casimir_mie_cache_get(self, l2, n, &ln_al2, &sign_al2, &ln_bl2, &sign_bl2);
 
             if(nTRbyScriptL < 1)
             {
