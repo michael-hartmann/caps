@@ -12,7 +12,7 @@ EXTENDED_DOUBLE = 1
 CC = gcc
 #CC = icc
 
-SOURCES = sfunc.c integration.c libcasimir.c matrix.c utils.c cache.c tests/unittest.c
+SOURCES = sfunc.c integration.c integration_perf.c libcasimir.c matrix.c utils.c tests/unittest.c
 CFLAGS += -Werror -Wall -Wmissing-prototypes -Wstrict-prototypes -Wshadow -Wpointer-arith -Wcast-qual -Wwrite-strings -fshort-enums -fno-common
 
 # -DNDEBUG will disable asserts. This hardly increases performance and in case
