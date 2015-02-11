@@ -2,6 +2,7 @@
 #define __LIBCASIMIR_H
 
 #include <pthread.h>
+#include <stdio.h>
 
 #include "edouble.h"
 
