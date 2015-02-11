@@ -47,6 +47,7 @@ typedef struct
      */
      /*@{*/
     double RbyScriptL; /**< \f$R/\mathcal{L}\f$, where \f$R\f$ is the radius of the sphere and \f$L\f$ is the separation of plane and sphere. */
+    double LbyR;       /**< \f$L/R\f$, where \f$R\f$ is the radius of the sphere and \f$L\f$ is the separation of plane and sphere. */
     double T; /**< temperature */
     /*@}*/
 

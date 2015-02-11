@@ -32,7 +32,7 @@ static char CASIMIR_COMPILE_INFO[2048];
  * The returned string contains information which compiler was used and which
  * kind of arithmetics the binary uses.
  *
- * Do not modify this string!
+ * Do not modify or free this string!
  *
  * @retval constant string
  */
@@ -61,6 +61,7 @@ void casimir_info(casimir_t *self, FILE *stream, const char *prefix)
         prefix = "";
 
     fprintf(stream, "%sRbyScriptL = %g\n", prefix, self->RbyScriptL);
+    fprintf(stream, "%sL/R = %g\n", prefix, self->LbyR);
     fprintf(stream, "%sT = %g\n", prefix, self->T);
 
     fprintf(stream, "%somegap_sphere   = %g\n", prefix, self->omegap_sphere);
@@ -302,6 +303,7 @@ int casimir_init(casimir_t *self, double RbyScriptL, double T)
 
     self->T           = T;
     self->RbyScriptL  = RbyScriptL;
+    self->LbyR        = 1-1/RbyScriptL;
     self->precision   = CASIMIR_DEFAULT_PRECISION;
     self->verbose     = 0;
     self->cores       = 1;
