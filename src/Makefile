@@ -56,7 +56,7 @@ casimir_hiT: $(OBJECTS)
 	$(CC) $(OPTIMIZATION) $(CFLAGS) $(OBJECTS) casimir_hiT.c $(LDFLAGS) -o casimir_hiT
 
 casimir_tests: $(OBJECTS)
-	$(CC) $(OPTIMIZATION) -I . $(CFLAGS) $(OBJECTS) tests/tests.c $(LDFLAGS) -o casimir_tests
+	$(CC) $(OPTIMIZATION) -I . $(CFLAGS) $(OBJECTS) tests/test*.c $(LDFLAGS) -o casimir_tests
 	./casimir_tests
 
 clean:
