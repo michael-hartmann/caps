@@ -1,6 +1,8 @@
 #ifndef UNITTESTS__
 #define UNITTESTS__
 
+#include <stdio.h>
+
 #define EPS 1e-10
 #define Assert(t,boolean) _Assert(__LINE__, (t), (boolean))
 #define AssertEqual(t,x,y) _AssertEqual(__LINE__, (t), (x), (y))
