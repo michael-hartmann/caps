@@ -11,6 +11,7 @@
 #include "test_bessels.h"
 #include "test_doublefact.h"
 #include "test_epsilon.h"
+#include "test_givens.h"
 #include "test_Lambda.h"
 #include "test_Plm.h"
 #include "test_Xi.h"
@@ -28,7 +29,6 @@ int test_logdet(void);
 int test_integration(void);
 int test_integration_drude(void);
 int test_mie(void);
-int test_givens(void);
 int test_mie_drude(void);
 int test_fresnel(void);
 
@@ -102,32 +102,6 @@ int test_logdet()
 
     return test_results(&test, stderr);
 }
-
-
-int test_givens()
-{
-    matrix_edouble_t *M;
-    unittest_t test;
-    unittest_init(&test, "QR decomposition", "Test QR decomposition using givens rotation");
-
-    {
-        M = matrix_edouble_alloc(2);
-        matrix_set(M, 0,0, 20e100);
-        matrix_set(M, 0,1, 2);
-        matrix_set(M, 1,0, 1);
-        matrix_set(M, 1,1, 1e-100);
-
-        matrix_edouble_balance(M);
-
-        AssertAlmostEqual(&test, matrix_edouble_logdet(M), log(18));
-
-        matrix_edouble_free(M);
-    }
-
-    return test_results(&test, stderr);
-}
-
-
 
 
 static double _mie_lna_perf(int l, double arg, int *sign)
