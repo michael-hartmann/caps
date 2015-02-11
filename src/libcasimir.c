@@ -52,7 +52,7 @@ const char *casimir_compile_info(void)
  *
  * @param self Casimir object
  * @param stream where to print the string
- * @param prefix if prefix != NULL: start every lign with the string contained
+ * @param prefix if prefix != NULL: start every line with the string contained
  * in prefix
  */
 void casimir_info(casimir_t *self, FILE *stream, const char *prefix)
@@ -288,6 +288,7 @@ edouble casimir_lnXi(int l1, int l2, int m, int *sign)
  * @param [out] self Casimir object
  * @param [in]  RbyScriptL \f$\frac{R}{\mathcal{L}} = \frac{R}{R+L}\f$
  * @param [in]  T temperature in units of \f$2\pi k_B \mathcal{L}/(\hbar c)\f$
+ * @retval 
  */
 int casimir_init(casimir_t *self, double RbyScriptL, double T)
 {
@@ -303,11 +304,13 @@ int casimir_init(casimir_t *self, double RbyScriptL, double T)
 
     self->T           = T;
     self->RbyScriptL  = RbyScriptL;
-    self->LbyR        = 1-1/RbyScriptL;
+    self->LbyR        = LbyR;
     self->precision   = CASIMIR_DEFAULT_PRECISION;
     self->verbose     = 0;
     self->cores       = 1;
     self->threads     = NULL;
+
+    /* initialize mie cache */
     casimir_mie_cache_init(self);
     
     /* perfect reflectors */
