@@ -271,7 +271,7 @@ void casimir_integrate_perf(integration_perf_t *self, int l1, int l2, int m, cas
                     B1 += a_l1ml2m[q]*I(self,nu,2*m);
                 }
                 B1 *= gaunt_a0(l1-1,l2-1,m);
-                B1 *= (l1+1)*(l1+m)*(l2+1)*(l2+m);
+                B1 *= (l1+1.)*(l1+m)*(l2+1.)*(l2+m);
             }
 
             B2 = 0;
@@ -284,7 +284,7 @@ void casimir_integrate_perf(integration_perf_t *self, int l1, int l2, int m, cas
                     //printf("a[%d] = %.15g (%d,%d)\n", q, (double)a_l1ml2m[q],l1-1,l2+1);
                 }
                 B2 *= -gaunt_a0(l1-1,l2+1,m);
-                B2 *= (l1+1)*(l1+m)*l2*(l2-m+1);
+                B2 *= (l1+1.)*(l1+m)*l2*(l2-m+1.);
             }
 
             B3 = 0;
@@ -296,7 +296,7 @@ void casimir_integrate_perf(integration_perf_t *self, int l1, int l2, int m, cas
                     B3 += a_l1pl2m[q]*I(self,nu,2*m);
                 }
                 B3 *= -gaunt_a0(l1+1,l2-1,m);
-                B3 *= l1*(l1-m+1)*(l2+1)*(l2+m);
+                B3 *= l1*(l1-m+1.)*(l2+1.)*(l2+m);
             }
 
             B4 = 0;
@@ -306,11 +306,11 @@ void casimir_integrate_perf(integration_perf_t *self, int l1, int l2, int m, cas
                 B4 += a_l1pl2p[q]*I(self,nu,2*m);
             }
             B4 *= gaunt_a0(l1+1,l2+1,m);
-            B4 *= l1*(l1-m+1)*l2*(l2-m+1);
+            B4 *= l1*(l1-m+1.)*l2*(l2-m+1.);
 
-            B = (B1+B2+B3+B4)/((2*l1+1)*(2*l2+1));
+            B = B1+B2+B3+B4;
 
-            log_B  = logq(fabsq(B));
+            log_B  = logq(fabsq(B)) - logq(2*l1+1)-logq(2*l2+1);
             sign_B = copysignq(1,B);
         }
 
