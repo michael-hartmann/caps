@@ -1,6 +1,8 @@
 #ifndef CASIMIR_HIT
 #define CASIMIR_HIT
 
+#include <pthread.h>
+
 typedef struct {
     double LbyR, precision;
     int lmax, m;
