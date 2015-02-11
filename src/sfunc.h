@@ -1,6 +1,8 @@
 #ifndef __SFUNC_H
 #define __SFUNC_H
 
+#include <stdlib.h>
+
 #include "edouble.h"
 
 #define PI     3.141592653589793238462643383279502884197169L
