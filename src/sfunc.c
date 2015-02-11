@@ -119,7 +119,7 @@ void bessel_lnInuKnu(int nu, const edouble x, edouble *lnInu_p, edouble *lnKnu_p
 
     if(lnInu_p != NULL)
     {
-        #define an(n,nu,x) (2*(nu+0.5+n)/x)
+        #define an(n,nu,x) (2*((nu)+0.5+(n))/(x))
 
         edouble nom   = an(2,nu,x)+1/an(1,nu,x);
         edouble denom = an(2,nu,x);
@@ -141,6 +141,7 @@ void bessel_lnInuKnu(int nu, const edouble x, edouble *lnInu_p, edouble *lnKnu_p
         }
 
         *lnInu_p = -logx-lnKnu-logq(expq(lnKnup-lnKnu)+1/ratio);
+        #undef an
     }
 }
 
@@ -381,7 +382,7 @@ void gaunt(const int n, const int nu, const int m, edouble a_tilde[])
         return;
 
     /* eq. (29) */
-    a_tilde[1] = (n+nu-1.5)*(1-(2*n+2*nu-1)/(n4*(n4-1.))*((m-n)*(m-n+1)/(2*n-1.)+(m-nu)*(m-nu+1)/(2*nu-1.)));
+    a_tilde[1] = (n+nu-1.5)*(1.-(2.*n+2.*nu-1.)/(n4*(n4-1.))*((m-n)*(m-n+1.)/(2.*n-1.)+(m-nu)*(m-nu+1.)/(2.*nu-1.)));
     if(qmax == 1)
         return;
 
