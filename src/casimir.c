@@ -198,35 +198,15 @@ int main(int argc, char *argv[])
                 break;
             case 'l':
                 lfac = atof(optarg);
-                if(lfac <= 0)
-                {
-                    fprintf(stderr, "-l must be positive\n");
-                    exit(1);
-                }
                 break;
             case 'p':
                 precision = atof(optarg);
-                if(precision <= 0)
-                {
-                    fprintf(stderr, "--precision must be positive\n");
-                    exit(1);
-                }
                 break;
             case 'g':
                 gamma_ = atof(optarg);
-                if(gamma_ <= 0)
-                {
-                    fprintf(stderr, "--gamma must be positive\n");
-                    exit(1);
-                }
                 break;
             case 'w':
                 omegap = atof(optarg);
-                if(omegap <= 0)
-                {
-                    fprintf(stderr, "--omegap must be positive\n");
-                    exit(1);
-                }
                 break;
             case 'h':
                 usage(stdout);
@@ -254,32 +234,57 @@ int main(int argc, char *argv[])
     {
         if(lfac <= 0)
         {
-            fprintf(stderr, "--lfac must be positive\n\n");
+            fprintf(stderr, "wrong argument for -l, --lscale: lscale must be positive\n\n");
+            usage(stderr);
+            exit(1);
+        }
+        if(lmax < 1)
+        {
+            fprintf(stderr, "wrong argument for -L: lmax must be positive\n\n");
             usage(stderr);
             exit(1);
         }
         if(precision <= 0)
         {
-            fprintf(stderr, "--precision must be positive\n\n");
+            fprintf(stderr, "wrong argument for -p, --precision: precision must be positive\n\n");
             usage(stderr);
             exit(1);
         }
         if(lLbyR[0] <= 0 || lLbyR[1] <= 0)
         {
-            fprintf(stderr, "-x must be positive; LbyR > 0\n\n");
+            fprintf(stderr, "wrong argument for -x: x=L/R must be positive\n\n");
             usage(stderr);
             exit(1);
         }
         if(lT[0] <= 0)
         {
-            fprintf(stderr, "positive value for -T required\n\n");
+            fprintf(stderr, "wrong argument for -T: temperature must be positive\n\n");
+            usage(stderr);
+            exit(1);
+        }
+        if(cores < 1)
+        {
+            fprintf(stderr, "wrong argument for -c: number of cores must be >= 1\n\n");
+            usage(stderr);
+            exit(1);
+        }
+        if(gamma_ <= 0)
+        {
+            fprintf(stderr, "wrong argument for --gamma: gamma must be positive\n\n");
+            usage(stderr);
+            exit(1);
+        }
+        if(omegap <= 0)
+        {
+            fprintf(stderr, "wrong argument for --omegap: omegap must be positive\n\n");
             usage(stderr);
             exit(1);
         }
     }
 
-    /* print information to stdout */
+    if(!quiet_flag)
     {
+        /* print information to stdout */
         /* print command line */
         printf("# %s", argv[0]);
         for(i = 1; i < argc; i++)
