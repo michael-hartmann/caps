@@ -1164,15 +1164,12 @@ double casimir_F_n(casimir_t *self, const int n, int *mmax)
     for(m = 0; m <= lmax; m++)
         values[m] = 0;
 
+    if(self->integration <= 0) 
+        casimir_integrate_perf_init(&int_perf, n*self->T, self->lmax);
+
     for(m = 0; m <= self->lmax; m++)
     {
-        if(self->integration <= 0) 
-            casimir_integrate_perf_init(&int_perf, n*self->T, self->lmax);
-
         values[m] = casimir_logdetD(self,n,m,&int_perf);
-
-        if(self->integration <= 0) 
-            casimir_integrate_perf_free(&int_perf);
 
         if(self->verbose)
             fprintf(stderr, "# n=%d, m=%d, value=%.15g\n", n, m, values[m]);
@@ -1186,6 +1183,9 @@ double casimir_F_n(casimir_t *self, const int n, int *mmax)
         if(values[0] != 0 && fabs(values[m]/sum_n) < precision)
             break;
     }
+
+    if(self->integration <= 0) 
+        casimir_integrate_perf_free(&int_perf);
 
     if(self->verbose)
         fprintf(stderr, "# n=%d, value=%.15g\n", n, sum_n);

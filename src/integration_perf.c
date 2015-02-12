@@ -125,6 +125,8 @@ static void polydplm(edouble pl1[], edouble pl2[], int l1, int l2, int m)
 void casimir_integrate_perf_init(integration_perf_t *self, double nT, int lmax)
 {
     int i,size;
+    int N = lmax+2;
+    size_t elems = (N*N-N)/2+N;
     self->tau = 2*nT;
 
     /* init cache */
@@ -136,14 +138,44 @@ void casimir_integrate_perf_init(integration_perf_t *self, double nT, int lmax)
     for(i = 0; i < size; i++)
         self->cache_I[i] = -INFINITY;
 
-    self->cache_gaunt = xmalloc(sizeof(gaunt_cache_t));
-    cache_gaunt_init(self->cache_gaunt, lmax);
+    self->cache = NULL;
+    self->signs = NULL;
+    self->m     = -1;
+    self->lmax  = lmax;
+
+    self->N = N;
+    self->elems = elems;
+    self->cache = xmalloc(elems*sizeof(edouble *));
+    self->signs = xmalloc(elems*sizeof(sign_t *));
+
+    for(i = 0; i < elems; i++)
+    {
+        self->cache[i] = NULL;
+        self->signs[i] = NULL;
+    }
 }
 
 void casimir_integrate_perf_free(integration_perf_t *self)
 {
-    cache_gaunt_free(self->cache_gaunt);
-    xfree(self->cache_gaunt);
+    int i;
+    for(i = 0; i < self->elems; i++)
+    {
+        if(self->cache[i] != NULL)
+        {
+            xfree(self->cache[i]);
+            self->cache[i] = NULL;
+        }
+        if(self->signs[i] != NULL)
+        {
+            xfree(self->signs[i]);
+            self->signs[i] = NULL;
+        }
+    }
+
+    xfree(self->cache);
+    self->cache = NULL;
+    xfree(self->signs);
+    self->signs = NULL;
 
     xfree(self->cache_I);
     self->cache_I = NULL;
@@ -154,7 +186,6 @@ void casimir_integrate_perf(integration_perf_t *self, int l1, int l2, int m, cas
 {
     edouble tau = self->tau;
     edouble lnLambda = casimir_lnLambda(l1, l2, m, NULL);
-    gaunt_cache_t *cache = self->cache_gaunt;
 
     if(m == 0)
     {
@@ -213,19 +244,19 @@ void casimir_integrate_perf(integration_perf_t *self, int l1, int l2, int m, cas
         edouble *sum = xmalloc((qmax_l1pl2p+1)*sizeof(edouble));
 
         sign_t *signs_l1l2;
-        edouble *a_l1l2 = cache_gaunt_get(cache, l1,l2,m, &signs_l1l2);
+        edouble *a_l1l2 = cache_gaunt_get(self, l1,l2,m, &signs_l1l2);
 
         sign_t *signs_l1pl2, *signs_l1ml2, *signs_l1l2p, *signs_l1l2m;
-        edouble *a_l1pl2 = cache_gaunt_get(cache, l1+1,l2,m, &signs_l1pl2);
-        edouble *a_l1ml2 = cache_gaunt_get(cache, l1-1,l2,m, &signs_l1ml2);
-        edouble *a_l1l2p = cache_gaunt_get(cache, l1,l2+1,m, &signs_l1l2p);
-        edouble *a_l1l2m = cache_gaunt_get(cache, l1,l2-1,m, &signs_l1l2m);
+        edouble *a_l1pl2 = cache_gaunt_get(self, l1+1,l2,m, &signs_l1pl2);
+        edouble *a_l1ml2 = cache_gaunt_get(self, l1-1,l2,m, &signs_l1ml2);
+        edouble *a_l1l2p = cache_gaunt_get(self, l1,l2+1,m, &signs_l1l2p);
+        edouble *a_l1l2m = cache_gaunt_get(self, l1,l2-1,m, &signs_l1l2m);
 
         sign_t *signs_l1pl2p, *signs_l1pl2m, *signs_l1ml2p, *signs_l1ml2m;
-        edouble *a_l1pl2p = cache_gaunt_get(cache, l1+1,l2+1,m, &signs_l1pl2p);
-        edouble *a_l1pl2m = cache_gaunt_get(cache, l1+1,l2-1,m, &signs_l1pl2m);
-        edouble *a_l1ml2p = cache_gaunt_get(cache, l1-1,l2+1,m, &signs_l1ml2p);
-        edouble *a_l1ml2m = cache_gaunt_get(cache, l1-1,l2-1,m, &signs_l1ml2m);
+        edouble *a_l1pl2p = cache_gaunt_get(self, l1+1,l2+1,m, &signs_l1pl2p);
+        edouble *a_l1pl2m = cache_gaunt_get(self, l1+1,l2-1,m, &signs_l1pl2m);
+        edouble *a_l1ml2p = cache_gaunt_get(self, l1-1,l2+1,m, &signs_l1ml2p);
+        edouble *a_l1ml2m = cache_gaunt_get(self, l1-1,l2-1,m, &signs_l1ml2m);
 
 
         /* A */
@@ -389,60 +420,30 @@ void casimir_integrate_perf(integration_perf_t *self, int l1, int l2, int m, cas
     }
 }
 
-void cache_gaunt_init(gaunt_cache_t *cache, int lmax)
-{
-    int i;
-    int N = lmax+2;
-    size_t elems = (N*N-N)/2+N;
-
-    cache->N = N;
-    cache->elems = elems;
-    cache->cache = xmalloc(elems*sizeof(edouble *));
-    cache->signs = xmalloc(elems*sizeof(sign_t *));
-
-    for(i = 0; i < elems; i++)
-    {
-        cache->cache[i] = NULL;
-        cache->signs[i] = NULL;
-    }
-}
-
-void cache_gaunt_free(gaunt_cache_t *cache)
-{
-    int i;
-    size_t elems = cache->elems;
-
-    for(i = 0; i < elems; i++)
-    {
-        if(cache->cache[i] != NULL)
-        {
-            xfree(cache->cache[i]);
-            cache->cache[i] = NULL;
-        }
-        if(cache->signs[i] != NULL)
-        {
-            xfree(cache->signs[i]);
-            cache->signs[i] = NULL;
-        }
-    }
-
-    if(cache->cache != NULL)
-    {
-        xfree(cache->cache);
-        cache->cache = NULL;
-    }
-    if(cache->signs != NULL)
-    {
-        xfree(cache->signs);
-        cache->signs = NULL;
-    }
-}
-
-edouble *cache_gaunt_get(gaunt_cache_t *cache, int n, int nu, int m, sign_t **signs)
+edouble *cache_gaunt_get(integration_perf_t *self, int n, int nu, int m, sign_t **signs)
 {
     int index;
-    const int N = cache->N;
+    const int N = self->N;
     edouble *v;
+
+    if(self->m != m)
+    {
+        int i;
+        for(i = 0; i < self->elems; i++)
+        {
+            if(self->cache[i] != NULL)
+            {
+                xfree(self->cache[i]);
+                self->cache[i] = NULL;
+            }
+            if(self->signs[i] != NULL)
+            {
+                xfree(self->signs[i]);
+                self->signs[i] = NULL;
+            }
+        }
+        self->m = m;
+    }
 
     #define INDEX1(n,nu) ((n)*(N) - ((n)-1)*(((n)-1) + 1)/2 + (nu) - (n))
     #define INDEX2(n,nu) ((nu)*(N) - ((nu)-1)*(((nu)-1) + 1)/2 + (n) - (nu))
@@ -452,7 +453,7 @@ edouble *cache_gaunt_get(gaunt_cache_t *cache, int n, int nu, int m, sign_t **si
     else
         index = INDEX2(n,nu);
 
-    v = cache->cache[index];
+    v = self->cache[index];
     if(v == NULL)
     {
         int i;
@@ -465,34 +466,34 @@ edouble *cache_gaunt_get(gaunt_cache_t *cache, int n, int nu, int m, sign_t **si
             for(q = 0; q < n-3; q++)
             {
                 int index_new = INDEX2(n-3,q);
-                if(cache->cache[index_new] != NULL)
+                if(self->cache[index_new] != NULL)
                 {
-                    xfree(cache->cache[index_new]);
-                    cache->cache[index_new] = NULL;
+                    xfree(self->cache[index_new]);
+                    self->cache[index_new] = NULL;
                 }
-                if(cache->cache[index_new] != NULL)
+                if(self->cache[index_new] != NULL)
                 {
-                    xfree(cache->cache[index_new]);
-                    cache->cache[index_new] = NULL;
+                    xfree(self->cache[index_new]);
+                    self->cache[index_new] = NULL;
                 }
             }
         }
 
-        cache->cache[index] = xmalloc(elems*sizeof(edouble));
-        cache->signs[index] = xmalloc(elems*sizeof(sign_t));
-        gaunt(n, nu, m, cache->cache[index]);
+        self->cache[index] = xmalloc(elems*sizeof(edouble));
+        self->signs[index] = xmalloc(elems*sizeof(sign_t));
+        gaunt(n, nu, m, self->cache[index]);
         for(i = 0; i < elems; i++)
         {
-            cache->signs[index][i] = copysignq(1, cache->cache[index][i]);
-            cache->cache[index][i] = logq(fabsq(cache->cache[index][i]));
+            self->signs[index][i] = copysignq(1, self->cache[index][i]);
+            self->cache[index][i] = logq(fabsq(self->cache[index][i]));
         }
 
-        *signs = cache->signs[index];
-        return cache->cache[index];
+        *signs = self->signs[index];
+        return self->cache[index];
     }
     else
     {
-        *signs = cache->signs[index];
+        *signs = self->signs[index];
         return v;
     }
 }
