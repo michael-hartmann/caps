@@ -447,15 +447,13 @@ void cache_gaunt_init(gaunt_cache_t *cache, int lmax)
     int i;
     int N = lmax+2;
     size_t elems = (N*N-N)/2+N;
-    size_t size = elems*sizeof(edouble *);
 
     cache->N = N;
     cache->elems = elems;
-    cache->size  = size;
-    cache->max_size = -1;
-    cache->cache = xmalloc(size*sizeof(edouble *));
+    cache->cache = xmalloc(elems*sizeof(edouble *));
+    cache->signs = xmalloc(elems*sizeof(sign_t *));
 
-    for(i = 0; i < size; i++)
+    for(i = 0; i < elems; i++)
         cache->cache[i] = NULL;
 }
 
@@ -468,7 +466,16 @@ void cache_gaunt_free(gaunt_cache_t *cache)
         if(cache->cache[i] != NULL)
             xfree(cache->cache[i]);
 
-    xfree(cache->cache);
+    if(cache->cache != NULL)
+    {
+        xfree(cache->cache);
+        cache->cache = NULL;
+    }
+    if(cache->signs != NULL)
+    {
+        xfree(cache->signs);
+        cache->signs = NULL;
+    }
 }
 
 edouble *cache_gaunt_get(gaunt_cache_t *cache, int n, int nu, int m)
@@ -489,7 +496,7 @@ edouble *cache_gaunt_get(gaunt_cache_t *cache, int n, int nu, int m)
     /* this could be improved */
     if(v == NULL)
     {
-        size_t size = (MAX(0,gaunt_qmax(n,nu,m))+1)*sizeof(edouble);
+        size_t elems = MAX(0,gaunt_qmax(n,nu,m))+1;
 
         if(n > 3)
         {
@@ -505,9 +512,7 @@ edouble *cache_gaunt_get(gaunt_cache_t *cache, int n, int nu, int m)
             }
         }
 
-
-        v = xmalloc(size);
-        cache->size += size;
+        v = xmalloc(elems*sizeof(edouble));
         gaunt(n, nu, m, v);
         cache->cache[index] = v;
     }

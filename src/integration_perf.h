@@ -2,12 +2,12 @@
 #define INTEGRATION_PERF_H
 
 #include "edouble.h"
+#include "libcasimir.h"
 
 typedef struct {
     edouble **cache;
+    sign_t **signs;
     int N,elems;
-    size_t size;
-    size_t max_size;
 } gaunt_cache_t;
 
 typedef struct {
