@@ -5,7 +5,9 @@
 
 typedef struct {
     edouble **cache;
-    int N,size;
+    int N,elems;
+    size_t size;
+    size_t max_size;
 } gaunt_cache_t;
 
 typedef struct {
