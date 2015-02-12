@@ -454,7 +454,10 @@ void cache_gaunt_init(gaunt_cache_t *cache, int lmax)
     cache->signs = xmalloc(elems*sizeof(sign_t *));
 
     for(i = 0; i < elems; i++)
+    {
         cache->cache[i] = NULL;
+        cache->signs[i] = NULL;
+    }
 }
 
 void cache_gaunt_free(gaunt_cache_t *cache)
@@ -463,8 +466,18 @@ void cache_gaunt_free(gaunt_cache_t *cache)
     size_t elems = cache->elems;
 
     for(i = 0; i < elems; i++)
+    {
         if(cache->cache[i] != NULL)
+        {
             xfree(cache->cache[i]);
+            cache->cache[i] = NULL;
+        }
+        if(cache->signs[i] != NULL)
+        {
+            xfree(cache->signs[i]);
+            cache->signs[i] = NULL;
+        }
+    }
 
     if(cache->cache != NULL)
     {
@@ -484,7 +497,7 @@ edouble *cache_gaunt_get(gaunt_cache_t *cache, int n, int nu, int m)
     const int N = cache->N;
     edouble *v;
 
-    #define INDEX1(n,nu) (n*N - ((n)-1)*(((n)-1) + 1)/2 + (nu) - (n))
+    #define INDEX1(n,nu) ((n)*(N) - ((n)-1)*(((n)-1) + 1)/2 + (nu) - (n))
     #define INDEX2(n,nu) ((nu)*(N) - ((nu)-1)*(((nu)-1) + 1)/2 + (n) - (nu))
 
     if(n <= nu)
@@ -493,11 +506,11 @@ edouble *cache_gaunt_get(gaunt_cache_t *cache, int n, int nu, int m)
         index = INDEX2(n,nu);
 
     v = cache->cache[index];
-    /* this could be improved */
     if(v == NULL)
     {
         size_t elems = MAX(0,gaunt_qmax(n,nu,m))+1;
 
+        /* this could be improved */
         if(n > 3)
         {
             int q;
@@ -509,13 +522,18 @@ edouble *cache_gaunt_get(gaunt_cache_t *cache, int n, int nu, int m)
                     xfree(cache->cache[index_new]);
                     cache->cache[index_new] = NULL;
                 }
+                if(cache->cache[index_new] != NULL)
+                {
+                    xfree(cache->cache[index_new]);
+                    cache->cache[index_new] = NULL;
+                }
             }
         }
 
-        v = xmalloc(elems*sizeof(edouble));
-        gaunt(n, nu, m, v);
-        cache->cache[index] = v;
+        cache->cache[index] = xmalloc(elems*sizeof(edouble));
+        gaunt(n, nu, m, cache->cache[index]);
+        return cache->cache[index];
     }
-
-    return v;
+    else
+        return v;
 }
