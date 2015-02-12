@@ -1160,15 +1160,19 @@ double casimir_F_n(casimir_t *self, const int n, int *mmax)
     integration_perf_t int_perf;
 
     /* perfect reflectors */
-    if(self->integration <= 0) 
-        casimir_integrate_perf_init(&int_perf, n*self->T, self->lmax);
 
     for(m = 0; m <= lmax; m++)
         values[m] = 0;
 
     for(m = 0; m <= self->lmax; m++)
     {
+        if(self->integration <= 0) 
+            casimir_integrate_perf_init(&int_perf, n*self->T, self->lmax);
+
         values[m] = casimir_logdetD(self,n,m,&int_perf);
+
+        if(self->integration <= 0) 
+            casimir_integrate_perf_free(&int_perf);
 
         if(self->verbose)
             fprintf(stderr, "# n=%d, m=%d, value=%.15g\n", n, m, values[m]);
@@ -1188,9 +1192,6 @@ double casimir_F_n(casimir_t *self, const int n, int *mmax)
 
     if(mmax != NULL)
         *mmax = m;
-
-    if(self->integration <= 0) 
-        casimir_integrate_perf_free(&int_perf);
 
     return sum_n;
 }
@@ -1357,7 +1358,6 @@ double casimir_logdetD(casimir_t *self, int n, int m, void *integration_obj)
     int min,max,dim,l1,l2;
     double logdet = 0;
     double nTRbyScriptL = n*self->T*self->RbyScriptL;
-    gaunt_cache_t gaunt_cache;
 
     min = MAX(m,1);
     max = self->lmax;
@@ -1377,9 +1377,6 @@ double casimir_logdetD(casimir_t *self, int n, int m, void *integration_obj)
 
         return logdet_EE + logdet_MM;
     }
-
-    if(self->integration <= 0)
-        cache_gaunt_init(&gaunt_cache, self->lmax);
 
     matrix_edouble_t *M = matrix_edouble_alloc(2*dim);
 
@@ -1411,7 +1408,7 @@ double casimir_logdetD(casimir_t *self, int n, int m, void *integration_obj)
             if(self->integration > 0)
                 casimir_integrate_drude(self, &cint, l1, l2, m, n, self->T);
             else
-                casimir_integrate_perf(integration_obj, l1, l2, m, &cint, &gaunt_cache);
+                casimir_integrate_perf(integration_obj, l1, l2, m, &cint);
 
             /* EE */
             matrix_set(M, i,j, Delta_ij -             sign_al1*( cint.signA_TE*expq(ln_al1+cint.lnA_TE) + cint.signB_TM*expq(ln_al1+cint.lnB_TM) ));
@@ -1433,10 +1430,6 @@ double casimir_logdetD(casimir_t *self, int n, int m, void *integration_obj)
             }
         }
     }
-
-    /* free gaunt cache */
-    if(self->integration <= 0)
-        cache_gaunt_free(&gaunt_cache);
 
     if(m == 0)
     {

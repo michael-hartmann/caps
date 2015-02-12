@@ -20,7 +20,7 @@ typedef struct {
 
 void casimir_integrate_perf_init(integration_perf_t *self, double nT, int lmax);
 void casimir_integrate_perf_free(integration_perf_t *self);
-void casimir_integrate_perf(integration_perf_t *self, int l1, int l2, int m, casimir_integrals_t *cint, gaunt_cache_t *cache);
+void casimir_integrate_perf(integration_perf_t *self, int l1, int l2, int m, casimir_integrals_t *cint);
 
 void cache_gaunt_init(gaunt_cache_t *cache, int lmax);
 void cache_gaunt_free(gaunt_cache_t *cache);

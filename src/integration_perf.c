@@ -150,10 +150,11 @@ void casimir_integrate_perf_free(integration_perf_t *self)
 }
 
 /* TODO: m = 0, check signs! */
-void casimir_integrate_perf(integration_perf_t *self, int l1, int l2, int m, casimir_integrals_t *cint, gaunt_cache_t *cache)
+void casimir_integrate_perf(integration_perf_t *self, int l1, int l2, int m, casimir_integrals_t *cint)
 {
     edouble tau = self->tau;
     edouble lnLambda = casimir_lnLambda(l1, l2, m, NULL);
+    gaunt_cache_t *cache = self->cache_gaunt;
 
     if(m == 0)
     {
@@ -209,64 +210,20 @@ void casimir_integrate_perf(integration_perf_t *self, int l1, int l2, int m, cas
         const int qmax_l1ml2p = gaunt_qmax(l1-1,l2+1,m);
         const int qmax_l1ml2m = gaunt_qmax(l1-1,l2-1,m);
 
-        edouble *a_l1l2 = NULL, *a_l1pl2 = NULL, *a_l1ml2 = NULL, *a_l1l2p = NULL, *a_l1l2m = NULL, *a_l1pl2p = NULL;
-        edouble *a_l1pl2m = NULL, *a_l1ml2p = NULL, *a_l1ml2m = NULL;
         edouble *sum;
         sign_t *signs_sum;
 
-        if(cache == NULL)
-        {
-            /* reserve space for gaunt coefficients on stack */
-            a_l1l2 = alloca(MAX(1,qmax_l1l2+1)*sizeof(edouble));
-            a_l1ml2 = alloca(MAX(1,qmax_l1ml2+1)*sizeof(edouble));
-            a_l1l2m = alloca(MAX(1,qmax_l1l2m+1)*sizeof(edouble));
-            a_l1ml2m = alloca(MAX(1,qmax_l1ml2m+1)*sizeof(edouble));
+        edouble *a_l1l2 = cache_gaunt_get(cache, l1,l2,m);
 
-            /* calculate Gaunt coefficients */
-            gaunt(l1, l2,  m, a_l1l2);
+        edouble *a_l1pl2 = cache_gaunt_get(cache, l1+1,l2,m);
+        edouble *a_l1ml2 = cache_gaunt_get(cache, l1-1,l2,m);
+        edouble *a_l1l2p = cache_gaunt_get(cache, l1,l2+1,m);
+        edouble *a_l1l2m = cache_gaunt_get(cache, l1,l2-1,m);
 
-            gaunt(l1-1, l2,  m, a_l1ml2);
-            gaunt(l1,   l2-1,m, a_l1l2m);
-            gaunt(l1-1, l2-1,m, a_l1ml2m);
-
-            if((l1+1) >= m)
-            {
-                a_l1pl2 = alloca(MAX(1,qmax_l1pl2+1)*sizeof(edouble));
-                a_l1pl2m = alloca(MAX(1,qmax_l1pl2m+1)*sizeof(edouble));
-
-                gaunt(l1+1, l2,  m, a_l1pl2);
-                gaunt(l1+1, l2-1,m, a_l1pl2m);
-            }
-
-            if((l2+1) >= m)
-            {
-                a_l1l2p = alloca(MAX(1,qmax_l1l2p+1)*sizeof(edouble));
-                a_l1ml2p = alloca(MAX(1,qmax_l1ml2p+1)*sizeof(edouble));
-
-                gaunt(l1,   l2+1,m, a_l1l2p);
-                gaunt(l1-1, l2+1,m, a_l1ml2p);
-            }
-
-            if((l1+1) >= m && (l2+1) >= m)
-            {
-                a_l1pl2p = alloca(MAX(1,qmax_l1pl2p+1)*sizeof(edouble));
-                gaunt(l1+1, l2+1, m, a_l1pl2p);
-            }
-        }
-        else
-        {
-            a_l1l2 = cache_gaunt_get(cache, l1,l2,m);
-
-            a_l1pl2 = cache_gaunt_get(cache, l1+1,l2,m);
-            a_l1ml2 = cache_gaunt_get(cache, l1-1,l2,m);
-            a_l1l2p = cache_gaunt_get(cache, l1,l2+1,m);
-            a_l1l2m = cache_gaunt_get(cache, l1,l2-1,m);
-
-            a_l1pl2p = cache_gaunt_get(cache, l1+1,l2+1,m);
-            a_l1pl2m = cache_gaunt_get(cache, l1+1,l2-1,m);
-            a_l1ml2p = cache_gaunt_get(cache, l1-1,l2+1,m);
-            a_l1ml2m = cache_gaunt_get(cache, l1-1,l2-1,m);
-        }
+        edouble *a_l1pl2p = cache_gaunt_get(cache, l1+1,l2+1,m);
+        edouble *a_l1pl2m = cache_gaunt_get(cache, l1+1,l2-1,m);
+        edouble *a_l1ml2p = cache_gaunt_get(cache, l1-1,l2+1,m);
+        edouble *a_l1ml2m = cache_gaunt_get(cache, l1-1,l2-1,m);
 
         sum       = xmalloc((qmax_l1pl2p+1)*sizeof(edouble));
         signs_sum = xmalloc((qmax_l1pl2p+1)*sizeof(sign_t));
