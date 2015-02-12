@@ -1434,6 +1434,10 @@ double casimir_logdetD(casimir_t *self, int n, int m, void *integration_obj)
         }
     }
 
+    /* free gaunt cache */
+    if(self->integration <= 0)
+        cache_gaunt_free(&gaunt_cache);
+
     if(m == 0)
     {
         size_t i,j;
@@ -1460,9 +1464,6 @@ double casimir_logdetD(casimir_t *self, int n, int m, void *integration_obj)
         matrix_edouble_balance(M);
         logdet = matrix_edouble_logdet(M);
     }
-
-    if(self->integration <= 0)
-        cache_gaunt_free(&gaunt_cache);
 
     matrix_edouble_free(M);
 
