@@ -339,6 +339,10 @@ edouble inline gaunt_a0(int n,int nu,int m)
     return expq(gaunt_log_a0(n,nu,m));
 }
 
+/* eq. (3) */
+#define alpha(p, n, nu) (((edouble)(pow_2(p)-pow_2(n+nu+1))*(pow_2(p)-pow_2(n-nu)))/(4*pow_2(p)-1))
+
+#if 0
 static edouble inline alpha(const edouble p, const edouble n, const edouble nu);
 
 static edouble inline alpha(const edouble p, const edouble n, const edouble nu)
@@ -349,6 +353,7 @@ static edouble inline alpha(const edouble p, const edouble n, const edouble nu)
 
     return num/denom;
 }
+#endif
 
 /*
 Determine Gaunt coefficients a(m, n, mu, nu, p) for m, n, mu and nu fixed.
