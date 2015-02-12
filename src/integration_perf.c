@@ -210,34 +210,33 @@ void casimir_integrate_perf(integration_perf_t *self, int l1, int l2, int m, cas
         const int qmax_l1ml2p = gaunt_qmax(l1-1,l2+1,m);
         const int qmax_l1ml2m = gaunt_qmax(l1-1,l2-1,m);
 
-        edouble *sum;
-        sign_t *signs_sum;
+        edouble *sum = xmalloc((qmax_l1pl2p+1)*sizeof(edouble));
 
-        edouble *a_l1l2 = cache_gaunt_get(cache, l1,l2,m);
+        sign_t *signs_l1l2;
+        edouble *a_l1l2 = cache_gaunt_get(cache, l1,l2,m, &signs_l1l2);
 
-        edouble *a_l1pl2 = cache_gaunt_get(cache, l1+1,l2,m);
-        edouble *a_l1ml2 = cache_gaunt_get(cache, l1-1,l2,m);
-        edouble *a_l1l2p = cache_gaunt_get(cache, l1,l2+1,m);
-        edouble *a_l1l2m = cache_gaunt_get(cache, l1,l2-1,m);
+        sign_t *signs_l1pl2, *signs_l1ml2, *signs_l1l2p, *signs_l1l2m;
+        edouble *a_l1pl2 = cache_gaunt_get(cache, l1+1,l2,m, &signs_l1pl2);
+        edouble *a_l1ml2 = cache_gaunt_get(cache, l1-1,l2,m, &signs_l1ml2);
+        edouble *a_l1l2p = cache_gaunt_get(cache, l1,l2+1,m, &signs_l1l2p);
+        edouble *a_l1l2m = cache_gaunt_get(cache, l1,l2-1,m, &signs_l1l2m);
 
-        edouble *a_l1pl2p = cache_gaunt_get(cache, l1+1,l2+1,m);
-        edouble *a_l1pl2m = cache_gaunt_get(cache, l1+1,l2-1,m);
-        edouble *a_l1ml2p = cache_gaunt_get(cache, l1-1,l2+1,m);
-        edouble *a_l1ml2m = cache_gaunt_get(cache, l1-1,l2-1,m);
+        sign_t *signs_l1pl2p, *signs_l1pl2m, *signs_l1ml2p, *signs_l1ml2m;
+        edouble *a_l1pl2p = cache_gaunt_get(cache, l1+1,l2+1,m, &signs_l1pl2p);
+        edouble *a_l1pl2m = cache_gaunt_get(cache, l1+1,l2-1,m, &signs_l1pl2m);
+        edouble *a_l1ml2p = cache_gaunt_get(cache, l1-1,l2+1,m, &signs_l1ml2p);
+        edouble *a_l1ml2m = cache_gaunt_get(cache, l1-1,l2-1,m, &signs_l1ml2m);
 
-        sum       = xmalloc((qmax_l1pl2p+1)*sizeof(edouble));
-        signs_sum = xmalloc((qmax_l1pl2p+1)*sizeof(sign_t));
 
         /* A */
         {
             for(q = 0; q <= qmax_l1l2; q++)
             {
                 nu = l1+l2-2*q;
-                sum[q]       = logq(fabsq(a_l1l2[q])) + I(self,nu,2*m);
-                signs_sum[q] = copysignq(1,a_l1l2[q]);
+                sum[q] = a_l1l2[q] + I(self,nu,2*m);
             }
 
-            log_A = gaunt_log_a0(l1,l2,m)+logadd_ms(sum, signs_sum, qmax_l1l2+1, &sign_A);
+            log_A = gaunt_log_a0(l1,l2,m)+logadd_ms(sum, signs_l1l2, qmax_l1l2+1, &sign_A);
         }
 
         /* B */
@@ -250,10 +249,9 @@ void casimir_integrate_perf(integration_perf_t *self, int l1, int l2, int m, cas
                 for(q = 0; q <= qmax_l1ml2m; q++)
                 {
                     nu = l1-1+l2-1-2*q;
-                    sum[q] = logq(fabsq(a_l1ml2m[q]))+I(self,nu,2*m);
-                    signs_sum[q] = copysignq(1, a_l1ml2m[q]);
+                    sum[q] = a_l1ml2m[q]+I(self,nu,2*m);
                 }
-                log_Bn[0]  = gaunt_log_a0(l1-1,l2-1,m) + logadd_ms(sum, signs_sum, qmax_l1ml2m+1, &signs[0]);
+                log_Bn[0]  = gaunt_log_a0(l1-1,l2-1,m) + logadd_ms(sum, signs_l1ml2m, qmax_l1ml2m+1, &signs[0]);
                 log_Bn[0] += logq(l1+1)+logq(l1+m)+logq(l2+1)+logq(l2+m);
             }
 
@@ -262,10 +260,9 @@ void casimir_integrate_perf(integration_perf_t *self, int l1, int l2, int m, cas
                 for(q = 0; q <= qmax_l1ml2p; q++)
                 {
                     nu = l1-1+l2+1-2*q;
-                    sum[q] = logq(fabsq(a_l1ml2p[q]))+ + I(self,nu,2*m);
-                    signs_sum[q] = copysignq(1, a_l1ml2p[q]);
+                    sum[q] = a_l1ml2p[q] + I(self,nu,2*m);
                 }
-                log_Bn[1]  = gaunt_log_a0(l1-1,l2+1,m) + logadd_ms(sum, signs_sum, qmax_l1ml2p+1, &signs[1]);
+                log_Bn[1]  = gaunt_log_a0(l1-1,l2+1,m) + logadd_ms(sum, signs_l1ml2p, qmax_l1ml2p+1, &signs[1]);
                 log_Bn[1] += logq(l1+1)+logq(l1+m)+logq(l2)+logq(l2-m+1);
                 signs[1] *= -1;
             }
@@ -275,10 +272,9 @@ void casimir_integrate_perf(integration_perf_t *self, int l1, int l2, int m, cas
                 for(q = 0; q <= qmax_l1pl2m; q++)
                 {
                     nu = l1+1+l2-1-2*q;
-                    sum[q] = logq(fabsq(a_l1pl2m[q])) + I(self,nu,2*m);
-                    signs_sum[q] = copysignq(1,a_l1pl2m[q]);
+                    sum[q] = a_l1pl2m[q] + I(self,nu,2*m);
                 }
-                log_Bn[2]  = gaunt_log_a0(l1+1,l2-1,m) + logadd_ms(sum, signs_sum, qmax_l1pl2m+1, &signs[2]);
+                log_Bn[2]  = gaunt_log_a0(l1+1,l2-1,m) + logadd_ms(sum, signs_l1pl2m, qmax_l1pl2m+1, &signs[2]);
                 log_Bn[2] += logq(l1)+logq(l1-m+1)+logq(l2+1)+logq(l2+m);
                 signs[2] *= -1;
             }
@@ -286,10 +282,9 @@ void casimir_integrate_perf(integration_perf_t *self, int l1, int l2, int m, cas
             for(q = 0; q <= qmax_l1pl2p; q++)
             {
                 nu = l1+1+l2+1-2*q;
-                sum[q] = logq(fabsq(a_l1pl2p[q])) + I(self,nu,2*m);
-                signs_sum[q] = copysignq(1,a_l1pl2p[q]);
+                sum[q] = a_l1pl2p[q] + I(self,nu,2*m);
             }
-            log_Bn[3]  = gaunt_log_a0(l1+1,l2+1,m) + logadd_ms(sum, signs_sum, qmax_l1pl2p+1, &signs[3]);
+            log_Bn[3]  = gaunt_log_a0(l1+1,l2+1,m) + logadd_ms(sum, signs_l1pl2p, qmax_l1pl2p+1, &signs[3]);
             log_Bn[3] += logq(l1)+logq(l1-m+1)+logq(l2)+logq(l2-m+1);
 
             log_B = logadd_ms(log_Bn, signs, 4, &sign_B) - logq(2*l1+1) - logq(2*l2+1);
@@ -305,20 +300,18 @@ void casimir_integrate_perf(integration_perf_t *self, int l1, int l2, int m, cas
                 for(q = 0; q <= qmax_l1l2m; q++)
                 {
                     nu = l1+l2-1-2*q;
-                    sum[q]       = logq(fabsq(a_l1l2m[q])) + I(self,nu,2*m);
-                    signs_sum[q] = copysignq(1, a_l1l2m[q]);
+                    sum[q] = a_l1l2m[q] + I(self,nu,2*m);
                 }
-                log_Cn[0]  = gaunt_log_a0(l1,l2-1,m) + logadd_ms(sum, signs_sum, qmax_l1l2m+1, &signs[0]);
+                log_Cn[0]  = gaunt_log_a0(l1,l2-1,m) + logadd_ms(sum, signs_l1l2m, qmax_l1l2m+1, &signs[0]);
                 log_Cn[0] += logq(l2+1)+logq(l2+m);
             }
 
             for(q = 0; q <= qmax_l1l2p; q++)
             {
                 nu = l1+l2+1-2*q;
-                sum[q] = logq(fabsq(a_l1l2p[q])) + I(self,nu,2*m);
-                signs_sum[q] = copysignq(1, a_l1l2p[q]);
+                sum[q] = a_l1l2p[q] + I(self,nu,2*m);
             }
-            log_Cn[1] = gaunt_log_a0(l1,l2+1,m) + logadd_ms(sum, signs_sum, qmax_l1l2p+1, &signs[1]);
+            log_Cn[1] = gaunt_log_a0(l1,l2+1,m) + logadd_ms(sum, signs_l1l2p, qmax_l1l2p+1, &signs[1]);
             log_Cn[1] += logq(l2)+logq(l2-m+1);
             signs[1] *= -1;
 
@@ -335,27 +328,24 @@ void casimir_integrate_perf(integration_perf_t *self, int l1, int l2, int m, cas
                 for(q = 0; q <= qmax_l1ml2; q++)
                 {
                     nu = l1-1+l2-2*q;
-                    sum[q] = logq(fabsq(a_l1ml2[q])) + I(self,nu,2*m);
-                    signs_sum[q] = copysignq(1,a_l1ml2[q]);
+                    sum[q] = a_l1ml2[q] + I(self,nu,2*m);
                 }
-                log_Dn[0]  = gaunt_log_a0(l1-1,l2,m) + logadd_ms(sum, signs_sum, qmax_l1ml2+1, &signs[0]);
+                log_Dn[0]  = gaunt_log_a0(l1-1,l2,m) + logadd_ms(sum, signs_l1ml2, qmax_l1ml2+1, &signs[0]);
                 log_Dn[0] += logq(l1+1)+logq(l1+m);
             }
 
             for(q = 0; q <= qmax_l1pl2; q++)
             {
                 nu = l1+1+l2-2*q;
-                sum[q] = logq(fabsq(a_l1pl2[q])) + I(self,nu,2*m);
-                signs_sum[q] = copysignq(1, a_l1pl2[q]);
+                sum[q] = a_l1pl2[q] + I(self,nu,2*m);
             }
-            log_Dn[1]  = gaunt_log_a0(l1+1,l2,m) + logadd_ms(sum, signs_sum, qmax_l1pl2+1, &signs[1]);
+            log_Dn[1]  = gaunt_log_a0(l1+1,l2,m) + logadd_ms(sum, signs_l1pl2, qmax_l1pl2+1, &signs[1]);
             log_Dn[1] += logq(l1)+logq(l1-m+1);
             signs[1] *= -1;
 
             log_D = logadd_ms(log_Dn, signs, 2, &sign_D) - logq(2*l1+1);
         }
 
-        xfree(signs_sum);
         xfree(sum);
 
 
@@ -448,7 +438,7 @@ void cache_gaunt_free(gaunt_cache_t *cache)
     }
 }
 
-edouble *cache_gaunt_get(gaunt_cache_t *cache, int n, int nu, int m)
+edouble *cache_gaunt_get(gaunt_cache_t *cache, int n, int nu, int m, sign_t **signs)
 {
     int index;
     const int N = cache->N;
@@ -465,7 +455,8 @@ edouble *cache_gaunt_get(gaunt_cache_t *cache, int n, int nu, int m)
     v = cache->cache[index];
     if(v == NULL)
     {
-        size_t elems = MAX(0,gaunt_qmax(n,nu,m))+1;
+        int i;
+        int elems = MAX(0,gaunt_qmax(n,nu,m))+1;
 
         /* this could be improved */
         if(n > 3)
@@ -488,9 +479,20 @@ edouble *cache_gaunt_get(gaunt_cache_t *cache, int n, int nu, int m)
         }
 
         cache->cache[index] = xmalloc(elems*sizeof(edouble));
+        cache->signs[index] = xmalloc(elems*sizeof(sign_t));
         gaunt(n, nu, m, cache->cache[index]);
+        for(i = 0; i < elems; i++)
+        {
+            cache->signs[index][i] = copysignq(1, cache->cache[index][i]);
+            cache->cache[index][i] = logq(fabsq(cache->cache[index][i]));
+        }
+
+        *signs = cache->signs[index];
         return cache->cache[index];
     }
     else
+    {
+        *signs = cache->signs[index];
         return v;
+    }
 }

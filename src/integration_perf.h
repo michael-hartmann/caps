@@ -24,6 +24,6 @@ void casimir_integrate_perf(integration_perf_t *self, int l1, int l2, int m, cas
 
 void cache_gaunt_init(gaunt_cache_t *cache, int lmax);
 void cache_gaunt_free(gaunt_cache_t *cache);
-edouble *cache_gaunt_get(gaunt_cache_t *cache, int n, int nu, int m);
+edouble *cache_gaunt_get(gaunt_cache_t *cache, int n, int nu, int m, sign_t **signs);
 
 #endif
