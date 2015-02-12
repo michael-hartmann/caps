@@ -1,3 +1,4 @@
+#include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
@@ -39,17 +40,20 @@ static edouble polyintegrate(edouble p[], int len_p, int offset, edouble tau)
 {
     int k;
     edouble value = 0;
+    edouble max = lgammaq(len_p+offset);
 
     // XXX prevent overflows
     for(k = offset; k < len_p+offset; k++)
-        //value += gamma(k+1)/tau**(k+1)*p[k-offset]
-        value += expq(lgammaq(k+1)-(k+1)*logq(tau))*p[k-offset];
+    {
+        value += expq(lgammaq(k+1)-(k+1)*logq(tau)-max)*p[k-offset];
+    }
 
-    return value;
+    //printf("value=%g\n", (double)logq(fabsq(value)));
+    return value*expq(max);
 }
 
 
-/* evaluete integral I_nu^2m(tau) = exp(-z*tau)/ (z^2+2z) * Plm(nu, 2m, 1+z) */
+/* evaluete integral I_nu^2m(tau) = (-1)^m * exp(-z*tau)/ (z^2+2z) * Plm(nu, 2m, 1+z) */
 static inline edouble I(integration_perf_t *self, int nu, int m2)
 {
     const int m = m2/2;
@@ -57,7 +61,7 @@ static inline edouble I(integration_perf_t *self, int nu, int m2)
     edouble v;
 
     v = self->cache_I[index];
-    if(v == 0)
+    if(isinfq(v))
     {
         edouble tau = self->tau;
 
@@ -67,8 +71,18 @@ static inline edouble I(integration_perf_t *self, int nu, int m2)
         poly2(nu,m2,p2);
         polymult(p1, m, p2, nu+1-m2, p);
 
-        v = MPOW(m)*polyintegrate(p, -m+nu, m-1, tau);
+        v = polyintegrate(p, -m+nu, m-1, tau);
+        assert(v > 0); // XXX
+        v = logq(v);
+        //printf("v=%g\n", (double)v);
         self->cache_I[index] = v;
+
+        #ifndef NDEBUG
+            if(isinfq(v))
+                TERMINATE("I is inf, nu=%d, 2m=%d\n", nu, m2);
+            if(isnanq(v))
+                TERMINATE("I is nan, nu=%d, 2m=%d\n", nu, m2);
+        #endif
     }
 
     return v;
@@ -123,7 +137,7 @@ void casimir_integrate_perf_init(integration_perf_t *self, double nT, int lmax)
     self->cache_I = xmalloc(size*sizeof(edouble));
 
     for(i = 0; i < size; i++)
-        self->cache_I[i] = 0;
+        self->cache_I[i] = -INFINITY;
 
     self->cache_gaunt = xmalloc(sizeof(gaunt_cache_t));
     cache_gaunt_init(self->cache_gaunt, lmax);
@@ -180,7 +194,8 @@ void casimir_integrate_perf(integration_perf_t *self, int l1, int l2, int m, cas
     }
     else
     {
-        int nu,q, sign_A, sign_B, sign_C, sign_D;
+        int nu,q;
+        sign_t sign_A, sign_B, sign_C, sign_D;
         edouble log_m = logq(m);
         edouble log_A,log_B,log_C,log_D;
 
@@ -198,6 +213,8 @@ void casimir_integrate_perf(integration_perf_t *self, int l1, int l2, int m, cas
 
         edouble *a_l1l2, *a_l1pl2, *a_l1ml2, *a_l1l2p, *a_l1l2m, *a_l1pl2p;
         edouble *a_l1pl2m, *a_l1ml2p, *a_l1ml2m;
+        edouble *summ;
+        sign_t *signs_sum;
 
         if(cache == NULL)
         {
@@ -251,151 +268,168 @@ void casimir_integrate_perf(integration_perf_t *self, int l1, int l2, int m, cas
             a_l1ml2m = cache_gaunt_get(cache, l1-1,l2-1,m);
         }
 
+        summ      = xmalloc(qmax_l1pl2p*sizeof(edouble));
+        signs_sum = xmalloc(qmax_l1pl2p*sizeof(sign_t));
 
         /* A */
         {
-            edouble A = 0;
             for(q = 0; q <= qmax_l1l2; q++)
             {
                 nu = l1+l2-2*q;
-                A += a_l1l2[q]*I(self,nu,2*m);
+                summ[q]      = logq(fabsq(a_l1l2[q])) + I(self,nu,2*m);
+                signs_sum[q] = copysignq(1,a_l1l2[q]);
             }
 
-            log_A  = gaunt_log_a0(l1,l2,m)+logq(fabsq(A));
-            sign_A = copysignq(1, A);
+            log_A = gaunt_log_a0(l1,l2,m)+logadd_ms(summ, signs_sum, qmax_l1l2+1, &sign_A);
         }
 
         /* B */
         {
-            edouble B, B1, B2, B3, B4;
+            sign_t signs[4] = {1,1,1,1};
+            edouble sum, log_Bn[4] = { -INFINITY, -INFINITY, -INFINITY, -INFINITY };
 
-            B1 = 0;
             if((l1-1) >= m && (l2-1) >= m)
             {
+                sum = 0;
                 for(q = 0; q <= qmax_l1ml2m; q++)
                 {
                     nu = l1-1+l2-1-2*q;
-                    B1 += a_l1ml2m[q]*I(self,nu,2*m);
+                    sum += a_l1ml2m[q]*expq(I(self,nu,2*m));
                 }
-                B1 *= gaunt_a0(l1-1,l2-1,m);
-                B1 *= (l1+1.)*(l1+m)*(l2+1.)*(l2+m);
+                signs[0] = copysignq(1,sum);
+                log_Bn[0]  = logq(fabsq(sum));
+                log_Bn[0] += gaunt_log_a0(l1-1,l2-1,m);
+                log_Bn[0] += logq(l1+1)+logq(l1+m)+logq(l2+1)+logq(l2+m);
             }
 
-            B2 = 0;
             if((l1-1) >= m)
             {
+                sum = 0;
                 for(q = 0; q <= qmax_l1ml2p; q++)
                 {
                     nu = l1-1+l2+1-2*q;
-                    B2 += a_l1ml2p[q]*I(self,nu,2*m);
-                    //printf("a[%d] = %.15g (%d,%d)\n", q, (double)a_l1ml2m[q],l1-1,l2+1);
+                    sum += a_l1ml2p[q]*expq(I(self,nu,2*m));
                 }
-                B2 *= -gaunt_a0(l1-1,l2+1,m);
-                B2 *= (l1+1.)*(l1+m)*l2*(l2-m+1.);
+                signs[1] = -copysignq(1,sum);
+                log_Bn[1]  = logq(fabsq(sum));
+                log_Bn[1] += gaunt_log_a0(l1-1,l2+1,m);
+                log_Bn[1] += logq(l1+1)+logq(l1+m)+logq(l2)+logq(l2-m+1);
             }
 
-            B3 = 0;
             if((l2-1) >= m)
             {
+                sum = 0;
                 for(q = 0; q <= qmax_l1pl2m; q++)
                 {
                     nu = l1+1+l2-1-2*q;
-                    B3 += a_l1pl2m[q]*I(self,nu,2*m);
+                    sum += a_l1pl2m[q]*expq(I(self,nu,2*m));
                 }
-                B3 *= -gaunt_a0(l1+1,l2-1,m);
-                B3 *= l1*(l1-m+1.)*(l2+1.)*(l2+m);
+                signs[2] = -copysignq(1,sum);
+                log_Bn[2]  = logq(fabsq(sum));
+                log_Bn[2] += gaunt_log_a0(l1+1,l2-1,m);
+                log_Bn[2] += logq(l1)+logq(l1-m+1)+logq(l2+1)+logq(l2+m);
             }
 
-            B4 = 0;
+            sum = 0;
             for(q = 0; q <= qmax_l1pl2p; q++)
             {
                 nu = l1+1+l2+1-2*q;
-                B4 += a_l1pl2p[q]*I(self,nu,2*m);
+                sum += a_l1pl2p[q]*expq(I(self,nu,2*m));
             }
-            B4 *= gaunt_a0(l1+1,l2+1,m);
-            B4 *= l1*(l1-m+1.)*l2*(l2-m+1.);
+            signs[3] = copysignq(1,sum);
+            log_Bn[3]  = logq(fabsq(sum));
+            log_Bn[3] += gaunt_log_a0(l1+1,l2+1,m);
+            log_Bn[3] += logq(l1)+logq(l1-m+1)+logq(l2)+logq(l2-m+1);
 
-            B = B1+B2+B3+B4;
-
-            log_B  = logq(fabsq(B)) - logq(2*l1+1)-logq(2*l2+1);
-            sign_B = copysignq(1,B);
+            log_B = logadd_ms(log_Bn, signs, 4, &sign_B) - logq(2*l1+1) - logq(2*l2+1);
         }
 
         /* C */
         {
-            edouble C,C1,C2;
+            sign_t signs[2] = {1,1};
+            edouble log_Cn[2] = { -INFINITY, -INFINITY };
+            edouble sum;
 
-            C1 = 0;
+            sum = 0;
             if((l2-1) >= m)
             {
                 for(q = 0; q <= qmax_l1l2m; q++)
                 {
                     nu = l1+l2-1-2*q;
-                    C1 += a_l1l2m[q]*I(self,nu,2*m);
+                    sum += a_l1l2m[q]*expq(I(self,nu,2*m));
                 }
-                C1 *= gaunt_a0(l1,l2-1,m);
-                C1 *= (l2+1.)*(l2+m);
+                signs[0] = copysignq(1,sum);
+                log_Cn[0]  = logq(fabsq(sum));
+                log_Cn[0] += gaunt_log_a0(l1,l2-1,m);
+                log_Cn[0] += logq(l2+1)+logq(l2+m);
             }
 
-            C2 = 0;
+            sum = 0;
             for(q = 0; q <= qmax_l1l2p; q++)
             {
                 nu = l1+l2+1-2*q;
-                C2 += a_l1l2p[q]*I(self,nu,2*m);
+                sum += a_l1l2p[q]*expq(I(self,nu,2*m));
             }
-            C2 *= -gaunt_a0(l1,l2+1,m);
-            C2 *= l2*(l2-m+1.);
+            signs[1] = -copysignq(1,sum);
+            log_Cn[1] = logq(fabsq(sum));
+            log_Cn[1] += gaunt_log_a0(l1,l2+1,m);
+            log_Cn[1] += logq(l2)+logq(l2-m+1);
 
-            C = (C1+C2)/(2.*l2+1.);
-            log_C  = logq(fabsq(C));
-            sign_C = copysignq(1,C);
+            log_C = logadd_ms(log_Cn, signs, 2, &sign_C) - logq(2*l2+1);
         }
 
         /* D */
         {
-            edouble D,D1,D2;
+            sign_t signs[2] = {1,1};
+            edouble log_Dn[2] = { -INFINITY, -INFINITY };
+            edouble sum;
 
-            D1 = 0;
+            sum = 0;
             if((l1-1) >= m)
             {
                 for(q = 0; q <= qmax_l1ml2; q++)
                 {
                     nu = l1-1+l2-2*q;
-                    D1 += a_l1ml2[q]*I(self,nu,2*m);
+                    sum += a_l1ml2[q]*expq(I(self,nu,2*m));
                 }
-                D1 *= gaunt_a0(l1-1,l2,m);
-                D1 *= (l1+1.)*(l1+m);
+                signs[0] = copysignq(1,sum);
+                log_Dn[0]  = logq(fabsq(sum));
+                log_Dn[0] += gaunt_log_a0(l1-1,l2,m);
+                log_Dn[0] += logq(l1+1)+logq(l1+m);
             }
 
-            D2 = 0;
+            sum = 0;
             for(q = 0; q <= qmax_l1pl2; q++)
             {
                 nu = l1+1+l2-2*q;
-                D2 += a_l1pl2[q]*I(self,nu,2*m);
+                sum += a_l1pl2[q]*expq(I(self,nu,2*m));
             }
-            D2 *= -gaunt_a0(l1+1,l2,m);
-            D2 *= l1*(l1-m+1.);
+            signs[1] = -copysignq(1,sum);
+            log_Dn[1]  = logq(fabsq(sum));
+            log_Dn[1] += gaunt_log_a0(l1+1,l2,m);
+            log_Dn[1] += logq(l1)+logq(l1-m+1);
 
-            D = (D1+D2)/(2*l1+1);
-            log_D  = logq(fabsq(D));
-            sign_D = copysignq(1,D);
+            log_D = logadd_ms(log_Dn, signs, 2, &sign_D) - logq(2*l1+1);
         }
+
+        xfree(signs_sum);
+        xfree(summ);
 
 
         cint->lnA_TM   = cint->lnA_TE = 2*log_m+lnLambda-tau+log_A;
-        cint->signA_TM = -MPOW(l2+m)*sign_A; /* - because Lambda(l1,l2,m) is negative */
+        cint->signA_TM = -MPOW(l2)*sign_A; /* - because Lambda(l1,l2,m) is negative */
         cint->signA_TE = -cint->signA_TM;
 
         cint->lnB_TM   = cint->lnB_TE = lnLambda-tau+log_B;
-        cint->signB_TM = -MPOW(l2+m+1)*sign_B;
+        cint->signB_TM = -MPOW(l2+1)*sign_B;
         cint->signB_TE = -cint->signB_TM;
 
         cint->lnC_TM   = cint->lnC_TE = log_m+lnLambda-tau+log_C;
-        cint->signC_TM = -MPOW(l2+m)*sign_C;
+        cint->signC_TM = -MPOW(l2)*sign_C;
         cint->signC_TE = -cint->signC_TM;
 
         cint->lnD_TM   = cint->lnD_TE = log_m+lnLambda-tau+log_D;
-        cint->signD_TM = -MPOW(l2+m+1)*sign_D; // XXX ???
+        cint->signD_TM = -MPOW(l2+1)*sign_D; // XXX ???
         cint->signD_TE = -cint->signD_TM;
 
         #ifndef NDEBUG

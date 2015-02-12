@@ -104,14 +104,14 @@ int test_logdet()
 }
 
 
-static double _mie_lna_perf(int l, double arg, int *sign)
+static double _mie_lna_perf(int l, double arg, sign_t *sign)
 {
     casimir_t self;
     casimir_init(&self, 0.5, 2*arg);
     return casimir_lna_perf(&self, l, 1, sign);
 }
 
-static double _mie_lnb_perf(int l, double arg, int *sign)
+static double _mie_lnb_perf(int l, double arg, sign_t *sign)
 {
     double result;
     casimir_t self;
@@ -125,7 +125,7 @@ static double _mie_lnb_perf(int l, double arg, int *sign)
 
 int test_mie(void)
 {
-    int sign;
+    sign_t sign;
     casimir_t self;
     unittest_t test;
     unittest_init(&test, "Mie", "Test Mie functions al,bl for various parameters");
@@ -169,7 +169,7 @@ int test_mie(void)
 int test_mie_drude(void)
 {
     double T, RbyScriptL, omegap, gamma;;
-    int sign_a, sign_b;
+    sign_t sign_a, sign_b;
     double lna, lnb;
     casimir_t casimir;
     unittest_t test;

@@ -5,7 +5,7 @@
 
 int test_Xi(void)
 {
-    int sign;
+    sign_t sign;
     unittest_t test;
     unittest_init(&test, "Xi", "Test Xi function for various parameters");
 

@@ -42,7 +42,7 @@ typedef struct {
 void polymult(edouble p1[], int len_p1, edouble p2[], int len_p2, edouble p[]);
 
 edouble inline logadd_s(const edouble a, const sign_t sign_a, const edouble b, const sign_t sign_b, sign_t *sign);
-edouble inline logadd_ms(const edouble list[], const int signs[], const size_t len, int *sign);
+edouble inline logadd_ms(const edouble list[], const sign_t signs[], const size_t len, sign_t *sign);
 
 edouble inline lbinom(int n, int k);
 

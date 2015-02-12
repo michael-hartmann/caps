@@ -73,12 +73,12 @@ void casimir_integrate_drude(casimir_t *self, casimir_integrals_t *cint, int l1,
     const edouble ln_Lambda = casimir_lnLambda(l1, l2, m, NULL); /* sign: -1 */
     edouble prefactor;
     edouble *ln_ABCD, *lnA_TE, *lnA_TM, *lnB_TE, *lnB_TM, *lnC_TE, *lnC_TM, *lnD_TE, *lnD_TM;
-    int *signs_ABCD, *signs_A, *signs_B, *signs_C, *signs_D;
+    sign_t *signs_ABCD, *signs_A, *signs_B, *signs_C, *signs_D;
     edouble *xk, *ln_wk;
     const int N = gausslaguerre_nodes_weights(self->integration, &xk, &ln_wk);
 
     /* allocate space for signs_A, signs_B, signs_C, signs_D */
-    signs_ABCD = xmalloc(4*N*sizeof(int));
+    signs_ABCD = xmalloc(4*N*sizeof(sign_t));
     signs_A = signs_ABCD;
     signs_B = signs_A+1*N;
     signs_C = signs_A+2*N;
@@ -184,10 +184,10 @@ void casimir_integrate_drude(casimir_t *self, casimir_integrals_t *cint, int l1,
 * This function returns the logarithm of the integral. The sign will be stored
 * in sign.
 */
-double log_polyintegrate(edouble p[], size_t len, int l1, int l2, int m, double tau, int *sign)
+double log_polyintegrate(edouble p[], size_t len, int l1, int l2, int m, double tau, sign_t *sign)
 {
     size_t i;
-    int sign_lnLambda;
+    sign_t sign_lnLambda;
     edouble value = 0;
     double ln_tau = log(tau);
     double lnLambda = casimir_lnLambda(l1, l2, m, &sign_lnLambda);

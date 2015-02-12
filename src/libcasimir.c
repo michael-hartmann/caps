@@ -104,7 +104,7 @@ void casimir_info(casimir_t *self, FILE *stream, const char *prefix)
  * @param [out] sign is set to -1 if sign != NULL
  * @retval log(Lambda(l1,l2,m))
  */
-edouble inline casimir_lnLambda(int l1, int l2, int m, int *sign)
+edouble inline casimir_lnLambda(int l1, int l2, int m, sign_t *sign)
 {
     if(sign != NULL)
         *sign = -1;
@@ -267,7 +267,7 @@ double casimir_T_scaled_to_SI(double T, double ScriptL)
  * @param [out] sign
  * @retval log(Xi(l1,l2,m))
  */
-edouble casimir_lnXi(int l1, int l2, int m, int *sign)
+edouble casimir_lnXi(int l1, int l2, int m, sign_t *sign)
 {
     if(sign != NULL)
         *sign = MPOW(l2);
@@ -704,7 +704,7 @@ void casimir_free(casimir_t *self)
  * @param [out] b0 coefficient \f$b_{\ell,0}^\mathrm{perf}\f$
  * @param [out] sign_b0 sign of \f$b_{\ell,0}^\mathrm{perf}\f$
  */
-void casimir_lnab0(int l, double *a0, int *sign_a0, double *b0, int *sign_b0)
+void casimir_lnab0(int l, double *a0, sign_t *sign_a0, double *b0, sign_t *sign_b0)
 {
     *sign_a0 = MPOW(l);
     *sign_b0 = MPOW(l+1);
@@ -726,7 +726,7 @@ void casimir_lnab0(int l, double *a0, int *sign_a0, double *b0, int *sign_b0)
  * @param [out] sign sign of \f$a_\ell\f$
  * @retval logarithm of Mie coefficient a_l
  */
-double casimir_lna_perf(casimir_t *self, const int l, const int n, int *sign)
+double casimir_lna_perf(casimir_t *self, const int l, const int n, sign_t *sign)
 {
     edouble nominator, denominator, frac, ret;
     edouble lnKlp,lnKlm,lnIlm,lnIlp;
@@ -784,7 +784,7 @@ double casimir_lna_perf(casimir_t *self, const int l, const int n, int *sign)
  * @param [out] sign sign of \f$b_\ell\f$
  * @retval logarithm of Mie coefficient b_l
  */
-double casimir_lnb_perf(casimir_t *self, const int l, const int n, int *sign)
+double casimir_lnb_perf(casimir_t *self, const int l, const int n, sign_t *sign)
 {
     edouble chi = n*self->T*self->RbyScriptL;
     edouble lnInu, lnKnu;
@@ -814,7 +814,7 @@ double casimir_lnb_perf(casimir_t *self, const int l, const int n, int *sign)
  * @param [out] sign_a sign of Mie coefficient \f$a_\ell\f$
  * @param [out] sign_b sign of Mie coefficient \f$b_\ell\f$
  */
-void casimir_lnab(casimir_t *self, const int n_mat, const int l, double *lna, double *lnb, int *sign_a, int *sign_b)
+void casimir_lnab(casimir_t *self, const int n_mat, const int l, double *lna, double *lnb, sign_t *sign_a, sign_t *sign_b)
 { 
     sign_t sign_sla, sign_slb, sign_slc, sign_sld;
     edouble ln_n, ln_sla, ln_slb, ln_slc, ln_sld;
@@ -940,8 +940,8 @@ void casimir_mie_cache_alloc(casimir_t *self, int n)
 
         entry->ln_al   = xmalloc((lmax+1)*sizeof(double));
         entry->ln_bl   = xmalloc((lmax+1)*sizeof(double));
-        entry->sign_al = xmalloc((lmax+1)*sizeof(int));
-        entry->sign_bl = xmalloc((lmax+1)*sizeof(int));
+        entry->sign_al = xmalloc((lmax+1)*sizeof(sign_t));
+        entry->sign_bl = xmalloc((lmax+1)*sizeof(sign_t));
 
         entry->ln_al[0] = entry->ln_bl[0] = 0;
         for(l = 1; l <= lmax; l++)
@@ -983,7 +983,7 @@ void casimir_mie_cache_clean(casimir_t *self)
  * @param [out] ln_b logarithm of b_l
  * @param [out] sign_b sign of b_l
  */
-void casimir_mie_cache_get(casimir_t *self, int l, int n, double *ln_a, int *sign_a, double *ln_b, int *sign_b)
+void casimir_mie_cache_get(casimir_t *self, int l, int n, double *ln_a, sign_t *sign_a, double *ln_b, sign_t *sign_b)
 {
     casimir_mie_cache_entry_t *entry;
     int nmax;
@@ -1314,7 +1314,7 @@ void casimir_logdetD0(casimir_t *self, int m, double *logdet_EE, double *logdet_
         {
             /* i: row of matrix, j: column of matrix */
             const int i = l1-min, j = l2-min;
-            int sign_a0, sign_b0, sign_xi;
+            sign_t sign_a0, sign_b0, sign_xi;
             double lna0, lnb0;
             double lnXiRL = casimir_lnXi(l1,l2,m,&sign_xi)+(2*l1+1)*lnRbyScriptL;
             casimir_lnab0(l1, &lna0, &sign_a0, &lnb0, &sign_b0);
@@ -1393,7 +1393,7 @@ double casimir_logdetD(casimir_t *self, int n, int m, void *integration_obj)
             const int i = l1-min, j = l2-min;
             casimir_integrals_t cint;
             double ln_al1, ln_bl1, ln_al2, ln_bl2;
-            int sign_al1, sign_bl1, sign_al2, sign_bl2;
+            sign_t sign_al1, sign_bl1, sign_al2, sign_bl2;
 
             casimir_mie_cache_get(self, l1, n, &ln_al1, &sign_al1, &ln_bl1, &sign_bl1);
             casimir_mie_cache_get(self, l2, n, &ln_al2, &sign_al2, &ln_bl2, &sign_bl2);

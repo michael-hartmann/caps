@@ -2,12 +2,13 @@
 
 #include "unittest.h"
 #include "sfunc.h"
+#include "libcasimir.h"
 
 #include "test_Plm.h"
 
 int test_Plm()
 {
-    int sign;
+    sign_t sign;
     plm_combination_t comb;
     unittest_t test;
 

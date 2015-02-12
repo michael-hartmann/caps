@@ -87,5 +87,11 @@ int test_integration_perf(void)
     _integrals(100,41,0,2.5,&cint);
     casimir_integrate_perf(&int_perf, 100, 41, 0, &cint, NULL);
 
+    //_integrals(875,875,1,1,&cint);
+    //casimir_integrate_perf(&int_perf, 100, 41, 0, &cint, NULL);
+    // XXX
+
+    //_integrals(877,876,1,1,&cint);
+
     return test_results(&test, stderr);
 }

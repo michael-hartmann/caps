@@ -45,7 +45,7 @@ edouble inline logadd_s(const edouble a, const sign_t sign_a, const edouble b, c
 }
 
 
-edouble inline logadd_ms(const edouble list[], const int signs[], const size_t len, int *sign)
+edouble inline logadd_ms(const edouble list[], const sign_t signs[], const size_t len, sign_t *sign)
 {
     size_t i;
     edouble sum;
