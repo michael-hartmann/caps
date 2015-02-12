@@ -134,7 +134,7 @@ void parse_range(const char param, const char *_optarg, double list[])
 
 int main(int argc, char *argv[])
 {
-    double gamma_ = -1, omegap = -1;
+    double gamma_ = 0, omegap = 0;
     double precision = DEFAULT_PRECISION;
     double lfac      = DEFAULT_LFAC;
     double lT[4]     = { 0,0,0,SCALE_LIN }; /* start, stop, N, lin/log */
@@ -238,7 +238,7 @@ int main(int argc, char *argv[])
             usage(stderr);
             exit(1);
         }
-        if(lmax < 1)
+        if(lmax < 0)
         {
             fprintf(stderr, "wrong argument for -L: lmax must be positive\n\n");
             usage(stderr);
@@ -268,13 +268,13 @@ int main(int argc, char *argv[])
             usage(stderr);
             exit(1);
         }
-        if(gamma_ <= 0)
+        if(gamma_ < 0)
         {
             fprintf(stderr, "wrong argument for --gamma: gamma must be positive\n\n");
             usage(stderr);
             exit(1);
         }
-        if(omegap <= 0)
+        if(omegap < 0)
         {
             fprintf(stderr, "wrong argument for --omegap: omegap must be positive\n\n");
             usage(stderr);
