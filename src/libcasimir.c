@@ -816,7 +816,7 @@ double casimir_lnb_perf(casimir_t *self, const int l, const int n, int *sign)
  */
 void casimir_lnab(casimir_t *self, const int n_mat, const int l, double *lna, double *lnb, int *sign_a, int *sign_b)
 { 
-    int sign_sla, sign_slb, sign_slc, sign_sld;
+    sign_t sign_sla, sign_slb, sign_slc, sign_sld;
     edouble ln_n, ln_sla, ln_slb, ln_slc, ln_sld;
     edouble lnIl, lnKl, lnIlm, lnKlm, lnIl_nchi, lnKl_nchi, lnIlm_nchi, lnKlm_nchi;
     edouble xi = n_mat*self->T;
@@ -824,7 +824,7 @@ void casimir_lnab(casimir_t *self, const int n_mat, const int l, double *lna, do
     edouble ln_chi = logq(xi)+logq(self->RbyScriptL);
     edouble omegap = self->omegap_sphere;
     edouble gamma_ = self->gamma_sphere;
-    int sign_a_num, sign_a_denom, sign_b_num, sign_b_denom;
+    sign_t sign_a_num, sign_a_denom, sign_b_num, sign_b_denom;
 
     if(isinf(omegap))
     {

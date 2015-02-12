@@ -13,6 +13,8 @@
 #define CASIMIR_IDLE 1000
 #define CASIMIR_FACTOR_LMAX 5
 
+typedef char sign_t;
+
 const char *casimir_compile_info(void);
 
 

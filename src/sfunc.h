@@ -4,6 +4,7 @@
 #include <stdlib.h>
 
 #include "edouble.h"
+#include "libcasimir.h"
 
 #define PI     3.141592653589793238462643383279502884197169L
 #define LOG2   0.6931471805599453094172321214581765680755007L
@@ -40,7 +41,7 @@ typedef struct {
 
 void polymult(edouble p1[], int len_p1, edouble p2[], int len_p2, edouble p[]);
 
-edouble inline logadd_s(const edouble a, const int sign_a, const edouble b, const int sign_b, int *sign);
+edouble inline logadd_s(const edouble a, const sign_t sign_a, const edouble b, const sign_t sign_b, sign_t *sign);
 edouble inline logadd_ms(const edouble list[], const int signs[], const size_t len, int *sign);
 
 edouble inline lbinom(int n, int k);
@@ -54,9 +55,9 @@ double logspace(double start, double stop, int N, int i);
 
 edouble ln_doublefact(int n);
 
-edouble plm_lnPlm (int l, int m, edouble x, int *sign);
+edouble plm_lnPlm (int l, int m, edouble x, sign_t *sign);
 edouble plm_Plm   (int l, int m, edouble x);
-edouble plm_lndPlm(int l, int m, edouble x, int *sign);
+edouble plm_lndPlm(int l, int m, edouble x, sign_t *sign);
 edouble plm_dPlm  (int l, int m, edouble x);
 
 void plm_PlmPlm(int l1, int l2, int m, edouble x, plm_combination_t *res);

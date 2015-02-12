@@ -19,7 +19,7 @@ void polymult(edouble p1[], int len_p1, edouble p2[], int len_p2, edouble p[])
             p[i+j] += p1[i]*p2[j];
 }
 
-edouble inline logadd_s(const edouble a, const int sign_a, const edouble b, const int sign_b, int *sign)
+edouble inline logadd_s(const edouble a, const sign_t sign_a, const edouble b, const sign_t sign_b, sign_t *sign)
 {
     if(isinfq(a) && a < 0)
     {
@@ -216,7 +216,7 @@ edouble ln_doublefact(int n)
  */
 
 /* calculate Plm for l=m...l=lmax */
-static inline void _lnplm_array(int lmax, int m, edouble x, edouble lnplm[], int sign[])
+static inline void _lnplm_array(int lmax, int m, edouble x, edouble lnplm[], sign_t sign[])
 {
     int l;
     edouble logx = logq(x);
@@ -246,10 +246,10 @@ static inline void _lnplm_array(int lmax, int m, edouble x, edouble lnplm[], int
 }
 
 /* calculate Plm(x) */
-edouble plm_lnPlm(int l, int m, edouble x, int *sign)
+edouble plm_lnPlm(int l, int m, edouble x, sign_t *sign)
 {
     edouble plm[l-m+1];
-    int  signs[l-m+1];
+    sign_t  signs[l-m+1];
 
     _lnplm_array(l, m, x, plm, signs);
     *sign = signs[l-m];
@@ -259,17 +259,17 @@ edouble plm_lnPlm(int l, int m, edouble x, int *sign)
 
 edouble plm_Plm(int l, int m, edouble x)
 {
-    int sign;
+    sign_t sign;
     edouble value = plm_lnPlm(l, m, x, &sign);
     return sign*expq(value);
 }
 
 /* calculate dPlm(x) */
-edouble plm_lndPlm(int l, int m, edouble x, int *sign)
+edouble plm_lndPlm(int l, int m, edouble x, sign_t *sign)
 {
     const int lmax = l+1;
     edouble plm[lmax-m+1];
-    int signs[lmax-m+1];
+    sign_t signs[lmax-m+1];
 
     _lnplm_array(lmax, m, x, plm, signs);
 
@@ -279,7 +279,7 @@ edouble plm_lndPlm(int l, int m, edouble x, int *sign)
 
 edouble plm_dPlm(int l, int m, edouble x)
 {
-    int sign;
+    sign_t sign;
     edouble value = plm_lndPlm(l, m, x, &sign);
     return sign*expq(value);
 }
@@ -288,12 +288,12 @@ void plm_PlmPlm(int l1, int l2, int m, edouble x, plm_combination_t *res)
 {
     const int lmax = MAX(l1,l2)+1;
     edouble lnPlm[lmax-m+1];
-    int signs[lmax-m+1];
+    sign_t signs[lmax-m+1];
     edouble logx = logq(x);
     edouble logx2m1 = logq(pow_2(x)-1);
     edouble lnPl1m, lnPl2m, lndPl1m, lndPl2m;
-    int sign_Pl1m, sign_Pl2m, sign_dPl1m, sign_dPl2m;
-    int common_sign = MPOW(m%2);
+    sign_t sign_Pl1m, sign_Pl2m, sign_dPl1m, sign_dPl2m;
+    sign_t common_sign = MPOW(m%2);
 
     _lnplm_array(lmax, m, x, lnPlm, signs);
 
