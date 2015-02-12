@@ -170,6 +170,13 @@ void casimir_integrate_perf(integration_perf_t *self, int l1, int l2, int m, cas
         cint->signA_TM = cint->signA_TE = +1;
         cint->signC_TM = cint->signC_TE = +1;
         cint->signD_TM = cint->signD_TE = +1;
+
+        #ifndef NDEBUG
+            if(isinfq(cint->lnB_TM))
+                TERMINATE("lnB is inf, l1=%d,l2=%d,m=%d,tau=%g", l1,l2,m,(double)tau);
+            if(isnanq(cint->lnB_TM))
+                TERMINATE("lnB is nan, l1=%d,l2=%d,m=%d,tau=%g", l1,l2,m,(double)tau);
+        #endif
     }
     else
     {
@@ -390,6 +397,28 @@ void casimir_integrate_perf(integration_perf_t *self, int l1, int l2, int m, cas
         cint->lnD_TM   = cint->lnD_TE = log_m+lnLambda-tau+log_D;
         cint->signD_TM = -MPOW(l2+m+1)*sign_D; // XXX ???
         cint->signD_TE = -cint->signD_TM;
+
+        #ifndef NDEBUG
+            if(isinfq(cint->lnA_TM))
+                TERMINATE("lnA is inf, l1=%d,l2=%d,m=%d,tau=%g", l1,l2,m,(double)tau);
+            if(isnanq(cint->lnA_TM))
+                TERMINATE("lnA is nan, l1=%d,l2=%d,m=%d,tau=%g", l1,l2,m,(double)tau);
+
+            if(isinfq(cint->lnB_TM))
+                TERMINATE("lnB is inf, l1=%d,l2=%d,m=%d,tau=%g", l1,l2,m,(double)tau);
+            if(isnanq(cint->lnB_TM))
+                TERMINATE("lnB is nan, l1=%d,l2=%d,m=%d,tau=%g", l1,l2,m,(double)tau);
+
+            if(isinfq(cint->lnC_TM))
+                TERMINATE("lnC is inf, l1=%d,l2=%d,m=%d,tau=%g", l1,l2,m,(double)tau);
+            if(isnanq(cint->lnC_TM))
+                TERMINATE("lnC is nan, l1=%d,l2=%d,m=%d,tau=%g", l1,l2,m,(double)tau);
+
+            if(isinfq(cint->lnD_TM))
+                TERMINATE("lnD is inf, l1=%d,l2=%d,m=%d,tau=%g", l1,l2,m,(double)tau);
+            if(isnanq(cint->lnD_TM))
+                TERMINATE("lnD is nan, l1=%d,l2=%d,m=%d,tau=%g", l1,l2,m,(double)tau);
+        #endif
     }
 }
 
