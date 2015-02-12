@@ -377,6 +377,9 @@ void gaunt(const int n, const int nu, const int m, edouble a_tilde[])
     /* eq. (28) */
     const int Ap = -2*m*(n-nu)*(n+nu+1);
 
+    if(qmax < 0)
+        return;
+
     a_tilde[0] = 1;
     if(qmax == 0)
         return;
