@@ -1,7 +1,11 @@
 #ifndef __UTILS_H
 #define __UTILS_H
 
-#define TERMINATE(...) do { fprintf(stderr, "fatal error: "); fprintf(stderr, __VA_ARGS__); fprintf(stderr, " (%s:%d)\n", __FILE__, __LINE__); exit(1); } while(0);
+#ifndef NDEBUG
+#define TERMINATE(cond, ...) if(cond) { fprintf(stderr, "fatal error: "); fprintf(stderr, __VA_ARGS__); fprintf(stderr, " (%s:%d)\n", __FILE__, __LINE__); exit(1); }
+#else
+#define TERMINATE(cond, ...)
+#endif
 
 double now(void);
 
