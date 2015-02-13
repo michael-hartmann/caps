@@ -19,14 +19,28 @@ void polymult(edouble p1[], int len_p1, edouble p2[], int len_p2, edouble p[])
             p[i+j] += p1[i]*p2[j];
 }
 
+edouble inline logadd(const edouble a, const edouble b)
+{
+    if(isinf(a) && a < 0)
+        return b;
+    else if(isinf(b) && b < 0)
+        return a;
+
+    if(a > b)
+        return a + log1pq(expq(b-a));
+    else
+        return b + log1pq(expq(a-b));
+}
+
+
 edouble inline logadd_s(const edouble a, const sign_t sign_a, const edouble b, const sign_t sign_b, sign_t *sign)
 {
-    if(isinfq(a) && a < 0)
+    if(isinf(a) && a < 0)
     {
         *sign = sign_b;
         return b;
     }
-    else if(isinfq(b) && b < 0)
+    else if(isinf(b) && b < 0)
     {
         *sign = sign_a;
         return a;
@@ -42,6 +56,24 @@ edouble inline logadd_s(const edouble a, const sign_t sign_a, const edouble b, c
         *sign = sign_b;
         return b + log1pq(sign_a*sign_b*expq(a-b));
     }
+}
+
+
+edouble inline logadd_m(const edouble list[], const size_t len)
+{
+    size_t i;
+    edouble sum;
+    edouble max = list[0];
+
+    for(i = 1; i < len; i++)
+        if(list[i] > max)
+            max = list[i];
+
+    sum = expq(list[0]-max);
+    for(i = 1; i < len; i++)
+        sum += expq(list[i]-max);
+
+    return max + logq(fabsq(sum));
 }
 
 
@@ -98,7 +130,7 @@ void bessel_lnInuKnu(int nu, const edouble x, edouble *lnInu_p, edouble *lnKnu_p
             lnKnu  = prefactor+logq(lnKnu);
         }
 
-        if(isnanq(lnKnup) || isinfq(lnKnup))
+        if(isnan(lnKnup) || isinf(lnKnup))
         {
             /* so, we couldn't calculate lnKnup and lnKnu. Maybe we can at
              * least use the asymptotic behaviour for small values.
