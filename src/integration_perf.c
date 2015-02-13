@@ -60,7 +60,7 @@ static inline edouble I(integration_perf_t *self, int nu, int m2)
     edouble v;
 
     v = self->cache_I[index];
-    if(isinfq(v))
+    if(isinf(v))
     {
         edouble tau = self->tau;
 
@@ -74,12 +74,8 @@ static inline edouble I(integration_perf_t *self, int nu, int m2)
         //printf("v=%g\n", (double)v);
         self->cache_I[index] = v;
 
-        #ifndef NDEBUG
-            if(isinfq(v))
-                TERMINATE("I is inf, nu=%d, 2m=%d\n", nu, m2);
-            if(isnanq(v))
-                TERMINATE("I is nan, nu=%d, 2m=%d\n", nu, m2);
-        #endif
+        TERMINATE(isinf(v), "I is inf, nu=%d, 2m=%d\n", nu, m2);
+        TERMINATE(isnan(v), "I is nan, nu=%d, 2m=%d\n", nu, m2);
     }
 
     return v;
@@ -215,12 +211,8 @@ void casimir_integrate_perf(integration_perf_t *self, int l1, int l2, int m, cas
         cint->signC_TM = cint->signC_TE = +1;
         cint->signD_TM = cint->signD_TE = +1;
 
-        #ifndef NDEBUG
-            if(isinfq(cint->lnB_TM))
-                TERMINATE("lnB is inf, l1=%d,l2=%d,m=%d,tau=%g", l1,l2,m,(double)tau);
-            if(isnanq(cint->lnB_TM))
-                TERMINATE("lnB is nan, l1=%d,l2=%d,m=%d,tau=%g", l1,l2,m,(double)tau);
-        #endif
+        TERMINATE(isinf(cint->lnB_TM), "lnB is inf, l1=%d,l2=%d,m=%d,tau=%g", l1,l2,m,(double)tau);
+        TERMINATE(isnan(cint->lnB_TM), "lnB is nan, l1=%d,l2=%d,m=%d,tau=%g", l1,l2,m,(double)tau);
     }
     else
     {
@@ -396,27 +388,17 @@ void casimir_integrate_perf(integration_perf_t *self, int l1, int l2, int m, cas
         cint->signD_TM = -MPOW(l2+1)*sign_D;
         cint->signD_TE = -cint->signD_TM;
 
-        #ifndef NDEBUG
-            if(isinfq(cint->lnA_TM))
-                TERMINATE("lnA is inf, l1=%d,l2=%d,m=%d,tau=%g", l1,l2,m,(double)tau);
-            if(isnanq(cint->lnA_TM))
-                TERMINATE("lnA is nan, l1=%d,l2=%d,m=%d,tau=%g", l1,l2,m,(double)tau);
+        TERMINATE(isinf(cint->lnA_TM), "lnA is inf, l1=%d,l2=%d,m=%d,tau=%g", l1,l2,m,(double)tau);
+        TERMINATE(isnan(cint->lnA_TM), "lnA is nan, l1=%d,l2=%d,m=%d,tau=%g", l1,l2,m,(double)tau);
 
-            if(isinfq(cint->lnB_TM))
-                TERMINATE("lnB is inf, l1=%d,l2=%d,m=%d,tau=%g", l1,l2,m,(double)tau);
-            if(isnanq(cint->lnB_TM))
-                TERMINATE("lnB is nan, l1=%d,l2=%d,m=%d,tau=%g", l1,l2,m,(double)tau);
+        TERMINATE(isinf(cint->lnB_TM), "lnB is inf, l1=%d,l2=%d,m=%d,tau=%g", l1,l2,m,(double)tau);
+        TERMINATE(isnan(cint->lnB_TM), "lnB is nan, l1=%d,l2=%d,m=%d,tau=%g", l1,l2,m,(double)tau);
 
-            if(isinfq(cint->lnC_TM))
-                TERMINATE("lnC is inf, l1=%d,l2=%d,m=%d,tau=%g", l1,l2,m,(double)tau);
-            if(isnanq(cint->lnC_TM))
-                TERMINATE("lnC is nan, l1=%d,l2=%d,m=%d,tau=%g", l1,l2,m,(double)tau);
+        TERMINATE(isinf(cint->lnC_TM), "lnC is inf, l1=%d,l2=%d,m=%d,tau=%g", l1,l2,m,(double)tau);
+        TERMINATE(isnan(cint->lnC_TM), "lnC is nan, l1=%d,l2=%d,m=%d,tau=%g", l1,l2,m,(double)tau);
 
-            if(isinfq(cint->lnD_TM))
-                TERMINATE("lnD is inf, l1=%d,l2=%d,m=%d,tau=%g", l1,l2,m,(double)tau);
-            if(isnanq(cint->lnD_TM))
-                TERMINATE("lnD is nan, l1=%d,l2=%d,m=%d,tau=%g", l1,l2,m,(double)tau);
-        #endif
+        TERMINATE(isinf(cint->lnD_TM), "lnD is inf, l1=%d,l2=%d,m=%d,tau=%g", l1,l2,m,(double)tau);
+        TERMINATE(isnan(cint->lnD_TM), "lnD is nan, l1=%d,l2=%d,m=%d,tau=%g", l1,l2,m,(double)tau);
     }
 }
 
