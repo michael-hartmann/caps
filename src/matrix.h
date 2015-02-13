@@ -164,6 +164,20 @@ MATRIX_TYPEDEF(matrix_edouble_t, edouble);
 
 #define MATRIX_ABSMIN_HEADER(FUNCTION_PREFIX, MATRIX_TYPE, TYPE) TYPE FUNCTION_PREFIX ## _absmin(MATRIX_TYPE *M) \
 
+
+#define MATRIX_EXP(FUNCTION_PREFIX, MATRIX_TYPE, EXP_FUNCTION) \
+    void FUNCTION_PREFIX ## _exp(MATRIX_TYPE *M, matrix_sign_t *M_sign) \
+    { \
+        size_t i,j, dim = M->size; \
+ \
+        for(i = 0; i < dim; i++) \
+            for(j = 0; j < dim; j++) \
+                matrix_set(M, i,j, matrix_get(M_sign,i,j)*EXP_FUNCTION(matrix_get(M,i,j))); \
+    }
+
+#define MATRIX_EXP_HEADER(FUNCTION_PREFIX, MATRIX_TYPE) void FUNCTION_PREFIX ## _exp(MATRIX_TYPE *M, matrix_sign_t *M_sign) \
+
+
 /* Balance a general matrix by scaling the rows and columns, so the
  * new row and column norms are the same order of magnitude.
  *
@@ -388,6 +402,7 @@ MATRIX_ABSMIN_HEADER    (matrix_edouble, matrix_edouble_t, edouble);
 MATRIX_ABSMAX_HEADER    (matrix_edouble, matrix_edouble_t, edouble);
 MATRIX_BALANCE_HEADER   (matrix_edouble, matrix_edouble_t);
 MATRIX_LOG_BALANCE_HEADER(matrix_edouble, matrix_edouble_t);
+MATRIX_EXP_HEADER(matrix_edouble, matrix_edouble_t);
 
 MATRIX_ALLOC_HEADER(matrix_sign, matrix_sign_t);
 MATRIX_FREE_HEADER (matrix_sign, matrix_sign_t);
