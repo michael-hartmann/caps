@@ -1386,7 +1386,7 @@ double casimir_logdetD(casimir_t *self, int n, int m, void *integration_obj)
        M_ME,  M_MM */
     for(l1 = min; l1 <= max; l1++)
     {
-        printf("l1=%d\n", l1);
+        //printf("l1=%d\n", l1);
         for(l2 = min; l2 <= l1; l2++)
         {
             const int Delta_ij = (l1 == l2 ? 0 : -INFINITY);
@@ -1428,9 +1428,6 @@ double casimir_logdetD(casimir_t *self, int n, int m, void *integration_obj)
                 matrix_set(M, j,i, logadd_ms(list_ji, signs_ji, 3, &sign));
                 matrix_set(M_sign, j,i, sign);
 
-                //matrix_set(M, i,j, Delta_ij -             sign_al1*( cint.signA_TE*expq(ln_al1+cint.lnA_TE) + cint.signB_TM*expq(ln_al1+cint.lnB_TM) ));
-                //matrix_set(M, j,i, Delta_ij - MPOW(l1+l2)*sign_al2*( cint.signA_TE*expq(ln_al2+cint.lnA_TE) + cint.signB_TM*expq(ln_al2+cint.lnB_TM) ));
-
                 assert(!isinf(matrix_get(M,i,j)));
                 assert(!isnan(matrix_get(M,i,j)));
 
@@ -1452,9 +1449,6 @@ double casimir_logdetD(casimir_t *self, int n, int m, void *integration_obj)
 
                 matrix_set(M, j+dim,i+dim, logadd_ms(list_ji, signs_ji, 3, &sign));
                 matrix_set(M_sign, j+dim,i+dim, sign);
-
-                //matrix_set(M, i+dim,j+dim, Delta_ij -             sign_bl1*( cint.signA_TM*expq(ln_bl1+cint.lnA_TM) + cint.signB_TE*expq(ln_bl1+cint.lnB_TE) ));
-                //matrix_set(M, j+dim,i+dim, Delta_ij - MPOW(l1+l2)*sign_bl2*( cint.signA_TM*expq(ln_bl2+cint.lnA_TM) + cint.signB_TE*expq(ln_bl2+cint.lnB_TE) ));
 
                 assert(!isinf(matrix_get(M,i+dim,j+dim)));
                 assert(!isnan(matrix_get(M,i+dim,j+dim)));
@@ -1481,9 +1475,6 @@ double casimir_logdetD(casimir_t *self, int n, int m, void *integration_obj)
                     matrix_set(M, dim+j,i, logadd_ms(list_ji, signs_ji, 2, &sign));
                     matrix_set(M_sign, dim+j,i, sign);
 
-                    //matrix_set(M, dim+i,j, -               sign_al1*( cint.signC_TE*expq(ln_al1+cint.lnC_TE) + cint.signD_TM*expq(ln_al1+cint.lnD_TM) ));
-                    //matrix_set(M, dim+j,i, - MPOW(l1+l2+1)*sign_al2*( cint.signD_TE*expq(ln_al2+cint.lnD_TE) + cint.signC_TM*expq(ln_al2+cint.lnC_TM) ));
-
                     assert(!isinf(matrix_get(M,i+dim,j)));
                     assert(!isnan(matrix_get(M,j+dim,i)));
                 }
@@ -1502,9 +1493,6 @@ double casimir_logdetD(casimir_t *self, int n, int m, void *integration_obj)
 
                     matrix_set(M, j,dim+i, logadd_ms(list_ji, signs_ji, 2, &sign));
                     matrix_set(M_sign, j,dim+i, sign);
-
-                    //matrix_set(M, i,dim+j, -               sign_bl1*( cint.signC_TM*expq(ln_bl1+cint.lnC_TM) + cint.signD_TE*expq(ln_bl1+cint.lnD_TE) ));
-                    //matrix_set(M, j,dim+i, - MPOW(l1+l2+1)*sign_bl2*( cint.signD_TM*expq(ln_bl2+cint.lnD_TM) + cint.signC_TE*expq(ln_bl2+cint.lnC_TE) ));
 
                     assert(!isinf(matrix_get(M,i,j+dim)));
                     assert(!isnan(matrix_get(M,j,i+dim)));
@@ -1548,10 +1536,10 @@ double casimir_logdetD(casimir_t *self, int n, int m, void *integration_obj)
     }
     else
     {
-        printf("balancing\n");
+        //printf("balancing\n");
         matrix_edouble_log_balance(M);
         matrix_edouble_exp(M,M_sign);
-        printf("calculating determinant\n");
+        //printf("calculating determinant\n");
         logdet = matrix_edouble_logdet(M);
     }
 
