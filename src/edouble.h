@@ -15,16 +15,10 @@
     #define gammaq    gammal
     #define lgammaq   lgammal
     #define copysignq copysignl
-    #define isinfq(x) ((x)/2.l == (x))
-    #define isnanq(x) ((x) != (x))
 #else
     #if defined(__ICC) || defined(__INTEL_COMPILER)
         #define CASIMIR_ARITHMETICS "icc _Quad"
         #define edouble _Quad
-
-        /* define isinf and isnan */
-        #define isinfq(x) ((x)/10 == (x))
-        #define isnanq(x) ((x) != (x))
 
         /* define prototypes. without these prototypes icc will return nan. */
         _Quad __logq(_Quad);
