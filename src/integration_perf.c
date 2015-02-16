@@ -12,13 +12,16 @@
 
 
 /* p must have length m+n+1 */
-static void poly1(int m, edouble p[])
+static void poly1(const int m, edouble p[])
 {
     /* (z+2)^m */
     int k;
 
     for(k = 0; k <= m; k++)
+    {
         p[k] = expq(lgammaq(m+1)-lgammaq(k+1)-lgammaq(m+1-k)+(m-k)*LOG2);
+        TERMINATE(isinf(p[k]), "p[%d] inf\n", k);
+    }
 }
 
 
@@ -32,23 +35,35 @@ static void poly2(int nu, int m2, edouble p[])
     int k;
 
     for(k = m2; k <= nu; k++)
+    {
         p[k-m2] = expq(lgammaq(k+nu+1)-lgammaq(k+1)-lgammaq(k-m2+1)-lgammaq(-k+nu+1)-k*LOG2);
+        TERMINATE(isinf(p[k-m2]), "p[%d] inf\n", k-m2);
+    }
 }
 
 
-static edouble polyintegrate(edouble p[], int len_p, int offset, edouble tau, sign_t *sign)
+static edouble polyintegrate(edouble p[], const int len_p, const int offset, const edouble tau, sign_t *sign)
 {
     int k;
-    edouble value = 0;
-    edouble max = lgammaq(len_p+offset);
+    const edouble log_tau = logq(tau);
+    edouble list[len_p];
+    sign_t signs[len_p];
+    sign_t sign_ret;
+    edouble ret;
 
     for(k = offset; k < len_p+offset; k++)
-        value += expq(lgammaq(k+1)-(k+1)*logq(tau)-max)*p[k-offset];
+    {
+        list[k-offset]  = lgammaq(k+1)-(k+1)*log_tau+logq(fabsq(p[k-offset]));
+        signs[k-offset] = copysignq(1, p[k-offset]);
+    }
+
+    ret = logadd_ms(list, signs, len_p, &sign_ret);
 
     if(sign != NULL)
-        *sign = copysignq(1,value);
+        *sign = sign_ret;
 
-    return logq(fabsq(value)) + max;
+    TERMINATE(isinf(ret), "ret is inf, ret=%Lg", ret);
+    return ret;
 }
 
 
@@ -74,7 +89,7 @@ static inline edouble I(integration_perf_t *self, int nu, int m2)
         //printf("v=%g\n", (double)v);
         self->cache_I[index] = v;
 
-        TERMINATE(isinf(v), "I is inf, nu=%d, 2m=%d\n", nu, m2);
+        TERMINATE(isinf(v), "I is inf, I=%Lg, nu=%d, 2m=%d\n", v, nu, m2);
         TERMINATE(isnan(v), "I is nan, nu=%d, 2m=%d\n", nu, m2);
     }
 
