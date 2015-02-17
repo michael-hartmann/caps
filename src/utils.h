@@ -2,7 +2,7 @@
 #define __UTILS_H
 
 #ifndef NDEBUG
-#define TERMINATE(cond, ...) if(cond) { fprintf(stderr, "fatal error: "); fprintf(stderr, __VA_ARGS__); fprintf(stderr, " (%s:%d)\n", __FILE__, __LINE__); exit(1); }
+#define TERMINATE(cond, ...) if(cond) { fprintf(stderr, "fatal error: "); fprintf(stderr, __VA_ARGS__); fprintf(stderr, " (in %s, %s:%d)\n", __func__, __FILE__, __LINE__); exit(1); }
 #else
 #define TERMINATE(cond, ...)
 #endif
