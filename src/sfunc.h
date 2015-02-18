@@ -2,6 +2,7 @@
 #define __SFUNC_H
 
 #include <stdlib.h>
+#include <math.h>
 
 #include "edouble.h"
 #include "libcasimir.h"
@@ -14,7 +15,7 @@
 // abbrevations for functions
 #define lngamma(x) (lgammaq(x))
 #define pow_2(x) ((x)*(x))
-#define lnfac(x)  (gammaq(1+(x)))
+#define lnfac(x)  (lgammaq(1+(x)))
 
 #define MPOW(a) (1-2*((a) & 1))
 
