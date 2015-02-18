@@ -4,7 +4,6 @@ from __future__ import division
 from math import *
 from scipy.integrate import quad
 from mpmath import polylog
-from scipy.special import spence
 
 
 def integrand(x, LbyR, T):
@@ -27,13 +26,11 @@ def pfa(LbyR, T):
     if isinf(T) and T > 0:
         return -1.2020569031595942/4/(LbyR+LbyR**2)
     if T > 0:
-        I = quad(integrand, 1, 1+1/LbyR, args=(LbyR, T))
-        #print I
+        I = quad(integrand, 1, 1+1/LbyR, args=(LbyR, T), epsrel=1e-12)
         return -T/(4*pi)*I[0]
     elif T == 0:
         # T = 0
         return -pi**3/720*(1+2*LbyR)/(LbyR**2+LbyR**3)
-        #return -pi**3/720*(1/LbyR + 1/LbyR**2 - 1/(1+LbyR))
     else:
         raise BaseException("invalid value for T")
 
