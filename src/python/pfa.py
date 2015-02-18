@@ -18,7 +18,7 @@ def integrand(x, LbyR, T):
         if n == 0:
             value /= 2
         sum += value
-        if value/sum < 1e-13:
+        if value/sum < 1e-15:
             return sum/(x**2*LbyR)
         n += 1 
 
