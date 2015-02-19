@@ -1,8 +1,6 @@
 .PHONY: casimir casimir_tests casimir_hiT casimir_logdetD
 all: casimir casimir_hiT casimir_logdetD casimir_tests
 
-OBJECTS=$(SOURCES:.c=.o)
-
 # Use extended doubles for calculations. gcc and icc implement long double as
 # 80-bit extended precision type by x86 hardware This is less precise than
 # quadrupule precision, but should be much faster.
@@ -20,7 +18,7 @@ CFLAGS += -Werror -Wall -Wmissing-prototypes -Wstrict-prototypes -Wshadow -Wpoin
 #CFLAGS += -DNDEBUG
 
 # rudimentary memory checking
-CFLAGS += -DMEMORY_CHECK
+#CFLAGS += -DMEMORY_CHECK
 
 LDFLAGS += -lm -pthread
 
@@ -46,17 +44,17 @@ endif
 
 
 
-casimir: $(OBJECTS)
-	$(CC) $(OPTIMIZATION) $(CFLAGS) $(OBJECTS) casimir.c $(LDFLAGS) -o casimir
+casimir:
+	$(CC) $(OPTIMIZATION) $(CFLAGS) $(SOURCES) casimir.c $(LDFLAGS) -o casimir
 
-casimir_logdetD: $(OBJECTS)
-	$(CC) $(OPTIMIZATION) $(CFLAGS) $(OBJECTS) casimir_logdetD.c $(LDFLAGS) -o casimir_logdetD
+casimir_logdetD:
+	$(CC) $(OPTIMIZATION) $(CFLAGS) $(SOURCES) casimir_logdetD.c $(LDFLAGS) -o casimir_logdetD
 
-casimir_hiT: $(OBJECTS)
-	$(CC) $(OPTIMIZATION) $(CFLAGS) $(OBJECTS) casimir_hiT.c $(LDFLAGS) -o casimir_hiT
+casimir_hiT:
+	$(CC) $(OPTIMIZATION) $(CFLAGS) $(SOURCES) casimir_hiT.c $(LDFLAGS) -o casimir_hiT
 
-casimir_tests: $(OBJECTS)
-	$(CC) $(OPTIMIZATION) -I . $(CFLAGS) $(OBJECTS) tests/test*.c $(LDFLAGS) -o casimir_tests
+casimir_tests:
+	$(CC) $(OPTIMIZATION) -I . $(CFLAGS) $(SOURCES) tests/test*.c $(LDFLAGS) -o casimir_tests
 	./casimir_tests
 
 clean:
