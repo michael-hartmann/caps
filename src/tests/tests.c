@@ -17,20 +17,13 @@
 #include "test_Plm.h"
 #include "test_Xi.h"
 
+#include "tests.h"
+
 /* This makes perfectly sense even on a single core machine: This maybe won't
  * speedup things if you have less than CORES cores, but it will test, if
  * locking and multithreading is correct.
  */
 #define CORES 10
-
-
-/* prototypes */
-int test_casimirF(void);
-int test_logdet(void);
-int test_integration_drude(void);
-int test_mie(void);
-int test_mie_drude(void);
-int test_fresnel(void);
 
 int test_casimirF()
 {
@@ -168,7 +161,7 @@ int test_mie(void)
 
 int test_mie_drude(void)
 {
-    double T, RbyScriptL, omegap, gamma;;
+    double T, RbyScriptL, omegap, gamma_;
     sign_t sign_a, sign_b;
     double lna, lnb;
     casimir_t casimir;
@@ -178,10 +171,10 @@ int test_mie_drude(void)
     RbyScriptL = 0.85;
     T          = 2.7;
     omegap     = 1;
-    gamma      = 1;
+    gamma_     = 1;
     casimir_init(&casimir, RbyScriptL, T);
     casimir_set_omegap_sphere(&casimir, omegap);
-    casimir_set_gamma_sphere(&casimir, gamma);
+    casimir_set_gamma_sphere(&casimir, gamma_);
 
     // void casimir_lnab(casimir_t *self, const int n, const int l, double *lna, double *lnb, int *sign_a, int *sign_b);
 
@@ -209,10 +202,10 @@ int test_mie_drude(void)
     RbyScriptL = 0.95;
     T          = 0.1;
     omegap     = 0.1;
-    gamma      = 1.4;
+    gamma_     = 1.4;
     casimir_init(&casimir, RbyScriptL, T);
     casimir_set_omegap_sphere(&casimir, omegap);
-    casimir_set_gamma_sphere(&casimir, gamma);
+    casimir_set_gamma_sphere(&casimir, gamma_);
 
     casimir_lnab(&casimir, 1, 1, &lna, &lnb, &sign_a, &sign_b);
     AssertAlmostEqual(&test, lna, -11.294081746210154580677515252479982979);
@@ -238,10 +231,10 @@ int test_mie_drude(void)
     RbyScriptL = 0.5;
     T          = 1;
     omegap     = 1e-4;
-    gamma      = 1e-4;
+    gamma_     = 1e-4;
     casimir_init(&casimir, RbyScriptL, T);
     casimir_set_omegap_sphere(&casimir, omegap);
-    casimir_set_gamma_sphere(&casimir,  gamma);
+    casimir_set_gamma_sphere(&casimir,  gamma_);
 
     casimir_lnab(&casimir, 1, 7, &lna, &lnb, &sign_a, &sign_b);
     AssertAlmostEqual(&test, lna, -55.208389631622379721466940745498367474);
@@ -255,10 +248,10 @@ int test_mie_drude(void)
     RbyScriptL = 0.5;
     T          = 1;
     omegap     = 1;
-    gamma      = 1e-4;
+    gamma_     = 1e-4;
     casimir_init(&casimir, RbyScriptL, T);
     casimir_set_omegap_sphere(&casimir, omegap);
-    casimir_set_gamma_sphere(&casimir,  gamma);
+    casimir_set_gamma_sphere(&casimir,  gamma_);
 
     casimir_lnab(&casimir, 1, 1, &lna, &lnb, &sign_a, &sign_b);
     AssertAlmostEqual(&test, lna, -3.8540239333215465024615528927141405724);
