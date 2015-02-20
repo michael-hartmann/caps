@@ -10,7 +10,7 @@ EXTENDED_DOUBLE = 1
 CC = gcc
 #CC = icc
 
-SOURCES = sfunc.c integration.c integration_perf.c libcasimir.c matrix.c utils.c tests/unittest.c
+SOURCES = sfunc.c integration.c integration_perf.c libcasimir.c matrix.c utils.c
 CFLAGS += -Werror -Wall -Wmissing-prototypes -Wstrict-prototypes -Wshadow -Wpointer-arith -Wcast-qual -Wwrite-strings -fshort-enums -fno-common
 
 # -DNDEBUG will disable asserts. This hardly increases performance and in case
@@ -54,7 +54,7 @@ casimir_hiT:
 	$(CC) $(OPTIMIZATION) $(CFLAGS) $(SOURCES) casimir_hiT.c $(LDFLAGS) -o casimir_hiT
 
 casimir_tests:
-	$(CC) $(OPTIMIZATION) -I . $(CFLAGS) $(SOURCES) tests/test*.c $(LDFLAGS) -o casimir_tests
+	$(CC) $(OPTIMIZATION) -I . $(CFLAGS) $(SOURCES) tests/unittest.c tests/test*.c $(LDFLAGS) -o casimir_tests
 	./casimir_tests
 
 clean:
