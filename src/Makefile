@@ -6,6 +6,9 @@ all: casimir casimir_hiT casimir_logdetD casimir_tests
 # quadrupule precision, but should be much faster.
 EXTENDED_DOUBLE = 1
 
+# use lapack to calculate determinant
+USE_LAPACK = 1
+
 # compile. You may use gcc or icc.
 CC = gcc
 #CC = icc
@@ -17,14 +20,11 @@ CFLAGS += -Werror -Wall -Wmissing-prototypes -Wstrict-prototypes -Wshadow -Wpoin
 # of errors the program won't abort.
 #CFLAGS += -DNDEBUG
 
-# use lapack to calculate determinant
-USE_LAPACK = 1
-
 LDFLAGS += -lm -pthread 
 
 ifdef USE_LAPACK
-    LDFLAGS += -llapack -lblas
     CFLAGS += -DUSE_LAPACK
+    LDFLAGS += -llapack -lblas
 endif
 
 # use optimization

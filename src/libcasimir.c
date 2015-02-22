@@ -39,7 +39,13 @@ static char CASIMIR_COMPILE_INFO[2048];
  */
 const char *casimir_compile_info(void)
 {
-    snprintf(CASIMIR_COMPILE_INFO, sizeof(CASIMIR_COMPILE_INFO)/sizeof(char), "Compiler %s, using %s", COMPILER, CASIMIR_ARITHMETICS);
+    #ifdef USE_LAPACK
+        const char *lapack = "lapack support";
+    #else
+        const char *lapack = "lapack support";
+    #endif
+
+    snprintf(CASIMIR_COMPILE_INFO, sizeof(CASIMIR_COMPILE_INFO)/sizeof(char), "Compiler %s, using %s, %s", COMPILER, CASIMIR_ARITHMETICS, lapack);
     return CASIMIR_COMPILE_INFO;
 }
 
