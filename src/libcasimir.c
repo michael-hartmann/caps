@@ -1006,7 +1006,6 @@ void casimir_mie_cache_get(casimir_t *self, int l, int n, double *ln_a, sign_t *
     *sign_a = entry->sign_al[l];
     *ln_b   = entry->ln_bl[l];
     *sign_b = entry->sign_bl[l];
-
 }
 
 /**
@@ -1297,8 +1296,9 @@ double casimir_F(casimir_t *self, int *nmax)
 void casimir_logdetD0(casimir_t *self, int m, double *logdet_EE, double *logdet_MM)
 {
     int l1,l2,min,max,dim;
-    double lnRbyScriptL = log(self->RbyScriptL);
+    const edouble lnRbyScriptL = logq(self->RbyScriptL);
     matrix_edouble_t *EE = NULL, *MM = NULL;
+    matrix_sign_t *EE_sign = NULL, *MM_sign = NULL;
 
     min = MAX(m,1);
     max = self->lmax;
@@ -1306,9 +1306,15 @@ void casimir_logdetD0(casimir_t *self, int m, double *logdet_EE, double *logdet_
     dim = (max-min+1);
 
     if(logdet_EE != NULL)
+    {
         EE = matrix_edouble_alloc(dim);
+        EE_sign = matrix_sign_alloc(dim);
+    }
     if(logdet_MM != NULL)
+    {
         MM = matrix_edouble_alloc(dim);
+        MM_sign = matrix_sign_alloc(dim);
+    }
 
     /* calculate the logarithm of the matrix elements of D */
     for(l1 = min; l1 <= max; l1++)
@@ -1318,25 +1324,59 @@ void casimir_logdetD0(casimir_t *self, int m, double *logdet_EE, double *logdet_
             const int i = l1-min, j = l2-min;
             sign_t sign_a0, sign_b0, sign_xi;
             double lna0, lnb0;
-            double lnXiRL = casimir_lnXi(l1,l2,m,&sign_xi)+(2*l1+1)*lnRbyScriptL;
+            const edouble lnXiRL = casimir_lnXi(l1,l2,m,&sign_xi)+(2*l1+1)*lnRbyScriptL;
             casimir_lnab0(l1, &lna0, &sign_a0, &lnb0, &sign_b0);
+            edouble v;
+            sign_t sign;
 
             if(EE != NULL)
-                matrix_set(EE, i,j, (l1 == l2 ? 1 : 0) - sign_xi*sign_a0*expq(lna0+lnXiRL));
+            {
+                if(l1 != l2)
+                {
+                    v    = lna0+lnXiRL;
+                    sign = -sign_xi*sign_a0;
+                }
+                else
+                    v = logadd_s(0, +1, lna0+lnXiRL, -sign_xi*sign_a0, &sign);
+
+                matrix_set(EE, i,j, v);
+                matrix_set(EE_sign, i,j, sign);
+
+                TERMINATE(isinf(v) || isnan(v), "EE l1=%d,l2=%d: %Lg (lna0=%g, lnXiRL=%Lg)", l1, l2, v, lna0, lnXiRL);
+            }
             if(MM != NULL)
-                matrix_set(MM, i,j, (l1 == l2 ? 1 : 0) + sign_xi*sign_b0*expq(lnb0+lnXiRL));
+            {
+                if(l1 != l2)
+                {
+                    v    = lnb0+lnXiRL;
+                    sign = sign_xi*sign_b0;
+                }
+                else
+                    v = logadd_s(0, +1, lnb0+lnXiRL, sign_xi*sign_b0, &sign);
+
+                matrix_set(MM, i,j, v);
+                matrix_set(MM_sign, i,j, sign);
+                TERMINATE(isinf(v) || isnan(v), "MM l1=%d,l2=%d: %Lg (lnb0=%g, lnXiRL=%Lg)", l1, l2, v, lnb0, lnXiRL);
+            }
         }
 
     /* balance matrices, calculate logdet and free space */
     if(EE != NULL)
     {
-        matrix_edouble_balance(EE);
+        matrix_edouble_log_balance(EE);
+        matrix_edouble_exp(EE, EE_sign);
+        matrix_sign_free(EE_sign);
+
         *logdet_EE = matrix_edouble_logdet(EE);
         matrix_edouble_free(EE);
+
     }
     if(MM != NULL)
     {
-        matrix_edouble_balance(MM);
+        matrix_edouble_log_balance(MM);
+        matrix_edouble_exp(MM, MM_sign);
+        matrix_sign_free(MM_sign);
+
         *logdet_MM = matrix_edouble_logdet(MM);
         matrix_edouble_free(MM);
     }
