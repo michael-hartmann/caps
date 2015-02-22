@@ -59,20 +59,6 @@ MATRIX_TYPEDEF(matrix_edouble_t, edouble);
 
 #define MATRIX_FREE_HEADER(FUNCTION_PREFIX, MATRIX_TYPE) void FUNCTION_PREFIX ## _free(MATRIX_TYPE *m)
 
-#define MATRIX_LOGDET_LAPACK(FUNCTION_PREFIX, MATRIX_TYPE, TYPE, ABS_FUNCTION, COPYSIGN_FUNCTION, SQRT_FUNCTION, LOG_FUNCTION) \
-    TYPE FUNCTION_PREFIX ## _logdet(MATRIX_TYPE *M) \
-    { \
-        double det = 0; \
-        int i,dim = M->size; \
-        int IPIV[dim]; \
-        LAPACKE_dgetrf(LAPACK_COL_MAJOR, dim, dim, M->M, dim,IPIV); \
-\
-        for(i = 0; i < dim; i++) \
-            det += LOG_FUNCTION(ABS_FUNCTION(matrix_get(M, i, i))); \
-        return det; \
-    }
-
-
 #define MATRIX_LOGDET(FUNCTION_PREFIX, MATRIX_TYPE, TYPE, ABS_FUNCTION, COPYSIGN_FUNCTION, SQRT_FUNCTION, LOG_FUNCTION) \
     TYPE FUNCTION_PREFIX ## _logdet(MATRIX_TYPE *M) \
     { \
@@ -387,14 +373,6 @@ MATRIX_TYPEDEF(matrix_edouble_t, edouble);
 #define matrix_get(m, i, j)   ((m)->M[(i)*m->size+(j)])
 #define matrix_set(m, i, j,v) ((m)->M[(i)*m->size+(j)]=(v))
 
-MATRIX_ALLOC_HEADER(matrix, matrix_t);
-MATRIX_FREE_HEADER (matrix, matrix_t);
-MATRIX_LOGDET_HEADER(matrix, matrix_t, double);
-MATRIX_ABSMIN_HEADER(matrix, matrix_t, double);
-MATRIX_ABSMAX_HEADER(matrix, matrix_t, double);
-MATRIX_BALANCE_HEADER(matrix, matrix_t);
-MATRIX_LOG_BALANCE_HEADER(matrix, matrix_t);
-
 MATRIX_ALLOC_HEADER(matrix_edouble, matrix_edouble_t);
 MATRIX_FREE_HEADER (matrix_edouble, matrix_edouble_t);
 MATRIX_LOGDET_HEADER    (matrix_edouble, matrix_edouble_t, edouble);
@@ -406,9 +384,7 @@ MATRIX_EXP_HEADER(matrix_edouble, matrix_edouble_t);
 
 MATRIX_ALLOC_HEADER(matrix_sign, matrix_sign_t);
 MATRIX_FREE_HEADER (matrix_sign, matrix_sign_t);
-MATRIX_LOGDET_HEADER(matrix_sign, matrix_sign_t, sign_t);
-MATRIX_ABSMIN_HEADER(matrix_sign, matrix_sign_t, sign_t);
-MATRIX_ABSMAX_HEADER(matrix_sign, matrix_sign_t, sign_t);
-MATRIX_BALANCE_HEADER(matrix_sign, matrix_sign_t);
+
+double matrix_logdet_lapack(matrix_edouble_t *M, matrix_sign_t *signs);
 
 #endif
