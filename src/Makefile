@@ -11,16 +11,21 @@ CC = gcc
 #CC = icc
 
 SOURCES = sfunc.c integration.c integration_perf.c libcasimir.c matrix.c utils.c
-CFLAGS += -Werror -Wall -Wmissing-prototypes -Wstrict-prototypes -Wshadow -Wpointer-arith -Wcast-qual -Wwrite-strings -fshort-enums -fno-common
+CFLAGS += -Werror -Wall -Wmissing-prototypes -Wstrict-prototypes -Wshadow -Wpointer-arith -Wcast-qual -Wwrite-strings -fno-common
 
 # -DNDEBUG will disable asserts. This hardly increases performance and in case
 # of errors the program won't abort.
 #CFLAGS += -DNDEBUG
 
-# rudimentary memory checking
-#CFLAGS += -DMEMORY_CHECK
+# use lapack to calculate determinant
+USE_LAPACK = 1
 
-LDFLAGS += -lm -pthread
+LDFLAGS += -lm -pthread 
+
+ifdef USE_LAPACK
+    LDFLAGS += -llapack -lblas
+    CFLAGS += -DUSE_LAPACK
+endif
 
 # use optimization
 ifeq ($(CC),gcc)

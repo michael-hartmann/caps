@@ -1364,20 +1364,29 @@ void casimir_logdetD0(casimir_t *self, int m, double *logdet_EE, double *logdet_
     if(EE != NULL)
     {
         matrix_edouble_log_balance(EE);
-        matrix_edouble_exp(EE, EE_sign);
+
+        #ifdef USE_LAPACK
+            *logdet_EE = matrix_logdet_lapack(EE, EE_sign);
+        #else
+            matrix_edouble_exp(EE, EE_sign);
+            *logdet_EE = matrix_edouble_logdet(EE);
+        #endif
+
         matrix_sign_free(EE_sign);
-
-        *logdet_EE = matrix_edouble_logdet(EE);
         matrix_edouble_free(EE);
-
     }
     if(MM != NULL)
     {
         matrix_edouble_log_balance(MM);
-        matrix_edouble_exp(MM, MM_sign);
-        matrix_sign_free(MM_sign);
 
-        *logdet_MM = matrix_edouble_logdet(MM);
+        #ifdef USE_LAPACK
+            *logdet_MM = matrix_logdet_lapack(MM, MM_sign);
+        #else
+            matrix_edouble_exp(MM, MM_sign);
+            *logdet_MM = matrix_edouble_logdet(MM);
+        #endif
+
+        matrix_sign_free(MM_sign);
         matrix_edouble_free(MM);
     }
 }
@@ -1426,7 +1435,6 @@ double casimir_logdetD(casimir_t *self, int n, int m, void *integration_obj)
        M_ME,  M_MM */
     for(l1 = min; l1 <= max; l1++)
     {
-        //printf("l1=%d\n", l1);
         for(l2 = min; l2 <= l1; l2++)
         {
             const int Delta_ij = (l1 == l2 ? 0 : -INFINITY);
@@ -1560,13 +1568,20 @@ double casimir_logdetD(casimir_t *self, int n, int m, void *integration_obj)
                 matrix_set(MM_sign, i,j, matrix_get(M_sign, i+dim,j+dim));
             }
 
+        matrix_edouble_free(M);
+        matrix_sign_free(M_sign);
+
         matrix_edouble_log_balance(MM);
         matrix_edouble_log_balance(EE);
 
-        matrix_edouble_exp(EE, EE_sign);
-        matrix_edouble_exp(MM, MM_sign);
+        #ifdef USE_LAPACK
+            logdet = matrix_logdet_lapack(EE, EE_sign) + matrix_logdet_lapack(MM, MM_sign);
+        #else
+            matrix_edouble_exp(EE, EE_sign);
+            matrix_edouble_exp(MM, MM_sign);
 
-        logdet = matrix_edouble_logdet(EE)+matrix_edouble_logdet(MM);
+            logdet = matrix_edouble_logdet(EE)+matrix_edouble_logdet(MM);
+        #endif
 
         matrix_sign_free(EE_sign);
         matrix_sign_free(MM_sign);
@@ -1576,15 +1591,18 @@ double casimir_logdetD(casimir_t *self, int n, int m, void *integration_obj)
     }
     else
     {
-        //printf("balancing\n");
         matrix_edouble_log_balance(M);
-        matrix_edouble_exp(M,M_sign);
-        //printf("calculating determinant\n");
-        logdet = matrix_edouble_logdet(M);
-    }
 
-    matrix_edouble_free(M);
-    matrix_sign_free(M_sign);
+        #ifdef USE_LAPACK
+            logdet = matrix_logdet_lapack(M, M_sign);
+        #else
+            matrix_edouble_exp(M,M_sign);
+            logdet = matrix_edouble_logdet(M);
+        #endif
+
+        matrix_edouble_free(M);
+        matrix_sign_free(M_sign);
+    }
 
     return logdet;
 }
