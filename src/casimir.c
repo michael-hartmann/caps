@@ -78,8 +78,7 @@ Further options:\n\
         Show this help\n\
 \n\
 \n\
-Compiled %s, %s\n\
-%s\n", DEFAULT_LFAC, DEFAULT_PRECISION, __DATE__, __TIME__, casimir_compile_info());
+%s\n", DEFAULT_LFAC, DEFAULT_PRECISION, casimir_compile_info());
 }
 
 /* parse a range given for LbyR or T from the command line.
@@ -283,39 +282,7 @@ int main(int argc, char *argv[])
     }
 
     if(!quiet_flag)
-    {
-        /* print information to stdout */
-        /* print command line */
-        printf("# %s", argv[0]);
-        for(i = 1; i < argc; i++)
-            printf(", %s", argv[i]);
-        printf("\n");
-
-        if(gamma_ > 0)
-            printf("# gamma =%g\n", gamma_);
-        if(omegap > 0)
-            printf("# omegap=%g\n", omegap);
-
-        printf("# precision=%g\n", precision);
-        if(lmax > 0)
-            printf("# lmax=%d\n", lmax);
-        else
-            printf("# lfac=%g\n", lfac);
-        printf("# cores=%d\n", cores);
-        if(lLbyR[2] == 1)
-            printf("# LbyR=%g\n", lLbyR[0]);
-        else
-            printf("# LbyR=%g...%g (%d)\n", lLbyR[0],lLbyR[1],(int)lLbyR[2]);
-        if(lT[2] == 1)
-            printf("# T=%g\n", lT[0]);
-        else
-            printf("# T=%g...%g (%d)\n", lT[0],lT[1],(int)lT[2]);
-
-        printf("#\n");
-        printf("# LbyR, T, F, lmax, nmax, time\n");
-        printf("#\n");
-        printf("#\n");
-    }
+        printf("# %s\n#\n", casimir_compile_info());
 
     i = 0;
     for(iLbyR = 0; iLbyR < lLbyR[2]; iLbyR++)
@@ -358,7 +325,12 @@ int main(int argc, char *argv[])
             else
                 casimir_set_lmax(&casimir, MAX((int)ceil(lfac/LbyR), DEFAULT_LFAC));
 
-            casimir_info(&casimir, stdout, "# ");
+
+            if(!quiet_flag)
+            {
+                casimir_info(&casimir, stdout, "# ");
+                printf("#\n# LbyR, T, F, lmax, nmax, time\n");
+            }
 
             F = casimir_F(&casimir, &nmax);
             casimir_free(&casimir);
@@ -366,7 +338,12 @@ int main(int argc, char *argv[])
             printf("%.15g, %.15g, %.15g, %d, %d, %g\n", LbyR, T, F, casimir.lmax, nmax, now()-start_time);
 
             if(!quiet_flag)
-                fprintf(stderr, "# %6.2f%%, L/R=%g, T=%g\n", ++i*100/(lLbyR[2]*lT[2]), LbyR, T);
+            {
+                double progress = ++i*100/(lLbyR[2]*lT[2]);
+                fprintf(stderr, "# %6.2f%%, L/R=%g, T=%g\n", progress, LbyR, T);
+                if(progress != 100)
+                    printf("#\n#\n");
+            }
         }
 
     return 0;

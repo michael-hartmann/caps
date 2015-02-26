@@ -21,7 +21,7 @@
 #include "sfunc.h"
 #include "utils.h"
 
-static char CASIMIR_COMPILE_INFO[2048];
+static char CASIMIR_COMPILE_INFO[4096] = { 0 };
 
 /** @brief Return string with compile information
  *
@@ -40,7 +40,10 @@ const char *casimir_compile_info(void)
         const char *lapack = "no lapack support";
     #endif
 
-    snprintf(CASIMIR_COMPILE_INFO, sizeof(CASIMIR_COMPILE_INFO)/sizeof(char), "Compiler %s, using %s, %s", COMPILER, CASIMIR_ARITHMETICS, lapack);
+    snprintf(CASIMIR_COMPILE_INFO, sizeof(CASIMIR_COMPILE_INFO)/sizeof(char),
+             "Compiled on %s at %s with %s, using %s, %s",
+              __DATE__, __TIME__, COMPILER, CASIMIR_ARITHMETICS, lapack
+            );
     return CASIMIR_COMPILE_INFO;
 }
 
