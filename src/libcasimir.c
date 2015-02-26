@@ -22,10 +22,6 @@
 #include "sfunc.h"
 #include "utils.h"
 
-#ifdef MEMORY_CHECK
-#include <malloc.h>
-#endif
-
 static char CASIMIR_COMPILE_INFO[2048];
 
 /** @brief Return string with compile information
@@ -303,10 +299,6 @@ int casimir_init(casimir_t *self, double RbyScriptL, double T)
     if(RbyScriptL < 0 || RbyScriptL >= 1 || T < 0)
         return 0;
     
-    #ifdef MEMORY_CHECK
-    mallopt(M_CHECK_ACTION, 2);
-    #endif
-
     self->lmax = (int)ceil(CASIMIR_FACTOR_LMAX/LbyR);
 
     self->T           = T;
