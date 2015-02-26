@@ -989,19 +989,30 @@ void casimir_mie_cache_get(casimir_t *self, int l, int n, double *ln_a, sign_t *
     casimir_mie_cache_entry_t *entry;
     int nmax;
 
-    /* this locking is important to prevent memory corruption */
+    /* this mutex is important to prevent memory corruption */
     pthread_mutex_lock(&self->mie_cache->mutex);
 
     nmax = self->mie_cache->nmax;
     if(n > nmax || self->mie_cache->entries[n] == NULL)
         casimir_mie_cache_alloc(self, n);
 
+    /* This is a first class example of concurrent accesses on memory and
+     * locking: You might think, we don't need a lock anymore. All the data has
+     * been written and it is safe to release the mutex. Unfortunately, this is
+     * not true.
+     *
+     * Although all data has been written, another thread might add more Mie
+     * coefficients to the cache. In this case, the array
+     * self->mie_cache->entries needs to hold more values. For this reason,
+     * realloc is called. However, realloc may change the position of the array
+     * in memory and the pointer self->mie_cache->entries becomes invalid. This
+     * will usually cause a segmentation fault.
+     */
+    entry = self->mie_cache->entries[n];
+
+    /* at this point it is finally is safe to release the mutex without lock */
     pthread_mutex_unlock(&self->mie_cache->mutex);
 
-    /* at this point all the data is already written and it is safe to read
-     * without lock */
-
-    entry = self->mie_cache->entries[n];
     *ln_a   = entry->ln_al[l];
     *sign_a = entry->sign_al[l];
     *ln_b   = entry->ln_bl[l];
