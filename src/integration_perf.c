@@ -270,7 +270,6 @@ void casimir_integrate_perf(integration_perf_t *self, int l1, int l2, int m, cas
         edouble *a_l1ml2p = cache_gaunt_get(self, l1-1,l2+1,m, &signs_l1ml2p);
         edouble *a_l1ml2m = cache_gaunt_get(self, l1-1,l2-1,m, &signs_l1ml2m);
 
-
         /* A */
         {
             for(q = 0; q <= qmax_l1l2; q++)
@@ -458,7 +457,7 @@ edouble *cache_gaunt_get(integration_perf_t *self, int n, int nu, int m, sign_t 
     if(v == NULL)
     {
         int i;
-        int elems = MAX(0,gaunt_qmax(n,nu,m))+1;
+        size_t elems = MAX(0,1+gaunt_qmax(n,nu,m));
 
         /* this could be improved */
         if(n > 3)
