@@ -6,6 +6,7 @@
 #define WARN(cond, ...) if(cond) { fprintf(stderr, "fatal error: "); fprintf(stderr, __VA_ARGS__); fprintf(stderr, " (in %s, %s:%d)\n", __func__, __FILE__, __LINE__); }
 #else
 #define TERMINATE(cond, ...)
+#define WARN(cond, ...)
 #endif
 
 double now(void);
