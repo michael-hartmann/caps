@@ -13,8 +13,9 @@ double now(void);
 void set_defaut_error_handler(void (*f)(const char *));
 void default_error_handler(const char *str);
 
-void *xmalloc(size_t len);
-void *xrealloc(void *p, size_t len);
+void *xmalloc(size_t size);
+void *xmalloc_align(size_t size);
+void *xrealloc(void *p, size_t size);
 void xfree(void *p);
 
 int cinstr(const char *str, char c);

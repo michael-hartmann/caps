@@ -18,18 +18,32 @@ void default_error_handler(const char *reason)
     exit(1);
 }
 
-void *xmalloc(size_t len)
+void *xmalloc_align(size_t size)
 {
-    void *p = malloc(len);
+    int ret;
+    void *ptr;
+    long pagesize = sysconf(_SC_PAGE_SIZE);
+
+    ret = posix_memalign(&ptr, pagesize, size);
+    if(ret != 0)
+        error_handler("posix_memalign failed.");
+
+    return ptr;
+}
+
+
+void *xmalloc(size_t size)
+{
+    void *p = malloc(size);
     if(p == NULL)
         error_handler("malloc failed.");
 
     return p;
 }
 
-void *xrealloc(void *p, size_t len)
+void *xrealloc(void *p, size_t size)
 {
-    void *p2 = realloc(p, len);
+    void *p2 = realloc(p, size);
     if(p2 == NULL)
     {
         free(p);
