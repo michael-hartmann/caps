@@ -51,7 +51,7 @@ USE_EXTENDED_DOUBLE = 1
 # Disabling this option will slightly increase performance.
 #
 # If you don't know what to say here, enable checks.
-CFLAGS += -DNDEBUG
+# CFLAGS += -DNDEBUG
 
 
 ifdef USE_LAPACK
