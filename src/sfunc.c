@@ -4,6 +4,7 @@
 
 #include "edouble.h"
 #include "sfunc.h"
+#include "utils.h"
 
 /* p must have length len_p1+len_p2-1 */
 void polymult(edouble p1[], int len_p1, edouble p2[], int len_p2, edouble p[])
@@ -97,7 +98,7 @@ edouble inline logadd_ms(const edouble list[], const sign_t signs[], const size_
 
 edouble inline lbinom(int n, int k)
 {
-    return lngamma(1+n)-lngamma(1+k)-lngamma(1+n-k);
+    return lgammaq(1+n)-lgammaq(1+k)-lgammaq(1+n-k);
 }
 
 
@@ -137,11 +138,14 @@ void bessel_lnInuKnu(int nu, const edouble x, edouble *lnInu_p, edouble *lnKnu_p
             if(x < sqrt(nu)*1e3)
             {
                 /* small arguments */
-                lnKnu  = lngamma(nu+0.5)-LOG2+(nu+0.5)*(LOG2-logx);
-                lnKnup = lngamma(nu+1.5)-LOG2+(nu+1.5)*(LOG2-logx);
+                lnKnu  = lgammaq(nu+0.5)-LOG2+(nu+0.5)*(LOG2-logx);
+                lnKnup = lgammaq(nu+1.5)-LOG2+(nu+1.5)*(LOG2-logx);
             }
             else
-                lnKnu = lnKnup = 0;
+            {
+                WARN(1, "Couldn't calculate Bessel functions, nu=%d, x=%Lg\n", nu, x);
+                lnKnu = lnKnup = -INFINITY;
+            }
         }
 
         if(lnKnu_p != NULL)
@@ -221,12 +225,12 @@ edouble ln_doublefact(int n)
     if(n % 2 == 0) /* even */
     {
         int k = n/2;
-        return k*LOG2 + lnfac(k);
+        return k*LOG2 + lgammaq(1+k);
     }
     else /* odd */
     {
         int k = (n+1)/2;
-        return lnfac(2*k) - k*LOG2 - lnfac(k);
+        return lgammaq(1+2*k) - k*LOG2 - lgammaq(1+k);
     }
 }
 
