@@ -17,8 +17,8 @@ MATRIX_BALANCE   (matrix_edouble, matrix_edouble_t, edouble, fabsq);
 MATRIX_LOG_BALANCE(matrix_edouble, matrix_edouble_t, edouble, logq);
 MATRIX_EXP(matrix_edouble, matrix_edouble_t, expq);
 
-int dgetrf_(int *m, int *n, double *a, int *lda, int *ipiv, int *info);
 
+#ifdef USE_LAPACK
 double matrix_logdet_lapack(matrix_edouble_t *M, matrix_sign_t *signs)
 {
     const int dim = M->size;
@@ -42,3 +42,4 @@ double matrix_logdet_lapack(matrix_edouble_t *M, matrix_sign_t *signs)
 
     return logdet;
 }
+#endif
