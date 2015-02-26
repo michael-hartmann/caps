@@ -14,6 +14,8 @@
 #define LOG_FLOAT_RADIX_SQ 2*M_LN2
 #define LOG_095 -0.05129329438755058
 
+/* LAPACK LU cecomposition */
+int dgetrf_(int *m, int *n, double *a, int *lda, int *ipiv, int *info);
 
 #define MATRIX_TYPEDEF(NAME, MATRIX_TYPE) \
     typedef struct { \
@@ -74,7 +76,7 @@ MATRIX_TYPEDEF(matrix_edouble_t, edouble);
                 { \
                     TYPE a = matrix_get(M, j, j); \
                     TYPE b = Mij; \
- \
+\
                     if(b == 0) \
                     { \
                         c = COPYSIGN_FUNCTION(1,a); \
@@ -305,6 +307,9 @@ MATRIX_TYPEDEF(matrix_edouble_t, edouble);
                         list_row[len]    = matrix_get(A,i,j); \
                         len++; \
                     } \
+\
+                if(len == 0) \
+                    continue; \
 \
                 row_norm = logadd_m(list_row,    len); \
                 col_norm = logadd_m(list_column, len); \
