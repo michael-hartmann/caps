@@ -8,7 +8,6 @@
 
 #define _GNU_SOURCE
 
-#include <assert.h>
 #include <math.h>
 #include <stdio.h>
 #include <pthread.h>
@@ -38,7 +37,7 @@ const char *casimir_compile_info(void)
     #ifdef USE_LAPACK
         const char *lapack = "lapack support";
     #else
-        const char *lapack = "lapack support";
+        const char *lapack = "no lapack support";
     #endif
 
     snprintf(CASIMIR_COMPILE_INFO, sizeof(CASIMIR_COMPILE_INFO)/sizeof(char), "Compiler %s, using %s, %s", COMPILER, CASIMIR_ARITHMETICS, lapack);
@@ -1474,11 +1473,11 @@ double casimir_logdetD(casimir_t *self, int n, int m, void *integration_obj)
                 matrix_set(M, j,i, logadd_ms(list_ji, signs_ji, 3, &sign));
                 matrix_set(M_sign, j,i, sign);
 
-                assert(!isinf(matrix_get(M,i,j)));
-                assert(!isnan(matrix_get(M,i,j)));
+                TERMINATE(isinf(matrix_get(M,i,j)), "EE, i=%d,j=%d is inf", i,j);
+                TERMINATE(isnan(matrix_get(M,i,j)), "EE, i=%d,j=%d is nan", i,j);
 
-                assert(!isinf(matrix_get(M,j,i)));
-                assert(!isnan(matrix_get(M,j,i)));
+                TERMINATE(isinf(matrix_get(M,j,i)), "EE, i=%d,j=%d is inf", j,i);
+                TERMINATE(isnan(matrix_get(M,j,i)), "EE, i=%d,j=%d is nan", j,i);
             }
 
             /* MM */
@@ -1496,11 +1495,11 @@ double casimir_logdetD(casimir_t *self, int n, int m, void *integration_obj)
                 matrix_set(M, j+dim,i+dim, logadd_ms(list_ji, signs_ji, 3, &sign));
                 matrix_set(M_sign, j+dim,i+dim, sign);
 
-                assert(!isinf(matrix_get(M,i+dim,j+dim)));
-                assert(!isnan(matrix_get(M,i+dim,j+dim)));
+                TERMINATE(isinf(matrix_get(M,i+dim,j+dim)), "MM, i=%d,j=%d is inf", i+dim,j+dim);
+                TERMINATE(isnan(matrix_get(M,i+dim,j+dim)), "MM, i=%d,j=%d is nan", i+dim,j+dim);
 
-                assert(!isinf(matrix_get(M,j+dim,i+dim)));
-                assert(!isnan(matrix_get(M,j+dim,i+dim)));
+                TERMINATE(isinf(matrix_get(M,j+dim,i+dim)), "MM, i=%d,j=%d is inf", j+dim,i+dim);
+                TERMINATE(isnan(matrix_get(M,j+dim,i+dim)), "MM, i=%d,j=%d is nan", j+dim,i+dim);
             }
 
 
@@ -1521,8 +1520,11 @@ double casimir_logdetD(casimir_t *self, int n, int m, void *integration_obj)
                     matrix_set(M, dim+j,i, logadd_ms(list_ji, signs_ji, 2, &sign));
                     matrix_set(M_sign, dim+j,i, sign);
 
-                    assert(!isinf(matrix_get(M,i+dim,j)));
-                    assert(!isnan(matrix_get(M,j+dim,i)));
+                    TERMINATE(isinf(matrix_get(M,i+dim,j)), "EM, i=%d,j=%d is inf", i+dim,j);
+                    TERMINATE(isnan(matrix_get(M,i+dim,j)), "EM, i=%d,j=%d is nan", i+dim,j);
+
+                    TERMINATE(isinf(matrix_get(M,j+dim,i)), "EM, i=%d,j=%d is inf", j+dim,i);
+                    TERMINATE(isnan(matrix_get(M,j+dim,i)), "EM, i=%d,j=%d is nan", j+dim,i);
                 }
 
                 /* M_ME */
@@ -1540,8 +1542,11 @@ double casimir_logdetD(casimir_t *self, int n, int m, void *integration_obj)
                     matrix_set(M, j,dim+i, logadd_ms(list_ji, signs_ji, 2, &sign));
                     matrix_set(M_sign, j,dim+i, sign);
 
-                    assert(!isinf(matrix_get(M,i,j+dim)));
-                    assert(!isnan(matrix_get(M,j,i+dim)));
+                    TERMINATE(isinf(matrix_get(M,i,j+dim)), "ME, i=%d,j=%d is inf", i,j+dim);
+                    TERMINATE(isnan(matrix_get(M,i,j+dim)), "ME, i=%d,j=%d is nan", i,j+dim);
+
+                    TERMINATE(isinf(matrix_get(M,j,i+dim)), "ME, i=%d,j=%d is inf", j,i+dim);
+                    TERMINATE(isnan(matrix_get(M,j,i+dim)), "ME, i=%d,j=%d is nan", j,i+dim);
                 }
             }
         }
