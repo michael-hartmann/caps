@@ -941,7 +941,7 @@ void casimir_mie_cache_alloc(casimir_t *self, int n)
         entry->sign_al = xmalloc((lmax+1)*sizeof(sign_t));
         entry->sign_bl = xmalloc((lmax+1)*sizeof(sign_t));
 
-        entry->ln_al[0] = entry->ln_bl[0] = 0;
+        entry->ln_al[0] = entry->ln_bl[0] = NAN; /* should never be read */
         for(l = 1; l <= lmax; l++)
             casimir_lnab(self, n, l, &entry->ln_al[l], &entry->ln_bl[l], &entry->sign_al[l], &entry->sign_bl[l]);
     }
