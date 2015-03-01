@@ -9,6 +9,7 @@
 #include "unittest.h"
 
 #include "test_bessels.h"
+#include "test_casimirF.h"
 #include "test_doublefact.h"
 #include "test_epsilon.h"
 #include "test_fresnel.h"
@@ -29,42 +30,6 @@
  * locking and multithreading is correct.
  */
 #define CORES 10
-
-int test_casimirF()
-{
-    unittest_t test;
-    casimir_t casimir;
-    double F;
-
-    unittest_init(&test, "casimirF", "Compare free energies");
-
-    casimir_init(&casimir, 0.85, 2.7);
-    casimir_set_precision(&casimir, 1e-14);
-    casimir_set_cores(&casimir, CORES);
-    casimir_set_lmax(&casimir, 30);
-    F = casimir_F(&casimir, NULL);
-    AssertAlmostEqual(&test, F, -1.34361893570375);
-    casimir_free(&casimir);
-
-    casimir_init(&casimir, 0.7, 1);
-    casimir_set_precision(&casimir, 1e-14);
-    casimir_set_cores(&casimir, CORES);
-    casimir_set_lmax(&casimir, 15);
-    F = casimir_F(&casimir, NULL);
-    AssertAlmostEqual(&test, F, -0.220709222562969);
-    casimir_free(&casimir);
-
-    casimir_init(&casimir, 0.85, 2.7);
-    casimir_set_precision(&casimir, 1e-14);
-    casimir_set_cores(&casimir, CORES);
-    casimir_set_lmax(&casimir, 30);
-    F = casimir_F(&casimir, NULL);
-    AssertAlmostEqual(&test, F, -1.34361893570375);
-    casimir_free(&casimir);
-
-    return test_results(&test, stderr);
-}
-
 
 int test_integration_drude(void)
 {
@@ -291,7 +256,6 @@ int test_integration_drude(void)
     return test_results(&test, stderr);
 }
 
-
 int main(int argc, char *argv[])
 {
     test_Lambda();
@@ -311,7 +275,7 @@ int main(int argc, char *argv[])
     test_givens();
     test_logdet(CORES);
 
-    test_casimirF();
+    test_casimirF(CORES);
     
     return 0;
 }
