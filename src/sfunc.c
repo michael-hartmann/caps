@@ -143,7 +143,7 @@ void bessel_lnInuKnu(int nu, const edouble x, edouble *lnInu_p, edouble *lnKnu_p
             }
             else
             {
-                WARN(1, "Couldn't calculate Bessel functions, nu=%d, x=%Lg\n", nu, x);
+                WARN(1, "Couldn't calculate Bessel functions, nu=%d, x=%g\n", nu, (double)x);
                 lnKnu = lnKnup = -INFINITY;
             }
         }
