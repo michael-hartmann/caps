@@ -1,7 +1,6 @@
 #include <math.h>
 #include <stdio.h>
 #include <string.h>
-#include <assert.h>
 
 #include "edouble.h"
 #include "utils.h"
@@ -193,14 +192,15 @@ double log_polyintegrate(edouble p[], size_t len, int l1, int l2, int m, double 
     double lnLambda = casimir_lnLambda(l1, l2, m, &sign_lnLambda);
     double lnfac_max = lnfac(len-1);
 
-    assert(!isnan(lnLambda));
-    assert(!isinf(lnLambda));
+    TERMINATE(isnan(lnLambda), "lnLambda is nan");
+    TERMINATE(isinf(lnLambda), "lnLambda is inf");
 
     for(i = 0; i < len; i++)
         value += expq(lnfac(i)-lnfac_max-(i+1)*ln_tau)*p[i];
 
-    assert(!isnan(value));
-    assert(!isinf(value));
+    TERMINATE(isnan(value), "value is nan");
+    TERMINATE(isinf(value), "value is inf");
+
     *sign = (double)copysignq(1, value) * sign_lnLambda;
     return lnLambda+lnfac_max+logq(fabsq(value));
 }
