@@ -3,6 +3,5 @@
 
 int test_casimirF(void);
 int test_integration_drude(void);
-int test_fresnel(void);
 
 #endif
