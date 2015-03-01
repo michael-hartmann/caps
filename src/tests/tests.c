@@ -14,6 +14,7 @@
 #include "test_givens.h"
 #include "test_integration_perf.h"
 #include "test_Lambda.h"
+#include "test_lbinom.h"
 #include "test_Plm.h"
 #include "test_Xi.h"
 
@@ -605,6 +606,7 @@ int test_fresnel()
 int main(int argc, char *argv[])
 {
     test_Lambda();
+    test_lbinom();
     test_mie_drude();
 
     test_fresnel();
@@ -619,6 +621,7 @@ int main(int argc, char *argv[])
     test_besselK();
     test_givens();
     test_logdet();
+
     test_casimirF();
     
     return 0;
