@@ -369,7 +369,7 @@ edouble inline gaunt_log_a0(int n, int nu, int m)
     return lgamma(2*n+1)-lgamma(n+1)+lgamma(2*nu+1)-lgamma(1+nu)+lgamma(n+nu+1)-lgamma(2*n+2*nu+1)+lgamma(1+n+nu-2*m)-lgamma(1+n-m)-lgamma(1+nu-m);
 }
 
-edouble inline gaunt_a0(int n,int nu,int m)
+edouble inline gaunt_a0(int n, int nu, int m)
 {
     return expq(gaunt_log_a0(n,nu,m));
 }
@@ -377,35 +377,23 @@ edouble inline gaunt_a0(int n,int nu,int m)
 /* eq. (3) */
 #define alpha(p, n, nu) (((edouble)(pow_2(p)-pow_2(n+nu+1))*(pow_2(p)-pow_2(n-nu)))/(4*pow_2(p)-1))
 
-#if 0
-static edouble inline alpha(const edouble p, const edouble n, const edouble nu);
-
-static edouble inline alpha(const edouble p, const edouble n, const edouble nu)
-{
-    /* eq. (3) */
-    edouble num   = (pow_2(p)-pow_2(n+nu+1))*(pow_2(p)-pow_2(n-nu));
-    edouble denom = (4*pow_2(p)-1);
-
-    return num/denom;
-}
-#endif
 
 /*
-Determine Gaunt coefficients a(m, n, mu, nu, p) for m, n, mu and nu fixed.
-These coefficients can be used to express the product of two associated
-Legendre polynomials:
-
-P_n^m(x)*P_{nu}^{mu}(x) = a0 sum_{q=0}^{qmax} aq_tilde P_{n+nu-2q}^(m+mu)(x)
-
-Returns: qmax, a0, aq_tilde
-qmax is the upper bound of summation, a0 is the prefactor and aq_tilde is a
-list of normalized Gaunt coefficients.
-
-See [1] for more information, especially chapter 3. There is a brief
-outline how to calculate Gaunt coefficients at the end of the chapter.
-
-Ref.: [1] Y.-L. Xu, J. Comp. Appl. Math. 85, 53 (1997)
-*/
+ * Determine Gaunt coefficients a(m, n, mu, nu, p) for m, n, mu and nu fixed.
+ * These coefficients can be used to express the product of two associated
+ * Legendre polynomials:
+ *
+ * P_n^m(x)*P_{nu}^{mu}(x) = a0 sum_{q=0}^{qmax} aq_tilde P_{n+nu-2q}^(m+mu)(x)
+ *
+ * Returns: qmax, a0, aq_tilde
+ * qmax is the upper bound of summation, a0 is the prefactor and aq_tilde is a
+ * list of normalized Gaunt coefficients.
+ *
+ * See [1] for more information, especially chapter 3. There is a brief
+ * outline how to calculate Gaunt coefficients at the end of the chapter.
+ *
+ * Ref.: [1] Y.-L. Xu, J. Comp. Appl. Math. 85, 53 (1997)
+ */
 void gaunt(const int n, const int nu, const int m, edouble a_tilde[])
 {
     int q;
