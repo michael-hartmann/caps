@@ -7,7 +7,7 @@
 #include "utils.h"
 #include "sfunc.h"
 #include "libcasimir.h"
-#include "integration.h"
+#include "integration_drude.h"
 #include "gausslaguerre.h"
 
 void integrands_drude(edouble x, integrands_drude_t *integrands, casimir_t *self, double nT, int l1, int l2, int m)

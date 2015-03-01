@@ -1,6 +1,6 @@
 #include "libcasimir.h"
 #include "unittest.h"
-#include "integration.h"
+#include "integration_drude.h"
 #include "integration_perf.h"
 
 #include "test_logdet.h"

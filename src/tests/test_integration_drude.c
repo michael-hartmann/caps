@@ -1,7 +1,7 @@
 #include <math.h>
 
 #include "libcasimir.h"
-#include "integration.h"
+#include "integration_drude.h"
 #include "unittest.h"
 #include "sfunc.h"
 
