@@ -188,19 +188,16 @@ double log_polyintegrate(edouble p[], size_t len, int l1, int l2, int m, double 
     size_t i;
     sign_t sign_lnLambda;
     edouble value = 0;
-    double ln_tau = log(tau);
-    double lnLambda = casimir_lnLambda(l1, l2, m, &sign_lnLambda);
-    double lnfac_max = lnfac(len-1);
-
-    TERMINATE(isnan(lnLambda), "lnLambda is nan");
-    TERMINATE(isinf(lnLambda), "lnLambda is inf");
+    const edouble ln_tau = logq(tau);
+    const edouble lnLambda = casimir_lnLambda(l1, l2, m, &sign_lnLambda);
+    const edouble lnfac_max = lgammaq(1+len-1);
 
     for(i = 0; i < len; i++)
-        value += expq(lnfac(i)-lnfac_max-(i+1)*ln_tau)*p[i];
+        value += expq(lgammaq(1+i)-lnfac_max-(i+1)*ln_tau)*p[i];
 
     TERMINATE(isnan(value), "value is nan");
     TERMINATE(isinf(value), "value is inf");
 
-    *sign = (double)copysignq(1, value) * sign_lnLambda;
+    *sign = copysignq(1, value) * sign_lnLambda;
     return lnLambda+lnfac_max+logq(fabsq(value));
 }
