@@ -32,6 +32,7 @@ double sumF(double *values, int lmax)
 void usage(FILE *stream, const char *name)
 {
     fprintf(stream, "Usage: %s -x L/R [-l lscale -L lmax -p precision]\n\n", name);
+    fprintf(stream, "Options:\n");
     fprintf(stream, "\t-x L/R:    ratio of L and R, L/R > 0\n");
     fprintf(stream, "\t-L lmax:   use lmax\n"); 
     fprintf(stream, "\t-l lscale: use lmax = lscale*R/L (ignored if -L is used), default: %g\n", LSCALE); 
