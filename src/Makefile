@@ -1,4 +1,4 @@
-.PHONY: clean doc casimir casimir_tests casimir_hiT casimir_logdetD
+.PHONY: clean doc casimir casimir_tests casimir_hiT casimir_logdetD casimir_Fn
 all: casimir casimir_hiT casimir_logdetD casimir_tests
 
 SOURCES  = sfunc.c integration.c integration_perf.c libcasimir.c matrix.c utils.c
@@ -50,7 +50,7 @@ USE_EXTENDED_DOUBLE = 1
 #
 # Disabling this option will slightly increase performance.
 #
-# If you don't know what to say here, enable checks.
+# If you don't know what to say here, comment out the line.
 # CFLAGS += -DNDEBUG
 
 
@@ -89,6 +89,10 @@ casimir_logdetD:
 
 casimir_hiT:
 	$(CC) $(OPTIMIZATION) $(CFLAGS) $(SOURCES) casimir_hiT.c $(LDFLAGS) -o casimir_hiT
+
+casimir_Fn:
+	$(CC) $(OPTIMIZATION) $(CFLAGS) $(SOURCES) casimir_Fn.c $(LDFLAGS) -o casimir_Fn
+
 
 casimir_tests:
 	$(CC) $(OPTIMIZATION) -I . $(CFLAGS) $(SOURCES) tests/unittest.c tests/test*.c $(LDFLAGS) -o casimir_tests
