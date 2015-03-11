@@ -84,6 +84,7 @@ void *logdetD(void *p)
     casimir_set_lmax(&casimir, lmax);
     
     logdet = casimir_logdetD(&casimir, n, m, &int_perf);
+    casimir_integrate_perf_free(&int_perf);
     casimir_free(&casimir);
     
     params->logdet = logdet;
@@ -256,6 +257,7 @@ int main(int argc, char *argv[])
                     if(r->logdet/sumF(values, lmax) < precision)
                         finished = 1;
                     xfree(r);
+                    xfree(threads[i]);
                     threads[i] = NULL;
                 }
             }
