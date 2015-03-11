@@ -1,13 +1,12 @@
 #include <math.h>
 #include <stdio.h>
 #include <string.h>
-#include <assert.h>
 
 #include "edouble.h"
 #include "utils.h"
 #include "sfunc.h"
 #include "libcasimir.h"
-#include "integration.h"
+#include "integration_drude.h"
 #include "gausslaguerre.h"
 
 void integrands_drude(edouble x, integrands_drude_t *integrands, casimir_t *self, double nT, int l1, int l2, int m)
@@ -189,198 +188,16 @@ double log_polyintegrate(edouble p[], size_t len, int l1, int l2, int m, double 
     size_t i;
     sign_t sign_lnLambda;
     edouble value = 0;
-    double ln_tau = log(tau);
-    double lnLambda = casimir_lnLambda(l1, l2, m, &sign_lnLambda);
-    double lnfac_max = lnfac(len-1);
-
-    assert(!isnan(lnLambda));
-    assert(!isinf(lnLambda));
+    const edouble ln_tau = logq(tau);
+    const edouble lnLambda = casimir_lnLambda(l1, l2, m, &sign_lnLambda);
+    const edouble lnfac_max = lgammaq(1+len-1);
 
     for(i = 0; i < len; i++)
-        value += expq(lnfac(i)-lnfac_max-(i+1)*ln_tau)*p[i];
+        value += expq(lgammaq(1+i)-lnfac_max-(i+1)*ln_tau)*p[i];
 
-    assert(!isnan(value));
-    assert(!isinf(value));
-    *sign = (double)copysignq(1, value) * sign_lnLambda;
+    TERMINATE(isnan(value), "value is nan");
+    TERMINATE(isinf(value), "value is inf");
+
+    *sign = copysignq(1, value) * sign_lnLambda;
     return lnLambda+lnfac_max+logq(fabsq(value));
 }
-#if 0
-
-void polym(edouble p[], int m)
-{
-    size_t k;
-
-    for(k = 0; k < m-1; k++)
-        p[k] = 0;
-
-    for(k = 0; k < m; k++)
-        p[2*m-2-k] = expq(lbinom(m-1,k))*pow(2, k);
-}
-
-void polyplm(edouble pl1[], edouble pl2[], int l1, int l2, int m)
-{
-    int k;
-
-    for(k = 0; k <= l1-m; k++)
-        pl1[k] = expq(lngamma(1+k+m+l1)-lngamma(1+l1-k-m)-lngamma(1+k)-lngamma(1+k+m)-k*LOG2);
-
-    for(k = 0; k <= l2-m; k++)
-        pl2[k] = expq(lngamma(1+k+m+l2)-lngamma(1+l2-k-m)-lngamma(1+k)-lngamma(1+k+m)-k*LOG2);
-}
-
-void polydplm(edouble pl1[], edouble pl2[], int l1, int l2, int m)
-{
-    int k;
-
-    if(m == 0)
-    {
-        for(k = 1; k <= l1; k++)
-            pl1[k-1] = expq(lngamma(1+k+l1)-lngamma(1+k)-lngamma(1+l1-k)-lngamma(k)-(k-1)*LOG2)/2;
-
-        for(k = 1; k <= l2; k++)
-            pl2[k-1] = expq(lngamma(1+k+l2)-lngamma(1+k)-lngamma(1+l2-k)-lngamma(k)-(k-1)*LOG2)/2;
-    }
-    else
-    {
-        for(k = 0; k <= l1-m+1; k++)
-            pl1[k] = 0;
-        for(k = 0; k <= l2-m+1; k++)
-            pl2[k] = 0;
-
-        pl1[l1+1-m] += (l1-m+1)*expq(lngamma(2*l1+3)-lngamma(l1+2)-lngamma(l1-m+2)-(l1+1-m)*LOG2);
-        for(k = 0; k <= l1-m; k++)
-        {
-            edouble common = expq(lngamma(1+k+l1+m)-lngamma(1+k+m)-lngamma(1+k)-lngamma(1+l1-k-m)-k*LOG2);
-            pl1[k] += common*(pow_2(m)+m*(k-l1-1)-2.0*k*l1-2*k)/(m-l1+k-1);
-            pl1[k+1] -= common*(l1+1);
-        }
-
-        pl2[l2+1-m] += (l2-m+1)*expq(lngamma(2*l2+3)-lngamma(l2+2)-lngamma(l2-m+2)-(l2+1-m)*LOG2);
-        for(k = 0; k <= l2-m; k++)
-        {
-            edouble common = expq(lngamma(1+k+l2+m)-lngamma(1+k+m)-lngamma(1+k)-lngamma(1+l2-k-m)-k*LOG2);
-            pl2[k] += common*(pow_2(m)+m*(k-l2-1)-2.0*k*l2-2*k)/(m-l2+k-1);
-            pl2[k+1] -= common*(l2+1.);
-        }
-    }
-}
-
-#define XLEN(a) (sizeof((a))/sizeof(edouble))
-
-/*
- * pmppl1mppl2m:  l1+l2-1
- * pmpdpl1mpdpl2m l1+l2+1
- * pmpdpl1mppl2m  l1+l2
- * pmppl1mpdpl2m  l1+l2
- */
-
-void casimir_integrate_coefficients(int l1, int l2, int m, edouble pmppl1mppl2m[], edouble pmpdpl1mpdpl2m[], edouble pmpdpl1mppl2m[], edouble pmppl1mpdpl2m[])
-{
-    edouble pdpl1m[l1-m+2];
-    edouble pdpl2m[l2-m+2];
-
-    if(m == 0)
-    {
-        edouble pm[3];
-        edouble pdpl1mpdpl2m[l1+l2-1];
-
-        polym(pm, 2);
-        polydplm(pdpl1m,pdpl2m,l1,l2,m);
-
-        polymult(pdpl1m, l1, pdpl2m, l2, pdpl1mpdpl2m);
-        polymult(pm, XLEN(pm), pdpl1mpdpl2m, XLEN(pdpl1mpdpl2m), pmpdpl1mpdpl2m);
-    }
-    else
-    {
-        edouble pm[2*m-1];
-        edouble ppl1m[l1-m+1];
-        edouble ppl2m[l2-m+1];
-
-        polym(pm, m);
-        polyplm(ppl1m,ppl2m,l1,l2,m);
-        polydplm(pdpl1m,pdpl2m,l1,l2,m);
-
-        edouble pmppl1m [XLEN(pm)+XLEN(ppl1m) -1];
-        edouble pmpdpl1m[XLEN(pm)+XLEN(pdpl1m)-1];
-
-        polymult(pm, XLEN(pm), ppl1m,  XLEN(ppl1m),  pmppl1m);
-        polymult(pm, XLEN(pm), pdpl1m, XLEN(pdpl1m), pmpdpl1m);
-
-        polymult(pmppl1m,  XLEN(pmppl1m),  ppl2m,  XLEN(ppl2m),  pmppl1mppl2m);
-        polymult(pmppl1m,  XLEN(pmppl1m),  pdpl2m, XLEN(pdpl2m), pmppl1mpdpl2m);
-        polymult(pmpdpl1m, XLEN(pmpdpl1m), ppl2m,  XLEN(ppl2m),  pmpdpl1mppl2m);
-        polymult(pmpdpl1m, XLEN(pmpdpl1m), pdpl2m, XLEN(pdpl2m), pmpdpl1mpdpl2m);
-    }
-}
-
-/*
-* Returns the integrals A,B,C,D for l1,l2,m,xi and p=TE,TM
-*/
-void casimir_integrate_perf(casimir_integrals_t *cint, int l1, int l2, int m, int n, double T)
-{
-    edouble lnA, lnB, lnC, lnD;
-    int signA, signB, signC, signD;
-    edouble tau = 2*n*T;
-
-    if(m == 0)
-    {
-        edouble pmpdpl1mpdpl2m[l1+l2+1];
-
-        casimir_integrate_coefficients(l1, l2, m, NULL, pmpdpl1mpdpl2m, NULL, NULL);
-
-        lnB = -tau+log_polyintegrate(pmpdpl1mpdpl2m, l1+l2+1, l1,l2,m, tau, &signB);
-        signB *= MPOW(l2+1);
-
-        lnA = lnC = lnD = -INFINITY;
-        signA = signC = signD = 0;
-    }
-    else
-    {
-        edouble logprefactor = -tau-m*LOG4;
-        edouble ln_m = logq(m);
-
-        edouble pmppl1mppl2m  [l1+l2-1];
-        edouble pmpdpl1mpdpl2m[l1+l2+1];
-        edouble pmppl1mpdpl2m [l1+l2];
-        edouble pmpdpl1mppl2m [l1+l2];
-
-        casimir_integrate_coefficients(l1, l2, m, pmppl1mppl2m, pmpdpl1mpdpl2m, pmpdpl1mppl2m, pmppl1mpdpl2m);
-
-        lnA = 2*ln_m+logprefactor+log_polyintegrate(pmppl1mppl2m, XLEN(pmppl1mppl2m), l1,l2,m,tau, &signA);
-        signA *= MPOW(l2);
-
-        lnB = logprefactor+log_polyintegrate(pmpdpl1mpdpl2m, XLEN(pmpdpl1mpdpl2m), l1,l2,m,tau, &signB);
-        signB *= MPOW(l2+1);
-        
-        lnC = ln_m+logprefactor+log_polyintegrate(pmppl1mpdpl2m, XLEN(pmppl1mpdpl2m), l1,l2,m,tau, &signC);
-        signC *= MPOW(l2+1);
-        
-        lnD = ln_m+logprefactor+log_polyintegrate(pmpdpl1mppl2m, XLEN(pmpdpl1mppl2m), l1,l2,m,tau, &signD);
-        signD *= MPOW(l2);
-    }
-
-    cint->lnA_TM   = lnA;
-    cint->signA_TM = signA;
-
-    cint->lnA_TE   = lnA;
-    cint->signA_TE = -signA;
-
-    cint->lnB_TM   = lnB;
-    cint->signB_TM = signB;
-
-    cint->lnB_TE   = lnB;
-    cint->signB_TE = -signB;
-
-    cint->lnC_TM   = lnC;
-    cint->signC_TM = signC;
-
-    cint->lnC_TE   = lnC;
-    cint->signC_TE = -signC;
-
-    cint->lnD_TM   = lnD;
-    cint->signD_TM = signD;
-
-    cint->lnD_TE   = lnD;
-    cint->signD_TE = -signD;
-}
-#endif

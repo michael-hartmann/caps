@@ -1,7 +1,7 @@
 /**
  * @file   libcasimir.c
  * @author Michael Hartmann <michael.hartmann@physik.uni-augsburg.de>
- * @date   February, 2015
+ * @date   March, 2015
  * @brief  library to calculate the free Casimir energy in the plane-sphere geometry
  */
 
@@ -14,7 +14,7 @@
 #include <unistd.h>
 
 #include "edouble.h"
-#include "integration.h"
+#include "integration_drude.h"
 #include "integration_perf.h"
 #include "libcasimir.h"
 #include "matrix.h"
@@ -1353,7 +1353,8 @@ void casimir_logdetD0(casimir_t *self, int m, double *logdet_EE, double *logdet_
                 matrix_set(EE, i,j, v);
                 matrix_set(EE_sign, i,j, sign);
 
-                TERMINATE(isinf(v) || isnan(v), "EE l1=%d,l2=%d: %Lg (lna0=%g, lnXiRL=%Lg)", l1, l2, v, lna0, lnXiRL);
+                TERMINATE(isinf(v), "EE l1=%d,l2=%d: inf (lna0=%g, lnXiRL=%g)", l1, l2, lna0, (double)lnXiRL);
+                TERMINATE(isnan(v), "EE l1=%d,l2=%d: nan (lna0=%g, lnXiRL=%g)", l1, l2, lna0, (double)lnXiRL);
             }
             if(MM != NULL)
             {
@@ -1367,7 +1368,9 @@ void casimir_logdetD0(casimir_t *self, int m, double *logdet_EE, double *logdet_
 
                 matrix_set(MM, i,j, v);
                 matrix_set(MM_sign, i,j, sign);
-                TERMINATE(isinf(v) || isnan(v), "MM l1=%d,l2=%d: %Lg (lnb0=%g, lnXiRL=%Lg)", l1, l2, v, lnb0, lnXiRL);
+
+                TERMINATE(isinf(v), "MM l1=%d,l2=%d: inf (lnb0=%g, lnXiRL=%g)", l1, l2, lnb0, (double)lnXiRL);
+                TERMINATE(isnan(v), "MM l1=%d,l2=%d: nan (lnb0=%g, lnXiRL=%g)", l1, l2, lnb0, (double)lnXiRL);
             }
         }
 

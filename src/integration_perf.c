@@ -19,7 +19,7 @@ static void poly1(const int m, edouble p[])
     for(k = 0; k <= m; k++)
     {
         p[k] = expq(lgammaq(m+1)-lgammaq(k+1)-lgammaq(m+1-k)+(m-k)*LOG2);
-        TERMINATE(isinf(p[k]), "p[%d] inf\n", k);
+        TERMINATE(isinf(p[k]), "p[%d] inf", k);
     }
 }
 
@@ -36,7 +36,7 @@ static void poly2(const int nu, const int m2, edouble p[])
     for(k = m2; k <= nu; k++)
     {
         p[k-m2] = expq(lgammaq(k+nu+1)-lgammaq(k+1)-lgammaq(k-m2+1)-lgammaq(-k+nu+1)-k*LOG2);
-        TERMINATE(isinf(p[k-m2]), "p[%d] inf\n", k-m2);
+        TERMINATE(isinf(p[k-m2]), "p[%d] inf", k-m2);
     }
 }
 
@@ -61,7 +61,7 @@ static edouble polyintegrate(edouble p[], const int len_p, const int offset, con
     if(sign != NULL)
         *sign = sign_ret;
 
-    TERMINATE(isinf(ret), "ret is inf, ret=%Lg", ret);
+    TERMINATE(isinf(ret), "ret is inf");
     return ret;
 }
 
@@ -88,7 +88,7 @@ static inline edouble I(integration_perf_t *self, int nu, int m2)
         //printf("v=%g\n", (double)v);
         self->cache_I[index] = v;
 
-        TERMINATE(isinf(v), "I is inf, I=%Lg, nu=%d, 2m=%d\n", v, nu, m2);
+        TERMINATE(isinf(v), "I is inf, nu=%d, 2m=%d\n", nu, m2);
         TERMINATE(isnan(v), "I is nan, nu=%d, 2m=%d\n", nu, m2);
     }
 
@@ -225,8 +225,8 @@ void casimir_integrate_perf(integration_perf_t *self, int l1, int l2, int m, cas
         cint->lnB_TM   = cint->lnB_TE = lnLambda-tau+log_B;
         cint->signB_TM = -MPOW(l2+1)*sign_B;
         cint->signB_TE = -cint->signB_TM;
-        TERMINATE(isinf(cint->lnB_TM), "lnB is inf, l1=%d,l2=%d,m=%d,tau=%Lg", l1,l2,m,tau);
-        TERMINATE(isnan(cint->lnB_TM), "lnB is nan, l1=%d,l2=%d,m=%d,tau=%Lg", l1,l2,m,tau);
+        TERMINATE(isinf(cint->lnB_TM), "lnB is inf, l1=%d,l2=%d,m=%d,tau=%g", l1,l2,m,(double)tau);
+        TERMINATE(isnan(cint->lnB_TM), "lnB is nan, l1=%d,l2=%d,m=%d,tau=%g", l1,l2,m,(double)tau);
 
         cint->lnA_TE = cint->lnA_TM   = -INFINITY;
         cint->signA_TM = cint->signA_TE = 1;
@@ -403,17 +403,17 @@ void casimir_integrate_perf(integration_perf_t *self, int l1, int l2, int m, cas
         cint->signD_TM = -MPOW(l2+1)*sign_D;
         cint->signD_TE = -cint->signD_TM;
 
-        TERMINATE(isinf(cint->lnA_TM), "lnA is inf, l1=%d,l2=%d,m=%d,tau=%Lg", l1,l2,m,tau);
-        TERMINATE(isnan(cint->lnA_TM), "lnA is nan, l1=%d,l2=%d,m=%d,tau=%Lg", l1,l2,m,tau);
+        TERMINATE(isinf(cint->lnA_TM), "lnA is inf, l1=%d,l2=%d,m=%d,tau=%g", l1,l2,m,(double)tau);
+        TERMINATE(isnan(cint->lnA_TM), "lnA is nan, l1=%d,l2=%d,m=%d,tau=%g", l1,l2,m,(double)tau);
 
-        TERMINATE(isinf(cint->lnB_TM), "lnB is inf, l1=%d,l2=%d,m=%d,tau=%Lg", l1,l2,m,tau);
-        TERMINATE(isnan(cint->lnB_TM), "lnB is nan, l1=%d,l2=%d,m=%d,tau=%Lg", l1,l2,m,tau);
+        TERMINATE(isinf(cint->lnB_TM), "lnB is inf, l1=%d,l2=%d,m=%d,tau=%g", l1,l2,m,(double)tau);
+        TERMINATE(isnan(cint->lnB_TM), "lnB is nan, l1=%d,l2=%d,m=%d,tau=%g", l1,l2,m,(double)tau);
 
-        TERMINATE(isinf(cint->lnC_TM), "lnC is inf, l1=%d,l2=%d,m=%d,tau=%Lg", l1,l2,m,tau);
-        TERMINATE(isnan(cint->lnC_TM), "lnC is nan, l1=%d,l2=%d,m=%d,tau=%Lg", l1,l2,m,tau);
+        TERMINATE(isinf(cint->lnC_TM), "lnC is inf, l1=%d,l2=%d,m=%d,tau=%g", l1,l2,m,(double)tau);
+        TERMINATE(isnan(cint->lnC_TM), "lnC is nan, l1=%d,l2=%d,m=%d,tau=%g", l1,l2,m,(double)tau);
 
-        TERMINATE(isinf(cint->lnD_TM), "lnD is inf, l1=%d,l2=%d,m=%d,tau=%Lg", l1,l2,m,tau);
-        TERMINATE(isnan(cint->lnD_TM), "lnD is nan, l1=%d,l2=%d,m=%d,tau=%Lg", l1,l2,m,tau);
+        TERMINATE(isinf(cint->lnD_TM), "lnD is inf, l1=%d,l2=%d,m=%d,tau=%g", l1,l2,m,(double)tau);
+        TERMINATE(isnan(cint->lnD_TM), "lnD is nan, l1=%d,l2=%d,m=%d,tau=%g", l1,l2,m,(double)tau);
     }
 
     xfree(sum);
