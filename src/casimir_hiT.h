@@ -9,7 +9,6 @@ typedef struct {
     double value, time, logdet_EE, logdet_MM;
 } param_t;
 
-double now(void);
 double sumF(double *values, int lmax);
 void usage(FILE *stream, const char *name);
 void *logdetD0(void *p);
