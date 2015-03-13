@@ -67,7 +67,7 @@ MATRIX_TYPEDEF(matrix_edouble_t, edouble);
         const int dim = M->size; \
         int i,j,k; \
         TYPE sum, det = 0; \
-        TYPE *a = M->M; \
+        const TYPE *a = M->M; \
 \
         for(j = 0; j < dim; j++) \
         { \
@@ -107,7 +107,7 @@ MATRIX_TYPEDEF(matrix_edouble_t, edouble);
                 if(Mij != 0) \
                 { \
                     TYPE a = m[j*dim+j]; \
-                    TYPE b = Mij; \
+                    const TYPE b = Mij; \
 \
                     if(b == 0) \
                     { \
@@ -121,23 +121,23 @@ MATRIX_TYPEDEF(matrix_edouble_t, edouble);
                     } \
                     else if(ABS_FUNCTION(b) > ABS_FUNCTION(a)) \
                     { \
-                        TYPE t = a/b; \
-                        TYPE u = COPYSIGN_FUNCTION(SQRT_FUNCTION(1+t*t),b); \
+                        const TYPE t = a/b; \
+                        const TYPE u = COPYSIGN_FUNCTION(SQRT_FUNCTION(1+t*t),b); \
                         s = -1/u; \
                         c = -s*t; \
                     } \
                     else \
                     { \
-                        TYPE t = b/a; \
-                        TYPE u = COPYSIGN_FUNCTION(SQRT_FUNCTION(1+t*t),a); \
+                        const TYPE t = b/a; \
+                        const TYPE u = COPYSIGN_FUNCTION(SQRT_FUNCTION(1+t*t),a); \
                         c = 1/u; \
                         s = -c*t; \
                     } \
  \
                     for(n = 0; n < dim; n++) \
                     { \
-                        TYPE Min = m[i*dim+n]; \
-                        TYPE Mjn = m[j*dim+n]; \
+                        const TYPE Min = m[i*dim+n]; \
+                        const TYPE Mjn = m[j*dim+n]; \
  \
                         m[i*dim+n] = c*Min + s*Mjn; \
                         m[j*dim+n] = c*Mjn - s*Min; \
