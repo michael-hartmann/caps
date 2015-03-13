@@ -61,20 +61,52 @@ MATRIX_TYPEDEF(matrix_edouble_t, edouble);
 
 #define MATRIX_FREE_HEADER(FUNCTION_PREFIX, MATRIX_TYPE) void FUNCTION_PREFIX ## _free(MATRIX_TYPE *m)
 
-#define MATRIX_LOGDET(FUNCTION_PREFIX, MATRIX_TYPE, TYPE, ABS_FUNCTION, COPYSIGN_FUNCTION, SQRT_FUNCTION, LOG_FUNCTION) \
+#define MATRIX_LOGDET_LU(FUNCTION_PREFIX, MATRIX_TYPE, TYPE, ABS_FUNCTION, LOG_FUNCTION) \
+    TYPE FUNCTION_PREFIX ## _logdet(MATRIX_TYPE *M) \
+    { \
+        const int dim = M->size; \
+        int i,j,k; \
+        TYPE sum, det = 0; \
+        TYPE *a = M->M; \
+\
+        for(j = 0; j < dim; j++) \
+        { \
+            for(i = 0; i < j+1; i++) \
+            { \
+                sum = 0; \
+                for(k = 0; k < i; k++) \
+                    sum += a[i*dim+k]*a[k*dim+j]; \
+                a[i*dim+j] -= sum; \
+            } \
+            for(i = j+1; i < dim; i++) \
+            { \
+                sum = 0; \
+                for(k = 0; k < j; k++) \
+                    sum += a[i*dim+k]*a[k*dim+j]; \
+                a[i*dim+j] = (a[i*dim+j]-sum)/a[j*dim+j]; \
+            } \
+        } \
+\
+        for(i = 0; i < dim; i++) \
+            det += LOG_FUNCTION(ABS_FUNCTION(a[i*dim+i])); \
+        return det; \
+    }
+
+#define MATRIX_LOGDET_QR(FUNCTION_PREFIX, MATRIX_TYPE, TYPE, ABS_FUNCTION, COPYSIGN_FUNCTION, SQRT_FUNCTION, LOG_FUNCTION) \
     TYPE FUNCTION_PREFIX ## _logdet(MATRIX_TYPE *M) \
     { \
         size_t i, j, n, dim = M->size; \
         TYPE det = 0; \
+        TYPE *m = M->M; \
 \
         for(j = 0; j < dim-1; j++) \
             for(i = j+1; i < dim; i++) \
             {\
-                TYPE c,s, Mij = matrix_get(M, i, j); \
+                TYPE c,s, Mij = m[i*dim+j]; \
 \
                 if(Mij != 0) \
                 { \
-                    TYPE a = matrix_get(M, j, j); \
+                    TYPE a = m[j*dim+j]; \
                     TYPE b = Mij; \
 \
                     if(b == 0) \
@@ -104,19 +136,19 @@ MATRIX_TYPEDEF(matrix_edouble_t, edouble);
  \
                     for(n = 0; n < dim; n++) \
                     { \
-                        TYPE Min = matrix_get(M, i, n); \
-                        TYPE Mjn = matrix_get(M, j, n); \
+                        TYPE Min = m[i*dim+n]; \
+                        TYPE Mjn = m[j*dim+n]; \
  \
-                        matrix_set(M, i, n, c*Min + s*Mjn); \
-                        matrix_set(M, j, n, c*Mjn - s*Min); \
+                        m[i*dim+n] = c*Min + s*Mjn; \
+                        m[j*dim+n] = c*Mjn - s*Min; \
                     } \
  \
-                    matrix_set(M, i, j, 0); \
+                    /* m[i*dim+j] = 0; */ \
                 } \
             } \
  \
         for(i = 0; i < dim; i++) \
-            det += LOG_FUNCTION(ABS_FUNCTION(matrix_get(M, i, i))); \
+            det += LOG_FUNCTION(ABS_FUNCTION(m[i*dim+i])); \
         return det; \
     }
 

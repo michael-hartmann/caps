@@ -10,7 +10,8 @@ MATRIX_FREE (matrix_sign, matrix_sign_t);
 
 MATRIX_ALLOC(matrix_edouble, matrix_edouble_t, edouble);
 MATRIX_FREE (matrix_edouble, matrix_edouble_t);
-MATRIX_LOGDET    (matrix_edouble, matrix_edouble_t, edouble, fabsq, copysignq, sqrtq, logq);
+MATRIX_LOGDET_QR (matrix_edouble, matrix_edouble_t, edouble, fabsq, copysignq, sqrtq, logq);
+//MATRIX_LOGDET_LU (matrix_edouble, matrix_edouble_t, edouble, fabsq, logq);
 MATRIX_ABSMIN    (matrix_edouble, matrix_edouble_t, edouble, fabsq);
 MATRIX_ABSMAX    (matrix_edouble, matrix_edouble_t, edouble, fabsq);
 MATRIX_BALANCE   (matrix_edouble, matrix_edouble_t, edouble, fabsq);
