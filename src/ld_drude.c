@@ -1,12 +1,15 @@
-/* gcc -DEXTENDED_DOUBLE -Wall -O2 sfunc.c integration.c integration_perf.c libcasimir.c matrix.c utils.c ld_drude.c -pthread -lm -o ld_drude */
 #include <stdio.h>
 #include <math.h>
+
 #include "libcasimir.h"
-#include "integration.h"
+#include "integration_drude.h"
 #include "sfunc.h"
 
 #define TE 0
 #define TM 1
+
+edouble TraceD0(casimir_t *self, int m);
+void TraceD(casimir_t *self, int n, int m, edouble Tr_EE[2], edouble Tr_MM[2]);
 
 edouble TraceD0(casimir_t *self, int m)
 {
@@ -73,81 +76,82 @@ int main(int argc, char *argv[])
     int n,m;
     int lmax = 1;
     edouble Tr = 0;
-    double eps = 1e-10;
+    double eps = 1e-12;
 
     /* in beiden Skalierungen identisch */
     double DbyR = 19; /* DbyR = ScriptL/R = 1/RbyScriptL */
-    double T = 0.5;
+    double T = 0.001;
 
     /* Skalierung Stefan */
     double omegap_stefan = 10; /* omega_pl * R / 2pi c */
-    double omegapbygamma = 40; /* omega_p/gamma */
+    double omegapbygamma = 100; /* omega_p/gamma */
 
     /* Umrechnen in meine Skalierung */
     double omegap = 2*M_PI*omegap_stefan*DbyR;
     double gamma_ = omegap/omegapbygamma;
 
-    casimir_init(&casimir, 1./DbyR, T);
-
-    /* set order of Gauss-Laguerre integration */
-    casimir_set_integration(&casimir, 100);
-
-    /* set lmax */
-    casimir_set_lmax(&casimir, lmax);
-
-    /* set omega_p */
-    casimir_set_omegap_sphere(&casimir, omegap);
-    casimir_set_omegap_plane (&casimir, omegap);
-
-    /* set gamma */
-    casimir_set_gamma_sphere(&casimir, gamma_);
-    casimir_set_gamma_plane (&casimir, gamma_);
-
-    casimir_info(&casimir, stderr, "# ");
-
-    printf("#\n");
-    printf("# n, m, P, p, Tr(M)\n");
-
     {
-        edouble Tr_0 = 0;
+        casimir_init(&casimir, 1./DbyR, T);
 
-        for(n = 0; 1; n++)
+        /* set lmax */
+        casimir_set_lmax(&casimir, lmax);
+
+        /* set omega_p */
+        casimir_set_omegap_sphere(&casimir, omegap);
+        casimir_set_omegap_plane (&casimir, omegap);
+
+        /* set gamma */
+        casimir_set_gamma_sphere(&casimir, gamma_);
+        casimir_set_gamma_plane (&casimir, gamma_);
+
+        /* set order of Gauss-Laguerre integration */
+        casimir_set_integration(&casimir, 150);
+
+        casimir_info(&casimir, stdout, "# ");
+
+        printf("#\n");
+        printf("# n, m, P, p, Tr(M)\n");
+
         {
-            edouble Tr_n = 0;
+            Tr = 0;
+            edouble Tr_0 = 0;
 
-            for(m = 0; m <= lmax; m++)
+            for(n = 0; 1; n++)
             {
-                edouble Tr_EE[2], Tr_MM[2], sum;
+                edouble Tr_n = 0;
 
-                TraceD(&casimir, n, m, Tr_EE, Tr_MM);
-                sum = Tr_EE[0] + Tr_EE[1] + Tr_MM[0] + Tr_MM[1];
+                for(m = 0; m <= lmax; m++)
+                {
+                    edouble Tr_EE[2], Tr_MM[2], sum;
 
-                printf("%d, %d, EE, TE, %.15Lg\n", n, m, Tr_EE[TE]);
-                printf("%d, %d, EE, TM, %.15Lg\n", n, m, Tr_EE[TM]);
-                printf("%d, %d, MM, TE, %.15Lg\n", n, m, Tr_MM[TE]);
-                printf("%d, %d, MM, TM, %.15Lg\n", n, m, Tr_MM[TM]);
+                    TraceD(&casimir, n, m, Tr_EE, Tr_MM);
+                    sum = Tr_EE[0] + Tr_EE[1] + Tr_MM[0] + Tr_MM[1];
 
-                if(m == 0)
-                    sum /= 2;
+                    printf("%d, %d, EE, TE, %.15Lg\n", n, m, Tr_EE[TE]);
+                    printf("%d, %d, EE, TM, %.15Lg\n", n, m, Tr_EE[TM]);
+                    printf("%d, %d, MM, TE, %.15Lg\n", n, m, Tr_MM[TE]);
+                    printf("%d, %d, MM, TM, %.15Lg\n", n, m, Tr_MM[TM]);
 
-                Tr_n += sum;
-            }
+                    if(m == 0)
+                        sum /= 2;
 
-            if(n == 0)
-            {
-                Tr_0 = Tr_n;
-                Tr = Tr_n/2;
-            }
-            else
-            {
-                Tr += Tr_n;
-                if(Tr_n/Tr_0 < eps)
-                    break;
+                    Tr_n += sum;
+                }
+
+                if(n == 0)
+                {
+                    Tr_0 = Tr_n;
+                    Tr = Tr_n/2;
+                }
+                else
+                {
+                    Tr += Tr_n;
+                    if(Tr_n/Tr_0 < eps)
+                        break;
+                }
             }
         }
     }
-
-    printf("# F=%.15Lg\n", Tr*T/M_PI);
 
     return 0;
 }
