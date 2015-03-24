@@ -1,4 +1,4 @@
-.PHONY: clean doc casimir casimir_tests casimir_hiT casimir_logdetD casimir_Fn
+.PHONY: clean doc casimir casimir_tests casimir_hiT casimir_logdetD casimir_Fn ld_drude
 all: casimir casimir_hiT casimir_logdetD casimir_tests
 
 SOURCES  = sfunc.c integration_drude.c integration_perf.c libcasimir.c matrix.c utils.c
@@ -92,6 +92,9 @@ casimir_hiT:
 
 casimir_Fn:
 	$(CC) $(OPTIMIZATION) $(CFLAGS) $(SOURCES) casimir_Fn.c $(LDFLAGS) -o casimir_Fn
+
+ld_drude:
+	$(CC) $(OPTIMIZATION) $(CFLAGS) $(SOURCES) ld_drude.c $(LDFLAGS) -o ld_drude
 
 
 casimir_tests:
