@@ -1131,9 +1131,6 @@ static int _join_threads(casimir_t *self, double values[], int *ncalc)
                 xfree(r);
                 xfree(threads[i]);
                 threads[i] = NULL;
-
-                if(self->verbose)
-                    fprintf(stderr, "# n=%d, value=%.15g\n", r->n, values[r->n]);
             }
         }
     }
