@@ -65,24 +65,25 @@ void casimir_info(casimir_t *self, FILE *stream, const char *prefix)
     if(prefix == NULL)
         prefix = "";
 
-    fprintf(stream, "%sRbyScriptL = %g\n", prefix, self->RbyScriptL);
-    fprintf(stream, "%sL/R = %g\n", prefix, self->LbyR);
-    fprintf(stream, "%sT = %g\n", prefix, self->T);
+    fprintf(stream, "%sR/(R+L) = %g\n", prefix, self->RbyScriptL);
+    fprintf(stream, "%sL/R     = %g\n", prefix, self->LbyR);
+    fprintf(stream, "%sR/L     = %g\n", prefix, 1/self->LbyR);
+    fprintf(stream, "%sT       = %g\n", prefix, self->T);
 
-    fprintf(stream, "%somegap_sphere   = %g\n", prefix, self->omegap_sphere);
-    fprintf(stream, "%somegap_plane    = %g\n", prefix, self->omegap_plane);
-    fprintf(stream, "%sgamma_sphere    = %g\n", prefix, self->gamma_sphere);
-    fprintf(stream, "%sgamma_plane     = %g\n", prefix, self->gamma_plane);
-    fprintf(stream, "%sintegration     = ", prefix);
+    fprintf(stream, "%somegap_sphere = %g\n", prefix, self->omegap_sphere);
+    fprintf(stream, "%somegap_plane  = %g\n", prefix, self->omegap_plane);
+    fprintf(stream, "%sgamma_sphere  = %g\n", prefix, self->gamma_sphere);
+    fprintf(stream, "%sgamma_plane   = %g\n", prefix, self->gamma_plane);
+    fprintf(stream, "%sintegration   = ", prefix);
     if(self->integration <= 0)
         fprintf(stream, "analytic (perfect mirrors)\n");
     else
         fprintf(stream, "%d\n", self->integration);
 
-    fprintf(stream, "%slmax = %d\n",        prefix, self->lmax);
-    fprintf(stream, "%sverbose = %d\n",     prefix, self->verbose);
-    fprintf(stream, "%scores = %d\n",       prefix, self->cores);
-    fprintf(stream, "%sprecision = %g\n",   prefix, self->precision);
+    fprintf(stream, "%slmax      = %d\n", prefix, self->lmax);
+    fprintf(stream, "%sverbose   = %d\n", prefix, self->verbose);
+    fprintf(stream, "%scores     = %d\n", prefix, self->cores);
+    fprintf(stream, "%sprecision = %g\n", prefix, self->precision);
 }
 
 
@@ -132,7 +133,7 @@ edouble inline casimir_lnLambda(int l1, int l2, int m, sign_t *sign)
  */
 double casimir_epsilon(double xi, double omegap, double gamma_)
 {
-    return 1+ omegap*omegap/(xi*(xi+gamma_));
+    return 1+omegap*omegap/(xi*(xi+gamma_));
 }
 
 
@@ -174,6 +175,7 @@ void casimir_rp(casimir_t *self, edouble nT, edouble k, edouble *r_TE, edouble *
     *r_TE = (1-beta)/(1+beta);
     *r_TM = (epsilon-beta)/(epsilon+beta);
 }
+
 
 /**
 * @name converting
@@ -253,6 +255,7 @@ double casimir_T_scaled_to_SI(double T, double ScriptL)
 
 /*@}*/
 
+
 /**
  * @brief Calculate logarithm and sign of prefactor \f$\Xi_{\ell_1 \ell_2}^{(m)}\f$
  *
@@ -279,6 +282,7 @@ edouble casimir_lnXi(int l1, int l2, int m, sign_t *sign)
     return (logq(2*l1+1)+logq(2*l2+1)-lnfac(l1-m)-lnfac(l2-m)-lnfac(l1+m)-lnfac(l2+m)-logq(l1)-logq(l1+1)-logq(l2)-logq(l2+1))/2.0L \
            +lnfac(2*l1)+lnfac(2*l2)+lnfac(l1+l2)-LOG4*(2*l1+l2+1)-lnfac(l1-1)-lnfac(l2-1);
 }
+
 
 /**
 * @name initialization and setting parameters
