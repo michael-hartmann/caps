@@ -10,6 +10,7 @@
 
 edouble TraceD0(casimir_t *self, int m);
 void TraceD(casimir_t *self, int n, int m, edouble Tr_EE[2], edouble Tr_MM[2]);
+void usage(FILE *stream, int argc, char *argv[]);
 
 edouble TraceD0(casimir_t *self, int m)
 {
@@ -69,6 +70,11 @@ void TraceD(casimir_t *self, int n, int m, edouble Tr_EE[2], edouble Tr_MM[2])
     }
 }
 
+void usage(FILE *stream, int argc, char *argv[])
+{
+    fprintf(stream, "Usage: %s D/R T omegap omegap/gamma\n", argv[0]);
+}
+
 
 int main(int argc, char *argv[])
 {
@@ -79,13 +85,24 @@ int main(int argc, char *argv[])
     double eps = 1e-12;
 
     /* in beiden Skalierungen identisch */
-    double DbyR = 19; /* DbyR = ScriptL/R = 1/RbyScriptL */
-    double T = 0.001;
+    double DbyR; /* DbyR = ScriptL/R = 1/RbyScriptL */
+    double T;
 
     /* Skalierung Stefan */
-    double omegap_stefan = 10; /* omega_pl * R / 2pi c */
-    double omegapbygamma = 100; /* omega_p/gamma */
+    double omegap_stefan; /* omega_pl * R / 2pi c */
+    double omegapbygamma; /* omega_p/gamma */
 
+    if(argc != 5)
+    {
+        usage(stderr, argc, argv);
+        exit(1);
+    }
+    DbyR          = atof(argv[1]);
+    T             = atof(argv[2]);
+    omegap_stefan = atof(argv[3]);
+    omegapbygamma = atof(argv[4]);
+
+    printf("# DbyR=%g, T*2pi*kb*D/(hbar*c)=%g, omegap*R/(2pi*c) = %g, omegap/gamma = %g\n", DbyR, T, omegap_stefan, omegapbygamma);
     /* Umrechnen in meine Skalierung */
     double omegap = 2*M_PI*omegap_stefan*DbyR;
     double gamma_ = omegap/omegapbygamma;
