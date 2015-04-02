@@ -9,15 +9,17 @@
 #define WARN(cond, ...)
 #endif
 
+
+#define xfree(p) do { _xfree(p); p = NULL; } while (0)
+
 double now(void);
 
 void set_defaut_error_handler(void (*f)(const char *));
 void default_error_handler(const char *str);
 
 void *xmalloc(size_t size);
-void *xmalloc_align(size_t size);
 void *xrealloc(void *p, size_t size);
-void xfree(void *p);
+void _xfree(void *p);
 
 int cinstr(const char *str, char c);
 const char *indexn(const char *str, char c, int n);
