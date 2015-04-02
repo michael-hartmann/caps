@@ -151,17 +151,17 @@ int main(int argc, char *argv[])
         int c;
         struct option long_options[] =
         {
-          { "verbose",     no_argument,       &verbose_flag,     1 },
-          { "quiet",       no_argument,       &quiet_flag,       1 },
-          { "buffering",   no_argument,       &buffering_flag,   1 },
-          { "help",        no_argument,       0, 'h' },
-          { "LbyR",        required_argument, 0, 'x' },
-          { "lscale",      required_argument, 0, 'l' },
-          { "cores",       required_argument, 0, 'c' },
-          { "precision",   required_argument, 0, 'p' },
-          { "gamma",       required_argument, 0, 'g' },
-          { "omegap",      required_argument, 0, 'w' },
-          { 0, 0, 0, 0 }
+            { "verbose",   no_argument,       &verbose_flag,   1 },
+            { "quiet",     no_argument,       &quiet_flag,     1 },
+            { "buffering", no_argument,       &buffering_flag, 1 },
+            { "help",      no_argument,       0, 'h' },
+            { "LbyR",      required_argument, 0, 'x' },
+            { "lscale",    required_argument, 0, 'l' },
+            { "cores",     required_argument, 0, 'c' },
+            { "precision", required_argument, 0, 'p' },
+            { "gamma",     required_argument, 0, 'g' },
+            { "omegap",    required_argument, 0, 'w' },
+            { 0, 0, 0, 0 }
         };
 
         /* getopt_long stores the option index here. */
@@ -170,7 +170,7 @@ int main(int argc, char *argv[])
         c = getopt_long (argc, argv, "x:T:c:s:a:l:L:p:g:w:Xvqh", long_options, &option_index);
       
         /* Detect the end of the options. */
-        if (c == -1)
+        if(c == -1)
             break;
       
         switch (c)
@@ -271,13 +271,13 @@ int main(int argc, char *argv[])
         }
         if(gamma_ < 0)
         {
-            fprintf(stderr, "wrong argument for --gamma: gamma must be positive\n\n");
+            fprintf(stderr, "wrong argument for --gamma: gamma must be nonnegative\n\n");
             usage(stderr);
             exit(1);
         }
         if(omegap < 0)
         {
-            fprintf(stderr, "wrong argument for --omegap: omegap must be positive\n\n");
+            fprintf(stderr, "wrong argument for --omegap: omegap must be nonnegative\n\n");
             usage(stderr);
             exit(1);
         }
