@@ -23,9 +23,9 @@
 
 static char CASIMIR_COMPILE_INFO[4096] = { 0 };
 
-/** @brief Return string with compile information
+/** @brief Return string with information about the binary
  *
- * The returned string contains information which compiler was used and which
+ * The returned string contains date and time of compilation, the compiler and
  * kind of arithmetics the binary uses.
  *
  * Do not modify or free this string!
@@ -51,9 +51,8 @@ const char *casimir_compile_info(void)
 /** @brief Print object information to stream
  *
  * This function will print information about the object self to stream.
- * Information include all parameters like RbyScriptL, x, omegap and gamma of
- * sphere and plane, as well as maximum value of l, precision, number of
- * cores...
+ * Information include all parameters like R/L, omegap and gamma of sphere and
+ * plane, as well as maximum value of l, precision, number of cores...
  *
  * @param self Casimir object
  * @param stream where to print the string
@@ -98,7 +97,7 @@ void casimir_info(casimir_t *self, FILE *stream, const char *prefix)
  *
  * If sign is not NULL, -1 will be stored in sign.
  *
- * The values are computed using the lngamma function in a smart way to avoid overflows.
+ * The values are computed using the lgamma function to avoid overflows.
  *
  * Restrictions: \f$\ell_1,\ell_2 \ge 1\f$, \f$\ell_1,\ell_2 \ge m\f$
  *
@@ -148,7 +147,7 @@ double casimir_epsilon(double xi, double omegap, double gamma_)
  * @param [in]  xi     imaginary frequency (in scaled units: \f$\xi=nT\f$)
  * @param [in]  omegap Plasma frequency
  * @param [in]  gamma_ relaxation frequency
- * @retval log(epsilon(xi, omegap, gamma_))
+ * @retval lnepsilon \f$\log(\epsilon(\xi, \omega_p, \gamma))\f$
  */
 double casimir_lnepsilon(double xi, double omegap, double gamma_)
 {
@@ -201,25 +200,25 @@ double casimir_F_SI_to_scaled(double F_SI, double ScriptL)
 
 
 /**
- * @brief Convert free energy in units of \f$\mathcal{L}/(\hbar c)\f$ to free energy in SI units
+ * @brief Convert free energy in units of \f$\hbar c / \mathcal{L}\f$ to SI units
  *
  * This function returns 
  * \f[
  *      \mathcal{F}_\mathrm{SI} = \mathcal{F}_\mathrm{scaled} \frac{\hbar c}{\mathcal{L}}
  * \f]
  *
- * @param [in] F free energy in units of \f$\mathcal{L}/(\hbar c)\f$
+ * @param [in] F_scaled \f$\mathcal{F}_\mathrm{scaled}\f$, free energy in units of \f$\hbar c / \mathcal{L}\f$
  * @param [in] ScriptL \f$\mathcal{L} = R+L\f$ (in units of meters)
- * @retval free energy in SI units
+ * @retval F_SI \f$\mathcal{F}_\mathrm{SI}\f$ free energy in units of Joule
  */
-double casimir_F_scaled_to_SI(double F, double ScriptL)
+double casimir_F_scaled_to_SI(double F_scaled, double ScriptL)
 {
-    return HBARC/ScriptL*F;
+    return HBARC/ScriptL*F_scaled;
 }
 
 
 /**
- * @brief Convert temperature in units of Kelvin to temperature in units of \f$2\pi k_B \mathcal{L}/(\hbar c)\f$
+ * @brief Convert temperature in units of Kelvin to temperature in units of \f$\hbar c /(2\pi k_B \mathcal{L})\f$
  *
  * This function returns 
  * \f[
@@ -228,7 +227,7 @@ double casimir_F_scaled_to_SI(double F, double ScriptL)
  *
  * @param [in] T_SI temperature in units of Kelvin
  * @param [in] ScriptL \f$\mathcal{L} = R+L\f$ (in units of meters)
- * @retval temperature in unitss of \f$2\pi k_B \mathcal{L}/(\hbar c)\f$
+ * @retval T_scaled temperature in units of \f$\hbar c /(2\pi k_B \mathcal{L})\f$
  */
 double casimir_T_SI_to_scaled(double T_SI, double ScriptL)
 {
@@ -237,20 +236,20 @@ double casimir_T_SI_to_scaled(double T_SI, double ScriptL)
 
 
 /**
- * @brief Convert temperature in units of \f$2\pi k_B \mathcal{L}/(\hbar c)\f$ to temperature in units of Kelvin
+ * @brief Convert temperature in units of \f$\hbar c /(2\pi k_B \mathcal{L})\f$ to temperature in units of Kelvin
  *
  * This function returns 
  * \f[
  *      T_\mathrm{scaled} = \frac{2\pi k_b \mathcal{L}}{\hbar c} T_\mathrm{SI}
  * \f]
  *
- * @param [in] T temperature in units of \f$2\pi k_B \mathcal{L}/(\hbar c)\f$
- * @param [in] ScriptL \f$\mathcal{L} = R+L\f$ (in units of meters)
- * @retval temperature in units of Kelvin
+ * @param [in] T_scaled temperature in units of \f$\hbar c /(2\pi k_B \mathcal{L})\f$
+ * @param [in] ScriptL \f$\mathcal{L} = R+L\f$ in units of meters
+ * @retval T_SI temperature in units of Kelvin
  */
-double casimir_T_scaled_to_SI(double T, double ScriptL)
+double casimir_T_scaled_to_SI(double T_scaled, double ScriptL)
 {
-    return HBARC/(2*PI*KB*ScriptL)*T;
+    return HBARC/(2*PI*KB*ScriptL)*T_scaled;
 }
 
 /*@}*/
@@ -265,7 +264,7 @@ double casimir_T_scaled_to_SI(double T, double ScriptL)
  * If sign is not NULL, the sign of \f$\Xi_{\ell_1 \ell_2}^{(m)}\f$ is stored in
  * sign.
  *
- * The values are computed using the lngamma function in a smart way to avoid overflows.
+ * The values are computed using the lgamma function to avoid overflows.
  *
  * Restrictions: \f$\ell_1,\ell_2 \ge 1\f$, \f$\ell_1,\ell_2 \ge m\f$
  *
@@ -273,7 +272,7 @@ double casimir_T_scaled_to_SI(double T, double ScriptL)
  * @param [in]  l2
  * @param [in]  m
  * @param [out] sign
- * @retval log(Xi(l1,l2,m))
+ * @retval logXi \f$\log(\Xi(\ell_1,\ell_2,m))\f$
  */
 edouble casimir_lnXi(int l1, int l2, int m, sign_t *sign)
 {
@@ -292,18 +291,22 @@ edouble casimir_lnXi(int l1, int l2, int m, sign_t *sign)
 /**
  * @brief Create a new Casimir object for perfect reflectors
  *
- * Restrictions: \f$T > 0\f$, \f$0 < \mathcal{L} < 1\f$
+ * Restrictions: \f$T > 0\f$, \f$0 < R/\mathcal{L} < 1\f$
  *
  * @param [out] self Casimir object
  * @param [in]  RbyScriptL \f$\frac{R}{\mathcal{L}} = \frac{R}{R+L}\f$
  * @param [in]  T temperature in units of \f$2\pi k_B \mathcal{L}/(\hbar c)\f$
- * @retval 
+ * @retval 0 if successful
+ * @retval -1 if wrong value for RbyScriptL
+ * @retval -2 if wrong value for T
  */
 int casimir_init(casimir_t *self, double RbyScriptL, double T)
 {
     double LbyR = 1./RbyScriptL - 1;
-    if(RbyScriptL < 0 || RbyScriptL >= 1 || T < 0)
-        return 0;
+    if(RbyScriptL < 0 || RbyScriptL >= 1)
+        return -1;
+    if(T < 0)
+        return -2;
     
     self->lmax = (int)ceil(CASIMIR_FACTOR_LMAX/LbyR);
 
@@ -325,7 +328,7 @@ int casimir_init(casimir_t *self, double RbyScriptL, double T)
     self->omegap_plane  = INFINITY;
     self->gamma_plane   = 0;
 
-    return 1;
+    return 0;
 }
 
 
@@ -519,8 +522,7 @@ int casimir_get_cores(casimir_t *self)
  *
  * This library supports multiple processor cores. However, you must specify
  * how many cores the library should use. By default, only one core will be
- * used. If you have a quad core computer, you might want to set the number of
- * cores to 4.
+ * used.
  *
  * The libraray uses POSIX threads for parallelization. Threads share memory and
  * for this reason all cores must be on the same computer.
@@ -687,7 +689,7 @@ void casimir_free(casimir_t *self)
 */
 /*@{*/
 
-/** Return the logarithm of the prefactors \f$a_{\ell,0}^\mathrm{perf}\f$, \f$b_{\ell,0}^\mathrm{perf}\f$ and its signs
+/** Return the logarithm of the prefactors \f$a_{\ell,0}^\mathrm{perf}\f$, \f$b_{\ell,0}^\mathrm{perf}\f$ and their signs
  *
  * For small frequencies \f$\chi = \frac{\xi R}{c} \ll 1\f$ the Mie
  * coeffiecients scale like
@@ -698,7 +700,7 @@ void casimir_free(casimir_t *self)
  * b_{\ell}^\mathrm{perf} = b_{\ell,0}^\mathrm{perf} \left(\frac{\chi}{2}\right)^{2\ell+1}
  * \f]
  * This function returns the logarithm of the prefactors
- * \f$a_{\ell,0}^\mathrm{perf}\f$, \f$b_{\ell,0}^\mathrm{perf}\f$ and its
+ * \f$a_{\ell,0}^\mathrm{perf}\f$, \f$b_{\ell,0}^\mathrm{perf}\f$ and their
  * signs.
  *
  * In scaled units: \f$\chi = nT \frac{R}{\mathcal{L}}\f$
@@ -1090,6 +1092,7 @@ static double _sum(double values[], size_t len)
     return sum;
 }
 
+/* This is the function the thread executes */
 static void *_thread_f(void *p)
 {
     casimir_thread_t *r = (casimir_thread_t *)p;
@@ -1097,6 +1100,12 @@ static void *_thread_f(void *p)
     return r;
 }
 
+/* This function starts a thread to compute the free energy corresponding to
+ * the Matsubara term n
+ *
+ * The memory for the thread object and the variable r will be allocated in this function
+ * and freed in _join_threads.
+ */
 static pthread_t *_start_thread(casimir_t *self, int n)
 {
     pthread_t *t = xmalloc(sizeof(pthread_t));
@@ -1112,6 +1121,7 @@ static pthread_t *_start_thread(casimir_t *self, int n)
     return t;
 }
 
+/* This function tries to join threads and writed the result to values */
 static int _join_threads(casimir_t *self, double values[], int *ncalc)
 {
     int i, joined = 0, running = 0;
@@ -1155,12 +1165,12 @@ static int _join_threads(casimir_t *self, double values[], int *ncalc)
  * @brief Calculate free energy for Matsubara term n
  *
  * This function calculates the free energy for the Matsubara term n. If mmax
- * is not NULL, the maximum usedd value of m is stored in mmax.
+ * is not NULL, the largest value of m calculated will be stored in mmax.
  *
  * @param [in,out] self Casimir object
  * @param [in] n Matsubara term, \f$\xi=nT\f$
  * @param [out] mmax maximum number of m
- * @retval Casimir free energy for given n
+ * @retval F Casimir free energy for given n
  */
 double casimir_F_n(casimir_t *self, const int n, int *mmax)
 {
@@ -1213,11 +1223,11 @@ double casimir_F_n(casimir_t *self, const int n, int *mmax)
  * @brief Calculate free energy
  *
  * This function calculates the free energy. If nmax is not NULL, the highest
- * Matsubara term used will be stored in nnmax.
+ * Matsubara term calculated will be stored in nnmax.
  * 
  * @param [in,out] self Casimir object
  * @param [out] nmax maximum number of n
- * @retval Casimir free energy
+ * @retval F Casimir free energy
  */
 double casimir_F(casimir_t *self, int *nmax)
 {
@@ -1228,7 +1238,7 @@ double casimir_F(casimir_t *self, int *nmax)
     size_t len = 0;
     int ncalc = 0;
     const int cores = self->cores;
-    const int delta = MAX(512, cores);
+    const int delta = MAX(1024, cores);
     pthread_t **threads = self->threads;
 
     for(i = 0; i < cores; i++)
@@ -1295,7 +1305,7 @@ double casimir_F(casimir_t *self, int *nmax)
 
 
 /**
- * @brief Calculate \f$\log\det \mathcal{D}(\xi=0)\f$
+ * @brief Calculate \f$\log\det \mathcal{D}^{(m)}(\xi=0)\f$ for EE and MM
  *
  * This function calculates the logarithm of the determinant of the scattering
  * operator D for the Matsubara term \f$n=0\f$.
@@ -1408,7 +1418,7 @@ void casimir_logdetD0(casimir_t *self, int m, double *logdet_EE, double *logdet_
 
 
 /**
- * @brief Calculate \f$\log\det \mathcal{D}(\xi=nT)\f$
+ * @brief Calculate \f$\log\det \mathcal{D}^{(m)}(\xi=nT)\f$
  *
  * This function calculates the logarithm of the determinant of the scattering
  * operator D for the Matsubara term \f$n\f$.
@@ -1416,7 +1426,8 @@ void casimir_logdetD0(casimir_t *self, int m, double *logdet_EE, double *logdet_
  * @param [in,out] self Casimir object
  * @param [in] n Matsubara term
  * @param [in] m
- * @retval log det D(xi=nT)
+ * @param [in,out] m integration object
+ * @retval logdetD \f$\log \det \mathcal{D}^{(m)}(\xi=nT)\f$
  */
 double casimir_logdetD(casimir_t *self, int n, int m, void *integration_obj)
 {
