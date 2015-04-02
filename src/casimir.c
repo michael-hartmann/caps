@@ -26,7 +26,7 @@ plane-sphere geometry for given L/R and temperature T. The output is in scaled\n
 unities.\n\
 \n\
 Mandatory options:\n\
-    -x, --LbyR FRACTION\n\
+    -x, --LbyR L/R\n\
         Separation L between sphere and plane divided by radius of of sphere,\n\
         where L/R > 0.\n\
         If you want to calculate several points, you may pass start and stop\n\
@@ -40,36 +40,38 @@ Mandatory options:\n\
             a logarithmic scale.\n\
 \n\
     -T TEMPERATURE\n\
-        Temperature in scaled units. You may use the same syntax as for -Q.\n\
+        Temperature in units of hbar*c/(2pi*kB*(L+R)). You may use the same\n\
+        syntax like for -x to calculate a range of points.\n\
 \n\
 Further options:\n\
     -g, --gamma\n\
-        Set value of relaxation frequency gamma of Drude metals. If omitted,\n\
-        gamma = 0.\n\
+        Set value of relaxation frequency gamma of Drude metals in units of\n\
+        c/(L+R). If omitted, gamma = 0.\n\
 \n\
     -w, --omegap\n\
-        Set value of Plasma frequency omega_p of Drude metals. If ommited,\n\
-        omegap = INFINITY.\n\
+        Set value of Plasma frequency omega_p of Drude metals in units of\n\
+        c/omegaP. If ommited, omegap = INFINITY.\n\
 \n\
     -l, --lscale\n\
         Specify parameter lscale. The vector space has to be truncated for\n\
         some value lmax. This program will use lmax=(R/L*lscale) (default: %d)\n\
 \n\
     -L LMAX\n\
-        Set lmax to the value LMAx. When -L is specified, -l will be ignored\n\
+        Set lmax to the value LMAX. When -L is specified, -l will be ignored\n\
 \n\
     -c, --cores CORES\n\
-        Use CORES at the same time (default: 1)\n\
+        Use CORES of processors for the calculation (default: 1)\n\
 \n\
     -p, --precision\n\
-        Set precision to given value. (default: %g)\n\
+        Set precision to given value (default: %g)\n\
 \n\
     --buffering\n\
         Enable buffering. By default buffering for stderr and stdout is\n\
         disabled.\n\
 \n\
     -v, --verbose\n\
-        Be more verbose. This will output additional information.\n\
+        Be more verbose. This will output interim results and additional\n\
+        information.\n\
 \n\
     -q, --quiet\n\
         The progress is printed to stderr unless this flag is set.\n\
