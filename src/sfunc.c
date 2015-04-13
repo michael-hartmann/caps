@@ -1,3 +1,10 @@
+/**
+ * @file   sfunc.c
+ * @author Michael Hartmann <michael.hartmann@physik.uni-augsburg.de>
+ * @date   April, 2015
+ * @brief  various functions implementing mostly special functions
+ */
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <math.h>
@@ -357,18 +364,45 @@ void plm_PlmPlm(int l1, int l2, int m, edouble x, plm_combination_t *res)
     res->sign_dPl1mdPl2m = common_sign * sign_dPl1m * sign_dPl2m;
 }
 
+/**
+ * @brief Determine qmax
+ *
+ * @param [in]  n  \f$n\f$
+ * @param [in]  nu \f$\nu\f$
+ * @param [in]  m  \f$m=\mu\f$
+ * @return a0 \f$q_\mathrm{max}\f$
+ */
 int inline gaunt_qmax(const int n, const int nu, const int m)
 {
     int xi = (n+nu-2*m)/2;
     return MIN(MIN(n,nu), xi);
 }
 
-/* eq. (20) */
+/**
+ * @brief Calculate \f$\log a_0\f$
+ *
+ * Cf. eq. (20).
+ *
+ * @param [in]  n  \f$n\f$
+ * @param [in]  nu \f$\nu\f$
+ * @param [in]  m  \f$m=\mu\f$
+ * @return a0 \f$\log a_0\f$
+ */
 edouble inline gaunt_log_a0(int n, int nu, int m)
 {
     return lgamma(2*n+1)-lgamma(n+1)+lgamma(2*nu+1)-lgamma(1+nu)+lgamma(n+nu+1)-lgamma(2*n+2*nu+1)+lgamma(1+n+nu-2*m)-lgamma(1+n-m)-lgamma(1+nu-m);
 }
 
+/**
+ * @brief Calculate \f$a_0\f$
+ *
+ * Cf. eq. (20).
+ *
+ * @param [in]  n  \f$n\f$
+ * @param [in]  nu \f$\nu\f$
+ * @param [in]  m  \f$m=\mu\f$
+ * @return a0 \f$a_0\f$
+ */
 edouble inline gaunt_a0(int n, int nu, int m)
 {
     return expq(gaunt_log_a0(n,nu,m));
@@ -378,21 +412,29 @@ edouble inline gaunt_a0(int n, int nu, int m)
 #define alpha(p, n, nu) (((edouble)(pow_2(p)-pow_2(n+nu+1))*(pow_2(p)-pow_2(n-nu)))/(4*pow_2(p)-1))
 
 
-/*
- * Determine Gaunt coefficients a(m, n, mu, nu, p) for m, n, mu and nu fixed.
- * These coefficients can be used to express the product of two associated
- * Legendre polynomials:
+/**
+ * @brief Calculate Gaunt coefficients
  *
- * P_n^m(x)*P_{nu}^{mu}(x) = a0 sum_{q=0}^{qmax} aq_tilde P_{n+nu-2q}^(m+mu)(x)
+ * Determine Gaunt coefficients \f$a(m, n, mu, nu, p)\f$ for \f$m\f$, \f$n\f$,
+ * \f$\mu\f$ and \f$\nu\f$ fixed.  These coefficients can be used to express
+ * the product of two associated Legendre polynomials:
  *
- * Returns: qmax, a0, aq_tilde
- * qmax is the upper bound of summation, a0 is the prefactor and aq_tilde is a
- * list of normalized Gaunt coefficients.
+ * \f[
+ * P_n^m(x) P_{\nu}^{\mu}(x) = a_0 \sum_{q=0}^{q_\mathrm{max}} \tilde a_q P_{n+\nu-2q}^{m+mu}(x)
+ * \f]
+ *
+ * \f$q_\mathrm{max}\f$ is the upper bound of summation, \f$a_0\f$ is the
+ * prefactor and \f$\tilde a_q\f$ are normalized Gaunt coefficients.
  *
  * See [1] for more information, especially chapter 3. There is a brief
  * outline how to calculate Gaunt coefficients at the end of the chapter.
  *
  * Ref.: [1] Y.-L. Xu, J. Comp. Appl. Math. 85, 53 (1997)
+ *
+ * @param [in]  n  \f$n\f$
+ * @param [in]  nu \f$\nu\f$
+ * @param [in]  m  \f$m=\mu\f$
+ * @param [out] a_tilde \f$\tilde a_q\f$ list of normalized Gaunt coefficients
  */
 void gaunt(const int n, const int nu, const int m, edouble a_tilde[])
 {
