@@ -30,7 +30,9 @@ static char CASIMIR_COMPILE_INFO[4096] = { 0 };
  *
  * Do not modify or free this string!
  *
- * @retval constant string
+ * This function is not thread-safe.
+ *
+ * @retval description constant string
  */
 const char *casimir_compile_info(void)
 {
@@ -51,8 +53,12 @@ const char *casimir_compile_info(void)
 /** @brief Print object information to stream
  *
  * This function will print information about the object self to stream.
- * Information include all parameters like R/L, omegap and gamma of sphere and
- * plane, as well as maximum value of l, precision, number of cores...
+ * Information include all parameters like \f$R/L\f$, \f$\omega_\mathrm{P}\f$
+ * and \f$\gamma\f$ of sphere and plane, as well as maximum value of
+ * \f$\ell\f$, precision, number of cores...
+ *
+ * This function is thread-safe. However, do not modify parameters (e.g. lmax,
+ * dielectric properties of plane and sphere...) while calling this function.
  *
  * @param self Casimir object
  * @param stream where to print the string
@@ -99,15 +105,17 @@ void casimir_info(casimir_t *self, FILE *stream, const char *prefix)
  *
  * The values are computed using the lgamma function to avoid overflows.
  *
- * Restrictions: \f$\ell_1,\ell_2 \ge 1\f$, \f$\ell_1,\ell_2 \ge m\f$
+ * Restrictions: \f$\ell_1,\ell_2 \ge 1\f$, \f$\ell_1,\ell_2 \ge m > 0\f$
  *
  * Symmetries: \f$\Lambda_{\ell_1,\ell_2}^{(m)} = \Lambda_{\ell_2,\ell_1}^{(m)}\f$
  *
- * @param [in]  l1
- * @param [in]  l2
- * @param [in]  m
- * @param [out] sign is set to -1 if sign != NULL
- * @retval log(Lambda(l1,l2,m))
+ * This function is thread-safe.
+ *
+ * @param [in]  l1 \f$\ell_1\f$
+ * @param [in]  l2 \f$\ell_2\f$
+ * @param [in]  m  \f$m\f$
+ * @param [out] sign set to -1 if sign != NULL
+ * @retval lnLambda \f$\log{\Lambda_{\ell_1,\ell_2}^{(m)}}\f$
  */
 edouble inline casimir_lnLambda(int l1, int l2, int m, sign_t *sign)
 {
@@ -125,10 +133,12 @@ edouble inline casimir_lnLambda(int l1, int l2, int m, sign_t *sign)
  *      \epsilon(i\xi) = 1 + \frac{\omega_\mathrm{P}^2}{\xi(\xi+\gamma)}
  * \f]
  *
- * @param [in]  xi     imaginary frequency (in scaled units: \f$\xi=nT\f$)
- * @param [in]  omegap Plasma frequency
- * @param [in]  gamma_ relaxation frequency
- * @retval epsilon(xi, omegap, gamma_)
+ * This function is thread-safe.
+ *
+ * @param [in]  xi     \f$\xi\f$ imaginary frequency (in scaled units: \f$\xi=nT\f$)
+ * @param [in]  omegap \f$\omega_\mathrm{P}\f$ Plasma frequency
+ * @param [in]  gamma_ \f$\gamma\f$ relaxation frequency
+ * @retval epsilon \f$\epsilon(\xi, \omega_\mathrm{P}, \gamma)\f$
  */
 double casimir_epsilon(double xi, double omegap, double gamma_)
 {
@@ -144,10 +154,12 @@ double casimir_epsilon(double xi, double omegap, double gamma_)
  *      \epsilon(i\xi) = 1 + \frac{\omega_\mathrm{P}^2}{\xi(\xi+\gamma)}
  * \f]
  *
- * @param [in]  xi     imaginary frequency (in scaled units: \f$\xi=nT\f$)
- * @param [in]  omegap Plasma frequency
- * @param [in]  gamma_ relaxation frequency
- * @retval lnepsilon \f$\log(\epsilon(\xi, \omega_p, \gamma))\f$
+ * This function is thread-safe.
+ *
+ * @param [in]  xi     \f$\xi\f$ imaginary frequency (in scaled units: \f$\xi=nT\f$)
+ * @param [in]  omegap \f$\omega_\mathrm{P}\f$ Plasma frequency
+ * @param [in]  gamma_ \f$\gamma\f$ relaxation frequency
+ * @retval lnepsilon \f$\log{\epsilon(\xi, \omega_\mathrm{P}, \gamma)}\f$
  */
 double casimir_lnepsilon(double xi, double omegap, double gamma_)
 {
@@ -160,8 +172,10 @@ double casimir_lnepsilon(double xi, double omegap, double gamma_)
  *
  * This function calculates the Fresnel coefficients for TE and TM mode
  *
+ * This function is thread-safe.
+ *
  * @param [in]      self    Casimir object
- * @param [in]      nT      imaginary frequency (in scaled units: \f$\xi=nT\f$)
+ * @param [in]      nT      \f$\xi=nT\f$ imaginary frequency
  * @param [in]      k       xy projection of wavevector
  * @param [in,out]  r_TE    Fresnel coefficient for TE mode
  * @param [in,out]  r_TM    Fresnel coefficient for TM mode
@@ -189,6 +203,8 @@ void casimir_rp(casimir_t *self, edouble nT, edouble k, edouble *r_TE, edouble *
  *      \mathcal{F}_\mathrm{scaled} = \mathcal{F}_\mathrm{SI} \frac{\mathcal{L}}{\hbar c}
  * \f]
  *
+ * This function is thread-safe.
+ *
  * @param [in] F_SI free energy in SI units
  * @param [in] ScriptL \f$\mathcal{L} = R+L\f$ (in units of meters)
  * @retval free energy in scaled units
@@ -206,6 +222,8 @@ double casimir_F_SI_to_scaled(double F_SI, double ScriptL)
  * \f[
  *      \mathcal{F}_\mathrm{SI} = \mathcal{F}_\mathrm{scaled} \frac{\hbar c}{\mathcal{L}}
  * \f]
+ *
+ * This function is thread-safe.
  *
  * @param [in] F_scaled \f$\mathcal{F}_\mathrm{scaled}\f$, free energy in units of \f$\hbar c / \mathcal{L}\f$
  * @param [in] ScriptL \f$\mathcal{L} = R+L\f$ (in units of meters)
@@ -225,6 +243,8 @@ double casimir_F_scaled_to_SI(double F_scaled, double ScriptL)
  *      T_\mathrm{scaled} = \frac{2\pi k_b \mathcal{L}}{\hbar c} T_\mathrm{SI}
  * \f]
  *
+ * This function is thread-safe.
+ *
  * @param [in] T_SI temperature in units of Kelvin
  * @param [in] ScriptL \f$\mathcal{L} = R+L\f$ (in units of meters)
  * @retval T_scaled temperature in units of \f$\hbar c /(2\pi k_B \mathcal{L})\f$
@@ -242,6 +262,8 @@ double casimir_T_SI_to_scaled(double T_SI, double ScriptL)
  * \f[
  *      T_\mathrm{scaled} = \frac{2\pi k_b \mathcal{L}}{\hbar c} T_\mathrm{SI}
  * \f]
+ *
+ * This function is thread-safe.
  *
  * @param [in] T_scaled temperature in units of \f$\hbar c /(2\pi k_B \mathcal{L})\f$
  * @param [in] ScriptL \f$\mathcal{L} = R+L\f$ in units of meters
@@ -266,13 +288,15 @@ double casimir_T_scaled_to_SI(double T_scaled, double ScriptL)
  *
  * The values are computed using the lgamma function to avoid overflows.
  *
- * Restrictions: \f$\ell_1,\ell_2 \ge 1\f$, \f$\ell_1,\ell_2 \ge m\f$
+ * Restrictions: \f$\ell_1,\ell_2 \ge 1\f$, \f$\ell_1,\ell_2 \ge m > 0\f$
  *
- * @param [in]  l1
- * @param [in]  l2
- * @param [in]  m
+ * This function is thread-safe.
+ *
+ * @param [in]  l1 \f$\ell_1\f$
+ * @param [in]  l2 \f$\ell_2\f$
+ * @param [in]  m  \f$m\f$
  * @param [out] sign
- * @retval logXi \f$\log(\Xi(\ell_1,\ell_2,m))\f$
+ * @retval logXi \f$\log{\Xi(\ell_1,\ell_2,m)}\f$
  */
 edouble casimir_lnXi(int l1, int l2, int m, sign_t *sign)
 {
@@ -291,7 +315,12 @@ edouble casimir_lnXi(int l1, int l2, int m, sign_t *sign)
 /**
  * @brief Create a new Casimir object for perfect reflectors
  *
+ * This function will initialize a Casimir object with sphere and plane perfect
+ * reflectors.
+ *
  * Restrictions: \f$T > 0\f$, \f$0 < R/\mathcal{L} < 1\f$
+ *
+ * This function is not thread-safe.
  *
  * @param [out] self Casimir object
  * @param [in]  RbyScriptL \f$\frac{R}{\mathcal{L}} = \frac{R}{R+L}\f$
@@ -337,6 +366,8 @@ int casimir_init(casimir_t *self, double RbyScriptL, double T)
  *
  * Set order/type of integration.
  *
+ * This function is not thread-safe.
+ *
  * @param [in,out] self Casimir object
  * @param [in] integration: 0 perfect reflectors, >0: order of Gauss-Laguerre integration
  */
@@ -353,6 +384,8 @@ void casimir_set_integration(casimir_t *self, int integration)
  *
  * Get order/type of integration.
  *
+ * This function is not thread-safe.
+ *
  * @param [in,out] self Casimir object
  * @retval 0 if analytic integration for perfect reflectors
  * @retval order of integration for Gauss-Laguerre
@@ -368,10 +401,12 @@ int casimir_get_integration(casimir_t *self)
  *
  * Set the plasma frequency for the sphere.
  *
+ * This function is not thread-safe.
+ *
  * @param [in,out] self Casimir object
- * @param [in] omegap plasma frequency
+ * @param [in] omegap \f$\omega_\mathrm{P}\f$ plasma frequency
  * @retval 1 if successful
- * @retval 0 if omegap < 0
+ * @retval 0 if \f$\omega_\mathrm{P} < 0\f$
  */
 int casimir_set_omegap_sphere(casimir_t *self, double omegap)
 {
@@ -389,10 +424,12 @@ int casimir_set_omegap_sphere(casimir_t *self, double omegap)
  *
  * Set the plasma frequency for the plane.
  *
+ * This function is not thread-safe.
+ *
  * @param [in,out] self Casimir object
- * @param [in] omegap plasma frequency
+ * @param [in] omegap \f$\omega_\mathrm{P}\f$ plasma frequency
  * @retval 1 if successful
- * @retval 0 if omegap < 0
+ * @retval 0 if \f$omega_\mathrm{P} < 0\f$
  */
 int casimir_set_omegap_plane(casimir_t *self, double omegap)
 {
@@ -411,6 +448,8 @@ int casimir_set_omegap_plane(casimir_t *self, double omegap)
  *
  * Get the plasma frequency for the sphere.
  *
+ * This function is not thread-safe.
+ *
  * @param [in,out] self Casimir object
  * @retval plasma frequency
  */
@@ -422,10 +461,12 @@ double casimir_get_omegap_sphere(casimir_t *self)
 /**
  * @brief Get \f$\omega_\mathrm{P}\f$ for the plane
  *
- * Get the plasma frequency for the plane.
+ * Get the plasma frequency \f$\omega_\mathrm{P}\f$ for the plane.
+ *
+ * This function is not thread-safe.
  *
  * @param [in,out] self Casimir object
- * @retval plasma frequency
+ * @retval omegap \f$\omega_\mathrm{P}\f$plasma frequency
  */
 double casimir_get_omegap_plane(casimir_t *self)
 {
@@ -438,10 +479,12 @@ double casimir_get_omegap_plane(casimir_t *self)
  *
  * Set the relaxation frequency for the sphere.
  *
+ * This function is not thread-safe.
+ *
  * @param [in,out] self Casimir object
- * @param [in] gamma_ relaxation frequency
+ * @param [in] gamma_ \f$\gamma\f$ relaxation frequency
  * @retval 1 if successful
- * @retval 0 if gamma_ < 0
+ * @retval 0 if \f$\gamma < 0\f$
  */
 int casimir_set_gamma_sphere(casimir_t *self, double gamma_)
 {
@@ -457,12 +500,14 @@ int casimir_set_gamma_sphere(casimir_t *self, double gamma_)
 /**
  * @brief Set \f$\gamma\f$ for the plane
  *
- * Set the relaxation frequency for the plane.
+ * Set the relaxation frequency \f$\gamma\f$ for the plane.
+ *
+ * This function is not thread-safe.
  *
  * @param [in,out] self Casimir object
  * @param [in] gamma_ relaxation frequency
  * @retval 1 if successful
- * @retval 0 if gamma_ < 0
+ * @retval 0 if \f$\gamma < 0\f$
  */
 int casimir_set_gamma_plane(casimir_t *self, double gamma_)
 {
@@ -479,10 +524,12 @@ int casimir_set_gamma_plane(casimir_t *self, double gamma_)
 /**
  * @brief Get \f$\gamma\f$ for the sphere
  *
- * Get the relaxation frequency for the sphere.
+ * Get the relaxation frequency \f$\gamma\f$ for the sphere.
+ *
+ * This function is not thread-safe.
  *
  * @param [in,out] self Casimir object
- * @retval relaxation frequency
+ * @retval gamma \f$\gamma\f$ relaxation frequency
  */
 double casimir_get_gamma_sphere(casimir_t *self)
 {
@@ -494,8 +541,10 @@ double casimir_get_gamma_sphere(casimir_t *self)
  *
  * Get the relaxation frequency for the plane.
  *
+ * This function is not thread-safe.
+ *
  * @param [in,out] self Casimir object
- * @retval relaxation frequency
+ * @retval gamma \f$\gamma\f$ relaxation frequency
  */
 double casimir_get_gamma_plane(casimir_t *self)
 {
@@ -507,6 +556,8 @@ double casimir_get_gamma_plane(casimir_t *self)
  * @brief Return numbers of used cores
  *
  * See casimir_set_cores.
+ *
+ * This function is not thread-safe.
  *
  * @param [in,out] self Casimir object
  * @retval number of used cores (>=0)
@@ -528,6 +579,8 @@ int casimir_get_cores(casimir_t *self)
  * for this reason all cores must be on the same computer.
  *
  * Restrictions: cores > 0
+ *
+ * This function is not thread-safe.
  *
  * @param [in,out] self Casimir object
  * @param [in] cores number of cores that should be used
@@ -560,9 +613,11 @@ int casimir_set_cores(casimir_t *self, int cores)
  * In order to get meaningful results and to prevent recalculating Mie
  * coefficients, set the lmax at the beginning before doing expensive
  * computations.
+ *
+ * This function is not thread-safe.
  * 
  * @param [in,out] self Casimir object
- * @param [in] lmax maximum number of l
+ * @param [in] lmax maximum number of \f$\ell\f$
  * @retval 1 if successful
  * @retval 0 if lmax < 1
  */
@@ -585,8 +640,10 @@ int casimir_set_lmax(casimir_t *self, int lmax)
  *
  * See casimir_set_lmax.
  *
+ * This function is not thread-safe.
+ *
  * @param [in,out] self Casimir object
- * @retval lmax maximum value of l
+ * @retval lmax maximum value of \f$\ell\f$
  */
 int casimir_get_lmax(casimir_t *self)
 {
@@ -598,6 +655,8 @@ int casimir_get_lmax(casimir_t *self)
  * @brief Get verbose flag
  *
  * Return if the verbose flag is set.
+ *
+ * This function is not thread-safe.
  *
  * @param [in,out] self Casimir object
  * @retval 0 if verbose flag is not set
@@ -615,6 +674,8 @@ int casimir_get_verbose(casimir_t *self)
  * Use this function to set the verbose flag. If set to 1, this will cause the
  * library to print information to stderr. 
  *
+ * This function is not thread-safe.
+ *
  * @param [in,out] self Casimir object
  * @param [in] verbose 1 if verbose, 0 if not verbose
  * @retval 1
@@ -631,8 +692,10 @@ int casimir_set_verbose(casimir_t *self, int verbose)
  *
  * See casimir_set_precision
  *
+ * This function is not thread-safe.
+ *
  * @param [in,out] self Casimir object
- * @retval precision
+ * @retval precision \f$\epsilon_p\f$
  */
 double casimir_get_precision(casimir_t *self)
 {
@@ -643,8 +706,10 @@ double casimir_get_precision(casimir_t *self)
 /**
  * @brief Set precision
  *
+ * This function is not thread-safe.
+ *
  * @param [in,out] self Casimir object
- * @param [in] precision
+ * @param [in] precision \f$\epsilon_p\f$
  * @retval 1 if successful
  * @retval 0 if precision <= 0
  */
@@ -658,15 +723,14 @@ int casimir_set_precision(casimir_t *self, double precision)
 }
 
 
-/*
- * Free memory for casimir object
- */
 /**
  * @brief Free memory for Casimir object
  *
  * This function will free allocated memory for the Casimir object. If you have
  * allocated memory for the object yourself, you have, however, to free this
  * yourself.
+ *
+ * This function is not thread-safe.
  * 
  * @param [in,out] self Casimir object
  */
@@ -705,7 +769,9 @@ void casimir_free(casimir_t *self)
  *
  * In scaled units: \f$\chi = nT \frac{R}{\mathcal{L}}\f$
  *
- * @param [in] l
+ * This function is thread-safe.
+ *
+ * @param [in] order \$\ell\f$
  * @param [out] a0 coefficient \f$a_{\ell,0}^\mathrm{perf}\f$
  * @param [out] sign_a0 sign of \f$a_{\ell,0}^\mathrm{perf}\f$
  * @param [out] b0 coefficient \f$b_{\ell,0}^\mathrm{perf}\f$
@@ -727,11 +793,14 @@ void casimir_lnab0(int l, double *a0, sign_t *sign_a0, double *b0, sign_t *sign_
  *
  * Restrictions: \f$\ell \ge 1\f$, \f$\ell \ge 0\f$
  *
+ * This function is thread-safe - as long you don't change temperature and
+ * aspect ratio.
+ *
  * @param [in,out] self Casimir object
- * @param [in] l
+ * @param [in] order \f$\ell\f$
  * @param [in] n Matsubara term, \f$xi = nT\f$
  * @param [out] sign sign of \f$a_\ell\f$
- * @retval logarithm of Mie coefficient a_l
+ * @retval logarithm of Mie coefficient \f$a_\ell\f$
  */
 double casimir_lna_perf(casimir_t *self, const int l, const int n, sign_t *sign)
 {
@@ -785,11 +854,14 @@ double casimir_lna_perf(casimir_t *self, const int l, const int n, sign_t *sign)
  *
  * Restrictions: \f$\ell \ge 1\f$, \f$\ell \ge 0\f$
  *
+ * This function is thread safe - as long you don't change temperature and
+ * aspect ratio.
+ *
  * @param [in,out] self Casimir object
- * @param [in] l
+ * @param [in] order \f$\ell\f$
  * @param [in] n Matsubara term, \f$xi = nT\f$
  * @param [out] sign sign of \f$b_\ell\f$
- * @retval logarithm of Mie coefficient b_l
+ * @retval logarithm of Mie coefficient \f$b_\ell\f$
  */
 double casimir_lnb_perf(casimir_t *self, const int l, const int n, sign_t *sign)
 {
@@ -813,9 +885,12 @@ double casimir_lnb_perf(casimir_t *self, const int l, const int n, sign_t *sign)
  *
  * sign_a and sign_b must be valid pointers and must not be NULL.
  *
+ * This function is thread safe - as long you don't change temperature, aspect
+ * ratio and dielectric properties of sphere.
+ *
  * @param [in,out] self Casimir object
  * @param [in] n Matsubara term, \f$\xi = nT\f$
- * @param [in] l
+ * @param [in] order \f$\ell\f$
  * @param [out] lna logarithm of Mie coefficient \f$a_\ell\f$
  * @param [out] lnb logarithm of Mie coefficient \f$b_\ell\f$
  * @param [out] sign_a sign of Mie coefficient \f$a_\ell\f$
@@ -853,6 +928,7 @@ void casimir_lnab(casimir_t *self, const int n_mat, const int l, double *lna, do
     ln_slc = lnIl_nchi + logadd_s(lnKl,      +1, ln_chi+lnKlm,           +1, &sign_slc);
     ln_sld = lnKl      + logadd_s(lnIl_nchi, +1, ln_n+ln_chi+lnIlm_nchi, -1, &sign_sld);
 
+    /* XXX FIXME XXX */
     /*
     printf("n =%.15g\n", (double)expq(ln_n));
     printf("n2=%.15g\n", (double)expq(2*ln_n));
@@ -879,8 +955,8 @@ void casimir_lnab(casimir_t *self, const int n_mat, const int l, double *lna, do
  * @brief Initialize Mie cache
  *
  * This will initialize a cache for the Mie coefficients. If a Mie coefficient
- * \f$a_l(\xi=nT)\f$ or \f$b_l(xi=nT)\f$ is needed, the coefficients only needs
- * to be calculated the first time. The result will be saved.
+ * \f$a_\ell(\xi=nT)\f$ or \f$b_\ell(xi=nT)\f$ is needed, the coefficients only
+ * needs to be calculated the first time. The result will be saved.
  *
  * The cache will grow on demand. But it will never shrink - unless you call
  * casimir_free or casimir_mie_cache_clean.
@@ -888,6 +964,8 @@ void casimir_lnab(casimir_t *self, const int n_mat, const int l, double *lna, do
  * The casimir_init function will call this function and the cache will be used
  * throughout computations. So you usually don't want to use this function
  * yourself.
+ *
+ * This function is not thread safe.
  *
  * @param [in,out] casimir object
  */
@@ -921,6 +999,8 @@ void casimir_mie_cache_init(casimir_t *self)
  * is not precomputed yet.
  *
  * You usually don't want to use this function yourself.
+ *
+ * This function is not thread safe.
  *
  * @param [in,out] self Casimir object
  * @param [in,out] cache Mie cache
@@ -967,6 +1047,8 @@ void casimir_mie_cache_alloc(casimir_t *self, int n)
  *
  * You usually don't want to use this function yourself.
  *
+ * This function is not thread-safe.
+ *
  * @param [in, out] Casimir object
  */
 void casimir_mie_cache_clean(casimir_t *self)
@@ -978,17 +1060,19 @@ void casimir_mie_cache_clean(casimir_t *self)
 /**
  * @brief Clean memory of cache
  *
- * Get Mie coefficients for l and Matsubara frequency xi=nT. If the Mie
- * coefficients have not been calculated yet, they will be computed and stored
- * in the cache.
+ * Get Mie coefficients for \f$\ell\f$ and Matsubara frequency \f$\xi=nT\f$. If
+ * the Mie coefficients have not been calculated yet, they will be computed and
+ * stored in the cache.
+ *
+ * This function is thread-safe.
  *
  * @param [in, out] Casimir object
- * @param [in] l
- * @param [in] n
- * @param [out] ln_a logarithm of a_l
- * @param [out] sign_a sign of a_l
- * @param [out] ln_b logarithm of b_l
- * @param [out] sign_b sign of b_l
+ * @param [in] order \f$\ell\f$
+ * @param [in] n Matsubara term
+ * @param [out] ln_a logarithm of \f$a_\ell\f$
+ * @param [out] sign_a sign of \f$a_\ell\f$
+ * @param [out] ln_b logarithm of \f$b_\ell\f$
+ * @param [out] sign_b sign of \f$b_\ell\f$
  */
 void casimir_mie_cache_get(casimir_t *self, int l, int n, double *ln_a, sign_t *sign_a, double *ln_b, sign_t *sign_b)
 {
@@ -1032,6 +1116,8 @@ void casimir_mie_cache_get(casimir_t *self, int l, int n, double *ln_a, sign_t *
  * afterwards!
  *
  * You usually don't want to use this function yourself.
+ *
+ * This function is not thread-safe.
  *
  * @param [in, out] Casimir object
  */
@@ -1167,10 +1253,14 @@ static int _join_threads(casimir_t *self, double values[], int *ncalc)
  * This function calculates the free energy for the Matsubara term n. If mmax
  * is not NULL, the largest value of m calculated will be stored in mmax.
  *
+ * This function is thread-safe - as long you don't change temperature, aspect
+ * ratio, dielectric properties of sphere and plane, lmax, integration and
+ * verbose.
+ *
  * @param [in,out] self Casimir object
  * @param [in] n Matsubara term, \f$\xi=nT\f$
- * @param [out] mmax maximum number of m
- * @retval F Casimir free energy for given n
+ * @param [out] mmax maximum number of \f$m\f$
+ * @retval F Casimir free energy for given \f$n\f$
  */
 double casimir_F_n(casimir_t *self, const int n, int *mmax)
 {
@@ -1224,6 +1314,8 @@ double casimir_F_n(casimir_t *self, const int n, int *mmax)
  *
  * This function calculates the free energy. If nmax is not NULL, the highest
  * Matsubara term calculated will be stored in nnmax.
+ *
+ * This function will use as many cores as specified by casimir_set_cores.
  * 
  * @param [in,out] self Casimir object
  * @param [out] nmax maximum number of n
@@ -1309,6 +1401,8 @@ double casimir_F(casimir_t *self, int *nmax)
  *
  * This function calculates the logarithm of the determinant of the scattering
  * operator D for the Matsubara term \f$n=0\f$.
+ *
+ * This function is thread-safe as long you don't change lmax and aspect ratio.
  *
  * @param [in,out] self Casimir object
  * @param [in] m
@@ -1422,6 +1516,9 @@ void casimir_logdetD0(casimir_t *self, int m, double *logdet_EE, double *logdet_
  *
  * This function calculates the logarithm of the determinant of the scattering
  * operator D for the Matsubara term \f$n\f$.
+ *
+ * This function is thread-safe - as long you don't change lmax, temperature,
+ * aspect ratio, dielectric properties of sphere and plane, and integration.
  *
  * @param [in,out] self Casimir object
  * @param [in] n Matsubara term
