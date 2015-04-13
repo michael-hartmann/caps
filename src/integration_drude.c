@@ -13,15 +13,15 @@ void integrands_drude(edouble x, integrands_drude_t *integrands, casimir_t *self
 {
     plm_combination_t comb;
     const edouble tau = 2*nT;
-    const edouble k = sqrtq(pow_2(x)/4 + nT*x);
-    const edouble log_factor = logq(pow_2(x)+2*tau*x);
+    const edouble k = sqrte(pow_2(x)/4 + nT*x);
+    const edouble log_factor = loge(pow_2(x)+2*tau*x);
     edouble r_TE, r_TM;
     edouble lnr_TE, lnr_TM;
     edouble A,B,C,D;
 
     casimir_rp(self, nT, k, &r_TE, &r_TM);
-    lnr_TE = logq(-r_TE);
-    lnr_TM = logq(r_TM);
+    lnr_TE = loge(-r_TE);
+    lnr_TM = loge(r_TM);
 
     plm_PlmPlm(l1, l2, m, 1+x/tau, &comb);
 
@@ -68,7 +68,7 @@ void casimir_integrate_drude(casimir_t *self, casimir_integrals_t *cint, int l1,
     int i;
     integrands_drude_t integrand;
     const edouble tau = 2*n*T;
-    const edouble ln_tau = logq(tau);
+    const edouble ln_tau = loge(tau);
     const edouble ln_Lambda = casimir_lnLambda(l1, l2, m, NULL); /* sign: -1 */
     edouble prefactor;
     edouble *ln_ABCD, *lnA_TE, *lnA_TM, *lnB_TE, *lnB_TM, *lnC_TE, *lnC_TM, *lnD_TE, *lnD_TM;
@@ -188,16 +188,16 @@ double log_polyintegrate(edouble p[], size_t len, int l1, int l2, int m, double 
     size_t i;
     sign_t sign_lnLambda;
     edouble value = 0;
-    const edouble ln_tau = logq(tau);
+    const edouble ln_tau = loge(tau);
     const edouble lnLambda = casimir_lnLambda(l1, l2, m, &sign_lnLambda);
-    const edouble lnfac_max = lgammaq(1+len-1);
+    const edouble lnfac_max = lgammae(1+len-1);
 
     for(i = 0; i < len; i++)
-        value += expq(lgammaq(1+i)-lnfac_max-(i+1)*ln_tau)*p[i];
+        value += expe(lgammae(1+i)-lnfac_max-(i+1)*ln_tau)*p[i];
 
     TERMINATE(isnan(value), "value is nan");
     TERMINATE(isinf(value), "value is inf");
 
-    *sign = copysignq(1, value) * sign_lnLambda;
-    return lnLambda+lnfac_max+logq(fabsq(value));
+    *sign = copysigne(1, value) * sign_lnLambda;
+    return lnLambda+lnfac_max+loge(fabse(value));
 }

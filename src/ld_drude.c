@@ -29,7 +29,7 @@ edouble TraceD0(casimir_t *self, int m)
         double lnXiRL = casimir_lnXi(l,l,m,&sign_xi)+(2*l+1)*lnRbyScriptL;
         casimir_lnab0(l, &lna0, &sign_a0, &lnb0, &sign_b0);
 
-        Tr_EE += -sign_xi*sign_a0*expq(lna0+lnXiRL);
+        Tr_EE += -sign_xi*sign_a0*expe(lna0+lnXiRL);
     }
 
     return Tr_EE;
@@ -61,12 +61,12 @@ void TraceD(casimir_t *self, int n, int m, edouble Tr_EE[2], edouble Tr_MM[2])
         casimir_integrate_drude(self, &cint, l, l, m, n, self->T);
 
         /* EE */
-        Tr_EE[TE] += -sign_al*cint.signA_TE*expq(ln_al+cint.lnA_TE);
-        Tr_EE[TM] += -sign_al*cint.signB_TM*expq(ln_al+cint.lnB_TM);
+        Tr_EE[TE] += -sign_al*cint.signA_TE*expe(ln_al+cint.lnA_TE);
+        Tr_EE[TM] += -sign_al*cint.signB_TM*expe(ln_al+cint.lnB_TM);
 
         /* MM */
-        Tr_MM[TE] += -sign_bl*cint.signB_TE*expq(ln_bl+cint.lnB_TE);
-        Tr_MM[TM] += -sign_bl*cint.signA_TM*expq(ln_bl+cint.lnA_TM);
+        Tr_MM[TE] += -sign_bl*cint.signB_TE*expe(ln_bl+cint.lnB_TE);
+        Tr_MM[TM] += -sign_bl*cint.signA_TM*expe(ln_bl+cint.lnA_TM);
     }
 }
 

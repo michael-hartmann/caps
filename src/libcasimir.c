@@ -121,7 +121,7 @@ edouble inline casimir_lnLambda(int l1, int l2, int m, sign_t *sign)
 {
     if(sign != NULL)
         *sign = -1;
-    return LOG2 + (logq(2.*l1+1)+logq(2*l2+1)-LOG4-logq(l1)-logq(l1+1)-logq(l2)-logq(l2+1)+lnfac(l1-m)+lnfac(l2-m)-lnfac(l1+m)-lnfac(l2+m))/2.0L;
+    return LOG2 + (loge(2.*l1+1)+loge(2*l2+1)-LOG4-loge(l1)-loge(l1+1)-loge(l2)-loge(l2+1)+lnfac(l1-m)+lnfac(l2-m)-lnfac(l1+m)-lnfac(l2+m))/2.0L;
 }
 
 
@@ -183,7 +183,7 @@ double casimir_lnepsilon(double xi, double omegap, double gamma_)
 void casimir_rp(casimir_t *self, edouble nT, edouble k, edouble *r_TE, edouble *r_TM)
 {
     edouble epsilon = casimir_epsilon(nT, self->omegap_plane, self->gamma_plane);
-    edouble beta = sqrtq(1 + (epsilon-1)/(1 + pow_2(k/nT)));
+    edouble beta = sqrte(1 + (epsilon-1)/(1 + pow_2(k/nT)));
 
     *r_TE = (1-beta)/(1+beta);
     *r_TM = (epsilon-beta)/(epsilon+beta);
@@ -302,7 +302,7 @@ edouble casimir_lnXi(int l1, int l2, int m, sign_t *sign)
 {
     if(sign != NULL)
         *sign = MPOW(l2);
-    return (logq(2*l1+1)+logq(2*l2+1)-lnfac(l1-m)-lnfac(l2-m)-lnfac(l1+m)-lnfac(l2+m)-logq(l1)-logq(l1+1)-logq(l2)-logq(l2+1))/2.0L \
+    return (loge(2*l1+1)+loge(2*l2+1)-lnfac(l1-m)-lnfac(l2-m)-lnfac(l1+m)-lnfac(l2+m)-loge(l1)-loge(l1+1)-loge(l2)-loge(l2+1))/2.0L \
            +lnfac(2*l1)+lnfac(2*l2)+lnfac(l1+l2)-LOG4*(2*l1+l2+1)-lnfac(l1-1)-lnfac(l2-1);
 }
 
@@ -821,24 +821,24 @@ double casimir_lna_perf(casimir_t *self, const int l, const int n, sign_t *sign)
 
     /* numinator */
     {
-        frac = expq(lnfrac+lnIlm-lnIlp);
+        frac = expe(lnfrac+lnIlm-lnIlp);
         if(frac < 1)
-            nominator = log1pq(fabsq(-frac));
+            nominator = log1pe(fabse(-frac));
         else
         {
             if(frac > 1)
                 *sign *= -1;
 
-            nominator = logq(fabsq(1-frac));
+            nominator = loge(fabse(1-frac));
         }
     }
     /* denominator */
     {
-        frac = expq(lnfrac+lnKlm-lnKlp);
+        frac = expe(lnfrac+lnKlm-lnKlp);
         if(frac < 1)
-            denominator = log1pq(frac);
+            denominator = log1pe(frac);
         else
-            denominator = log1pq(frac);
+            denominator = log1pe(frac);
     }
 
     ret = prefactor+nominator-denominator;
@@ -903,7 +903,7 @@ void casimir_lnab(casimir_t *self, const int n_mat, const int l, double *lna, do
     edouble lnIl, lnKl, lnIlm, lnKlm, lnIl_nchi, lnKl_nchi, lnIlm_nchi, lnKlm_nchi;
     edouble xi = n_mat*self->T;
     edouble chi = xi*self->RbyScriptL;
-    edouble ln_chi = logq(xi)+logq(self->RbyScriptL);
+    edouble ln_chi = loge(xi)+loge(self->RbyScriptL);
     edouble omegap = self->omegap_sphere;
     edouble gamma_ = self->gamma_sphere;
     sign_t sign_a_num, sign_a_denom, sign_b_num, sign_b_denom;
@@ -920,8 +920,8 @@ void casimir_lnab(casimir_t *self, const int n_mat, const int l, double *lna, do
     bessel_lnInuKnu(l,   chi, &lnIl,  &lnKl);
     bessel_lnInuKnu(l-1, chi, &lnIlm, &lnKlm);
 
-    bessel_lnInuKnu(l,   expq(ln_n)*chi, &lnIl_nchi,  &lnKl_nchi);
-    bessel_lnInuKnu(l-1, expq(ln_n)*chi, &lnIlm_nchi, &lnKlm_nchi);
+    bessel_lnInuKnu(l,   expe(ln_n)*chi, &lnIl_nchi,  &lnKl_nchi);
+    bessel_lnInuKnu(l-1, expe(ln_n)*chi, &lnIlm_nchi, &lnKlm_nchi);
 
     ln_sla = lnIl_nchi + logadd_s(lnIl,      +1, ln_chi+lnIlm,           -1, &sign_sla);
     ln_slb = lnIl      + logadd_s(lnIl_nchi, +1, ln_n+ln_chi+lnIlm_nchi, -1, &sign_slb);
@@ -930,17 +930,17 @@ void casimir_lnab(casimir_t *self, const int n_mat, const int l, double *lna, do
 
     /* XXX FIXME XXX */
     /*
-    printf("n =%.15g\n", (double)expq(ln_n));
-    printf("n2=%.15g\n", (double)expq(2*ln_n));
-    printf("lnIl = %.15g\n", (double)expq(lnIl));
+    printf("n =%.15g\n", (double)expe(ln_n));
+    printf("n2=%.15g\n", (double)expe(2*ln_n));
+    printf("lnIl = %.15g\n", (double)expe(lnIl));
     printf("chi=%.15g\n", (double)chi);
     */
 
     /*
-    printf("sla=%.15g\n", (double)(sign_sla*expq(ln_sla)));
-    printf("slb=%.15g\n", (double)(sign_slb*expq(ln_slb)));
-    printf("slc=%.15g\n", (double)(sign_slc*expq(ln_slc)));
-    printf("sld=%.15g\n", (double)(sign_sld*expq(ln_sld)));
+    printf("sla=%.15g\n", (double)(sign_sla*expe(ln_sla)));
+    printf("slb=%.15g\n", (double)(sign_slb*expe(ln_slb)));
+    printf("slc=%.15g\n", (double)(sign_slc*expe(ln_slc)));
+    printf("sld=%.15g\n", (double)(sign_sld*expe(ln_sld)));
     */
 
     *lna = LOGPI - LOG2 + logadd_s(2*ln_n+ln_sla, +sign_sla, ln_slb, -sign_slb, &sign_a_num) - logadd_s(2*ln_n+ln_slc, +sign_slc, ln_sld, -sign_sld, &sign_a_denom);
@@ -1412,7 +1412,7 @@ double casimir_F(casimir_t *self, int *nmax)
 void casimir_logdetD0(casimir_t *self, int m, double *logdet_EE, double *logdet_MM)
 {
     int l1,l2,min,max,dim;
-    const edouble lnRbyScriptL = logq(self->RbyScriptL);
+    const edouble lnRbyScriptL = loge(self->RbyScriptL);
     matrix_edouble_t *EE = NULL, *MM = NULL;
     matrix_sign_t *EE_sign = NULL, *MM_sign = NULL;
 

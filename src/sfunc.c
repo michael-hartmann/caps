@@ -34,9 +34,9 @@ edouble inline logadd(const edouble a, const edouble b)
         return a;
 
     if(a > b)
-        return a + log1pq(expq(b-a));
+        return a + log1pe(expe(b-a));
     else
-        return b + log1pq(expq(a-b));
+        return b + log1pe(expe(a-b));
 }
 
 
@@ -56,12 +56,12 @@ edouble inline logadd_s(const edouble a, const sign_t sign_a, const edouble b, c
     if(a > b)
     {
         *sign = sign_a;
-        return a + log1pq(sign_a*sign_b*expq(b-a));
+        return a + log1pe(sign_a*sign_b*expe(b-a));
     }
     else
     {
         *sign = sign_b;
-        return b + log1pq(sign_a*sign_b*expq(a-b));
+        return b + log1pe(sign_a*sign_b*expe(a-b));
     }
 }
 
@@ -76,11 +76,11 @@ edouble inline logadd_m(const edouble list[], const size_t len)
         if(list[i] > max)
             max = list[i];
 
-    sum = expq(list[0]-max);
+    sum = expe(list[0]-max);
     for(i = 1; i < len; i++)
-        sum += expq(list[i]-max);
+        sum += expe(list[i]-max);
 
-    return max + logq(fabsq(sum));
+    return max + loge(fabse(sum));
 }
 
 
@@ -94,18 +94,18 @@ edouble inline logadd_ms(const edouble list[], const sign_t signs[], const size_
         if(list[i] > max)
             max = list[i];
 
-    sum = signs[0]*expq(list[0]-max);
+    sum = signs[0]*expe(list[0]-max);
     for(i = 1; i < len; i++)
-        sum += signs[i]*expq(list[i]-max);
+        sum += signs[i]*expe(list[i]-max);
 
-    *sign = copysignq(1, sum);
-    return max + logq(fabsq(sum));
+    *sign = copysigne(1, sum);
+    return max + loge(fabse(sum));
 }
 
 
 edouble inline lbinom(int n, int k)
 {
-    return lgammaq(1+n)-lgammaq(1+k)-lgammaq(1+n-k);
+    return lgammae(1+n)-lgammae(1+k)-lgammae(1+n-k);
 }
 
 
@@ -113,7 +113,7 @@ void bessel_lnInuKnu(int nu, const edouble x, edouble *lnInu_p, edouble *lnKnu_p
 {
     int l;
     edouble lnKnu = 1, lnKnup = 1+1./x;
-    edouble logx = logq(x);
+    edouble logx = loge(x);
 
     // calculate Knu, Knup
     {
@@ -121,8 +121,8 @@ void bessel_lnInuKnu(int nu, const edouble x, edouble *lnInu_p, edouble *lnKnu_p
 
         if(nu == 0)
         {
-            lnKnu  = prefactor+logq(lnKnu);
-            lnKnup = prefactor+logq(lnKnup);
+            lnKnu  = prefactor+loge(lnKnu);
+            lnKnup = prefactor+loge(lnKnup);
         }
         else
         {
@@ -133,8 +133,8 @@ void bessel_lnInuKnu(int nu, const edouble x, edouble *lnInu_p, edouble *lnKnu_p
                 lnKnup = Kn;
             }
 
-            lnKnup = prefactor+logq(lnKnup);
-            lnKnu  = prefactor+logq(lnKnu);
+            lnKnup = prefactor+loge(lnKnup);
+            lnKnu  = prefactor+loge(lnKnu);
         }
 
         if(isnan(lnKnup) || isinf(lnKnup))
@@ -145,8 +145,8 @@ void bessel_lnInuKnu(int nu, const edouble x, edouble *lnInu_p, edouble *lnKnu_p
             if(x < sqrt(nu)*1e3)
             {
                 /* small arguments */
-                lnKnu  = lgammaq(nu+0.5)-LOG2+(nu+0.5)*(LOG2-logx);
-                lnKnup = lgammaq(nu+1.5)-LOG2+(nu+1.5)*(LOG2-logx);
+                lnKnu  = lgammae(nu+0.5)-LOG2+(nu+0.5)*(LOG2-logx);
+                lnKnup = lgammae(nu+1.5)-LOG2+(nu+1.5)*(LOG2-logx);
             }
             else
             {
@@ -182,7 +182,7 @@ void bessel_lnInuKnu(int nu, const edouble x, edouble *lnInu_p, edouble *lnKnu_p
             l++;
         }
 
-        *lnInu_p = -logx-lnKnu-logq(expq(lnKnup-lnKnu)+1/ratio);
+        *lnInu_p = -logx-lnKnu-loge(expe(lnKnup-lnKnu)+1/ratio);
         #undef an
     }
 }
@@ -232,12 +232,12 @@ edouble ln_doublefact(int n)
     if(n % 2 == 0) /* even */
     {
         int k = n/2;
-        return k*LOG2 + lgammaq(1+k);
+        return k*LOG2 + lgammae(1+k);
     }
     else /* odd */
     {
         int k = (n+1)/2;
-        return lgammaq(1+2*k) - k*LOG2 - lgammaq(1+k);
+        return lgammae(1+2*k) - k*LOG2 - lgammae(1+k);
     }
 }
 
@@ -261,7 +261,7 @@ edouble ln_doublefact(int n)
 static inline void _lnplm_array(int lmax, int m, edouble x, edouble lnplm[], sign_t sign[])
 {
     int l;
-    edouble logx = logq(x);
+    edouble logx = loge(x);
 
     if(m == 0)
     {
@@ -271,19 +271,19 @@ static inline void _lnplm_array(int lmax, int m, edouble x, edouble lnplm[], sig
     else
     {
         sign[0]  = MPOW((int)(m/2) + m%2);
-        lnplm[0] = ln_doublefact(2*m-1) + m*0.5*logq(pow_2(x)-1); // l=m,m=m
+        lnplm[0] = ln_doublefact(2*m-1) + m*0.5*loge(pow_2(x)-1); // l=m,m=m
     }
 
     if(lmax == m)
         return;
 
     sign[1]  = sign[0];
-    lnplm[1] = lnplm[0]+logx+logq(2*m+1); // l=m+1, m=m
+    lnplm[1] = lnplm[0]+logx+loge(2*m+1); // l=m+1, m=m
 
     for(l = m+2; l <= lmax; l++)
     {
-        lnplm[l-m] = logadd_s(logq(2*l-1)+logx+lnplm[l-m-1], sign[l-m-1], logq(l+m-1)+lnplm[l-m-2], -sign[l-m-2], &sign[l-m]);
-        lnplm[l-m]-= logq(l-m);
+        lnplm[l-m] = logadd_s(loge(2*l-1)+logx+lnplm[l-m-1], sign[l-m-1], loge(l+m-1)+lnplm[l-m-2], -sign[l-m-2], &sign[l-m]);
+        lnplm[l-m]-= loge(l-m);
     }
 }
 
@@ -303,7 +303,7 @@ edouble plm_Plm(int l, int m, edouble x)
 {
     sign_t sign;
     edouble value = plm_lnPlm(l, m, x, &sign);
-    return sign*expq(value);
+    return sign*expe(value);
 }
 
 /* calculate dPlm(x) */
@@ -315,7 +315,7 @@ edouble plm_lndPlm(int l, int m, edouble x, sign_t *sign)
 
     _lnplm_array(lmax, m, x, plm, signs);
 
-    return logadd_s(logq(l-m+1)+plm[l+1-m], signs[l+1-m], logq(l+1)+logq(x)+plm[l-m], -signs[l+1-m], sign) - logq(pow_2(x)-1);
+    return logadd_s(loge(l-m+1)+plm[l+1-m], signs[l+1-m], loge(l+1)+loge(x)+plm[l-m], -signs[l+1-m], sign) - loge(pow_2(x)-1);
 }
 
 
@@ -323,7 +323,7 @@ edouble plm_dPlm(int l, int m, edouble x)
 {
     sign_t sign;
     edouble value = plm_lndPlm(l, m, x, &sign);
-    return sign*expq(value);
+    return sign*expe(value);
 }
 
 void plm_PlmPlm(int l1, int l2, int m, edouble x, plm_combination_t *res)
@@ -331,8 +331,8 @@ void plm_PlmPlm(int l1, int l2, int m, edouble x, plm_combination_t *res)
     const int lmax = MAX(l1,l2)+1;
     edouble lnPlm[lmax-m+1];
     sign_t signs[lmax-m+1];
-    edouble logx = logq(x);
-    edouble logx2m1 = logq(pow_2(x)-1);
+    edouble logx = loge(x);
+    edouble logx2m1 = loge(pow_2(x)-1);
     edouble lnPl1m, lnPl2m, lndPl1m, lndPl2m;
     sign_t sign_Pl1m, sign_Pl2m, sign_dPl1m, sign_dPl2m;
     sign_t common_sign = MPOW(m%2);
@@ -344,8 +344,8 @@ void plm_PlmPlm(int l1, int l2, int m, edouble x, plm_combination_t *res)
     lnPl2m    = lnPlm[l2-m];
     sign_Pl2m = signs[l2-m];
 
-    lndPl1m = logadd_s(logq(l1-m+1)+lnPlm[l1+1-m], signs[l1+1-m], logq(l1+1)+logx+lnPlm[l1-m], -signs[l1+1-m], &sign_dPl1m) - logx2m1;
-    lndPl2m = logadd_s(logq(l2-m+1)+lnPlm[l2+1-m], signs[l2+1-m], logq(l2+1)+logx+lnPlm[l2-m], -signs[l2+1-m], &sign_dPl2m) - logx2m1;
+    lndPl1m = logadd_s(loge(l1-m+1)+lnPlm[l1+1-m], signs[l1+1-m], loge(l1+1)+logx+lnPlm[l1-m], -signs[l1+1-m], &sign_dPl1m) - logx2m1;
+    lndPl2m = logadd_s(loge(l2-m+1)+lnPlm[l2+1-m], signs[l2+1-m], loge(l2+1)+logx+lnPlm[l2-m], -signs[l2+1-m], &sign_dPl2m) - logx2m1;
 
     /* Pl1m*Pl2m */
     res->lnPl1mPl2m    = lnPl1m + lnPl2m;
@@ -405,7 +405,7 @@ edouble inline gaunt_log_a0(int n, int nu, int m)
  */
 edouble inline gaunt_a0(int n, int nu, int m)
 {
-    return expq(gaunt_log_a0(n,nu,m));
+    return expe(gaunt_log_a0(n,nu,m));
 }
 
 /* eq. (3) */
