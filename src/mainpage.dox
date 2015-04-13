@@ -33,6 +33,9 @@ entropies is not understood very well.
 
 \section whatislibcasimir What is libcasimir?
 
+\image html  geometry.png
+\image latex geometry.png
+
 libcasimir implements the numerics for the Casimir effect in the plane-sphere
 geometry with perfect spheres using a scattering approach [8, 9]. We use the
 same approach, but derive slightly different formulas for the matrix element of
