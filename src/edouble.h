@@ -43,7 +43,7 @@
         #define sqrte __sqrtq
 
         _Quad __log1pq(_Quad);
-        #define log1pq __log1pq
+        #define log1pe __log1pq
 
         _Quad __fabsq(_Quad);
         #define fabse __fabsq
@@ -64,7 +64,7 @@
         #define gammae gammaq
         #define lgammae lgammaq
         #define sqrte sqrtq
-        #define log1pq log1pq
+        #define log1pe log1pq
         #define fabse fabsq
         #define copysigne copysignq
     #else
