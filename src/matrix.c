@@ -1,3 +1,10 @@
+/**
+ * @file   matrix.c
+ * @author Michael Hartmann <michael.hartmann@physik.uni-augsburg.de>
+ * @date   April, 2015
+ * @brief  matrix functions
+ */
+
 #include <stdio.h>
 
 #include "libcasimir.h"

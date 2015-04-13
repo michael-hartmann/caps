@@ -1,3 +1,10 @@
+/**
+ * @file   integration_perf.c
+ * @author Michael Hartmann <michael.hartmann@physik.uni-augsburg.de>
+ * @date   April, 2015
+ * @brief  Perform integration for perfect planes
+ */
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>

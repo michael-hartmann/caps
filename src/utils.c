@@ -1,3 +1,10 @@
+/**
+ * @file   utils.c
+ * @author Michael Hartmann <michael.hartmann@physik.uni-augsburg.de>
+ * @date   April, 2015
+ * @brief  helper functions
+ */
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/time.h>

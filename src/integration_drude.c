@@ -1,3 +1,10 @@
+/**
+ * @file   integration_drude.c
+ * @author Michael Hartmann <michael.hartmann@physik.uni-augsburg.de>
+ * @date   April, 2015
+ * @brief  Perform integration for Drude planes
+ */
+
 #include <math.h>
 #include <stdio.h>
 #include <string.h>
