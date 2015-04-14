@@ -13,7 +13,25 @@
 #include "sfunc.h"
 #include "utils.h"
 
-/* p must have length len_p1+len_p2-1 */
+/**
+ * @brief Multiply two polynomials
+ *
+ * Multiply the coefficients of the polynomials p1 and p2 with and store the
+ * result in p. p must have length of at least len_p1+len_p2-1.
+ *
+ * The polynomials are stored by coefficients \f$a_0,...,a_N\f$.
+ *
+ * This function uses the naive algorithm to calculate the product of two polynomials and thus
+ * this function has complexity \f$\mathcal{O}(\mathrm{len\_p1}\cdot\mathrm{len\_p2})\f$.
+ *
+ * This function is thread-safe.
+ *
+ * @param [in] p1 polynomial
+ * @param [in] len_p1 length of array p1
+ * @param [in] p1 polynomial
+ * @param [in] len_p2 length of array p2
+ * @param [in] p polynomial \f$p=p1\dotp2\f$
+ */
 void polymult(edouble p1[], int len_p1, edouble p2[], int len_p2, edouble p[])
 {
     int i,j;
@@ -26,42 +44,59 @@ void polymult(edouble p1[], int len_p1, edouble p2[], int len_p2, edouble p[])
             p[i+j] += p1[i]*p2[j];
 }
 
-edouble inline logadd(const edouble a, const edouble b)
+/**
+ * @brief Add two numbers given by their logarithms
+ *
+ * @param [in] log_a number
+ * @param [in] log_b number
+ * @return log_sum \f$\log{\left[\exp{(\mathrm{log\_a})}+\exp{(log\_b)}\right]}\f$
+ */
+edouble inline logadd(const edouble log_a, const edouble log_b)
 {
-    if(isinf(a) && a < 0)
-        return b;
-    else if(isinf(b) && b < 0)
-        return a;
+    if(isinf(log_a) && log_a < 0)
+        return log_b;
+    else if(isinf(log_b) && log_b < 0)
+        return log_a;
 
-    if(a > b)
-        return a + log1pe(expe(b-a));
+    if(log_a > log_b)
+        return log_a + log1pe(expe(log_b-log_a));
     else
-        return b + log1pe(expe(a-b));
+        return log_b + log1pe(expe(log_a-log_b));
 }
 
 
-edouble inline logadd_s(const edouble a, const sign_t sign_a, const edouble b, const sign_t sign_b, sign_t *sign)
+/**
+ * @brief Add two numbers given by their logarithms, respecting signs
+ *
+ * @param [in]  log_a number
+ * @param [in]  sign_a sign of a
+ * @param [in]  log_b number
+ * @param [in]  sign_b sign of b
+ * @param [out] sign sign of result
+ * @return log_sum \f$\log{\left|\mathrm{sign\_a}\cdot\exp{(\mathrm{log\_a})}+\mathrm{sign\_b} \cdot \exp{(log\_b)}\right|}\f$
+ */
+edouble inline logadd_s(const edouble log_a, const sign_t sign_a, const edouble log_b, const sign_t sign_b, sign_t *sign)
 {
-    if(isinf(a) && a < 0)
+    if(isinf(log_a) && log_a < 0)
     {
         *sign = sign_b;
-        return b;
+        return log_b;
     }
-    else if(isinf(b) && b < 0)
+    else if(isinf(log_b) && log_b < 0)
     {
         *sign = sign_a;
-        return a;
+        return log_a;
     }
 
-    if(a > b)
+    if(log_a > log_b)
     {
         *sign = sign_a;
-        return a + log1pe(sign_a*sign_b*expe(b-a));
+        return log_a + log1pe(sign_a*sign_b*expe(log_b-log_a));
     }
     else
     {
         *sign = sign_b;
-        return b + log1pe(sign_a*sign_b*expe(a-b));
+        return log_b + log1pe(sign_a*sign_b*expe(log_a-log_b));
     }
 }
 
@@ -103,6 +138,13 @@ edouble inline logadd_ms(const edouble list[], const sign_t signs[], const size_
 }
 
 
+/**
+ * @brief Calculate logarithm of Binomial coefficient
+ *
+ * @param n
+ * @param k
+ * @return binomial \f$\log \left(\begin{array}{c} n \\ k \end{array}\right)\f$
+ */
 edouble inline lbinom(int n, int k)
 {
     return lgammae(1+n)-lgammae(1+k)-lgammae(1+n-k);
@@ -206,26 +248,27 @@ edouble bessel_lnInu(const int nu, const edouble x)
 
 double linspace(double start, double stop, int N, int i)
 {
-    if(start == stop)
-        return start;
-
     return start+(stop-start)*i/(N-1);
 }
 
 
 double logspace(double start, double stop, int N, int i)
 {
-    if(start == stop)
-        return start;
-
     return start*pow(pow(stop/start, 1./(N-1)), i);
 }
 
+/**
+ * @brief Calculate double factorial \f$n!!\f$
+ *
+ * @param n non-negative integer
+ * @return doublefactorial \f$n!!\f$
+ */
 edouble ln_doublefact(int n)
 {
     if(n < 0)
         return NAN;
 
+    /* see e.g. http://en.wikipedia.org/wiki/Double_factorial */
     if(n == 0 || n == 1) /* 0!! = 1!! = 0 */
         return 0;
 
