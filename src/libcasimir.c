@@ -555,7 +555,7 @@ double casimir_get_gamma_plane(casimir_t *self)
 /**
  * @brief Return numbers of used cores
  *
- * See casimir_set_cores.
+ * See \ref casimir_set_cores.
  *
  * This function is not thread-safe.
  *
@@ -636,9 +636,9 @@ int casimir_set_lmax(casimir_t *self, int lmax)
 
 
 /**
- * @brief Get maximum value of l
+ * @brief Get maximum value of \f$\ell\f$
  *
- * See casimir_set_lmax.
+ * See \ref casimir_set_lmax.
  *
  * This function is not thread-safe.
  *
@@ -690,7 +690,7 @@ int casimir_set_verbose(casimir_t *self, int verbose)
 /**
  * @brief Get precision
  *
- * See casimir_set_precision
+ * See \ref casimir_set_precision
  *
  * This function is not thread-safe.
  *
@@ -772,7 +772,7 @@ void casimir_free(casimir_t *self)
  *
  * This function is thread-safe.
  *
- * @param [in] order \f$\ell\f$
+ * @param [in] l \f$\ell\f$
  * @param [out] a0 coefficient \f$a_{\ell,0}^\mathrm{perf}\f$
  * @param [out] sign_a0 sign of \f$a_{\ell,0}^\mathrm{perf}\f$
  * @param [out] b0 coefficient \f$b_{\ell,0}^\mathrm{perf}\f$
@@ -798,7 +798,7 @@ void casimir_lnab0(int l, double *a0, sign_t *sign_a0, double *b0, sign_t *sign_
  * aspect ratio.
  *
  * @param [in,out] self Casimir object
- * @param [in] order \f$\ell\f$
+ * @param [in] l \f$\ell\f$
  * @param [in] n Matsubara term, \f$xi = nT\f$
  * @param [out] sign sign of \f$a_\ell\f$
  * @retval logarithm of Mie coefficient \f$a_\ell\f$
@@ -859,8 +859,8 @@ double casimir_lna_perf(casimir_t *self, const int l, const int n, sign_t *sign)
  * aspect ratio.
  *
  * @param [in,out] self Casimir object
- * @param [in] order \f$\ell\f$
- * @param [in] n Matsubara term, \f$xi = nT\f$
+ * @param [in] l \f$\ell\f$
+ * @param [in] n Matsubara term, \f$\xi = nT\f$
  * @param [out] sign sign of \f$b_\ell\f$
  * @retval logarithm of Mie coefficient \f$b_\ell\f$
  */
@@ -890,8 +890,8 @@ double casimir_lnb_perf(casimir_t *self, const int l, const int n, sign_t *sign)
  * ratio and dielectric properties of sphere.
  *
  * @param [in,out] self Casimir object
- * @param [in] n Matsubara term, \f$\xi = nT\f$
- * @param [in] order \f$\ell\f$
+ * @param [in] n_mat Matsubara term, \f$\xi = nT\f$
+ * @param [in] l \f$\ell\f$
  * @param [out] lna logarithm of Mie coefficient \f$a_\ell\f$
  * @param [out] lnb logarithm of Mie coefficient \f$b_\ell\f$
  * @param [out] sign_a sign of Mie coefficient \f$a_\ell\f$
@@ -968,7 +968,7 @@ void casimir_lnab(casimir_t *self, const int n_mat, const int l, double *lna, do
  *
  * This function is not thread safe.
  *
- * @param [in,out] casimir object
+ * @param [in,out] self Casimir object
  */
 void casimir_mie_cache_init(casimir_t *self)
 {
@@ -992,19 +992,12 @@ void casimir_mie_cache_init(casimir_t *self)
 /**
  * @brief Allocate memory for the Mie coefficients \f$a_\ell\f$ and \f$b_\ell\f$
  *
- * This function computes all the Mie coefficients for \f$\xi=nT\f$ and stores
- * it in cache. Make sure you have already initialized the cache (cf.
- * casimir_mie_cache_init). Initialization is done by casimir_init.
- *
- * This function will be called by casimir_mie_cache_get if a Mie coefficient
- * is not precomputed yet.
- *
  * You usually don't want to use this function yourself.
  *
  * This function is not thread safe.
  *
  * @param [in,out] self Casimir object
- * @param [in,out] cache Mie cache
+ * @param [in] n Matsubara term
  */
 void casimir_mie_cache_alloc(casimir_t *self, int n)
 {
@@ -1050,7 +1043,7 @@ void casimir_mie_cache_alloc(casimir_t *self, int n)
  *
  * This function is not thread-safe.
  *
- * @param [in, out] Casimir object
+ * @param [in, out] self Casimir object
  */
 void casimir_mie_cache_clean(casimir_t *self)
 {
@@ -1067,8 +1060,8 @@ void casimir_mie_cache_clean(casimir_t *self)
  *
  * This function is thread-safe.
  *
- * @param [in, out] Casimir object
- * @param [in] order \f$\ell\f$
+ * @param [in, out] self Casimir object
+ * @param [in] l \f$\ell\f$
  * @param [in] n Matsubara term
  * @param [out] ln_a logarithm of \f$a_\ell\f$
  * @param [out] sign_a sign of \f$a_\ell\f$
@@ -1120,7 +1113,7 @@ void casimir_mie_cache_get(casimir_t *self, int l, int n, double *ln_a, sign_t *
  *
  * This function is not thread-safe.
  *
- * @param [in, out] Casimir object
+ * @param [in, out] self Casimir object
  */
 void casimir_mie_cache_free(casimir_t *self)
 {
@@ -1524,7 +1517,7 @@ void casimir_logdetD0(casimir_t *self, int m, double *logdet_EE, double *logdet_
  * @param [in,out] self Casimir object
  * @param [in] n Matsubara term
  * @param [in] m
- * @param [in,out] m integration object
+ * @param [in,out] integration_obj may be NULL
  * @retval logdetD \f$\log \det \mathcal{D}^{(m)}(\xi=nT)\f$
  */
 double casimir_logdetD(casimir_t *self, int n, int m, void *integration_obj)
