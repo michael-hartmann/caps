@@ -6,13 +6,14 @@
 
 #include "edouble.h"
 
-#define HBARC 3.161526510740123e-26
-#define KB    1.3806488e-23
+#define HBARC 3.161526510740123e-26 /**< \f$\hbar \mathrm{c}\f$ */
+#define KB    1.3806488e-23         /**< \f$k_\mathrm{B}\f$ */
 
 #define CASIMIR_DEFAULT_PRECISION 1e-12
 #define CASIMIR_IDLE 1000
 #define CASIMIR_FACTOR_LMAX 5
 
+/** define sign_t as a signed char */
 typedef char sign_t;
 
 const char *casimir_compile_info(void);
@@ -23,17 +24,17 @@ const char *casimir_compile_info(void);
  */
 typedef struct
 {
-    double *ln_al; /**< list of Mie coefficients \f$a_\ell\f$ (logarithms) */
-    sign_t *sign_al;  /**< list of signs of Mie coefficients \f$a_\ell\f$ */
-    double *ln_bl; /**< list of Mie coefficients \f$b_\ell\f$ (logarithms) */
-    sign_t *sign_bl;  /**< list of signs of Mie coefficients \f$b_\ell\f$ */
+    double *ln_al;   /**< list of Mie coefficients \f$a_\ell\f$ (logarithms) */
+    sign_t *sign_al; /**< list of signs of Mie coefficients \f$a_\ell\f$ */
+    double *ln_bl;   /**< list of Mie coefficients \f$b_\ell\f$ (logarithms) */
+    sign_t *sign_bl; /**< list of signs of Mie coefficients \f$b_\ell\f$ */
 } casimir_mie_cache_entry_t;
 
 typedef struct {
-    int nmax;
-    int lmax;
-    casimir_mie_cache_entry_t **entries;
-    pthread_mutex_t mutex;
+    int nmax; /**< maximum value of n */
+    int lmax  /**< maximum value of l */;
+    casimir_mie_cache_entry_t **entries; /**< entries */
+    pthread_mutex_t mutex; /**< mutex for Mie cache */
 } casimir_mie_cache_t;
 
 /**
@@ -50,7 +51,7 @@ typedef struct
      /*@{*/
     double RbyScriptL; /**< \f$R/\mathcal{L}\f$, where \f$R\f$ is the radius of the sphere and \f$L\f$ is the separation of plane and sphere. */
     double LbyR;       /**< \f$L/R\f$, where \f$R\f$ is the radius of the sphere and \f$L\f$ is the separation of plane and sphere. */
-    double T; /**< temperature */
+    double T;          /**< temperature */
     /*@}*/
 
     /**
@@ -90,14 +91,6 @@ typedef struct
     double value;    /**< free energy for Matsubara term n*/
 } casimir_thread_t;
 
-
-/*
-typedef struct
-{
-    double logA,logB,logC,logD;
-    int signA, signB, signC, signD;
-} casimir_integrals_t;
-*/
 
 typedef struct
 {

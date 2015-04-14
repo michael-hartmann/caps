@@ -198,7 +198,7 @@ void casimir_rp(casimir_t *self, edouble nT, edouble k, edouble *r_TE, edouble *
 /**
  * @brief Convert free energy in SI units to free energy in units of \f$\mathcal{L}/(\hbar c)\f$
  *
- * This function returns 
+ * This function returns
  * \f[
  *      \mathcal{F}_\mathrm{scaled} = \mathcal{F}_\mathrm{SI} \frac{\mathcal{L}}{\hbar c}
  * \f]
@@ -218,7 +218,7 @@ double casimir_F_SI_to_scaled(double F_SI, double ScriptL)
 /**
  * @brief Convert free energy in units of \f$\hbar c / \mathcal{L}\f$ to SI units
  *
- * This function returns 
+ * This function returns
  * \f[
  *      \mathcal{F}_\mathrm{SI} = \mathcal{F}_\mathrm{scaled} \frac{\hbar c}{\mathcal{L}}
  * \f]
@@ -238,7 +238,7 @@ double casimir_F_scaled_to_SI(double F_scaled, double ScriptL)
 /**
  * @brief Convert temperature in units of Kelvin to temperature in units of \f$\hbar c /(2\pi k_B \mathcal{L})\f$
  *
- * This function returns 
+ * This function returns
  * \f[
  *      T_\mathrm{scaled} = \frac{2\pi k_b \mathcal{L}}{\hbar c} T_\mathrm{SI}
  * \f]
@@ -258,7 +258,7 @@ double casimir_T_SI_to_scaled(double T_SI, double ScriptL)
 /**
  * @brief Convert temperature in units of \f$\hbar c /(2\pi k_B \mathcal{L})\f$ to temperature in units of Kelvin
  *
- * This function returns 
+ * This function returns
  * \f[
  *      T_\mathrm{scaled} = \frac{2\pi k_b \mathcal{L}}{\hbar c} T_\mathrm{SI}
  * \f]
@@ -336,7 +336,7 @@ int casimir_init(casimir_t *self, double RbyScriptL, double T)
         return -1;
     if(T < 0)
         return -2;
-    
+
     self->lmax = (int)ceil(CASIMIR_FACTOR_LMAX/LbyR);
 
     self->T           = T;
@@ -349,7 +349,7 @@ int casimir_init(casimir_t *self, double RbyScriptL, double T)
 
     /* initialize mie cache */
     casimir_mie_cache_init(self);
-    
+
     /* perfect reflectors */
     self->integration = -1; /* perfect reflectors */
     self->omegap_sphere = INFINITY;
@@ -615,7 +615,7 @@ int casimir_set_cores(casimir_t *self, int cores)
  * computations.
  *
  * This function is not thread-safe.
- * 
+ *
  * @param [in,out] self Casimir object
  * @param [in] lmax maximum number of \f$\ell\f$
  * @retval 1 if successful
@@ -672,7 +672,7 @@ int casimir_get_verbose(casimir_t *self)
  * @brief Set verbose flag
  *
  * Use this function to set the verbose flag. If set to 1, this will cause the
- * library to print information to stderr. 
+ * library to print information to stderr.
  *
  * This function is not thread-safe.
  *
@@ -731,7 +731,7 @@ int casimir_set_precision(casimir_t *self, double precision)
  * yourself.
  *
  * This function is not thread-safe.
- * 
+ *
  * @param [in,out] self Casimir object
  */
 void casimir_free(casimir_t *self)
@@ -749,11 +749,12 @@ void casimir_free(casimir_t *self)
 
 
 /**
-* @name Mie coefficients
-*/
+ * @name Mie coefficients
+ */
 /*@{*/
 
-/** Return the logarithm of the prefactors \f$a_{\ell,0}^\mathrm{perf}\f$, \f$b_{\ell,0}^\mathrm{perf}\f$ and their signs
+/**
+ * @brief Return logarithm of prefactors \f$a_{\ell,0}^\mathrm{perf}\f$, \f$b_{\ell,0}^\mathrm{perf}\f$ and their signs
  *
  * For small frequencies \f$\chi = \frac{\xi R}{c} \ll 1\f$ the Mie
  * coeffiecients scale like
@@ -771,7 +772,7 @@ void casimir_free(casimir_t *self)
  *
  * This function is thread-safe.
  *
- * @param [in] order \$\ell\f$
+ * @param [in] order \f$\ell\f$
  * @param [out] a0 coefficient \f$a_{\ell,0}^\mathrm{perf}\f$
  * @param [out] sign_a0 sign of \f$a_{\ell,0}^\mathrm{perf}\f$
  * @param [out] b0 coefficient \f$b_{\ell,0}^\mathrm{perf}\f$
@@ -811,7 +812,7 @@ double casimir_lna_perf(casimir_t *self, const int l, const int n, sign_t *sign)
     edouble lnfrac = log(chi)-log(l);
 
     /* we could do both calculations together. but it doesn't cost much time -
-     * so why bother? 
+     * so why bother?
      */
     bessel_lnInuKnu(l-1, chi, &lnIlm, &lnKlm);
     bessel_lnInuKnu(l,   chi, &lnIlp, &lnKlp);
@@ -897,7 +898,7 @@ double casimir_lnb_perf(casimir_t *self, const int l, const int n, sign_t *sign)
  * @param [out] sign_b sign of Mie coefficient \f$b_\ell\f$
  */
 void casimir_lnab(casimir_t *self, const int n_mat, const int l, double *lna, double *lnb, sign_t *sign_a, sign_t *sign_b)
-{ 
+{
     sign_t sign_sla, sign_slb, sign_slc, sign_sld;
     edouble ln_n, ln_sla, ln_slb, ln_slc, ln_sld;
     edouble lnIl, lnKl, lnIlm, lnKlm, lnIl_nchi, lnKl_nchi, lnIlm_nchi, lnKlm_nchi;
@@ -1276,7 +1277,7 @@ double casimir_F_n(casimir_t *self, const int n, int *mmax)
     for(m = 0; m <= lmax; m++)
         values[m] = 0;
 
-    if(self->integration <= 0) 
+    if(self->integration <= 0)
         casimir_integrate_perf_init(&int_perf, n*self->T, self->lmax);
 
     for(m = 0; m <= self->lmax; m++)
@@ -1289,14 +1290,14 @@ double casimir_F_n(casimir_t *self, const int n, int *mmax)
         /* If F is !=0 and value/F < 1e-16, then F+value = F. The addition
          * has no effect.
          * As for larger m value will be even smaller, we can skip the
-         * summation here. 
+         * summation here.
          */
         sum_n = _sum(values, lmax+1);
         if(values[0] != 0 && fabs(values[m]/sum_n) < precision)
             break;
     }
 
-    if(self->integration <= 0) 
+    if(self->integration <= 0)
         casimir_integrate_perf_free(&int_perf);
 
     if(self->verbose)
@@ -1316,7 +1317,7 @@ double casimir_F_n(casimir_t *self, const int n, int *mmax)
  * Matsubara term calculated will be stored in nnmax.
  *
  * This function will use as many cores as specified by casimir_set_cores.
- * 
+ *
  * @param [in,out] self Casimir object
  * @param [out] nmax maximum number of n
  * @retval F Casimir free energy
