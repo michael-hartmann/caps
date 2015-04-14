@@ -205,17 +205,17 @@ void bessel_lnInuKnu(int nu, const edouble x, edouble *lnInu_p, edouble *lnKnu_p
     {
         #define an(n,nu,x) (2*((nu)+0.5+(n))/(x))
 
-        edouble nom   = an(2,nu,x)+1/an(1,nu,x);
+        edouble num   = an(2,nu,x)+1/an(1,nu,x);
         edouble denom = an(2,nu,x);
-        edouble ratio = (an(1,nu,x)*nom)/denom;
+        edouble ratio = (an(1,nu,x)*num)/denom;
         edouble ratio_last = 0;
 
         l = 3;
         while(1)
         {
-            nom   = an(l,nu,x)+1/nom;
+            num   = an(l,nu,x)+1/num;
             denom = an(l,nu,x)+1/denom;
-            ratio *= nom/denom;
+            ratio *= num/denom;
 
             if(ratio_last != 0 && fabs(1-ratio/ratio_last) < 1e-15)
                 break;
