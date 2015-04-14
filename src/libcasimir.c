@@ -23,6 +23,12 @@
 
 static char CASIMIR_COMPILE_INFO[4096] = { 0 };
 
+
+/**
+* @name Information on compilation and Casimir objects
+*/
+/*@{*/
+
 /** @brief Return string with information about the binary
  *
  * The returned string contains date and time of compilation, the compiler and
@@ -91,6 +97,13 @@ void casimir_info(casimir_t *self, FILE *stream, const char *prefix)
     fprintf(stream, "%sprecision = %g\n", prefix, self->precision);
 }
 
+/*@}*/
+
+
+/**
+* @name various functions
+*/
+/*@{*/
 
 /**
  * @brief Calculate logarithm and sign of prefactor \f$\Lambda_{\ell_1 \ell_2}^{(m)}\f$
@@ -122,6 +135,36 @@ edouble inline casimir_lnLambda(int l1, int l2, int m, sign_t *sign)
     if(sign != NULL)
         *sign = -1;
     return LOG2 + (loge(2.*l1+1)+loge(2*l2+1)-LOG4-loge(l1)-loge(l1+1)-loge(l2)-loge(l2+1)+lnfac(l1-m)+lnfac(l2-m)-lnfac(l1+m)-lnfac(l2+m))/2.0L;
+}
+
+
+/**
+ * @brief Calculate logarithm and sign of prefactor \f$\Xi_{\ell_1 \ell_2}^{(m)}\f$
+ *
+ * This function returns the logarithm of the prefactor for given
+ * \f$\ell_1,\ell_2,m\f$. The prefactor is defined by Eq. (5.54).
+ *
+ * If sign is not NULL, the sign of \f$\Xi_{\ell_1 \ell_2}^{(m)}\f$ is stored in
+ * sign.
+ *
+ * The values are computed using the lgamma function to avoid overflows.
+ *
+ * Restrictions: \f$\ell_1,\ell_2 \ge 1\f$, \f$\ell_1,\ell_2 \ge m > 0\f$
+ *
+ * This function is thread-safe.
+ *
+ * @param [in]  l1 \f$\ell_1\f$
+ * @param [in]  l2 \f$\ell_2\f$
+ * @param [in]  m  \f$m\f$
+ * @param [out] sign
+ * @retval logXi \f$\log{\Xi(\ell_1,\ell_2,m)}\f$
+ */
+edouble casimir_lnXi(int l1, int l2, int m, sign_t *sign)
+{
+    if(sign != NULL)
+        *sign = MPOW(l2);
+    return (loge(2*l1+1)+loge(2*l2+1)-lnfac(l1-m)-lnfac(l2-m)-lnfac(l1+m)-lnfac(l2+m)-loge(l1)-loge(l1+1)-loge(l2)-loge(l2+1))/2.0L \
+           +lnfac(2*l1)+lnfac(2*l2)+lnfac(l1+l2)-LOG4*(2*l1+l2+1)-lnfac(l1-1)-lnfac(l2-1);
 }
 
 
@@ -189,6 +232,7 @@ void casimir_rp(casimir_t *self, edouble nT, edouble k, edouble *r_TE, edouble *
     *r_TM = (epsilon-beta)/(epsilon+beta);
 }
 
+/*@}*/
 
 /**
 * @name converting
@@ -275,36 +319,6 @@ double casimir_T_scaled_to_SI(double T_scaled, double ScriptL)
 }
 
 /*@}*/
-
-
-/**
- * @brief Calculate logarithm and sign of prefactor \f$\Xi_{\ell_1 \ell_2}^{(m)}\f$
- *
- * This function returns the logarithm of the prefactor for given
- * \f$\ell_1,\ell_2,m\f$. The prefactor is defined by Eq. (5.54).
- *
- * If sign is not NULL, the sign of \f$\Xi_{\ell_1 \ell_2}^{(m)}\f$ is stored in
- * sign.
- *
- * The values are computed using the lgamma function to avoid overflows.
- *
- * Restrictions: \f$\ell_1,\ell_2 \ge 1\f$, \f$\ell_1,\ell_2 \ge m > 0\f$
- *
- * This function is thread-safe.
- *
- * @param [in]  l1 \f$\ell_1\f$
- * @param [in]  l2 \f$\ell_2\f$
- * @param [in]  m  \f$m\f$
- * @param [out] sign
- * @retval logXi \f$\log{\Xi(\ell_1,\ell_2,m)}\f$
- */
-edouble casimir_lnXi(int l1, int l2, int m, sign_t *sign)
-{
-    if(sign != NULL)
-        *sign = MPOW(l2);
-    return (loge(2*l1+1)+loge(2*l2+1)-lnfac(l1-m)-lnfac(l2-m)-lnfac(l1+m)-lnfac(l2+m)-loge(l1)-loge(l1+1)-loge(l2)-loge(l2+1))/2.0L \
-           +lnfac(2*l1)+lnfac(2*l2)+lnfac(l1+l2)-LOG4*(2*l1+l2+1)-lnfac(l1-1)-lnfac(l2-1);
-}
 
 
 /**

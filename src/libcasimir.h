@@ -16,8 +16,6 @@
 /** define sign_t as a signed char */
 typedef char sign_t;
 
-const char *casimir_compile_info(void);
-
 
 /**
  * Cache for Mie coefficients.
@@ -31,8 +29,8 @@ typedef struct
 } casimir_mie_cache_entry_t;
 
 typedef struct {
-    int nmax; /**< maximum value of n */
-    int lmax  /**< maximum value of l */;
+    int nmax;  /**< maximum value of n */
+    int lmax;  /**< maximum value of \f$\ell\f$ */
     casimir_mie_cache_entry_t **entries; /**< entries */
     pthread_mutex_t mutex; /**< mutex for Mie cache */
 } casimir_mie_cache_t;
@@ -72,7 +70,7 @@ typedef struct
     int lmax;            /**< truncation value for vector space \f$\ell_\mathrm{max}\f$ */
     int verbose;         /**< flag that indicates to be verbose */
     int cores;           /**< number of thread that should be used */
-    double precision;    /**< precision */
+    double precision;    /**< precision \f$\epsilon_p\f$ */
     pthread_t **threads; /**< list of pthread objects */
 
     casimir_mie_cache_t *mie_cache;
@@ -94,18 +92,27 @@ typedef struct
 
 typedef struct
 {
-    edouble lnA_TE, lnA_TM;
-    edouble lnB_TE, lnB_TM;
-    edouble lnC_TE, lnC_TM;
-    edouble lnD_TE, lnD_TM;
-    sign_t signA_TE, signA_TM;
-    sign_t signB_TE, signB_TM;
-    sign_t signC_TE, signC_TM;
-    sign_t signD_TE, signD_TM;
+    edouble lnA_TE;  /**< logarithm of integral A_TE */
+    edouble lnA_TM;  /**< logarithm of integral A_TM */
+    edouble lnB_TE;  /**< logarithm of integral B_TE */
+    edouble lnB_TM;  /**< logarithm of integral B_TM */
+    edouble lnC_TE;  /**< logarithm of integral C_TE */
+    edouble lnC_TM;  /**< logarithm of integral C_TM */
+    edouble lnD_TE;  /**< logarithm of integral D_TE */
+    edouble lnD_TM;  /**< logarithm of integral D_TM */
+    sign_t signA_TE; /**< sign of lnA_TE */
+    sign_t signA_TM; /**< sign of lnA_TM */
+    sign_t signB_TE; /**< sign of lnB_TE */
+    sign_t signB_TM; /**< sign of lnB_TM */
+    sign_t signC_TE; /**< sign of lnC_TE */
+    sign_t signC_TM; /**< sign of lnC_TM */
+    sign_t signD_TE; /**< sign of lnD_TE */
+    sign_t signD_TM; /**< sign of lnD_TM */
 } casimir_integrals_t;
 
 
 /* prototypes */
+const char *casimir_compile_info(void);
 void casimir_info(casimir_t *self, FILE *stream, const char *prefix);
 
 double casimir_epsilon(double xi, double omegap, double gamma_);
