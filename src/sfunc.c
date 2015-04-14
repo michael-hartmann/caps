@@ -28,7 +28,7 @@
  *
  * @param [in] p1 polynomial
  * @param [in] len_p1 length of array p1
- * @param [in] p1 polynomial
+ * @param [in] p2 polynomial
  * @param [in] len_p2 length of array p2
  * @param [in] p polynomial \f$p=p1\dotp2\f$
  */
