@@ -102,7 +102,7 @@ casimir_tests:
 	./casimir_tests
 
 clean:
-	rm -f casimir casimir_tests casimir_hiT casimir_logdetD *.o
+	rm -f casimir casimir_tests casimir_hiT casimir_logdetD *.o casimir_Fn ld_drude
 
 doc:
 	doxygen doxygen.conf
