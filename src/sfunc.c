@@ -44,6 +44,13 @@ void polymult(edouble p1[], int len_p1, edouble p2[], int len_p2, edouble p[])
             p[i+j] += p1[i]*p2[j];
 }
 
+
+/**
+* @name Add numbers given as logarithms
+*/
+/*@{*/
+
+
 /**
  * @brief Add two numbers given by their logarithms
  *
@@ -137,6 +144,7 @@ edouble inline logadd_ms(const edouble list[], const sign_t signs[], const size_
     return max + loge(fabse(sum));
 }
 
+/*@}*/
 
 /**
  * @brief Calculate logarithm of Binomial coefficient
@@ -150,6 +158,11 @@ edouble inline lbinom(int n, int k)
     return lgammae(1+n)-lgammae(1+k)-lgammae(1+n-k);
 }
 
+
+/**
+* @name Bessel functions
+*/
+/*@{*/
 
 void bessel_lnInuKnu(int nu, const edouble x, edouble *lnInu_p, edouble *lnKnu_p)
 {
@@ -245,6 +258,7 @@ edouble bessel_lnInu(const int nu, const edouble x)
     return Inu;
 }
 
+/*@}*/
 
 double linspace(double start, double stop, int N, int i)
 {
@@ -285,23 +299,43 @@ edouble ln_doublefact(int n)
 }
 
 
-/* This module implements associated legendre functions and its derivatives
- * for m >= 0 and x >= 1.
+/**
+* @name Associated Legendre polynomials
+*/
+/*@{*/
+
+/**
+ * @brief Calculate associated Legendre polynomials for argument \f$x \ge 1\f$
+ *
+ * This function calculates associated legendre functions and its derivatives
+ * for \f$m \ge 0\f$ and \f$x \ge 1\f$.
  * 
  * Associated Legendre polynomials are defined as follows:
- *     Plm(x) = (-1)^m (1-x²)^(m/2) * d^m/dx^m Pl(x)
- * where Pl(x) denotes a Legendre polynomial.
+ * \f[
+ *     P_\ell^m(x) = (-1)^m (1-x^2)^{m/2} \frac{\mathrm{d}^m}{\mathrm{d}x^m} P_\ell(x)
+ * \f]
+ * where \f$P_\ell(x)\f$ denotes a Legendre polynomial.
  *
- * As Pl(x) are ordinary polynomials, the only problem is the term (1-x²) when
- * extending the domain to values of x > 1.
+ * As \f$P_\ell(x)\f$ are ordinary polynomials, the only problem is the term
+ * \f$(1-x^2)^{m/2}\f$ when extending the domain to values of \f$x > 1\f$. We will
+ * use the convention \f$\sqrt{-x} \equiv +i \sqrt{x}\f$.
  *
- * (*) Note:
- * Products of associated legendre polynomials with common m are unambiguous, because
- *     (i)² = (-i)² = -1.
+ * Note: Products of associated legendre polynomials with common \f$m\f$ are
+ * unambiguous, because
+ * \f[
+ *     i^2 = (-i)^2 = -1.
+ * \f]
+ *
+ * This function calculates the associated Legendre polynomials for
+ * \f$\ell=m,...,\ell_\mathrm{max}\f$.
+ *
+ * @param [in] lmax maximum value of \f$\ell\f$
+ * @param [in] m order
+ * @param [in] x position to evaluate associated Legendre polynomial
+ * @param [out] lnplm array of logarithms of values
+ * @param [out] sign corressponding signs
  */
-
-/* calculate Plm for l=m...l=lmax */
-static inline void _lnplm_array(int lmax, int m, edouble x, edouble lnplm[], sign_t sign[])
+inline void plm_lnPlm_array(int lmax, int m, edouble x, edouble lnplm[], sign_t sign[])
 {
     int l;
     edouble logx = loge(x);
@@ -330,18 +364,38 @@ static inline void _lnplm_array(int lmax, int m, edouble x, edouble lnplm[], sig
     }
 }
 
-/* calculate Plm(x) */
+/**
+ * @brief Calculate \f$P_\ell^m(x)\f$
+ *
+ * See \ref plm_lnPlm_array.
+ *
+ * @param l degree
+ * @param m order
+ * @param x position
+ * @param sign sign of result
+ * @return lnPlm \f$\log\left|P_\ell^m(x)\right|\f$
+ */
 edouble plm_lnPlm(int l, int m, edouble x, sign_t *sign)
 {
     edouble plm[l-m+1];
     sign_t  signs[l-m+1];
 
-    _lnplm_array(l, m, x, plm, signs);
+    plm_lnPlm_array(l, m, x, plm, signs);
     *sign = signs[l-m];
 
     return plm[l-m];
 }
 
+/**
+ * @brief Calculate \f$P_\ell^m(x)\f$
+ *
+ * See \ref plm_lnPlm_array.
+ *
+ * @param l degree
+ * @param m order
+ * @param x position
+ * @return Plm \f$P_\ell^m(x)\f$
+ */
 edouble plm_Plm(int l, int m, edouble x)
 {
     sign_t sign;
@@ -349,19 +403,39 @@ edouble plm_Plm(int l, int m, edouble x)
     return sign*expe(value);
 }
 
-/* calculate dPlm(x) */
+/**
+ * @brief Calculate \f${P_\ell^m}^\prime (x)\f$
+ *
+ * See \ref plm_lnPlm_array.
+ *
+ * @param l degree
+ * @param m order
+ * @param x position
+ * @param sign sign of result
+ * @return lndPlm \f$\log\left|{P_\ell^m}^\prime(x)\right|\f$
+ */
 edouble plm_lndPlm(int l, int m, edouble x, sign_t *sign)
 {
     const int lmax = l+1;
     edouble plm[lmax-m+1];
     sign_t signs[lmax-m+1];
 
-    _lnplm_array(lmax, m, x, plm, signs);
+    plm_lnPlm_array(lmax, m, x, plm, signs);
 
     return logadd_s(loge(l-m+1)+plm[l+1-m], signs[l+1-m], loge(l+1)+loge(x)+plm[l-m], -signs[l+1-m], sign) - loge(pow_2(x)-1);
 }
 
 
+/**
+ * @brief Calculate \f${P_\ell^m}^\prime(x)\f$
+ *
+ * See \ref plm_lnPlm_array.
+ *
+ * @param l degree
+ * @param m order
+ * @param x position
+ * @return dPlm \f${P_\ell^m}^\prime(x)\f$
+ */
 edouble plm_dPlm(int l, int m, edouble x)
 {
     sign_t sign;
@@ -369,6 +443,22 @@ edouble plm_dPlm(int l, int m, edouble x)
     return sign*expe(value);
 }
 
+/**
+ * @brief Calculate products of associated Legendre polynomials and its derivatives
+ *
+ * Calculate products \f$P_{\ell_1}^m(x) P_{\ell_2}^m(x)\f$,
+ * \f${P_{\ell_1}^m}^\prime(x) P_{\ell_2}^m(x)\f$ \f$P_{\ell_1}^m(x)
+ * {P_{\ell_2}^m}^\prime(x)\f$ \f${P_{\ell_1}^m}^\prime(x)
+ * {P_{\ell_2}^m}^\prime(x)\f$.
+ *
+ * See \ref plm_lnPlm_array.
+ *
+ * @param [in]  l1 \f$\ell_1\f$
+ * @param [in]  l2 \f$\ell_2\f$
+ * @param [in]  m \f$m\f$
+ * @param [in]  x \f$x\f$
+ * @param [out] res save results in this struct
+ */
 void plm_PlmPlm(int l1, int l2, int m, edouble x, plm_combination_t *res)
 {
     const int lmax = MAX(l1,l2)+1;
@@ -380,7 +470,7 @@ void plm_PlmPlm(int l1, int l2, int m, edouble x, plm_combination_t *res)
     sign_t sign_Pl1m, sign_Pl2m, sign_dPl1m, sign_dPl2m;
     sign_t common_sign = MPOW(m%2);
 
-    _lnplm_array(lmax, m, x, lnPlm, signs);
+    plm_lnPlm_array(lmax, m, x, lnPlm, signs);
 
     lnPl1m    = lnPlm[l1-m];
     sign_Pl1m = signs[l1-m];
@@ -406,6 +496,14 @@ void plm_PlmPlm(int l1, int l2, int m, edouble x, plm_combination_t *res)
     res->lndPl1mdPl2m    = lndPl1m + lndPl2m;
     res->sign_dPl1mdPl2m = common_sign * sign_dPl1m * sign_dPl2m;
 }
+
+/*@}*/
+
+
+/**
+* @name Gaunt coefficients
+*/
+/*@{*/
 
 /**
  * @brief Determine qmax
@@ -533,3 +631,5 @@ void gaunt(const int n, const int nu, const int m, edouble a_tilde[])
             a_tilde[q] = (p+1)*(p2+2)*alpha(p+2,n,nu)*a_tilde[q-1] / ((p+2)*(p1+1)*alpha(p+1,n,nu));
     }
 }
+
+/*@}*/
