@@ -13,7 +13,25 @@
 #include "sfunc.h"
 #include "utils.h"
 
-/* p must have length len_p1+len_p2-1 */
+/**
+ * @brief Multiply two polynomials
+ *
+ * Multiply the coefficients of the polynomials p1 and p2 with and store the
+ * result in p. p must have length of at least len_p1+len_p2-1.
+ *
+ * The polynomials are stored by coefficients \f$a_0,...,a_N\f$.
+ *
+ * This function uses the naive algorithm to calculate the product of two polynomials and thus
+ * this function has complexity \f$\mathcal{O}(\mathrm{len\_p1}\cdot\mathrm{len\_p2})\f$.
+ *
+ * This function is thread-safe.
+ *
+ * @param [in] p1 polynomial
+ * @param [in] len_p1 length of array p1
+ * @param [in] p2 polynomial
+ * @param [in] len_p2 length of array p2
+ * @param [in] p polynomial \f$p=p1\dotp2\f$
+ */
 void polymult(edouble p1[], int len_p1, edouble p2[], int len_p2, edouble p[])
 {
     int i,j;
@@ -26,42 +44,66 @@ void polymult(edouble p1[], int len_p1, edouble p2[], int len_p2, edouble p[])
             p[i+j] += p1[i]*p2[j];
 }
 
-edouble inline logadd(const edouble a, const edouble b)
-{
-    if(isinf(a) && a < 0)
-        return b;
-    else if(isinf(b) && b < 0)
-        return a;
 
-    if(a > b)
-        return a + log1pe(expe(b-a));
+/**
+* @name Add numbers given as logarithms
+*/
+/*@{*/
+
+
+/**
+ * @brief Add two numbers given by their logarithms
+ *
+ * @param [in] log_a number
+ * @param [in] log_b number
+ * @return log_sum \f$\log{\left[\exp{(\mathrm{log\_a})}+\exp{(log\_b)}\right]}\f$
+ */
+edouble inline logadd(const edouble log_a, const edouble log_b)
+{
+    if(isinf(log_a) && log_a < 0)
+        return log_b;
+    else if(isinf(log_b) && log_b < 0)
+        return log_a;
+
+    if(log_a > log_b)
+        return log_a + log1pe(expe(log_b-log_a));
     else
-        return b + log1pe(expe(a-b));
+        return log_b + log1pe(expe(log_a-log_b));
 }
 
 
-edouble inline logadd_s(const edouble a, const sign_t sign_a, const edouble b, const sign_t sign_b, sign_t *sign)
+/**
+ * @brief Add two numbers given by their logarithms, respecting signs
+ *
+ * @param [in]  log_a number
+ * @param [in]  sign_a sign of a
+ * @param [in]  log_b number
+ * @param [in]  sign_b sign of b
+ * @param [out] sign sign of result
+ * @return log_sum \f$\log{\left|\mathrm{sign\_a}\cdot\exp{(\mathrm{log\_a})}+\mathrm{sign\_b} \cdot \exp{(log\_b)}\right|}\f$
+ */
+edouble inline logadd_s(const edouble log_a, const sign_t sign_a, const edouble log_b, const sign_t sign_b, sign_t *sign)
 {
-    if(isinf(a) && a < 0)
+    if(isinf(log_a) && log_a < 0)
     {
         *sign = sign_b;
-        return b;
+        return log_b;
     }
-    else if(isinf(b) && b < 0)
+    else if(isinf(log_b) && log_b < 0)
     {
         *sign = sign_a;
-        return a;
+        return log_a;
     }
 
-    if(a > b)
+    if(log_a > log_b)
     {
         *sign = sign_a;
-        return a + log1pe(sign_a*sign_b*expe(b-a));
+        return log_a + log1pe(sign_a*sign_b*expe(log_b-log_a));
     }
     else
     {
         *sign = sign_b;
-        return b + log1pe(sign_a*sign_b*expe(a-b));
+        return log_b + log1pe(sign_a*sign_b*expe(log_a-log_b));
     }
 }
 
@@ -102,12 +144,25 @@ edouble inline logadd_ms(const edouble list[], const sign_t signs[], const size_
     return max + loge(fabse(sum));
 }
 
+/*@}*/
 
+/**
+ * @brief Calculate logarithm of Binomial coefficient
+ *
+ * @param n
+ * @param k
+ * @return binomial \f$\log \left(\begin{array}{c} n \\ k \end{array}\right)\f$
+ */
 edouble inline lbinom(int n, int k)
 {
     return lgammae(1+n)-lgammae(1+k)-lgammae(1+n-k);
 }
 
+
+/**
+* @name Bessel functions
+*/
+/*@{*/
 
 void bessel_lnInuKnu(int nu, const edouble x, edouble *lnInu_p, edouble *lnKnu_p)
 {
@@ -163,17 +218,17 @@ void bessel_lnInuKnu(int nu, const edouble x, edouble *lnInu_p, edouble *lnKnu_p
     {
         #define an(n,nu,x) (2*((nu)+0.5+(n))/(x))
 
-        edouble nom   = an(2,nu,x)+1/an(1,nu,x);
+        edouble num   = an(2,nu,x)+1/an(1,nu,x);
         edouble denom = an(2,nu,x);
-        edouble ratio = (an(1,nu,x)*nom)/denom;
+        edouble ratio = (an(1,nu,x)*num)/denom;
         edouble ratio_last = 0;
 
         l = 3;
         while(1)
         {
-            nom   = an(l,nu,x)+1/nom;
+            num   = an(l,nu,x)+1/num;
             denom = an(l,nu,x)+1/denom;
-            ratio *= nom/denom;
+            ratio *= num/denom;
 
             if(ratio_last != 0 && fabs(1-ratio/ratio_last) < 1e-15)
                 break;
@@ -203,29 +258,31 @@ edouble bessel_lnInu(const int nu, const edouble x)
     return Inu;
 }
 
+/*@}*/
 
 double linspace(double start, double stop, int N, int i)
 {
-    if(start == stop)
-        return start;
-
     return start+(stop-start)*i/(N-1);
 }
 
 
 double logspace(double start, double stop, int N, int i)
 {
-    if(start == stop)
-        return start;
-
     return start*pow(pow(stop/start, 1./(N-1)), i);
 }
 
+/**
+ * @brief Calculate double factorial \f$n!!\f$
+ *
+ * @param n non-negative integer
+ * @return doublefactorial \f$n!!\f$
+ */
 edouble ln_doublefact(int n)
 {
     if(n < 0)
         return NAN;
 
+    /* see e.g. http://en.wikipedia.org/wiki/Double_factorial */
     if(n == 0 || n == 1) /* 0!! = 1!! = 0 */
         return 0;
 
@@ -242,23 +299,43 @@ edouble ln_doublefact(int n)
 }
 
 
-/* This module implements associated legendre functions and its derivatives
- * for m >= 0 and x >= 1.
+/**
+* @name Associated Legendre polynomials
+*/
+/*@{*/
+
+/**
+ * @brief Calculate associated Legendre polynomials for argument \f$x \ge 1\f$
+ *
+ * This function calculates associated legendre functions and its derivatives
+ * for \f$m \ge 0\f$ and \f$x \ge 1\f$.
  * 
  * Associated Legendre polynomials are defined as follows:
- *     Plm(x) = (-1)^m (1-x²)^(m/2) * d^m/dx^m Pl(x)
- * where Pl(x) denotes a Legendre polynomial.
+ * \f[
+ *     P_\ell^m(x) = (-1)^m (1-x^2)^{m/2} \frac{\mathrm{d}^m}{\mathrm{d}x^m} P_\ell(x)
+ * \f]
+ * where \f$P_\ell(x)\f$ denotes a Legendre polynomial.
  *
- * As Pl(x) are ordinary polynomials, the only problem is the term (1-x²) when
- * extending the domain to values of x > 1.
+ * As \f$P_\ell(x)\f$ are ordinary polynomials, the only problem is the term
+ * \f$(1-x^2)^{m/2}\f$ when extending the domain to values of \f$x > 1\f$. We will
+ * use the convention \f$\sqrt{-x} \equiv +i \sqrt{x}\f$.
  *
- * (*) Note:
- * Products of associated legendre polynomials with common m are unambiguous, because
- *     (i)² = (-i)² = -1.
+ * Note: Products of associated legendre polynomials with common \f$m\f$ are
+ * unambiguous, because
+ * \f[
+ *     i^2 = (-i)^2 = -1.
+ * \f]
+ *
+ * This function calculates the associated Legendre polynomials for
+ * \f$\ell=m,...,\ell_\mathrm{max}\f$.
+ *
+ * @param [in] lmax maximum value of \f$\ell\f$
+ * @param [in] m order
+ * @param [in] x position to evaluate associated Legendre polynomial
+ * @param [out] lnplm array of logarithms of values
+ * @param [out] sign corressponding signs
  */
-
-/* calculate Plm for l=m...l=lmax */
-static inline void _lnplm_array(int lmax, int m, edouble x, edouble lnplm[], sign_t sign[])
+inline void plm_lnPlm_array(int lmax, int m, edouble x, edouble lnplm[], sign_t sign[])
 {
     int l;
     edouble logx = loge(x);
@@ -287,18 +364,38 @@ static inline void _lnplm_array(int lmax, int m, edouble x, edouble lnplm[], sig
     }
 }
 
-/* calculate Plm(x) */
+/**
+ * @brief Calculate \f$P_\ell^m(x)\f$
+ *
+ * See \ref plm_lnPlm_array.
+ *
+ * @param l degree
+ * @param m order
+ * @param x position
+ * @param sign sign of result
+ * @return lnPlm \f$\log\left|P_\ell^m(x)\right|\f$
+ */
 edouble plm_lnPlm(int l, int m, edouble x, sign_t *sign)
 {
     edouble plm[l-m+1];
     sign_t  signs[l-m+1];
 
-    _lnplm_array(l, m, x, plm, signs);
+    plm_lnPlm_array(l, m, x, plm, signs);
     *sign = signs[l-m];
 
     return plm[l-m];
 }
 
+/**
+ * @brief Calculate \f$P_\ell^m(x)\f$
+ *
+ * See \ref plm_lnPlm_array.
+ *
+ * @param l degree
+ * @param m order
+ * @param x position
+ * @return Plm \f$P_\ell^m(x)\f$
+ */
 edouble plm_Plm(int l, int m, edouble x)
 {
     sign_t sign;
@@ -306,19 +403,39 @@ edouble plm_Plm(int l, int m, edouble x)
     return sign*expe(value);
 }
 
-/* calculate dPlm(x) */
+/**
+ * @brief Calculate \f${P_\ell^m}^\prime (x)\f$
+ *
+ * See \ref plm_lnPlm_array.
+ *
+ * @param l degree
+ * @param m order
+ * @param x position
+ * @param sign sign of result
+ * @return lndPlm \f$\log\left|{P_\ell^m}^\prime(x)\right|\f$
+ */
 edouble plm_lndPlm(int l, int m, edouble x, sign_t *sign)
 {
     const int lmax = l+1;
     edouble plm[lmax-m+1];
     sign_t signs[lmax-m+1];
 
-    _lnplm_array(lmax, m, x, plm, signs);
+    plm_lnPlm_array(lmax, m, x, plm, signs);
 
     return logadd_s(loge(l-m+1)+plm[l+1-m], signs[l+1-m], loge(l+1)+loge(x)+plm[l-m], -signs[l+1-m], sign) - loge(pow_2(x)-1);
 }
 
 
+/**
+ * @brief Calculate \f${P_\ell^m}^\prime(x)\f$
+ *
+ * See \ref plm_lnPlm_array.
+ *
+ * @param l degree
+ * @param m order
+ * @param x position
+ * @return dPlm \f${P_\ell^m}^\prime(x)\f$
+ */
 edouble plm_dPlm(int l, int m, edouble x)
 {
     sign_t sign;
@@ -326,6 +443,22 @@ edouble plm_dPlm(int l, int m, edouble x)
     return sign*expe(value);
 }
 
+/**
+ * @brief Calculate products of associated Legendre polynomials and its derivatives
+ *
+ * Calculate products \f$P_{\ell_1}^m(x) P_{\ell_2}^m(x)\f$,
+ * \f${P_{\ell_1}^m}^\prime(x) P_{\ell_2}^m(x)\f$ \f$P_{\ell_1}^m(x)
+ * {P_{\ell_2}^m}^\prime(x)\f$ \f${P_{\ell_1}^m}^\prime(x)
+ * {P_{\ell_2}^m}^\prime(x)\f$.
+ *
+ * See \ref plm_lnPlm_array.
+ *
+ * @param [in]  l1 \f$\ell_1\f$
+ * @param [in]  l2 \f$\ell_2\f$
+ * @param [in]  m \f$m\f$
+ * @param [in]  x \f$x\f$
+ * @param [out] res save results in this struct
+ */
 void plm_PlmPlm(int l1, int l2, int m, edouble x, plm_combination_t *res)
 {
     const int lmax = MAX(l1,l2)+1;
@@ -337,7 +470,7 @@ void plm_PlmPlm(int l1, int l2, int m, edouble x, plm_combination_t *res)
     sign_t sign_Pl1m, sign_Pl2m, sign_dPl1m, sign_dPl2m;
     sign_t common_sign = MPOW(m%2);
 
-    _lnplm_array(lmax, m, x, lnPlm, signs);
+    plm_lnPlm_array(lmax, m, x, lnPlm, signs);
 
     lnPl1m    = lnPlm[l1-m];
     sign_Pl1m = signs[l1-m];
@@ -363,6 +496,14 @@ void plm_PlmPlm(int l1, int l2, int m, edouble x, plm_combination_t *res)
     res->lndPl1mdPl2m    = lndPl1m + lndPl2m;
     res->sign_dPl1mdPl2m = common_sign * sign_dPl1m * sign_dPl2m;
 }
+
+/*@}*/
+
+
+/**
+* @name Gaunt coefficients
+*/
+/*@{*/
 
 /**
  * @brief Determine qmax
@@ -490,3 +631,5 @@ void gaunt(const int n, const int nu, const int m, edouble a_tilde[])
             a_tilde[q] = (p+1)*(p2+2)*alpha(p+2,n,nu)*a_tilde[q-1] / ((p+2)*(p1+1)*alpha(p+1,n,nu));
     }
 }
+
+/*@}*/

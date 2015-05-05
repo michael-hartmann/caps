@@ -58,6 +58,7 @@ double logspace(double start, double stop, int N, int i);
 
 edouble ln_doublefact(int n);
 
+inline void plm_lnPlm_array(int lmax, int m, edouble x, edouble lnplm[], sign_t sign[]);
 edouble plm_lnPlm (int l, int m, edouble x, sign_t *sign);
 edouble plm_Plm   (int l, int m, edouble x);
 edouble plm_lndPlm(int l, int m, edouble x, sign_t *sign);

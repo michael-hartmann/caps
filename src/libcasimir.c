@@ -23,6 +23,12 @@
 
 static char CASIMIR_COMPILE_INFO[4096] = { 0 };
 
+
+/**
+* @name Information on compilation and Casimir objects
+*/
+/*@{*/
+
 /** @brief Return string with information about the binary
  *
  * The returned string contains date and time of compilation, the compiler and
@@ -91,6 +97,13 @@ void casimir_info(casimir_t *self, FILE *stream, const char *prefix)
     fprintf(stream, "%sprecision = %g\n", prefix, self->precision);
 }
 
+/*@}*/
+
+
+/**
+* @name various functions
+*/
+/*@{*/
 
 /**
  * @brief Calculate logarithm and sign of prefactor \f$\Lambda_{\ell_1 \ell_2}^{(m)}\f$
@@ -122,6 +135,36 @@ edouble inline casimir_lnLambda(int l1, int l2, int m, sign_t *sign)
     if(sign != NULL)
         *sign = -1;
     return LOG2 + (loge(2.*l1+1)+loge(2*l2+1)-LOG4-loge(l1)-loge(l1+1)-loge(l2)-loge(l2+1)+lnfac(l1-m)+lnfac(l2-m)-lnfac(l1+m)-lnfac(l2+m))/2.0L;
+}
+
+
+/**
+ * @brief Calculate logarithm and sign of prefactor \f$\Xi_{\ell_1 \ell_2}^{(m)}\f$
+ *
+ * This function returns the logarithm of the prefactor for given
+ * \f$\ell_1,\ell_2,m\f$. The prefactor is defined by Eq. (5.54).
+ *
+ * If sign is not NULL, the sign of \f$\Xi_{\ell_1 \ell_2}^{(m)}\f$ is stored in
+ * sign.
+ *
+ * The values are computed using the lgamma function to avoid overflows.
+ *
+ * Restrictions: \f$\ell_1,\ell_2 \ge 1\f$, \f$\ell_1,\ell_2 \ge m > 0\f$
+ *
+ * This function is thread-safe.
+ *
+ * @param [in]  l1 \f$\ell_1\f$
+ * @param [in]  l2 \f$\ell_2\f$
+ * @param [in]  m  \f$m\f$
+ * @param [out] sign
+ * @retval logXi \f$\log{\Xi(\ell_1,\ell_2,m)}\f$
+ */
+edouble casimir_lnXi(int l1, int l2, int m, sign_t *sign)
+{
+    if(sign != NULL)
+        *sign = MPOW(l2);
+    return (loge(2*l1+1)+loge(2*l2+1)-lnfac(l1-m)-lnfac(l2-m)-lnfac(l1+m)-lnfac(l2+m)-loge(l1)-loge(l1+1)-loge(l2)-loge(l2+1))/2.0L \
+           +lnfac(2*l1)+lnfac(2*l2)+lnfac(l1+l2)-LOG4*(2*l1+l2+1)-lnfac(l1-1)-lnfac(l2-1);
 }
 
 
@@ -189,6 +232,7 @@ void casimir_rp(casimir_t *self, edouble nT, edouble k, edouble *r_TE, edouble *
     *r_TM = (epsilon-beta)/(epsilon+beta);
 }
 
+/*@}*/
 
 /**
 * @name converting
@@ -198,7 +242,7 @@ void casimir_rp(casimir_t *self, edouble nT, edouble k, edouble *r_TE, edouble *
 /**
  * @brief Convert free energy in SI units to free energy in units of \f$\mathcal{L}/(\hbar c)\f$
  *
- * This function returns 
+ * This function returns
  * \f[
  *      \mathcal{F}_\mathrm{scaled} = \mathcal{F}_\mathrm{SI} \frac{\mathcal{L}}{\hbar c}
  * \f]
@@ -218,7 +262,7 @@ double casimir_F_SI_to_scaled(double F_SI, double ScriptL)
 /**
  * @brief Convert free energy in units of \f$\hbar c / \mathcal{L}\f$ to SI units
  *
- * This function returns 
+ * This function returns
  * \f[
  *      \mathcal{F}_\mathrm{SI} = \mathcal{F}_\mathrm{scaled} \frac{\hbar c}{\mathcal{L}}
  * \f]
@@ -238,7 +282,7 @@ double casimir_F_scaled_to_SI(double F_scaled, double ScriptL)
 /**
  * @brief Convert temperature in units of Kelvin to temperature in units of \f$\hbar c /(2\pi k_B \mathcal{L})\f$
  *
- * This function returns 
+ * This function returns
  * \f[
  *      T_\mathrm{scaled} = \frac{2\pi k_b \mathcal{L}}{\hbar c} T_\mathrm{SI}
  * \f]
@@ -258,7 +302,7 @@ double casimir_T_SI_to_scaled(double T_SI, double ScriptL)
 /**
  * @brief Convert temperature in units of \f$\hbar c /(2\pi k_B \mathcal{L})\f$ to temperature in units of Kelvin
  *
- * This function returns 
+ * This function returns
  * \f[
  *      T_\mathrm{scaled} = \frac{2\pi k_b \mathcal{L}}{\hbar c} T_\mathrm{SI}
  * \f]
@@ -275,36 +319,6 @@ double casimir_T_scaled_to_SI(double T_scaled, double ScriptL)
 }
 
 /*@}*/
-
-
-/**
- * @brief Calculate logarithm and sign of prefactor \f$\Xi_{\ell_1 \ell_2}^{(m)}\f$
- *
- * This function returns the logarithm of the prefactor for given
- * \f$\ell_1,\ell_2,m\f$. The prefactor is defined by Eq. (5.54).
- *
- * If sign is not NULL, the sign of \f$\Xi_{\ell_1 \ell_2}^{(m)}\f$ is stored in
- * sign.
- *
- * The values are computed using the lgamma function to avoid overflows.
- *
- * Restrictions: \f$\ell_1,\ell_2 \ge 1\f$, \f$\ell_1,\ell_2 \ge m > 0\f$
- *
- * This function is thread-safe.
- *
- * @param [in]  l1 \f$\ell_1\f$
- * @param [in]  l2 \f$\ell_2\f$
- * @param [in]  m  \f$m\f$
- * @param [out] sign
- * @retval logXi \f$\log{\Xi(\ell_1,\ell_2,m)}\f$
- */
-edouble casimir_lnXi(int l1, int l2, int m, sign_t *sign)
-{
-    if(sign != NULL)
-        *sign = MPOW(l2);
-    return (loge(2*l1+1)+loge(2*l2+1)-lnfac(l1-m)-lnfac(l2-m)-lnfac(l1+m)-lnfac(l2+m)-loge(l1)-loge(l1+1)-loge(l2)-loge(l2+1))/2.0L \
-           +lnfac(2*l1)+lnfac(2*l2)+lnfac(l1+l2)-LOG4*(2*l1+l2+1)-lnfac(l1-1)-lnfac(l2-1);
-}
 
 
 /**
@@ -336,7 +350,7 @@ int casimir_init(casimir_t *self, double RbyScriptL, double T)
         return -1;
     if(T < 0)
         return -2;
-    
+
     self->lmax = (int)ceil(CASIMIR_FACTOR_LMAX/LbyR);
 
     self->T           = T;
@@ -349,7 +363,7 @@ int casimir_init(casimir_t *self, double RbyScriptL, double T)
 
     /* initialize mie cache */
     casimir_mie_cache_init(self);
-    
+
     /* perfect reflectors */
     self->integration = -1; /* perfect reflectors */
     self->omegap_sphere = INFINITY;
@@ -555,7 +569,7 @@ double casimir_get_gamma_plane(casimir_t *self)
 /**
  * @brief Return numbers of used cores
  *
- * See casimir_set_cores.
+ * See \ref casimir_set_cores.
  *
  * This function is not thread-safe.
  *
@@ -615,7 +629,7 @@ int casimir_set_cores(casimir_t *self, int cores)
  * computations.
  *
  * This function is not thread-safe.
- * 
+ *
  * @param [in,out] self Casimir object
  * @param [in] lmax maximum number of \f$\ell\f$
  * @retval 1 if successful
@@ -636,9 +650,9 @@ int casimir_set_lmax(casimir_t *self, int lmax)
 
 
 /**
- * @brief Get maximum value of l
+ * @brief Get maximum value of \f$\ell\f$
  *
- * See casimir_set_lmax.
+ * See \ref casimir_set_lmax.
  *
  * This function is not thread-safe.
  *
@@ -672,7 +686,7 @@ int casimir_get_verbose(casimir_t *self)
  * @brief Set verbose flag
  *
  * Use this function to set the verbose flag. If set to 1, this will cause the
- * library to print information to stderr. 
+ * library to print information to stderr.
  *
  * This function is not thread-safe.
  *
@@ -690,7 +704,7 @@ int casimir_set_verbose(casimir_t *self, int verbose)
 /**
  * @brief Get precision
  *
- * See casimir_set_precision
+ * See \ref casimir_set_precision
  *
  * This function is not thread-safe.
  *
@@ -731,7 +745,7 @@ int casimir_set_precision(casimir_t *self, double precision)
  * yourself.
  *
  * This function is not thread-safe.
- * 
+ *
  * @param [in,out] self Casimir object
  */
 void casimir_free(casimir_t *self)
@@ -749,11 +763,12 @@ void casimir_free(casimir_t *self)
 
 
 /**
-* @name Mie coefficients
-*/
+ * @name Mie coefficients
+ */
 /*@{*/
 
-/** Return the logarithm of the prefactors \f$a_{\ell,0}^\mathrm{perf}\f$, \f$b_{\ell,0}^\mathrm{perf}\f$ and their signs
+/**
+ * @brief Return logarithm of prefactors \f$a_{\ell,0}^\mathrm{perf}\f$, \f$b_{\ell,0}^\mathrm{perf}\f$ and their signs
  *
  * For small frequencies \f$\chi = \frac{\xi R}{c} \ll 1\f$ the Mie
  * coeffiecients scale like
@@ -771,7 +786,7 @@ void casimir_free(casimir_t *self)
  *
  * This function is thread-safe.
  *
- * @param [in] order \$\ell\f$
+ * @param [in] l \f$\ell\f$
  * @param [out] a0 coefficient \f$a_{\ell,0}^\mathrm{perf}\f$
  * @param [out] sign_a0 sign of \f$a_{\ell,0}^\mathrm{perf}\f$
  * @param [out] b0 coefficient \f$b_{\ell,0}^\mathrm{perf}\f$
@@ -797,7 +812,7 @@ void casimir_lnab0(int l, double *a0, sign_t *sign_a0, double *b0, sign_t *sign_
  * aspect ratio.
  *
  * @param [in,out] self Casimir object
- * @param [in] order \f$\ell\f$
+ * @param [in] l \f$\ell\f$
  * @param [in] n Matsubara term, \f$xi = nT\f$
  * @param [out] sign sign of \f$a_\ell\f$
  * @retval logarithm of Mie coefficient \f$a_\ell\f$
@@ -811,7 +826,7 @@ double casimir_lna_perf(casimir_t *self, const int l, const int n, sign_t *sign)
     edouble lnfrac = log(chi)-log(l);
 
     /* we could do both calculations together. but it doesn't cost much time -
-     * so why bother? 
+     * so why bother?
      */
     bessel_lnInuKnu(l-1, chi, &lnIlm, &lnKlm);
     bessel_lnInuKnu(l,   chi, &lnIlp, &lnKlp);
@@ -858,8 +873,8 @@ double casimir_lna_perf(casimir_t *self, const int l, const int n, sign_t *sign)
  * aspect ratio.
  *
  * @param [in,out] self Casimir object
- * @param [in] order \f$\ell\f$
- * @param [in] n Matsubara term, \f$xi = nT\f$
+ * @param [in] l \f$\ell\f$
+ * @param [in] n Matsubara term, \f$\xi = nT\f$
  * @param [out] sign sign of \f$b_\ell\f$
  * @retval logarithm of Mie coefficient \f$b_\ell\f$
  */
@@ -889,15 +904,15 @@ double casimir_lnb_perf(casimir_t *self, const int l, const int n, sign_t *sign)
  * ratio and dielectric properties of sphere.
  *
  * @param [in,out] self Casimir object
- * @param [in] n Matsubara term, \f$\xi = nT\f$
- * @param [in] order \f$\ell\f$
+ * @param [in] n_mat Matsubara term, \f$\xi = nT\f$
+ * @param [in] l \f$\ell\f$
  * @param [out] lna logarithm of Mie coefficient \f$a_\ell\f$
  * @param [out] lnb logarithm of Mie coefficient \f$b_\ell\f$
  * @param [out] sign_a sign of Mie coefficient \f$a_\ell\f$
  * @param [out] sign_b sign of Mie coefficient \f$b_\ell\f$
  */
 void casimir_lnab(casimir_t *self, const int n_mat, const int l, double *lna, double *lnb, sign_t *sign_a, sign_t *sign_b)
-{ 
+{
     sign_t sign_sla, sign_slb, sign_slc, sign_sld;
     edouble ln_n, ln_sla, ln_slb, ln_slc, ln_sld;
     edouble lnIl, lnKl, lnIlm, lnKlm, lnIl_nchi, lnKl_nchi, lnIlm_nchi, lnKlm_nchi;
@@ -967,7 +982,7 @@ void casimir_lnab(casimir_t *self, const int n_mat, const int l, double *lna, do
  *
  * This function is not thread safe.
  *
- * @param [in,out] casimir object
+ * @param [in,out] self Casimir object
  */
 void casimir_mie_cache_init(casimir_t *self)
 {
@@ -991,19 +1006,12 @@ void casimir_mie_cache_init(casimir_t *self)
 /**
  * @brief Allocate memory for the Mie coefficients \f$a_\ell\f$ and \f$b_\ell\f$
  *
- * This function computes all the Mie coefficients for \f$\xi=nT\f$ and stores
- * it in cache. Make sure you have already initialized the cache (cf.
- * casimir_mie_cache_init). Initialization is done by casimir_init.
- *
- * This function will be called by casimir_mie_cache_get if a Mie coefficient
- * is not precomputed yet.
- *
  * You usually don't want to use this function yourself.
  *
  * This function is not thread safe.
  *
  * @param [in,out] self Casimir object
- * @param [in,out] cache Mie cache
+ * @param [in] n Matsubara term
  */
 void casimir_mie_cache_alloc(casimir_t *self, int n)
 {
@@ -1049,7 +1057,7 @@ void casimir_mie_cache_alloc(casimir_t *self, int n)
  *
  * This function is not thread-safe.
  *
- * @param [in, out] Casimir object
+ * @param [in, out] self Casimir object
  */
 void casimir_mie_cache_clean(casimir_t *self)
 {
@@ -1066,8 +1074,8 @@ void casimir_mie_cache_clean(casimir_t *self)
  *
  * This function is thread-safe.
  *
- * @param [in, out] Casimir object
- * @param [in] order \f$\ell\f$
+ * @param [in, out] self Casimir object
+ * @param [in] l \f$\ell\f$
  * @param [in] n Matsubara term
  * @param [out] ln_a logarithm of \f$a_\ell\f$
  * @param [out] sign_a sign of \f$a_\ell\f$
@@ -1119,7 +1127,7 @@ void casimir_mie_cache_get(casimir_t *self, int l, int n, double *ln_a, sign_t *
  *
  * This function is not thread-safe.
  *
- * @param [in, out] Casimir object
+ * @param [in, out] self Casimir object
  */
 void casimir_mie_cache_free(casimir_t *self)
 {
@@ -1276,7 +1284,7 @@ double casimir_F_n(casimir_t *self, const int n, int *mmax)
     for(m = 0; m <= lmax; m++)
         values[m] = 0;
 
-    if(self->integration <= 0) 
+    if(self->integration <= 0)
         casimir_integrate_perf_init(&int_perf, n*self->T, self->lmax);
 
     for(m = 0; m <= self->lmax; m++)
@@ -1289,14 +1297,14 @@ double casimir_F_n(casimir_t *self, const int n, int *mmax)
         /* If F is !=0 and value/F < 1e-16, then F+value = F. The addition
          * has no effect.
          * As for larger m value will be even smaller, we can skip the
-         * summation here. 
+         * summation here.
          */
         sum_n = _sum(values, lmax+1);
         if(values[0] != 0 && fabs(values[m]/sum_n) < precision)
             break;
     }
 
-    if(self->integration <= 0) 
+    if(self->integration <= 0)
         casimir_integrate_perf_free(&int_perf);
 
     if(self->verbose)
@@ -1316,7 +1324,7 @@ double casimir_F_n(casimir_t *self, const int n, int *mmax)
  * Matsubara term calculated will be stored in nnmax.
  *
  * This function will use as many cores as specified by casimir_set_cores.
- * 
+ *
  * @param [in,out] self Casimir object
  * @param [out] nmax maximum number of n
  * @retval F Casimir free energy
@@ -1523,7 +1531,7 @@ void casimir_logdetD0(casimir_t *self, int m, double *logdet_EE, double *logdet_
  * @param [in,out] self Casimir object
  * @param [in] n Matsubara term
  * @param [in] m
- * @param [in,out] m integration object
+ * @param [in,out] integration_obj may be NULL
  * @retval logdetD \f$\log \det \mathcal{D}^{(m)}(\xi=nT)\f$
  */
 double casimir_logdetD(casimir_t *self, int n, int m, void *integration_obj)
