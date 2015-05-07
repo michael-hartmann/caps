@@ -26,11 +26,11 @@ void usage(FILE *stream)
     fprintf(stream, "Usage: casimir [OPTIONS]\n\
 This program will calculate the free Casimir energy F(T,L/R) for the\n\
 plane-sphere geometry for given L/R and temperature T. The output is in scaled\n\
-unities.\n\
+units.\n\
 \n\
 Mandatory options:\n\
     -x, --LbyR L/R\n\
-        Separation L between sphere and plane divided by radius of of sphere,\n\
+        Separation L between sphere and plane divided by radius of sphere,\n\
         where L/R > 0.\n\
         If you want to calculate several points, you may pass start and stop\n\
         value and the amount of points to be calculated.\n\
@@ -53,7 +53,7 @@ Further options:\n\
 \n\
     -w, --omegap\n\
         Set value of Plasma frequency omega_p of Drude metals in units of\n\
-        c/omegaP. If ommited, omegap = INFINITY.\n\
+        c/omegaP. If omitted, omegap = INFINITY.\n\
 \n\
     -l, --lscale\n\
         Specify parameter lscale. The vector space has to be truncated for\n\
@@ -73,7 +73,7 @@ Further options:\n\
         disabled.\n\
 \n\
     -v, --verbose\n\
-        Be more verbose. This will output interim results and additional\n\
+        Be more verbose. This will output intermediate results and additional\n\
         information.\n\
 \n\
     -q, --quiet\n\
