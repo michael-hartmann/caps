@@ -38,7 +38,7 @@ proj = Sphere(R, theta0, phi0)
 # draw the horizon
 proj.draw_circle()
 
-# draw aequator, longitudes and latitudes with dashed lines
+# draw equator, longitudes and latitudes with dashed lines
 attrs = [style.linestyle.dashed, deformer.smoothed(0.2), color.cmyk.Periwinkle]
 proj.draw_longitudes(5, attrs=attrs)
 proj.draw_latitudes(10, attrs=attrs)
