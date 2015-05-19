@@ -5,6 +5,7 @@
 #include <math.h>
 
 #include "edouble.h"
+#include "libcasimir.h"
 #include "utils.h"
 
 #define FLOAT_RADIX       2.0
@@ -13,6 +14,8 @@
 #define LOG_FLOAT_RADIX_SQ 2*M_LN2
 #define LOG_095 -0.05129329438755058
 
+/* LAPACK LU cecomposition */
+int dgetrf_(int *m, int *n, double *a, int *lda, int *ipiv, int *info);
 
 #define MATRIX_TYPEDEF(NAME, MATRIX_TYPE) \
     typedef struct { \
@@ -21,8 +24,8 @@
     } NAME
 
 
+MATRIX_TYPEDEF(matrix_sign_t, sign_t);
 MATRIX_TYPEDEF(matrix_t, double);
-MATRIX_TYPEDEF(matrix_char_t, char);
 MATRIX_TYPEDEF(matrix_edouble_t, edouble);
 
 #define MATRIX_ALLOC(FUNCTION_PREFIX, MATRIX_TYPE, TYPE) \
@@ -58,63 +61,54 @@ MATRIX_TYPEDEF(matrix_edouble_t, edouble);
 
 #define MATRIX_FREE_HEADER(FUNCTION_PREFIX, MATRIX_TYPE) void FUNCTION_PREFIX ## _free(MATRIX_TYPE *m)
 
-#define MATRIX_EXP(FUNCTION_PREFIX, MATRIX_TYPE, TYPE, EXPFUNCTION) \
-    void FUNCTION_PREFIX ## _exp(MATRIX_TYPE *m) \
-    { \
-        size_t i, dim = m->size; \
-        TYPE *M = m->M; \
-\
-        for(i = 0; i < dim*dim; i++) \
-            M[i] = EXPFUNCTION(M[i]); \
-    } 
-
-#define MATRIX_EXP_HEADER(FUNCTION_PREFIX, MATRIX_TYPE) void FUNCTION_PREFIX ## _exp(MATRIX_TYPE *m)
-
-#define MATRIX_FROEBENIUS(FUNCTION_PREFIX, MATRIX_TYPE, TYPE, SQRTFUNCTION) \
-    TYPE FUNCTION_PREFIX ## _froebenius(MATRIX_TYPE *M) \
-    { \
-        size_t i,j, dim = M->size; \
-        TYPE norm = 0; \
-\
-        for(i = 0; i < dim; i++) \
-            for(j = 0; j < dim; j++) \
-                norm += pow_2(matrix_get(M, i,j)); \
-\
-        return SQRTFUNCTION(norm); \
-    }
-
-#define MATRIX_FROEBENIUS_HEADER(FUNCTION_PREFIX, MATRIX_TYPE, TYPE) TYPE FUNCTION_PREFIX ## _froebenius(MATRIX_TYPE *M)
-
-#define MATRIX_LOGDET_LAPACK(FUNCTION_PREFIX, MATRIX_TYPE, TYPE, ABS_FUNCTION, COPYSIGN_FUNCTION, SQRT_FUNCTION, LOG_FUNCTION) \
+#define MATRIX_LOGDET_LU(FUNCTION_PREFIX, MATRIX_TYPE, TYPE, ABS_FUNCTION, LOG_FUNCTION) \
     TYPE FUNCTION_PREFIX ## _logdet(MATRIX_TYPE *M) \
     { \
-        double det = 0; \
-        int i,dim = M->size; \
-        int IPIV[dim]; \
-        LAPACKE_dgetrf(LAPACK_COL_MAJOR, dim, dim, M->M, dim,IPIV); \
+        const int dim = M->size; \
+        int i,j,k; \
+        TYPE sum, det = 0; \
+        const TYPE *a = M->M; \
+\
+        for(j = 0; j < dim; j++) \
+        { \
+            for(i = 0; i < j+1; i++) \
+            { \
+                sum = 0; \
+                for(k = 0; k < i; k++) \
+                    sum += a[i*dim+k]*a[k*dim+j]; \
+                a[i*dim+j] -= sum; \
+            } \
+            for(i = j+1; i < dim; i++) \
+            { \
+                sum = 0; \
+                for(k = 0; k < j; k++) \
+                    sum += a[i*dim+k]*a[k*dim+j]; \
+                a[i*dim+j] = (a[i*dim+j]-sum)/a[j*dim+j]; \
+            } \
+        } \
 \
         for(i = 0; i < dim; i++) \
-            det += LOG_FUNCTION(ABS_FUNCTION(matrix_get(M, i, i))); \
+            det += LOG_FUNCTION(ABS_FUNCTION(a[i*dim+i])); \
         return det; \
     }
 
-
-#define MATRIX_LOGDET(FUNCTION_PREFIX, MATRIX_TYPE, TYPE, ABS_FUNCTION, COPYSIGN_FUNCTION, SQRT_FUNCTION, LOG_FUNCTION) \
+#define MATRIX_LOGDET_QR(FUNCTION_PREFIX, MATRIX_TYPE, TYPE, ABS_FUNCTION, COPYSIGN_FUNCTION, SQRT_FUNCTION, LOG_FUNCTION) \
     TYPE FUNCTION_PREFIX ## _logdet(MATRIX_TYPE *M) \
     { \
         size_t i, j, n, dim = M->size; \
         TYPE det = 0; \
+        TYPE *m = M->M; \
 \
         for(j = 0; j < dim-1; j++) \
             for(i = j+1; i < dim; i++) \
             {\
-                TYPE c,s, Mij = matrix_get(M, i, j); \
+                TYPE c,s, Mij = m[i*dim+j]; \
 \
                 if(Mij != 0) \
                 { \
-                    TYPE a = matrix_get(M, j, j); \
-                    TYPE b = Mij; \
- \
+                    TYPE a = m[j*dim+j]; \
+                    const TYPE b = Mij; \
+\
                     if(b == 0) \
                     { \
                         c = COPYSIGN_FUNCTION(1,a); \
@@ -127,34 +121,34 @@ MATRIX_TYPEDEF(matrix_edouble_t, edouble);
                     } \
                     else if(ABS_FUNCTION(b) > ABS_FUNCTION(a)) \
                     { \
-                        TYPE t = a/b; \
-                        TYPE u = COPYSIGN_FUNCTION(SQRT_FUNCTION(1+t*t),b); \
+                        const TYPE t = a/b; \
+                        const TYPE u = COPYSIGN_FUNCTION(SQRT_FUNCTION(1+t*t),b); \
                         s = -1/u; \
                         c = -s*t; \
                     } \
                     else \
                     { \
-                        TYPE t = b/a; \
-                        TYPE u = COPYSIGN_FUNCTION(SQRT_FUNCTION(1+t*t),a); \
+                        const TYPE t = b/a; \
+                        const TYPE u = COPYSIGN_FUNCTION(SQRT_FUNCTION(1+t*t),a); \
                         c = 1/u; \
                         s = -c*t; \
                     } \
  \
                     for(n = 0; n < dim; n++) \
                     { \
-                        TYPE Min = matrix_get(M, i, n); \
-                        TYPE Mjn = matrix_get(M, j, n); \
+                        const TYPE Min = m[i*dim+n]; \
+                        const TYPE Mjn = m[j*dim+n]; \
  \
-                        matrix_set(M, i, n, c*Min + s*Mjn); \
-                        matrix_set(M, j, n, c*Mjn - s*Min); \
+                        m[i*dim+n] = c*Min + s*Mjn; \
+                        m[j*dim+n] = c*Mjn - s*Min; \
                     } \
  \
-                    matrix_set(M, i, j, 0); \
+                    /* m[i*dim+j] = 0; */ \
                 } \
             } \
  \
         for(i = 0; i < dim; i++) \
-            det += LOG_FUNCTION(ABS_FUNCTION(matrix_get(M, i, i))); \
+            det += LOG_FUNCTION(ABS_FUNCTION(m[i*dim+i])); \
         return det; \
     }
 
@@ -189,6 +183,20 @@ MATRIX_TYPEDEF(matrix_edouble_t, edouble);
     }
 
 #define MATRIX_ABSMIN_HEADER(FUNCTION_PREFIX, MATRIX_TYPE, TYPE) TYPE FUNCTION_PREFIX ## _absmin(MATRIX_TYPE *M) \
+
+
+#define MATRIX_EXP(FUNCTION_PREFIX, MATRIX_TYPE, EXP_FUNCTION) \
+    void FUNCTION_PREFIX ## _exp(MATRIX_TYPE *M, matrix_sign_t *M_sign) \
+    { \
+        size_t i,j, dim = M->size; \
+ \
+        for(i = 0; i < dim; i++) \
+            for(j = 0; j < dim; j++) \
+                matrix_set(M, i,j, matrix_get(M_sign,i,j)*EXP_FUNCTION(matrix_get(M,i,j))); \
+    }
+
+#define MATRIX_EXP_HEADER(FUNCTION_PREFIX, MATRIX_TYPE) void FUNCTION_PREFIX ## _exp(MATRIX_TYPE *M, matrix_sign_t *M_sign) \
+
 
 /* Balance a general matrix by scaling the rows and columns, so the
  * new row and column norms are the same order of magnitude.
@@ -291,28 +299,129 @@ MATRIX_TYPEDEF(matrix_edouble_t, edouble);
 
 #define MATRIX_BALANCE_HEADER(FUNCTION_PREFIX, MATRIX_TYPE) void FUNCTION_PREFIX ## _balance(MATRIX_TYPE *A)
 
-#define matrix_get(m, i, j)   (m->M[(i)*m->size+(j)])
-#define matrix_set(m, i, j,v) (m->M[(i)*m->size+(j)]=v)
 
-MATRIX_ALLOC_HEADER(matrix, matrix_t);
-MATRIX_FREE_HEADER (matrix, matrix_t);
-MATRIX_EXP_HEADER  (matrix, matrix_t);
-MATRIX_FROEBENIUS_HEADER(matrix, matrix_t, double);
-MATRIX_LOGDET_HEADER(matrix, matrix_t, double);
-MATRIX_ABSMIN_HEADER(matrix, matrix_t, double);
-MATRIX_ABSMAX_HEADER(matrix, matrix_t, double);
-MATRIX_BALANCE_HEADER(matrix, matrix_t);
+#define MATRIX_BALANCE_HEADER(FUNCTION_PREFIX, MATRIX_TYPE) void FUNCTION_PREFIX ## _balance(MATRIX_TYPE *A)
 
-MATRIX_ALLOC_HEADER(matrix_char, matrix_char_t);
-MATRIX_FREE_HEADER (matrix_char, matrix_char_t);
+#define MATRIX_LOG_BALANCE(FUNCTION_PREFIX, MATRIX_TYPE, TYPE, LOG_FUNCTION) \
+    void FUNCTION_PREFIX ## _log_balance(MATRIX_TYPE *A) \
+    { \
+        size_t i,j; \
+        const size_t N = A->size; \
+        int not_converged = 1; \
+        TYPE *D; \
+        TYPE *list_row; \
+        TYPE *list_column; \
+\
+        D           = (TYPE *)xmalloc(N*sizeof(TYPE)); \
+        list_row    = (TYPE *)xmalloc(N*sizeof(TYPE)); \
+        list_column = (TYPE *)xmalloc(N*sizeof(TYPE)); \
+ \
+        /* initialize D to the identity matrix */ \
+        for(i = 0; i < N; i++) \
+            D[i] = 0; \
+ \
+        while(not_converged) \
+        { \
+            size_t len = 0; \
+            TYPE g, f, s; \
+            TYPE row_norm, col_norm; \
+ \
+            not_converged = 0; \
+\
+            for (i = 0; i < N; ++i) \
+            { \
+                len = 0; \
+\
+                for (j = 0; j < N; ++j) \
+                    if (j != i) \
+                    { \
+                        list_column[len] = matrix_get(A,j,i); \
+                        list_row[len]    = matrix_get(A,i,j); \
+                        len++; \
+                    } \
+\
+                if(len == 0) \
+                    continue; \
+\
+                row_norm = logadd_m(list_row,    len); \
+                col_norm = logadd_m(list_column, len); \
+\
+                if ((col_norm == LOG_FUNCTION(0)) || (row_norm == LOG_FUNCTION(0))) \
+                  continue; \
+\
+                g = row_norm - LOG_FLOAT_RADIX; \
+                f = 0; \
+                s = logadd(col_norm, row_norm); \
+\
+                /* \
+                 * find the integer power of the machine radix which \
+                 * comes closest to balancing the matrix \
+                 */ \
+                while (col_norm < g) \
+                { \
+                    f += LOG_FLOAT_RADIX; \
+                    col_norm += LOG_FLOAT_RADIX_SQ; \
+                } \
+\
+                g = row_norm + LOG_FLOAT_RADIX; \
+\
+                while (col_norm > g) \
+                { \
+                    f -= LOG_FLOAT_RADIX; \
+                    col_norm -= LOG_FLOAT_RADIX_SQ; \
+                } \
+\
+                if (logadd(row_norm, col_norm) < (LOG_095+s+f)) \
+                { \
+                    int k; \
+                    not_converged = 1; \
+ \
+                    g = -f; \
+ \
+                    /* \
+                     * apply similarity transformation D, where \
+                     * D_{ij} = f_i * delta_{ij} \
+                     */ \
+ \
+                    /* multiply by D^{-1} on the left */ \
+                    for(k = 0; k < N; k++) \
+                        matrix_set(A, i,k, g+matrix_get(A,i,k)); \
+ \
+ \
+                    /* multiply by D on the right */ \
+                    for(k = 0; k < N; k++) \
+                        matrix_set(A, k,i, f+matrix_get(A,k,i)); \
+ \
+                    /* keep track of transformation */ \
+                    for(k = 0; k < N; k++) \
+                        D[k] += f; \
+                } \
+            } \
+        } \
+\
+        xfree(D); \
+        xfree(list_column); \
+        xfree(list_row); \
+    }
+
+#define MATRIX_LOG_BALANCE_HEADER(FUNCTION_PREFIX, MATRIX_TYPE) void FUNCTION_PREFIX ## _log_balance(MATRIX_TYPE *A)
+
+
+#define matrix_get(m, i, j)   ((m)->M[(i)*m->size+(j)])
+#define matrix_set(m, i, j,v) ((m)->M[(i)*m->size+(j)]=(v))
 
 MATRIX_ALLOC_HEADER(matrix_edouble, matrix_edouble_t);
 MATRIX_FREE_HEADER (matrix_edouble, matrix_edouble_t);
-MATRIX_EXP_HEADER  (matrix_edouble, matrix_edouble_t);
-MATRIX_FROEBENIUS_HEADER(matrix_edouble, matrix_edouble_t, edouble);
 MATRIX_LOGDET_HEADER    (matrix_edouble, matrix_edouble_t, edouble);
 MATRIX_ABSMIN_HEADER    (matrix_edouble, matrix_edouble_t, edouble);
 MATRIX_ABSMAX_HEADER    (matrix_edouble, matrix_edouble_t, edouble);
 MATRIX_BALANCE_HEADER   (matrix_edouble, matrix_edouble_t);
+MATRIX_LOG_BALANCE_HEADER(matrix_edouble, matrix_edouble_t);
+MATRIX_EXP_HEADER(matrix_edouble, matrix_edouble_t);
+
+MATRIX_ALLOC_HEADER(matrix_sign, matrix_sign_t);
+MATRIX_FREE_HEADER (matrix_sign, matrix_sign_t);
+
+double matrix_logdet_lapack(matrix_edouble_t *M, matrix_sign_t *signs);
 
 #endif

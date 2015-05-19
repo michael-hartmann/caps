@@ -5,59 +5,68 @@
     #define CASIMIR_ARITHMETICS "long double"
     #define edouble long double
 
-    #define logq      logl
-    #define expq      expl
-    #define sqrtq     sqrtl
-    #define log1pq    log1pl
-    #define fabsq     fabsl
-    #define sinq      sinl
-    #define cosq      cosl
-    #define gammaq    gammal
-    #define copysignq copysignl
-    #define isinfq(x) (x/10 == x)
-    #define isnanq(x) (x != x)
+    #define loge      logl
+    #define expe      expl
+    #define sqrte     sqrtl
+    #define log1pe    log1pl
+    #define fabse     fabsl
+    #define sine      sinl
+    #define cose      cosl
+    #define gammae    gammal
+    #define lgammae   lgammal
+    #define copysigne copysignl
 #else
     #if defined(__ICC) || defined(__INTEL_COMPILER)
         #define CASIMIR_ARITHMETICS "icc _Quad"
         #define edouble _Quad
-    
-        /* define isinf and isnan */
-        #define isinfq(x) (x/10 == x)
-        #define isnanq(x) (x != x)
-    
+
         /* define prototypes. without these prototypes icc will return nan. */
         _Quad __logq(_Quad);
-        #define logq __logq
-    
+        #define loge __logq
+
         _Quad __cosq(_Quad);
-        #define cosq __cosq
-    
+        #define cose __cosq
+
         _Quad __sinq(_Quad);
-        #define sinq __sinq
-    
+        #define sine __sinq
+
         _Quad __expq(_Quad);
-        #define expq __expq
-    
+        #define expe __expq
+
         _Quad __gammaq(_Quad);
-        #define gammaq __gammaq
-    
+        #define gammae __gammaq
+
+        _Quad __lgammaq(_Quad);
+        #define lgammae __lgammaq
+
         _Quad __sqrtq(_Quad);
-        #define sqrtq __sqrtq
-    
+        #define sqrte __sqrtq
+
         _Quad __log1pq(_Quad);
-        #define log1pq __log1pq
-    
+        #define log1pe __log1pq
+
         _Quad __fabsq(_Quad);
-        #define fabsq __fabsq
-    
+        #define fabse __fabsq
+
         _Quad __copysignq(_Quad, _Quad);
-        #define copysignq __copysignq
-    
+        #define copysigne __copysignq
+
     #elif defined(__GNUC__) || defined(__GNUG__)
         #define CASIMIR_ARITHMETICS "gcc __float128"
 
         #include <quadmath.h>
         #define edouble __float128
+
+        #define loge logq
+        #define cose cosq
+        #define sine sinq
+        #define expe expq
+        #define gammae gammaq
+        #define lgammae lgammaq
+        #define sqrte sqrtq
+        #define log1pe log1pq
+        #define fabse fabsq
+        #define copysigne copysignq
     #else
         #error "I'm sorry, but quad precision is only supported with gcc or icc at the moment."
     #endif

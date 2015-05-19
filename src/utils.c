@@ -1,3 +1,10 @@
+/**
+ * @file   utils.c
+ * @author Michael Hartmann <michael.hartmann@physik.uni-augsburg.de>
+ * @date   April, 2015
+ * @brief  helper functions
+ */
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/time.h>
@@ -18,18 +25,18 @@ void default_error_handler(const char *reason)
     exit(1);
 }
 
-void *xmalloc(size_t len)
+void *xmalloc(size_t size)
 {
-    void *p = malloc(len);
+    void *p = malloc(size);
     if(p == NULL)
         error_handler("malloc failed.");
 
     return p;
 }
 
-void *xrealloc(void *p, size_t len)
+void *xrealloc(void *p, size_t size)
 {
-    void *p2 = realloc(p, len);
+    void *p2 = realloc(p, size);
     if(p2 == NULL)
     {
         free(p);
@@ -39,7 +46,7 @@ void *xrealloc(void *p, size_t len)
     return p2;
 }
 
-void xfree(void *p)
+void _xfree(void *p)
 {
     if(p == NULL)
         error_handler("free on NULL.");

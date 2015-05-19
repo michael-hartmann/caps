@@ -1,6 +1,8 @@
 #ifndef __CASIMIR_H
 #define __CASIMIR_H
 
+    #include <stdio.h>
+
     #define SCALE_LIN 0
     #define SCALE_LOG 1
 

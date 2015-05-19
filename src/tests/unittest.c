@@ -13,9 +13,9 @@ int test_results(unittest_t *test, FILE *stream)
 {
     fprintf(stream, "[%3d/%3d]\t%-20s\t%-50s", test->passed, test->passed+test->failed, test->func, test->desc);
     if(test->failed == 0)
-        fprintf(stream, " [PASSED]\n");
+        fprintf(stream, " [" KGRN "PASSED" KNRM "]\n");
     else
-        fprintf(stream, " [FAILED]\n");
+        fprintf(stream, " [" KRED "FAILED" KNRM "]\n");
 
     return test->failed;
 }

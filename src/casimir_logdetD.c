@@ -4,6 +4,7 @@
 #include <stdlib.h>
 
 #include "libcasimir.h"
+#include "integration_perf.h"
 #include "sfunc.h"
 #include "utils.h"
 
@@ -15,7 +16,7 @@ This program will calculate the free Casimir energy for the plane-sphere \n\
 geometry for given n,m,T,L/R. \n\
 \n\
 Mandatory options:\n\
-    -Q Radius of sphere divided by distance between center of sphere and plate; 0 < R/(R+L) < 1\n\
+    -x L/R\n\
     -T Temperature\n\
     -n value of n\n\
     -m value of m\n\
@@ -44,8 +45,9 @@ Compiled %s, %s\n", __DATE__, __TIME__);
 
 int main(int argc, char *argv[])
 {
-    double T = -1, Q = -1;
+    double T = -1;
     double lfac = 5;
+    double LbyR = -1;
     int i, n = -1, m = -1;
     int lmax = 0;
     int buffering_flag = 0, verbose_flag = 0;
@@ -70,7 +72,7 @@ int main(int argc, char *argv[])
         /* getopt_long stores the option index here. */
         int option_index = 0;
       
-        c = getopt_long (argc, argv, "Q:T:n:m:s:a:l:L:vqh", long_options, &option_index);
+        c = getopt_long (argc, argv, "x:T:n:m:s:a:l:L:vqh", long_options, &option_index);
       
         /* Detect the end of the options. */
         if (c == -1)
@@ -82,8 +84,8 @@ int main(int argc, char *argv[])
             /* If this option set a flag, do nothing else now. */
             if (long_options[option_index].flag != 0)
               break;
-          case 'Q':
-              Q = atof(optarg);
+          case 'x':
+              LbyR = atof(optarg);
               break;
           case 'T':
               T = atof(optarg);
@@ -130,9 +132,9 @@ int main(int argc, char *argv[])
         usage(stderr);
         exit(1);
     }
-    if(Q <= 0 || Q >= 1)
+    if(LbyR <= 0)
     {
-        fprintf(stderr, "-Q must be in 0 < Q < 1\n\n");
+        fprintf(stderr, "-x must be positive\n\n");
         usage(stderr);
         exit(1);
     }
@@ -150,33 +152,34 @@ int main(int argc, char *argv[])
     }
 
     if(lmax <= 0)
-        lmax = MAX((int)ceil(Q/(1-Q)*lfac), 5);
+        lmax = MAX((int)ceil(lfac/LbyR), 5);
 
-    printf("# lfac=%g\n", lfac);
-    printf("# Q = %g\n", Q);
-    printf("# n = %d\n", n);
-    printf("# m = %d\n", m);
+    printf("# lfac = %g\n", lfac);
+    printf("# LbyR = %g\n", LbyR);
+    printf("# n    = %d\n", n);
+    printf("# m    = %d\n", m);
     printf("# lmax = %d\n", lmax);
     printf("#\n");
 
     {
+        double Q = 1./(1.+LbyR);
+        integration_perf_t int_perf;
         casimir_t casimir;
-        casimir_mie_cache_t cache;
         double value, start_time = now();
-        double nTRbyScriptL = n*T*Q;
+
+        casimir_integrate_perf_init(&int_perf, n*T, lmax);
 
         casimir_init(&casimir, Q, T);
         casimir_set_verbose(&casimir, verbose_flag);
         casimir_set_lmax(&casimir, lmax);
 
-        casimir_mie_cache_init(&cache, nTRbyScriptL);
-        casimir_mie_cache_alloc(&casimir, &cache);
-        value = casimir_logdetD(&casimir, n, m, &cache);
-        casimir_mie_cache_free(&cache);
+        value = casimir_logdetD(&casimir, n, m, &int_perf);
+
+        casimir_integrate_perf_free(&int_perf);
         casimir_free(&casimir);
 
-        printf("# Q,T,n,m,value,lmax,time\n");
-        printf("%.15g, %.15g, %d, %d, %.15g, %d, %g\n", Q, T, n, m, value, casimir.lmax, now()-start_time);
+        printf("# LbyR,Q,T,n,m,value,lmax,time\n");
+        printf("%.15g, %.15g, %.15g, %d, %d, %.15g, %d, %g\n", LbyR, Q, T, n, m, value, casimir.lmax, now()-start_time);
     }
 
     return 0;

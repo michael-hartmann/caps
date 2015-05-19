@@ -4,36 +4,35 @@ from __future__ import division
 from math import *
 from scipy.integrate import quad
 from mpmath import polylog
-from scipy.special import spence
 
 
 def integrand(x, LbyR, T):
-    #print "integrand"
+    """Integrand for pfa and finite temperature"""
     n = 0
     sum = 0
+    alpha1 = 2*T*x/(1+1/LbyR)
     while True:
-        alpha = 2*n*T*x/(1+1/LbyR)
+        alpha = alpha1*n
         arg = exp(-alpha)
         value = polylog(3,arg) + alpha*polylog(2,arg)
         if n == 0:
             value /= 2
         sum += value
-        if value/sum < 1e-13:
+        if value/sum < 1e-15:
             return sum/(x**2*LbyR)
         n += 1 
 
 
 def pfa(LbyR, T):
+    """Calculate free energy according to PFA for perfect reflectors for L/R and T"""
     if isinf(T) and T > 0:
         return -1.2020569031595942/4/(LbyR+LbyR**2)
     if T > 0:
-        I = quad(integrand, 1, 1+1/LbyR, args=(LbyR, T))
-        #print I
+        I = quad(integrand, 1, 1+1/LbyR, args=(LbyR, T), epsrel=1e-12)
         return -T/(4*pi)*I[0]
     elif T == 0:
         # T = 0
         return -pi**3/720*(1+2*LbyR)/(LbyR**2+LbyR**3)
-        #return -pi**3/720*(1/LbyR + 1/LbyR**2 - 1/(1+LbyR))
     else:
         raise BaseException("invalid value for T")
 

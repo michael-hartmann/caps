@@ -9,8 +9,9 @@
 #include <time.h>
 #include <unistd.h>
 
-#include "casimir_hiT.h"
+#include "casimir_Fn.h"
 #include "libcasimir.h"
+#include "integration_perf.h"
 #include "utils.h"
 
 #define IDLE 1000 // in µs
@@ -32,65 +33,62 @@ double sumF(double *values, int lmax)
 void usage(FILE *stream, const char *name)
 {
     fprintf(stream, "Usage: %s -x L/R [-l lscale -L lmax -p precision]\n\n", name);
-    fprintf(stream, "Options:\n");
     fprintf(stream, "\t-x L/R:    ratio of L and R, L/R > 0\n");
+    fprintf(stream, "\t-n n:      Matsubara term\n");
+    fprintf(stream, "\t-T T:      temperature\n");
     fprintf(stream, "\t-L lmax:   use lmax\n"); 
     fprintf(stream, "\t-l lscale: use lmax = lscale*R/L (ignored if -L is used), default: %g\n", LSCALE); 
     fprintf(stream, "\t-p prec:   use precision, default: %g\n", PRECISION); 
     fprintf(stream, "\t-c cores:  how many cores to use, default: 1\n");
 }
 
-pthread_t *start_thread(double LbyR, int m, int lmax, double precision)
+pthread_t *start_thread(double LbyR, double T, int n, int m, int lmax, double precision)
 {
     pthread_t *thread = xmalloc(sizeof(pthread_t));
     param_t *p        = xmalloc(sizeof(param_t));
 
     p->LbyR      = LbyR;
+    p->T         = T;
     p->precision = precision;
     p->lmax      = lmax;
+    p->n         = n;
     p->m         = m;
-    p->value     = -1;
+    p->logdet    = 0;
     p->time      = -1;
 
-    pthread_create(thread, NULL, &logdetD0, (void *)p);
+    pthread_create(thread, NULL, &logdetD, (void *)p);
 
     return thread;
 }
 
 
-void *logdetD0(void *p)
+void *logdetD(void *p)
 {       
     casimir_t casimir;
     double start = now();
-    double logdet_EE, logdet_MM;
+    double logdet;
     param_t *params = p;
     double LbyR      = params->LbyR;
+    double T         = params->T;
     double precision = params->precision;
+    int n            = params->n;
     int m            = params->m;
     int lmax         = params->lmax;
+    integration_perf_t int_perf;
 
-    casimir_init(&casimir, 1/(1+LbyR), 0.1);
+    casimir_integrate_perf_init(&int_perf, n*T, lmax);
+
+    casimir_init(&casimir, 1/(1+LbyR), T);
     casimir_set_precision(&casimir, precision);
     casimir_set_verbose(&casimir, VERBOSE);
     casimir_set_lmax(&casimir, lmax);
     
-    casimir_logdetD0(&casimir, m, &logdet_EE, &logdet_MM);
+    logdet = casimir_logdetD(&casimir, n, m, &int_perf);
+    casimir_integrate_perf_free(&int_perf);
     casimir_free(&casimir);
     
-    // n == 0
-    logdet_EE /= 2;
-    logdet_MM /= 2;
-
-    if(m == 0)
-    {
-        logdet_EE /= 2;
-        logdet_MM /= 2;
-    }
-    
-    params->value     = logdet_EE+logdet_MM;
-    params->logdet_EE = logdet_EE;
-    params->logdet_MM = logdet_MM;
-    params->time      = now()-start;
+    params->logdet = logdet;
+    params->time   = now()-start;
 
     return params;
 }
@@ -101,10 +99,10 @@ int main(int argc, char *argv[])
     double lscale = LSCALE;
     int lmax = -1;
     int cores = 1;
-    int i, m;
+    int i, n = -1;
     double start_time = now();
-    double LbyR = -1;
-    double *values, *EE;
+    double T = -1, LbyR = -1;
+    double *values;
     pthread_t **threads;
 
     while (1)
@@ -112,18 +110,20 @@ int main(int argc, char *argv[])
         int c;
         struct option long_options[] =
         {
-          { "help",      no_argument,       0, 'h' },
-          { "LbyR",      required_argument, 0, 'x' },
-          { "lmax",      required_argument, 0, 'L' },
-          { "lscale",    required_argument, 0, 'l' },
-          { "precision", required_argument, 0, 'p' },
+          { "help",        no_argument,       0, 'h' },
+          { "LbyR",        required_argument, 0, 'x' },
+          { "temperature", required_argument, 0, 'T' },
+          { "matsubara",   required_argument, 0, 'n' },
+          { "lmax",        required_argument, 0, 'L' },
+          { "lscale",      required_argument, 0, 'l' },
+          { "precision",   required_argument, 0, 'p' },
           { 0, 0, 0, 0 }
         };
 
         /* getopt_long stores the option index here. */
         int option_index = 0;
       
-        c = getopt_long (argc, argv, "x:L:l:p:c:h", long_options, &option_index);
+        c = getopt_long (argc, argv, "x:L:l:p:n:T:c:h", long_options, &option_index);
       
         /* Detect the end of the options. */
         if (c == -1)
@@ -150,6 +150,12 @@ int main(int argc, char *argv[])
           case 'p':
               precision = atof(optarg);
               break;
+          case 'n':
+              n = atoi(optarg);
+              break;
+          case 'T':
+              T = atof(optarg);
+              break;
           case 'h':
               usage(stdout, argv[0]);
               exit(0);
@@ -166,6 +172,18 @@ int main(int argc, char *argv[])
     if(LbyR <= 0)
     {
         fprintf(stderr, "argument of -x must be nonnegative\n\n");
+        usage(stderr, argv[0]);
+        exit(1);
+    }
+    if(T <= 0)
+    {
+        fprintf(stderr, "argument of -T must be nonnegative\n\n");
+        usage(stderr, argv[0]);
+        exit(1);
+    }
+    if(n < 0)
+    {
+        fprintf(stderr, "argument of -n must be positive\n\n");
         usage(stderr, argv[0]);
         exit(1);
     }
@@ -192,72 +210,71 @@ int main(int argc, char *argv[])
         setvbuf(stderr, NULL, _IONBF, 0);
     }
 
-    fprintf(stderr, "# L/R=%g, precision=%g, lmax=%d, cores=%d\n", LbyR, precision, lmax, cores);
+    fprintf(stderr, "# L/R=%.15g, T=%.15g, n=%d, precision=%g, lmax=%d, cores=%d\n", LbyR, T, n, precision, lmax, cores);
     
     values = (double *)xmalloc(lmax*sizeof(double));
-    EE     = (double *)xmalloc(lmax*sizeof(double));
 
     for(i = 0; i < lmax; i++)
-    {
         values[i] = 0;
-        EE[i]     = 0;
-    }
 
     threads = (pthread_t **)xmalloc(cores*sizeof(pthread_t));
     for(i = 0; i < cores; i++)
         threads[i] = NULL;
 
-    m = 0;
-    while(m < lmax)
-    {
-        int bye = 0;
-        param_t *r;
 
-        // try to start threads
-        for(i = 0; i < cores; i++)
+    {
+        int m = 0;
+        int finished = 0;
+        int running = 0;
+
+        while(1)
         {
-            if(threads[i] == NULL)
-                threads[i] = start_thread(LbyR, m++, lmax, precision);
-            else if(pthread_tryjoin_np(*threads[i], (void *)&r) == 0)
+            param_t *r;
+            if(m >= lmax)
+                finished = 1;
+
+            // try to start threads
+            for(i = 0; i < cores; i++)
             {
-                values[r->m] = r->value;
-                EE[r->m]     = r->logdet_EE;
-                fprintf(stderr, "# m=%d, value=%.15g, logdet_EE=%.15g, logdet_MM=%.15g, time=%g\n", r->m, r->value, r->logdet_EE, r->logdet_MM, r->time);
-                if(r->value/sumF(values, lmax) < precision)
-                    bye = 1;
-                xfree(r);
-                threads[i] = NULL;
+                if(threads[i] == NULL)
+                {
+                    if(!finished && m < lmax)
+                    {
+                        running++;
+                        threads[i] = start_thread(LbyR, T, n, m++, lmax, precision);
+                    }
+                }
+                else if(pthread_tryjoin_np(*threads[i], (void *)&r) == 0)
+                {
+                    running--;
+
+                    values[r->m] = r->logdet;
+                    if(n == 0)
+                        values[r->m] /= 2;
+                    if(r->m == 0)
+                        values[r->m] /= 2;
+                    fprintf(stderr, "# n=%d, m=%d, value=%.15g, time=%g\n", r->n, r->m, r->logdet, r->time);
+                    if(r->logdet/sumF(values, lmax) < precision)
+                        finished = 1;
+                    xfree(r);
+                    xfree(threads[i]);
+                    threads[i] = NULL;
+                }
             }
-        }
 
-        if(bye)
-            break;
+            if(finished && running == 0)
+                break;
 
-        usleep(IDLE);
-    }
-
-    fprintf(stderr, "# waiting for last threads to finish\n");
-    for(i = 0; i < cores; i++)
-    {
-        param_t *r;
-        if(threads[i] != NULL)
-        {
-            pthread_join(*threads[i], (void *)&r);
-            values[r->m] = r->value;
-            EE[r->m]     = r->logdet_EE;
-            fprintf(stderr, "# m=%d, value=%.15g, logdet_EE=%.15g, logdet_MM=%.15g, time=%g\n", r->m, r->value, r->logdet_EE, r->logdet_MM, r->time);
-            xfree(r);
-            threads[i] = NULL;
+            usleep(IDLE);
         }
     }
-    
+
     xfree(threads);
 
-    printf("# L/R, value_perf, value_Drude, time\n");
-    printf("%.15g, %.15g, %.15g, %.15g\n", LbyR, sumF(values, lmax), sumF(EE, lmax), now()-start_time);
+    printf("# L/R, F_n, time\n");
+    printf("%.15g, %.15g, %.15g\n", LbyR, T/M_PI*sumF(values, lmax), now()-start_time);
 
     xfree(values);
-    xfree(EE);
 
     return 0;
 }
