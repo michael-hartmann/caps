@@ -1,0 +1,7 @@
+Dieser Ordner enthaelt Daten fuer den Hochtemperaturfall, also fuer T->oo.
+Konkret wurde die Matsubara-Summe nach n=0 abgebrochen. Die Daten liegen fuer
+perfekte Spiegel und Drude vor.
+
+Parameter:
+    epsilon = 5e-9
+    lmax    = MAX(25, ceil(8/x))

@@ -1,0 +1,12 @@
+# starting on alcc91 at Wed May 14 07:13:11 CEST 2014
+# casimir, -T, 0.256124721603563, -Q, 0.966982273335806, -p, 1e-08, -L, 175, -c, 5
+# Compiler icc, using long double and plain matrix elements and plain integration
+# precision=1e-08
+# lfac=5
+# cores=5
+# L=0.966982
+# T=0.256125
+#
+# R/(L+R), T, F, lmax, nmax, time
+0.966982273335806, 0.256124721603563, -36.47744119018, 175, 1052, 22630
+# finished at Wed May 14 13:30:21 CEST 2014

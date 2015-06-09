@@ -1,0 +1,13 @@
+# starting on alcc69 at Tue May 20 03:27:08 CEST 2014
+# casimir, -T, 1.54699331848552, -Q, 0.966982273335806, -p, 1e-08, -L, 175, -c, 5
+# Compiler icc, using long double and plain matrix elements and plain integration
+# precision=1e-08
+# lfac=5
+# cores=5
+# L=0.966982
+# T=1.54699
+#
+# R/(L+R), T, F, lmax, nmax, time
+0.966982273335806, 1.54699331848552, -36.4788239776884, 175, 179, 3815
+# finished at Tue May 20 04:30:43 CEST 2014
+slurmd[alcc69]: slurm_receive_msg: Socket timed out on send/recv operation

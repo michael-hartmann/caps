@@ -1,0 +1,15 @@
+Dieser Ordner enthaelt Daten fuer den Vergleich mit PFA.
+
+Konkret wurde die Freie Energie F in Abhaengigkeit x=L/R berechnet fuer
+perfekte Spiegel.
+
+Die Parameter sind (F und T sind in skalierten Einheiten):
+    T       = 0.8*(1+x)
+    epsilon = 3e-9 (oder 1e-9)
+    lmax    = MAX(30, ceil(6.1/x))
+
+Das Programm data.py erstellt aus den slurm-*.out Dateien eine csv-Ausgabe mit
+den Spalten L/R, T, F, error. error ist dabei eine Abschaetzung des Fehlers der
+berechneten Freien Energie.
+
+Das Programm plot.py erstellt einen plot der Dateien.

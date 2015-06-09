@@ -1,0 +1,12 @@
+# starting on alcc58.physik.uni-augsburg.de at Thu May  8 17:15:01 CEST 2014
+# casimir, -T, 0.446325167037862, -Q, 0.959292092040836, -p, 1e-08, -L, 141, -c, 5
+# Compiler icc, using long double and plain matrix elements and plain integration
+# precision=1e-08
+# lfac=5
+# cores=5
+# L=0.959292
+# T=0.446325
+#
+# R/(L+R), T, F, lmax, nmax, time
+0.959292092040836, 0.446325167037862, -23.5691009026509, 141, 493, 4623.15
+# finished at Thu May  8 18:32:04 CEST 2014
