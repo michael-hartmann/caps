@@ -78,18 +78,20 @@ int test_integration_perf(void)
     AssertAlmostEqual(&test, cint.signC_TM*exp(cint.lnC_TM), -6.7659079909128738e-9*-2);
     AssertAlmostEqual(&test, cint.signD_TM*exp(cint.lnD_TM), +9.44463292099617e-9*-2);
 
-    /*
-    _integrals(40,40,0,2.5,&cint);
-    casimir_integrate_perf(&int_perf, 40, 40, 0, &cint);
+    _integrals(40,40,1,2.5,&cint);
+    AssertAlmostEqual(&test, cint.lnA_TM, 185.27722707813169721211989855051);
 
-    _integrals(100,41,0,2.5,&cint);
-    //casimir_integrate_perf(&int_perf, 100, 41, 0, &cint, NULL);
-*/
-    //_integrals(875,875,1,1,&cint);
-    //casimir_integrate_perf(&int_perf, 100, 41, 0, &cint, NULL);
-    // XXX
+    _integrals(140,40,1,2.5,&cint);
+    AssertAlmostEqual(&test, cint.lnA_TM, 575.400220880156994701641252076629);
 
-    //_integrals(877,876,1,1,&cint);
+    _integrals(240,40,1,2.5,&cint);
+    AssertAlmostEqual(&test, cint.lnA_TM, 1025.59108523802829059595981668750);
+
+    _integrals(540,40,1,2.5,&cint);
+    AssertAlmostEqual(&test, cint.lnA_TM, 2561.62734676892999652846813001817);
+
+    _integrals(1540,40,1,2.5,&cint);
+    AssertAlmostEqual(&test, cint.lnA_TM, 8589.22040500894307686493465726593);
 
     return test_results(&test, stderr);
 }
