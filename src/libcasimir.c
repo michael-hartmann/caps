@@ -353,19 +353,19 @@ int casimir_init(casimir_t *self, double RbyScriptL, double T)
 
     self->lmax = (int)ceil(CASIMIR_FACTOR_LMAX/LbyR);
 
-    self->T           = T;
-    self->RbyScriptL  = RbyScriptL;
-    self->LbyR        = LbyR;
-    self->precision   = CASIMIR_DEFAULT_PRECISION;
-    self->verbose     = 0;
-    self->cores       = 1;
-    self->threads     = NULL;
+    self->T          = T;
+    self->RbyScriptL = RbyScriptL;
+    self->LbyR       = LbyR;
+    self->precision  = CASIMIR_DEFAULT_PRECISION;
+    self->verbose    = 0;
+    self->cores      = 1;
+    self->threads    = xmalloc(self->cores*sizeof(pthread_t));
 
     /* initialize mie cache */
     casimir_mie_cache_init(self);
 
     /* perfect reflectors */
-    self->integration = -1; /* perfect reflectors */
+    self->integration   = -1; /* perfect reflectors */
     self->omegap_sphere = INFINITY;
     self->gamma_sphere  = 0;
     self->omegap_plane  = INFINITY;
