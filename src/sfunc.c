@@ -262,13 +262,19 @@ edouble bessel_lnInu(const int nu, const edouble x)
 
 double linspace(double start, double stop, int N, int i)
 {
-    return start+(stop-start)*i/(N-1);
+    if(N == 1)
+        return start;
+    else
+        return start+(stop-start)*i/(N-1);
 }
 
 
 double logspace(double start, double stop, int N, int i)
 {
-    return start*pow(pow(stop/start, 1./(N-1)), i);
+    if(N == 1)
+        return start;
+    else
+        return start*pow(pow(stop/start, 1./(N-1)), i);
 }
 
 /**
