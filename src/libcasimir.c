@@ -1403,6 +1403,52 @@ double casimir_F(casimir_t *self, int *nmax)
     }
 }
 
+double psd13[][2] = {
+    { 1.000000000000000,   1.000000000000001 },
+    { 1.000000000000001,   0.999999999999991 },
+    { 0.999999999999999,   1.000000000000064 },
+    { 1.000000000000011,   1.000000000000158 },
+    { 1.000000000257354,   1.000000011608591 },
+    { 1.000000519582035,   1.000020756424606 },
+    { 1.000126363809900,   1.004133827101792 },
+    { 1.004770480731387,   1.111330652987736 },
+    { 1.041277034606124,   1.651789018291181 },
+    { 1.157428232669501,   2.912445157884004 },
+    { 1.431933120046814,   5.939828836168054 },
+    { 2.148725824587908,  16.848984730013321 },
+    { 5.898586385593695, 153.031467009523141 },
+    { 0                ,   0                 }
+};
+
+double casimir_F_psd(casimir_t *self, double *F_n)
+{
+    const double T0 = self->T;
+    int n = 1;
+    double sum = 0.5*casimir_F_n(self, 0, NULL);
+
+    while(1)
+    {
+        const double xi  = psd13[n-1][0];
+        const double eta = psd13[n-1][1];
+
+        if(xi == 0 || eta == 0)
+            break;
+
+        self->T = T0*xi;
+
+        sum += eta*casimir_F_n(self, n, NULL);
+
+        n++;
+    }
+
+    self->T = T0;
+
+    /* reinit mie cache */
+    casimir_mie_cache_clean(self);
+
+    return self->T/PI*sum;
+}
+
 
 /**
  * @brief Calculate \f$\log\det \mathcal{D}^{(m)}(\xi=0)\f$ for EE and MM
