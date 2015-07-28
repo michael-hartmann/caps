@@ -3,6 +3,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#include "casimir_T0.h"
+
 #include "integration_perf.h"
 #include "gausslaguerre.h"
 #include "libcasimir.h"
@@ -12,9 +14,6 @@
 #define PRECISION 1e-9
 #define ORDER 50
 #define LFAC 6.
-
-void usage(FILE *stream);
-double integrand(double xi, double LbyR, int lmax, double precision);
 
 void usage(FILE *stream) {
     fprintf(stderr,
