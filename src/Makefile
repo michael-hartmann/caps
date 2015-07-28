@@ -1,4 +1,4 @@
-.PHONY: clean doc casimir casimir_tests casimir_hiT casimir_logdetD casimir_Fn ld_drude
+.PHONY: clean doc casimir casimir_tests casimir_hiT casimir_logdetD casimir_Fn ld_drude casimir_psd
 all: casimir casimir_hiT casimir_logdetD casimir_tests
 
 SOURCES  = sfunc.c integration_drude.c integration_perf.c libcasimir.c matrix.c utils.c
@@ -96,13 +96,16 @@ casimir_Fn:
 ld_drude:
 	$(CC) $(OPTIMIZATION) $(CFLAGS) $(SOURCES) ld_drude.c $(LDFLAGS) -o ld_drude
 
+casimir_psd:
+	$(CC) $(OPTIMIZATION) $(CFLAGS) $(SOURCES) casimir_psd.c $(LDFLAGS) -o casimir_psd
 
 casimir_tests:
 	$(CC) $(OPTIMIZATION) -I . $(CFLAGS) $(SOURCES) tests/unittest.c tests/test*.c $(LDFLAGS) -o casimir_tests
 	./casimir_tests
 
+
 clean:
-	rm -f casimir casimir_tests casimir_hiT casimir_logdetD *.o casimir_Fn ld_drude
+	rm -f casimir casimir_tests casimir_hiT casimir_logdetD *.o casimir_Fn ld_drude casimir_psd
 
 doc:
 	doxygen doxygen.conf

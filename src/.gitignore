@@ -1,10 +1,10 @@
 *.o
 doc/
-casimir_hiT
 casimir
-n0
-casimir_logdetD
-casimir_tests
-pfa.pyc
-ld_drude
 casimir_Fn
+casimir_hiT
+casimir_logdetD
+casimir_psd
+casimir_tests
+ld_drude
+pfa.pyc
