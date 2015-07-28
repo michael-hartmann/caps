@@ -1,5 +1,8 @@
 #!/usr/bin/python
 
+# Ref: Hu, Xu, Yan, Pade spectrum decomposition of Fermi function and Bose
+# function, The Journal of Chemical Physics 133, 101106, 2010
+
 from __future__ import division
 import numpy as np
 from sympy import *
@@ -37,9 +40,3 @@ for i,mxi2 in enumerate(roots):
     print "    { %.20g, %.20g },"  % (xi_i, eta_i)
 print "    { 0, 0 }"
 print "};"
-
-
-
-#print poly
-#print poly.eval(0)
-#print xi
