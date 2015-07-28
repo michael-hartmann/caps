@@ -1413,6 +1413,9 @@ double casimir_F(casimir_t *self, int *nmax)
  * @param [in] psd
  * @param [out] F_n
  * @retval F Casimir free energy
+ *
+ * Ref: Hu, Xu, Yan, Pade spectrum decomposition of Fermi function and Bose
+ * function, The Journal of Chemical Physics 133, 101106, 2010
  */
 double casimir_F_psd(casimir_t *self, double psd[][2], double *F_n)
 {
