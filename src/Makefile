@@ -1,7 +1,7 @@
 .PHONY: clean doc casimir casimir_tests casimir_hiT casimir_logdetD casimir_Fn ld_drude casimir_psd
 all: casimir casimir_hiT casimir_logdetD casimir_tests
 
-SOURCES  = sfunc.c integration_drude.c integration_perf.c libcasimir.c matrix.c utils.c
+SOURCES  = sfunc.c integration_drude.c integration_perf.c libcasimir.c matrix.c utils.c gausslaguerre.c
 CFLAGS  += -Werror -Wall -Wmissing-prototypes -Wstrict-prototypes -Wshadow -Wpointer-arith -Wcast-qual -Wwrite-strings -fno-common
 LDFLAGS += -lm -pthread
 
