@@ -11,7 +11,7 @@
 #include "sfunc.h"
 #include "edouble.h"
 
-#define PRECISION 1e-9
+#define PRECISION 1e-12
 #define ORDER 50
 #define LFAC 6.
 
@@ -57,6 +57,7 @@ double integrand(double xi, double LbyR, int lmax, double precision)
     int m = 0;
     double v0 = 0;
     const double Q = 1/(1+LbyR);
+    int use_trace = 0;
 
     casimir_init(&casimir, Q, xi);
     casimir_set_lmax(&casimir, lmax);
@@ -65,7 +66,16 @@ double integrand(double xi, double LbyR, int lmax, double precision)
 
     while(m <= lmax)
     {
-        double v_m = casimir_logdetD(&casimir, 1, m, &int_perf);
+        double v_m;
+
+        if(use_trace)
+            v_m =    -casimir_trM(&casimir, 1, m, &int_perf);
+        else
+        {
+            v_m = casimir_logdetD(&casimir, 1, m, &int_perf);
+            if(fabs(v_m) < 1e-8)
+                use_trace = 1;
+        }
 
         if(m == 0)
         {
@@ -199,6 +209,11 @@ int main(int argc, char *argv[])
             return 1;
         }
     }
+
+    fflush(stdin);
+    fflush(stderr);
+    setvbuf(stdout, NULL, _IONBF, 0);
+    setvbuf(stderr, NULL, _IONBF, 0);
 
     /* crude estimate */
     alpha = 2*LbyR/(1+LbyR);
