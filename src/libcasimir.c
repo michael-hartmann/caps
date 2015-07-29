@@ -1563,6 +1563,61 @@ void casimir_logdetD0(casimir_t *self, int m, double *logdet_EE, double *logdet_
 
 
 /**
+ * @brief Calculate \f$\mathrm{tr} \mathcal{D}^{(m)}(\xi=nT)\f$
+ *
+ * This function calculates the trace of the scattering operator D for the
+ * Matsubara term \f$n\f$.
+ *
+ * This function is thread-safe - as long you don't change lmax, temperature,
+ * aspect ratio, dielectric properties of sphere and plane, and integration.
+ *
+ * @param [in,out] self Casimir object
+ * @param [in] n Matsubara term
+ * @param [in] m
+ * @param [in,out] integration_obj may be NULL
+ * @retval trM \f$\mathrm{tr} \mathcal{D}^{(m)}(\xi=nT)\f$
+ */
+double casimir_trM(casimir_t *self, int n, int m, void *integration_obj)
+{
+    int l;
+    const int min = MAX(m,1);
+    const int max = self->lmax;
+    edouble trM = 0;
+
+    for(l = min; l <= max; l++)
+    {
+        edouble v;
+        casimir_integrals_t cint;
+        double ln_al, ln_bl;
+        sign_t sign, sign_al, sign_bl;
+
+        casimir_mie_cache_get(self, l, n, &ln_al, &sign_al, &ln_bl, &sign_bl);
+
+        if(self->integration > 0)
+            casimir_integrate_drude(self, &cint, l, l, m, n, self->T);
+        else
+            casimir_integrate_perf(integration_obj, l, l, m, &cint);
+
+        /* EE */
+        sign_t signs_EE[] = { sign_al*cint.signA_TE, sign_al*cint.signB_TM };
+        edouble list_EE[] = { ln_al+cint.lnA_TE, ln_al+cint.lnB_TM };
+
+        v = logadd_ms(list_EE, signs_EE, 2, &sign);
+        trM += sign*expe(v);
+
+        /* MM */
+        sign_t signs_MM[] = { sign_bl*cint.signA_TM, sign_bl*cint.signB_TE };
+        edouble list_MM[] = { ln_bl+cint.lnA_TM, ln_bl+cint.lnB_TE };
+
+        v = logadd_ms(list_MM, signs_MM, 2, &sign);
+        trM += sign*expe(v);
+    }
+
+    return trM;
+}
+
+
+/**
  * @brief Calculate \f$\log\det \mathcal{D}^{(m)}(\xi=nT)\f$
  *
  * This function calculates the logarithm of the determinant of the scattering
