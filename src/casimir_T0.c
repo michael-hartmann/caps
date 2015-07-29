@@ -53,11 +53,9 @@ double integrand(double xi, double LbyR, int lmax, double precision)
 {
     casimir_t casimir;
     integration_perf_t int_perf;
-    double v = 0;
-    int m = 0;
-    double v0 = 0;
+    double v = 0, v0 = 0;
+    int m = 0, use_trace = 0;
     const double Q = 1/(1+LbyR);
-    int use_trace = 0;
 
     casimir_init(&casimir, Q, xi);
     casimir_set_lmax(&casimir, lmax);
@@ -69,7 +67,7 @@ double integrand(double xi, double LbyR, int lmax, double precision)
         double v_m;
 
         if(use_trace)
-            v_m =    -casimir_trM(&casimir, 1, m, &int_perf);
+            v_m = -casimir_trM(&casimir, 1, m, &int_perf);
         else
         {
             v_m = casimir_logdetD(&casimir, 1, m, &int_perf);
@@ -210,12 +208,13 @@ int main(int argc, char *argv[])
         }
     }
 
+    /* disable buffering */
     fflush(stdin);
     fflush(stderr);
     setvbuf(stdout, NULL, _IONBF, 0);
     setvbuf(stderr, NULL, _IONBF, 0);
 
-    /* crude estimate */
+    /* estimate, cf. eq. (6.33) */
     alpha = 2*LbyR/(1+LbyR);
     order = gausslaguerre_nodes_weights(order, &xk, &ln_wk);
 
@@ -227,6 +226,7 @@ int main(int argc, char *argv[])
     printf("# cores = %d\n", cores);
     printf("#\n");
 
+    /* do Gauss-Legendre quadrature */
     for(k = 0; k < order; k++)
     {
         const edouble x    = xk[k];
@@ -236,9 +236,6 @@ int main(int argc, char *argv[])
         integral += expe(ln_w+x)*f;
 
         printf("# k=%d, x=%.15g, logdetD(xi = x/alpha)=%.15g\n", k, (double)x, f);
-
-        if(f == 0)
-            break;
     }
 
     F0 = (double)(integral/alpha/M_PI);
