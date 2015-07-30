@@ -11,6 +11,7 @@ LDFLAGS += -lm -pthread
 # At the moment gcc and icc are supported.
 CC = gcc
 #CC = icc
+MPICC = mpicc
 
 
 # Use extended doubles for calculations.
@@ -100,7 +101,7 @@ casimir_psd:
 	$(CC) $(OPTIMIZATION) $(CFLAGS) $(SOURCES) casimir_psd.c $(LDFLAGS) -o casimir_psd
 
 casimir_T0:
-	$(CC) $(OPTIMIZATION) $(CFLAGS) $(SOURCES) casimir_T0.c $(LDFLAGS) -o casimir_T0
+	$(MPICC) $(OPTIMIZATION) $(CFLAGS) $(SOURCES) casimir_T0.c $(LDFLAGS) -o casimir_T0
 
 casimir_tests:
 	$(CC) $(OPTIMIZATION) -I . $(CFLAGS) $(SOURCES) tests/unittest.c tests/test*.c $(LDFLAGS) -o casimir_tests
