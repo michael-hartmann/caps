@@ -3,7 +3,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
-#include "mpi.h"
+#include <mpi.h>
 
 #include "casimir_T0.h"
 
@@ -13,12 +13,9 @@
 #include "sfunc.h"
 #include "edouble.h"
 
-
 #define PRECISION 1e-12
 #define ORDER 50
 #define LFAC 6.
-
-int master(int argc, char *argv[], int cores);
 
 double integrand(double xi, double LbyR, int lmax, double precision)
 {
@@ -62,7 +59,6 @@ double integrand(double xi, double LbyR, int lmax, double precision)
 
         m++;
     }
-
 
     casimir_integrate_perf_free(&int_perf);
     casimir_free(&casimir);
@@ -139,16 +135,16 @@ int master(int argc, char *argv[], int cores)
             { "precision", required_argument, 0, 'p' },
             { 0, 0, 0, 0 }
         };
-    
+
         /* getopt_long stores the option index here. */
         int option_index = 0;
-    
+
         c = getopt_long (argc, argv, "x:L:N:l:c:p:h", long_options, &option_index);
-    
+
         /* Detect the end of the options. */
         if(c == -1)
             break;
-    
+
         switch (c)
         {
             case 0:
@@ -182,7 +178,7 @@ int master(int argc, char *argv[], int cores)
                 abort();
         }
     }
-    
+
     if(LbyR < 0)
     {
         fprintf(stderr, "LbyR must be positive.\n\n");
@@ -219,6 +215,12 @@ int master(int argc, char *argv[], int cores)
             usage(stderr);
             EXIT(1);
         }
+    }
+
+    if(cores < 2)
+    {
+        fprintf(stderr, "need at least 2 cores\n");
+        EXIT(1);
     }
 
     /* disable buffering */
@@ -288,7 +290,7 @@ int master(int argc, char *argv[], int cores)
 
     /* free energy or T=0 */
     F0 = (double)(integral/alpha/M_PI);
-    
+
     printf("#\n");
     printf("# L/R, order, alpha, F(T=0)\n");
     printf("%.15g, %d, %.15g, %.15g\n", LbyR, order, alpha, F0);
@@ -336,12 +338,16 @@ int slave(MPI_Comm master_comm, int rank)
     return 0;
 }
 
-void usage(FILE *stream) {
+void usage(FILE *stream)
+{
     fprintf(stderr,
 "Usage: casimir_T0 [OPTIONS]\n"
 "This program will calculate the free Casimir energy F(T=0,L/R) for the\n"
 "plane-sphere geometry for given L/R and temperature T. The output is in scaled\n"
 "units.\n"
+"\n"
+"This program uses MPI for parallization. The program needs at least two cores\n"
+"to run.\n"
 "\n"
 "Mandatory options:\n"
 "    -x, --LbyR L/R\n"
