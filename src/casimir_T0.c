@@ -2,6 +2,8 @@
 #include <getopt.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <unistd.h>
+#include "mpi.h"
 
 #include "casimir_T0.h"
 
@@ -11,43 +13,12 @@
 #include "sfunc.h"
 #include "edouble.h"
 
+
 #define PRECISION 1e-12
 #define ORDER 50
 #define LFAC 6.
 
-void usage(FILE *stream) {
-    fprintf(stderr,
-"Usage: casimir_T0 [OPTIONS]\n"
-"This program will calculate the free Casimir energy F(T=0,L/R) for the\n"
-"plane-sphere geometry for given L/R and temperature T. The output is in scaled\n"
-"units.\n"
-"\n"
-"Mandatory options:\n"
-"    -x, --LbyR L/R\n"
-"        Separation L between sphere and plane divided by radius of sphere,\n"
-"        where L/R > 0.\n"
-"\n"
-"Further options:\n"
-"    -l, --lscale\n"
-"        Specify parameter lscale. The vector space has to be truncated for\n"
-"        some value lmax. This program will use lmax=(R/L*lscale) (default: %g)\n"
-"\n"
-"    -L LMAX\n"
-"        Set lmax to the value LMAX. When -L is specified, -l will be ignored\n"
-"\n"
-"    -c, --cores CORES\n"
-"        Use CORES of processors for the calculation (default: 1)\n"
-"\n"
-"    -p, --precision\n"
-"        Set precision to given value (default: %g)\n"
-"\n"
-"    -N, --order\n"
-"        Order of Gauss-Laguerre integrateion (default: %d)\n"
-"\n"
-"    -h,--help\n"
-"        Show this help\n",
-    LFAC, PRECISION, ORDER);
-}
+int master(int argc, char *argv[], int cores);
 
 double integrand(double xi, double LbyR, int lmax, double precision)
 {
@@ -92,6 +63,7 @@ double integrand(double xi, double LbyR, int lmax, double precision)
         m++;
     }
 
+
     casimir_integrate_perf_free(&int_perf);
     casimir_free(&casimir);
 
@@ -99,11 +71,59 @@ double integrand(double xi, double LbyR, int lmax, double precision)
 }
 
 
+int submit_job(int destination, MPI_Request *request, double *recv, int k, double xi, double LbyR, int lmax, double precision)
+{
+    double buf[] = { k, xi, LbyR, lmax, precision };
+
+    MPI_Send(buf, 5, MPI_DOUBLE, destination, 0, MPI_COMM_WORLD);
+    MPI_Irecv(recv, 2, MPI_DOUBLE, destination, 0, MPI_COMM_WORLD, request);
+
+    return 0;
+}
+
+int retrieve_job(MPI_Request *request, double *buf, int *index, double *value)
+{
+    MPI_Status status;
+    MPI_Wait(request, &status);
+
+    *index = buf[0];
+    *value = buf[1];
+
+    return 0;
+}
+
 int main(int argc, char *argv[])
 {
-    int order = ORDER, cores = 1, lmax = 0, k;
+    int cores, rank, ret;
+    MPI_Comm new_comm;
+
+    /* initialize MPI */
+    MPI_Init(&argc, &argv);
+    MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+    MPI_Comm_split(MPI_COMM_WORLD, rank == 0, 0, &new_comm);
+    MPI_Comm_size(MPI_COMM_WORLD, &cores);
+
+    if(rank == 0)
+        ret = master(argc, argv, cores);
+    else
+        ret = slave(MPI_COMM_WORLD, rank);
+
+    MPI_Finalize();
+
+    return ret;
+}
+
+int master(int argc, char *argv[], int cores)
+{
+    int order = ORDER, lmax = 0, ret = 0;
     double F0, alpha, LbyR = -1, lfac = LFAC, precision = PRECISION;
     edouble integral = 0, *xk, *ln_wk;
+    int k = 0;
+    int i;
+    double recv[cores][2];
+    MPI_Request requests[cores];
+
+    #define EXIT(n) do { ret = n; goto out; } while(0)
 
     /* parse command line options */
     while (1)
@@ -116,20 +136,19 @@ int main(int argc, char *argv[])
             { "lmax",      required_argument, 0, 'L' },
             { "order",     required_argument, 0, 'N' },
             { "lscale",    required_argument, 0, 'l' },
-            { "cores",     required_argument, 0, 'c' },
             { "precision", required_argument, 0, 'p' },
             { 0, 0, 0, 0 }
         };
-
+    
         /* getopt_long stores the option index here. */
         int option_index = 0;
-
+    
         c = getopt_long (argc, argv, "x:L:N:l:c:p:h", long_options, &option_index);
-
+    
         /* Detect the end of the options. */
         if(c == -1)
             break;
-
+    
         switch (c)
         {
             case 0:
@@ -142,9 +161,6 @@ int main(int argc, char *argv[])
             case 'L':
                 lmax = atoi(optarg);
                 break;
-            case 'c':
-                cores = atoi(optarg);
-                break;
             case 'l':
                 lfac = atof(optarg);
                 break;
@@ -156,7 +172,7 @@ int main(int argc, char *argv[])
                 break;
             case 'h':
                 usage(stdout);
-                exit(0);
+                EXIT(0);
 
             case '?':
                 /* getopt_long already printed an error message. */
@@ -166,30 +182,24 @@ int main(int argc, char *argv[])
                 abort();
         }
     }
-
+    
     if(LbyR < 0)
     {
         fprintf(stderr, "LbyR must be positive.\n\n");
         usage(stderr);
-        return 1;
+        EXIT(1);
     }
     if(order < 1)
     {
         fprintf(stderr, "order must be positive.\n\n");
         usage(stderr);
-        return 1;
+        EXIT(1);
     }
     if(precision <= 0)
     {
         fprintf(stderr, "precision must be positive.\n\n");
         usage(stderr);
-        return 1;
-    }
-    if(cores <= 0)
-    {
-        fprintf(stderr, "cores must be positive.\n\n");
-        usage(stderr);
-        return 1;
+        EXIT(1);
     }
     if(lmax <= 0)
     {
@@ -201,13 +211,13 @@ int main(int argc, char *argv[])
         {
             fprintf(stderr, "lfac must be positive\n\n");
             usage(stderr);
-            return 1;
+            EXIT(1);
         }
         else
         {
             fprintf(stderr, "lmax must be positive\n\n");
             usage(stderr);
-            return 1;
+            EXIT(1);
         }
     }
 
@@ -229,23 +239,130 @@ int main(int argc, char *argv[])
     printf("# cores = %d\n", cores);
     printf("#\n");
 
-    /* do Gauss-Legendre quadrature */
-    for(k = 0; k < order; k++)
+    for(i = 1; i < MIN(order,cores); i++)
     {
-        const edouble x    = xk[k];
-        const edouble ln_w = ln_wk[k];
-        const double f = integrand(x/alpha, LbyR, lmax, precision);
-
-        integral += expe(ln_w+x)*f;
-
-        printf("# k=%d, x=%.15g, logdetD(xi = x/alpha)=%.15g\n", k, (double)x, f);
+        submit_job(i, &requests[i], recv[i], k, xk[k]/alpha, LbyR, lmax, precision);
+        k++;
     }
 
-    F0 = (double)(integral/alpha/M_PI);
+    /* do Gauss-Legendre quadrature */
+    while(1)
+    {
+        int index;
+        double value;
 
+        for(i = 1; i < cores && k < order; i++)
+        {
+            int flag = 0;
+            MPI_Status status;
+
+            MPI_Test(&requests[i], &flag, &status);
+            if(flag)
+            {
+                retrieve_job(&requests[i], recv[i], &index, &value);
+
+                printf("# k=%d, x=%.15g, logdetD(xi = x/alpha)=%.15g\n", index, (double)xk[index], value);
+                integral += expe(ln_wk[index]+xk[index])*value;
+
+                submit_job(i, &requests[i], recv[i], k, xk[k]/alpha, LbyR, lmax, precision);
+                k++;
+            }
+
+            usleep(5*1000);
+        }
+
+        if(k >= order)
+        {
+
+            for(i = 1; i < cores; i++)
+            {
+                retrieve_job(&requests[i], recv[i], &index, &value);
+
+                printf("# k=%d, x=%.15g, logdetD(xi = x/alpha)=%.15g\n", index, (double)xk[index], value);
+                integral += expe(ln_wk[index]+xk[index])*value;
+            }
+
+            break;
+        }
+    }
+
+    /* free energy or T=0 */
+    F0 = (double)(integral/alpha/M_PI);
+    
     printf("#\n");
     printf("# L/R, order, alpha, F(T=0)\n");
     printf("%.15g, %d, %.15g, %.15g\n", LbyR, order, alpha, F0);
 
+out:
+    for(i = 1; i < cores; i++)
+    {
+        double buf[] = { -1, -1, -1, -1, -1 };
+        MPI_Send(buf, 5, MPI_DOUBLE, i, 0, MPI_COMM_WORLD);
+    }
+
+    return ret;
+}
+
+int slave(MPI_Comm master_comm, int rank)
+{
+    int k, lmax;
+    double buf[5];
+    double v,xi,precision,LbyR;
+    MPI_Status status;
+    MPI_Request request;
+
+    while(1)
+    {
+        MPI_Recv(buf, 5, MPI_DOUBLE, 0, 0, master_comm, &status);
+
+        k         = buf[0];
+        xi        = buf[1];
+        LbyR      = buf[2];
+        lmax      = buf[3];
+        precision = buf[4];
+
+        if(k < 0)
+            break;
+
+        v = integrand(xi, LbyR, lmax, precision);
+
+        buf[0] = k;
+        buf[1] = v;
+
+        MPI_Isend(buf, 2, MPI_DOUBLE, 0, 0, master_comm, &request);
+        MPI_Wait(&request, &status);
+    }
+
     return 0;
+}
+
+void usage(FILE *stream) {
+    fprintf(stderr,
+"Usage: casimir_T0 [OPTIONS]\n"
+"This program will calculate the free Casimir energy F(T=0,L/R) for the\n"
+"plane-sphere geometry for given L/R and temperature T. The output is in scaled\n"
+"units.\n"
+"\n"
+"Mandatory options:\n"
+"    -x, --LbyR L/R\n"
+"        Separation L between sphere and plane divided by radius of sphere,\n"
+"        where L/R > 0.\n"
+"\n"
+"Further options:\n"
+"    -l, --lscale\n"
+"        Specify parameter lscale. The vector space has to be truncated for\n"
+"        some value lmax. This program will use lmax=(R/L*lscale) (default: %g)\n"
+"\n"
+"    -L LMAX\n"
+"        Set lmax to the value LMAX. When -L is specified, -l will be ignored\n"
+"\n"
+"    -p, --precision\n"
+"        Set precision to given value (default: %g)\n"
+"\n"
+"    -N, --order\n"
+"        Order of Gauss-Laguerre integrateion (default: %d)\n"
+"\n"
+"    -h,--help\n"
+"        Show this help\n",
+    LFAC, PRECISION, ORDER);
 }
