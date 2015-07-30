@@ -17,6 +17,7 @@
 #define ORDER 50
 #define LFAC 6.
 
+/* calculate integrand logdetD(xi) = \sum_{m=0}^{m=lmax} logdetD^m(xi) */
 double integrand(double xi, double LbyR, int lmax, double precision)
 {
     casimir_t casimir;
@@ -25,11 +26,13 @@ double integrand(double xi, double LbyR, int lmax, double precision)
     int m = 0, use_trace = 0;
     const double Q = 1/(1+LbyR);
 
+    /* initialize Casimir object and set lmax */
     casimir_init(&casimir, Q, xi);
     casimir_set_lmax(&casimir, lmax);
 
     casimir_integrate_perf_init(&int_perf, 1*casimir.T, casimir.lmax);
 
+    /* sum up all contributions from m=0 to m=lmax */
     while(m <= lmax)
     {
         double v_m;
@@ -39,6 +42,14 @@ double integrand(double xi, double LbyR, int lmax, double precision)
         else
         {
             v_m = casimir_logdetD(&casimir, 1, m, &int_perf);
+
+            /* For large arguments of xi the calculation of logdetD^m becomes
+             * inaccurate. This corresponds to large distances (large xi <->
+             * large distances), so we can use the approximation
+             *      logdetD^m \approx -Tr M^m(xi).
+             *
+             * The factor 1e-8 was determined by experience.
+             */
             if(fabs(v_m) < 1e-8)
             {
                 v_m = -casimir_trM(&casimir, 1, m, &int_perf);
@@ -46,6 +57,7 @@ double integrand(double xi, double LbyR, int lmax, double precision)
             }
         }
 
+        /* divide contribution from m=0 by 2 */
         if(m == 0)
         {
             v0 = v_m;
@@ -54,6 +66,7 @@ double integrand(double xi, double LbyR, int lmax, double precision)
 
         v += v_m;
 
+        /* if contribution to the sum is smaller than v_m/v0, we're done */
         if(fabs(v_m/v0) < precision)
             break;
 
@@ -67,15 +80,16 @@ double integrand(double xi, double LbyR, int lmax, double precision)
 }
 
 
-int submit_job(int destination, MPI_Request *request, double *recv, int k, double xi, double LbyR, int lmax, double precision)
+int submit_job(int process, MPI_Request *request, double *recv, int k, double xi, double LbyR, int lmax, double precision)
 {
     double buf[] = { k, xi, LbyR, lmax, precision };
 
-    MPI_Send(buf, 5, MPI_DOUBLE, destination, 0, MPI_COMM_WORLD);
-    MPI_Irecv(recv, 2, MPI_DOUBLE, destination, 0, MPI_COMM_WORLD, request);
+    MPI_Send (buf,  5, MPI_DOUBLE, process, 0, MPI_COMM_WORLD);
+    MPI_Irecv(recv, 2, MPI_DOUBLE, process, 0, MPI_COMM_WORLD, request);
 
     return 0;
 }
+
 
 int retrieve_job(MPI_Request *request, double *buf, int *index, double *value)
 {
@@ -87,6 +101,14 @@ int retrieve_job(MPI_Request *request, double *buf, int *index, double *value)
 
     return 0;
 }
+
+
+void stop_process(int task)
+{
+    double buf[] = { -1, -1, -1, -1, -1 };
+    MPI_Send(buf, 5, MPI_DOUBLE, task, 0, MPI_COMM_WORLD);
+}
+
 
 int main(int argc, char *argv[])
 {
@@ -114,8 +136,7 @@ int master(int argc, char *argv[], int cores)
     int order = ORDER, lmax = 0, ret = 0;
     double F0, alpha, LbyR = -1, lfac = LFAC, precision = PRECISION;
     edouble integral = 0, *xk, *ln_wk;
-    int k = 0;
-    int i;
+    int process, k = 0;
     double recv[cores][2];
     MPI_Request requests[cores];
 
@@ -179,7 +200,7 @@ int master(int argc, char *argv[], int cores)
         }
     }
 
-    if(LbyR < 0)
+    if(LbyR <= 0)
     {
         fprintf(stderr, "LbyR must be positive.\n\n");
         usage(stderr);
@@ -241,9 +262,9 @@ int master(int argc, char *argv[], int cores)
     printf("# cores = %d\n", cores);
     printf("#\n");
 
-    for(i = 1; i < MIN(order,cores); i++)
+    for(process = 1; process < MIN(order,cores); process++)
     {
-        submit_job(i, &requests[i], recv[i], k, xk[k]/alpha, LbyR, lmax, precision);
+        submit_job(process, &requests[process], recv[process], k, xk[k]/alpha, LbyR, lmax, precision);
         k++;
     }
 
@@ -253,20 +274,20 @@ int master(int argc, char *argv[], int cores)
         int index;
         double value;
 
-        for(i = 1; i < cores && k < order; i++)
+        for(process = 1; process < cores && k < order; process++)
         {
             int flag = 0;
             MPI_Status status;
 
-            MPI_Test(&requests[i], &flag, &status);
+            MPI_Test(&requests[process], &flag, &status);
             if(flag)
             {
-                retrieve_job(&requests[i], recv[i], &index, &value);
+                retrieve_job(&requests[process], recv[process], &index, &value);
 
                 printf("# k=%d, x=%.15g, logdetD(xi = x/alpha)=%.15g\n", index, (double)xk[index], value);
                 integral += expe(ln_wk[index]+xk[index])*value;
 
-                submit_job(i, &requests[i], recv[i], k, xk[k]/alpha, LbyR, lmax, precision);
+                submit_job(process, &requests[process], recv[process], k, xk[k]/alpha, LbyR, lmax, precision);
                 k++;
             }
 
@@ -276,9 +297,9 @@ int master(int argc, char *argv[], int cores)
         if(k >= order)
         {
 
-            for(i = 1; i < cores; i++)
+            for(process = 1; process < cores; process++)
             {
-                retrieve_job(&requests[i], recv[i], &index, &value);
+                retrieve_job(&requests[process], recv[process], &index, &value);
 
                 printf("# k=%d, x=%.15g, logdetD(xi = x/alpha)=%.15g\n", index, (double)xk[index], value);
                 integral += expe(ln_wk[index]+xk[index])*value;
@@ -292,15 +313,12 @@ int master(int argc, char *argv[], int cores)
     F0 = (double)(integral/alpha/M_PI);
 
     printf("#\n");
-    printf("# L/R, order, alpha, F(T=0)\n");
-    printf("%.15g, %d, %.15g, %.15g\n", LbyR, order, alpha, F0);
+    printf("# L/R, lmax, order, alpha, F(T=0)\n");
+    printf("%.15g, %d, %d, %.15g, %.15g\n", LbyR, lmax, order, alpha, F0);
 
 out:
-    for(i = 1; i < cores; i++)
-    {
-        double buf[] = { -1, -1, -1, -1, -1 };
-        MPI_Send(buf, 5, MPI_DOUBLE, i, 0, MPI_COMM_WORLD);
-    }
+    for(process = 1; process < cores; process++)
+        stop_process(process);
 
     return ret;
 }
@@ -348,6 +366,14 @@ void usage(FILE *stream)
 "\n"
 "This program uses MPI for parallization. The program needs at least two cores\n"
 "to run.\n"
+"\n"
+"The free eenergy at T=0 is calculated using integration:\n"
+"   F(L/R) = \\int_0^\\infty dξ logdet D(ξ)\n"
+"The integration is done using Gauss-Laguerre integration. The integrand\n"
+"decays exponentially, c.f. eq. (6.33) of [1].\n"
+"\n"
+"References:\n"
+"  [1] Hartmann, Negative Casimir entropies in the plane-sphere geometry, 2014\n"
 "\n"
 "Mandatory options:\n"
 "    -x, --LbyR L/R\n"
