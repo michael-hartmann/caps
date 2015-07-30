@@ -72,7 +72,10 @@ double integrand(double xi, double LbyR, int lmax, double precision)
         {
             v_m = casimir_logdetD(&casimir, 1, m, &int_perf);
             if(fabs(v_m) < 1e-8)
+            {
+                v_m = -casimir_trM(&casimir, 1, m, &int_perf);
                 use_trace = 1;
+            }
         }
 
         if(m == 0)
