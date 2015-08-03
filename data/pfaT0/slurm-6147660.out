@@ -1,0 +1,10 @@
+# starting on alcc54.physik.uni-augsburg.de at Mon Aug  3 08:10:06 CEST 2015
+# casimir_T0 -x 0.00315814141100251 -L 2216 -N 80
+
+# LbyR  = 0.00315814141100251
+# alpha = 0.00629639790703466
+# order = 80
+# prec  = 1e-12
+# lmax  = 2216
+# cores = 30
+#
