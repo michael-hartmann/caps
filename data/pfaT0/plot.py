@@ -4,7 +4,7 @@ from __future__ import division
 
 from pyx import *
 from glob import glob
-from math import pi,log,log
+from math import pi,log
 
 
 def slurp(filename, data=[]):
