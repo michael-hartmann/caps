@@ -93,5 +93,75 @@ int test_integration_perf(void)
     _integrals(1540,40,1,2.5,&cint);
     AssertAlmostEqual(&test, cint.lnA_TM, 8589.22040500894307686493465726593);
 
+    _integrals(20, 20, 3, 10, &cint);
+    AssertAlmostEqual(&test, cint.signA_TE * exp(cint.lnA_TE), 781.09859105555221959);
+    AssertAlmostEqual(&test, cint.signB_TE * exp(cint.lnB_TE), -134864.11599496152485);
+    AssertAlmostEqual(&test, cint.signC_TE * exp(cint.lnC_TE), -10117.073210379348893);
+    AssertAlmostEqual(&test, cint.signD_TE * exp(cint.lnD_TE), 10117.073210379348893);
+    AssertAlmostEqual(&test, cint.signA_TM * exp(cint.lnA_TM), -781.09859105555221959);
+    AssertAlmostEqual(&test, cint.signB_TM * exp(cint.lnB_TM), 134864.11599496152485);
+    AssertAlmostEqual(&test, cint.signC_TM * exp(cint.lnC_TM), 10117.073210379348893);
+    AssertAlmostEqual(&test, cint.signD_TM * exp(cint.lnD_TM), -10117.073210379348893);
+
+    _integrals(20, 20, 3, 0.005, &cint);
+    AssertAlmostEqual(&test, cint.signA_TE * exp(cint.lnA_TE), 5.1118182099912547966e+132);
+    AssertAlmostEqual(&test, cint.signB_TE * exp(cint.lnB_TE), -3.5441939544749868444e+141);
+    AssertAlmostEqual(&test, cint.signC_TE * exp(cint.lnC_TE), -1.3290727331464213355e+137);
+    AssertAlmostEqual(&test, cint.signD_TE * exp(cint.lnD_TE), 1.3290727331464213355e+137);
+    AssertAlmostEqual(&test, cint.signA_TM * exp(cint.lnA_TM), -5.1118182099912547966e+132);
+    AssertAlmostEqual(&test, cint.signB_TM * exp(cint.lnB_TM), 3.5441939544749868444e+141);
+    AssertAlmostEqual(&test, cint.signC_TM * exp(cint.lnC_TM), 1.3290727331464213355e+137);
+    AssertAlmostEqual(&test, cint.signD_TM * exp(cint.lnD_TM), -1.3290727331464213355e+137);
+
+    _integrals(20, 10, 3, 0.1, &cint);
+    AssertAlmostEqual(&test, cint.signA_TE * exp(cint.lnA_TE), 8.5978097063718598278e+56);
+    AssertAlmostEqual(&test, cint.signB_TE * exp(cint.lnB_TE), -4.1556106748900681252e+62);
+    AssertAlmostEqual(&test, cint.signC_TE * exp(cint.lnC_TE), -4.1556099454869528064e+59);
+    AssertAlmostEqual(&test, cint.signD_TE * exp(cint.lnD_TE), 8.3112107466018794333e+59);
+    AssertAlmostEqual(&test, cint.signA_TM * exp(cint.lnA_TM), -8.5978097063718598278e+56);
+    AssertAlmostEqual(&test, cint.signB_TM * exp(cint.lnB_TM), 4.1556106748900681252e+62);
+    AssertAlmostEqual(&test, cint.signC_TM * exp(cint.lnC_TM), 4.1556099454869528064e+59);
+    AssertAlmostEqual(&test, cint.signD_TM * exp(cint.lnD_TM), -8.3112107466018794333e+59);
+
+    _integrals(20, 15, 10, 5, &cint);
+    AssertAlmostEqual(&test, cint.signA_TE * exp(cint.lnA_TE), -5431256655.4366550446);
+    AssertAlmostEqual(&test, cint.signB_TE * exp(cint.lnB_TE), 204531605206.09912109);
+    AssertAlmostEqual(&test, cint.signC_TE * exp(cint.lnC_TE), 28587590863.750656128);
+    AssertAlmostEqual(&test, cint.signD_TE * exp(cint.lnD_TE), -37805365266.289375305);
+    AssertAlmostEqual(&test, cint.signA_TM * exp(cint.lnA_TM), 5431256655.4366550446);
+    AssertAlmostEqual(&test, cint.signB_TM * exp(cint.lnB_TM), -204531605206.09912109);
+    AssertAlmostEqual(&test, cint.signC_TM * exp(cint.lnC_TM), -28587590863.750656128);
+    AssertAlmostEqual(&test, cint.signD_TM * exp(cint.lnD_TM), 37805365266.289375305);
+
+    _integrals(50, 15, 10, 10, &cint);
+    AssertAlmostEqual(&test, cint.signA_TE * exp(cint.lnA_TE), -6.4110387204283793408e+19);
+    AssertAlmostEqual(&test, cint.signB_TE * exp(cint.lnB_TE), 5.1666432341025142866e+21);
+    AssertAlmostEqual(&test, cint.signC_TE * exp(cint.lnC_TE), 3.1581511099318560358e+20);
+    AssertAlmostEqual(&test, cint.signD_TE * exp(cint.lnD_TE), -1.032906554654643454e+21);
+    AssertAlmostEqual(&test, cint.signA_TM * exp(cint.lnA_TM), 6.4110387204283793408e+19);
+    AssertAlmostEqual(&test, cint.signB_TM * exp(cint.lnB_TM), -5.1666432341025142866e+21);
+    AssertAlmostEqual(&test, cint.signC_TM * exp(cint.lnC_TM), -3.1581511099318560358e+20);
+    AssertAlmostEqual(&test, cint.signD_TM * exp(cint.lnD_TM), 1.032906554654643454e+21);
+
+    _integrals(100, 25, 20, 20, &cint);
+    AssertAlmostEqual(&test, cint.signA_TE * exp(cint.lnA_TE), -5.0294652559566390516e+36);
+    AssertAlmostEqual(&test, cint.signB_TE * exp(cint.lnB_TE), 3.1964362960862542766e+38);
+    AssertAlmostEqual(&test, cint.signC_TE * exp(cint.lnC_TE), 2.0270824787427330596e+37);
+    AssertAlmostEqual(&test, cint.signD_TE * exp(cint.lnD_TE), -7.8698461944637818726e+37);
+    AssertAlmostEqual(&test, cint.signA_TM * exp(cint.lnA_TM), 5.0294652559566390516e+36);
+    AssertAlmostEqual(&test, cint.signB_TM * exp(cint.lnB_TM), -3.1964362960862542766e+38);
+    AssertAlmostEqual(&test, cint.signC_TM * exp(cint.lnC_TM), -2.0270824787427330596e+37);
+    AssertAlmostEqual(&test, cint.signD_TM * exp(cint.lnD_TM), 7.8698461944637818726e+37);
+
+    _integrals(60, 55, 40, 0.11, &cint);
+    AssertAlmostEqual(&test, cint.signA_TE * exp(cint.lnA_TE), -1.5670522864686087965e+280);
+    AssertAlmostEqual(&test, cint.signB_TE * exp(cint.lnB_TE), 8.7546005438190589883e+285);
+    AssertAlmostEqual(&test, cint.signC_TE * exp(cint.lnC_TE), 1.1165268702393727479e+283);
+    AssertAlmostEqual(&test, cint.signD_TE * exp(cint.lnD_TE), -1.2180291188873130328e+283);
+    AssertAlmostEqual(&test, cint.signA_TM * exp(cint.lnA_TM), 1.5670522864686087965e+280);
+    AssertAlmostEqual(&test, cint.signB_TM * exp(cint.lnB_TM), -8.7546005438190589883e+285);
+    AssertAlmostEqual(&test, cint.signC_TM * exp(cint.lnC_TM), -1.1165268702393727479e+283);
+    AssertAlmostEqual(&test, cint.signD_TM * exp(cint.lnD_TM), 1.2180291188873130328e+283);
+
     return test_results(&test, stderr);
 }
