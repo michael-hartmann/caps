@@ -48,7 +48,7 @@ if __name__ == "__main__":
     if argv < 3:
         usage(argv[0])
         exit(1)
-    
+
     try:
         LbyR = float(argv[1])
         T    = float(argv[2])
