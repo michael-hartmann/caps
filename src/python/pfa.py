@@ -7,7 +7,7 @@ from mpmath import polylog
 
 
 def integrand(x, LbyR, T):
-    """Integrand for pfa and finite temperature"""
+    """Integrand for PFA and finite temperature"""
     n = 0
     sum = 0
     alpha1 = 2*T*x/(1+1/LbyR)
@@ -20,11 +20,12 @@ def integrand(x, LbyR, T):
         sum += value
         if value/sum < 1e-15:
             return sum/(x**2*LbyR)
-        n += 1 
+        n += 1
 
 
 def pfa(LbyR, T):
-    """Calculate free energy according to PFA for perfect reflectors for L/R and T"""
+    """Calculate free energy according to PFA for perfect reflectors for L/R
+    and T"""
     if isinf(T) and T > 0:
         return -1.2020569031595942/4/(LbyR+LbyR**2)
     if T > 0:
