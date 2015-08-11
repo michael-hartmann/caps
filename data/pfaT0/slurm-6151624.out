@@ -1,0 +1,10 @@
+# starting on alcc86 at Mon Aug 10 23:01:13 CEST 2015
+# casimir_T0_parallelize -x 0.004 -L 1750 -N 80
+
+# LbyR  = 0.004
+# alpha = 0.00796812749003984
+# order = 80
+# prec  = 1e-12
+# lmax  = 1750
+# cores = 60
+#
