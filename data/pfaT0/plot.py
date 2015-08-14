@@ -4,7 +4,22 @@ from __future__ import division
 
 from pyx import *
 from glob import glob
-from math import pi,log
+from math import pi,log,exp
+from numpy import polyfit
+
+
+def slurp_alt(filename, data=[]):
+    with open(filename, "r") as f:
+        for line in f:
+            line = line.strip()
+            if line == "" or line[0] == "#":
+                continue
+            # L/R, lmax, order, alpha, F(T=0)
+            LbyR,T,F,error = map(float, line.split(","))
+            ratio = F/pfa(LbyR)
+            data.append((LbyR, F, ratio, ratio/bimonte(LbyR)))
+
+    return data
 
 
 def slurp(filename, data=[]):
@@ -16,19 +31,23 @@ def slurp(filename, data=[]):
             # L/R, lmax, order, alpha, F(T=0)
             LbyR,lmax,order,alpha,F = map(float, line.split(","))
             ratio = F/pfa(LbyR)
+            print filename, lmax*LbyR
             data.append((LbyR, F, ratio, ratio/bimonte(LbyR)))
 
     return data
 
 
 if __name__ == "__main__":
+    plotPFA     = False
+    plotBimonte = True
+
     # use LaTeX for Pyx
     text.set(mode = "latex")
 
     # PFA formula
     pfa = lambda x: -pi**3/720.*(x+1)/x**2
 
-    # formula Bimonte
+    # formula Bimonte: Bimonte, Emig, Jaffe, Kardar, Casimir forces beyond the proximity approximation
     theta1,theta2 = 1./3 - 20/pi**2, -4.52
     bimonte = lambda x: 1+theta1*x+theta2*x**2*log(x)
 
@@ -36,59 +55,73 @@ if __name__ == "__main__":
     data = []
     for filename in glob("slurm-*.out"):
         slurp(filename, data)
-
-    # sort data
     data = sorted(data, key=lambda x: x[0])
 
-    # plot F/F_PFA and Bimonte
-    g = graph.graphxy(
-        width = 10,
-        x = graph.axis.log(title=r"$x=L/R$", max=0.2, min=0.002),
-        y = graph.axis.lin(title=r"$\mathcal{F}/\mathcal{F}_\mathrm{PFA}(T=0)$", min=0.8),
-        key=graph.key.key(pos="tr", dist=0.1)
-    )
+    #data2 = []
+    #for filename in glob("check/slurm-*.out"):
+    #    slurp(filename, data2)
+    #data2 = sorted(data2, key=lambda x: x[0])
 
-    g2 = g.insert(graph.graphxy(
-        width = 4,
-        xpos = 1.7,
-        ypos = 1,
-        x = graph.axis.lin(max=0.008, min=0.002),
-        y = graph.axis.lin(max=0.997, min=0.9875)
-    ))
+    #data_alt = slurp_alt("../pfa/data")
+    # sort data
+    #data_alt = sorted(data_alt, key=lambda x: x[0])
 
 
     attrs = [color.gradient.RedBlue]
-    g.plot(
-        graph.data.points(data, x=1, y=3, title="numerisch vs Bordag"),
-        [graph.style.symbol(graph.style.symbol.circle, size=0.04, symbolattrs=attrs)]
-    )
 
-    f = "y(x)=1+%.15g*x+%.15g*x**2*log(x)" % (theta1,theta2)
-    g.plot(graph.data.function(f, title="Bimonte et al."))
+    if plotPFA:
+        # plot F/F_PFA and Bimonte
+        g = graph.graphxy(
+            width = 10,
+            x = graph.axis.log(title=r"$x=L/R$", max=0.2, min=0.002),
+            y = graph.axis.lin(title=r"$\mathcal{F}/\mathcal{F}_\mathrm{PFA}(T=0)$", min=0.8),
+            key=graph.key.key(pos="tr", dist=0.1)
+        )
 
-    g2.plot(
-        graph.data.points(data, x=1, y=3, title="numerisch"),
-        [graph.style.symbol(graph.style.symbol.circle, size=0.04, symbolattrs=attrs)]
-    )
+        g2 = g.insert(graph.graphxy(
+            width = 4,
+            xpos = 1.7,
+            ypos = 1,
+            x = graph.axis.lin(max=0.008, min=0.002),
+            y = graph.axis.lin(max=0.997, min=0.9875)
+        ))
 
-    g2.plot(graph.data.function(f))
 
-    g.writePDFfile("pfaT0.pdf")
+        g.plot(
+            graph.data.points(data, x=1, y=3, title="numerisch vs Bordag"),
+            [graph.style.symbol(graph.style.symbol.circle, size=0.04, symbolattrs=attrs)]
+        )
+
+        f = "y(x)=1+%.15g*x+%.15g*x**2*log(x)" % (theta1,theta2)
+        g.plot(graph.data.function(f, title="Bimonte et al."))
+
+        g2.plot(
+            graph.data.points(data, x=1, y=3, title="numerisch"),
+            [graph.style.symbol(graph.style.symbol.circle, size=0.04, symbolattrs=attrs)]
+        )
+
+        g2.plot(graph.data.function(f))
+
+        g.writePDFfile("pfaT0.pdf")
 
 
-    # Plot (F/F_PFA) / Bimonte
-    g = graph.graphxy(
-        width = 10,
-        x = graph.axis.log(title=r"$x=L/R$", max=0.02, min=0.002),
-        y = graph.axis.lin(min=0.9995, max=1.0003, title=r"$\frac{\mathcal{F}(T=0)}{\mathcal{F}_\mathrm{PFA}(T=0)}/\left(1+\theta_1 x + \theta_2 x^2 \log x\right)$"),
-    )
+    if plotBimonte:
+        # Plot (F/F_PFA) / Bimonte
+        g = graph.graphxy(
+            width = 10,
+            key   = graph.key.key(pos="bl"),
+            x     = graph.axis.log(title=r"$x=L/R$", max=0.02, min=0.0019),
+            y     = graph.axis.lin(min=0.9998, max=1.0003, title=r"$\frac{\mathcal{F}(T=0)}{\mathcal{F}_\mathrm{PFA}(T=0)}/\left(1+\theta_1 x + \theta_2 x^2 \log x\right)$"),
+        )
 
-    g.plot(
-        graph.data.points(data, x=1, y=4),
-        [graph.style.symbol(graph.style.symbol.circle, size=0.06, symbolattrs=attrs), graph.style.line()]
-    )
+        g.plot(
+            [graph.data.points(data, x=1, y=4, title=r"numerisch (Gauss-Laguerre)")],
+            #graph.data.points(data2, x=1, y=4, title=r"numerisch (unterschiedliche $\ell_\mathrm{max}$)"),
+            #graph.data.points(data_alt, x=1, y=4, title=r"numerisch (alt, $\ell_\mathrm{max}=6.2 L/R$)")],
+            [graph.style.symbol(graph.style.symbol.changecircle, size=0.06, symbolattrs=attrs), graph.style.line()]
+        )
 
-    g.finish()
-    g.stroke(g.ygridpath(1), [style.linestyle.dashed])
+        g.finish()
+        g.stroke(g.ygridpath(1), [style.linestyle.dashed])
 
-    g.writePDFfile("ratio.pdf")
+        g.writePDFfile("ratio.pdf")
