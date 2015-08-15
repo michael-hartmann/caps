@@ -41,7 +41,6 @@ double matrix_logdet_lapack(matrix_edouble_t *M, matrix_sign_t *signs)
 
     dgetrf_(&m, &n, a, &lda, ipiv, &info);
 
-    logdet = 0;
     for(i = 0; i < dim; i++)
         logdet += log(fabs(a[i+dim*i]));
 
