@@ -1,0 +1,10 @@
+# starting on alcc60 at Sat Aug 15 13:54:26 CEST 2015
+# casimir_T0 -x 0.0108303116793749 -L 739 -N 80
+
+# LbyR  = 0.0108303116793749
+# alpha = 0.0214285455318047
+# order = 80
+# prec  = 1e-12
+# lmax  = 739
+# cores = 20
+#
