@@ -1,0 +1,10 @@
+# starting on alcc73 at So 16. Aug 19:18:53 CEST 2015
+# casimir_T0 -x 0.00680519690859558 -L 1176 -N 80
+
+# LbyR  = 0.00680519690859558
+# alpha = 0.013518398453824
+# order = 80
+# prec  = 1e-12
+# lmax  = 1176
+# cores = 15
+#

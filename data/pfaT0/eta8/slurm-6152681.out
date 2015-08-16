@@ -1,0 +1,10 @@
+# starting on alcc82 at So 16. Aug 19:18:53 CEST 2015
+# casimir_T0 -x 0.00666909297042367 -L 1200 -N 80
+
+# LbyR  = 0.00666909297042367
+# alpha = 0.0132498216484324
+# order = 80
+# prec  = 1e-12
+# lmax  = 1200
+# cores = 15
+#
