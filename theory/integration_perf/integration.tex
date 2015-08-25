@@ -1,0 +1,130 @@
+\input{header}
+
+\begin{document}
+
+\chapter{Integration for perfect reflectors}
+
+We want to compute the integrals
+\begin{align}
+\label{eq:A}
+A_{\ell_1\ell_2,p}^{(m)}(\tau) &= (-1)^{\ell_2+m} \, r_p \, m^2 \, \e^{-\tau} \int_0^\infty \mathrm{d}z \, \frac{\e^{-\tau z}}{z^2+2z} \, \Plm{\ell_1}{m}(1+z) \Plm{\ell_2}{m}(1+z), \\
+\label{eq:B}
+B_{\ell_1\ell_2,p}^{(m)}(\tau) &= (-1)^{\ell_2+m+1} \, r_p \, \e^{-\tau} \int_0^\infty \mathrm{d}z \, \e^{-\tau z} \, (z^2+2z) \, \Plm{\ell_1}{m}^\prime(1+z) \Plm{\ell_2}{m}^\prime(1+z), \\
+\label{eq:C}
+C_{\ell_1\ell_2,p}^{(m)}(\tau) &= \imag m (-1)^{\ell_2+m} \, r_p \, \e^{-\tau} \int_0^\infty \mathrm{d}z \, \e^{-\tau z} \, \Plm{\ell_1}{m}(1+z) \Plm{\ell_2}{m}^\prime(1+z), \\
+\label{eq:D}
+D_{\ell_1\ell_2,p}^{(m)}(\tau) &= (-1)^{\ell_1+\ell_2+1} C_{\ell_2\ell_1,p}^{(m)}
+\end{align}
+for perfect reflectors, where $\tau \equiv 2nT=2\xi$. The Fresnel coefficients
+$r_p$ are given by $r_\TM=-r_\TE=1$ and can be put in front of the integral. 
+The integrals \eqref{eq:A}--\eqref{eq:D} are identical to the integrals (6.11)--(6.14)
+in MASTERTHESIS after a change of variable $z = x/\tau$.
+
+Using Gaunt coefficients a product of associated Legendre polynomials can be
+expressed as a sum of associated Legendre polynomials:
+\begin{equation}
+\Plm{n}{m}(x) \Plm{\nu}{\mu}(x) = a_0 \sum_{q=0}^\qmax \tilde a_q  \Plm{n+\nu-2q}{m+\mu}(x)
+\end{equation}
+
+Every integral can be reduced to a sum of integrals of the type
+\begin{equation}
+\mathcal{J}_\nu^{2m}(\tau) = \int_0^\infty \, \mathrm{d}z \frac{\e^{-\tau x}}{z^2+2z} \Plm{\nu}{2m}\left(1+z\right).
+\end{equation}
+
+
+\section{Integral $A_{\ell_1\ell_2,p}^{(m)}(\tau)$}
+
+\begin{align}
+\nonumber
+A_{\ell_1\ell_2,p}^{(m)}(\tau) &= \overbrace{(-1)^{\ell_2+m} \, r_p \, m^2 \, \e^{-\tau}}^{\equiv A_0} \int_0^\infty \mathrm{d}z \, \frac{\e^{-\tau z}}{z^2+2z} \, \Plm{\ell_1}{m}(1+z) \Plm{\ell_2}{m}(1+z) \\
+\nonumber
+&= A_0 \, a_0 \sum_{q=0}^\qmax \tilde a_q \int_0^\infty \mathrm{d}z \, \frac{\e^{-\tau z}}{z^2+2z} \, \Plm{\ell_1+\ell_2-2q}{2m}(1+z) \\
+&= A_0 \, a_0 \sum_{q=0}^\qmax \tilde a_q \, \mathcal{J}_{\ell_1+\ell_2-2q}^{2m}(\tau)
+\end{align}
+
+
+\section{Integral $B_{\ell_1\ell_2,p}^{(m)}(\tau)$}
+
+\begin{align}
+\nonumber
+&B_{\ell_1\ell_2,p}^{(m)}(\tau) = \overbrace{(-1)^{\ell_2+m+1} \, r_p \, \e^{-\tau}}^{\equiv B_0} \int_0^\infty \mathrm{d}z \, \e^{-\tau z} \, (z^2+2z) \, \Plm{\ell_1}{m}^\prime(1+z) \Plm{\ell_2}{m}^\prime(1+z) \\
+\nonumber
+&\sep = \frac{B_0}{(2\ell_1+1)(2\ell_2+1)} \int_0^\infty \mathrm{d}z \, \frac{\e^{-\tau z}}{z^2+2z} \left[ (\ell_1+1)(\ell_1+m)\Plm{\ell_1-1}{m}(1+z) - \ell_1(\ell_1-m+1)\Plm{\ell_1+1}{m}(1+z) \right] \\
+\nonumber
+& \sep\sep \times \left[ (\ell_2+1)(\ell_2+m)\Plm{\ell_2-1}{m}(1+z) - \ell_2(\ell_2-m+1)\Plm{\ell_2+1}{m}(1+z) \right] \\
+\nonumber
+&\sep = \frac{B_0}{(2\ell_1+1)(2\ell_2+1)} \Bigg[ \\
+\nonumber
+   &\sep\sep\sep +a_0                      \sum_{q=0}^\qmax                        (\ell_1+1)(\ell_1+m)(\ell_2+1)(\ell_2+m) \, \tilde a_q \, \mathcal{J}_{\ell_1+\ell_2-2-2q}^{2m}(\tau) \\
+\nonumber
+   &\sep\sep\sep -a_0^\prime               \sum_{q=0}^{\qmax^\prime}               (\ell_1+1)(\ell_1+m)\ell_2(\ell_2-m+1)   \, \tilde a_q^\prime \, \mathcal{J}_{\ell_1+\ell_2-2q}^{2m}(\tau) \\
+\nonumber
+   &\sep\sep\sep -a_0^{\prime\prime}       \sum_{q=0}^{\qmax^{\prime\prime}}       \ell_1(\ell_1-m+1)(\ell_2+1)(\ell_2+m)   \, \tilde a_q^{\prime\prime} \, \mathcal{J}_{\ell_1+\ell_2-2q}^{2m}(\tau) \\
+   &\sep\sep\sep +a_0^{\prime\prime\prime} \sum_{q=0}^{\qmax^{\prime\prime\prime}} \ell_1(\ell_1-m+1)\ell_2(\ell_2-m+1)     \, \tilde a_q^{\prime\prime\prime} \, \mathcal{J}_{\ell_1+\ell_2+2-2q}^{2m}(\tau) \Bigg]
+\end{align}
+
+
+\section{Integral $C_{\ell_1\ell_2,p}^{(m)}(\tau)$}
+
+\begin{align}
+\nonumber
+&C_{\ell_1\ell_2,p}^{(m)}(\tau) = \overbrace{\imag m (-1)^{\ell_2+m} \, r_p \, \e^{-\tau}}^{\equiv C_0} \int_0^\infty \mathrm{d}z \, \e^{-\tau z} \, \Plm{\ell_1}{m}(1+z) \Plm{\ell_2}{m}^\prime(1+z) \\
+\nonumber
+%&\sep\overset{\eqref{appendix:dPlm}}{=} C_0 \int_0^\infty \mathrm{d}z \, \e^{-\tau z} \, \Plm{\ell_1}{m}(1+z) \frac{(\ell_2+1)(\ell_2+m) \Plm{\ell_2-1}{m}(1+z) - \ell_2(\ell_2-m+1)\Plm{\ell_2+1}{m}(1+z)}{(2\ell_2+1)(z^2+2z)} \\
+&\sep\overset{\eqref{appendix:dPlm}}{=} C_0 \int_0^\infty \mathrm{d}z \, \frac{\e^{-\tau z}}{z^2+2z} \, \Plm{\ell_1}{m}(1+z) \, \left( \frac{(\ell_2+1)(\ell_2+m)}{2\ell_2+1} \Plm{\ell_2-1}{m}(1+z) - \frac{\ell_2(\ell_2-m+1)}{2\ell_2+1} \Plm{\ell_2+1}{m}(1+z) \right) \\
+&\sep = \frac{C_0}{2\ell_2+1} \left(
+    a_0 (\ell_2+1)(\ell_2+m) \sum_{q=0}^\qmax \tilde a_q \mathcal{J}_{\ell_1+\ell_2-1-2q}^{2m}(\tau)
+    - a_0^\prime \ell_2(\ell_2-m+1) \sum_{q=0}^{\qmax^\prime} \tilde a_q^\prime \mathcal{J}_{\ell_1+\ell_2+1-2q}^{2m}(\tau) \right)
+\end{align}
+
+
+\section{Integral $\mathcal{J}_\nu^{2m}(\tau)$}
+
+\begin{align}
+\nonumber
+\mathcal{J}_\nu^{2m}(\tau) &= \int_0^\infty \mathrm{d}z \, \e^{-\tau z} (z^2+2z)^{-1} \Plm{\nu}{2m}(1+z) \\
+\nonumber
+&\overset{\eqref{appendix:Plm}}{=} \int_0^\infty \mathrm{d}z \, \e^{-\tau z} (z^2+2z)^{-1} (-1)^{2m} \left(1-1-2z-z^2\right)^m \frac{\mathrm{d}^{2m}}{\mathrm{d}z^{2m}} \Plm{\nu}{}(1+z) \\
+\nonumber
+&\overset{\eqref{appendix:Pn}}{=} (-1)^m \int_0^\infty \mathrm{d}z \, \e^{-\tau z} (z^2+2z)^{m-1} \frac{\mathrm{d}^{2m}}{\mathrm{d}z^{2m}} \sum_{k=0}^\nu \binom{\nu}{k} \binom{-\nu-1}{k} \left(-\frac{1}{2}\right)^k z^k \\
+\nonumber
+&\overset{\eqref{appendix:binom}}{=} (-1)^m \int_0^\infty \mathrm{d}z \, \e^{-\tau z} (z^2+2z)^{m-1} \sum_{k=2m}^\nu \binom{\nu}{k} \binom{\nu+k}{k} \left(+\frac{1}{2}\right)^k \frac{k!}{(k-2m)!} z^{k-2m} \\
+&= (-1)^m \int_0^\infty \mathrm{d}z \, \e^{-\tau z} (z^2+2z)^{m-1} \sum_{k=2m}^\nu \frac{(k+\nu)!}{2^k k! (k-2m)! (\nu-k)!} z^{k-2m}
+\end{align}
+
+\appendix
+
+\chapter{Formulae}
+
+\section{Binomial coefficient}
+\begin{equation}
+\label{appendix:binom}
+\binom{-\alpha}{k} = (-1)^k \binom{\alpha+k-1}{k}
+\end{equation}
+
+
+\section{Legendre polynomials}
+
+\begin{equation}
+\label{appendix:Pn}
+\Plm{n}{}(x) = \sum_{k=0}^n \binom{n}{k} \binom{-n-1}{k} \left(\frac{1-x}{2}\right)^k
+\end{equation}
+
+
+\section{Associated Legendre polynomials}
+
+\begin{equation}
+\label{appendix:Plm}
+\Plm{\ell}{m}(x) = (-1)^m (1-x^2)^{m/2} \frac{\mathrm{d}^m}{\mathrm{d}x^m} \Plm{\ell}{}(x)
+\end{equation}
+
+\begin{equation}
+\label{appendix:dPlm}
+\frac{\mathrm{d}}{\mathrm{d}x} \Plm{\ell}{m}(x) = \frac{1}{(2\ell+1) \, (1-x^2)} \left[ (\ell+1)(\ell+m)\Plm{\ell-1}{m}(x) - \ell(\ell-m+1)\Plm{\ell+1}{m}(x) \right]
+\end{equation}
+
+\clearpage
+\addcontentsline{toc}{chapter}{Bibliography}
+\printbibliography
+
+\end{document}
