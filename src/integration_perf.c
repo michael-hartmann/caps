@@ -234,8 +234,8 @@ void casimir_integrate_perf(integration_perf_t *self, int l1, int l2, int m, cas
         cint->lnB_TM   = cint->lnB_TE = lnLambda-tau+log_B;
         cint->signB_TM = -MPOW(l2+1)*sign_B;
         cint->signB_TE = -cint->signB_TM;
-        TERMINATE(isinf(cint->lnB_TM), "lnB is inf, l1=%d,l2=%d,m=%d,tau=%g", l1,l2,m,(double)tau);
-        TERMINATE(isnan(cint->lnB_TM), "lnB is nan, l1=%d,l2=%d,m=%d,tau=%g", l1,l2,m,(double)tau);
+        TERMINATE(isinf(cint->lnB_TM), "lnB is inf, l1=%d,l2=%d,m=%d,tau=%Lg", l1,l2,m,tau);
+        TERMINATE(isnan(cint->lnB_TM), "lnB is nan, l1=%d,l2=%d,m=%d,tau=%Lg", l1,l2,m,tau);
 
         cint->lnA_TE = cint->lnA_TM   = -INFINITY;
         cint->signA_TM = cint->signA_TE = 1;
@@ -412,17 +412,17 @@ void casimir_integrate_perf(integration_perf_t *self, int l1, int l2, int m, cas
         cint->signD_TM = -MPOW(l2+1)*sign_D;
         cint->signD_TE = -cint->signD_TM;
 
-        TERMINATE(isinf(cint->lnA_TM), "lnA is inf, l1=%d,l2=%d,m=%d,tau=%g", l1,l2,m,(double)tau);
-        TERMINATE(isnan(cint->lnA_TM), "lnA is nan, l1=%d,l2=%d,m=%d,tau=%g", l1,l2,m,(double)tau);
+        TERMINATE(isinf(cint->lnA_TM), "lnA is inf, l1=%d,l2=%d,m=%d,tau=%Lg", l1,l2,m,tau);
+        TERMINATE(isnan(cint->lnA_TM), "lnA is nan, l1=%d,l2=%d,m=%d,tau=%Lg", l1,l2,m,tau);
 
-        TERMINATE(isinf(cint->lnB_TM), "lnB is inf, l1=%d,l2=%d,m=%d,tau=%g", l1,l2,m,(double)tau);
-        TERMINATE(isnan(cint->lnB_TM), "lnB is nan, l1=%d,l2=%d,m=%d,tau=%g", l1,l2,m,(double)tau);
+        TERMINATE(isinf(cint->lnB_TM), "lnB is inf, l1=%d,l2=%d,m=%d,tau=%Lg", l1,l2,m,tau);
+        TERMINATE(isnan(cint->lnB_TM), "lnB is nan, l1=%d,l2=%d,m=%d,tau=%Lg", l1,l2,m,tau);
 
-        TERMINATE(isinf(cint->lnC_TM), "lnC is inf, l1=%d,l2=%d,m=%d,tau=%g", l1,l2,m,(double)tau);
-        TERMINATE(isnan(cint->lnC_TM), "lnC is nan, l1=%d,l2=%d,m=%d,tau=%g", l1,l2,m,(double)tau);
+        TERMINATE(isinf(cint->lnC_TM), "lnC is inf, l1=%d,l2=%d,m=%d,tau=%Lg", l1,l2,m,tau);
+        TERMINATE(isnan(cint->lnC_TM), "lnC is nan, l1=%d,l2=%d,m=%d,tau=%Lg", l1,l2,m,tau);
 
-        TERMINATE(isinf(cint->lnD_TM), "lnD is inf, l1=%d,l2=%d,m=%d,tau=%g", l1,l2,m,(double)tau);
-        TERMINATE(isnan(cint->lnD_TM), "lnD is nan, l1=%d,l2=%d,m=%d,tau=%g", l1,l2,m,(double)tau);
+        TERMINATE(isinf(cint->lnD_TM), "lnD is inf, l1=%d,l2=%d,m=%d,tau=%Lg", l1,l2,m,tau);
+        TERMINATE(isnan(cint->lnD_TM), "lnD is nan, l1=%d,l2=%d,m=%d,tau=%Lg", l1,l2,m,tau);
     }
 
     xfree(sum);
