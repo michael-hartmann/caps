@@ -21,4 +21,6 @@ void casimir_integrate_perf(integration_perf_t *self, int l1, int l2, int m, cas
 
 edouble *cache_gaunt_get(integration_perf_t *cache, int n, int nu, int m, sign_t **signs);
 
+edouble I(integration_perf_t *self, int nu, int m2);
+
 #endif

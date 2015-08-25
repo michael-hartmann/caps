@@ -26,7 +26,8 @@ static void poly1(const int m, edouble p[])
     for(k = 0; k <= m; k++)
     {
         p[k] = expe(lgammae(m+1)-lgammae(k+1)-lgammae(m+1-k)+(m-k)*LOG2);
-        TERMINATE(isinf(p[k]), "p[%d] inf", k);
+        TERMINATE(isinf(p[k]), "p[%d] inf, m=%d", k,m);
+        TERMINATE(isnan(p[k]), "p[%d] nan, m=%d", k,m);
     }
 }
 
@@ -60,6 +61,7 @@ static edouble polyintegrate(edouble p[], const int len_p, const int offset, con
     for(k = offset; k < len_p+offset; k++)
     {
         list[k-offset]  = lgammae(k+1)-(k+1)*log_tau+loge(fabse(p[k-offset]));
+        //printf("list[%d]=%Lg, k=%d, offset=%d, p[k-offset]=%Lg\n", k-offset, list[k-offset],k,offset, p[k-offset]);
         signs[k-offset] = copysigne(1, p[k-offset]);
     }
 
@@ -69,12 +71,13 @@ static edouble polyintegrate(edouble p[], const int len_p, const int offset, con
         *sign = sign_ret;
 
     TERMINATE(isinf(ret), "ret is inf");
+    TERMINATE(isnan(ret), "ret is nan");
     return ret;
 }
 
 
 /* evaluete integral I_nu^2m(tau) = (-1)^m * exp(-z*tau)/ (z^2+2z) * Plm(nu, 2m, 1+z) */
-static inline edouble I(integration_perf_t *self, int nu, int m2)
+edouble I(integration_perf_t *self, int nu, int m2)
 {
     const int m = m2/2;
     const int index = m*self->nu_max + nu;
@@ -87,12 +90,11 @@ static inline edouble I(integration_perf_t *self, int nu, int m2)
 
         edouble p1[m], p2[nu+1-m2], p[-m+nu];
 
-        poly1(m-1, p1);
-        poly2(nu,m2,p2);
-        polymult(p1, m, p2, nu+1-m2, p);
+        poly1(m-1, p1);                  /* len: m       */
+        poly2(nu,m2,p2);                 /* len: nu+1-2m */
+        polymult(p1, m, p2, nu+1-m2, p); /* len: nu-m    */ /* XXX fails for L/R small */
 
         v = polyintegrate(p, -m+nu, m-1, tau, NULL);
-        //printf("v=%g\n", (double)v);
         self->cache_I[index] = v;
 
         TERMINATE(isinf(v), "I is inf, nu=%d, 2m=%d\n", nu, m2);
