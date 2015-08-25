@@ -45,6 +45,7 @@ static void poly2(const int nu, const int m2, edouble p[])
     {
         p[k-m2] = expe(lgammae(k+nu+1)-lgammae(k+1)-lgammae(k-m2+1)-lgammae(-k+nu+1)-k*LOG2);
         TERMINATE(isinf(p[k-m2]), "p[%d] inf", k-m2);
+        TERMINATE(isnan(p[k-m2]), "p[%d] nan", k-m2);
     }
 }
 
@@ -70,13 +71,13 @@ static edouble polyintegrate(edouble p[], const int len_p, const int offset, con
     if(sign != NULL)
         *sign = sign_ret;
 
-    TERMINATE(isinf(ret), "ret is inf");
-    TERMINATE(isnan(ret), "ret is nan");
+    TERMINATE(isinf(ret), "ret is inf, tau=%Lg", tau);
+    TERMINATE(isnan(ret), "ret is nan, tau=%Lg", tau);
     return ret;
 }
 
 
-/* evaluete integral I_nu^2m(tau) = (-1)^m * exp(-z*tau)/ (z^2+2z) * Plm(nu, 2m, 1+z) */
+/* evaluate integral I_nu^2m(tau) = (-1)^m * exp(-z*tau)/ (z^2+2z) * Plm(nu, 2m, 1+z) */
 edouble I(integration_perf_t *self, int nu, int m2)
 {
     const int m = m2/2;
