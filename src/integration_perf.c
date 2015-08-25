@@ -428,6 +428,9 @@ void casimir_integrate_perf(integration_perf_t *self, int l1, int l2, int m, cas
     xfree(sum);
 }
 
+/* We _do_ need a cache for the Gaunt coefficients or we just calculate and
+ * recalculate the coefficients. However, this cache is crap. It works, but it
+ * could be definitely improved. */
 edouble *cache_gaunt_get(integration_perf_t *self, int n, int nu, int m, sign_t **signs)
 {
     int index;
