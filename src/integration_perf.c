@@ -1,8 +1,8 @@
 /**
  * @file   integration_perf.c
  * @author Michael Hartmann <michael.hartmann@physik.uni-augsburg.de>
- * @date   April, 2015
- * @brief  Perform integration for perfect planes
+ * @date   August, 2015
+ * @brief  Perform integration for perfect reflectors
  */
 
 #include <stdio.h>
@@ -17,63 +17,40 @@
 #include "utils.h"
 
 
-/* p must have length m+n+1 */
-static void poly1(const int m, edouble p[])
-{
-    /* (z+2)^m */
-    int k;
-
-    for(k = 0; k <= m; k++)
-    {
-        p[k] = expe(lgammae(m+1)-lgammae(k+1)-lgammae(m+1-k)+(m-k)*LOG2);
-        TERMINATE(isinf(p[k]), "p[%d] inf, m=%d", k,m);
-        TERMINATE(isnan(p[k]), "p[%d] nan, m=%d", k,m);
-    }
-}
-
-
-/* p must have size nu+1-2m */
-static void poly2(const int nu, const int m2, edouble p[])
-{
-    /* m2 = 2*m
-     * d^2m/dz^2m P_(nu)(1+z)
-     */
-    //const int len = nu-m2+1;
-    int k;
-
-    for(k = m2; k <= nu; k++)
-    {
-        p[k-m2] = expe(lgammae(k+nu+1)-lgammae(k+1)-lgammae(k-m2+1)-lgammae(-k+nu+1)-k*LOG2);
-        TERMINATE(isinf(p[k-m2]), "p[%d] inf", k-m2);
-        TERMINATE(isnan(p[k-m2]), "p[%d] nan", k-m2);
-    }
-}
-
-
-static edouble polyintegrate(edouble p[], const int len_p, const int offset, const edouble tau, sign_t *sign)
+static edouble polyintegrate(edouble p[], const int len_p, const int offset, const edouble tau)
 {
     int k;
     const edouble log_tau = loge(tau);
     edouble list[len_p];
-    sign_t signs[len_p];
-    sign_t sign_ret;
-    edouble ret;
 
     for(k = offset; k < len_p+offset; k++)
+        list[k-offset] = lgammae(k+1)-(k+1)*log_tau+p[k-offset];
+
+    return logadd_m(list, len_p);
+}
+
+
+static void log_polymult(edouble p1[], const int len_p1, edouble p2[], const int len_p2, edouble p[])
+{
+    int k, len = len_p1+len_p2-1;
+    edouble temp[len];
+
+    for(k = 0; k < len; k++)
     {
-        list[k-offset]  = lgammae(k+1)-(k+1)*log_tau+loge(fabse(p[k-offset]));
-        //printf("list[%d]=%Lg, k=%d, offset=%d, p[k-offset]=%Lg\n", k-offset, list[k-offset],k,offset, p[k-offset]);
-        signs[k-offset] = copysigne(1, p[k-offset]);
+        int i, elems = 0;
+
+        for(i = 0; i < MIN(k+1, len_p1); i++)
+        {
+            int j = k-i;
+            if(i < len_p1 && j < len_p2)
+                temp[elems++] = p1[i]+p2[j];
+        }
+
+        if(elems)
+            p[k] = logadd_m(temp, elems);
+        else
+            p[k] = -INFINITY;
     }
-
-    ret = logadd_ms(list, signs, len_p, &sign_ret);
-
-    if(sign != NULL)
-        *sign = sign_ret;
-
-    TERMINATE(isinf(ret), "ret is inf, tau=%Lg", tau);
-    TERMINATE(isnan(ret), "ret is nan, tau=%Lg", tau);
-    return ret;
 }
 
 
@@ -82,20 +59,29 @@ edouble I(integration_perf_t *self, int nu, int m2)
 {
     const int m = m2/2;
     const int index = m*self->nu_max + nu;
-    edouble v;
+    edouble v = self->cache_I[index];
 
-    v = self->cache_I[index];
     if(isinf(v))
     {
-        edouble tau = self->tau;
+        int k;
+        const edouble tau = self->tau;
 
-        edouble p1[m], p2[nu+1-m2], p[-m+nu];
+        edouble p1[m];       /* polynom (z+2)^(m-1) */
+        edouble p2[nu+1-m2]; /* polynom d^(2m)/dz^(2m) P_(nu)(1+z) */
+        edouble p[-m+nu];    /* polynom p1*p2 */
 
-        poly1(m-1, p1);                  /* len: m       */
-        poly2(nu,m2,p2);                 /* len: nu+1-2m */
-        polymult(p1, m, p2, nu+1-m2, p); /* len: nu-m    */ /* XXX fails for L/R small */
+        /* Every monom of both polynoms is positive. So we can save the
+         * logarithms of the coefficients. */
 
-        v = polyintegrate(p, -m+nu, m-1, tau, NULL);
+        for(k = 0; k <= m-1; k++)
+            p1[k] = lgammae(m)-lgammae(k+1)-lgammae(m-k)+(m-1-k)*LOG2;
+
+        for(k = m2; k <= nu; k++)
+            p2[k-m2] = lgammae(k+nu+1)-lgammae(k+1)-lgammae(k-m2+1)-lgammae(-k+nu+1)-k*LOG2;
+
+        log_polymult(p1, m, p2, nu+1-m2, p); /* len: nu-m */
+
+        v = polyintegrate(p, -m+nu, m-1, tau);
         self->cache_I[index] = v;
 
         TERMINATE(isinf(v), "I is inf, nu=%d, 2m=%d\n", nu, m2);
