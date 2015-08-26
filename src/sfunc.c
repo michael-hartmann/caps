@@ -30,7 +30,7 @@
  * @param [in] len_p1 length of array p1
  * @param [in] p2 polynomial
  * @param [in] len_p2 length of array p2
- * @param [in] p polynomial \f$p=p1\dotp2\f$
+ * @param [in] p polynomial \f$p=p1 \dot p2\f$
  */
 void polymult(edouble p1[], int len_p1, edouble p2[], int len_p2, edouble p[])
 {
@@ -52,7 +52,9 @@ void polymult(edouble p1[], int len_p1, edouble p2[], int len_p2, edouble p[])
 
 
 /**
- * @brief Add two numbers given by their logarithms
+ * @brief Add two numbers given by their logarithms.
+ *
+ * Both numbers are assumed to be nonnegative.
  *
  * @param [in] log_a number
  * @param [in] log_b number
@@ -80,7 +82,7 @@ edouble inline logadd(const edouble log_a, const edouble log_b)
  * @param [in]  log_b number
  * @param [in]  sign_b sign of b
  * @param [out] sign sign of result
- * @return log_sum \f$\log{\left|\mathrm{sign\_a}\cdot\exp{(\mathrm{log\_a})}+\mathrm{sign\_b} \cdot \exp{(log\_b)}\right|}\f$
+ * @return log_sum \f$\log{\left( \mathrm{sign\_a}\cdot\exp{(\mathrm{log\_a})}+\mathrm{sign\_b} \cdot \exp{(log\_b)} \right)}\f$
  */
 edouble inline logadd_s(const edouble log_a, const sign_t sign_a, const edouble log_b, const sign_t sign_b, sign_t *sign)
 {
@@ -108,6 +110,15 @@ edouble inline logadd_s(const edouble log_a, const sign_t sign_a, const edouble 
 }
 
 
+/**
+ * @brief Add numbers given by their logarithms.
+ *
+ * len numbers in list will be added. The numbers are assumed to be positive.
+ *
+ * @param [in]  list array of numbers given by logarithm
+ * @param [in]  len length of list
+ * @return log_sum \f$\log{\sum_{i=1}^\mathrm{len} \mathrm{sign\_i}\cdot\exp{(\mathrm{log\_i})}}\f$
+ */
 edouble inline logadd_m(const edouble list[], const size_t len)
 {
     size_t i;
