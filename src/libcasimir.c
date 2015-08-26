@@ -1108,7 +1108,7 @@ void casimir_mie_cache_get(casimir_t *self, int l, int n, double *ln_a, sign_t *
      */
     entry = self->mie_cache->entries[n];
 
-    /* at this point it is finally is safe to release the mutex without lock */
+    /* at this point it is finally is safe to release the mutex */
     pthread_mutex_unlock(&self->mie_cache->mutex);
 
     *ln_a   = entry->ln_al[l];
