@@ -31,7 +31,6 @@ def slurp(filename, data=[]):
             # L/R, lmax, order, alpha, F(T=0)
             LbyR,lmax,order,alpha,F = map(float, line.split(","))
             ratio = F/pfa(LbyR)
-            print filename, lmax*LbyR
             data.append((LbyR, F, ratio, ratio/bimonte(LbyR)))
 
     return data
@@ -52,19 +51,15 @@ if __name__ == "__main__":
     bimonte = lambda x: 1+theta1*x+theta2*x**2*log(x)
 
     # read in data
-    data = []
-    for filename in glob("slurm-*.out"):
-        slurp(filename, data)
-    data = sorted(data, key=lambda x: x[0])
+    data_eta7 = []
+    for filename in glob("eta7/slurm-*.out"):
+        slurp(filename, data_eta7)
+    data_eta7 = sorted(data_eta7, key=lambda x: x[0])
 
-    #data2 = []
-    #for filename in glob("check/slurm-*.out"):
-    #    slurp(filename, data2)
-    #data2 = sorted(data2, key=lambda x: x[0])
-
-    #data_alt = slurp_alt("../pfa/data")
-    # sort data
-    #data_alt = sorted(data_alt, key=lambda x: x[0])
+    data_eta8 = []
+    for filename in glob("eta8/slurm-*.out"):
+        slurp(filename, data_eta8)
+    data_eta8 = sorted(data_eta8, key=lambda x: x[0])
 
 
     attrs = [color.gradient.RedBlue]
@@ -115,10 +110,13 @@ if __name__ == "__main__":
         )
 
         g.plot(
-            [graph.data.points(data, x=1, y=4, title=r"numerisch (Gauss-Laguerre)")],
+            [
+                graph.data.points(data_eta7, x=1, y=4, title=r"$\eta=7$"),
+                graph.data.points(data_eta8, x=1, y=4, title=r"$\eta=8$")
+            ],
             #graph.data.points(data2, x=1, y=4, title=r"numerisch (unterschiedliche $\ell_\mathrm{max}$)"),
             #graph.data.points(data_alt, x=1, y=4, title=r"numerisch (alt, $\ell_\mathrm{max}=6.2 L/R$)")],
-            [graph.style.symbol(graph.style.symbol.changecircle, size=0.06, symbolattrs=attrs), graph.style.line()]
+            [graph.style.symbol(graph.style.symbol.circle, size=0.06, symbolattrs=attrs), graph.style.line()]
         )
 
         g.finish()
