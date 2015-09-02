@@ -19,9 +19,46 @@ static void _integrals(int l1, int l2, int m, double nT, casimir_integrals_t *ci
 
 int test_integration_perf(void)
 {
+    double v;
     casimir_integrals_t cint;
     unittest_t test;
     unittest_init(&test, "Integration", "Test integration for various parameters");
+
+    v = _I(2,2,2);
+    AssertAlmostEqual(&test, v, 0.4054651081081643819780131163);
+
+    v = _I(5,2,2);
+    AssertAlmostEqual(&test, v, 5.813197260642067905077208633);
+
+    v = _I(10,2,2);
+    AssertAlmostEqual(&test, v, 15.95677753626913653914287233);
+
+    v = _I(20,2,2);
+    AssertAlmostEqual(&test, v, 42.90107196175527602778595691);
+
+    v = _I(50,2,2);
+    AssertAlmostEqual(&test, v, 148.6198399132092393065774679);
+
+    v = _I(100,2,2);
+    AssertAlmostEqual(&test, v, 363.5462729668148118110492452);
+
+    v = _I(200,2,2);
+    AssertAlmostEqual(&test, v, 862.6979732793756131251640376);
+
+    v = _I(300,2,2);
+    AssertAlmostEqual(&test, v, 1414.170985399411237979371551);
+
+    v = _I(500,2,2);
+    AssertAlmostEqual(&test, v, 2610.341684504699101672443343);
+
+    v = _I(700,2,2);
+    AssertAlmostEqual(&test, v, 3888.794466186317574388209390227783135);
+
+    v = _I(1000,2,2);
+    AssertAlmostEqual(&test, v, 5910.7939575865590314904753188706990739);
+
+    v = _I(1500,2,2);
+    AssertAlmostEqual(&test, v, 9472.8696066438596720790474385838167760);
 
     _integrals(1,1,1,1,&cint);
     AssertAlmostEqual(&test, cint.lnA_TM, -2.980829253011726);
