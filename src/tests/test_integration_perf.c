@@ -60,6 +60,18 @@ int test_integration_perf(void)
     v = _I(1500,2,2);
     AssertAlmostEqual(&test, v, 9472.8696066438596720790474385838167760);
 
+    v = _I(3000,2,2);
+    AssertAlmostEqual(&test, v, 21022.142076441619865987086582686107);
+
+    // XXX
+    _integrals(1050,1050,1,1,&cint);
+    AssertAlmostEqual(&test, cint.lnA_TM, 13940.125756903571190096123124106829015888756201576644);
+    //AssertAlmostEqual(&test, cint.lnB_TM, 13967.951219063326784005854180747517807698817156658259); // ???
+    //AssertAlmostEqual(&test, cint.lnC_TM, 13954.038134073832182440009136156538010794692114959778); // ???
+
+    _integrals(1,1050,1,1,&cint);
+    AssertAlmostEqual(&test, cint.lnA_TM, 6244.4854968828077531090811790525063931088933444934980);
+
     _integrals(1,1,1,1,&cint);
     AssertAlmostEqual(&test, cint.lnA_TM, -2.980829253011726);
     AssertAlmostEqual(&test, cint.lnB_TM, -2.0645385211375711716721);
