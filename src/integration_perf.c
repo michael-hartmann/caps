@@ -55,6 +55,32 @@ static void log_polymult(edouble p1[], const int len_p1, edouble p2[], const int
 
 
 /* evaluate integral I_nu^2m(tau) = (-1)^m * exp(-z*tau)/ (z^2+2z) * Plm(nu, 2m, 1+z) */
+edouble _I(int nu, int m2, edouble tau)
+{
+    const int m = m2/2;
+    edouble v;
+    int k;
+
+    edouble p1[m];       /* polynom (z+2)^(m-1) */
+    edouble p2[nu+1-m2]; /* polynom d^(2m)/dz^(2m) P_(nu)(1+z) */
+    edouble p[-m+nu];    /* polynom p1*p2 */
+
+    /* Every monom of both polynoms is positive. So we can save the
+     * logarithms of the coefficients. */
+
+    for(k = 0; k <= m-1; k++)
+        p1[k] = lgammae(m)-lgammae(k+1)-lgammae(m-k)+(m-1-k)*LOG2;
+
+    for(k = m2; k <= nu; k++)
+        p2[k-m2] = lgammae(k+nu+1)-lgammae(k+1)-lgammae(k-m2+1)-lgammae(-k+nu+1)-k*LOG2;
+
+    log_polymult(p1, m, p2, nu+1-m2, p); /* len: nu-m */
+
+    v = polyintegrate(p, -m+nu, m-1, tau);
+    TERMINATE(isinf(v) || isnan(v), "I=%Lg, nu=%d, 2m=%d\n", v, nu, m2);
+    return v;
+}
+
 edouble I(integration_perf_t *self, int nu, int m2)
 {
     const int m = m2/2;
@@ -62,30 +88,7 @@ edouble I(integration_perf_t *self, int nu, int m2)
     edouble v = self->cache_I[index];
 
     if(isinf(v))
-    {
-        int k;
-        const edouble tau = self->tau;
-
-        edouble p1[m];       /* polynom (z+2)^(m-1) */
-        edouble p2[nu+1-m2]; /* polynom d^(2m)/dz^(2m) P_(nu)(1+z) */
-        edouble p[-m+nu];    /* polynom p1*p2 */
-
-        /* Every monom of both polynoms is positive. So we can save the
-         * logarithms of the coefficients. */
-
-        for(k = 0; k <= m-1; k++)
-            p1[k] = lgammae(m)-lgammae(k+1)-lgammae(m-k)+(m-1-k)*LOG2;
-
-        for(k = m2; k <= nu; k++)
-            p2[k-m2] = lgammae(k+nu+1)-lgammae(k+1)-lgammae(k-m2+1)-lgammae(-k+nu+1)-k*LOG2;
-
-        log_polymult(p1, m, p2, nu+1-m2, p); /* len: nu-m */
-
-        v = polyintegrate(p, -m+nu, m-1, tau);
-        self->cache_I[index] = v;
-
-        TERMINATE(isinf(v) || isnan(v), "I=%Lg, nu=%d, 2m=%d\n", v, nu, m2);
-    }
+        v = self->cache_I[index] = _I(nu, m2, self->tau);
 
     return v;
 }
