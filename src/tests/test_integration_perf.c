@@ -63,14 +63,25 @@ int test_integration_perf(void)
     v = _I(3000,2,2);
     AssertAlmostEqual(&test, v, 21022.142076441619865987086582686107);
 
-    // XXX
     _integrals(1050,1050,1,1,&cint);
     AssertAlmostEqual(&test, cint.lnA_TM, 13940.125756903571190096123124106829015888756201576644);
-    //AssertAlmostEqual(&test, cint.lnB_TM, 13967.951219063326784005854180747517807698817156658259); // ???
-    //AssertAlmostEqual(&test, cint.lnC_TM, 13954.038134073832182440009136156538010794692114959778); // ???
+    AssertAlmostEqual(&test, cint.lnB_TM, 13967.9514623712062733110267893316781893739350523);
+    AssertAlmostEqual(&test, cint.lnC_TM, 13954.03837148533464206);
+
+    _integrals(1050,1,1,1,&cint);
+    AssertAlmostEqual(&test, cint.lnA_TM, 6244.485496882807753109);
+    AssertAlmostEqual(&test, cint.lnB_TM, 6263.969792590335805);
+    AssertAlmostEqual(&test, cint.lnC_TM, 6250.748896960319286622);
 
     _integrals(1,1050,1,1,&cint);
-    AssertAlmostEqual(&test, cint.lnA_TM, 6244.4854968828077531090811790525063931088933444934980);
+    AssertAlmostEqual(&test, cint.lnA_TM, 6244.485496882807753109081179);
+    AssertAlmostEqual(&test, cint.lnB_TM, 6263.969792590335805037405705);
+    AssertAlmostEqual(&test, cint.lnC_TM, 6257.7054405868224491877);
+
+    _integrals(500,1050,1,1,&cint);
+    AssertAlmostEqual(&test, cint.lnA_TM, 9813.28363230087848);
+    AssertAlmostEqual(&test, cint.lnB_TM, 9839.7598665288218618873847);
+    AssertAlmostEqual(&test, cint.lnC_TM, 9826.8923954024132364);
 
     _integrals(1,1,1,1,&cint);
     AssertAlmostEqual(&test, cint.lnA_TM, -2.980829253011726);
