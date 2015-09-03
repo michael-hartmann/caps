@@ -1788,7 +1788,7 @@ double casimir_logdetD(casimir_t *self, int n, int m, void *integration_obj)
     /* Dump matrix */
     {
         int i,j;
-        printf("# m, n, log[abs(D_mn)], sign(D_mn)");
+        printf("# m, n, log[abs(D_mn)], sign(D_mn)\n");
         for(i = 0; i < 2*dim; i++)
             for(j = 0; j < 2*dim; j++)
                 printf("%d,%d, %.16Lg, %+d\n", i,j, matrix_get(M,i,j), matrix_get(M_sign,i,j));
