@@ -178,7 +178,7 @@ edouble inline lbinom(int n, int k)
 void bessel_lnInuKnu(int nu, const edouble x, edouble *lnInu_p, edouble *lnKnu_p)
 {
     int l;
-    edouble lnKnu = 1, lnKnup = 1+1./x;
+    edouble lnKnu = 0, lnKnup = log1pe(1./x);
     edouble logx = loge(x);
 
     // calculate Knu, Knup
@@ -187,24 +187,26 @@ void bessel_lnInuKnu(int nu, const edouble x, edouble *lnInu_p, edouble *lnKnu_p
 
         if(nu == 0)
         {
-            lnKnu  = prefactor+loge(lnKnu);
-            lnKnup = prefactor+loge(lnKnup);
+            lnKnu  = prefactor+lnKnu;
+            lnKnup = prefactor+lnKnup;
         }
         else
         {
             for(l = 2; l <= nu+1; l++)
             {
-                edouble Kn = (2*l-1)*lnKnup/x + lnKnu;
+                edouble lnKn_new = logadd(loge(2*l-1)+lnKnup-logx, lnKnu);
                 lnKnu  = lnKnup;
-                lnKnup = Kn;
+                lnKnup = lnKn_new;
             }
 
-            lnKnup = prefactor+loge(lnKnup);
-            lnKnu  = prefactor+loge(lnKnu);
+            lnKnup = prefactor+lnKnup;
+            lnKnu  = prefactor+lnKnu;
         }
 
         if(isnan(lnKnup) || isinf(lnKnup))
         {
+            WARN(1, "Couldn't calculate Bessel functions, falling back to approximations, nu=%d, x=%Lg\n", nu, x);
+
             /* so, we couldn't calculate lnKnup and lnKnu. Maybe we can at
              * least use the asymptotic behaviour for small values.
              */
@@ -216,7 +218,7 @@ void bessel_lnInuKnu(int nu, const edouble x, edouble *lnInu_p, edouble *lnKnu_p
             }
             else
             {
-                WARN(1, "Couldn't calculate Bessel functions, nu=%d, x=%g\n", nu, (double)x);
+                TERMINATE(1, "Couldn't calculate Bessel functions, nu=%d, x=%Lg\n", nu, x);
                 lnKnu = lnKnup = -INFINITY;
             }
         }
@@ -241,14 +243,14 @@ void bessel_lnInuKnu(int nu, const edouble x, edouble *lnInu_p, edouble *lnKnu_p
             denom = an(l,nu,x)+1/denom;
             ratio *= num/denom;
 
-            if(ratio_last != 0 && fabs(1-ratio/ratio_last) < 1e-15)
+            if(ratio_last != 0 && fabse(1.L-ratio/ratio_last) < 1e-20)
                 break;
 
             ratio_last = ratio;
             l++;
         }
 
-        *lnInu_p = -logx-lnKnu-loge(expe(lnKnup-lnKnu)+1/ratio);
+        *lnInu_p = -logx-lnKnu-logadd(lnKnup-lnKnu, -loge(ratio));
         #undef an
     }
 }
