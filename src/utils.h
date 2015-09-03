@@ -3,7 +3,7 @@
 
 #ifndef NDEBUG
 #define TERMINATE(cond, ...) if(cond) { fprintf(stderr, "fatal error: "); fprintf(stderr, __VA_ARGS__); fprintf(stderr, " (in %s, %s:%d)\n", __func__, __FILE__, __LINE__); exit(1); }
-#define WARN(cond, ...) if(cond) { fprintf(stderr, "fatal error: "); fprintf(stderr, __VA_ARGS__); fprintf(stderr, " (in %s, %s:%d)\n", __func__, __FILE__, __LINE__); }
+#define WARN(cond, ...) if(cond) { fprintf(stderr, "warning: "); fprintf(stderr, __VA_ARGS__); fprintf(stderr, " (in %s, %s:%d)\n", __func__, __FILE__, __LINE__); }
 #else
 #define TERMINATE(cond, ...)
 #define WARN(cond, ...)
