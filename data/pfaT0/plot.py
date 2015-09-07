@@ -1,6 +1,4 @@
-#!/usr/bin/python
-
-from __future__ import division
+#!/usr/bin/python3
 
 from pyx import *
 from glob import glob
@@ -41,7 +39,7 @@ if __name__ == "__main__":
     plotBimonte = True
 
     # use LaTeX for Pyx
-    text.set(mode = "latex")
+    text.set(text.LatexRunner)
 
     # PFA formula
     pfa = lambda x: -pi**3/720.*(x+1)/x**2
