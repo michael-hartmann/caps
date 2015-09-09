@@ -33,9 +33,6 @@ Further options:\n\
         Enable buffering. By default buffering for stderr and stdout is\n\
         disabled.\n\
 \n\
-    -v, --verbose\n\
-        Be more verbose.\n\
-\n\
     -h,--help\n\
         Show this help\n\
 \n\
@@ -50,7 +47,7 @@ int main(int argc, char *argv[])
     double LbyR = -1;
     int i, n = -1, m = -1;
     int lmax = 0;
-    int buffering_flag = 0, verbose_flag = 0;
+    int buffering_flag = 0;
 
     printf("# %s", argv[0]);
     for(i = 1; i < argc; i++)
@@ -62,7 +59,6 @@ int main(int argc, char *argv[])
         int c;
         struct option long_options[] =
         {
-          { "verbose",   no_argument,       &verbose_flag,   1 },
           { "buffering", no_argument,       &buffering_flag, 1 },
           { "help",      no_argument,       0, 'h' },
           { "lscale",    required_argument, 0, 'l' },
@@ -72,7 +68,7 @@ int main(int argc, char *argv[])
         /* getopt_long stores the option index here. */
         int option_index = 0;
       
-        c = getopt_long (argc, argv, "x:T:n:m:s:a:l:L:vqh", long_options, &option_index);
+        c = getopt_long (argc, argv, "x:T:n:m:s:a:l:L:qh", long_options, &option_index);
       
         /* Detect the end of the options. */
         if (c == -1)
@@ -92,9 +88,6 @@ int main(int argc, char *argv[])
               break;
           case 'L':
               lmax = atoi(optarg);
-          case 'v':
-              verbose_flag = 1;
-              break;
           case 'l':
               lfac = atof(optarg);
               break;
@@ -174,7 +167,6 @@ int main(int argc, char *argv[])
         casimir_integrate_perf_init(&int_perf, n*T, lmax);
 
         casimir_init(&casimir, Q, T);
-        casimir_set_verbose(&casimir, verbose_flag);
         casimir_set_lmax(&casimir, lmax);
 
         value = casimir_logdetD(&casimir, n, m, &int_perf);

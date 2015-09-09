@@ -1,7 +1,7 @@
 /**
  * @file   libcasimir.c
  * @author Michael Hartmann <michael.hartmann@physik.uni-augsburg.de>
- * @date   July, 2015
+ * @date   September, 2015
  * @brief  library to calculate the free Casimir energy in the plane-sphere geometry
  */
 
@@ -92,7 +92,6 @@ void casimir_info(casimir_t *self, FILE *stream, const char *prefix)
         fprintf(stream, "%d\n", self->integration);
 
     fprintf(stream, "%slmax      = %d\n", prefix, self->lmax);
-    fprintf(stream, "%sverbose   = %d\n", prefix, self->verbose);
     fprintf(stream, "%scores     = %d\n", prefix, self->cores);
     fprintf(stream, "%sprecision = %g\n", prefix, self->precision);
 }
@@ -357,7 +356,6 @@ int casimir_init(casimir_t *self, double RbyScriptL, double T)
     self->RbyScriptL = RbyScriptL;
     self->LbyR       = LbyR;
     self->precision  = CASIMIR_DEFAULT_PRECISION;
-    self->verbose    = 0;
     self->cores      = 1;
     self->threads    = xmalloc(self->cores*sizeof(pthread_t));
 
@@ -663,43 +661,6 @@ int casimir_get_lmax(casimir_t *self)
 {
     return self->lmax;
 }
-
-
-/**
- * @brief Get verbose flag
- *
- * Return if the verbose flag is set.
- *
- * This function is not thread-safe.
- *
- * @param [in,out] self Casimir object
- * @retval 0 if verbose flag is not set
- * @retval 1 if verbose flag is set
- */
-int casimir_get_verbose(casimir_t *self)
-{
-    return self->verbose;
-}
-
-
-/**
- * @brief Set verbose flag
- *
- * Use this function to set the verbose flag. If set to 1, this will cause the
- * library to print information to stderr.
- *
- * This function is not thread-safe.
- *
- * @param [in,out] self Casimir object
- * @param [in] verbose 1 if verbose, 0 if not verbose
- * @retval 1
- */
-int casimir_set_verbose(casimir_t *self, int verbose)
-{
-    self->verbose = verbose ? 1 : 0;
-    return 1;
-}
-
 
 /**
  * @brief Get precision
@@ -1262,8 +1223,7 @@ static int _join_threads(casimir_t *self, double values[], int *ncalc)
  * is not NULL, the largest value of m calculated will be stored in mmax.
  *
  * This function is thread-safe - as long you don't change temperature, aspect
- * ratio, dielectric properties of sphere and plane, lmax, integration and
- * verbose.
+ * ratio, dielectric properties of sphere and plane, lmax and integration.
  *
  * @param [in,out] self Casimir object
  * @param [in] n Matsubara term, \f$\xi=nT\f$
@@ -1291,9 +1251,6 @@ double casimir_F_n(casimir_t *self, const int n, int *mmax)
     {
         values[m] = casimir_logdetD(self,n,m,&int_perf);
 
-        if(self->verbose)
-            fprintf(stderr, "# n=%d, m=%d, value=%.15g\n", n, m, values[m]);
-
         /* If F is !=0 and value/F < 1e-16, then F+value = F. The addition
          * has no effect.
          * As for larger m value will be even smaller, we can skip the
@@ -1306,9 +1263,6 @@ double casimir_F_n(casimir_t *self, const int n, int *mmax)
 
     if(self->integration <= 0)
         casimir_integrate_perf_free(&int_perf);
-
-    if(self->verbose)
-        fprintf(stderr, "# n=%d, value=%.15g\n", n, sum_n);
 
     if(mmax != NULL)
         *mmax = m;
@@ -1784,14 +1738,14 @@ double casimir_logdetD(casimir_t *self, int n, int m, void *integration_obj)
         }
     }
 
-    #if 0
+    #if 1
     /* Dump matrix */
     {
         int i,j;
         printf("# m, n, log[abs(D_mn)], sign(D_mn)\n");
         for(i = 0; i < 2*dim; i++)
             for(j = 0; j < 2*dim; j++)
-                printf("%d,%d, %.16Lg, %+d\n", i,j, matrix_get(M,i,j), matrix_get(M_sign,i,j));
+                printf("%d,%d, %.16Lg\n", i,j, matrix_get(M_sign,i,j)*expe(matrix_get(M,i,j)));
     }
     #endif
 
