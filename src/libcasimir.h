@@ -68,7 +68,6 @@ typedef struct
      /*@{*/
     int integration;     /**< 0: use perfect reflectors, >0: order of Gauss-Laguerre integration */
     int lmax;            /**< truncation value for vector space \f$\ell_\mathrm{max}\f$ */
-    int verbose;         /**< flag that indicates to be verbose */
     int cores;           /**< number of thread that should be used */
     double precision;    /**< precision \f$\epsilon_p\f$ */
     pthread_t **threads; /**< list of pthread objects */
@@ -152,9 +151,6 @@ int casimir_set_cores(casimir_t *self, int cores);
 
 double casimir_get_precision(casimir_t *self);
 int    casimir_set_precision(casimir_t *self, double precision);
-
-int casimir_get_verbose(casimir_t *self);
-int casimir_set_verbose(casimir_t *self, int verbose);
 
 void casimir_lnab0(int l, double *a0, sign_t *sign_a0, double *b0, sign_t *sign_b0);
 void casimir_lnab(casimir_t *self, const int n, const int l, double *lna, double *lnb, sign_t *sign_a, sign_t *sign_b);
