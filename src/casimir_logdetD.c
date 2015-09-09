@@ -3,8 +3,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "libcasimir.h"
 #include "integration_perf.h"
+#include "libcasimir.h"
 #include "sfunc.h"
 #include "utils.h"
 
@@ -154,15 +154,19 @@ int main(int argc, char *argv[])
     if(lmax <= 0)
         lmax = MAX((int)ceil(lfac/LbyR), 5);
 
-    printf("# lfac = %g\n", lfac);
-    printf("# LbyR = %g\n", LbyR);
+    printf("# L/R  = %g\n", LbyR);
     printf("# n    = %d\n", n);
+    printf("# T    = %g\n", T);
+    printf("# xi   = nT = %g\n", n*T);
     printf("# m    = %d\n", m);
-    printf("# lmax = %d\n", lmax);
+    if(lmax)
+        printf("# lmax = %d\n", lmax);
+    else
+        printf("# lfac = %g\n", lfac);
     printf("#\n");
 
     {
-        double Q = 1./(1.+LbyR);
+        const double Q = 1./(1.+LbyR);
         integration_perf_t int_perf;
         casimir_t casimir;
         double value, start_time = now();
@@ -178,8 +182,8 @@ int main(int argc, char *argv[])
         casimir_integrate_perf_free(&int_perf);
         casimir_free(&casimir);
 
-        printf("# LbyR,Q,T,n,m,value,lmax,time\n");
-        printf("%.15g, %.15g, %.15g, %d, %d, %.15g, %d, %g\n", LbyR, Q, T, n, m, value, casimir.lmax, now()-start_time);
+        printf("# LbyR,T,n,m,value,lmax,time\n");
+        printf("%g, %g, %d, %d, %.15g, %d, %g\n", LbyR, T, n, m, value, casimir.lmax, now()-start_time);
     }
 
     return 0;
