@@ -1419,8 +1419,7 @@ void casimir_logdetD0(casimir_t *self, int m, double *logdet_EE, double *logdet_
                 matrix_set(EE, i,j, v);
                 matrix_set(EE_sign, i,j, sign);
 
-                TERMINATE(isinf(v), "EE l1=%d,l2=%d: inf (lna0=%g, lnXiRL=%g)", l1, l2, lna0, (double)lnXiRL);
-                TERMINATE(isnan(v), "EE l1=%d,l2=%d: nan (lna0=%g, lnXiRL=%g)", l1, l2, lna0, (double)lnXiRL);
+                TERMINATE(isnan(v) || isinf(v), "EE l1=%d,l2=%d: v=%Lg (lna0=%g, lnXiRL=%Lg)", l1, l2, v, lna0, lnXiRL);
             }
             if(MM != NULL)
             {
@@ -1435,8 +1434,7 @@ void casimir_logdetD0(casimir_t *self, int m, double *logdet_EE, double *logdet_
                 matrix_set(MM, i,j, v);
                 matrix_set(MM_sign, i,j, sign);
 
-                TERMINATE(isinf(v), "MM l1=%d,l2=%d: inf (lnb0=%g, lnXiRL=%g)", l1, l2, lnb0, (double)lnXiRL);
-                TERMINATE(isnan(v), "MM l1=%d,l2=%d: nan (lnb0=%g, lnXiRL=%g)", l1, l2, lnb0, (double)lnXiRL);
+                TERMINATE(isinf(v) || isnan(v), "MM l1=%d,l2=%d: v=%Lg (lnb0=%g, lnXiRL=%Lg)", l1, l2, v, lnb0, lnXiRL);
             }
         }
 
