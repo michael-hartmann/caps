@@ -159,7 +159,6 @@ double casimir_lnb_perf(casimir_t *self, const int l, const int n, sign_t *sign)
 
 double casimir_F_n(casimir_t *self, const int n, int *mmax);
 double casimir_F(casimir_t *self, int *nmax);
-double casimir_F_psd(casimir_t *self, double psd[][2], double *F_n);
 
 void casimir_mie_cache_init(casimir_t *self);
 void casimir_mie_cache_alloc(casimir_t *self, int n);

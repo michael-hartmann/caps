@@ -1359,49 +1359,6 @@ double casimir_F(casimir_t *self, int *nmax)
 
 
 /**
- * @brief Calculate free energy using PSD
- *
- * Here be dragons.
- *
- * @param [in,out] self Casimir object
- * @param [in] psd
- * @param [out] F_n
- * @retval F Casimir free energy
- *
- * Ref: Hu, Xu, Yan, Pade spectrum decomposition of Fermi function and Bose
- * function, The Journal of Chemical Physics 133, 101106, 2010
- */
-double casimir_F_psd(casimir_t *self, double psd[][2], double *F_n)
-{
-    const double T0 = self->T;
-    int n = 1;
-    double sum = 0.5*casimir_F_n(self, 0, NULL);
-
-    while(1)
-    {
-        const double xi  = psd[n-1][0];
-        const double eta = psd[n-1][1];
-
-        if(xi == 0 || eta == 0)
-            break;
-
-        self->T = T0*xi;
-
-        sum += eta*casimir_F_n(self, n, NULL);
-
-        n++;
-    }
-
-    self->T = T0;
-
-    /* reinit mie cache */
-    casimir_mie_cache_clean(self);
-
-    return self->T/PI*sum;
-}
-
-
-/**
  * @brief Calculate \f$\log\det \mathcal{D}^{(m)}(\xi=0)\f$ for EE and MM
  *
  * This function calculates the logarithm of the determinant of the scattering
