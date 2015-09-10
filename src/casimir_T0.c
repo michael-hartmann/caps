@@ -24,10 +24,9 @@ double integrand(double xi, double LbyR, int lmax, double precision)
     integration_perf_t int_perf;
     double v = 0, v0 = 0;
     int m = 0, use_trace = 0;
-    const double Q = 1/(1+LbyR);
 
     /* initialize Casimir object and set lmax */
-    casimir_init(&casimir, Q, xi);
+    casimir_init(&casimir, LbyR, xi);
     casimir_set_lmax(&casimir, lmax);
 
     casimir_integrate_perf_init(&int_perf, 1*casimir.T, casimir.lmax);

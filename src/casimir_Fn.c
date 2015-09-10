@@ -78,7 +78,7 @@ void *logdetD(void *p)
 
     casimir_integrate_perf_init(&int_perf, n*T, lmax);
 
-    casimir_init(&casimir, 1/(1+LbyR), T);
+    casimir_init(&casimir, LbyR, T);
     casimir_set_precision(&casimir, precision);
     casimir_set_verbose(&casimir, VERBOSE);
     casimir_set_lmax(&casimir, lmax);

@@ -159,14 +159,13 @@ int main(int argc, char *argv[])
     printf("#\n");
 
     {
-        const double Q = 1./(1.+LbyR);
         integration_perf_t int_perf;
         casimir_t casimir;
         double value, start_time = now();
 
         casimir_integrate_perf_init(&int_perf, n*T, lmax);
 
-        casimir_init(&casimir, Q, T);
+        casimir_init(&casimir, LbyR, T);
         casimir_set_lmax(&casimir, lmax);
 
         value = casimir_logdetD(&casimir, n, m, &int_perf);

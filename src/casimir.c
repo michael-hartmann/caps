@@ -288,7 +288,7 @@ int main(int argc, char *argv[])
             casimir_t casimir;
             double start_time = now();
             int nmax;
-            double F,LbyR,T,Q;
+            double F,LbyR,T;
 
             if(lLbyR[3] == SCALE_LIN)
                 LbyR = linspace(lLbyR[0], lLbyR[1], lLbyR[2], iLbyR);
@@ -300,8 +300,7 @@ int main(int argc, char *argv[])
             else
                 T = logspace(lT[0], lT[1], lT[2], iT);
 
-            Q = 1/(1+LbyR);
-            casimir_init(&casimir, Q, T);
+            casimir_init(&casimir, LbyR, T);
             casimir_set_cores(&casimir, cores);
             casimir_set_precision(&casimir, precision);
 

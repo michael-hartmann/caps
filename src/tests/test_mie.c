@@ -7,7 +7,7 @@
 static double _mie_lna_perf(int l, double arg, sign_t *sign)
 {
     casimir_t self;
-    casimir_init(&self, 0.5, 2*arg);
+    casimir_init(&self, 1/0.5-1, 2*arg);
     return casimir_lna_perf(&self, l, 1, sign);
 }
 
@@ -16,7 +16,7 @@ static double _mie_lnb_perf(int l, double arg, sign_t *sign)
     double result;
     casimir_t self;
 
-    casimir_init(&self, 0.5, 2*arg);
+    casimir_init(&self, 1/0.5-1, 2*arg);
     result = casimir_lnb_perf(&self, l, 1, sign);
     casimir_free(&self);
 
@@ -30,7 +30,7 @@ int test_mie(void)
     unittest_t test;
     unittest_init(&test, "Mie", "Test Mie functions al,bl for various parameters");
 
-    casimir_init(&self, 0.5,2);
+    casimir_init(&self, 1/0.5-1,2);
 
     /* b_l */
     AssertAlmostEqual(&test, _mie_lnb_perf(5,3,&sign), -3.206110089012862);
