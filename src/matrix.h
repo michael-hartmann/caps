@@ -14,7 +14,7 @@
 #define LOG_FLOAT_RADIX_SQ 2*M_LN2
 #define LOG_095 -0.05129329438755058
 
-/* LAPACK LU cecomposition */
+/* LAPACK LU decomposition */
 int dgetrf_(int *m, int *n, double *a, int *lda, int *ipiv, int *info);
 
 #define MATRIX_TYPEDEF(NAME, MATRIX_TYPE) \
@@ -173,13 +173,13 @@ MATRIX_TYPEDEF(matrix_edouble_t, edouble);
     TYPE FUNCTION_PREFIX ## _absmin(MATRIX_TYPE *M) \
     { \
         size_t i,j, dim = M->size; \
-        TYPE max = ABS_FUNCTION(matrix_get(M, 0,0)); \
+        TYPE min = ABS_FUNCTION(matrix_get(M, 0,0)); \
  \
         for(i = 0; i < dim; i++) \
             for(j = 0; j < dim; j++) \
-                max = MIN(max, ABS_FUNCTION(matrix_get(M, i,j))); \
+                min = MIN(max, ABS_FUNCTION(matrix_get(M, i,j))); \
  \
-        return max; \
+        return min; \
     }
 
 #define MATRIX_ABSMIN_HEADER(FUNCTION_PREFIX, MATRIX_TYPE, TYPE) TYPE FUNCTION_PREFIX ## _absmin(MATRIX_TYPE *M) \
