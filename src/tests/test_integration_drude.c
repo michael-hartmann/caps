@@ -18,7 +18,7 @@ int test_integration_drude(void)
 
     omegap = 1.32e2;
     gamma_ = 6.9e-1;
-    casimir_init(&casimir, 0.5, 1);
+    casimir_init(&casimir, 1/0.5-1, 1);
     casimir_set_omegap_plane(&casimir, omegap);
     casimir_set_gamma_plane(&casimir, gamma_);
 

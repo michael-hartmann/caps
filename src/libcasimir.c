@@ -336,16 +336,15 @@ double casimir_T_scaled_to_SI(double T_scaled, double ScriptL)
  * This function is not thread-safe.
  *
  * @param [out] self Casimir object
- * @param [in]  RbyScriptL \f$\frac{R}{\mathcal{L}} = \frac{R}{R+L}\f$
+ * @param [in]  LbyR \f$\frac{L}{R}\f$
  * @param [in]  T temperature in units of \f$2\pi k_B \mathcal{L}/(\hbar c)\f$
  * @retval 0 if successful
  * @retval -1 if wrong value for RbyScriptL
  * @retval -2 if wrong value for T
  */
-int casimir_init(casimir_t *self, double RbyScriptL, double T)
+int casimir_init(casimir_t *self, double LbyR, double T)
 {
-    double LbyR = 1./RbyScriptL - 1;
-    if(RbyScriptL < 0 || RbyScriptL >= 1)
+    if(LbyR < 0)
         return -1;
     if(T < 0)
         return -2;
@@ -353,7 +352,7 @@ int casimir_init(casimir_t *self, double RbyScriptL, double T)
     self->lmax = (int)ceil(CASIMIR_FACTOR_LMAX/LbyR);
 
     self->T          = T;
-    self->RbyScriptL = RbyScriptL;
+    self->RbyScriptL = 1./(1.+LbyR);
     self->LbyR       = LbyR;
     self->precision  = CASIMIR_DEFAULT_PRECISION;
     self->cores      = 1;
@@ -1695,7 +1694,7 @@ double casimir_logdetD(casimir_t *self, int n, int m, void *integration_obj)
         }
     }
 
-    #if 1
+    #if 0
     /* Dump matrix */
     {
         int i,j;

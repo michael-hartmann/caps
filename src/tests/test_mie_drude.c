@@ -17,7 +17,7 @@ int test_mie_drude(void)
     T          = 2.7;
     omegap     = 1;
     gamma_     = 1;
-    casimir_init(&casimir, RbyScriptL, T);
+    casimir_init(&casimir, 1/RbyScriptL-1, T);
     casimir_set_omegap_sphere(&casimir, omegap);
     casimir_set_gamma_sphere(&casimir, gamma_);
 
@@ -48,7 +48,7 @@ int test_mie_drude(void)
     T          = 0.1;
     omegap     = 0.1;
     gamma_     = 1.4;
-    casimir_init(&casimir, RbyScriptL, T);
+    casimir_init(&casimir, 1/RbyScriptL-1, T);
     casimir_set_omegap_sphere(&casimir, omegap);
     casimir_set_gamma_sphere(&casimir, gamma_);
 
@@ -77,7 +77,7 @@ int test_mie_drude(void)
     T          = 1;
     omegap     = 1e-4;
     gamma_     = 1e-4;
-    casimir_init(&casimir, RbyScriptL, T);
+    casimir_init(&casimir, 1/RbyScriptL-1, T);
     casimir_set_omegap_sphere(&casimir, omegap);
     casimir_set_gamma_sphere(&casimir,  gamma_);
 
@@ -94,7 +94,7 @@ int test_mie_drude(void)
     T          = 1;
     omegap     = 1;
     gamma_     = 1e-4;
-    casimir_init(&casimir, RbyScriptL, T);
+    casimir_init(&casimir, 1/RbyScriptL-1, T);
     casimir_set_omegap_sphere(&casimir, omegap);
     casimir_set_gamma_sphere(&casimir,  gamma_);
 

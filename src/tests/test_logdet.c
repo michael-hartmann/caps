@@ -17,7 +17,7 @@ int test_logdet(int cores)
 
     unittest_init(&test, "logdet M", "calculate logdet");
 
-    casimir_init(&casimir, RbyScriptL, T);
+    casimir_init(&casimir, 1/RbyScriptL-1, T);
     casimir_set_lmax(&casimir, lmax);
     casimir_set_cores(&casimir, cores);
 

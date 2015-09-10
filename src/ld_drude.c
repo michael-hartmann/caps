@@ -108,7 +108,7 @@ int main(int argc, char *argv[])
     double gamma_ = omegap/omegapbygamma;
 
     {
-        casimir_init(&casimir, 1./DbyR, T);
+        casimir_init(&casimir, DbyR-1, T);
 
         /* set lmax */
         casimir_set_lmax(&casimir, lmax);

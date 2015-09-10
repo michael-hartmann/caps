@@ -125,7 +125,7 @@ double casimir_F_scaled_to_SI(double F, double ScriptL_SI);
 double casimir_T_SI_to_scaled(double T_SI, double ScriptL_SI);
 double casimir_T_scaled_to_SI(double T, double ScriptL_SI);
 
-int casimir_init(casimir_t *self, double RbyScriptL, double T);
+int casimir_init(casimir_t *self, double LbyR, double T);
 void casimir_free(casimir_t *self);
 
 int casimir_set_omegap_sphere(casimir_t *self, double omegap);

@@ -11,7 +11,7 @@ int test_casimirF(int cores)
 
     unittest_init(&test, "casimirF", "Compare free energies");
 
-    casimir_init(&casimir, 0.85, 2.7);
+    casimir_init(&casimir, 1/0.85-1, 2.7);
     casimir_set_precision(&casimir, 1e-14);
     casimir_set_cores(&casimir, cores);
     casimir_set_lmax(&casimir, 30);
@@ -19,7 +19,7 @@ int test_casimirF(int cores)
     AssertAlmostEqual(&test, F, -1.34361893570375);
     casimir_free(&casimir);
 
-    casimir_init(&casimir, 0.7, 1);
+    casimir_init(&casimir, 1/0.7-1, 1);
     casimir_set_precision(&casimir, 1e-14);
     casimir_set_cores(&casimir, cores);
     casimir_set_lmax(&casimir, 15);
@@ -27,7 +27,7 @@ int test_casimirF(int cores)
     AssertAlmostEqual(&test, F, -0.220709222562969);
     casimir_free(&casimir);
 
-    casimir_init(&casimir, 0.85, 2.7);
+    casimir_init(&casimir, 1/0.85-1, 2.7);
     casimir_set_precision(&casimir, 1e-14);
     casimir_set_cores(&casimir, cores);
     casimir_set_lmax(&casimir, 30);

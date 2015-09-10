@@ -68,7 +68,7 @@ void *logdetD0(void *p)
     int m            = params->m;
     int lmax         = params->lmax;
 
-    casimir_init(&casimir, 1/(1+LbyR), 0.1);
+    casimir_init(&casimir, LbyR, 0.1);
     casimir_set_precision(&casimir, precision);
     casimir_set_lmax(&casimir, lmax);
     
