@@ -77,7 +77,7 @@ edouble _I(int nu, int m2, edouble tau)
     log_polymult(p1, m, p2, nu+1-m2, p); /* len: nu-m */
 
     v = polyintegrate(p, -m+nu, m-1, tau);
-    TERMINATE(isinf(v) || isnan(v), "I=%Lg, nu=%d, 2m=%d\n", v, nu, m2);
+    TERMINATE(!isfinite(v), "I=%Lg, nu=%d, 2m=%d\n", v, nu, m2);
     return v;
 }
 
@@ -223,7 +223,7 @@ void casimir_integrate_perf(integration_perf_t *self, int l1, int l2, int m, cas
         cint->lnB_TM   = cint->lnB_TE = lnLambda-tau+log_B;
         cint->signB_TM = -MPOW(l2+1)*sign_B;
         cint->signB_TE = -cint->signB_TM;
-        TERMINATE(isinf(cint->lnB_TM) || isnan(cint->lnB_TM), "lnB=%Lg, l1=%d,l2=%d,m=%d,tau=%Lg", cint->lnB_TM,l1,l2,m,tau);
+        TERMINATE(!isfinite(cint->lnB_TM), "lnB=%Lg, l1=%d,l2=%d,m=%d,tau=%Lg", cint->lnB_TM,l1,l2,m,tau);
 
         cint->lnA_TE = cint->lnA_TM   = -INFINITY;
         cint->signA_TM = cint->signA_TE = 1;
@@ -400,10 +400,10 @@ void casimir_integrate_perf(integration_perf_t *self, int l1, int l2, int m, cas
         cint->signD_TM = -MPOW(l2+1)*sign_D;
         cint->signD_TE = -cint->signD_TM;
 
-        TERMINATE(isinf(cint->lnA_TM) || isnan(cint->lnA_TM), "lnA=%Lg, l1=%d,l2=%d,m=%d,tau=%Lg", cint->lnA_TM,l1,l2,m,tau);
-        TERMINATE(isinf(cint->lnB_TM) || isnan(cint->lnB_TM), "lnB=%Lg, l1=%d,l2=%d,m=%d,tau=%Lg", cint->lnB_TM,l1,l2,m,tau);
-        TERMINATE(isinf(cint->lnC_TM) || isnan(cint->lnC_TM), "lnC=%Lg, l1=%d,l2=%d,m=%d,tau=%Lg", cint->lnC_TM,l1,l2,m,tau);
-        TERMINATE(isinf(cint->lnD_TM) || isnan(cint->lnD_TM), "lnD=%Lg, l1=%d,l2=%d,m=%d,tau=%Lg", cint->lnD_TM,l1,l2,m,tau);
+        TERMINATE(!isfinite(cint->lnA_TM), "lnA=%Lg, l1=%d,l2=%d,m=%d,tau=%Lg", cint->lnA_TM,l1,l2,m,tau);
+        TERMINATE(!isfinite(cint->lnB_TM), "lnB=%Lg, l1=%d,l2=%d,m=%d,tau=%Lg", cint->lnB_TM,l1,l2,m,tau);
+        TERMINATE(!isfinite(cint->lnC_TM), "lnC=%Lg, l1=%d,l2=%d,m=%d,tau=%Lg", cint->lnC_TM,l1,l2,m,tau);
+        TERMINATE(!isfinite(cint->lnD_TM), "lnD=%Lg, l1=%d,l2=%d,m=%d,tau=%Lg", cint->lnD_TM,l1,l2,m,tau);
     }
 
     xfree(sum);
