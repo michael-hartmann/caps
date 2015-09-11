@@ -177,7 +177,7 @@ MATRIX_TYPEDEF(matrix_edouble_t, edouble);
  \
         for(i = 0; i < dim; i++) \
             for(j = 0; j < dim; j++) \
-                min = MIN(max, ABS_FUNCTION(matrix_get(M, i,j))); \
+                min = MIN(min, ABS_FUNCTION(matrix_get(M, i,j))); \
  \
         return min; \
     }
