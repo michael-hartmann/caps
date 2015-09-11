@@ -202,8 +202,7 @@ double log_polyintegrate(edouble p[], size_t len, int l1, int l2, int m, double 
     for(i = 0; i < len; i++)
         value += expe(lgammae(1+i)-lnfac_max-(i+1)*ln_tau)*p[i];
 
-    TERMINATE(isnan(value), "value is nan");
-    TERMINATE(isinf(value), "value is inf");
+    TERMINATE(!isfinite(value), "value=%Lg", value);
 
     *sign = copysigne(1, value) * sign_lnLambda;
     return lnLambda+lnfac_max+loge(fabse(value));
