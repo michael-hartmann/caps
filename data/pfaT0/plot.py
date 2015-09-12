@@ -81,7 +81,7 @@ if __name__ == "__main__":
 
 
         g.plot(
-            graph.data.points(data, x=1, y=3, title="numerisch vs Bordag"),
+            graph.data.points(data_eta7, x=1, y=3, title="numerisch vs Bordag"),
             [graph.style.symbol(graph.style.symbol.circle, size=0.04, symbolattrs=attrs)]
         )
 
@@ -89,7 +89,7 @@ if __name__ == "__main__":
         g.plot(graph.data.function(f, title="Bimonte et al."))
 
         g2.plot(
-            graph.data.points(data, x=1, y=3, title="numerisch"),
+            graph.data.points(data_eta7, x=1, y=3, title="numerisch vs Bordag"),
             [graph.style.symbol(graph.style.symbol.circle, size=0.04, symbolattrs=attrs)]
         )
 
