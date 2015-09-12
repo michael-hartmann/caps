@@ -37,7 +37,7 @@ def slurp(filename, data=[]):
 
 
 if __name__ == "__main__":
-    plotPFA     = False
+    plotPFA     = True
     plotBimonte = True
 
     # use LaTeX for Pyx
@@ -83,7 +83,7 @@ if __name__ == "__main__":
 
 
         g.plot(
-            graph.data.points(data_eta7, x=1, y=3, title="numerisch"),
+            graph.data.points(data_eta8, x=1, y=3, title="numerisch"),
             [graph.style.symbol(graph.style.symbol.circle, size=0.04, symbolattrs=attrs)]
         )
 
@@ -91,7 +91,7 @@ if __name__ == "__main__":
         g.plot(graph.data.function(f, title="Bimonte et al."))
 
         g2.plot(
-            graph.data.points(data_eta7, x=1, y=3, title="numerisch"),
+            graph.data.points(data_eta8, x=1, y=3, title="numerisch"),
             [graph.style.symbol(graph.style.symbol.circle, size=0.04, symbolattrs=attrs)]
         )
 
@@ -111,7 +111,7 @@ if __name__ == "__main__":
 
         g.plot(
             [
-                graph.data.points(data_eta7, x=1, y=4, title=r"$\eta=7$"),
+                #graph.data.points(data_eta7, x=1, y=4, title=r"$\eta=7$"),
                 graph.data.points(data_eta8, x=1, y=4, title=r"$\eta=8$")
             ],
             #graph.data.points(data2, x=1, y=4, title=r"numerisch (unterschiedliche $\ell_\mathrm{max}$)"),
