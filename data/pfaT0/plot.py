@@ -10,12 +10,13 @@ def slurp_alt(filename, data=[]):
     with open(filename, "r") as f:
         for line in f:
             line = line.strip()
-            if line == "" or line[0] == "#":
-                continue
-            # L/R, lmax, order, alpha, F(T=0)
-            LbyR,T,F,error = map(float, line.split(","))
-            ratio = F/pfa(LbyR)
-            data.append((LbyR, F, ratio, ratio/bimonte(LbyR)))
+            empty = line == ""
+            comment = line.startswith("#")
+            if not(empty or comment):
+                # L/R, lmax, order, alpha, F(T=0)
+                LbyR,T,F,error = map(float, line.split(","))
+                ratio = F/pfa(LbyR)
+                data.append((LbyR, F, ratio, ratio/bimonte(LbyR)))
 
     return data
 
@@ -24,12 +25,13 @@ def slurp(filename, data=[]):
     with open(filename, "r") as f:
         for line in f:
             line = line.strip()
-            if line == "" or line[0] == "#":
-                continue
-            # L/R, lmax, order, alpha, F(T=0)
-            LbyR,lmax,order,alpha,F = map(float, line.split(","))
-            ratio = F/pfa(LbyR)
-            data.append((LbyR, F, ratio, ratio/bimonte(LbyR)))
+            empty = line == ""
+            comment = line.startswith("#")
+            if not(empty or comment):
+                # L/R, lmax, order, alpha, F(T=0)
+                LbyR,lmax,order,alpha,F = map(float, line.split(","))
+                ratio = F/pfa(LbyR)
+                data.append((LbyR, F, ratio, ratio/bimonte(LbyR)))
 
     return data
 
