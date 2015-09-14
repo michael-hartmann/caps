@@ -33,6 +33,10 @@ Further options:\n\
         Enable buffering. By default buffering for stderr and stdout is\n\
         disabled.\n\
 \n\
+    --trace THRESHOLD\n\
+        Try to calculate log det D(xi) using -Tr D(xi). If |trace|>THRESHOLD,\n\
+        fall back to log det D(xi).\n\
+\n\
     -h,--help\n\
         Show this help\n\
 \n\
@@ -48,6 +52,7 @@ int main(int argc, char *argv[])
     int i, n = -1, m = -1;
     int lmax = 0;
     int buffering_flag = 0;
+    double trace_threshold = -1;
 
     printf("# %s", argv[0]);
     for(i = 1; i < argc; i++)
@@ -62,13 +67,14 @@ int main(int argc, char *argv[])
           { "buffering", no_argument,       &buffering_flag, 1 },
           { "help",      no_argument,       0, 'h' },
           { "lscale",    required_argument, 0, 'l' },
+          { "trace",     required_argument, 0, 't' },
           { 0, 0, 0, 0 }
         };
 
         /* getopt_long stores the option index here. */
         int option_index = 0;
       
-        c = getopt_long (argc, argv, "x:T:n:m:s:a:l:L:qh", long_options, &option_index);
+        c = getopt_long (argc, argv, "x:T:n:m:s:a:l:L:t:qh", long_options, &option_index);
       
         /* Detect the end of the options. */
         if (c == -1)
@@ -96,6 +102,9 @@ int main(int argc, char *argv[])
               break;
           case 'm':
               m = atoi(optarg);
+              break;
+          case 't':
+              trace_threshold = atof(optarg);
               break;
           case 'h':
               usage(stdout);
@@ -156,19 +165,31 @@ int main(int argc, char *argv[])
         printf("# lmax = %d\n", lmax);
     else
         printf("# lfac = %g\n", lfac);
+    if(trace_threshold > 0)
+        printf("# trace_threshold = %g\n", trace_threshold);
+
     printf("#\n");
 
     {
         integration_perf_t int_perf;
         casimir_t casimir;
-        double value, start_time = now();
+        double value = 0, start_time = now();
 
         casimir_integrate_perf_init(&int_perf, n*T, lmax);
 
         casimir_init(&casimir, LbyR, T);
         casimir_set_lmax(&casimir, lmax);
 
-        value = casimir_logdetD(&casimir, n, m, &int_perf);
+
+        if(trace_threshold > 0)
+        {
+            double trace = casimir_trM(&casimir, n, m, &int_perf);
+            if(fabs(trace) < trace_threshold)
+                value = -trace;
+        }
+
+        if(!value)
+            value = casimir_logdetD(&casimir, n, m, &int_perf);
 
         casimir_integrate_perf_free(&int_perf);
         casimir_free(&casimir);
