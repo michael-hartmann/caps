@@ -17,7 +17,6 @@
 #define IDLE 1000 // in µs
 #define LSCALE 7.0
 #define PRECISION 5e-9
-#define VERBOSE 1
 
 double sumF(double *values, int lmax)
 {
@@ -80,7 +79,6 @@ void *logdetD(void *p)
 
     casimir_init(&casimir, LbyR, T);
     casimir_set_precision(&casimir, precision);
-    casimir_set_verbose(&casimir, VERBOSE);
     casimir_set_lmax(&casimir, lmax);
     
     logdet = casimir_logdetD(&casimir, n, m, &int_perf);
