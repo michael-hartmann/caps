@@ -1,10 +1,11 @@
-.PHONY: clean doc casimir casimir_tests casimir_hiT casimir_logdetD casimir_Fn ld_drude casimir_psd casimir_T0
-all: casimir casimir_hiT casimir_logdetD casimir_tests
+.PHONY: clean doc casimir casimir_tests casimir_hiT casimir_logdetD casimir_Fn ld_drude casimir_T0
+all: casimir casimir_hiT casimir_logdetD casimir_Fn ld_drude casimir_T0 casimir_tests
 
 SOURCES  = sfunc.c integration_drude.c integration_perf.c libcasimir.c matrix.c utils.c gausslaguerre.c
 CFLAGS  += -Werror -Wall -Wmissing-prototypes -Wstrict-prototypes -Wshadow -Wpointer-arith -Wcast-qual -Wwrite-strings -fno-common
 LDFLAGS += -lm -pthread
 
+TARGET = "../bin/"
 
 # Choose a compiler.
 #
@@ -12,6 +13,7 @@ LDFLAGS += -lm -pthread
 CC = gcc
 #CC = icc
 MPICC = mpicc
+#MPICC = mpiicc
 
 
 # Use extended doubles for calculations.
@@ -97,9 +99,6 @@ casimir_Fn:
 ld_drude:
 	$(CC) $(OPTIMIZATION) $(CFLAGS) $(SOURCES) ld_drude.c $(LDFLAGS) -o ld_drude
 
-casimir_psd:
-	$(CC) $(OPTIMIZATION) $(CFLAGS) $(SOURCES) casimir_psd.c $(LDFLAGS) -o casimir_psd
-
 casimir_T0:
 	$(MPICC) $(OPTIMIZATION) $(CFLAGS) $(SOURCES) casimir_T0.c $(LDFLAGS) -o casimir_T0
 
@@ -107,6 +106,8 @@ casimir_tests:
 	$(CC) $(OPTIMIZATION) -I . $(CFLAGS) $(SOURCES) tests/unittest.c tests/test*.c $(LDFLAGS) -o casimir_tests
 	./casimir_tests
 
+install:
+	cp casimir casimir_tests casimir_hiT casimir_logdetD casimir_Fn ld_drude casimir_T0 ${TARGET}
 
 clean:
 	rm -f casimir casimir_tests casimir_hiT casimir_logdetD *.o casimir_Fn ld_drude casimir_psd
