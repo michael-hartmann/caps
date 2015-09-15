@@ -5,7 +5,7 @@ from math import *
 from scipy.integrate import quad
 from scipy.special import zetac
 
-def integrand(x, LbyR, T):
+def integrand(x, LbyR, T, prec=1e-15):
     """alternative integrand for PFA and finite temperature
 
     """
@@ -17,7 +17,7 @@ def integrand(x, LbyR, T):
         arg = exp(-alpha)
         value = arg/(1-arg)*(1/n**3+alpha1/(n**2*(1-arg)))
         sum += value
-        if value/sum < 1e-15:
+        if value/sum < prec:
             return sum/(x**2*LbyR)
         n += 1
 
