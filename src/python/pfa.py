@@ -3,24 +3,23 @@
 from __future__ import division
 from math import *
 from scipy.integrate import quad
-from polyreal import Li2,Lin
+from scipy.special import zetac
 
 def integrand(x, LbyR, T, prec=1e-15):
-    """Integrand for PFA and finite temperature"""
-    n = 0
-    sum = 0
-    alpha1 = 2*T*x/(1+1/LbyR)
+    """alternative integrand for PFA and finite temperature
+
+    """
+    n = 1
+    sum = 0.5*(1+zetac(3))
+    alpha1 = 2*T*x*LbyR/(1+LbyR)
     while True:
         alpha = alpha1*n
         arg = exp(-alpha)
-        value = Lin(3,arg) + alpha*Li2(arg)
-        if n == 0:
-            value /= 2
+        value = arg/(1-arg)*(1/n**3+alpha1/(n**2*(1-arg)))
         sum += value
         if value/sum < prec:
             return sum/(x**2*LbyR)
         n += 1
-
 
 def pfa(LbyR, T):
     """Calculate free energy according to PFA for perfect reflectors for L/R
