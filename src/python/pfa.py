@@ -3,10 +3,9 @@
 from __future__ import division
 from math import *
 from scipy.integrate import quad
-from mpmath import polylog
+from polyreal import Li2,Lin
 
-
-def integrand(x, LbyR, T):
+def integrand(x, LbyR, T, prec=1e-15):
     """Integrand for PFA and finite temperature"""
     n = 0
     sum = 0
@@ -14,11 +13,11 @@ def integrand(x, LbyR, T):
     while True:
         alpha = alpha1*n
         arg = exp(-alpha)
-        value = polylog(3,arg) + alpha*polylog(2,arg)
+        value = Lin(3,arg) + alpha*Li2(arg)
         if n == 0:
             value /= 2
         sum += value
-        if value/sum < 1e-15:
+        if value/sum < prec:
             return sum/(x**2*LbyR)
         n += 1
 
