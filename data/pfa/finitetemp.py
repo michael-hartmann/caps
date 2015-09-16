@@ -3,7 +3,6 @@ from math import pi, exp
 import numpy as np
 from scipy.integrate import quad
 from scipy.special import zetac
-from mpmath import polylog
 from pyx import *
 
 def extract_matsubara(line):
