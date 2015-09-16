@@ -81,7 +81,7 @@ def slurp(filename, mterms=False):
     References:
     -----------
     [1] M. Hartmann, master thesis (Univ. Augsburg, 2014),
-        http://dx.doi.org/10.5281/zenodo.12476
+        https://github.com/michael-hartmann/libcasimir/raw/master/thesis.pdf
 
     '''
     m_terms = {}
@@ -130,7 +130,33 @@ def fpfa(x):
     return -pi**3/720*(1+2*x)/(x**3+x**2)
 
 def integrand(x, LbyR, T):
-    """alternative integrand for PFA and finite temperature
+    """determine integrand for PFA expression (7.6) in [1]
+
+    Parameters:
+    -----------
+    x : float, integration variable
+    LbyR : float, ratio of surface-surface distance to sphere radius
+    T : float, temperature scaled according to (5.41) in [1]
+    prec : float, precision used in convergence criterion of the sum
+
+    Returns:
+    --------
+    integrand including the factor 1/(L/R) in the prefactor
+
+    Notes:
+    ------
+    In order to avoid the evaluation of the di- and trilogarithm, the
+    integrand has been resummed. In the Matsubara sum, the n=0 term is
+    accounted for explicitly by means of Li_3(1)/2 = ζ(3)/2. Expressing
+    the tri- and dilogarithm in terms of their series expansion (cf.
+    (A.23) in [1]), the Matsubara sum yields a geometric sum and its
+    derivative, respectively, for which a closed expression can be given.
+    It then remains one sum to be done.
+
+    References:
+    -----------
+    [1] M. Hartmann, master thesis (Univ. Augsburg, 2014)
+        https://github.com/michael-hartmann/libcasimir/raw/master/thesis.pdf
 
     """
     n = 1
