@@ -1,7 +1,8 @@
 #!/usr/bin/python
+# -*- coding: utf-8 -*-
 
-from __future__ import division
-from math import *
+from __future__ import division, print_function
+from math import pi,exp,isinf
 from scipy.integrate import quad
 from scipy.special import zetac
 
@@ -63,14 +64,14 @@ def pfa(LbyR, T):
 
 
 if __name__ == "__main__":
-    from sys import argv, exit
+    from sys import argv, stderr, stdout, exit
 
-    def usage(self):
-        print "%s LbyR, T" % (self)
-        print "\tLbyR: ratio L/R, LbyR > 0"
-        print "\tT:    temperature, T > 0"
+    def usage(self, stream=stdout):
+        print("%s LbyR  T" % (self),         file=stream)
+        print("\tLbyR: ratio L/R, LbyR > 0", file=stream)
+        print("\tT:    temperature, T > 0",  file=stream)
 
-    if argv < 3:
+    if len(argv) < 3:
         usage(argv[0])
         exit(1)
 
@@ -79,11 +80,11 @@ if __name__ == "__main__":
         T    = float(argv[2])
 
         if LbyR < 0:
-            raise BaseException("LbyR < 0")
+            raise BaseException("LbyR must be positive")
         if T < 0:
-            raise BaseException("R < 0")
+            raise BaseException("T must be positive")
     except:
-        usage(argv[0])
+        usage(argv[0], stream=stderr)
         exit(1)
 
-    print pfa(LbyR, T)
+    print("%+.15g" % pfa(LbyR, T))
