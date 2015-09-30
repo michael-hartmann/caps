@@ -5,36 +5,21 @@
 
 #include "test_logdet.h"
 
-int test_logdet(int cores)
+int test_logdet(void)
 {
     unittest_t test;
     casimir_t casimir;
     integration_perf_t int_perf;
-    const double RbyScriptL = 0.97;
-    const double T = 0.1;
-    const int lmax = 200;
     double logdet;
 
     unittest_init(&test, "logdet M", "calculate logdet");
 
-    casimir_init(&casimir, 1/RbyScriptL-1, T);
-    casimir_set_lmax(&casimir, lmax);
-    casimir_set_cores(&casimir, cores);
+    casimir_init(&casimir, 0.006, 1.006);
+    casimir_set_lmax(&casimir, 500);
+    casimir_integrate_perf_init(&int_perf, 1.006, 500);
 
-
-    logdet = casimir_logdetD(&casimir, 0, 0, NULL);
-    AssertAlmostEqual(&test, logdet, -3.45236396285874);
-
-    logdet = casimir_logdetD(&casimir, 0, 1, NULL);
-    AssertAlmostEqual(&test, logdet, -2.63586999367158);
-
-    logdet = casimir_logdetD(&casimir, 0, 10, NULL);
-    AssertAlmostEqual(&test, logdet, -0.0276563864490425);
-
-    casimir_integrate_perf_init(&int_perf, T, lmax);
     logdet = casimir_logdetD(&casimir, 1, 1, &int_perf);
-    AssertAlmostEqual(&test, logdet, -2.63900987016801);
-    casimir_integrate_perf_free(&int_perf);
+    AssertAlmostEqual(&test, logdet, -9.27424711542347);
 
     casimir_free(&casimir);
 
