@@ -1,0 +1,15 @@
+This is a list of people that have contributed to libcasimir. The fields are
+name (N), email (E) and description (D).
+
+N: Michael Hartmann
+E: <michael.hartmann@physik.uni-augsburg.de>
+D: Main developer.
+
+N: Gert-Ludwig Ingold
+E: <gert.ingold@physik.uni-augsburg.de>
+D: Correction of documentation, massive speedup of PFA (Proximity Force
+D: Approximation) calculations, PFA plot.
+
+N: Erik Buchenau
+E: <e.buchenau@live.de>
+D: Contributed a unit test.
