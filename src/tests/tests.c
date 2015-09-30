@@ -27,7 +27,6 @@
 
 int main(int argc, char *argv[])
 {
-   /*
     test_Lambda();
     test_lbinom();
     //test_mie_drude();
@@ -42,7 +41,6 @@ int main(int argc, char *argv[])
     test_mie();
     test_besselI();
     test_besselK();
-    */
     test_determinant();
 
     test_logdet();
