@@ -95,6 +95,7 @@ void casimir_info(casimir_t *self, FILE *stream, const char *prefix)
     fprintf(stream, "%slmax      = %d\n", prefix, self->lmax);
     fprintf(stream, "%scores     = %d\n", prefix, self->cores);
     fprintf(stream, "%sprecision = %g\n", prefix, self->precision);
+    fprintf(stream, "%sdetalg    = %s\n", prefix, self->detalg);
 }
 
 /*@}*/
