@@ -9,6 +9,12 @@ N: Gert-Ludwig Ingold
 E: <gert.ingold@physik.uni-augsburg.de>
 D: Correction of documentation, massive speedup of PFA (Proximity Force
 D: Approximation) calculations, PFA plot.
+D:
+D: Helped to find a bug that the round-trip matrix was filled in the wrong way.
+
+N: Romain Guerout
+E: <romain.guerout@gmail.com>
+D: Helped to find a bug that the round-trip matrix was filled in the wrong way.
 
 N: Erik Buchenau
 E: <e.buchenau@live.de>
