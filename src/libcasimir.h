@@ -72,6 +72,8 @@ typedef struct
     double precision;    /**< precision \f$\epsilon_p\f$ */
     pthread_t **threads; /**< list of pthread objects */
 
+    char detalg[64];     /**< algorithm to calculate determinant */
+
     casimir_mie_cache_t *mie_cache;
     /*@}*/
 } casimir_t;

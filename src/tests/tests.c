@@ -7,7 +7,7 @@
 #include "test_doublefact.h"
 #include "test_epsilon.h"
 #include "test_fresnel.h"
-#include "test_givens.h"
+#include "test_determinant.h"
 #include "test_integration_drude.h"
 #include "test_integration_perf.h"
 #include "test_Lambda.h"
@@ -27,6 +27,7 @@
 
 int main(int argc, char *argv[])
 {
+   /*
     test_Lambda();
     test_lbinom();
     //test_mie_drude();
@@ -41,7 +42,8 @@ int main(int argc, char *argv[])
     test_mie();
     test_besselI();
     test_besselK();
-    test_givens();
+    */
+    test_determinant();
 
     test_logdet();
 

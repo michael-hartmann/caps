@@ -1,6 +1,6 @@
-#ifndef TEST_GIVENS_H
-#define TEST_GIVENS_H
+#ifndef TEST_DETERMINANT_H
+#define TEST_DETERMINANT_H
 
-int test_givens(void);
+int test_determinant(void);
 
 #endif
