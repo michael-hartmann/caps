@@ -62,12 +62,12 @@ MATRIX_TYPEDEF(matrix_edouble_t, edouble);
 #define MATRIX_FREE_HEADER(FUNCTION_PREFIX, MATRIX_TYPE) void FUNCTION_PREFIX ## _free(MATRIX_TYPE *m)
 
 #define MATRIX_LOGDET_LU(FUNCTION_PREFIX, MATRIX_TYPE, TYPE, ABS_FUNCTION, LOG_FUNCTION) \
-    TYPE FUNCTION_PREFIX ## _logdet(MATRIX_TYPE *M) \
+    TYPE FUNCTION_PREFIX ## _logdet_lu(MATRIX_TYPE *M) \
     { \
         const int dim = M->size; \
         int i,j,k; \
         TYPE sum, det = 0; \
-        const TYPE *a = M->M; \
+        TYPE *a = M->M; \
 \
         for(j = 0; j < dim; j++) \
         { \
@@ -93,7 +93,7 @@ MATRIX_TYPEDEF(matrix_edouble_t, edouble);
     }
 
 #define MATRIX_LOGDET_QR(FUNCTION_PREFIX, MATRIX_TYPE, TYPE, ABS_FUNCTION, COPYSIGN_FUNCTION, SQRT_FUNCTION, LOG_FUNCTION) \
-    TYPE FUNCTION_PREFIX ## _logdet(MATRIX_TYPE *M) \
+    TYPE FUNCTION_PREFIX ## _logdet_qr(MATRIX_TYPE *M) \
     { \
         size_t i, j, n, dim = M->size; \
         TYPE det = 0; \
@@ -152,7 +152,9 @@ MATRIX_TYPEDEF(matrix_edouble_t, edouble);
         return det; \
     }
 
-#define MATRIX_LOGDET_HEADER(FUNCTION_PREFIX, MATRIX_TYPE, TYPE) TYPE FUNCTION_PREFIX ## _logdet(MATRIX_TYPE *M)
+#define MATRIX_LOGDET_QR_HEADER(FUNCTION_PREFIX, MATRIX_TYPE, TYPE) TYPE FUNCTION_PREFIX ## _logdet_qr(MATRIX_TYPE *M)
+
+#define MATRIX_LOGDET_LU_HEADER(FUNCTION_PREFIX, MATRIX_TYPE, TYPE) TYPE FUNCTION_PREFIX ## _logdet_lu(MATRIX_TYPE *M)
 
 #define MATRIX_ABSMAX(FUNCTION_PREFIX, MATRIX_TYPE, TYPE, ABS_FUNCTION) \
     TYPE FUNCTION_PREFIX ## _absmax(MATRIX_TYPE *M) \
@@ -412,16 +414,19 @@ MATRIX_TYPEDEF(matrix_edouble_t, edouble);
 
 MATRIX_ALLOC_HEADER(matrix_edouble, matrix_edouble_t);
 MATRIX_FREE_HEADER (matrix_edouble, matrix_edouble_t);
-MATRIX_LOGDET_HEADER    (matrix_edouble, matrix_edouble_t, edouble);
 MATRIX_ABSMIN_HEADER    (matrix_edouble, matrix_edouble_t, edouble);
 MATRIX_ABSMAX_HEADER    (matrix_edouble, matrix_edouble_t, edouble);
 MATRIX_BALANCE_HEADER   (matrix_edouble, matrix_edouble_t);
 MATRIX_LOG_BALANCE_HEADER(matrix_edouble, matrix_edouble_t);
 MATRIX_EXP_HEADER(matrix_edouble, matrix_edouble_t);
 
+MATRIX_LOGDET_QR_HEADER(matrix_edouble, matrix_edouble_t, edouble);
+MATRIX_LOGDET_LU_HEADER(matrix_edouble, matrix_edouble_t, edouble);
+
 MATRIX_ALLOC_HEADER(matrix_sign, matrix_sign_t);
 MATRIX_FREE_HEADER (matrix_sign, matrix_sign_t);
 
+double matrix_edouble_logdet(matrix_edouble_t *M, matrix_sign_t *M_sign, const char *type);
 double matrix_logdet_lapack(matrix_edouble_t *M, matrix_sign_t *signs);
 
 #endif
