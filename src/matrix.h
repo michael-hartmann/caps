@@ -16,6 +16,10 @@
 
 /* LAPACK LU decomposition */
 int dgetrf_(int *m, int *n, double *a, int *lda, int *ipiv, int *info);
+/* LAPACK invert */
+int dgetri_(int *n, double *a, int *lda, int *ipiv, double *work, int *lwork, int *info);
+/* matrix multiplication */
+int dgemm_(char *transa, char *transb, int *m, int *n, int *k, double *alpha, double *a, int *lda, double *b, int *ldb, double *beta, double *c__, int *ldc);
 
 #define MATRIX_TYPEDEF(NAME, MATRIX_TYPE) \
     typedef struct { \
@@ -427,6 +431,7 @@ MATRIX_ALLOC_HEADER(matrix_sign, matrix_sign_t);
 MATRIX_FREE_HEADER (matrix_sign, matrix_sign_t);
 
 double matrix_edouble_logdet(matrix_edouble_t *M, matrix_sign_t *M_sign, const char *type);
-double matrix_logdet_lapack(matrix_edouble_t *M, matrix_sign_t *signs);
+double matrix_logdet_lu_lapack(matrix_edouble_t *M, matrix_sign_t *signs);
+double matrix_logdet_block_lapack(matrix_edouble_t *M, matrix_sign_t *signs);
 
 #endif
