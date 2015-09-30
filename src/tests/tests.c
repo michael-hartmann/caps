@@ -42,9 +42,8 @@ int main(int argc, char *argv[])
     test_besselI();
     test_besselK();
     test_givens();
-    test_logdet(CORES);
 
-    test_casimirF(CORES);
-    
+    test_logdet();
+
     return 0;
 }
