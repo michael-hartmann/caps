@@ -12,11 +12,17 @@
 #define LOGPI  1.14472988584940017414342735135305871164729L
 #define LOG4   1.386294361119890618834464242916353136151001L
 
-// abbrevations for functions
+/* abbrevations for functions */
 #define lngamma(x) (lgammae(x))
 #define pow_2(x) ((x)*(x))
+#define pow_3(x) ((x)*(x)*(x))
+#define pow_4(x) ((x)*(x)*(x)*(x))
+#define pow_5(x) ((x)*(x)*(x)*(x)*(x))
+#define pow_6(x) ((x)*(x)*(x)*(x)*(x)*(x))
+#define pow_7(x) ((x)*(x)*(x)*(x)*(x)*(x)*(x))
 #define lnfac(x)  (lgammae(1+(x)))
 
+/* calculate pow(-1,a) = -1**a */
 #define MPOW(a) (1-2*((a) & 1))
 
 #ifndef MIN
