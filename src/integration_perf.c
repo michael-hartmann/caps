@@ -1,7 +1,7 @@
 /**
  * @file   integration_perf.c
  * @author Michael Hartmann <michael.hartmann@physik.uni-augsburg.de>
- * @date   August, 2015
+ * @date   September, 2015
  * @brief  Perform integration for perfect reflectors
  */
 
@@ -13,10 +13,24 @@
 #include "sfunc.h"
 #include "libcasimir.h"
 #include "integration_perf.h"
-
 #include "utils.h"
 
 
+/** @brief Integrate polynomial x^offset*p*exp(-tau*x)
+ *
+ * This function evaluates the integral
+ * \f[
+ *      \inf_0^\infty \mathrm{d}x \, x^\mathrm{offset} p(x) \exp{(-\tau x)},
+ * \f]
+ * where \f$p(x)\f$ is a polynomial. The coefficients of p are given as
+ * logarithms and are assumed to be positive.
+ *
+ * @param [in] p coefficients of polynomial
+ * @param [in] len_p number of coefficients of polynomial p
+ * @param [in] offset parameter
+ * @param [in] tau parameter
+ * @retval logarithm of value of integral
+ */
 static edouble polyintegrate(edouble p[], const int len_p, const int offset, const edouble tau)
 {
     int k;
@@ -30,6 +44,17 @@ static edouble polyintegrate(edouble p[], const int len_p, const int offset, con
 }
 
 
+/** @brief Multiply two polynomials
+ *
+ * Multiply the polynomials p1 (len_p1 coefficients) and p2 (len_p2
+ * coefficients) and store result in p.
+ *
+ * @param [in]  p1 coefficients of polynomial p1
+ * @param [in]  len_p1 number of coefficients of polynomial p1
+ * @param [in]  p2 coefficients of polynomial p1
+ * @param [in]  len_p2 number of coefficients of polynomial p2
+ * @param [out] p polynomial p1*p2
+ */
 static void log_polymult(edouble p1[], const int len_p1, edouble p2[], const int len_p2, edouble p[])
 {
     int k, len = len_p1+len_p2-1;
@@ -54,7 +79,19 @@ static void log_polymult(edouble p1[], const int len_p1, edouble p2[], const int
 }
 
 
-/* evaluate integral I_nu^2m(tau) = (-1)^m * exp(-z*tau)/ (z^2+2z) * Plm(nu, 2m, 1+z) */
+/** @brief Evaluate integral I
+ *
+ * This function evaluates the integral
+ * \f[
+ *      \mathcal{I}_\nu^{2m}(tau) = (-1)^m \int_0^\infty \mathrm{d}z \, exp{(-\tau z)} (z^2+2z)^{-1} * \mathrm{Plm}_\nu^{2m}(1+z).
+ * \f]
+ * The value of the integral is always positive.
+ *
+ * @param [in] nu
+ * @param [in] m2
+ * @param [in] tau
+ * @retval logarithm of value of integral
+ */
 edouble _I(int nu, int m2, edouble tau)
 {
     const int m = m2/2;
@@ -153,7 +190,10 @@ void casimir_integrate_perf_free(integration_perf_t *self)
     self->cache_I = NULL;
 }
 
-/* TODO: m = 0, check signs! */
+/** @brief Evaluate integrals A,B,C,D
+ *
+ * Note that we also include the factor \f$\Lambda_{\ell_1,\ell_2}^{(m)}\f$.
+ */
 void casimir_integrate_perf(integration_perf_t *self, int l1, int l2, int m, casimir_integrals_t *cint)
 {
     int nu,q;
