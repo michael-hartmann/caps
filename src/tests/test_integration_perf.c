@@ -4,10 +4,302 @@
 #include "integration_perf.h"
 #include "unittest.h"
 #include "sfunc.h"
+#include "utils.h"
 
 #include "test_integration_perf.h"
 
 static void _integrals(int l1, int l2, int m, double nT, casimir_integrals_t *cint);
+static double A(int l1, int l2, int m, double nT, sign_t *sign);
+static double B(int l1, int l2, int m, double nT, sign_t *sign);
+static double C(int l1, int l2, int m, double nT, sign_t *sign);
+
+/* return integral of A (including Lambda) for l1,l2,m small */
+static double A(int l1, int l2, int m, double nT, sign_t *sign)
+{
+    const double tau = 2*nT;
+
+    if(m == 0)
+    {
+        *sign = 1;
+        return -INFINITY;
+    }
+    if(m == 1)
+    {
+        if(l1 == 1 && l2 == 1)
+        {
+            *sign = +1;
+            return -tau+log(3)-log(4)-log(tau);
+        }
+        if(l1 == 1 && l2 == 2)
+        {
+            *sign = -1;
+            return -tau+log(sqrt(5)/sqrt(3)*3./4)-2*log(tau)+log1p(tau);
+        }
+        if(l1 == 1 && l2 == 3)
+        {
+            *sign = +1;
+            return -tau+log(sqrt(21)/8)-3*log(tau)+log(2*pow_2(tau)+5*tau+5);
+        }
+
+        if(l1 == 2 && l2 == 1)
+        {
+            *sign = +1;
+            return -tau+log(sqrt(5)/sqrt(3)*3./4)-2*log(tau)+log1p(tau);
+        }
+        if(l1 == 2 && l2 == 2)
+        {
+            *sign = -1;
+            return -tau+log(5./4)-3*log(tau)+log(pow_2(tau)+2*tau+2);
+        }
+        if(l1 == 2 && l2 == 3)
+        {
+            *sign = +1;
+            return -tau+0.5*log(11340./20736)-4*log(tau)+log(2*pow_3(tau)+7*pow_2(tau)+15*tau+15);
+        }
+
+        if(l1 == 3 && l2 == 1)
+        {
+            *sign = +1;
+            return -tau+log(sqrt(21)*6./48)-3*log(tau)+log(2*pow_2(tau)+5*tau+5);
+        }
+        if(l1 == 3 && l2 == 2)
+        {
+            *sign = -1;
+            return -tau+0.5*log(11340./20736)-4*log(tau)+log(2*pow_3(tau)+7*pow_2(tau)+15*tau+15);
+        }
+        if(l1 == 3 && l2 == 3)
+        {
+            *sign = +1;
+            return -tau+log(7./576)-5*log(tau)+log(144*pow_4(tau)+720*pow_3(tau)+2520*pow_2(tau)+5400*tau+5400);
+        }
+    }
+    if(m == 2)
+    {
+        if(l1 == 2 && l2 == 2)
+        {
+            *sign = -1;
+            return -tau+log(5/2.)-3*log(tau)+log1p(tau);
+        }
+        if(l1 == 2 && l2 == 3)
+        {
+            *sign = +1;
+            return -tau+log(sqrt(35./12960)*90.)-4*log(tau)+log(pow_2(tau)+3*tau+3);
+        }
+
+        if(l1 == 3 && l2 == 2)
+        {
+            *sign = -1;
+            return -tau+log(sqrt(35./12960)*90.)-4*log(tau)+log(pow_2(tau)+3*tau+3);
+        }
+        if(l1 == 3 && l2 == 3)
+        {
+            *sign = +1;
+            return -tau+log(7./360)-5*log(tau)+log(450*pow_3(tau)+2250*pow_2(tau)+5400*tau+5400);
+        }
+    }
+
+    TERMINATE(0, "not implemented for l1=%d, l2=%d, m=%d", l1,l2,m);
+    return 0;
+}
+
+/* return integral of A (including Lambda) for l1,l2,m small */
+static double B(int l1, int l2, int m, double nT, sign_t *sign)
+{
+    const double tau = 2*nT;
+
+    if(m == 0)
+    {
+        if(l1 == 1 && l2 == 1)
+        {
+            *sign = -1;
+            return -tau+log(3)-3*log(tau)+log1p(tau);
+        }
+        if(l1 == 1 && l2 == 2)
+        {
+            *sign = +1;
+            return -tau+log(3*sqrt(5))-4*log(tau)+log(pow_2(tau)+3*tau+3);
+        }
+
+        if(l1 == 2 && l2 == 1)
+        {
+            *sign = -1;
+            return -tau+log(3*sqrt(5))-4*log(tau)+log(pow_2(tau)+3*tau+3);
+        }
+        if(l1 == 2 && l2 == 2)
+        {
+            *sign = +1;
+            return -tau+log(5./6)-5*log(tau)+log(18*pow_3(tau)+90*pow_2(tau)+216*tau+216);
+        }
+    }
+
+    if(m == 1)
+    {
+        if(l1 == 1 && l2 == 1)
+        {
+            *sign = -1;
+            return -tau+log(3./4)-3*log(tau)+log(pow_2(tau)+2*tau+2);
+        }
+        if(l1 == 1 && l2 == 2)
+        {
+            *sign = +1;
+            return -tau+log(sqrt(5./3)*3./4)-4*log(tau)+log(pow_3(tau)+5*pow_2(tau)+12*tau+12);
+        }
+        if(l1 == 1 && l2 == 3)
+        {
+            *sign = -1;
+            return -tau+log(6.*sqrt(21)/48)-5*log(tau)+log(2*pow_4(tau)+19*pow_3(tau)+79*pow_2(tau)+180*tau+180);
+        }
+
+        if(l1 == 2 && l2 == 1)
+        {
+            *sign = -1;
+            return -tau+log(sqrt(5./3)*3./4)-4*log(tau)+log(pow_3(tau)+5*pow_2(tau)+12*tau+12);
+        }
+        if(l1 == 2 && l2 == 2)
+        {
+            *sign = +1;
+            return -tau+log(45./36)-5*log(tau)+log(pow_4(tau)+8*pow_3(tau)+40*pow_2(tau)+96*tau+96);
+        }
+        if(l1 == 2 && l2 == 3)
+        {
+            *sign = -1;
+            return -tau+log(sqrt(35./20736))-6*log(tau)+log(36*pow_5(tau)+450*pow_4(tau)+3402*pow_3(tau)+14202*pow_2(tau)+32400*tau+32400);
+        }
+
+        if(l1 == 3 && l2 == 1)
+        {
+            *sign = -1;
+            return -tau+log(6.*sqrt(21)/48)-5*log(tau)+log(2*pow_4(tau)+19*pow_3(tau)+79*pow_2(tau)+180*tau+180);
+        }
+        if(l1 == 3 && l2 == 2)
+        {
+            *sign = +1;
+            return -tau+log(sqrt(35./20736))-6*log(tau)+log(36*pow_5(tau)+450*pow_4(tau)+3402*pow_3(tau)+14202*pow_2(tau)+32400*tau+32400);
+        }
+        if(l1 == 3 && l2 == 3)
+        {
+            *sign = -1;
+            return -tau+log(7/576.)-7*log(tau)+log(144*pow_6(tau)+2448*pow_5(tau)+27288*pow_4(tau)+171720*pow_3(tau)+657720*pow_2(tau)+1458000*tau+1458000);
+        }
+    }
+    if(m == 2)
+    {
+        if(l1 == 2 && l2 == 2)
+        {
+            *sign = +1;
+            return -tau+log(5./144)-5*log(tau)+log(72*pow_3(tau)+360*pow_2(tau)+864*tau+864);
+        }
+        if(l1 == 2 && l2 == 3)
+        {
+            *sign = -1;
+            return -tau+0.5*log(35./207360)-6*log(tau)+log(360*pow_4(tau)+3240*pow_3(tau)+14040*pow_2(tau)+32400*tau+32400);
+        }
+
+        if(l1 == 3 && l2 == 2)
+        {
+            *sign = +1;
+            return -tau+0.5*log(35./207360)-6*log(tau)+log(360*pow_4(tau)+3240*pow_3(tau)+14040*pow_2(tau)+32400*tau+32400);
+        }
+        if(l1 == 3 && l2 == 3)
+        {
+            *sign = -1;
+            return -tau+log(7./1440)-7*log(tau)+log(1800*pow_5(tau)+23400*pow_4(tau)+162000*pow_3(tau)+648000*pow_2(tau)+1458000*tau+1458000);
+        }
+    }
+
+    TERMINATE(1, "not implemented for l1=%d, l2=%d, m=%d", l1,l2,m);
+    return 0;
+}
+
+/* return integral of C (including Lambda) for l1,l2,m small */
+static double C(int l1, int l2, int m, double nT, sign_t *sign)
+{
+    const double tau = 2*nT;
+
+    if(m == 0)
+    {
+        *sign = 1;
+        return -INFINITY;
+    }
+    if(m == 1)
+    {
+        if(l1 == 1 && l2 == 1)
+        {
+            *sign = +1;
+            return -tau+log(3./4)-2*log(tau)+log1p(tau);
+        }
+        if(l1 == 1 && l2 == 2)
+        {
+            *sign = -1;
+            return -tau+log(sqrt(5./3)*3./4)-3*log(tau)+log(pow_2(tau)+4*tau+4);
+        }
+        if(l1 == 1 && l2 == 3)
+        {
+            *sign = +1;
+            return -tau+log(sqrt(21)/48)-4*log(tau)+log(12*pow_3(tau)+102*pow_2(tau)+270*tau+270);
+        }
+
+        if(l1 == 2 && l2 == 1)
+        {
+            *sign = +1;
+            return -tau+log(sqrt(5./3)*3./4)-3*log(tau)+log(pow_2(tau)+2*tau+2);
+        }
+        if(l1 == 2 && l2 == 2)
+        {
+            *sign = -1;
+            return -tau+log(5./36)-4*log(tau)+log(9*pow_3(tau)+45*pow_2(tau)+108*tau+108);
+        }
+        if(l1 == 2 && l2 == 3)
+        {
+            *sign = +1;
+            return -tau+0.5*log(35./20736)-5*log(tau)+log(36*pow_4(tau)+342*pow_3(tau)+1422*pow_2(tau)+3240*tau+3240);
+        }
+
+        if(l1 == 3 && l2 == 1)
+        {
+            *sign = +1;
+            return -tau+log(sqrt(21)/48)-4*log(tau)+log(12*pow_3(tau)+42*pow_2(tau)+90*tau+90);
+        }
+        if(l1 == 3 && l2 == 2)
+        {
+            *sign = -1;
+            return -tau+0.5*log(35./20736)-5*log(tau)+log(36*pow_4(tau)+234*pow_3(tau)+954*pow_2(tau)+2160*tau+2160);
+        }
+        if(l1 == 3 && l2 == 3)
+        {
+            *sign = +1;
+            return -tau+log(7./576)-6*log(tau)+log(144*pow_5(tau)+1584*pow_4(tau)+9720*pow_3(tau)+36720*pow_2(tau)+81000*tau+81000);
+        }
+    }
+    if(m == 2)
+    {
+        if(l1 == 2 && l2 == 2)
+        {
+            *sign = -1;
+            return -tau+log(5./72)-4*log(tau)+log(36*pow_2(tau)+108*tau+108);
+        }
+        if(l1 == 2 && l2 == 3)
+        {
+            *sign = +1;
+            return -tau+0.5*log(35./51840)-5*log(tau)+log(180*pow_3(tau)+1260*pow_2(tau)+3240*tau+3240);
+        }
+
+        if(l1 == 3 && l2 == 2)
+        {
+            *sign = -1;
+            return -tau+0.5*log(35./51840)-5*log(tau)+log(180*pow_3(tau)+900*pow_2(tau)+2160*tau+2160);
+        }
+        if(l1 == 3 && l2 == 3)
+        {
+            *sign = +1;
+            return -tau+log(7./720)-6*log(tau)+log(900*pow_4(tau)+8100*pow_3(tau)+35100*pow_2(tau)+81000*tau+81000);
+        }
+    }
+
+    TERMINATE(0, "not implemented for l1=%d, l2=%d, m=%d", l1,l2,m);
+    return 0;
+}
+
 static void _integrals(int l1, int l2, int m, double nT, casimir_integrals_t *cint)
 {
     integration_perf_t int_perf;
@@ -19,11 +311,62 @@ static void _integrals(int l1, int l2, int m, double nT, casimir_integrals_t *ci
 
 int test_integration_perf(void)
 {
+    int i;
     double v;
+    double list_nT[] = { 1e-4, 1e-3, 1e-2, 1e-1, 1e0, 1e1, 1e2, 1e3, 1e4 };
     casimir_integrals_t cint;
     unittest_t test;
     unittest_init(&test, "Integration", "Test integration for various parameters");
 
+    /* test vs analytical expressions for l1,l2,m small */
+    for(i = 0; i < sizeof(list_nT)/sizeof(list_nT[0]); i++)
+    {
+        double nT = list_nT[i];
+        int l1,l2,m;
+
+        for(l1 = 1; l1 <= 2; l1++)
+            for(l2 = 1; l2 <= 2; l2++)
+            {
+                sign_t signB = 0;
+                double lnB = B(l1,l2,0,nT,&signB);
+
+                _integrals(l1,l2,0,nT,&cint);
+
+                AssertAlmostEqual(&test, cint.lnB_TM, lnB);
+                AssertAlmostEqual(&test, cint.signB_TM, signB);
+            }
+
+        for(m = 1; m <= 2; m++)
+            for(l1 = 2; l1 <= 3; l1++)
+                for(l2 = 2; l2 <= 3; l2++)
+                {
+                    sign_t signA = 0;
+                    sign_t signB = 0;
+                    sign_t signC = 0;
+                    sign_t signD = 0;
+                    double lnA = A(l1,l2,m,nT,&signA);
+                    double lnB = B(l1,l2,m,nT,&signB);
+                    double lnC = C(l1,l2,m,nT,&signC);
+                    double lnD;
+
+                    _integrals(l1,l2,m,nT,&cint);
+                    AssertAlmostEqual(&test, cint.lnA_TM, lnA);
+                    AssertAlmostEqual(&test, cint.signA_TM, signA);
+                    AssertAlmostEqual(&test, cint.lnB_TM, lnB);
+                    AssertAlmostEqual(&test, cint.signB_TM, signB);
+                    AssertAlmostEqual(&test, cint.lnC_TM, lnC);
+                    AssertAlmostEqual(&test, cint.signC_TM, signC);
+
+                    AssertAlmostEqual(&test, cint.signD_TM, -signC);
+
+                    lnD = C(l2,l1,m,nT,&signD);
+                    AssertAlmostEqual(&test, cint.lnD_TM, lnD);
+                    AssertAlmostEqual(&test, cint.signD_TM, MPOW(l1+l2+1)*signD);
+                }
+    }
+
+
+    /* test integral I */
     v = _I(2,2,2);
     AssertAlmostEqual(&test, v, 0.4054651081081643819780131163);
 
@@ -63,6 +406,7 @@ int test_integration_perf(void)
     v = _I(3000,2,2);
     AssertAlmostEqual(&test, v, 21022.142076441619865987086582686107);
 
+    /* test for various combinations of l1,l2,m and nT */
     _integrals(1050,1050,1,1,&cint);
     AssertAlmostEqual(&test, cint.lnA_TM, 13940.125756903571190096123124106829015888756201576644);
     AssertAlmostEqual(&test, cint.lnB_TM, 13967.9514623712062733110267893316781893739350523);
@@ -115,28 +459,110 @@ int test_integration_perf(void)
     AssertAlmostEqual(&test, cint.lnB_TM, 56.977025325953406);
 
     _integrals(4,4,1,0.005,&cint);
-    AssertAlmostEqual(&test, cint.signA_TM*exp(cint.lnA_TM), +2.4806179125126554e17*-2);
-    AssertAlmostEqual(&test, cint.signB_TM*exp(cint.lnB_TM), -2.2226323455151368e24*-2);
-    AssertAlmostEqual(&test, cint.signC_TM*exp(cint.lnC_TM), -6.9457269656680333e20*-2);
-    AssertAlmostEqual(&test, cint.signD_TM*exp(cint.lnD_TM), +6.9457269656680333e20*-2);
+    AssertAlmostEqual(&test, cint.lnA_TM, 40.74560144887208);
+    AssertEqual(&test, cint.signA_TM, -1);
+    AssertAlmostEqual(&test, cint.lnB_TM, 56.75388164708835);
+    AssertEqual(&test, cint.signB_TM, +1);
+    AssertAlmostEqual(&test, cint.lnC_TM, 48.68297568585137);
+    AssertEqual(&test, cint.signC_TM, -1);
+    AssertAlmostEqual(&test, cint.lnD_TM, 48.68297568585137);
+    AssertEqual(&test, cint.signD_TM, +1);
 
     _integrals(40,40,1,0.25,&cint);
-    AssertAlmostEqual(&test, cint.signA_TM*exp(cint.lnA_TM), +1.5754477603435539e159*-2);
-    AssertAlmostEqual(&test, cint.signB_TM*exp(cint.lnB_TM), -6.3723632215476122e166*-2);
-    AssertAlmostEqual(&test, cint.signC_TM*exp(cint.lnC_TM), -9.9568222699306801e162*-2);
-    AssertAlmostEqual(&test, cint.signD_TM*exp(cint.lnD_TM), +9.9568222699306801e162*-2);
+    AssertAlmostEqual(&test, cint.lnA_TM, 367.258716490769);
+    AssertAlmostEqual(&test, cint.lnB_TM, 384.7742430107486);
+    AssertAlmostEqual(&test, cint.lnC_TM, 376.010190217081);
+    AssertAlmostEqual(&test, cint.lnD_TM, 376.010190217081);
+
+    _integrals(40,40,1,1,&cint);
+    AssertAlmostEqual(&test, cint.lnA_TM, 257.7297499756845);
+    AssertAlmostEqual(&test, cint.lnB_TM, 272.472669228606);
+    AssertAlmostEqual(&test, cint.lnC_TM, 265.0949179301248);
+    AssertAlmostEqual(&test, cint.lnD_TM, 265.0949179301248);
 
     _integrals(40,40,40,1,&cint);
-    AssertAlmostEqual(&test, cint.signA_TM*exp(cint.lnA_TM), +6.4140686579381969e91*-2);
-    AssertAlmostEqual(&test, cint.signB_TM*exp(cint.lnB_TM), -1.0147301906459434e95*-2);
-    AssertAlmostEqual(&test, cint.signC_TM*exp(cint.lnC_TM), -2.5352219594503741e93*-2);
-    AssertAlmostEqual(&test, cint.signD_TM*exp(cint.lnD_TM), +2.5352219594503736e93*-2);
+    AssertAlmostEqual(&test, cint.lnA_TM, 212.0868844486187);
+    AssertAlmostEqual(&test, cint.lnB_TM, 219.4533537701274);
+    AssertAlmostEqual(&test, cint.lnC_TM, 215.7638420201849);
+    AssertAlmostEqual(&test, cint.lnD_TM, 215.7638420201849);
 
-    _integrals(7,4,3,8.5,&cint);
-    AssertAlmostEqual(&test, cint.signA_TM*exp(cint.lnA_TM), +4.8180365200137397e-9*-2);
-    AssertAlmostEqual(&test, cint.signB_TM*exp(cint.lnB_TM), -1.3731640166794149e-8*-2);
-    AssertAlmostEqual(&test, cint.signC_TM*exp(cint.lnC_TM), -6.7659079909128738e-9*-2);
-    AssertAlmostEqual(&test, cint.signD_TM*exp(cint.lnD_TM), +9.44463292099617e-9*-2);
+    _integrals(7,4,3,8,&cint);
+    AssertAlmostEqual(&test, cint.lnA_TM, -17.1928436859713);
+    AssertAlmostEqual(&test, cint.lnB_TM, -16.0865392641165);
+    AssertAlmostEqual(&test, cint.lnC_TM, -16.83090135860425);
+    AssertAlmostEqual(&test, cint.lnD_TM, -16.48574215820564);
+
+    _integrals(20, 20, 3, 13, &cint);
+    AssertAlmostEqual(&test, cint.lnA_TM, -5.202385074993125);
+    AssertAlmostEqual(&test, cint.lnB_TM, -0.5773666089005467);
+    AssertAlmostEqual(&test, cint.lnC_TM, -2.905312825257782);
+    AssertAlmostEqual(&test, cint.lnD_TM, -2.905312825257782);
+
+    _integrals(20, 20, 3, 0.001, &cint);
+    AssertAlmostEqual(&test, cint.lnA_TM, 368.3408666279195);
+    AssertAlmostEqual(&test, cint.lnB_TM, 391.916763894729);
+    AssertAlmostEqual(&test, cint.lnC_TM, 380.1161563573135);
+    AssertAlmostEqual(&test, cint.lnD_TM, 380.1161563573135);
+
+    _integrals(20, 20, 3, 0.01, &cint);
+    AssertAlmostEqual(&test, cint.lnA_TM, 278.540045473523);
+    AssertAlmostEqual(&test, cint.lnB_TM, 297.5107725493697);
+    AssertAlmostEqual(&test, cint.lnC_TM, 288.0127501055992);
+    AssertAlmostEqual(&test, cint.lnD_TM, 288.0127501055992);
+
+    _integrals(20, 20, 3, 0.1, &cint);
+    AssertAlmostEqual(&test, cint.lnA_TM, 188.7389740846992);
+    AssertAlmostEqual(&test, cint.lnB_TM, 203.1045304770997);
+    AssertAlmostEqual(&test, cint.lnC_TM, 195.9090931914071);
+    AssertAlmostEqual(&test, cint.lnD_TM, 195.9090931914071);
+
+    _integrals(20, 20, 3, 1, &cint);
+    AssertAlmostEqual(&test, cint.lnA_TM, 98.91288744548656);
+    AssertAlmostEqual(&test, cint.lnB_TM, 108.6732240307656);
+    AssertAlmostEqual(&test, cint.lnC_TM, 103.7803782982835);
+    AssertAlmostEqual(&test, cint.lnD_TM, 103.7803782982835);
+
+    _integrals(20, 20, 3, 10, &cint);
+    AssertAlmostEqual(&test, cint.lnA_TM, 6.660701378819416);
+    AssertAlmostEqual(&test, cint.lnB_TM, 11.81202300232528);
+    AssertAlmostEqual(&test, cint.lnC_TM, 9.221979692552173);
+    AssertAlmostEqual(&test, cint.lnD_TM, 9.221979692552173);
+
+    _integrals(20, 20, 3, 100, &cint);
+    AssertAlmostEqual(&test, cint.lnA_TM, -201.8065316849248);
+    AssertAlmostEqual(&test, cint.lnB_TM, -200.7135958357346);
+    AssertAlmostEqual(&test, cint.lnC_TM, -201.2774897833974);
+    AssertAlmostEqual(&test, cint.lnD_TM, -201.2774897833974);
+
+    _integrals(20, 10, 3, 0.1, &cint);
+    AssertAlmostEqual(&test, cint.lnA_TM, 131.0962726931826);
+    AssertAlmostEqual(&test, cint.lnB_TM, 144.184735156638);
+    AssertAlmostEqual(&test, cint.lnC_TM, 137.2769797021334);
+    AssertAlmostEqual(&test, cint.lnD_TM, 137.9701257824486);
+
+    _integrals(20, 15, 10, 5, &cint);
+    AssertAlmostEqual(&test, cint.lnA_TM, 22.41543637237407);
+    AssertAlmostEqual(&test, cint.lnB_TM, 26.04398834917292);
+    AssertAlmostEqual(&test, cint.lnC_TM, 24.07623857473362);
+    AssertAlmostEqual(&test, cint.lnD_TM, 24.35571686776128);
+
+    _integrals(50, 15, 10, 10, &cint);
+    AssertAlmostEqual(&test, cint.lnA_TM, 45.60713807155988);
+    AssertAlmostEqual(&test, cint.lnB_TM, 49.99651015278684);
+    AssertAlmostEqual(&test, cint.lnC_TM, 47.201688624453);
+    AssertAlmostEqual(&test, cint.lnD_TM, 48.38666367876067);
+
+    _integrals(100, 25, 20, 20, &cint);
+    AssertAlmostEqual(&test, cint.lnA_TM, 84.50837701530297);
+    AssertAlmostEqual(&test, cint.lnB_TM, 88.66027006552913);
+    AssertAlmostEqual(&test, cint.lnC_TM, 85.90224599747752);
+    AssertAlmostEqual(&test, cint.lnD_TM, 87.2586869597479);
+
+    _integrals(60, 55, 40, 0.11, &cint);
+    AssertAlmostEqual(&test, cint.lnA_TM, 645.1730223683922);
+    AssertAlmostEqual(&test, cint.lnB_TM, 658.4063308419369);
+    AssertAlmostEqual(&test, cint.lnC_TM, 651.7418041758159);
+    AssertAlmostEqual(&test, cint.lnD_TM, 651.8288153934492);
 
     _integrals(40,40,1,2.5,&cint);
     AssertAlmostEqual(&test, cint.lnA_TM, 185.27722707813169721211989855051);
@@ -223,76 +649,6 @@ int test_integration_perf(void)
     //AssertAlmostEqual(&test, cint.lnA_TM, );
     //AssertAlmostEqual(&test, cint.lnB_TM, );
     //AssertAlmostEqual(&test, cint.lnC_TM, );
-
-    _integrals(20, 20, 3, 10, &cint);
-    AssertAlmostEqual(&test, cint.signA_TE * exp(cint.lnA_TE), 781.09859105555221959);
-    AssertAlmostEqual(&test, cint.signB_TE * exp(cint.lnB_TE), -134864.11599496152485);
-    AssertAlmostEqual(&test, cint.signC_TE * exp(cint.lnC_TE), -10117.073210379348893);
-    AssertAlmostEqual(&test, cint.signD_TE * exp(cint.lnD_TE), 10117.073210379348893);
-    AssertAlmostEqual(&test, cint.signA_TM * exp(cint.lnA_TM), -781.09859105555221959);
-    AssertAlmostEqual(&test, cint.signB_TM * exp(cint.lnB_TM), 134864.11599496152485);
-    AssertAlmostEqual(&test, cint.signC_TM * exp(cint.lnC_TM), 10117.073210379348893);
-    AssertAlmostEqual(&test, cint.signD_TM * exp(cint.lnD_TM), -10117.073210379348893);
-
-    _integrals(20, 20, 3, 0.005, &cint);
-    AssertAlmostEqual(&test, cint.signA_TE * exp(cint.lnA_TE), 5.1118182099912547966e+132);
-    AssertAlmostEqual(&test, cint.signB_TE * exp(cint.lnB_TE), -3.5441939544749868444e+141);
-    AssertAlmostEqual(&test, cint.signC_TE * exp(cint.lnC_TE), -1.3290727331464213355e+137);
-    AssertAlmostEqual(&test, cint.signD_TE * exp(cint.lnD_TE), 1.3290727331464213355e+137);
-    AssertAlmostEqual(&test, cint.signA_TM * exp(cint.lnA_TM), -5.1118182099912547966e+132);
-    AssertAlmostEqual(&test, cint.signB_TM * exp(cint.lnB_TM), 3.5441939544749868444e+141);
-    AssertAlmostEqual(&test, cint.signC_TM * exp(cint.lnC_TM), 1.3290727331464213355e+137);
-    AssertAlmostEqual(&test, cint.signD_TM * exp(cint.lnD_TM), -1.3290727331464213355e+137);
-
-    _integrals(20, 10, 3, 0.1, &cint);
-    AssertAlmostEqual(&test, cint.signA_TE * exp(cint.lnA_TE), 8.5978097063718598278e+56);
-    AssertAlmostEqual(&test, cint.signB_TE * exp(cint.lnB_TE), -4.1556106748900681252e+62);
-    AssertAlmostEqual(&test, cint.signC_TE * exp(cint.lnC_TE), -4.1556099454869528064e+59);
-    AssertAlmostEqual(&test, cint.signD_TE * exp(cint.lnD_TE), 8.3112107466018794333e+59);
-    AssertAlmostEqual(&test, cint.signA_TM * exp(cint.lnA_TM), -8.5978097063718598278e+56);
-    AssertAlmostEqual(&test, cint.signB_TM * exp(cint.lnB_TM), 4.1556106748900681252e+62);
-    AssertAlmostEqual(&test, cint.signC_TM * exp(cint.lnC_TM), 4.1556099454869528064e+59);
-    AssertAlmostEqual(&test, cint.signD_TM * exp(cint.lnD_TM), -8.3112107466018794333e+59);
-
-    _integrals(20, 15, 10, 5, &cint);
-    AssertAlmostEqual(&test, cint.signA_TE * exp(cint.lnA_TE), -5431256655.4366550446);
-    AssertAlmostEqual(&test, cint.signB_TE * exp(cint.lnB_TE), 204531605206.09912109);
-    AssertAlmostEqual(&test, cint.signC_TE * exp(cint.lnC_TE), 28587590863.750656128);
-    AssertAlmostEqual(&test, cint.signD_TE * exp(cint.lnD_TE), -37805365266.289375305);
-    AssertAlmostEqual(&test, cint.signA_TM * exp(cint.lnA_TM), 5431256655.4366550446);
-    AssertAlmostEqual(&test, cint.signB_TM * exp(cint.lnB_TM), -204531605206.09912109);
-    AssertAlmostEqual(&test, cint.signC_TM * exp(cint.lnC_TM), -28587590863.750656128);
-    AssertAlmostEqual(&test, cint.signD_TM * exp(cint.lnD_TM), 37805365266.289375305);
-
-    _integrals(50, 15, 10, 10, &cint);
-    AssertAlmostEqual(&test, cint.signA_TE * exp(cint.lnA_TE), -6.4110387204283793408e+19);
-    AssertAlmostEqual(&test, cint.signB_TE * exp(cint.lnB_TE), 5.1666432341025142866e+21);
-    AssertAlmostEqual(&test, cint.signC_TE * exp(cint.lnC_TE), 3.1581511099318560358e+20);
-    AssertAlmostEqual(&test, cint.signD_TE * exp(cint.lnD_TE), -1.032906554654643454e+21);
-    AssertAlmostEqual(&test, cint.signA_TM * exp(cint.lnA_TM), 6.4110387204283793408e+19);
-    AssertAlmostEqual(&test, cint.signB_TM * exp(cint.lnB_TM), -5.1666432341025142866e+21);
-    AssertAlmostEqual(&test, cint.signC_TM * exp(cint.lnC_TM), -3.1581511099318560358e+20);
-    AssertAlmostEqual(&test, cint.signD_TM * exp(cint.lnD_TM), 1.032906554654643454e+21);
-
-    _integrals(100, 25, 20, 20, &cint);
-    AssertAlmostEqual(&test, cint.signA_TE * exp(cint.lnA_TE), -5.0294652559566390516e+36);
-    AssertAlmostEqual(&test, cint.signB_TE * exp(cint.lnB_TE), 3.1964362960862542766e+38);
-    AssertAlmostEqual(&test, cint.signC_TE * exp(cint.lnC_TE), 2.0270824787427330596e+37);
-    AssertAlmostEqual(&test, cint.signD_TE * exp(cint.lnD_TE), -7.8698461944637818726e+37);
-    AssertAlmostEqual(&test, cint.signA_TM * exp(cint.lnA_TM), 5.0294652559566390516e+36);
-    AssertAlmostEqual(&test, cint.signB_TM * exp(cint.lnB_TM), -3.1964362960862542766e+38);
-    AssertAlmostEqual(&test, cint.signC_TM * exp(cint.lnC_TM), -2.0270824787427330596e+37);
-    AssertAlmostEqual(&test, cint.signD_TM * exp(cint.lnD_TM), 7.8698461944637818726e+37);
-
-    _integrals(60, 55, 40, 0.11, &cint);
-    AssertAlmostEqual(&test, cint.signA_TE * exp(cint.lnA_TE), -1.5670522864686087965e+280);
-    AssertAlmostEqual(&test, cint.signB_TE * exp(cint.lnB_TE), 8.7546005438190589883e+285);
-    AssertAlmostEqual(&test, cint.signC_TE * exp(cint.lnC_TE), 1.1165268702393727479e+283);
-    AssertAlmostEqual(&test, cint.signD_TE * exp(cint.lnD_TE), -1.2180291188873130328e+283);
-    AssertAlmostEqual(&test, cint.signA_TM * exp(cint.lnA_TM), 1.5670522864686087965e+280);
-    AssertAlmostEqual(&test, cint.signB_TM * exp(cint.lnB_TM), -8.7546005438190589883e+285);
-    AssertAlmostEqual(&test, cint.signC_TM * exp(cint.lnC_TM), -1.1165268702393727479e+283);
-    AssertAlmostEqual(&test, cint.signD_TM * exp(cint.lnD_TM), 1.2180291188873130328e+283);
 
     return test_results(&test, stderr);
 }
