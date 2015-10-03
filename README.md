@@ -1,8 +1,5 @@
-libcasimir
-==========
-
 The Casimir effect
-------------------
+==================
 
 In 1984 Hendrik Casimir considered two parallel, perfectly conducting plates in vacuum at temperature T=0 and predicted an attracting force [1]. This force arises due to vacuum fluctuations and was experimentally verified in 1956 by Derjaguin, Abrikosova and Lifshitz [2], as well as in 1958 by Sparnaay [3].
 
@@ -42,3 +39,18 @@ $ cd src/
 $ make
 ```
 should install all dependencies and compile the code. If you want to change the floating point precision (80-bit extended precision or quadrupole precision) or the compiling option, have a look at the Makefile.
+
+Usage
+-----
+
+Developing and contributing
+---------------------------
+
+Citing
+------
+
+Authors, license and credits
+----------------------------
+
+Publications
+------------
