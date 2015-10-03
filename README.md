@@ -8,6 +8,9 @@ Since the Casimir effect is a manifestation of vacuum fluctuations in the mesosc
 Moreover, negative entropies are found for some geometries and parameters in the Casimir effect. Negative entropies, for example, occur in the plane–plane geometry for metals described by the Drude model. In addition, this effect also occurs in the plane–sphere geometry even for perfect reflectors, thus suggesting a geometrical origin of negative entropies [7,8]. This is in general not a problem, since the Casimir free energy is an interaction energy and does not describe the entire physical system. However, the origin of negative entropies is not understood very well.
 
 
+libcasimir
+==========
+
 What is libcasimir?
 -------------------
 geometry libcasimir implements the numerics for the Casimir effect in the plane-sphere geometry with perfect spheres using a scattering approach [8, 9]. We use the same approach, but derive slightly different formulas for the matrix element of the round-trip operator that don't need Wigned-d-symbols.
@@ -17,9 +20,6 @@ F scaled = L+R ℏc F T scaled = 2π k (L+R) ℏc T
 Using this scaling the free energy only depends on the temperature T and the geometric ratio L/R .
 
 This code is part of my master thesis. This thesis is also a good reference for libcasimir. It costed much time and much work to write a stable and a fast implementation. So, if you find this piece of code useful and you use it for plots, please consider to cite libcasimir.
-
-libcasimir
-==========
 
 Features
 --------
