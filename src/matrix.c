@@ -25,7 +25,6 @@ MATRIX_LOGDET_QR (matrix_edouble, matrix_edouble_t, edouble, fabse, copysigne, s
 MATRIX_LOGDET_LU (matrix_edouble, matrix_edouble_t, edouble, fabse, loge);
 MATRIX_ABSMIN    (matrix_edouble, matrix_edouble_t, edouble, fabse);
 MATRIX_ABSMAX    (matrix_edouble, matrix_edouble_t, edouble, fabse);
-MATRIX_BALANCE   (matrix_edouble, matrix_edouble_t, edouble, fabse);
 MATRIX_LOG_BALANCE(matrix_edouble, matrix_edouble_t, edouble, loge);
 MATRIX_EXP(matrix_edouble, matrix_edouble_t, expe);
 
