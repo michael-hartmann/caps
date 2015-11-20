@@ -223,12 +223,7 @@ MATRIX_TYPEDEF(matrix_edouble_t, edouble);
     { \
         size_t i,j; \
         const size_t N = A->size; \
-        TYPE D[N]; \
         int not_converged = 1; \
- \
-        /* initialize D to the identity matrix */ \
-        for(i = 0; i < N; i++) \
-            D[i] = 1; \
  \
         while(not_converged) \
         { \
@@ -294,10 +289,6 @@ MATRIX_TYPEDEF(matrix_edouble_t, edouble);
                     /* multiply by D on the right */ \
                     for(k = 0; k < N; k++) \
                         matrix_set(A, k,i, f*matrix_get(A,k,i)); \
- \
-                    /* keep track of transformation */ \
-                    for(k = 0; k < N; k++) \
-                        D[k] *= f; \
                 } \
             } \
         } \
@@ -314,17 +305,9 @@ MATRIX_TYPEDEF(matrix_edouble_t, edouble);
         size_t i,j; \
         const size_t N = A->size; \
         int not_converged = 1; \
-        TYPE *D; \
-        TYPE *list_row; \
-        TYPE *list_column; \
 \
-        D           = (TYPE *)xmalloc(N*sizeof(TYPE)); \
-        list_row    = (TYPE *)xmalloc(N*sizeof(TYPE)); \
-        list_column = (TYPE *)xmalloc(N*sizeof(TYPE)); \
- \
-        /* initialize D to the identity matrix */ \
-        for(i = 0; i < N; i++) \
-            D[i] = 0; \
+        TYPE *list_row    = xmalloc(N*sizeof(TYPE)); \
+        TYPE *list_column = xmalloc(N*sizeof(TYPE)); \
  \
         while(not_converged) \
         { \
@@ -397,15 +380,10 @@ MATRIX_TYPEDEF(matrix_edouble_t, edouble);
                     /* multiply by D on the right */ \
                     for(k = 0; k < N; k++) \
                         matrix_set(A, k,i, f+matrix_get(A,k,i)); \
- \
-                    /* keep track of transformation */ \
-                    for(k = 0; k < N; k++) \
-                        D[k] += f; \
                 } \
             } \
         } \
 \
-        xfree(D); \
         xfree(list_column); \
         xfree(list_row); \
     }
