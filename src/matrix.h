@@ -299,87 +299,104 @@ MATRIX_TYPEDEF(matrix_edouble_t, edouble);
 
 #define MATRIX_BALANCE_HEADER(FUNCTION_PREFIX, MATRIX_TYPE) void FUNCTION_PREFIX ## _balance(MATRIX_TYPE *A)
 
+/* We implement algorithm 3 (Balancing, proposed) from [1]. This algorithm
+ * balances a square matrix A, so that on output A is nearly balanced in the
+ * 1-norm.
+ *
+ * Notes:
+ *  - The matrix is stored as the logarithm of the actual matrix elements.
+ *  - We use the 1-norm.
+ *  - We don't calculate D.
+ *
+ * [1] Rodney James, Julien Langou, Bradley R. Lowery, On matrix balancing and
+ * eigenvector computation
+ */
 #define MATRIX_LOG_BALANCE(FUNCTION_PREFIX, MATRIX_TYPE, TYPE, LOG_FUNCTION) \
     void FUNCTION_PREFIX ## _log_balance(MATRIX_TYPE *A) \
     { \
         size_t i,j; \
         const size_t N = A->size; \
-        int not_converged = 1; \
+        int converged = 0; \
 \
-        TYPE *list_row    = xmalloc(N*sizeof(TYPE)); \
-        TYPE *list_column = xmalloc(N*sizeof(TYPE)); \
+        TYPE *M = A->M; \
+        double *list_row    = xmalloc(N*sizeof(double)); \
+        double *list_column = xmalloc(N*sizeof(double)); \
  \
-        while(not_converged) \
+        /* line 2 */ \
+        while(!converged) \
         { \
-            size_t len = 0; \
-            TYPE g, f, s; \
-            TYPE row_norm, col_norm; \
- \
-            not_converged = 0; \
+            double f, s, col_max, row_max; \
+            double row_norm, col_norm; \
 \
-            for (i = 0; i < N; ++i) \
+            /* line 4 */ \
+            converged = 1; \
+\
+            /* line 5 */ \
+            for(i = 0; i < N; i++) \
             { \
-                len = 0; \
+                /* line 6 */ \
+                col_max = row_max = list_column[0] = list_row[0] = M[0]; \
+                for(j = 1; j < N; j++) \
+                { \
+                    const double Aji = M[j*N+i]; \
+                    const double Aij = M[i*N+j]; \
+                    list_column[j] = Aji; \
+                    list_row[j]    = Aij; \
+                    col_max = MAX(Aji,col_max); \
+                    row_max = MAX(Aij,row_max); \
+                } \
 \
-                for (j = 0; j < N; ++j) \
-                    if (j != i) \
-                    { \
-                        list_column[len] = matrix_get(A,j,i); \
-                        list_row[len]    = matrix_get(A,i,j); \
-                        len++; \
-                    } \
-\
-                if(len == 0) \
-                    continue; \
-\
-                row_norm = logadd_m(list_row,    len); \
-                col_norm = logadd_m(list_column, len); \
+                /* faster than logadd_m */ \
+                row_norm = col_norm = 0; \
+                for(j = 0; j < N; j++) \
+                { \
+                    row_norm += exp(list_row[j]-row_max); \
+                    col_norm += exp(list_column[j]-col_max); \
+                } \
+                row_norm = row_max + log(fabs(row_norm)); \
+                col_norm = col_max + log(fabs(col_norm)); \
 \
                 if ((col_norm == LOG_FUNCTION(0)) || (row_norm == LOG_FUNCTION(0))) \
-                  continue; \
+                    continue; \
 \
-                g = row_norm - LOG_FLOAT_RADIX; \
-                f = 0; \
-                s = logadd(col_norm, row_norm); \
+                /* line 7 */ \
+                f = 0; /* log(1)=0 */ \
+                if(col_norm > row_norm) \
+                    s = col_norm + log1p(exp(row_norm-col_norm)); \
+                else \
+                    s = row_norm + log1p(exp(col_norm-row_norm)); \
 \
-                /* \
-                 * find the integer power of the machine radix which \
-                 * comes closest to balancing the matrix \
-                 */ \
-                while (col_norm < g) \
+                /* line 8 */ \
+                while(col_norm < (row_norm-LOG_FLOAT_RADIX)) \
                 { \
-                    f += LOG_FLOAT_RADIX; \
-                    col_norm += LOG_FLOAT_RADIX_SQ; \
+                    /* line 9 */ \
+                    col_norm += LOG_FLOAT_RADIX; \
+                    row_norm -= LOG_FLOAT_RADIX; \
+                    f        += LOG_FLOAT_RADIX; \
                 } \
 \
-                g = row_norm + LOG_FLOAT_RADIX; \
-\
-                while (col_norm > g) \
+                /* line 10 */ \
+                while(col_norm >= (row_norm+LOG_FLOAT_RADIX)) \
                 { \
-                    f -= LOG_FLOAT_RADIX; \
-                    col_norm -= LOG_FLOAT_RADIX_SQ; \
+                    /* line 11 */ \
+                    col_norm -= LOG_FLOAT_RADIX; \
+                    row_norm += LOG_FLOAT_RADIX; \
+                    f        -= LOG_FLOAT_RADIX; \
                 } \
 \
-                if (logadd(row_norm, col_norm) < (LOG_095+s+f)) \
+                /* line 12 */ \
+                if(logadd(row_norm, col_norm) < (LOG_095+s)) \
                 { \
                     int k; \
-                    not_converged = 1; \
+                    /* line 13 */ \
+                    converged = 0; \
  \
-                    g = -f; \
- \
-                    /* \
-                     * apply similarity transformation D, where \
-                     * D_{ij} = f_i * delta_{ij} \
-                     */ \
- \
-                    /* multiply by D^{-1} on the left */ \
+                    /* line 14 */ \
                     for(k = 0; k < N; k++) \
-                        matrix_set(A, i,k, g+matrix_get(A,i,k)); \
- \
- \
-                    /* multiply by D on the right */ \
-                    for(k = 0; k < N; k++) \
-                        matrix_set(A, k,i, f+matrix_get(A,k,i)); \
+                    { \
+                        M[i*N+k] -= f; \
+                        M[k*N+i] += f; \
+                    } \
                 } \
             } \
         } \
