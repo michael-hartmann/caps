@@ -638,9 +638,9 @@ void gaunt(const int n, const int nu, const int m, edouble a_tilde[])
         {
             /* eqs. (26), (27) */
             c0 = (p+2.)*(p+3.)*(p1+1.)*(p1+2.)*Ap*alpha(p+1,n,nu);
-            c1 = (edouble)Ap*Ap*Ap \
-               + (p+1)*(p+3)*(p1+2)*(p2+2)*Ap*alpha(p+2,n,nu) \
-               + (p+2)*(p+4)*(p1+3)*(p2+3)*Ap*alpha(p+3,n,nu);
+            c1 = Ap*((edouble)Ap*Ap \
+               + (p+1)*(p+3)*(p1+2)*(p2+2)*alpha(p+2,n,nu) \
+               + (p+2)*(p+4)*(p1+3)*(p2+3)*alpha(p+3,n,nu));
             c2 = -(p+2)*(p+3)*(p2+3)*(p2+4)*Ap*alpha(p+4,n,nu);
 
             a_tilde[q] = (c1*a_tilde[q-1] + c2*a_tilde[q-2])/c0;
