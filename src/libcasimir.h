@@ -169,8 +169,8 @@ void casimir_mie_cache_get(casimir_t *self, int l, int n, double *ln_a, sign_t *
 void casimir_mie_cache_free(casimir_t *self);
 
 void casimir_logdetD0(casimir_t *self, int m, double *EE, double *MM);
-double casimir_logdetD(casimir_t *self, int n, int m, void * obj);
-double casimir_trM(casimir_t *self, int n, int m, void *integration_obj);
+double casimir_logdetD(casimir_t *self, int n, int m);
+double casimir_trM(casimir_t *self, int n, int m);
 
 void casimir_rp(casimir_t *self, edouble nT, edouble k, edouble *r_TE, edouble *r_TM);
 

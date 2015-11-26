@@ -73,16 +73,12 @@ void *logdetD(void *p)
     int n            = params->n;
     int m            = params->m;
     int lmax         = params->lmax;
-    integration_perf_t int_perf;
-
-    casimir_integrate_perf_init(&int_perf, n*T, lmax);
 
     casimir_init(&casimir, LbyR, T);
     casimir_set_precision(&casimir, precision);
     casimir_set_lmax(&casimir, lmax);
     
-    logdet = casimir_logdetD(&casimir, n, m, &int_perf);
-    casimir_integrate_perf_free(&int_perf);
+    logdet = casimir_logdetD(&casimir, n, m);
     casimir_free(&casimir);
     
     params->logdet = logdet;

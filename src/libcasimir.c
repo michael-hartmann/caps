@@ -1241,19 +1241,15 @@ double casimir_F_n(casimir_t *self, const int n, int *mmax)
     int m;
     const int lmax = self->lmax;
     double values[lmax+1];
-    integration_perf_t int_perf;
 
     /* perfect reflectors */
 
     for(m = 0; m <= lmax; m++)
         values[m] = 0;
 
-    if(self->integration <= 0)
-        casimir_integrate_perf_init(&int_perf, n*self->T, self->lmax);
-
     for(m = 0; m <= self->lmax; m++)
     {
-        values[m] = casimir_logdetD(self,n,m,&int_perf);
+        values[m] = casimir_logdetD(self,n,m);
 
         /* If F is !=0 and value/F < 1e-16, then F+value = F. The addition
          * has no effect.
@@ -1264,9 +1260,6 @@ double casimir_F_n(casimir_t *self, const int n, int *mmax)
         if(values[0] != 0 && fabs(values[m]/sum_n) < precision)
             break;
     }
-
-    if(self->integration <= 0)
-        casimir_integrate_perf_free(&int_perf);
 
     if(mmax != NULL)
         *mmax = m;
@@ -1476,12 +1469,17 @@ void casimir_logdetD0(casimir_t *self, int m, double *logdet_EE, double *logdet_
  * @param [in,out] integration_obj may be NULL
  * @retval trM \f$\mathrm{tr} \mathcal{D}^{(m)}(\xi=nT)\f$
  */
-double casimir_trM(casimir_t *self, int n, int m, void *integration_obj)
+double casimir_trM(casimir_t *self, int n, int m)
 {
     int l;
+    const double nT = n*self->T;
     const int min = MAX(m,1);
     const int max = self->lmax;
     edouble trM = 0;
+    integration_perf_t int_perf;
+
+    if(self->integration < 0)
+        casimir_integrate_perf_init(&int_perf, nT, m, self->lmax);
 
     for(l = min; l <= max; l++)
     {
@@ -1495,7 +1493,7 @@ double casimir_trM(casimir_t *self, int n, int m, void *integration_obj)
         if(self->integration > 0)
             casimir_integrate_drude(self, &cint, l, l, m, n, self->T);
         else
-            casimir_integrate_perf(integration_obj, l, l, m, &cint);
+            casimir_integrate_perf(&int_perf, l, l, &cint);
 
         /* EE */
         sign_t signs_EE[] = { sign_al*cint.signA_TE, sign_al*cint.signB_TM };
@@ -1511,6 +1509,9 @@ double casimir_trM(casimir_t *self, int n, int m, void *integration_obj)
         v = logadd_ms(list_MM, signs_MM, 2, &sign);
         trM += sign*expe(v);
     }
+
+    if(self->integration < 0)
+        casimir_integrate_perf_free(&int_perf);
 
     return trM;
 }
@@ -1528,14 +1529,15 @@ double casimir_trM(casimir_t *self, int n, int m, void *integration_obj)
  * @param [in,out] self Casimir object
  * @param [in] n Matsubara term
  * @param [in] m
- * @param [in,out] integration_obj may be NULL
  * @retval logdetD \f$\log \det \mathcal{D}^{(m)}(\xi=nT)\f$
  */
-double casimir_logdetD(casimir_t *self, int n, int m, void *integration_obj)
+double casimir_logdetD(casimir_t *self, int n, int m)
 {
     int min,max,dim,l1,l2;
+    const double nT = n*self->T;
     double logdet = 0;
-    double nTRbyScriptL = n*self->T*self->RbyScriptL;
+    double nTRbyScriptL = nT*self->RbyScriptL;
+    integration_perf_t int_perf;
 
     min = MAX(m,1);
     max = self->lmax;
@@ -1555,6 +1557,9 @@ double casimir_logdetD(casimir_t *self, int n, int m, void *integration_obj)
 
         return logdet_EE + logdet_MM;
     }
+
+    if(self->integration < 0)
+        casimir_integrate_perf_init(&int_perf, nT, m, self->lmax);
 
     matrix_edouble_t *M = matrix_edouble_alloc(2*dim);
     matrix_sign_t *M_sign = matrix_sign_alloc(2*dim);
@@ -1587,7 +1592,7 @@ double casimir_logdetD(casimir_t *self, int n, int m, void *integration_obj)
             if(self->integration > 0)
                 casimir_integrate_drude(self, &cint, l1, l2, m, n, self->T);
             else
-                casimir_integrate_perf(integration_obj, l1, l2, m, &cint);
+                casimir_integrate_perf(&int_perf, l1, l2, &cint);
 
             /* EE */
             {
@@ -1720,6 +1725,9 @@ double casimir_logdetD(casimir_t *self, int n, int m, void *integration_obj)
         matrix_edouble_free(M);
         matrix_sign_free(M_sign);
     }
+
+    if(self->integration < 0)
+        casimir_integrate_perf_free(&int_perf);
 
     return logdet;
 }
