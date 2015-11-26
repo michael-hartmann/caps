@@ -12,7 +12,7 @@
 #include "edouble.h"
 #include "sfunc.h"
 #include "libcasimir.h"
-#include "integration_perf_new.h"
+#include "integration_perf.h"
 #include "utils.h"
 
 /** @brief Integrate polynomial x^offset*p*exp(-tau*x)
@@ -99,10 +99,11 @@ edouble casimir_integrate_I(integration_perf_t *self, int nu)
     if(isnan(v))
     {
         int k;
+        double tau = 2*self->nT;
 
-        edouble p1[m];       /* polynom (z+2)^(m-1) */
-        edouble p2[nu+1-m2]; /* polynom d^(2m)/dz^(2m) P_(nu)(1+z) */
-        edouble p[-m+nu];    /* polynom p1*p2 */
+        edouble p1[m];        /* polynom (z+2)^(m-1) */
+        edouble p2[nu+1-2*m]; /* polynom d^(2m)/dz^(2m) P_(nu)(1+z) */
+        edouble p[-m+nu];     /* polynom p1*p2 */
 
         /* Every monom of both polynoms is positive. So we can save the
          * logarithms of the coefficients. */
@@ -110,13 +111,13 @@ edouble casimir_integrate_I(integration_perf_t *self, int nu)
         for(k = 0; k <= m-1; k++)
             p1[k] = lgammae(m)-lgammae(k+1)-lgammae(m-k)+(m-1-k)*LOG2;
 
-        for(k = m2; k <= nu; k++)
-            p2[k-m2] = lgammae(k+nu+1)-lgammae(k+1)-lgammae(k-m2+1)-lgammae(-k+nu+1)-k*LOG2;
+        for(k = 2*m; k <= nu; k++)
+            p2[k-2*m] = lgammae(k+nu+1)-lgammae(k+1)-lgammae(k-2*m+1)-lgammae(-k+nu+1)-k*LOG2;
 
-        log_polymult(p1, m, p2, nu+1-m2, p); /* len: nu-m */
+        log_polymult(p1, m, p2, nu+1-2*m, p); /* len: nu-m */
 
         v = self->cache_I[nu] = polyintegrate(p, -m+nu, m-1, tau);
-        TERMINATE(!isfinite(v) || !isnan(v), "I=%Lg, nu=%d, 2m=%d\n", v, nu, m2);
+        TERMINATE(!isfinite(v) || !isnan(v), "I=%Lg, nu=%d, m=%d\n", v, nu, m);
     }
 
     return v;
@@ -132,9 +133,9 @@ edouble casimir_integrate_K(integration_perf_t *self, const int l1, const int l2
         int q;
         const int m = self->m;
         const int qmax       = gaunt_qmax(l1,l2,m);
-        const edouble log_a0 = gaunt_log_a0(l1,l2,m)
+        const edouble log_a0 = gaunt_log_a0(l1,l2,m);
         const int elems = MAX(0,1+qmax);
-        edouble *a_tilde = NULL;
+        edouble *a = NULL;
         sign_t *signs = NULL;
 
         a     = xmalloc(elems*sizeof(edouble));
@@ -148,7 +149,7 @@ edouble casimir_integrate_K(integration_perf_t *self, const int l1, const int l2
             a[q] = loge(a[q]) + casimir_integrate_I(self, l1+l2-2*q);
         }
 
-        v = self->cache_K[index] = logadd_ms(a, signs, elems, sign);
+        v = self->cache_K[index] = log_a0+logadd_ms(a, signs, elems, sign);
 
         xfree(a);
         xfree(signs);
@@ -160,14 +161,14 @@ edouble casimir_integrate_K(integration_perf_t *self, const int l1, const int l2
 
 void casimir_integrate_perf_init(integration_perf_t *self, double nT, int m, int lmax)
 {
-    int i, elems_I;
+    int i, elems_I, elems_K;;
 
     self->tau  = 2*nT;
     self->nT   = nT;
     self->lmax = lmax;
     self->m    = m;
 
-    elems_I = l1+l2+2
+    elems_I = 2*(lmax+1);
     self->cache_I = xmalloc(elems_I*sizeof(edouble));
     for(i = 0; i < elems_I; i++)
         self->cache_I[i] = NAN;
@@ -284,8 +285,8 @@ void casimir_integrate_perf(integration_perf_t *self, int l1, int l2, casimir_in
         cint->signC_TE = -sign*sign_D0(l2,m,TE);
     }
 
-    TERMINATE(!isfinite(cint->lnA_TM) || !isnan(cint->lnA_TM) "lnA=%Lg, l1=%d,l2=%d,m=%d,tau=%Lg", cint->lnA_TM,l1,l2,m,tau);
-    TERMINATE(!isfinite(cint->lnB_TM) || !isnan(cint->lnB_TM) "lnB=%Lg, l1=%d,l2=%d,m=%d,tau=%Lg", cint->lnB_TM,l1,l2,m,tau);
-    TERMINATE(!isfinite(cint->lnC_TM) || !isnan(cint->lnC_TM) "lnC=%Lg, l1=%d,l2=%d,m=%d,tau=%Lg", cint->lnC_TM,l1,l2,m,tau);
-    TERMINATE(!isfinite(cint->lnD_TM) || !isnan(cint->lnD_TM) "lnD=%Lg, l1=%d,l2=%d,m=%d,tau=%Lg", cint->lnD_TM,l1,l2,m,tau);
+    TERMINATE(!isfinite(cint->lnA_TM) || !isnan(cint->lnA_TM), "lnA=%Lg, l1=%d,l2=%d,m=%d,nT=%g", cint->lnA_TM,l1,l2,m,nT);
+    TERMINATE(!isfinite(cint->lnB_TM) || !isnan(cint->lnB_TM), "lnB=%Lg, l1=%d,l2=%d,m=%d,nT=%g", cint->lnB_TM,l1,l2,m,nT);
+    TERMINATE(!isfinite(cint->lnC_TM) || !isnan(cint->lnC_TM), "lnC=%Lg, l1=%d,l2=%d,m=%d,nT=%g", cint->lnC_TM,l1,l2,m,nT);
+    TERMINATE(!isfinite(cint->lnD_TM) || !isnan(cint->lnD_TM), "lnD=%Lg, l1=%d,l2=%d,m=%d,nT=%g", cint->lnD_TM,l1,l2,m,nT);
 }
