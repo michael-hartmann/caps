@@ -12,6 +12,20 @@ static void _integrals(int l1, int l2, int m, double nT, casimir_integrals_t *ci
 static double A(int l1, int l2, int m, double nT, sign_t *sign);
 static double B(int l1, int l2, int m, double nT, sign_t *sign);
 static double C(int l1, int l2, int m, double nT, sign_t *sign);
+static edouble _I(int nu, int m2, double tau);
+
+static edouble _I(int nu, int m2, double tau)
+{
+    edouble v;
+    const double nT = tau/2.0;
+    integration_perf_t int_perf;
+
+    casimir_integrate_perf_init(&int_perf, nT, m2/2, nu);
+    v = casimir_integrate_I(&int_perf, nu);
+    casimir_integrate_perf_free(&int_perf);
+
+    return v;
+}
 
 /* return integral of A (including Lambda) for l1,l2,m small */
 static double A(int l1, int l2, int m, double nT, sign_t *sign)
@@ -304,8 +318,8 @@ static void _integrals(int l1, int l2, int m, double nT, casimir_integrals_t *ci
 {
     integration_perf_t int_perf;
     int lmax = MAX(l1,l2);
-    casimir_integrate_perf_init(&int_perf, nT, lmax);
-    casimir_integrate_perf(&int_perf, l1, l2, m, cint);
+    casimir_integrate_perf_init(&int_perf, nT, m, lmax);
+    casimir_integrate_perf(&int_perf, l1, l2, cint);
     casimir_integrate_perf_free(&int_perf);
 }
 
