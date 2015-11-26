@@ -171,11 +171,8 @@ int main(int argc, char *argv[])
     printf("#\n");
 
     {
-        integration_perf_t int_perf;
         casimir_t casimir;
         double value = 0, start_time = now();
-
-        casimir_integrate_perf_init(&int_perf, n*T, lmax);
 
         casimir_init(&casimir, LbyR, T);
         casimir_set_lmax(&casimir, lmax);
@@ -183,15 +180,14 @@ int main(int argc, char *argv[])
 
         if(trace_threshold > 0)
         {
-            double trace = casimir_trM(&casimir, n, m, &int_perf);
+            double trace = casimir_trM(&casimir, n, m);
             if(fabs(trace) < trace_threshold)
                 value = -trace;
         }
 
         if(!value)
-            value = casimir_logdetD(&casimir, n, m, &int_perf);
+            value = casimir_logdetD(&casimir, n, m);
 
-        casimir_integrate_perf_free(&int_perf);
         casimir_free(&casimir);
 
         printf("# LbyR,T,n,m,value,lmax,time\n");

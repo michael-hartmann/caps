@@ -21,7 +21,6 @@
 double integrand(double xi, double LbyR, int lmax, double precision)
 {
     casimir_t casimir;
-    integration_perf_t int_perf;
     double v = 0, v0 = 0;
     int m = 0, use_trace = 0;
 
@@ -29,18 +28,16 @@ double integrand(double xi, double LbyR, int lmax, double precision)
     casimir_init(&casimir, LbyR, xi);
     casimir_set_lmax(&casimir, lmax);
 
-    casimir_integrate_perf_init(&int_perf, 1*casimir.T, casimir.lmax);
-
     /* sum up all contributions from m=0 to m=lmax */
     while(m <= lmax)
     {
         double v_m;
 
         if(use_trace)
-            v_m = -casimir_trM(&casimir, 1, m, &int_perf);
+            v_m = -casimir_trM(&casimir, 1, m);
         else
         {
-            v_m = casimir_logdetD(&casimir, 1, m, &int_perf);
+            v_m = casimir_logdetD(&casimir, 1, m);
 
             /* For large arguments of xi the calculation of logdetD^m becomes
              * inaccurate. This corresponds to large distances (large xi <->
@@ -51,7 +48,7 @@ double integrand(double xi, double LbyR, int lmax, double precision)
              */
             if(fabs(v_m) < 1e-8)
             {
-                v_m = -casimir_trM(&casimir, 1, m, &int_perf);
+                v_m = -casimir_trM(&casimir, 1, m);
                 use_trace = 1;
             }
         }
@@ -72,7 +69,6 @@ double integrand(double xi, double LbyR, int lmax, double precision)
         m++;
     }
 
-    casimir_integrate_perf_free(&int_perf);
     casimir_free(&casimir);
 
     return v;
