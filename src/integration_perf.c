@@ -15,6 +15,9 @@
 #include "integration_perf.h"
 #include "utils.h"
 
+static void casimir_integrate_perf_m0(integration_perf_t *self, int l1, int l2, casimir_integrals_t *cint);
+
+
 /** @brief Integrate polynomial x^offset*p*exp(-tau*x)
  *
  * This function evaluates the integral
@@ -82,24 +85,31 @@ static void log_polymult(edouble p1[], const int len_p1, edouble p2[], const int
  *
  * This function evaluates the integral
  * \f[
- *      \mathcal{I}_\nu^{2m}(tau) = (-1)^m \int_0^\infty \mathrm{d}z \, exp{(-\tau z)} (z^2+2z)^{-1} * \mathrm{Plm}_\nu^{2m}(1+z).
+ *      \mathcal{I}_\nu^{2m}(\tau=2nT) = (-1)^m \int_0^\infty \mathrm{d}z \, exp{(-\tau z)} (z^2+2z)^{-1} * \mathrm{Plm}_\nu^{2m}(1+z).
  * \f]
+ *
+ * The parameter m will be determined automatically. Usually m is the same
+ * value of m that was given to casimir_integrate_perf_init, except for m=0,
+ * where m=2 is used.
+ *
  * The value of the integral is always positive.
  *
+ * @param [in] self integration object
  * @param [in] nu
- * @param [in] m2
- * @param [in] tau
  * @retval logarithm of value of integral
  */
-edouble casimir_integrate_I(integration_perf_t *self, int nu)
+edouble casimir_integrate_perf_I(integration_perf_t *self, int nu)
 {
-    const int m = self->m;
     edouble v = self->cache_I[nu];
 
     if(isnan(v))
     {
         int k;
-        double tau = 2*self->nT;
+        const double tau = 2*self->nT;
+        int m = self->m;
+
+        if(m == 0)
+            m = 2;
 
         edouble p1[m];        /* polynom (z+2)^(m-1) */
         edouble p2[nu+1-2*m]; /* polynom d^(2m)/dz^(2m) P_(nu)(1+z) */
@@ -123,6 +133,23 @@ edouble casimir_integrate_I(integration_perf_t *self, int nu)
     return v;
 }
 
+
+/** @brief Evaluate integral K
+ *
+ * This function evaluates the integral
+ * \f[
+ *      \mathcal{K}_{\ell_1,\ell_2}^m(\tau=2nT) = a_0 \sum_{q=0}^{q_\mathrm{max}} \tilde a_q \mathcal{I}_\nu^{2m}(\tau=2nT)
+ * \f]
+ *
+ * The sign is stored in sign.
+ *
+ * @param [in] self integration object
+ * @param [in] l1 parameter l1
+ * @param [in] l2 parameter l2
+ * @param [out] sign sign of integral
+
+ * @retval logarithm of value of integral
+ */
 edouble casimir_integrate_K(integration_perf_t *self, const int l1, const int l2, sign_t *sign)
 {
     const int index = l1*(self->lmax+2)+l2;
@@ -135,18 +162,16 @@ edouble casimir_integrate_K(integration_perf_t *self, const int l1, const int l2
         const int qmax       = gaunt_qmax(l1,l2,m);
         const edouble log_a0 = gaunt_log_a0(l1,l2,m);
         const int elems = MAX(0,1+qmax);
-        edouble *a = NULL;
-        sign_t *signs = NULL;
 
-        a     = xmalloc(elems*sizeof(edouble));
-        signs = xmalloc(elems*sizeof(sign_t));
+        edouble *a    = xmalloc(elems*sizeof(edouble));
+        sign_t *signs = xmalloc(elems*sizeof(sign_t));
 
         gaunt(l1, l2, m, a);
 
         for(q = 0; q <= qmax; q++)
         {
             signs[q] = copysigne(1, a[q]);
-            a[q] = loge(fabse(a[q])) + casimir_integrate_I(self, l1+l2-2*q);
+            a[q] = loge(fabse(a[q])) + casimir_integrate_perf_I(self, l1+l2-2*q);
         }
 
         v = self->cache_K[index] = log_a0+logadd_ms(a, signs, elems, sign);
@@ -157,11 +182,19 @@ edouble casimir_integrate_K(integration_perf_t *self, const int l1, const int l2
         TERMINATE(isnan(v), "casimir_integrate_K l1=%d, l2=%d, m=%d, %Lg\n", l1, l2, m, v);
     }
 
-
     return v;
 }
 
 
+/** @brief Initialize integration_perf_t object
+ *
+ * This function initializes the integration_perf_t object self for Matsubara frequency xi=nT.
+ *
+ * @param [out] self integration object
+ * @param [in] nT Matsubara frequency, xi=nT
+ * @param [in] m angular momentum z-axis
+ * @param [out] lmax maximum value of l1,l2
+ */
 void casimir_integrate_perf_init(integration_perf_t *self, double nT, int m, int lmax)
 {
     int i, elems_I, elems_K;;
@@ -171,17 +204,26 @@ void casimir_integrate_perf_init(integration_perf_t *self, double nT, int m, int
     self->lmax = lmax;
     self->m    = m;
 
+    /* allocate memory and initialize chache for I */
     elems_I = 2*(lmax+2);
     self->cache_I = xmalloc(elems_I*sizeof(edouble));
     for(i = 0; i < elems_I; i++)
         self->cache_I[i] = NAN;
 
+    /* allocate memory and initialize chache for K */
     elems_K = pow_2(lmax+2);
     self->cache_K = xmalloc(elems_K*sizeof(edouble));
     for(i = 0; i < elems_K; i++)
         self->cache_K[i] = NAN;
 }
 
+
+/** @brief Free integration_perf_t object
+ *
+ * This function frees the integration_perf_t object self.
+ *
+ * @param [in,out] self integration object
+ */
 void casimir_integrate_perf_free(integration_perf_t *self)
 {
     if(self->cache_I != NULL)
@@ -196,9 +238,131 @@ void casimir_integrate_perf_free(integration_perf_t *self)
     }
 }
 
+/* integrate for m=0 */
+static void casimir_integrate_perf_m0(integration_perf_t *self, int l1, int l2, casimir_integrals_t *cint)
+{
+    int q,nu;
+    const int m = 0;
+    edouble log_B;
+    sign_t sign_B;
+    const edouble lnLambda = casimir_lnLambda(l1, l2, 0, NULL);
+    const double nT = self->nT;
+    const int qmax_l1pl2p = gaunt_qmax(l1+1,l2+1,2);
+
+    sign_t signs_B[4] = {1,1,1,1};
+    edouble log_Bn[4] = { -INFINITY, -INFINITY, -INFINITY, -INFINITY };
+
+    edouble *sum = xmalloc((qmax_l1pl2p+1)*sizeof(edouble));
+
+    if((l1-1) >= 2 && (l2-1) >= 2)
+    {
+        const int qmax = gaunt_qmax(l1-1,l2-1,2);
+        edouble *a = xmalloc((qmax+1)*sizeof(edouble));
+        sign_t *signs = xmalloc((qmax+1)*sizeof(sign_t));
+
+        gaunt(l1-1, l2-1, 2, a);
+
+        for(q = 0; q <= qmax; q++)
+        {
+            nu = l1-1+l2-1-2*q;
+            signs[q] = copysigne(1, a[q]);
+            sum[q] = loge(fabse(a[q]))+casimir_integrate_perf_I(self,nu);
+        }
+        log_Bn[0] = gaunt_log_a0(l1-1,l2-1,2) + logadd_ms(sum, signs, qmax+1, &signs_B[0]);
+
+        xfree(a);
+        xfree(signs);
+    }
+
+    if((l1-1) >= 2)
+    {
+        const int qmax = gaunt_qmax(l1-1,l2+1,2);
+        edouble *a = xmalloc((qmax+1)*sizeof(edouble));
+        sign_t *signs = xmalloc((qmax+1)*sizeof(sign_t));
+
+        gaunt(l1-1, l2+1, 2, a);
+
+        for(q = 0; q <= qmax; q++)
+        {
+            nu = l1-1+l2+1-2*q;
+            signs[q] = copysigne(1, a[q]);
+            sum[q] = loge(fabse(a[q])) + casimir_integrate_perf_I(self,nu);
+        }
+        log_Bn[1] = gaunt_log_a0(l1-1,l2+1,2) + logadd_ms(sum, signs, qmax+1, &signs_B[1]);
+        signs_B[1] *= -1;
+
+        xfree(a);
+        xfree(signs);
+    }
+
+    if((l2-1) >= 2)
+    {
+        const int qmax = gaunt_qmax(l1+1,l2-1,2);
+        edouble *a = xmalloc((qmax+1)*sizeof(edouble));
+        sign_t *signs = xmalloc((qmax+1)*sizeof(sign_t));
+
+        gaunt(l1+1, l2-1, 2, a);
+
+        for(q = 0; q <= qmax; q++)
+        {
+            nu = l1+1+l2-1-2*q;
+            signs[q] = copysigne(1, a[q]);
+            sum[q] = loge(fabse(a[q])) + casimir_integrate_perf_I(self,nu);
+        }
+        log_Bn[2] = gaunt_log_a0(l1+1,l2-1,2) + logadd_ms(sum, signs, qmax+1, &signs_B[2]);
+        signs_B[2] *= -1;
+
+        xfree(a);
+        xfree(signs);
+    }
+
+    {
+        const int qmax = qmax_l1pl2p;
+        edouble *a = xmalloc((qmax+1)*sizeof(edouble));
+        sign_t *signs = xmalloc((qmax+1)*sizeof(sign_t));
+
+        gaunt(l1+1, l2+1, 2, a);
+
+        for(q = 0; q <= qmax; q++)
+        {
+            nu = l1+1+l2+1-2*q;
+            signs[q] = copysigne(1, a[q]);
+            sum[q] = loge(fabse(a[q])) + casimir_integrate_perf_I(self,nu);
+        }
+        log_Bn[3] = gaunt_log_a0(l1+1,l2+1,2) + logadd_ms(sum, signs, qmax+1, &signs_B[3]);
+
+        xfree(a);
+        xfree(signs);
+    }
+
+    xfree(sum);
+    log_B = logadd_ms(log_Bn, signs_B, 4, &sign_B) - loge(2*l1+1) - loge(2*l2+1);
+
+    cint->lnB_TM = cint->lnB_TE = lnLambda+log_B0(m,nT)+log_B;
+    cint->signB_TM = sign_B*sign_B0(l2,m,TM);
+    cint->signB_TE = sign_B*sign_B0(l2,m,TE);
+
+    /* set, A,C,D = +0 */
+    cint->lnA_TE = cint->lnA_TM   = -INFINITY;
+    cint->signA_TM = cint->signA_TE = 1;
+
+    cint->lnC_TE = cint->lnC_TM   = -INFINITY;
+    cint->signC_TM = cint->signC_TE = 1;
+
+    cint->lnD_TE = cint->lnD_TM   = -INFINITY;
+    cint->signD_TM = cint->signD_TE = 1;
+}
+
 /** @brief Evaluate integrals A,B,C,D
  *
+ * This function evaluates the integral A,B,C,D for l1,l2. The results are stored in cint.
+ *
  * Note that we also include the factor \f$\Lambda_{\ell_1,\ell_2}^{(m)}\f$.
+ *
+ * @param [in] self integration object
+ * @param [in] l1 parameter l1
+ * @param [in] l2 parameter l2
+ * @param [out] cint values of integrals
  */
 void casimir_integrate_perf(integration_perf_t *self, int l1, int l2, casimir_integrals_t *cint)
 {
@@ -210,20 +374,8 @@ void casimir_integrate_perf(integration_perf_t *self, int l1, int l2, casimir_in
 
     if(m == 0)
     {
-        cint->lnA_TM = cint->lnA_TE = -INFINITY;
-        cint->lnC_TM = cint->lnC_TE = -INFINITY;
-        cint->lnD_TM = cint->lnD_TE = -INFINITY;
-        cint->signA_TE = cint->signA_TM = +1;
-        cint->signC_TE = cint->signC_TM = +1;
-        cint->signD_TE = cint->signD_TM = +1;
-
-
-        /* XXX FIXME XXX */
-        cint->lnB_TM = cint->lnB_TE = -INFINITY;
-        cint->signB_TM = +1;
-        cint->signB_TE = +1;
-
-        TERMINATE(!isfinite(cint->lnB_TM) || isnan(cint->lnB_TM), "lnA=%Lg, l1=%d,l2=%d,m=%d,nT=%g", cint->lnA_TM,l1,l2,m,nT);
+        casimir_integrate_perf_m0(self, l1, l2, cint);
+        TERMINATE(!isfinite(cint->lnB_TM) || isnan(cint->lnB_TM), "lnB=%Lg, l1=%d,l2=%d,m=%d,nT=%g", cint->lnB_TM,l1,l2,m,nT);
 
         return;
     }

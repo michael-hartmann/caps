@@ -36,7 +36,7 @@ void casimir_integrate_perf_init(integration_perf_t *self, double nT, int m, int
 void casimir_integrate_perf_free(integration_perf_t *self);
 void casimir_integrate_perf(integration_perf_t *self, int l1, int l2, casimir_integrals_t *cint);
 
-edouble casimir_integrate_I(integration_perf_t *self, int nu);
+edouble casimir_integrate_perf_I(integration_perf_t *self, int nu);
 edouble casimir_integrate_K(integration_perf_t *self, const int l1, const int l2, sign_t *sign);
 
 #endif
