@@ -242,7 +242,6 @@ void casimir_integrate_perf_free(integration_perf_t *self)
 static void casimir_integrate_perf_m0(integration_perf_t *self, int l1, int l2, casimir_integrals_t *cint)
 {
     int q,nu;
-    const int m = 0;
     edouble log_B;
     sign_t sign_B;
     const edouble lnLambda = casimir_lnLambda(l1, l2, 0, NULL);
