@@ -7,17 +7,20 @@
 #define TE 1
 #define TM 0
 
+/* here are all signs considered, except the sign of the evaluation of the
+ * integral. But also the -1 of Lambda(l1,l2,m) is considered here.
+ */
 #define log_A0(m,nT) (2*log(m)-2*nT)
-#define sign_A0(l2,m,rp) MPOW(l2+m+rp)
+#define sign_A0(l2,m,rp) MPOW(1+l2+rp)
 
 #define log_B0(m,nT) (-2*nT)
-#define sign_B0(l2,m,rp) MPOW(l2+m+1+rp)
+#define sign_B0(l2,m,rp) MPOW(l2+rp)
 
 #define log_C0(m,nT) (log(m)-2*nT)
-#define sign_C0(l2,m,rp) MPOW(l2+m+rp)
+#define sign_C0(l2,m,rp) MPOW(l2+rp)
 
 #define log_D0(m,nT) (log(m)-2*nT)
-#define sign_D0(l2,m,rp) MPOW(l2+m+rp+1)
+#define sign_D0(l2,m,rp) MPOW(l2+rp+1)
 
 
 typedef struct {
