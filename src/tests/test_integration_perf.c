@@ -21,7 +21,7 @@ static edouble _I(int nu, int m2, double tau)
     integration_perf_t int_perf;
 
     casimir_integrate_perf_init(&int_perf, nT, m2/2, nu);
-    v = casimir_integrate_I(&int_perf, nu);
+    v = casimir_integrate_perf_I(&int_perf, nu);
     casimir_integrate_perf_free(&int_perf);
 
     return v;
@@ -361,28 +361,28 @@ int test_integration_perf(void)
                     double lnA = A(l1,l2,m,nT,&signA);
                     double lnB = B(l1,l2,m,nT,&signB);
                     double lnC = C(l1,l2,m,nT,&signC);
-                    double lnD;
+                    double lnD = C(l2,l1,m,nT,&signD);
 
                     _integrals(l1,l2,m,nT,&cint);
                     AssertAlmostEqual(&test, cint.lnA_TM, lnA);
                     AssertAlmostEqual(&test, cint.signA_TM, signA);
+
                     AssertAlmostEqual(&test, cint.lnB_TM, lnB);
                     AssertAlmostEqual(&test, cint.signB_TM, signB);
+
                     AssertAlmostEqual(&test, cint.lnC_TM, lnC);
                     AssertAlmostEqual(&test, cint.signC_TM, signC);
 
                     AssertAlmostEqual(&test, cint.signD_TM, -signC);
-
-                    lnD = C(l2,l1,m,nT,&signD);
                     AssertAlmostEqual(&test, cint.lnD_TM, lnD);
                     AssertAlmostEqual(&test, cint.signD_TM, MPOW(l1+l2+1)*signD);
                 }
     }
 
-
     /* test integral I */
     v = _I(2,2,2);
     AssertAlmostEqual(&test, v, 0.4054651081081643819780131163);
+
 
     v = _I(5,2,2);
     AssertAlmostEqual(&test, v, 5.813197260642067905077208633);
@@ -453,6 +453,7 @@ int test_integration_perf(void)
     AssertAlmostEqual(&test, cint.lnC_TM, 412.57255550309976814896);
     AssertAlmostEqual(&test, cint.lnD_TM, 413.766977852356385781);
 
+
     _integrals(241,1,1,30,&cint);
     AssertAlmostEqual(&test, cint.lnA_TM, 249.75276347175786475423);
     AssertAlmostEqual(&test, cint.lnB_TM, 258.05248402595679167552);
@@ -469,8 +470,10 @@ int test_integration_perf(void)
     AssertAlmostEqual(&test, cint.lnB_TM, -1.970116759119433);
     AssertAlmostEqual(&test, cint.lnC_TM, -3.298725852652321);
 
+
     _integrals(4,4,0,0.005,&cint);
     AssertAlmostEqual(&test, cint.lnB_TM, 56.977025325953406);
+
 
     _integrals(4,4,1,0.005,&cint);
     AssertAlmostEqual(&test, cint.lnA_TM, 40.74560144887208);
@@ -623,6 +626,7 @@ int test_integration_perf(void)
     AssertAlmostEqual(&test, cint.lnA_TM, 13484.656037918688437);
     AssertAlmostEqual(&test, cint.lnB_TM, 13509.800445322035821193049198451);
     AssertAlmostEqual(&test, cint.lnC_TM, 13495.271984956561221915441695);
+
 
     _integrals(2000,2000,1,1,&cint);
     AssertAlmostEqual(&test, cint.lnA_TM, 29149.71533012066508345912);
