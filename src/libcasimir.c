@@ -1370,15 +1370,14 @@ double casimir_F(casimir_t *self, int *nmax)
  */
 void casimir_logdetD0(casimir_t *self, int m, double *logdet_EE, double *logdet_MM)
 {
-    int l1,l2,min,max,dim;
+    int l1,l2;
     const edouble lnRbyScriptL = loge(self->RbyScriptL);
     matrix_edouble_t *EE = NULL, *MM = NULL;
     matrix_sign_t *EE_sign = NULL, *MM_sign = NULL;
 
-    min = MAX(m,1);
-    max = self->lmax;
-
-    dim = (max-min+1);
+    const int min = MAX(m,1);
+    const int max = self->lmax;
+    const int dim = (max-min+1);
 
     if(logdet_EE != NULL)
     {
@@ -1533,16 +1532,16 @@ double casimir_trM(casimir_t *self, int n, int m)
  */
 double casimir_logdetD(casimir_t *self, int n, int m)
 {
-    int min,max,dim,l1,l2;
+    int l1,l2;
     const double nT = n*self->T;
     double logdet = 0;
-    double nTRbyScriptL = nT*self->RbyScriptL;
+    const double nTRbyScriptL = nT*self->RbyScriptL;
+    const double lognTRbyScriptL = log(nTRbyScriptL);
     integration_perf_t int_perf;
 
-    min = MAX(m,1);
-    max = self->lmax;
-
-    dim = (max-min+1);
+    const int min = MAX(m,1);
+    const int max = self->lmax;
+    const int dim = (max-min+1);
 
     if(n == 0)
     {
@@ -1581,7 +1580,6 @@ double casimir_logdetD(casimir_t *self, int n, int m)
 
             if(nTRbyScriptL < 1)
             {
-                double lognTRbyScriptL = log(nTRbyScriptL);
                 ln_al1 -= (l1-l2)*lognTRbyScriptL;
                 ln_bl1 -= (l1-l2)*lognTRbyScriptL;
 
