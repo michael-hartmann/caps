@@ -27,6 +27,7 @@ typedef struct {
     edouble tau;
     edouble *cache_I;
     edouble *cache_K;
+    sign_t *cache_K_signs;
     int dim_K;
     int m,lmax;
     double nT;
