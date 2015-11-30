@@ -1,7 +1,7 @@
 /**
  * @file   libcasimir.c
  * @author Michael Hartmann <michael.hartmann@physik.uni-augsburg.de>
- * @date   September, 2015
+ * @date   November, 2015
  * @brief  library to calculate the free Casimir energy in the plane-sphere geometry
  */
 
@@ -341,7 +341,7 @@ double casimir_T_scaled_to_SI(double T_scaled, double ScriptL)
  * @param [in]  LbyR \f$\frac{L}{R}\f$
  * @param [in]  T temperature in units of \f$2\pi k_B \mathcal{L}/(\hbar c)\f$
  * @retval 0 if successful
- * @retval -1 if wrong value for RbyScriptL
+ * @retval -1 if wrong value for LbyR
  * @retval -2 if wrong value for T
  */
 int casimir_init(casimir_t *self, double LbyR, double T)
@@ -1392,14 +1392,17 @@ void casimir_logdetD0(casimir_t *self, int m, double *logdet_EE, double *logdet_
 
     /* calculate the logarithm of the matrix elements of D */
     for(l1 = min; l1 <= max; l1++)
+    {
+        sign_t sign_a0, sign_b0;
+        double lna0, lnb0;
+        casimir_lnab0(l1, &lna0, &sign_a0, &lnb0, &sign_b0);
+
         for(l2 = min; l2 <= max; l2++)
         {
             /* i: row of matrix, j: column of matrix */
             const int i = l1-min, j = l2-min;
-            sign_t sign_a0, sign_b0, sign_xi;
-            double lna0, lnb0;
+            sign_t sign_xi;
             const edouble lnXiRL = casimir_lnXi(l1,l2,m,&sign_xi)+(2*l1+1)*lnRbyScriptL;
-            casimir_lnab0(l1, &lna0, &sign_a0, &lnb0, &sign_b0);
             edouble v;
             sign_t sign;
 
@@ -1434,6 +1437,7 @@ void casimir_logdetD0(casimir_t *self, int m, double *logdet_EE, double *logdet_
                 TERMINATE(!isfinite(v), "MM l1=%d,l2=%d: v=%Lg (lnb0=%g, lnXiRL=%Lg)", l1, l2, v, lnb0, lnXiRL);
             }
         }
+    }
 
     /* calculate logdet and free space */
     if(EE != NULL)
