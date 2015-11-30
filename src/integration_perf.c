@@ -175,14 +175,20 @@ edouble casimir_integrate_K(integration_perf_t *self, const int l1, const int l2
         }
 
         v = self->cache_K[index] = log_a0+logadd_ms(a, signs, elems, sign);
+        self->cache_K_signs[index] = *sign;
 
         xfree(a);
         xfree(signs);
 
         TERMINATE(isnan(v), "casimir_integrate_K l1=%d, l2=%d, m=%d, %Lg\n", l1, l2, m, v);
-    }
 
-    return v;
+        return v;
+    }
+    else
+    {
+        *sign = self->cache_K_signs[index];
+        return v;
+    }
 }
 
 
@@ -212,6 +218,7 @@ void casimir_integrate_perf_init(integration_perf_t *self, double nT, int m, int
 
     /* allocate memory and initialize chache for K */
     elems_K = pow_2(lmax+2);
+    self->cache_K_signs = xmalloc(elems_K*sizeof(sign_t));
     self->cache_K = xmalloc(elems_K*sizeof(edouble));
     for(i = 0; i < elems_K; i++)
         self->cache_K[i] = NAN;
@@ -235,6 +242,11 @@ void casimir_integrate_perf_free(integration_perf_t *self)
     {
         xfree(self->cache_K);
         self->cache_K = NULL;
+    }
+    if(self->cache_K_signs != NULL)
+    {
+        xfree(self->cache_K_signs);
+        self->cache_K_signs = NULL;
     }
 }
 
