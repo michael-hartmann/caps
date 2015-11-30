@@ -106,10 +106,7 @@ edouble casimir_integrate_perf_I(integration_perf_t *self, int nu)
     {
         int k;
         const double tau = 2*self->nT;
-        int m = self->m;
-
-        if(m == 0)
-            m = 2;
+        const int m = (self->m != 0) ? self->m : 2;
 
         edouble p1[m];        /* polynom (z+2)^(m-1) */
         edouble p2[nu+1-2*m]; /* polynom d^(2m)/dz^(2m) P_(nu)(1+z) */
@@ -158,7 +155,7 @@ edouble casimir_integrate_K(integration_perf_t *self, const int l1, const int l2
     if(isnan(v))
     {
         int q;
-        const int m = self->m;
+        const int m = (self->m != 0) ? self->m : 2;
         const int qmax       = gaunt_qmax(l1,l2,m);
         const edouble log_a0 = gaunt_log_a0(l1,l2,m);
         const int elems = MAX(0,1+qmax);
@@ -253,103 +250,33 @@ void casimir_integrate_perf_free(integration_perf_t *self)
 /* integrate for m=0 */
 static void casimir_integrate_perf_m0(integration_perf_t *self, int l1, int l2, casimir_integrals_t *cint)
 {
-    int q,nu;
     edouble log_B;
     sign_t sign_B;
     const edouble lnLambda = casimir_lnLambda(l1, l2, 0, NULL);
-    const double nT = self->nT;
-    const int qmax_l1pl2p = gaunt_qmax(l1+1,l2+1,2);
 
     sign_t signs_B[4] = {1,1,1,1};
     edouble log_Bn[4] = { -INFINITY, -INFINITY, -INFINITY, -INFINITY };
 
-    edouble *sum = xmalloc((qmax_l1pl2p+1)*sizeof(edouble));
-
     if((l1-1) >= 2 && (l2-1) >= 2)
-    {
-        const int qmax = gaunt_qmax(l1-1,l2-1,2);
-        edouble *a = xmalloc((qmax+1)*sizeof(edouble));
-        sign_t *signs = xmalloc((qmax+1)*sizeof(sign_t));
-
-        gaunt(l1-1, l2-1, 2, a);
-
-        for(q = 0; q <= qmax; q++)
-        {
-            nu = l1-1+l2-1-2*q;
-            signs[q] = copysigne(1, a[q]);
-            sum[q] = loge(fabse(a[q]))+casimir_integrate_perf_I(self,nu);
-        }
-        log_Bn[0] = gaunt_log_a0(l1-1,l2-1,2) + logadd_ms(sum, signs, qmax+1, &signs_B[0]);
-
-        xfree(a);
-        xfree(signs);
-    }
+        log_Bn[0] = casimir_integrate_K(self, l1-1, l2-1, &signs_B[0]);
 
     if((l1-1) >= 2)
     {
-        const int qmax = gaunt_qmax(l1-1,l2+1,2);
-        edouble *a = xmalloc((qmax+1)*sizeof(edouble));
-        sign_t *signs = xmalloc((qmax+1)*sizeof(sign_t));
-
-        gaunt(l1-1, l2+1, 2, a);
-
-        for(q = 0; q <= qmax; q++)
-        {
-            nu = l1-1+l2+1-2*q;
-            signs[q] = copysigne(1, a[q]);
-            sum[q] = loge(fabse(a[q])) + casimir_integrate_perf_I(self,nu);
-        }
-        log_Bn[1] = gaunt_log_a0(l1-1,l2+1,2) + logadd_ms(sum, signs, qmax+1, &signs_B[1]);
+        log_Bn[1] = casimir_integrate_K(self, l1-1, l2+1, &signs_B[1]);
         signs_B[1] *= -1;
-
-        xfree(a);
-        xfree(signs);
     }
 
     if((l2-1) >= 2)
     {
-        const int qmax = gaunt_qmax(l1+1,l2-1,2);
-        edouble *a = xmalloc((qmax+1)*sizeof(edouble));
-        sign_t *signs = xmalloc((qmax+1)*sizeof(sign_t));
-
-        gaunt(l1+1, l2-1, 2, a);
-
-        for(q = 0; q <= qmax; q++)
-        {
-            nu = l1+1+l2-1-2*q;
-            signs[q] = copysigne(1, a[q]);
-            sum[q] = loge(fabse(a[q])) + casimir_integrate_perf_I(self,nu);
-        }
-        log_Bn[2] = gaunt_log_a0(l1+1,l2-1,2) + logadd_ms(sum, signs, qmax+1, &signs_B[2]);
+        log_Bn[2] = casimir_integrate_K(self, l1+1, l2-1, &signs_B[2]);
         signs_B[2] *= -1;
-
-        xfree(a);
-        xfree(signs);
     }
 
-    {
-        const int qmax = qmax_l1pl2p;
-        edouble *a = xmalloc((qmax+1)*sizeof(edouble));
-        sign_t *signs = xmalloc((qmax+1)*sizeof(sign_t));
+    log_Bn[3] = casimir_integrate_K(self, l1+1, l2+1, &signs_B[3]);
 
-        gaunt(l1+1, l2+1, 2, a);
-
-        for(q = 0; q <= qmax; q++)
-        {
-            nu = l1+1+l2+1-2*q;
-            signs[q] = copysigne(1, a[q]);
-            sum[q] = loge(fabse(a[q])) + casimir_integrate_perf_I(self,nu);
-        }
-        log_Bn[3] = gaunt_log_a0(l1+1,l2+1,2) + logadd_ms(sum, signs, qmax+1, &signs_B[3]);
-
-        xfree(a);
-        xfree(signs);
-    }
-
-    xfree(sum);
     log_B = logadd_ms(log_Bn, signs_B, 4, &sign_B) - loge(2*l1+1) - loge(2*l2+1);
 
-    cint->lnB_TM = cint->lnB_TE = lnLambda+log_B0(m,nT)+log_B;
+    cint->lnB_TM = cint->lnB_TE = lnLambda+log_B0(m,self->nT)+log_B;
     cint->signB_TM = sign_B*sign_B0(l2,m,TM);
     cint->signB_TE = sign_B*sign_B0(l2,m,TE);
 
