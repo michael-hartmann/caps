@@ -105,6 +105,7 @@ void casimir_mpi_free(casimir_mpi_t *self)
     int i;
     double buf[] = { -1, -1, -1, -1, -1 };
 
+    /* stop all remaining slaves */
     for(i = 1; i < self->cores; i++)
         MPI_Send(buf, 5, MPI_DOUBLE, i, 0, MPI_COMM_WORLD);
 
@@ -363,6 +364,7 @@ int master(int argc, char *argv[], int cores)
 
             if(flag)
             {
+                /* receive result */
                 values[task->index] = task->value;
                 printf("# k=%d, x=%.15Lg, logdetD(xi = x/alpha)=%.15g\n", task->index, xk[task->index], values[task->index]);
             }
@@ -378,7 +380,7 @@ int master(int argc, char *argv[], int cores)
     for(i = 0; i < order; i++)
         integral += expe(ln_wk[i]+xk[i])*values[i];
 
-    /* free energy or T=0 */
+    /* free energy for T=0 */
     F0 = integral/alpha/M_PI;
 
     printf("#\n");
