@@ -129,7 +129,8 @@ int main(int argc, char *argv[])
 int master(int argc, char *argv[], int cores)
 {
     int order = ORDER, lmax = 0, ret = 0;
-    double F0, alpha, LbyR = -1, lfac = LFAC, precision = PRECISION;
+    edouble F0;
+    double alpha, LbyR = -1, lfac = LFAC, precision = PRECISION;
     edouble integral = 0, *xk, *ln_wk;
     int process, k = 0;
     double recv[cores][2];
@@ -279,7 +280,7 @@ int master(int argc, char *argv[], int cores)
             {
                 retrieve_job(&requests[process], recv[process], &index, &value);
 
-                printf("# k=%d, x=%.15g, logdetD(xi = x/alpha)=%.15g\n", index, (double)xk[index], value);
+                printf("# k=%d, x=%.15Lg, logdetD(xi = x/alpha)=%.15g\n", index, xk[index], value);
                 integral += expe(ln_wk[index]+xk[index])*value;
 
                 submit_job(process, &requests[process], recv[process], k, xk[k]/alpha, LbyR, lmax, precision);
@@ -296,7 +297,7 @@ int master(int argc, char *argv[], int cores)
             {
                 retrieve_job(&requests[process], recv[process], &index, &value);
 
-                printf("# k=%d, x=%.15g, logdetD(xi = x/alpha)=%.15g\n", index, (double)xk[index], value);
+                printf("# k=%d, x=%.15Lg, logdetD(xi = x/alpha)=%.15g\n", index, xk[index], value);
                 integral += expe(ln_wk[index]+xk[index])*value;
             }
 
@@ -305,11 +306,11 @@ int master(int argc, char *argv[], int cores)
     }
 
     /* free energy or T=0 */
-    F0 = (double)(integral/alpha/M_PI);
+    F0 = integral/alpha/M_PI;
 
     printf("#\n");
     printf("# L/R, lmax, order, alpha, F(T=0)\n");
-    printf("%.15g, %d, %d, %.15g, %.15g\n", LbyR, lmax, order, alpha, F0);
+    printf("%.15g, %d, %d, %.15g, %.15Lg\n", LbyR, lmax, order, alpha, F0);
 
 out:
     for(process = 1; process < cores; process++)
