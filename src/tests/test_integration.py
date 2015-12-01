@@ -7,7 +7,7 @@ from test_plm import Plm,dPlm
 from test_fresnel import fresnel_rp
 
 
-mp.dps = 5
+mp.dps = 50
 
 def integralA(l1,l2,m,nT, rp):
     tau = 2*nT
