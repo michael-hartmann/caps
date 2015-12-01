@@ -16,6 +16,7 @@
 #define PRECISION 1e-12
 #define ORDER 50
 #define LFAC 6.
+#define IDLE 5000
 
 /* calculate integrand logdetD(xi) = \sum_{m=0}^{m=lmax} logdetD^m(xi) */
 double integrand(double xi, double LbyR, int lmax, double precision)
@@ -88,11 +89,18 @@ int submit_job(int process, MPI_Request *request, double *recv, int k, double xi
 
 int retrieve_job(MPI_Request *request, double *buf, int *index, double *value)
 {
+    int flag = 0;
     MPI_Status status;
-    MPI_Wait(request, &status);
+    MPI_Test(request, &flag, &status);
 
-    *index = buf[0];
-    *value = buf[1];
+    if(flag)
+    {
+        MPI_Wait(request, &status);
+
+        *index = buf[0];
+        *value = buf[1];
+        return 1;
+    }
 
     return 0;
 }
@@ -272,14 +280,8 @@ int master(int argc, char *argv[], int cores)
 
         for(process = 1; process < cores && k < order; process++)
         {
-            int flag = 0;
-            MPI_Status status;
-
-            MPI_Test(&requests[process], &flag, &status);
-            if(flag)
+            if(retrieve_job(&requests[process], recv[process], &index, &value))
             {
-                retrieve_job(&requests[process], recv[process], &index, &value);
-
                 printf("# k=%d, x=%.15Lg, logdetD(xi = x/alpha)=%.15g\n", index, xk[index], value);
                 integral += expe(ln_wk[index]+xk[index])*value;
 
@@ -287,15 +289,15 @@ int master(int argc, char *argv[], int cores)
                 k++;
             }
 
-            usleep(5*1000);
+            usleep(IDLE);
         }
 
         if(k >= order)
         {
-
             for(process = 1; process < cores; process++)
             {
-                retrieve_job(&requests[process], recv[process], &index, &value);
+                while(!retrieve_job(&requests[process], recv[process], &index, &value))
+                    usleep(IDLE);
 
                 printf("# k=%d, x=%.15Lg, logdetD(xi = x/alpha)=%.15g\n", index, xk[index], value);
                 integral += expe(ln_wk[index]+xk[index])*value;
