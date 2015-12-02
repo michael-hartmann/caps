@@ -23,64 +23,6 @@
 #define STATE_RUNNING 1
 #define STATE_IDLE    0
 
-/* calculate integrand logdetD(xi) = \sum_{m=0}^{m=lmax} logdetD^m(xi) */
-double integrand(double xi, double LbyR, int lmax, double precision)
-{
-    casimir_t casimir;
-    double v = 0, v0 = 0;
-    int m = 0, use_trace = 0;
-
-    /* initialize Casimir object and set lmax */
-    casimir_init(&casimir, LbyR, xi);
-    casimir_set_lmax(&casimir, lmax);
-
-    /* sum up all contributions from m=0 to m=lmax */
-    while(m <= lmax)
-    {
-        double v_m;
-
-        if(use_trace)
-            v_m = -casimir_trM(&casimir, 1, m);
-        else
-        {
-            v_m = casimir_logdetD(&casimir, 1, m);
-
-            /* For large arguments of xi the calculation of logdetD^m becomes
-             * inaccurate. This corresponds to large distances (large xi <->
-             * large distances), so we can use the approximation
-             *      logdetD^m \approx -Tr M^m(xi).
-             *
-             * The factor 1e-8 was determined by experience.
-             */
-            if(fabs(v_m) < 1e-8)
-            {
-                v_m = -casimir_trM(&casimir, 1, m);
-                use_trace = 1;
-            }
-        }
-
-        /* divide contribution from m=0 by 2 */
-        if(m == 0)
-        {
-            v0 = v_m;
-            v_m /= 2;
-        }
-
-        v += v_m;
-
-        /* if contribution to the sum is smaller than v_m/v0, we're done */
-        if(fabs(v_m/v0) < precision)
-            break;
-
-        m++;
-    }
-
-    casimir_free(&casimir);
-
-    return v;
-}
-
-
 void casimir_mpi_init(casimir_mpi_t *self, double LbyR, int lmax, double precision, int cores)
 {
     int i;
@@ -94,8 +36,7 @@ void casimir_mpi_init(casimir_mpi_t *self, double LbyR, int lmax, double precisi
     for(i = 0; i < cores; i++)
     {
         casimir_task_t *task = xmalloc(sizeof(casimir_task_t));
-        task->index1   = -1;
-        task->index2   = -1;
+        task->index    = -1;
         task->state    = STATE_IDLE;
         self->tasks[i] = task;
     }
@@ -104,11 +45,11 @@ void casimir_mpi_init(casimir_mpi_t *self, double LbyR, int lmax, double precisi
 void casimir_mpi_free(casimir_mpi_t *self)
 {
     int i;
-    double buf[] = { -1, -1, -1, -1, -1 };
+    double buf[] = { -1, -1, -1, -1 };
 
     /* stop all remaining slaves */
     for(i = 1; i < self->cores; i++)
-        MPI_Send(buf, 5, MPI_DOUBLE, i, 0, MPI_COMM_WORLD);
+        MPI_Send(buf, 4, MPI_DOUBLE, i, 0, MPI_COMM_WORLD);
 
     for(i = 0; i < self->cores; i++)
     {
@@ -123,8 +64,7 @@ void casimir_mpi_free(casimir_mpi_t *self)
 
 int casimir_mpi_get_running(casimir_mpi_t *self)
 {
-    int running = 0;
-    int i;
+    int i,running = 0;
 
     for(i = 1; i < self->cores; i++)
         if(self->tasks[i]->state == STATE_RUNNING)
@@ -133,7 +73,7 @@ int casimir_mpi_get_running(casimir_mpi_t *self)
     return running;
 }
 
-int casimir_mpi_submit(casimir_mpi_t *self, int index1, int index2, double xi)
+int casimir_mpi_submit(casimir_mpi_t *self, int index, double xi, int m)
 {
     int i;
 
@@ -143,14 +83,14 @@ int casimir_mpi_submit(casimir_mpi_t *self, int index1, int index2, double xi)
 
         if(task->state == STATE_IDLE)
         {
-            double buf[] = { index1, xi, self->LbyR, self->lmax, self->precision };
+            double buf[] = { xi, self->LbyR, m, self->lmax };
 
-            task->index1 = index1;
-            task->index2 = index2;
-            task->xi     = xi;
-            task->state  = STATE_RUNNING;
+            task->index = index;
+            task->xi    = xi;
+            task->m     = m;
+            task->state = STATE_RUNNING;
 
-            MPI_Send (buf,        5, MPI_DOUBLE, i, 0, MPI_COMM_WORLD);
+            MPI_Send (buf,        4, MPI_DOUBLE, i, 0, MPI_COMM_WORLD);
             MPI_Irecv(task->recv, 1, MPI_DOUBLE, i, 0, MPI_COMM_WORLD, &task->request);
 
             return 1;
@@ -219,11 +159,11 @@ int main(int argc, char *argv[])
 
 int master(int argc, char *argv[], int cores)
 {
-    int i, order = ORDER, lmax = 0, ret = 0;
+    int i, m, order = ORDER, lmax = 0, ret = 0;
     edouble F0;
     double alpha, LbyR = -1, lfac = LFAC, precision = PRECISION;
     edouble integral = 0, *xk, *ln_wk;
-    double values[order];
+    double **values = NULL;
     casimir_mpi_t casimir_mpi;
 
     #define EXIT(n) do { ret = n; goto out; } while(0)
@@ -350,28 +290,49 @@ int master(int argc, char *argv[], int cores)
 
     casimir_mpi_init(&casimir_mpi, LbyR, lmax, precision, cores);
 
+    /* allocate memory */
+    values = xmalloc(order*sizeof(double *));
+    for(i = 0; i < order; i++)
+    {
+        values[i] = xmalloc(lmax*sizeof(double));
+
+        for(m = 0; m < lmax; m++)
+            values[i][m] = 0;
+    }
+
     /* do Gauss-Legendre quadrature */
-    i = 0;
-    while(i < order)
+    for(m = 0; m < lmax; m++)
+    {
+        for(i = 0; i < order; i++)
+        {
+            while(1)
+            {
+                casimir_task_t *task = NULL;
+                int flag;
+
+                /* send job */
+                flag = casimir_mpi_submit(&casimir_mpi, i, xk[i]/alpha, m);
+
+                if(flag)
+                    break;
+
+                while(casimir_mpi_retrieve(&casimir_mpi, &task))
+                    values[task->index][task->m] = task->value;
+
+                usleep(IDLE_MASTER);
+            }
+        }
+    }
+
+    while(casimir_mpi_get_running(&casimir_mpi) > 0)
     {
         casimir_task_t *task = NULL;
+        int flag = casimir_mpi_retrieve(&casimir_mpi, &task);
 
-        /* send jobs as long we have work to do */
-        while(i < order && casimir_mpi_submit(&casimir_mpi, i, 9, xk[i]/alpha))
-            i++;
-
-        while(1)
+        if(flag)
         {
-            int flag = casimir_mpi_retrieve(&casimir_mpi, &task);
-
-            if(flag)
-            {
-                /* receive result */
-                values[task->index1] = task->value;
-                printf("# k=%d, x=%.15Lg, logdetD(xi = x/alpha)=%.15g\n", task->index1, xk[task->index1], values[task->index1]);
-            }
-            else if(i != order || casimir_mpi_get_running(&casimir_mpi) == 0)
-                break;
+            /* receive result */
+            values[task->index][task->m] = task->value;
         }
 
         usleep(IDLE_MASTER);
@@ -380,7 +341,17 @@ int master(int argc, char *argv[], int cores)
     casimir_mpi_free(&casimir_mpi);
 
     for(i = 0; i < order; i++)
-        integral += expe(ln_wk[i]+xk[i])*values[i];
+    {
+        double value = 0;
+        for(m = 0; m < lmax; m++)
+        {
+            if(m == 0)
+                value = values[i][0]/2;
+            else
+                value += values[i][m];
+        }
+        integral += expe(ln_wk[i]+xk[i])*value;
+    }
 
     /* free energy for T=0 */
     F0 = integral/alpha/M_PI;
@@ -389,34 +360,44 @@ int master(int argc, char *argv[], int cores)
     printf("# L/R, lmax, order, alpha, F(T=0)\n");
     printf("%.15g, %d, %d, %.15g, %.15Lg\n", LbyR, lmax, order, alpha, F0);
 
+    /* free memory */
+    for(i = 0; i < order; i++)
+    {
+        xfree(values[i]);
+        values[i] = NULL;
+    }
+    xfree(values);
+    values = NULL;
+
 out:
     return ret;
 }
 
 int slave(MPI_Comm master_comm, int rank)
 {
-    int k, lmax;
+    int m, lmax;
     double buf[5];
-    double v,xi,precision,LbyR;
+    double xi,LbyR;
     MPI_Status status;
     MPI_Request request;
+    casimir_t casimir;
 
     while(1)
     {
         MPI_Recv(buf, 5, MPI_DOUBLE, 0, 0, master_comm, &status);
 
-        k         = buf[0];
-        xi        = buf[1];
-        LbyR      = buf[2];
+        xi        = buf[0];
+        LbyR      = buf[1];
+        m         = (int)buf[2];
         lmax      = buf[3];
-        precision = buf[4];
 
-        if(k < 0)
+        if(xi < 0)
             break;
 
-        v = integrand(xi, LbyR, lmax, precision);
-
-        buf[0] = v;
+        casimir_init(&casimir, LbyR, xi);
+        casimir_set_lmax(&casimir, lmax);
+        buf[0] = casimir_logdetD(&casimir, 1, m);
+        casimir_free(&casimir);
 
         MPI_Isend(buf, 1, MPI_DOUBLE, 0, 0, master_comm, &request);
         MPI_Wait(&request, &status);
