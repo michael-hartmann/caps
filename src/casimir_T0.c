@@ -94,8 +94,9 @@ void casimir_mpi_init(casimir_mpi_t *self, double LbyR, int lmax, double precisi
     for(i = 0; i < cores; i++)
     {
         casimir_task_t *task = xmalloc(sizeof(casimir_task_t));
-        task->index = -1;
-        task->state = STATE_IDLE;
+        task->index1   = -1;
+        task->index2   = -1;
+        task->state    = STATE_IDLE;
         self->tasks[i] = task;
     }
 }
@@ -132,7 +133,7 @@ int casimir_mpi_get_running(casimir_mpi_t *self)
     return running;
 }
 
-int casimir_mpi_submit(casimir_mpi_t *self, int index, double xi)
+int casimir_mpi_submit(casimir_mpi_t *self, int index1, int index2, double xi)
 {
     int i;
 
@@ -142,11 +143,12 @@ int casimir_mpi_submit(casimir_mpi_t *self, int index, double xi)
 
         if(task->state == STATE_IDLE)
         {
-            double buf[] = { index, xi, self->LbyR, self->lmax, self->precision };
+            double buf[] = { index1, xi, self->LbyR, self->lmax, self->precision };
 
-            task->index = index;
-            task->xi    = xi;
-            task->state = STATE_RUNNING;
+            task->index1 = index1;
+            task->index2 = index2;
+            task->xi     = xi;
+            task->state  = STATE_RUNNING;
 
             MPI_Send (buf,        5, MPI_DOUBLE, i, 0, MPI_COMM_WORLD);
             MPI_Irecv(task->recv, 1, MPI_DOUBLE, i, 0, MPI_COMM_WORLD, &task->request);
@@ -355,7 +357,7 @@ int master(int argc, char *argv[], int cores)
         casimir_task_t *task = NULL;
 
         /* send jobs as long we have work to do */
-        while(i < order && casimir_mpi_submit(&casimir_mpi, i, xk[i]/alpha))
+        while(i < order && casimir_mpi_submit(&casimir_mpi, i, 9, xk[i]/alpha))
             i++;
 
         while(1)
@@ -365,8 +367,8 @@ int master(int argc, char *argv[], int cores)
             if(flag)
             {
                 /* receive result */
-                values[task->index] = task->value;
-                printf("# k=%d, x=%.15Lg, logdetD(xi = x/alpha)=%.15g\n", task->index, xk[task->index], values[task->index]);
+                values[task->index1] = task->value;
+                printf("# k=%d, x=%.15Lg, logdetD(xi = x/alpha)=%.15g\n", task->index1, xk[task->index1], values[task->index1]);
             }
             else if(i != order || casimir_mpi_get_running(&casimir_mpi) == 0)
                 break;
