@@ -297,7 +297,7 @@ int master(int argc, char *argv[], int cores)
         values[i] = xmalloc(lmax*sizeof(double));
 
         for(m = 0; m < lmax; m++)
-            values[i][m] = 0;
+            values[i][m] = NAN;
     }
 
     /* do Gauss-Legendre quadrature */
@@ -308,14 +308,12 @@ int master(int argc, char *argv[], int cores)
             while(1)
             {
                 casimir_task_t *task = NULL;
-                int flag;
 
                 /* send job */
-                flag = casimir_mpi_submit(&casimir_mpi, i, xk[i]/alpha, m);
-
-                if(flag)
+                if(casimir_mpi_submit(&casimir_mpi, i, xk[i]/alpha, m))
                     break;
 
+                /* retrieve jobs */
                 while(casimir_mpi_retrieve(&casimir_mpi, &task))
                     values[task->index][task->m] = task->value;
 
@@ -324,16 +322,13 @@ int master(int argc, char *argv[], int cores)
         }
     }
 
+    /* retrieve all running jobs */
     while(casimir_mpi_get_running(&casimir_mpi) > 0)
     {
         casimir_task_t *task = NULL;
-        int flag = casimir_mpi_retrieve(&casimir_mpi, &task);
 
-        if(flag)
-        {
-            /* receive result */
+        while(casimir_mpi_retrieve(&casimir_mpi, &task))
             values[task->index][task->m] = task->value;
-        }
 
         usleep(IDLE_MASTER);
     }
