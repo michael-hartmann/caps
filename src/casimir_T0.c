@@ -300,7 +300,7 @@ int master(int argc, char *argv[], int cores)
             values[i][m] = NAN;
     }
 
-    /* do Gauss-Legendre quadrature */
+    /* gather all data */
     for(m = 0; m < lmax; m++)
     {
         for(i = 0; i < order; i++)
@@ -335,6 +335,7 @@ int master(int argc, char *argv[], int cores)
 
     casimir_mpi_free(&casimir_mpi);
 
+    /* do Gauss-Legendre quadrature */
     for(i = 0; i < order; i++)
     {
         double value = 0;
