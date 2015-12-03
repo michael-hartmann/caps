@@ -17,8 +17,7 @@
 #define PRECISION 1e-12
 #define ORDER 50
 #define LFAC 6.
-#define IDLE_MASTER 5000
-#define IDLE_SLAVE 5000
+#define IDLE 500
 
 #define STATE_RUNNING 1
 #define STATE_IDLE    0
@@ -317,7 +316,7 @@ int master(int argc, char *argv[], int cores)
                 while(casimir_mpi_retrieve(&casimir_mpi, &task))
                     values[task->index][task->m] = task->value;
 
-                usleep(IDLE_MASTER);
+                usleep(IDLE);
             }
         }
     }
@@ -330,7 +329,7 @@ int master(int argc, char *argv[], int cores)
         while(casimir_mpi_retrieve(&casimir_mpi, &task))
             values[task->index][task->m] = task->value;
 
-        usleep(IDLE_MASTER);
+        usleep(IDLE);
     }
 
     casimir_mpi_free(&casimir_mpi);
@@ -373,7 +372,7 @@ int slave(MPI_Comm master_comm, int rank)
 {
     int m, lmax;
     double buf[5];
-    double xi,LbyR;
+    double logdet,xi,LbyR;
     MPI_Status status;
     MPI_Request request;
     casimir_t casimir;
@@ -392,13 +391,11 @@ int slave(MPI_Comm master_comm, int rank)
 
         casimir_init(&casimir, LbyR, xi);
         casimir_set_lmax(&casimir, lmax);
-        buf[0] = casimir_logdetD(&casimir, 1, m);
+        logdet = casimir_logdetD(&casimir, 1, m);
         casimir_free(&casimir);
 
-        MPI_Isend(buf, 1, MPI_DOUBLE, 0, 0, master_comm, &request);
+        MPI_Isend(&logdet, 1, MPI_DOUBLE, 0, 0, master_comm, &request);
         MPI_Wait(&request, &status);
-
-        usleep(IDLE_SLAVE);
     }
 
     return 0;
