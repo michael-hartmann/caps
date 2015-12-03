@@ -12,6 +12,7 @@
 #define CASIMIR_DEFAULT_PRECISION 1e-12
 #define CASIMIR_IDLE 1000
 #define CASIMIR_FACTOR_LMAX 5
+#define CASIMIR_DEFAULT_TRACE_THRESHOLD 1e-8
 
 /** define sign_t as a signed char */
 typedef char sign_t;
@@ -66,11 +67,12 @@ typedef struct
      * @name accuracy and numerical parameters
      */
      /*@{*/
-    int integration;     /**< 0: use perfect reflectors, >0: order of Gauss-Laguerre integration */
-    int lmax;            /**< truncation value for vector space \f$\ell_\mathrm{max}\f$ */
-    int cores;           /**< number of thread that should be used */
-    double precision;    /**< precision \f$\epsilon_p\f$ */
-    pthread_t **threads; /**< list of pthread objects */
+    int integration;        /**< 0: use perfect reflectors, >0: order of Gauss-Laguerre integration */
+    int lmax;               /**< truncation value for vector space \f$\ell_\mathrm{max}\f$ */
+    int cores;              /**< number of thread that should be used */
+    double precision;       /**< precision \f$\epsilon_p\f$ */
+    double trace_threshold; /**< threshold */
+    pthread_t **threads;    /**< list of pthread objects */
 
     char detalg[64];     /**< algorithm to calculate determinant */
 
@@ -170,7 +172,7 @@ void casimir_mie_cache_free(casimir_t *self);
 
 void casimir_logdetD0(casimir_t *self, int m, double *EE, double *MM);
 double casimir_logdetD(casimir_t *self, int n, int m);
-double casimir_trM(casimir_t *self, int n, int m);
+double casimir_trM(casimir_t *self, int n, int m, void *int_perf);
 
 void casimir_rp(casimir_t *self, edouble nT, edouble k, edouble *r_TE, edouble *r_TM);
 
