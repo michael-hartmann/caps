@@ -71,7 +71,7 @@ typedef struct
     int lmax;               /**< truncation value for vector space \f$\ell_\mathrm{max}\f$ */
     int cores;              /**< number of thread that should be used */
     double precision;       /**< precision \f$\epsilon_p\f$ */
-    double trace_threshold; /**< threshold */
+    double trace_threshold; /**< threshold when Tr M is used as an approximation for log(det(1-M)) */
     pthread_t **threads;    /**< list of pthread objects */
 
     char detalg[64];     /**< algorithm to calculate determinant */
@@ -155,6 +155,10 @@ int casimir_set_cores(casimir_t *self, int cores);
 
 double casimir_get_precision(casimir_t *self);
 int    casimir_set_precision(casimir_t *self, double precision);
+
+
+double casimir_get_trace_threshold(casimir_t *self);
+int    casimir_set_trace_threshold(casimir_t *self, double threshold);
 
 void casimir_lnab0(int l, double *a0, sign_t *sign_a0, double *b0, sign_t *sign_b0);
 void casimir_lnab(casimir_t *self, const int n, const int l, double *lna, double *lnb, sign_t *sign_a, sign_t *sign_b);
