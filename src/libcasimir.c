@@ -1608,7 +1608,7 @@ double casimir_logdetD(casimir_t *self, int n, int m)
        M_ME,  M_MM */
     for(l1 = min; l1 <= max; l1++)
     {
-        for(l2 = min; l2 <= max; l2++)
+        for(l2 = min; l2 <= l1; l2++)
         {
             const int Delta_ij = (l1 == l2 ? 0 : -INFINITY);
             const int i = l1-min, j = l2-min;
