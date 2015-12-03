@@ -30,18 +30,13 @@ USE_EXTENDED_DOUBLE = 1
 
 # Use LAPACK to calculate the determinant.
 #
-# If you define USE_LAPACK, the LAPACK routine dgetrf will be used to perform
+# If you define USE_LAPACK, the LAPACK routine dgetrf may be used to perform
 # LU decompositions. The use of LAPACK is slightly faster, but LAPACK only
-# operates on doubles. This will increase the precision. For very small values
-# of the determinant, this will cause wrong results.
+# operates on doubles.
 #
-# Example: (no LAPACK support)
-# For T=10, x=0.0075, lmax=800, n=131 and m=64:
-#   log(det D) = 0                                      using LAPACK
-#   log(det D) = -5.45180220412611e-15          without using LAPACK
-#
-# If you don't know what to say here, comment out the line.
-# USE_LAPACK = 1
+# Per default a QR decomposition is used. If set USE_LAPACK to 1, you may also
+# use LU decomposition from LAPACK.
+USE_LAPACK = 1
 
 
 # Disable additional checks and assertions.
