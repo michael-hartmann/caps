@@ -17,7 +17,7 @@
 #define PRECISION 1e-12
 #define ORDER 50
 #define LFAC 6.
-#define IDLE 500
+#define IDLE 10
 
 #define STATE_RUNNING 1
 #define STATE_IDLE    0
