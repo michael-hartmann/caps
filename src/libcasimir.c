@@ -92,10 +92,11 @@ void casimir_info(casimir_t *self, FILE *stream, const char *prefix)
     else
         fprintf(stream, "%d\n", self->integration);
 
-    fprintf(stream, "%slmax      = %d\n", prefix, self->lmax);
-    fprintf(stream, "%scores     = %d\n", prefix, self->cores);
-    fprintf(stream, "%sprecision = %g\n", prefix, self->precision);
-    fprintf(stream, "%sdetalg    = %s\n", prefix, self->detalg);
+    fprintf(stream, "%slmax            = %d\n", prefix, self->lmax);
+    fprintf(stream, "%scores           = %d\n", prefix, self->cores);
+    fprintf(stream, "%sprecision       = %g\n", prefix, self->precision);
+    fprintf(stream, "%strace_threshold = %g\n", prefix, self->trace_threshold);
+    fprintf(stream, "%sdetalg          = %s\n", prefix, self->detalg);
 }
 
 /*@}*/
@@ -353,12 +354,13 @@ int casimir_init(casimir_t *self, double LbyR, double T)
 
     self->lmax = (int)ceil(CASIMIR_FACTOR_LMAX/LbyR);
 
-    self->T          = T;
-    self->RbyScriptL = 1./(1.+LbyR);
-    self->LbyR       = LbyR;
-    self->precision  = CASIMIR_DEFAULT_PRECISION;
-    self->cores      = 1;
-    self->threads    = xmalloc(self->cores*sizeof(pthread_t));
+    self->T               = T;
+    self->RbyScriptL      = 1./(1.+LbyR);
+    self->LbyR            = LbyR;
+    self->precision       = CASIMIR_DEFAULT_PRECISION;
+    self->trace_threshold = CASIMIR_DEFAULT_TRACE_THRESHOLD;
+    self->cores           = 1;
+    self->threads         = xmalloc(self->cores*sizeof(pthread_t));
 
     /* initialize mie cache */
     casimir_mie_cache_init(self);
@@ -1466,23 +1468,21 @@ void casimir_logdetD0(casimir_t *self, int m, double *logdet_EE, double *logdet_
  * This function is thread-safe - as long you don't change lmax, temperature,
  * aspect ratio, dielectric properties of sphere and plane, and integration.
  *
+ * This function works only for perfect metals at the moment!
+ *
  * @param [in,out] self Casimir object
  * @param [in] n Matsubara term
  * @param [in] m
  * @param [in,out] integration_obj may be NULL
  * @retval trM \f$\mathrm{tr} \mathcal{D}^{(m)}(\xi=nT)\f$
  */
-double casimir_trM(casimir_t *self, int n, int m)
+double casimir_trM(casimir_t *self, int n, int m, void *obj)
 {
     int l;
-    const double nT = n*self->T;
     const int min = MAX(m,1);
     const int max = self->lmax;
+    integration_perf_t *int_perf = obj;
     edouble trM = 0;
-    integration_perf_t int_perf;
-
-    if(self->integration < 0)
-        casimir_integrate_perf_init(&int_perf, nT, m, self->lmax);
 
     for(l = min; l <= max; l++)
     {
@@ -1493,10 +1493,7 @@ double casimir_trM(casimir_t *self, int n, int m)
 
         casimir_mie_cache_get(self, l, n, &ln_al, &sign_al, &ln_bl, &sign_bl);
 
-        if(self->integration > 0)
-            casimir_integrate_drude(self, &cint, l, l, m, n, self->T);
-        else
-            casimir_integrate_perf(&int_perf, l, l, &cint);
+        casimir_integrate_perf(int_perf, l, l, &cint);
 
         /* EE */
         sign_t signs_EE[] = { sign_al*cint.signA_TE, sign_al*cint.signB_TM };
@@ -1512,9 +1509,6 @@ double casimir_trM(casimir_t *self, int n, int m)
         v = logadd_ms(list_MM, signs_MM, 2, &sign);
         trM += sign*expe(v);
     }
-
-    if(self->integration < 0)
-        casimir_integrate_perf_free(&int_perf);
 
     return trM;
 }
@@ -1538,7 +1532,7 @@ double casimir_logdetD(casimir_t *self, int n, int m)
 {
     int l1,l2;
     const double nT = n*self->T;
-    double logdet = 0;
+    double trace, logdet = 0;
     const double nTRbyScriptL = nT*self->RbyScriptL;
     const double lognTRbyScriptL = log(nTRbyScriptL);
     integration_perf_t int_perf;
@@ -1564,6 +1558,13 @@ double casimir_logdetD(casimir_t *self, int n, int m)
     if(self->integration < 0)
         casimir_integrate_perf_init(&int_perf, nT, m, self->lmax);
 
+    trace = casimir_trM(self, n, m, &int_perf);
+    if(trace < self->trace_threshold)
+    {
+        logdet = -trace;
+        goto out;
+    }
+
     matrix_edouble_t *M = matrix_edouble_alloc(2*dim);
     matrix_sign_t *M_sign = matrix_sign_alloc(2*dim);
 
@@ -1571,18 +1572,15 @@ double casimir_logdetD(casimir_t *self, int n, int m)
        M_ME,  M_MM */
     for(l1 = min; l1 <= max; l1++)
     {
-        double ln_al1, ln_bl1;
-        sign_t sign_al1, sign_bl1;
-        casimir_mie_cache_get(self, l1, n, &ln_al1, &sign_al1, &ln_bl1, &sign_bl1);
-
         for(l2 = min; l2 <= max; l2++)
         {
             const int Delta_ij = (l1 == l2 ? 0 : -INFINITY);
             const int i = l1-min, j = l2-min;
             casimir_integrals_t cint;
-            double ln_al2, ln_bl2;
-            sign_t sign_al2, sign_bl2;
+            double ln_al1, ln_bl1,ln_al2, ln_bl2;
+            sign_t sign_al1, sign_bl1, sign_al2, sign_bl2;
 
+            casimir_mie_cache_get(self, l1, n, &ln_al1, &sign_al1, &ln_bl1, &sign_bl1);
             casimir_mie_cache_get(self, l2, n, &ln_al2, &sign_al2, &ln_bl2, &sign_bl2);
 
             if(nTRbyScriptL < 1)
@@ -1731,6 +1729,7 @@ double casimir_logdetD(casimir_t *self, int n, int m)
         matrix_sign_free(M_sign);
     }
 
+out:
     if(self->integration < 0)
         casimir_integrate_perf_free(&int_perf);
 
