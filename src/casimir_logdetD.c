@@ -53,6 +53,8 @@ int main(int argc, char *argv[])
     int lmax = 0;
     int buffering_flag = 0;
     double trace_threshold = -1;
+    casimir_t casimir;
+    double logdet, start_time = now();
 
     printf("# %s", argv[0]);
     for(i = 1; i < argc; i++)
@@ -156,43 +158,22 @@ int main(int argc, char *argv[])
     if(lmax <= 0)
         lmax = MAX((int)ceil(lfac/LbyR), 5);
 
-    printf("# L/R  = %g\n", LbyR);
-    printf("# n    = %d\n", n);
-    printf("# T    = %g\n", T);
-    printf("# xi   = nT = %g\n", n*T);
-    printf("# m    = %d\n", m);
-    if(lmax)
-        printf("# lmax = %d\n", lmax);
-    else
-        printf("# lfac = %g\n", lfac);
-    if(trace_threshold > 0)
-        printf("# trace_threshold = %g\n", trace_threshold);
 
+    casimir_init(&casimir, LbyR, T);
+    casimir_set_lmax(&casimir, lmax);
+
+    casimir_info(&casimir, stdout, "# ");
     printf("#\n");
 
-    {
-        casimir_t casimir;
-        double value = 0, start_time = now();
+    if(trace_threshold >= 0)
+        casimir_set_trace_threshold(&casimir, trace_threshold);
 
-        casimir_init(&casimir, LbyR, T);
-        casimir_set_lmax(&casimir, lmax);
+    logdet = casimir_logdetD(&casimir, n, m);
 
+    casimir_free(&casimir);
 
-        if(trace_threshold > 0)
-        {
-            double trace = casimir_trM(&casimir, n, m);
-            if(fabs(trace) < trace_threshold)
-                value = -trace;
-        }
-
-        if(!value)
-            value = casimir_logdetD(&casimir, n, m);
-
-        casimir_free(&casimir);
-
-        printf("# LbyR,T,n,m,value,lmax,time\n");
-        printf("%g, %g, %d, %d, %.15g, %d, %g\n", LbyR, T, n, m, value, casimir.lmax, now()-start_time);
-    }
+    printf("# LbyR,T,n,m,logdetD,lmax,time\n");
+    printf("%g, %g, %d, %d, %.15g, %d, %g\n", LbyR, T, n, m, logdet, casimir.lmax, now()-start_time);
 
     return 0;
 }
