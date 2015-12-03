@@ -705,6 +705,42 @@ int casimir_set_precision(casimir_t *self, double precision)
 
 
 /**
+ * @brief Set threshold for trace
+ *
+ * The threshold determines when Tr M is used as an approximation for
+ * log(det(1-M)). If trace < threshold, then the value of the trace will be
+ * used. Otherwise the determinant is caclulated.
+ *
+ * This function is not thread-safe.
+ *
+ * @param [in,out] self Casimir object
+ * @param [in] threshold threshold
+ * @retval 1 if successful
+ * @retval 0 if threshold < 0
+ */
+int casimir_set_trace_threshold(casimir_t *self, double threshold)
+{
+    if(threshold < 0)
+        return 0;
+
+    self->trace_threshold = threshold;
+    return 1;
+}
+
+/**
+ * @brief Get threshold for trace
+ *
+ * This function is not thread-safe.
+ *
+ * @param [in] self Casimir object
+ * @retval threshold
+ */
+double casimir_get_trace_threshold(casimir_t *self)
+{
+    return self->trace_threshold;
+}
+
+/**
  * @brief Free memory for Casimir object
  *
  * This function will free allocated memory for the Casimir object. If you have
