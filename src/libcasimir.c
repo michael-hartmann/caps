@@ -1571,15 +1571,18 @@ double casimir_logdetD(casimir_t *self, int n, int m)
        M_ME,  M_MM */
     for(l1 = min; l1 <= max; l1++)
     {
-        for(l2 = min; l2 <= l1; l2++)
+        double ln_al1, ln_bl1;
+        sign_t sign_al1, sign_bl1;
+        casimir_mie_cache_get(self, l1, n, &ln_al1, &sign_al1, &ln_bl1, &sign_bl1);
+
+        for(l2 = min; l2 <= max; l2++)
         {
             const int Delta_ij = (l1 == l2 ? 0 : -INFINITY);
             const int i = l1-min, j = l2-min;
             casimir_integrals_t cint;
-            double ln_al1, ln_bl1, ln_al2, ln_bl2;
-            sign_t sign_al1, sign_bl1, sign_al2, sign_bl2;
+            double ln_al2, ln_bl2;
+            sign_t sign_al2, sign_bl2;
 
-            casimir_mie_cache_get(self, l1, n, &ln_al1, &sign_al1, &ln_bl1, &sign_bl1);
             casimir_mie_cache_get(self, l2, n, &ln_al2, &sign_al2, &ln_bl2, &sign_bl2);
 
             if(nTRbyScriptL < 1)
