@@ -304,20 +304,28 @@ int master(int argc, char *argv[], int cores)
     {
         for(i = 0; i < order; i++)
         {
-            while(1)
-            {
-                casimir_task_t *task = NULL;
+            int k = 0;
 
-                /* send job */
-                if(casimir_mpi_submit(&casimir_mpi, i, xk[i]/alpha, m))
-                    break;
+            /* k is either 0 or the last value in the list that is non NAN */
+            while(k < (m-1) && !isnan(values[i][k+1]))
+                k++;
 
-                /* retrieve jobs */
-                while(casimir_mpi_retrieve(&casimir_mpi, &task))
-                    values[task->index][task->m] = task->value;
+            /* check if we still have to calculate this */
+            if(k <= 0 || values[i][k]/values[i][0] >= precision)
+                while(1)
+                {
+                    casimir_task_t *task = NULL;
 
-                usleep(IDLE);
-            }
+                    /* send job */
+                    if(casimir_mpi_submit(&casimir_mpi, i, xk[i]/alpha, m))
+                        break;
+
+                    /* retrieve jobs */
+                    while(casimir_mpi_retrieve(&casimir_mpi, &task))
+                        values[task->index][task->m] = task->value;
+
+                    usleep(IDLE);
+                }
         }
     }
 
@@ -340,6 +348,9 @@ int master(int argc, char *argv[], int cores)
         double value = 0;
         for(m = 0; m < lmax; m++)
         {
+            if(isnan(values[i][m]))
+                break;
+
             if(m == 0)
                 value = values[i][0]/2;
             else
