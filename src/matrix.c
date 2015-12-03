@@ -56,7 +56,7 @@ double matrix_edouble_logdet(matrix_edouble_t *M, matrix_sign_t *M_sign, const c
     #endif
     else
     {
-        TERMINATE(0, "Algorithm not supported: %s.", type);
+        TERMINATE(1, "Algorithm not supported: %s.", type);
         return 0;
     }
 }
