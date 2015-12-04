@@ -1,7 +1,7 @@
 /**
  * @file   libcasimir.c
  * @author Michael Hartmann <michael.hartmann@physik.uni-augsburg.de>
- * @date   November, 2015
+ * @date   December, 2015
  * @brief  library to calculate the free Casimir energy in the plane-sphere geometry
  */
 
@@ -1597,11 +1597,13 @@ double casimir_logdetD(casimir_t *self, int n, int m)
     trace = casimir_trM(self, n, m, &int_perf);
     if(trace < self->trace_threshold)
     {
-        logdet = -trace;
-        goto out;
+        if(self->integration < 0)
+            casimir_integrate_perf_free(&int_perf);
+
+        return -trace;
     }
 
-    matrix_edouble_t *M = matrix_edouble_alloc(2*dim);
+    matrix_edouble_t *M   = matrix_edouble_alloc(2*dim);
     matrix_sign_t *M_sign = matrix_sign_alloc(2*dim);
 
     /* M_EE, -M_EM
@@ -1715,6 +1717,9 @@ double casimir_logdetD(casimir_t *self, int n, int m)
         }
     }
 
+    if(self->integration < 0)
+        casimir_integrate_perf_free(&int_perf);
+
     #if 0
     /* Dump matrix */
     {
@@ -1764,10 +1769,6 @@ double casimir_logdetD(casimir_t *self, int n, int m)
         matrix_edouble_free(M);
         matrix_sign_free(M_sign);
     }
-
-out:
-    if(self->integration < 0)
-        casimir_integrate_perf_free(&int_perf);
 
     return logdet;
 }
