@@ -327,6 +327,8 @@ int master(int argc, char *argv[], int cores)
                     usleep(IDLE);
                 }
         }
+
+        printf("# m = %d\n", m);
     }
 
     /* retrieve all running jobs */
@@ -345,7 +347,7 @@ int master(int argc, char *argv[], int cores)
     /* do Gauss-Legendre quadrature */
     for(i = 0; i < order; i++)
     {
-        double value = 0;
+        edouble value = 0;
         for(m = 0; m < lmax; m++)
         {
             if(isnan(values[i][m]))
@@ -356,6 +358,7 @@ int master(int argc, char *argv[], int cores)
             else
                 value += values[i][m];
         }
+        printf("# k=%d, x=%.10Lg, logdetD(xi = x/alpha)=%.16Lg\n", i, xk[i], value);
         integral += expe(ln_wk[i]+xk[i])*value;
     }
 
