@@ -36,7 +36,7 @@ USE_EXTENDED_DOUBLE = 1
 #
 # Per default a QR decomposition is used. If set USE_LAPACK to 1, you may also
 # use LU decomposition from LAPACK.
-USE_LAPACK = 1
+# USE_LAPACK = 1
 
 
 # Disable additional checks and assertions.
