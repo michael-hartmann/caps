@@ -110,7 +110,7 @@ MATRIX_TYPEDEF(matrix_edouble_t, edouble);
 \
                 if(Mij != 0) \
                 { \
-                    TYPE a = m[j*dim+j]; \
+                    const TYPE a = m[j*dim+j]; \
                     const TYPE b = Mij; \
 \
                     if(b == 0) \
