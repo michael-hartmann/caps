@@ -822,11 +822,10 @@ void casimir_lnab0(int l, double *a0, sign_t *sign_a0, double *b0, sign_t *sign_
  */
 double casimir_lna_perf(casimir_t *self, const int l, const int n, sign_t *sign)
 {
-    edouble nominator, denominator, frac, ret;
+    edouble numerator, denominator;
     edouble lnKlp,lnKlm,lnIlm,lnIlp;
     edouble prefactor;
     edouble chi = n*self->T*self->RbyScriptL;
-    edouble lnfrac = log(chi)-log(l);
 
     /* we could do both calculations together. but it doesn't cost much time -
      * so why bother?
@@ -834,34 +833,22 @@ double casimir_lna_perf(casimir_t *self, const int l, const int n, sign_t *sign)
     bessel_lnInuKnu(l-1, chi, &lnIlm, &lnKlm);
     bessel_lnInuKnu(l,   chi, &lnIlp, &lnKlp);
 
+    /* We want to calculate
+     * a(chi) = (-1)^(l+1)*pi/2 * ( l*Ip-chi*Im )/( l*Kp+chi*Km )
+     *        = (-1)^(l+1)*pi/2*Ip/Kp * ( l-chi*Im/Ip )/( l+chi*Km/Kp )
+     *          \--------/ \--------/   \-------------/ \-------------/
+     *             sign     prefactor      numerator      denominator
+     */
+
     prefactor = LOGPI-LOG2+lnIlp-lnKlp;
-    *sign = MPOW(l+1);
 
-    /* numinator */
-    {
-        frac = expe(lnfrac+lnIlm-lnIlp);
-        if(frac < 1)
-            nominator = log1pe(fabse(-frac));
-        else
-        {
-            if(frac > 1)
-                *sign *= -1;
-
-            nominator = loge(fabse(1-frac));
-        }
-    }
+    /* numerator */
+    numerator = logadd_s(loge(l), +1, loge(chi)+lnIlm-lnIlp, -1, sign);
     /* denominator */
-    {
-        frac = expe(lnfrac+lnKlm-lnKlp);
-        if(frac < 1)
-            denominator = log1pe(frac);
-        else
-            denominator = log1pe(frac);
-    }
+    denominator = logadd(loge(l), loge(chi)+lnKlm-lnKlp);
 
-    ret = prefactor+nominator-denominator;
-
-    return ret;
+    *sign *= MPOW(l+1);
+    return prefactor+numerator-denominator;
 }
 
 
@@ -1724,10 +1711,14 @@ double casimir_logdetD(casimir_t *self, int n, int m)
     /* Dump matrix */
     {
         int i,j;
-        printf("# m, n, log[abs(D_mn)], sign(D_mn)\n");
+        printf("# m, n, log[abs(D_mn)], D_mn\n");
         for(i = 0; i < 2*dim; i++)
             for(j = 0; j < 2*dim; j++)
-                printf("%d,%d, %.16Lg\n", i,j, matrix_get(M_sign,i,j)*expe(matrix_get(M,i,j)));
+            {
+                const edouble elem = matrix_get(M,i,j);
+                const sign_t sign  = matrix_get(M_sign,i,j);
+                printf("%d,%d, %.16Lg, %.16Lg\n", i,j, elem, sign*expe(elem));
+            }
     }
     #endif
 
