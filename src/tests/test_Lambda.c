@@ -56,5 +56,10 @@ int test_Lambda(void)
 
     AssertAlmostEqual(&test, casimir_lnLambda(1500,1,0,NULL),    -3.1074706325876159457967703284850318070);
 
+    AssertAlmostEqual(&test, casimir_lnLambda(5000,1,1,NULL), -12.573207215572773561556083406674521745);
+    AssertAlmostEqual(&test, casimir_lnLambda(5000,500,1,NULL), -21.406202989196329346517820278453015337);
+    AssertAlmostEqual(&test, casimir_lnLambda(5000,2000,1,NULL), -23.484521169044081354765678610825503880);
+    AssertAlmostEqual(&test, casimir_lnLambda(5000,5000,1,NULL), -24.858732358693766195672947807355216058);
+
     return test_results(&test, stderr);
 }
