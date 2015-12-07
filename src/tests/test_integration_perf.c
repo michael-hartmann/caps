@@ -725,9 +725,9 @@ int test_integration_perf(void)
     AssertAlmostEqual(&test, cint.lnC_TM, 2601.052286639743501207037424084674992544735252498822692375343512556374755);
     AssertAlmostEqual(&test, cint.lnD_TM, 2607.26688661763036080100424831203262202790938673585476359897048874019501);
 
-    //_integrals(4000,4000,100,1,&cint);
+    _integrals(4000,4000,1,1,&cint);
     //AssertAlmostEqual(&test, cint.lnA_TM, );
-    //AssertAlmostEqual(&test, cint.lnB_TM, );
+    AssertAlmostEqual(&test, cint.lnB_TM, 63901.84182032480196706998988829691231125220392684855064349853042);
     //AssertAlmostEqual(&test, cint.lnC_TM, );
 
     return test_results(&test, stderr);
