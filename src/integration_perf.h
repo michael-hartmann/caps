@@ -24,7 +24,6 @@
 
 
 typedef struct {
-    edouble tau;
     edouble *cache_I;
     edouble *cache_K;
     sign_t *cache_K_signs;
