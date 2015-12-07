@@ -108,9 +108,12 @@ edouble casimir_integrate_perf_I(integration_perf_t *self, int nu)
         const double tau = 2*self->nT;
         const int m = (self->m != 0) ? self->m : 2;
 
-        edouble p1[m];        /* polynom (z+2)^(m-1) */
-        edouble p2[nu+1-2*m]; /* polynom d^(2m)/dz^(2m) P_(nu)(1+z) */
-        edouble p[-m+nu];     /* polynom p1*p2 */
+        /* polynom (z+2)^(m-1) */
+        edouble *p1 = xmalloc(m*sizeof(edouble));
+        /* polynom d^(2m)/dz^(2m) P_(nu)(1+z) */
+        edouble *p2 = xmalloc((nu+1-2*m)*sizeof(edouble));
+        /* polynom p1*p2 */
+        edouble *p = xmalloc((nu-m)*sizeof(edouble));
 
         /* Every monom of both polynoms is positive. So we can save the
          * logarithms of the coefficients. */
@@ -125,6 +128,10 @@ edouble casimir_integrate_perf_I(integration_perf_t *self, int nu)
 
         v = self->cache_I[nu] = polyintegrate(p, -m+nu, m-1, tau);
         TERMINATE(!isfinite(v) || isnan(v), "I=%Lg, nu=%d, m=%d\n", v, nu, m);
+
+        xfree(p1);
+        xfree(p2);
+        xfree(p);
     }
 
     return v;
@@ -202,7 +209,6 @@ void casimir_integrate_perf_init(integration_perf_t *self, double nT, int m, int
 {
     int i, elems_I, elems_K;
 
-    self->tau  = 2*nT;
     self->nT   = nT;
     self->lmax = lmax;
     self->m    = m;
