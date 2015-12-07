@@ -162,11 +162,11 @@ int main(int argc, char *argv[])
     casimir_init(&casimir, LbyR, T);
     casimir_set_lmax(&casimir, lmax);
 
-    casimir_info(&casimir, stdout, "# ");
-    printf("#\n");
-
     if(trace_threshold >= 0)
         casimir_set_trace_threshold(&casimir, trace_threshold);
+
+    casimir_info(&casimir, stdout, "# ");
+    printf("#\n");
 
     logdet = casimir_logdetD(&casimir, n, m);
 
