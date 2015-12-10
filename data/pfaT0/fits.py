@@ -6,60 +6,82 @@ from glob import glob
 import numpy as np
 from fit import *
 
-text.set(text.LatexRunner)
+class PolynomialFit:
+    def __init__(self, xvals, yvals):
+        self.xvals = xvals
+        self.yvals = yvals
+        self.logxvals = np.log(xvals)
+
+    def fitnormal(self, deg):
+        '''fit to a polynomial in powers of x
+
+        '''
+        self.coeffsnormal = np.polyfit(self.xvals, self.yvals, deg)
+        fitfunc = 'y(x) = %.15g' % self.coeffsnormal[-1]
+        arg = 'exp(x)'
+        for powm1, c in enumerate(self.coeffsnormal[-2::-1]):
+            if c != 0:
+                fitfunc = fitfunc + '%+.15g*%s**%i' % (c, arg, powm1+1)
+        self.fitfuncnormal = fitfunc
+
+    def fitlog(self, deg):
+        '''fit to a polynomial in powers of log(x)
+
+        '''
+        self.coeffslog = np.polyfit(self.logxvals, self.yvals, deg)
+        fitfunc = 'y(x) = %.15g' % self.coeffslog[-1]
+        arg = 'x'
+        for powm1, c in enumerate(self.coeffslog[-2::-1]):
+            if c != 0:
+                fitfunc = fitfunc + '%+.15g*%s**%i' % (c, arg, powm1+1)
+        self.fitfunclog = fitfunc
+
+
+def read_data(globpattern):
+    xvals = []
+    yvals = []
+    for filename in glob(globpattern):
+        with open(filename, "r") as f:
+            for line in f:
+                line = line.strip()
+                empty = line == ""
+                comment = line.startswith("#")
+                if not(empty or comment):
+                    LbyR, _, _, _, F = map(float, line.split(","))
+                    ratio = F/pfa(LbyR)
+                    beta = (ratio-1)/LbyR
+                    xvals.append(LbyR)
+                    yvals.append(beta)
+    return np.array(xvals), np.array(yvals)
+
 
 def pfa(x):
     return -pi**3/720.*(x+1)/x**2
-    #return -pi**3/720./x**2
 
 
-data_used = []
-data_unused = []
-
-# pfad zu den slurm-dateien
-files = glob("eta8/*.out")
-
-# linke und rechte grenze des plots
-lnx_min, lnx_max = -6.2, -4
-
-# bereich der punkte, die zum fitten verwendet werden
-fitbereich = [-5, -4.5]
-fit_x   = []
-fit_lnx = []
-fit_y   = []
-
-# daten einlesen
-for filename in files:
-    with open(filename, "r") as f:
-        for line in f:
-            line = line.strip()
-            empty = line == ""
-            comment = line.startswith("#")
-            if not(empty or comment):
-                # L/R, lmax, order, alpha, F(T=0)
-                x,lmax,order,alpha,F = map(float, line.split(","))
-                ratio = F/pfa(x)
-                beta = (ratio-1)/x
-
-                if fitbereich[0] <= log(x) <= fitbereich[1]:
-                    fit_x.append(x)
-                    fit_y.append(beta)
-                    fit_lnx.append(log(x))
-                    data_used.append((x, log(x), F, ratio, beta))
-                else:
-                    data_unused.append((x, log(x), F, ratio, beta))
+allxvals, allyvals = read_data('eta8/*.out')
+logallxvals = np.log(allxvals)
+fitmin = -5
+fitmax = -4.5
+tobefitted = np.logical_and(fitmin <= logallxvals, logallxvals <= fitmax)
+xvals = allxvals[tobefitted]
+yvals = allyvals[tobefitted]
+data_used = [(x, y) for x, y in zip(np.log(xvals), yvals)]
+data_unused = [(x, y) for x, y in
+               zip(np.log(allxvals[np.logical_not(tobefitted)]),
+                   allyvals[np.logical_not(tobefitted)])]
 
 
+polyfit = PolynomialFit(xvals, yvals)
+polyfit.fitnormal(3)
+f_x = polyfit.fitfuncnormal
+polyfit.fitlog(3)
+f_l = polyfit.fitfunclog
 
-# betal
-c_l = np.polyfit(fit_lnx, fit_y, 3)
-f_l = "y(x)=%.15g*x**3 + %.15g*x**2 + %.15g*x + %.15g" % (c_l[0], c_l[1], c_l[2], c_l[3])
 
-
-# betax
-c_x = np.polyfit(fit_x,   fit_y, 3)
-f_x = "y(x)=%.15g*exp(x)**3 + %.15g*exp(x)**2 + %.15g*exp(x) + %.15g" % (c_x[0], c_x[1], c_x[2], c_x[3])
-
+fit_x = xvals
+fit_lnx = np.log(xvals)
+fit_y = yvals
 
 # betam
 # startpunkte fuer c0,c1,c2 und c3 finden idee: wir nehmen die ersten vier
@@ -116,6 +138,11 @@ def betab(x):
 fit(betab, [c0, c1, c2, c3], np.array(fit_y), x=np.array(fit_lnx))
 f_b = "y(x) = %.15g + %.15g*exp(x)*x + %.15g*exp(x)**2 + %.15g*exp(x)**3" % (c0(), c1(), c2(), c3())
 
+
+# linke und rechte grenze des plots
+lnx_min, lnx_max = -6.2, -4
+text.set(text.LatexRunner)
+
 # do plot
 g = graph.graphxy(
     width = 12,
@@ -133,8 +160,8 @@ g.plot([
 )
 
 g.plot([
-    graph.data.points(data_used,   x=2, y=5, title="used for fit"),
-    graph.data.points(data_unused, x=2, y=5, title="not used for fit")],
+    graph.data.points(data_used,   x=1, y=2, title="used for fit"),
+    graph.data.points(data_unused, x=1, y=2, title="not used for fit")],
     [graph.style.symbol(graph.style.symbol.circle, size=0.06, symbolattrs=attrs)])
 
 g.writePDFfile()
