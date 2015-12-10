@@ -596,16 +596,19 @@ edouble inline gaunt_a0(int n, int nu, int m)
  * @param [in]  m  \f$m=\mu\f$
  * @param [out] a_tilde \f$\tilde a_q\f$ list of normalized Gaunt coefficients
  */
-void gaunt(const int n, const int nu, const int m, edouble a_tilde[])
+void gaunt(const int n_, const int nu_, const int m_, edouble a_tilde[])
 {
     int q;
-    const int n4 = n+nu-2*m;
+    const edouble n  = n_;
+    const edouble nu = nu_;
+    const edouble m  = m_;
+    const edouble n4 = n+nu-2*m;
 
     /* eq. (24) */
     const int qmax = gaunt_qmax(n,nu,m);
 
     /* eq. (28) */
-    const int Ap = -2*m*(n-nu)*(n+nu+1);
+    const edouble Ap = -2*m*(n-nu)*(n+nu+1);
 
     if(qmax < 0)
         return;
@@ -615,17 +618,16 @@ void gaunt(const int n, const int nu, const int m, edouble a_tilde[])
         return;
 
     /* eq. (29) */
-    a_tilde[1] = (n+nu-1.5)*(1.-(2.*n+2.*nu-1.)/(n4*(n4-1.))*((m-n)*(m-n+1.)/(2.*n-1.)+(m-nu)*(m-nu+1.)/(2.*nu-1.)));
+    a_tilde[1] = (n+nu-1.5)*(1-(2*n+2*nu-1)/(n4*(n4-1))*((m-n)*(m-n+1)/(2*n-1)+(m-nu)*(m-nu+1)/(2*nu-1)));
     if(qmax == 1)
         return;
 
     /* eq. (35) */
-    a_tilde[2] = (2.*n+2.*nu-1.)*(2.*n+2.*nu-7.)/4.*( (2.*n+2.*nu-3.)/(n4*(n4-1.)) * ( (2.*n+2.*nu-5.)/(2.*(n4-2.)*(n4-3.)) \
-                * ( (m-n)*(m-n+1.)*(m-n+2)*(m-n+3.)/(2.*n-1.)/(2.*n-3.) \
-                + 2.*(m-n)*(m-n+1.)*(m-nu)*(m-nu+1.)/((2.*n-1.)*(2.*nu-1.)) \
-                + (m-nu)*(m-nu+1.)*(m-nu+2.)*(m-nu+3)/(2.*nu-1.)/(2.*nu-3.) ) - (m-n)*(m-n+1.)/(2.*n-1.) \
-                - (m-nu)*(m-nu+1.)/(2.*nu-1.) ) +0.5);
-
+    a_tilde[2] = (2*n+2*nu-1)*(2*n+2*nu-7)/4*( (2*n+2*nu-3)/(n4*(n4-1)) * ( (2*n+2*nu-5)/(2*(n4-2)*(n4-3)) \
+                * ( (m-n)*(m-n+1)*(m-n+2)*(m-n+3)/(2*n-1)/(2*n-3) \
+                + 2*(m-n)*(m-n+1)*(m-nu)*(m-nu+1)/((2*n-1)*(2*nu-1)) \
+                + (m-nu)*(m-nu+1)*(m-nu+2)*(m-nu+3)/(2*nu-1)/(2*nu-3) ) - (m-n)*(m-n+1)/(2*n-1) \
+                - (m-nu)*(m-nu+1)/(2*nu-1) ) +0.5);
 
     for(q = 3; q <= qmax; q++)
     {
@@ -637,8 +639,8 @@ void gaunt(const int n, const int nu, const int m, edouble a_tilde[])
         if(Ap != 0)
         {
             /* eqs. (26), (27) */
-            c0 = (p+2.)*(p+3.)*(p1+1.)*(p1+2.)*Ap*alpha(p+1,n,nu);
-            c1 = Ap*((edouble)Ap*Ap \
+            c0 = (p+2)*(p+3)*(p1+1)*(p1+2)*Ap*alpha(p+1,n,nu);
+            c1 = Ap*(Ap*Ap \
                + (p+1)*(p+3)*(p1+2)*(p2+2)*alpha(p+2,n,nu) \
                + (p+2)*(p+4)*(p1+3)*(p2+3)*alpha(p+3,n,nu));
             c2 = -(p+2)*(p+3)*(p2+3)*(p2+4)*Ap*alpha(p+4,n,nu);
