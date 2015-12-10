@@ -1,10 +1,131 @@
 #!/usr/bin/python3
 
-from math import *
+from math import log
 from pyx import *
 from glob import glob
 import numpy as np
+from scipy.optimize import curve_fit
 from fit import *
+
+class FitL:
+    '''fit to c0+c1*log(x)+c2*log(x)**2+...
+
+    deg is the highest power in log(x), so that the number of
+    coefficients is given by deg+1
+
+    '''
+    def __init__(self, xvals, yvals, deg):
+        self.xvals = xvals
+        self.yvals = yvals
+        self.deg = deg
+
+    def func(self, x, *coeffs):
+        f = coeffs[0]
+        for powm1, c in enumerate(coeffs[1:]):
+            f = f+c*log(x)**(powm1+1)
+        return f
+
+    def fit(self):
+        p0 = np.ones(self.deg+1)
+        self.popt, pcov = curve_fit(self.func, self.xvals, self.yvals, p0)
+
+    def expr(self):
+        self.fit()
+        e = 'y(x) = %.15g' % self.popt[0]
+        for powm1, c in enumerate(self.popt[1:]):
+            if c != 0:
+                e = e + '%+.15g*x**%i' % (c, powm1+1)
+        return e
+
+class FitX:
+    '''fit to c0+c1*x+c2*x**2+...
+
+    deg is the highest power in x, so that the number of
+    coefficients is given by deg+1
+
+    '''
+    def __init__(self, xvals, yvals, deg):
+        self.xvals = xvals
+        self.yvals = yvals
+        self.deg = deg
+
+    def func(self, x, *coeffs):
+        f = coeffs[0]
+        for powm1, c in enumerate(coeffs[1:]):
+            f = f+c*x**(powm1+1)
+        return f
+
+    def fit(self):
+        p0 = np.ones(self.deg+1)
+        self.popt, pcov = curve_fit(self.func, self.xvals, self.yvals, p0)
+
+    def expr(self):
+        self.fit()
+        e = 'y(x) = %.15g' % self.popt[0]
+        for powm1, c in enumerate(self.popt[1:]):
+            if c != 0:
+                e = e + '%+.15g*exp(%i*x)' % (c, powm1+1)
+        return e
+
+class FitM:
+    '''fit to c0+c1*log(x)+c2*x+c3*x**2+...
+
+    deg is the highest power, so that the number of
+    coefficients is given by deg+2
+
+    '''
+    def __init__(self, xvals, yvals, deg):
+        self.xvals = xvals
+        self.yvals = yvals
+        self.deg = deg
+
+    def func(self, x, *coeffs):
+        f = coeffs[0]+coeffs[1]*log(x)
+        for powm1, c in enumerate(coeffs[2:]):
+            f = f+c*x**(powm1+1)
+        return f
+
+    def fit(self):
+        p0 = np.ones(self.deg+2)
+        self.popt, pcov = curve_fit(self.func, self.xvals, self.yvals, p0)
+
+    def expr(self):
+        self.fit()
+        e = 'y(x) = %.15g%+.15g*x' % tuple(self.popt[0:2])
+        for powm1, c in enumerate(self.popt[2:]):
+            if c != 0:
+                e = e + '%+.15g*exp(%i*x)' % (c, powm1+1)
+        return e
+
+class FitB:
+    '''fit to c0+c1*x*log(x)+c2*x**2+c3*x**3+...
+
+    deg is the highest power, so that the number of
+    coefficients is given by deg+1
+
+    '''
+    def __init__(self, xvals, yvals, deg):
+        self.xvals = xvals
+        self.yvals = yvals
+        self.deg = deg
+
+    def func(self, x, *coeffs):
+        f = coeffs[0]+coeffs[1]*x*log(x)
+        for powm1, c in enumerate(coeffs[2:]):
+            f = f+c*x**(powm1+2)
+        return f
+
+    def fit(self):
+        p0 = np.ones(self.deg+1)
+        self.popt, pcov = curve_fit(self.func, self.xvals, self.yvals, p0)
+
+    def expr(self):
+        self.fit()
+        e = 'y(x) = %.15g%+.15g*x*exp(x)' % tuple(self.popt[0:2])
+        for powm1, c in enumerate(self.popt[2:]):
+            if c != 0:
+                e = e + '%+.15g*exp(%i*x)' % (c, powm1+2)
+        return e
 
 class PolynomialFit:
     def __init__(self, xvals, yvals):
@@ -72,71 +193,17 @@ data_unused = [(x, y) for x, y in
                    allyvals[np.logical_not(tobefitted)])]
 
 
-polyfit = PolynomialFit(xvals, yvals)
-polyfit.fitnormal(3)
-f_x = polyfit.fitfuncnormal
-polyfit.fitlog(3)
-f_l = polyfit.fitfunclog
+f = FitL(xvals, yvals, 3)
+f_l = f.expr()
 
+f = FitX(xvals, yvals, 3)
+f_x = f.expr()
 
-fit_x = xvals
-fit_lnx = np.log(xvals)
-fit_y = yvals
+f = FitM(xvals, yvals, 2)
+f_m = f.expr()
 
-# betam
-# startpunkte fuer c0,c1,c2 und c3 finden idee: wir nehmen die ersten vier
-# punkte in fit_y_X und bestimmen die koefficienzen c0,c1,c2 und c3, so dass
-# die fit-funktion durch diese punkte laeuft. Das benutzen wir dann als
-# initialwerte fuer den fit.
-M = np.zeros((4,4))
-y = np.zeros(4)
-for i in range(4):
-    x      = fit_x[i]
-    lnx    = fit_lnx[i]
-    y[i]   = fit_y[i]
-    M[i][0] = 1
-    M[i][1] = lnx
-    M[i][2] = x
-    M[i][3] = x**2
-
-c_m = np.linalg.solve(M,y)
-
-c0 = Parameter(c_m[0])
-c1 = Parameter(c_m[1])
-c2 = Parameter(c_m[2])
-c3 = Parameter(c_m[3])
-
-def betam(x):
-    return c0() + c1()*x + c2()*exp(x) + c3()*exp(x)**2
-
-fit(betam, [c0, c1, c2, c3], np.array(fit_y), x=np.array(fit_lnx))
-f_m = "y(x) = %.15g %+.15g*x %+.15g*exp(x) %+.15g*exp(x)**2" % (c0(), c1(), c2(), c3())
-
-
-# betab
-M = np.zeros((4,4))
-y = np.zeros(4)
-for i in range(4):
-    x      = fit_x[i]
-    lnx    = fit_lnx[i]
-    y[i]   = fit_y[i]
-    M[i][0] = 1
-    M[i][1] = x*lnx
-    M[i][2] = x**2
-    M[i][3] = x**3
-
-c_b = np.linalg.solve(M,y)
-
-c0 = Parameter(c_b[0])
-c1 = Parameter(c_b[1])
-c2 = Parameter(c_b[2])
-c3 = Parameter(c_b[3])
-
-def betab(x):
-    return c0() + c1()*exp(x)*x + c2()*exp(x)**2 + c3()*exp(x)**3
-
-fit(betab, [c0, c1, c2, c3], np.array(fit_y), x=np.array(fit_lnx))
-f_b = "y(x) = %.15g + %.15g*exp(x)*x + %.15g*exp(x)**2 + %.15g*exp(x)**3" % (c0(), c1(), c2(), c3())
+f = FitB(xvals, yvals, 3)
+f_b = f.expr()
 
 
 # linke und rechte grenze des plots
