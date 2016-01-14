@@ -1,7 +1,7 @@
 /**
  * @file   libcasimir.c
  * @author Michael Hartmann <michael.hartmann@physik.uni-augsburg.de>
- * @date   December, 2015
+ * @date   January, 2016
  * @brief  library to calculate the free Casimir energy in the plane-sphere geometry
  */
 
@@ -126,7 +126,7 @@ void casimir_info(casimir_t *self, FILE *stream, const char *prefix)
  * @param [out] sign set to -1 if sign != NULL
  * @retval lnLambda \f$\log{\Lambda_{\ell_1,\ell_2}^{(m)}}\f$
  */
-edouble inline casimir_lnLambda(int l1, int l2, int m, sign_t *sign)
+edouble casimir_lnLambda(int l1, int l2, int m, sign_t *sign)
 {
     if(sign != NULL)
         *sign = -1;
@@ -999,7 +999,6 @@ void casimir_mie_cache_init(casimir_t *self)
  */
 void casimir_mie_cache_alloc(casimir_t *self, int n)
 {
-    int l;
     const int nmax = self->mie_cache->nmax;
     const int lmax = self->mie_cache->lmax;
     casimir_mie_cache_t *cache = self->mie_cache;
@@ -1008,7 +1007,7 @@ void casimir_mie_cache_alloc(casimir_t *self, int n)
     {
         cache->entries = xrealloc(cache->entries, (n+1)*sizeof(casimir_mie_cache_entry_t *));
 
-        for(l = nmax+1; l <= n; l++)
+        for(int l = nmax+1; l <= n; l++)
             cache->entries[l] = NULL;
     }
 
@@ -1023,7 +1022,7 @@ void casimir_mie_cache_alloc(casimir_t *self, int n)
         entry->sign_bl = xmalloc((lmax+1)*sizeof(sign_t));
 
         entry->ln_al[0] = entry->ln_bl[0] = NAN; /* should never be read */
-        for(l = 1; l <= lmax; l++)
+        for(int l = 1; l <= lmax; l++)
             casimir_lnab(self, n, l, &entry->ln_al[l], &entry->ln_bl[l], &entry->sign_al[l], &entry->sign_bl[l]);
     }
 
@@ -1115,7 +1114,6 @@ void casimir_mie_cache_get(casimir_t *self, int l, int n, double *ln_a, sign_t *
  */
 void casimir_mie_cache_free(casimir_t *self)
 {
-    int n;
     casimir_mie_cache_t *cache = self->mie_cache;
     casimir_mie_cache_entry_t **entries = cache->entries;
 
@@ -1127,7 +1125,7 @@ void casimir_mie_cache_free(casimir_t *self)
      * 3) the list of entries
      * 4) the mie cache object (casimir_mie_cache_t)
      */
-    for(n = 0; n <= cache->nmax; n++)
+    for(int n = 0; n <= cache->nmax; n++)
     {
         if(entries[n] != NULL)
         {
@@ -1157,12 +1155,11 @@ void casimir_mie_cache_free(casimir_t *self)
    The idea is: To avoid a loss of significance, we sum beginning with smallest
    number and add up in increasing order
 */
-static double _sum(double values[], size_t len)
+static double _sum(double values[], int len)
 {
-    int i;
     double sum = 0;
 
-    for(i = len-1; i > 0; i--)
+    for(int i = len-1; i > 0; i--)
         sum += values[i];
 
     sum += values[0]/2;
@@ -1202,11 +1199,11 @@ static pthread_t *_start_thread(casimir_t *self, int n)
 /* This function tries to join threads and writed the result to values */
 static int _join_threads(casimir_t *self, double values[], int *ncalc)
 {
-    int i, joined = 0, running = 0;
+    int joined = 0, running = 0;
     casimir_thread_t *r;
     pthread_t **threads = self->threads;
 
-    for(i = 0; i < self->cores; i++)
+    for(int i = 0; i < self->cores; i++)
     {
         if(threads[i] != NULL)
         {
@@ -1255,9 +1252,9 @@ static int _join_threads(casimir_t *self, double values[], int *ncalc)
  */
 double casimir_F_n(casimir_t *self, const int n, int *mmax)
 {
+    int m;
     double precision = self->precision;
     double sum_n = 0;
-    int m;
     const int lmax = self->lmax;
     double values[lmax+1];
 
@@ -1301,17 +1298,17 @@ double casimir_F_n(casimir_t *self, const int n, int *mmax)
  */
 double casimir_F(casimir_t *self, int *nmax)
 {
-    int i, n = 0;
+    int n = 0;
     double sum_n = 0;
     const double precision = self->precision;
     double *values = NULL;
-    size_t len = 0;
+    int len = 0;
     int ncalc = 0;
     const int cores = self->cores;
     const int delta = MAX(1024, cores);
     pthread_t **threads = self->threads;
 
-    for(i = 0; i < cores; i++)
+    for(int i = 0; i < cores; i++)
         threads[i] = NULL;
 
     /* So, here we sum up all m and n that contribute to F.
@@ -1327,7 +1324,7 @@ double casimir_F(casimir_t *self, int *nmax)
         {
             values = (double *)xrealloc(values, (len+delta)*sizeof(double));
 
-            for(i = len; i < len+delta; i++)
+            for(int i = len; i < len+delta; i++)
                 values[i] = 0;
 
             len += delta;
@@ -1335,7 +1332,7 @@ double casimir_F(casimir_t *self, int *nmax)
 
         if(cores > 1)
         {
-            for(i = 0; i < cores; i++)
+            for(int i = 0; i < cores; i++)
                 if(threads[i] == NULL)
                     threads[i] = _start_thread(self, n++);
 
@@ -1389,7 +1386,6 @@ double casimir_F(casimir_t *self, int *nmax)
  */
 void casimir_logdetD0(casimir_t *self, int m, double *logdet_EE, double *logdet_MM)
 {
-    int l1,l2;
     const edouble lnRbyScriptL = loge(self->RbyScriptL);
     matrix_edouble_t *EE = NULL, *MM = NULL;
     matrix_sign_t *EE_sign = NULL, *MM_sign = NULL;
@@ -1410,13 +1406,13 @@ void casimir_logdetD0(casimir_t *self, int m, double *logdet_EE, double *logdet_
     }
 
     /* calculate the logarithm of the matrix elements of D */
-    for(l1 = min; l1 <= max; l1++)
+    for(int l1 = min; l1 <= max; l1++)
     {
         sign_t sign_a0, sign_b0;
         double lna0, lnb0;
         casimir_lnab0(l1, &lna0, &sign_a0, &lnb0, &sign_b0);
 
-        for(l2 = min; l2 <= max; l2++)
+        for(int l2 = min; l2 <= max; l2++)
         {
             /* i: row of matrix, j: column of matrix */
             const int i = l1-min, j = l2-min;
@@ -1495,13 +1491,12 @@ void casimir_logdetD0(casimir_t *self, int m, double *logdet_EE, double *logdet_
  */
 double casimir_trM(casimir_t *self, int n, int m, void *obj)
 {
-    int l;
     const int min = MAX(m,1);
     const int max = self->lmax;
     integration_perf_t *int_perf = obj;
     edouble trM = 0;
 
-    for(l = min; l <= max; l++)
+    for(int l = min; l <= max; l++)
     {
         edouble v;
         casimir_integrals_t cint;
@@ -1547,7 +1542,6 @@ double casimir_trM(casimir_t *self, int n, int m, void *obj)
  */
 double casimir_logdetD(casimir_t *self, int n, int m)
 {
-    int l1,l2;
     const double nT = n*self->T;
     double trace, logdet = 0;
     const double nTRbyScriptL = nT*self->RbyScriptL;
@@ -1589,9 +1583,9 @@ double casimir_logdetD(casimir_t *self, int n, int m)
 
     /* M_EE, -M_EM
        M_ME,  M_MM */
-    for(l1 = min; l1 <= max; l1++)
+    for(int l1 = min; l1 <= max; l1++)
     {
-        for(l2 = min; l2 <= l1; l2++)
+        for(int l2 = min; l2 <= l1; l2++)
         {
             const int Delta_ij = (l1 == l2 ? 0 : -INFINITY);
             const int i = l1-min, j = l2-min;
@@ -1704,10 +1698,9 @@ double casimir_logdetD(casimir_t *self, int n, int m)
     #if 0
     /* Dump matrix */
     {
-        int i,j;
         printf("# m, n, log[abs(D_mn)], D_mn\n");
-        for(i = 0; i < 2*dim; i++)
-            for(j = 0; j < 2*dim; j++)
+        for(int i = 0; i < 2*dim; i++)
+            for(int j = 0; j < 2*dim; j++)
             {
                 const edouble elem = matrix_get(M,i,j);
                 const sign_t sign  = matrix_get(M_sign,i,j);
@@ -1718,15 +1711,14 @@ double casimir_logdetD(casimir_t *self, int n, int m)
 
     if(m == 0)
     {
-        size_t i,j;
         matrix_edouble_t *EE = matrix_edouble_alloc(dim);
         matrix_edouble_t *MM = matrix_edouble_alloc(dim);
 
         matrix_sign_t *EE_sign = matrix_sign_alloc(dim);
         matrix_sign_t *MM_sign = matrix_sign_alloc(dim);
 
-        for(i = 0; i < dim; i++)
-            for(j = 0; j < dim; j++)
+        for(int i = 0; i < dim; i++)
+            for(int j = 0; j < dim; j++)
             {
                 matrix_set(EE, i,j, matrix_get(M, i,j));
                 matrix_set(EE_sign, i,j, matrix_get(M_sign, i,j));
