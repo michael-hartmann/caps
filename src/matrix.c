@@ -1,12 +1,13 @@
 /**
  * @file   matrix.c
  * @author Michael Hartmann <michael.hartmann@physik.uni-augsburg.de>
- * @date   December, 2015
+ * @date   January, 2016
  * @brief  matrix functions
  */
 
 #include <stdio.h>
 #include <string.h>
+#include <strings.h>
 
 #include "libcasimir.h"
 #include "sfunc.h"
@@ -24,8 +25,7 @@ MATRIX_EXP(matrix_edouble, matrix_edouble_t, expe);
 
 void matrix_edouble_log_balance(matrix_edouble_t *A, const int p)
 {
-    size_t i,j;
-    const size_t N = A->size;
+    const int N = A->size;
     int converged = 0;
 
     edouble *M = A->M;
@@ -43,10 +43,10 @@ void matrix_edouble_log_balance(matrix_edouble_t *A, const int p)
         converged = 1;
 
         /* line 5 */
-        for(i = 0; i < N; i++)
+        for(int i = 0; i < N; i++)
         {
             /* line 6 */ \
-            for(j = 0; j < N; j++)
+            for(int j = 0; j < N; j++)
             {
                 const edouble Aij = matrix_get(A,i,j);
                 const edouble Aji = matrix_get(A,j,i);
@@ -86,12 +86,11 @@ void matrix_edouble_log_balance(matrix_edouble_t *A, const int p)
             /* line 12 */
             if(logadd(p*row_norm, p*col_norm) < (LOG095+s))
             {
-                int k;
                 /* line 13 */
                 converged = 0;
 
                 /* line 14 */
-                for(k = 0; k < N; k++)
+                for(int k = 0; k < N; k++)
                 {
                     M[i*N+k] -= (edouble)f*LOG_FLOAT_RADIX;
                     M[k*N+i] += (edouble)f*LOG_FLOAT_RADIX;
@@ -108,12 +107,14 @@ double matrix_edouble_logdet(matrix_edouble_t *M, matrix_sign_t *M_sign, const c
 {
     if(strcasecmp(type, "QR") == 0)
     {
+        matrix_edouble_log_balance(M,1);
         matrix_edouble_log_balance(M,2);
         matrix_edouble_exp(M, M_sign);
         return matrix_edouble_logdet_qr(M);
     }
     else if(strcasecmp(type, "LU") == 0)
     {
+        matrix_edouble_log_balance(M,1);
         matrix_edouble_log_balance(M,2);
         matrix_edouble_exp(M, M_sign);
         return matrix_edouble_logdet_lu(M);
