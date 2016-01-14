@@ -5,6 +5,7 @@
  * @brief  matrix functions
  */
 
+#include <stdbool.h>
 #include <stdio.h>
 #include <string.h>
 #include <strings.h>
@@ -19,6 +20,7 @@ MATRIX_FREE (matrix_sign, matrix_sign_t);
 
 MATRIX_ALLOC(matrix_edouble, matrix_edouble_t, edouble);
 MATRIX_FREE (matrix_edouble, matrix_edouble_t);
+
 MATRIX_LOGDET_QR (matrix_edouble, matrix_edouble_t, edouble, fabse, copysigne, sqrte, loge);
 MATRIX_LOGDET_LU (matrix_edouble, matrix_edouble_t, edouble, fabse, loge);
 MATRIX_EXP(matrix_edouble, matrix_edouble_t, expe);
@@ -26,7 +28,7 @@ MATRIX_EXP(matrix_edouble, matrix_edouble_t, expe);
 void matrix_edouble_log_balance(matrix_edouble_t *A, const int p)
 {
     const int N = A->size;
-    int converged = 0;
+    bool converged = false;
 
     edouble *M = A->M;
     edouble *list_row = xmalloc(N*sizeof(edouble));
@@ -40,7 +42,7 @@ void matrix_edouble_log_balance(matrix_edouble_t *A, const int p)
         edouble row_norm, col_norm;
 
         /* line 4 */
-        converged = 1;
+        converged = true;
 
         /* line 5 */
         for(int i = 0; i < N; i++)
@@ -87,7 +89,7 @@ void matrix_edouble_log_balance(matrix_edouble_t *A, const int p)
             if(logadd(p*row_norm, p*col_norm) < (LOG095+s))
             {
                 /* line 13 */
-                converged = 0;
+                converged = false;
 
                 /* line 14 */
                 for(int k = 0; k < N; k++)
