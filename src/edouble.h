@@ -5,7 +5,6 @@
 #define M_PI 3.14159265358979323846
 #endif
 
-#define CASIMIR_ARITHMETICS "long double"
 #define edouble long double
 
 #define loge      logl
@@ -19,7 +18,9 @@
 #define lgammae   lgammal
 #define copysigne copysignl
 
-#if defined(__ICC) || defined(__INTEL_COMPILER)
+#if defined(__clang__)
+    #define COMPILER "clang/llvm"
+#elif defined(__ICC) || defined(__INTEL_COMPILER)
     #define COMPILER "icc"
 #elif defined(__GNUC__) || defined(__GNUG__)
     #define COMPILER "gcc"

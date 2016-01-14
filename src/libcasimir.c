@@ -44,8 +44,8 @@ static char CASIMIR_COMPILE_INFO[4096] = { 0 };
 const char *casimir_compile_info(void)
 {
     snprintf(CASIMIR_COMPILE_INFO, sizeof(CASIMIR_COMPILE_INFO)/sizeof(char),
-             "Compiled on %s at %s with %s, using %s",
-              __DATE__, __TIME__, COMPILER, CASIMIR_ARITHMETICS
+             "Compiled on %s at %s with %s",
+              __DATE__, __TIME__, COMPILER
             );
     return CASIMIR_COMPILE_INFO;
 }
