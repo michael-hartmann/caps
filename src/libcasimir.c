@@ -43,15 +43,9 @@ static char CASIMIR_COMPILE_INFO[4096] = { 0 };
  */
 const char *casimir_compile_info(void)
 {
-    #ifdef USE_LAPACK
-        const char *lapack = "lapack support";
-    #else
-        const char *lapack = "no lapack support";
-    #endif
-
     snprintf(CASIMIR_COMPILE_INFO, sizeof(CASIMIR_COMPILE_INFO)/sizeof(char),
-             "Compiled on %s at %s with %s, using %s, %s",
-              __DATE__, __TIME__, COMPILER, CASIMIR_ARITHMETICS, lapack
+             "Compiled on %s at %s with %s, using %s",
+              __DATE__, __TIME__, COMPILER, CASIMIR_ARITHMETICS
             );
     return CASIMIR_COMPILE_INFO;
 }
