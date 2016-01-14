@@ -34,13 +34,11 @@
  */
 void polymult(edouble p1[], int len_p1, edouble p2[], int len_p2, edouble p[])
 {
-    int i,j;
-
-    for(i = 0; i < len_p1+len_p2-1; i++)
+    for(int i = 0; i < len_p1+len_p2-1; i++)
         p[i] = 0;
 
-    for(i = 0; i < len_p1; i++)
-        for(j = 0; j < len_p2; j++)
+    for(int i = 0; i < len_p1; i++)
+        for(int j = 0; j < len_p2; j++)
             p[i+j] += p1[i]*p2[j];
 }
 
@@ -60,7 +58,7 @@ void polymult(edouble p1[], int len_p1, edouble p2[], int len_p2, edouble p[])
  * @param [in] log_b number
  * @return log_sum \f$\log{\left[\exp{(\mathrm{log\_a})}+\exp{(log\_b)}\right]}\f$
  */
-edouble inline logadd(const edouble log_a, const edouble log_b)
+inline edouble logadd(const edouble log_a, const edouble log_b)
 {
     if(isinf(log_a) && log_a < 0)
         return log_b;
@@ -84,7 +82,7 @@ edouble inline logadd(const edouble log_a, const edouble log_b)
  * @param [out] sign sign of result
  * @return log_sum \f$\log{\left( \mathrm{sign\_a}\cdot\exp{(\mathrm{log\_a})}+\mathrm{sign\_b} \cdot \exp{(log\_b)} \right)}\f$
  */
-edouble inline logadd_s(const edouble log_a, const sign_t sign_a, const edouble log_b, const sign_t sign_b, sign_t *sign)
+edouble logadd_s(const edouble log_a, const sign_t sign_a, const edouble log_b, const sign_t sign_b, sign_t *sign)
 {
     if(isinf(log_a) && log_a < 0)
     {
@@ -119,36 +117,34 @@ edouble inline logadd_s(const edouble log_a, const sign_t sign_a, const edouble 
  * @param [in]  len length of list
  * @return log_sum \f$\log{\sum_{i=1}^\mathrm{len} \mathrm{sign\_i}\cdot\exp{(\mathrm{log\_i})}}\f$
  */
-edouble inline logadd_m(const edouble list[], const size_t len)
+inline edouble logadd_m(const edouble list[], const int len)
 {
-    size_t i;
     edouble sum;
     edouble max = list[0];
 
-    for(i = 1; i < len; i++)
+    for(int i = 1; i < len; i++)
         if(list[i] > max)
             max = list[i];
 
     sum = expe(list[0]-max);
-    for(i = 1; i < len; i++)
+    for(int i = 1; i < len; i++)
         sum += expe(list[i]-max);
 
     return max + loge(fabse(sum));
 }
 
 
-edouble inline logadd_ms(const edouble list[], const sign_t signs[], const size_t len, sign_t *sign)
+inline edouble logadd_ms(const edouble list[], const sign_t signs[], const int len, sign_t *sign)
 {
-    size_t i;
     edouble sum;
     edouble max = list[0];
 
-    for(i = 1; i < len; i++)
+    for(int i = 1; i < len; i++)
         if(list[i] > max)
             max = list[i];
 
     sum = signs[0]*expe(list[0]-max);
-    for(i = 1; i < len; i++)
+    for(int i = 1; i < len; i++)
         sum += signs[i]*expe(list[i]-max);
 
     *sign = copysigne(1, sum);
@@ -164,7 +160,7 @@ edouble inline logadd_ms(const edouble list[], const sign_t signs[], const size_
  * @param k
  * @return binomial \f$\log \left(\begin{array}{c} n \\ k \end{array}\right)\f$
  */
-edouble inline lbinom(int n, int k)
+inline edouble lbinom(int n, int k)
 {
     return lgammae(1+n)-lgammae(1+k)-lgammae(1+n-k);
 }
@@ -356,7 +352,6 @@ edouble ln_doublefact(int n)
  */
 inline void plm_lnPlm_array(int lmax, int m, edouble x, edouble lnplm[], sign_t sign[])
 {
-    int l;
     edouble logx = loge(x);
 
     if(m == 0)
@@ -376,7 +371,7 @@ inline void plm_lnPlm_array(int lmax, int m, edouble x, edouble lnplm[], sign_t 
     sign[1]  = sign[0];
     lnplm[1] = lnplm[0]+logx+loge(2*m+1); // l=m+1, m=m
 
-    for(l = m+2; l <= lmax; l++)
+    for(int l = m+2; l <= lmax; l++)
     {
         lnplm[l-m] = logadd_s(loge(2*l-1)+logx+lnplm[l-m-1], sign[l-m-1], loge(l+m-1)+lnplm[l-m-2], -sign[l-m-2], &sign[l-m]);
         lnplm[l-m]-= loge(l-m);
@@ -532,7 +527,7 @@ void plm_PlmPlm(int l1, int l2, int m, edouble x, plm_combination_t *res)
  * @param [in]  m  \f$m=\mu\f$
  * @return a0 \f$q_\mathrm{max}\f$
  */
-int inline gaunt_qmax(const int n, const int nu, const int m)
+inline int gaunt_qmax(const int n, const int nu, const int m)
 {
     int xi = (n+nu-2*m)/2;
     return MIN(MIN(n,nu), xi);
@@ -548,7 +543,7 @@ int inline gaunt_qmax(const int n, const int nu, const int m)
  * @param [in]  m  \f$m=\mu\f$
  * @return a0 \f$\log a_0\f$
  */
-edouble inline gaunt_log_a0(int n, int nu, int m)
+inline edouble gaunt_log_a0(int n, int nu, int m)
 {
     return lgamma(2*n+1)-lgamma(n+1)+lgamma(2*nu+1)-lgamma(1+nu)+lgamma(n+nu+1)-lgamma(2*n+2*nu+1)+lgamma(1+n+nu-2*m)-lgamma(1+n-m)-lgamma(1+nu-m);
 }
@@ -563,7 +558,7 @@ edouble inline gaunt_log_a0(int n, int nu, int m)
  * @param [in]  m  \f$m=\mu\f$
  * @return a0 \f$a_0\f$
  */
-edouble inline gaunt_a0(int n, int nu, int m)
+inline edouble gaunt_a0(int n, int nu, int m)
 {
     return expe(gaunt_log_a0(n,nu,m));
 }
@@ -598,7 +593,6 @@ edouble inline gaunt_a0(int n, int nu, int m)
  */
 void gaunt(const int n_, const int nu_, const int m_, edouble a_tilde[])
 {
-    int q;
     const edouble n  = n_;
     const edouble nu = nu_;
     const edouble m  = m_;
@@ -629,7 +623,7 @@ void gaunt(const int n_, const int nu_, const int m_, edouble a_tilde[])
                 + (m-nu)*(m-nu+1)*(m-nu+2)*(m-nu+3)/(2*nu-1)/(2*nu-3) ) - (m-n)*(m-n+1)/(2*n-1) \
                 - (m-nu)*(m-nu+1)/(2*nu-1) ) +0.5);
 
-    for(q = 3; q <= qmax; q++)
+    for(int q = 3; q <= qmax; q++)
     {
         edouble c0,c1,c2;
         const edouble p = n+nu-2*q;
