@@ -325,7 +325,6 @@ static void _integrals(int l1, int l2, int m, double nT, casimir_integrals_t *ci
 
 int test_integration_perf(void)
 {
-    int i;
     double v;
     double list_nT[] = { 1e-4, 1e-3, 1e-2, 1e-1, 0.5, 1e0, 1.006, 2, 1e1, 1e2, 1e3, 1e4 };
     casimir_integrals_t cint;
@@ -333,13 +332,12 @@ int test_integration_perf(void)
     unittest_init(&test, "Integration", "Test integration for various parameters");
 
     /* test vs analytical expressions for l1,l2,m small */
-    for(i = 0; i < sizeof(list_nT)/sizeof(list_nT[0]); i++)
+    for(size_t i = 0; i < sizeof(list_nT)/sizeof(list_nT[0]); i++)
     {
         double nT = list_nT[i];
-        int l1,l2,m;
 
-        for(l1 = 1; l1 <= 2; l1++)
-            for(l2 = 1; l2 <= 2; l2++)
+        for(int l1 = 1; l1 <= 2; l1++)
+            for(int l2 = 1; l2 <= 2; l2++)
             {
                 sign_t signB = 0;
                 double lnB = B(l1,l2,0,nT,&signB);
@@ -350,9 +348,9 @@ int test_integration_perf(void)
                 AssertAlmostEqual(&test, cint.signB_TM, signB);
             }
 
-        for(m = 1; m <= 2; m++)
-            for(l1 = 2; l1 <= 3; l1++)
-                for(l2 = 2; l2 <= 3; l2++)
+        for(int m = 1; m <= 2; m++)
+            for(int l1 = 2; l1 <= 3; l1++)
+                for(int l2 = 2; l2 <= 3; l2++)
                 {
                     sign_t signA = 0, signB = 0, signC = 0, signD = 0;
                     double lnA = A(l1,l2,m,nT,&signA);
