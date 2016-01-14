@@ -94,12 +94,12 @@ void matrix_edouble_log_balance(matrix_edouble_t *A, const int p);
 #define MATRIX_LOGDET_QR(FUNCTION_PREFIX, MATRIX_TYPE, TYPE, ABS_FUNCTION, COPYSIGN_FUNCTION, SQRT_FUNCTION, LOG_FUNCTION) \
     TYPE FUNCTION_PREFIX ## _logdet_qr(MATRIX_TYPE *M) \
     { \
-        size_t i, j, n, dim = M->size; \
+        int dim = M->size; \
         TYPE det = 0; \
         TYPE *m = M->M; \
 \
-        for(j = 0; j < dim-1; j++) \
-            for(i = j+1; i < dim; i++) \
+        for(int j = 0; j < dim-1; j++) \
+            for(int i = j+1; i < dim; i++) \
             {\
                 TYPE c,s, Mij = m[i*dim+j]; \
 \
@@ -133,7 +133,7 @@ void matrix_edouble_log_balance(matrix_edouble_t *A, const int p);
                         s = -c*t; \
                     } \
  \
-                    for(n = 0; n < dim; n++) \
+                    for(int n = 0; n < dim; n++) \
                     { \
                         const TYPE Min = m[i*dim+n]; \
                         const TYPE Mjn = m[j*dim+n]; \
@@ -146,7 +146,7 @@ void matrix_edouble_log_balance(matrix_edouble_t *A, const int p);
                 } \
             } \
  \
-        for(i = 0; i < dim; i++) \
+        for(int i = 0; i < dim; i++) \
             det += LOG_FUNCTION(ABS_FUNCTION(m[i*dim+i])); \
         return det; \
     }
@@ -158,10 +158,10 @@ void matrix_edouble_log_balance(matrix_edouble_t *A, const int p);
 #define MATRIX_EXP(FUNCTION_PREFIX, MATRIX_TYPE, EXP_FUNCTION) \
     void FUNCTION_PREFIX ## _exp(MATRIX_TYPE *M, matrix_sign_t *M_sign) \
     { \
-        size_t i,j, dim = M->size; \
+        int dim = M->size; \
  \
-        for(i = 0; i < dim; i++) \
-            for(j = 0; j < dim; j++) \
+        for(int i = 0; i < dim; i++) \
+            for(int j = 0; j < dim; j++) \
                 matrix_set(M, i,j, matrix_get(M_sign,i,j)*EXP_FUNCTION(matrix_get(M,i,j))); \
     }
 
