@@ -16,29 +16,6 @@ MPICC = mpicc
 #MPICC = mpiicc
 
 
-# Use extended doubles for calculations.
-#
-# gcc and icc implement long double as 80-bit extended precision type on x86
-# hardware. Extended doubles are less precise than quadrupule precision, but
-# are much faster (approximately by a factor of 40).
-#
-# To use quadruple precision, comment out the line.
-#
-# If you don't know what to do here, set EXTENDED_DOUBLE to 1.
-USE_EXTENDED_DOUBLE = 1
-
-
-# Use LAPACK to calculate the determinant.
-#
-# If you define USE_LAPACK, the LAPACK routine dgetrf may be used to perform
-# LU decompositions. The use of LAPACK is slightly faster, but LAPACK only
-# operates on doubles.
-#
-# Per default a QR decomposition is used. If set USE_LAPACK to 1, you may also
-# use LU decomposition from LAPACK.
-# USE_LAPACK = 1
-
-
 # Disable additional checks and assertions.
 #
 # This option will cause the program to perform additional checks. If an error
@@ -51,12 +28,6 @@ USE_EXTENDED_DOUBLE = 1
 # If you don't know what to say here, comment out the line.
 # CFLAGS += -DNDEBUG
 
-
-ifdef USE_LAPACK
-    CFLAGS += -DUSE_LAPACK
-    LDFLAGS += -llapack -lblas
-endif
-
 # use optimization
 ifeq ($(CC),gcc)
     OPTIMIZATION = -O3
@@ -65,18 +36,7 @@ ifeq ($(CC),icc)
     OPTIMIZATION = -fast
 endif
 
-# if we need quadrupole precision
-ifdef USE_EXTENDED_DOUBLE
-    CFLAGS += -DEXTENDED_DOUBLE
-else
-    ifeq ($(CC),gcc)
-        LDFLAGS += -lquadmath
-    endif
-    ifeq ($(CC),icc)
-        LDFLAGS += -Qoption,c,--extended_float_type
-    endif
-endif
-
+CFLAGS += -DEXTENDED_DOUBLE
 
 
 casimir:
