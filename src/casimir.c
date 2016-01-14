@@ -4,6 +4,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <strings.h>
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <unistd.h>
@@ -139,7 +140,7 @@ int main(int argc, char *argv[])
     double lfac      = DEFAULT_LFAC;
     double lT[4]     = { 0,0,0,SCALE_LIN }; /* start, stop, N, lin/log */
     double lLbyR[4]  = { 0,0,0,SCALE_LIN }; /* start, stop, N, lin/log */
-    int i, iT, iLbyR;
+    int i;
     int cores = 1;
     int lmax = 0;
     int buffering_flag = 0, quiet_flag = 0;
@@ -282,8 +283,8 @@ int main(int argc, char *argv[])
         printf("# %s\n#\n", casimir_compile_info());
 
     i = 0;
-    for(iLbyR = 0; iLbyR < lLbyR[2]; iLbyR++)
-        for(iT = 0; iT < lT[2]; iT++)
+    for(int iLbyR = 0; iLbyR < lLbyR[2]; iLbyR++)
+        for(int iT = 0; iT < lT[2]; iT++)
         {
             casimir_t casimir;
             double start_time = now();
