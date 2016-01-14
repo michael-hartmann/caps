@@ -1,6 +1,10 @@
 #ifndef __EDOUBLE_H
 #define __EDOUBLE_H
 
+#ifndef M_PI
+#define M_PI 3.14159265358979323846
+#endif
+
 #define CASIMIR_ARITHMETICS "long double"
 #define edouble long double
 
