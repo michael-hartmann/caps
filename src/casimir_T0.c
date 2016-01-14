@@ -1,3 +1,5 @@
+#define _BSD_SOURCE /* make usleep work */
+
 #include <ctype.h>
 #include <getopt.h>
 #include <stdio.h>
@@ -24,15 +26,13 @@
 
 void casimir_mpi_init(casimir_mpi_t *self, double LbyR, int lmax, double precision, int cores)
 {
-    int i;
-
     self->LbyR      = LbyR;
     self->lmax      = lmax;
     self->precision = precision;
     self->cores     = cores;
     self->tasks     = xmalloc(cores*sizeof(casimir_task_t *));
 
-    for(i = 0; i < cores; i++)
+    for(int i = 0; i < cores; i++)
     {
         casimir_task_t *task = xmalloc(sizeof(casimir_task_t));
         task->index    = -1;
@@ -43,14 +43,13 @@ void casimir_mpi_init(casimir_mpi_t *self, double LbyR, int lmax, double precisi
 
 void casimir_mpi_free(casimir_mpi_t *self)
 {
-    int i;
     double buf[] = { -1, -1, -1, -1 };
 
     /* stop all remaining slaves */
-    for(i = 1; i < self->cores; i++)
+    for(int i = 1; i < self->cores; i++)
         MPI_Send(buf, 4, MPI_DOUBLE, i, 0, MPI_COMM_WORLD);
 
-    for(i = 0; i < self->cores; i++)
+    for(int i = 0; i < self->cores; i++)
     {
         xfree(self->tasks[i]);
         self->tasks[i] = NULL;
@@ -63,9 +62,9 @@ void casimir_mpi_free(casimir_mpi_t *self)
 
 int casimir_mpi_get_running(casimir_mpi_t *self)
 {
-    int i,running = 0;
+    int running = 0;
 
-    for(i = 1; i < self->cores; i++)
+    for(int i = 1; i < self->cores; i++)
         if(self->tasks[i]->state == STATE_RUNNING)
             running++;
 
@@ -74,9 +73,7 @@ int casimir_mpi_get_running(casimir_mpi_t *self)
 
 int casimir_mpi_submit(casimir_mpi_t *self, int index, double xi, int m)
 {
-    int i;
-
-    for(i = 1; i < self->cores; i++)
+    for(int i = 1; i < self->cores; i++)
     {
         casimir_task_t *task = self->tasks[i];
 
@@ -102,11 +99,9 @@ int casimir_mpi_submit(casimir_mpi_t *self, int index, double xi, int m)
 
 int casimir_mpi_retrieve(casimir_mpi_t *self, casimir_task_t **task_out)
 {
-    int i;
-
     *task_out = NULL;
 
-    for(i = 1; i < self->cores; i++)
+    for(int i = 1; i < self->cores; i++)
     {
         casimir_task_t *task = self->tasks[i];
 
@@ -158,7 +153,7 @@ int main(int argc, char *argv[])
 
 int master(int argc, char *argv[], int cores)
 {
-    int i, m, order = ORDER, lmax = 0, ret = 0;
+    int order = ORDER, lmax = 0, ret = 0;
     edouble F0;
     double alpha, LbyR = -1, lfac = LFAC, precision = PRECISION;
     edouble integral = 0, *xk, *ln_wk;
@@ -171,8 +166,7 @@ int master(int argc, char *argv[], int cores)
     while (1)
     {
         int c;
-        struct option long_options[] =
-        {
+        struct option long_options[] = {
             { "help",      no_argument,       0, 'h' },
             { "LbyR",      required_argument, 0, 'x' },
             { "lmax",      required_argument, 0, 'L' },
@@ -291,18 +285,18 @@ int master(int argc, char *argv[], int cores)
 
     /* allocate memory */
     values = xmalloc(order*sizeof(double *));
-    for(i = 0; i < order; i++)
+    for(int i = 0; i < order; i++)
     {
         values[i] = xmalloc(lmax*sizeof(double));
 
-        for(m = 0; m < lmax; m++)
+        for(int m = 0; m < lmax; m++)
             values[i][m] = NAN;
     }
 
     /* gather all data */
-    for(m = 0; m < lmax; m++)
+    for(int m = 0; m < lmax; m++)
     {
-        for(i = 0; i < order; i++)
+        for(int i = 0; i < order; i++)
         {
             int k = 0;
 
@@ -345,10 +339,10 @@ int master(int argc, char *argv[], int cores)
     casimir_mpi_free(&casimir_mpi);
 
     /* do Gauss-Legendre quadrature */
-    for(i = 0; i < order; i++)
+    for(int i = 0; i < order; i++)
     {
         edouble value = 0;
-        for(m = 0; m < lmax; m++)
+        for(int m = 0; m < lmax; m++)
         {
             if(isnan(values[i][m]))
                 break;
@@ -370,7 +364,7 @@ int master(int argc, char *argv[], int cores)
     printf("%.15g, %d, %d, %.15g, %.15Lg\n", LbyR, lmax, order, alpha, F0);
 
     /* free memory */
-    for(i = 0; i < order; i++)
+    for(int i = 0; i < order; i++)
     {
         xfree(values[i]);
         values[i] = NULL;
@@ -395,10 +389,10 @@ int slave(MPI_Comm master_comm, int rank)
     {
         MPI_Recv(buf, 5, MPI_DOUBLE, 0, 0, master_comm, &status);
 
-        xi        = buf[0];
-        LbyR      = buf[1];
-        m         = (int)buf[2];
-        lmax      = buf[3];
+        xi   = buf[0];
+        LbyR = buf[1];
+        m    = (int)buf[2];
+        lmax = buf[3];
 
         if(xi < 0)
             break;

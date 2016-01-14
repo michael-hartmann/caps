@@ -10,19 +10,18 @@
 
 edouble TraceD0(casimir_t *self, int m);
 void TraceD(casimir_t *self, int n, int m, edouble Tr_EE[2], edouble Tr_MM[2]);
-void usage(FILE *stream, int argc, char *argv[]);
+void usage(FILE *stream, const char *self);
 
 edouble TraceD0(casimir_t *self, int m)
 {
-    int l,min,max;
     double lnRbyScriptL = log(self->RbyScriptL);
     edouble Tr_EE = 0;
 
-    min = MAX(m,1);
-    max = self->lmax;
+    int min = MAX(m,1);
+    int max = self->lmax;
 
     /* calculate the logarithm of the matrix elements of D */
-    for(l = min; l <= max; l++)
+    for(int l = min; l <= max; l++)
     {
         sign_t sign_a0, sign_b0, sign_xi;
         double lna0, lnb0;
@@ -37,7 +36,7 @@ edouble TraceD0(casimir_t *self, int m)
 
 void TraceD(casimir_t *self, int n, int m, edouble Tr_EE[2], edouble Tr_MM[2])
 {
-    int min,max,l;
+    int min,max;
     Tr_EE[TE] = Tr_EE[TM] = 0;
     Tr_MM[TE] = Tr_MM[TM] = 0;
 
@@ -50,7 +49,7 @@ void TraceD(casimir_t *self, int n, int m, edouble Tr_EE[2], edouble Tr_MM[2])
         return;
     }
 
-    for(l = min; l <= max; l++)
+    for(int l = min; l <= max; l++)
     {
         casimir_integrals_t cint;
         double ln_al, ln_bl;
@@ -70,16 +69,15 @@ void TraceD(casimir_t *self, int n, int m, edouble Tr_EE[2], edouble Tr_MM[2])
     }
 }
 
-void usage(FILE *stream, int argc, char *argv[])
+void usage(FILE *stream, const char *self)
 {
-    fprintf(stream, "Usage: %s D/R T omegap omegap/gamma\n", argv[0]);
+    fprintf(stream, "Usage: %s D/R T omegap omegap/gamma\n", self);
 }
 
 
 int main(int argc, char *argv[])
 {
     casimir_t casimir;
-    int n,m;
     int lmax = 1;
     edouble Tr = 0;
     double eps = 1e-12;
@@ -94,7 +92,7 @@ int main(int argc, char *argv[])
 
     if(argc != 5)
     {
-        usage(stderr, argc, argv);
+        usage(stderr, argv[0]);
         exit(1);
     }
     DbyR          = atof(argv[1]);
@@ -133,11 +131,11 @@ int main(int argc, char *argv[])
             Tr = 0;
             edouble Tr_0 = 0;
 
-            for(n = 0; 1; n++)
+            for(int n = 0; 1; n++)
             {
                 edouble Tr_n = 0;
 
-                for(m = 0; m <= lmax; m++)
+                for(int m = 0; m <= lmax; m++)
                 {
                     edouble Tr_EE[2], Tr_MM[2], sum;
 

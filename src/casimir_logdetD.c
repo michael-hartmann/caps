@@ -49,7 +49,7 @@ int main(int argc, char *argv[])
     double T = -1;
     double lfac = 5;
     double LbyR = -1;
-    int i, n = -1, m = -1;
+    int n = -1, m = -1;
     int lmax = 0;
     int buffering_flag = 0;
     double trace_threshold = -1;
@@ -57,20 +57,19 @@ int main(int argc, char *argv[])
     double logdet, start_time = now();
 
     printf("# %s", argv[0]);
-    for(i = 1; i < argc; i++)
+    for(int i = 1; i < argc; i++)
         printf(", %s", argv[i]);
     printf("\n");
 
     while (1)
     {
         int c;
-        struct option long_options[] =
-        {
-          { "buffering", no_argument,       &buffering_flag, 1 },
-          { "help",      no_argument,       0, 'h' },
-          { "lscale",    required_argument, 0, 'l' },
-          { "trace",     required_argument, 0, 't' },
-          { 0, 0, 0, 0 }
+        struct option long_options[] = {
+            { "buffering", no_argument,       &buffering_flag, 1 },
+            { "help",      no_argument,       0, 'h' },
+            { "lscale",    required_argument, 0, 'l' },
+            { "trace",     required_argument, 0, 't' },
+            { 0, 0, 0, 0 }
         };
 
         /* getopt_long stores the option index here. */
@@ -80,44 +79,44 @@ int main(int argc, char *argv[])
       
         /* Detect the end of the options. */
         if (c == -1)
-          break;
+            break;
       
         switch (c)
         {
-          case 0:
-            /* If this option set a flag, do nothing else now. */
-            if (long_options[option_index].flag != 0)
-              break;
-          case 'x':
-              LbyR = atof(optarg);
-              break;
-          case 'T':
-              T = atof(optarg);
-              break;
-          case 'L':
-              lmax = atoi(optarg);
-          case 'l':
-              lfac = atof(optarg);
-              break;
-          case 'n':
-              n = atoi(optarg);
-              break;
-          case 'm':
-              m = atoi(optarg);
-              break;
-          case 't':
-              trace_threshold = atof(optarg);
-              break;
-          case 'h':
-              usage(stdout);
-              exit(0);
+            case 0:
+              /* If this option set a flag, do nothing else now. */
+              if (long_options[option_index].flag != 0)
+                break;
+            case 'x':
+                LbyR = atof(optarg);
+                break;
+            case 'T':
+                T = atof(optarg);
+                break;
+            case 'L':
+                lmax = atoi(optarg);
+            case 'l':
+                lfac = atof(optarg);
+                break;
+            case 'n':
+                n = atoi(optarg);
+                break;
+            case 'm':
+                m = atoi(optarg);
+                break;
+            case 't':
+                trace_threshold = atof(optarg);
+                break;
+            case 'h':
+                usage(stdout);
+                exit(0);
       
-          case '?':
-            /* getopt_long already printed an error message. */
-            break;
+            case '?':
+              /* getopt_long already printed an error message. */
+              break;
       
-          default:
-            abort();
+            default:
+              abort();
         }
     }
 
