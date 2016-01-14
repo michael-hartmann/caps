@@ -48,12 +48,12 @@ typedef struct {
 
 void polymult(edouble p1[], int len_p1, edouble p2[], int len_p2, edouble p[]);
 
-edouble inline logadd(const edouble a, const edouble b);
-edouble inline logadd_s(const edouble a, const sign_t sign_a, const edouble b, const sign_t sign_b, sign_t *sign);
-edouble inline logadd_m(const edouble list[], const size_t len);
-edouble inline logadd_ms(const edouble list[], const sign_t signs[], const size_t len, sign_t *sign);
+inline edouble logadd(const edouble a, const edouble b);
+inline edouble logadd_s(const edouble a, const sign_t sign_a, const edouble b, const sign_t sign_b, sign_t *sign);
+inline edouble logadd_m(const edouble list[], const int len);
+inline edouble logadd_ms(const edouble list[], const sign_t signs[], const int len, sign_t *sign);
 
-edouble inline lbinom(int n, int k);
+inline edouble lbinom(int n, int k);
 
 edouble bessel_lnInu(const int n, const edouble x);
 edouble bessel_lnKnu(const int n, const edouble x);
@@ -72,10 +72,10 @@ edouble plm_dPlm  (int l, int m, edouble x);
 
 void plm_PlmPlm(int l1, int l2, int m, edouble x, plm_combination_t *res);
 
-edouble inline gaunt_log_a0(int n, int nu, int m);
-edouble inline gaunt_a0(int n,int nu,int m);
+inline edouble gaunt_log_a0(int n, int nu, int m);
+inline edouble gaunt_a0(int n,int nu,int m);
 void gaunt(const int n, const int nu, const int m, edouble a_tilde[]);
 
-int inline gaunt_qmax(const int n, const int nu, const int m);
+inline int gaunt_qmax(const int n, const int nu, const int m);
 
 #endif
