@@ -59,14 +59,14 @@ static edouble polyintegrate(edouble p[], const int len_p, const int offset, con
  */
 static void log_polymult(edouble p1[], const int len_p1, edouble p2[], const int len_p2, edouble p[])
 {
-    int k, len = len_p1+len_p2-1;
+    int len = len_p1+len_p2-1;
     edouble temp[len];
 
-    for(k = 0; k < len; k++)
+    for(int k = 0; k < len; k++)
     {
-        int i, elems = 0;
+        int elems = 0;
 
-        for(i = 0; i < MIN(k+1, len_p1); i++)
+        for(int i = 0; i < MIN(k+1, len_p1); i++)
         {
             int j = k-i;
             if(i < len_p1 && j < len_p2)
@@ -104,7 +104,6 @@ edouble casimir_integrate_perf_I(integration_perf_t *self, int nu)
 
     if(isnan(v))
     {
-        int k;
         const double tau = 2*self->nT;
         const int m = (self->m != 0) ? self->m : 2;
 
@@ -118,10 +117,10 @@ edouble casimir_integrate_perf_I(integration_perf_t *self, int nu)
         /* Every monom of both polynoms is positive. So we can save the
          * logarithms of the coefficients. */
 
-        for(k = 0; k <= m-1; k++)
+        for(int k = 0; k <= m-1; k++)
             p1[k] = lgammae(m)-lgammae(k+1)-lgammae(m-k)+(m-1-k)*LOG2;
 
-        for(k = 2*m; k <= nu; k++)
+        for(int k = 2*m; k <= nu; k++)
             p2[k-2*m] = lgammae(k+nu+1)-lgammae(k+1)-lgammae(k-2*m+1)-lgammae(-k+nu+1)-k*LOG2;
 
         log_polymult(p1, m, p2, nu+1-2*m, p); /* len: nu-m */
@@ -161,7 +160,6 @@ edouble casimir_integrate_K(integration_perf_t *self, const int l1, const int l2
 
     if(isnan(v))
     {
-        int q;
         const int m = (self->m != 0) ? self->m : 2;
         const int qmax       = gaunt_qmax(l1,l2,m);
         const edouble log_a0 = gaunt_log_a0(l1,l2,m);
@@ -172,7 +170,7 @@ edouble casimir_integrate_K(integration_perf_t *self, const int l1, const int l2
 
         gaunt(l1, l2, m, a);
 
-        for(q = 0; q <= qmax; q++)
+        for(int q = 0; q <= qmax; q++)
         {
             signs[q] = copysigne(1, a[q]);
             a[q] = loge(fabse(a[q])) + casimir_integrate_perf_I(self, l1+l2-2*q);
@@ -207,7 +205,7 @@ edouble casimir_integrate_K(integration_perf_t *self, const int l1, const int l2
  */
 void casimir_integrate_perf_init(integration_perf_t *self, double nT, int m, int lmax)
 {
-    int i, elems_I, elems_K;
+    int elems_I, elems_K;
 
     self->nT   = nT;
     self->lmax = lmax;
@@ -216,14 +214,14 @@ void casimir_integrate_perf_init(integration_perf_t *self, double nT, int m, int
     /* allocate memory and initialize chache for I */
     elems_I = 2*(lmax+2);
     self->cache_I = xmalloc(elems_I*sizeof(edouble));
-    for(i = 0; i < elems_I; i++)
+    for(int i = 0; i < elems_I; i++)
         self->cache_I[i] = NAN;
 
     /* allocate memory and initialize chache for K */
     elems_K = pow_2(lmax+2);
     self->cache_K_signs = xmalloc(elems_K*sizeof(sign_t));
     self->cache_K = xmalloc(elems_K*sizeof(edouble));
-    for(i = 0; i < elems_K; i++)
+    for(int i = 0; i < elems_K; i++)
         self->cache_K[i] = NAN;
 }
 
