@@ -2,14 +2,17 @@
 all: casimir casimir_hiT casimir_logdetD casimir_Fn ld_drude casimir_T0 casimir_tests
 
 SOURCES  = sfunc.c integration_drude.c integration_perf.c libcasimir.c matrix.c utils.c gausslaguerre.c
-CFLAGS  += -Werror -Wall -Wmissing-prototypes -Wstrict-prototypes -Wshadow -Wpointer-arith -Wcast-qual -Wwrite-strings -fno-common
+CFLAGS  += -std=c99              # use C99
+CFLAGS  += -fgnu89-inline        # use traditional GNU semantics for
+CFLAGS  += -Werror -Wall -Wextra # enable warnings and make them fatal
+CFLAGS  += -Wmissing-prototypes -Wstrict-prototypes -Wshadow -Wpointer-arith -Wcast-qual -Wwrite-strings -Wno-unused-parameter
 LDFLAGS += -lm -pthread
 
 TARGET = "../bin/"
 
 # Choose a compiler.
 #
-# At the moment gcc and icc are supported.
+# At the moment gcc, clang and icc are supported.
 CC = gcc
 #CC = icc
 MPICC = mpicc
