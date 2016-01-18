@@ -38,49 +38,44 @@ void matrix_edouble_log_balance(matrix_edouble_t *A, const int p)
     edouble *list_row = xmalloc(N*sizeof(edouble));
     edouble *list_col = xmalloc(N*sizeof(edouble));
 
-    /* line 2 */ \
+    /* line 2 */
     while(!converged)
     {
-        int f;
-        edouble s;
-        edouble row_norm, col_norm;
-
         /* line 4 */
         converged = true;
 
         /* line 5 */
         for(int i = 0; i < N; i++)
         {
-            /* line 6 */ \
+            /* line 6 */
             for(int j = 0; j < N; j++)
             {
-                const edouble Aij = matrix_get(A,i,j);
-                const edouble Aji = matrix_get(A,j,i);
-
-                list_row[j] = p*Aij;
-                list_col[j] = p*Aji;
+                list_row[j] = p*matrix_get(A,i,j);
+                list_col[j] = p*matrix_get(A,j,i);
             }
 
-            row_norm = logadd_m(list_row, N);
-            col_norm = logadd_m(list_col, N);
+            edouble row_norm = logadd_m(list_row, N);
+            edouble col_norm = logadd_m(list_col, N);
 
+            /*
             if(isinf(row_norm) || isinf(col_norm))
                 continue;
+            */
 
             /* line 7 */
-            f = 0; /* log(1)=0 */
-            s = logadd(p*col_norm, p*row_norm);
+            int f = 0; /* log(1)=0 */
+            edouble s = logadd(p*col_norm, p*row_norm);
 
             /* line 8 */
             while(col_norm < (row_norm-LOG_FLOAT_RADIX))
             {
-                /* line 9 */ \
+                /* line 9 */
                 col_norm += LOG_FLOAT_RADIX;
                 row_norm -= LOG_FLOAT_RADIX;
                 f        += 1;
             }
 
-            /* line 10 */ \
+            /* line 10 */
             while(col_norm >= (row_norm+LOG_FLOAT_RADIX))
             {
                 /* line 11 */
@@ -114,14 +109,12 @@ double matrix_edouble_logdet(matrix_edouble_t *M, matrix_sign_t *M_sign, const c
     if(strcasecmp(type, "QR") == 0)
     {
         matrix_edouble_log_balance(M,1);
-        matrix_edouble_log_balance(M,2);
         matrix_edouble_exp(M, M_sign);
         return matrix_edouble_logdet_qr(M);
     }
     else if(strcasecmp(type, "LU") == 0)
     {
         matrix_edouble_log_balance(M,1);
-        matrix_edouble_log_balance(M,2);
         matrix_edouble_exp(M, M_sign);
         return matrix_edouble_logdet_lu(M);
     }
