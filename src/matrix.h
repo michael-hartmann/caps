@@ -248,6 +248,8 @@ MATRIX_LOGDET_LU_HEADER(matrix_edouble, matrix_edouble_t, edouble);
 
 MATRIX_ALLOC_HEADER(matrix_sign, matrix_sign_t);
 MATRIX_FREE_HEADER (matrix_sign, matrix_sign_t);
+MATRIX_LOAD_HEADER (matrix_sign, matrix_sign_t);
+MATRIX_SAVE_HEADER (matrix_sign, matrix_sign_t);
 
 double matrix_edouble_logdet(matrix_edouble_t *M, matrix_sign_t *M_sign, const char *type);
 

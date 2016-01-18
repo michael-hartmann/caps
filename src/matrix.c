@@ -17,6 +17,8 @@
 
 MATRIX_ALLOC(matrix_sign, matrix_sign_t, sign_t);
 MATRIX_FREE (matrix_sign, matrix_sign_t);
+MATRIX_SAVE (matrix_sign, matrix_sign_t, sign_t);
+MATRIX_LOAD (matrix_sign, matrix_sign_t, sign_t, matrix_sign_alloc, matrix_sign_free);
 
 MATRIX_ALLOC(matrix_edouble, matrix_edouble_t, edouble);
 MATRIX_FREE (matrix_edouble, matrix_edouble_t);
