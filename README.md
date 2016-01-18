@@ -52,6 +52,15 @@ Citing
 Authors, license and credits
 ----------------------------
 
+ * [Michael Hartmann](https://myweb.rz.uni-augsburg.de/~hartmmic/), michael.hartmann@physik.uni-augsburg.de  
+   main developer
+
+ * [Gert-Ludwig Ingold](http://www.physik.uni-augsburg.de/theo1/ingold/), gert.ingold@physik.uni-augsburg.de  
+   contributions to documentation, speedup of PFA calculation, bugfixes
+
+For a full list, see CREDITS.
+
+The code is licensed under GPLv2, see LICENSE.
 
 Publications
 ------------
