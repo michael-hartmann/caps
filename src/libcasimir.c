@@ -369,9 +369,46 @@ int casimir_init(casimir_t *self, double LbyR, double T)
     /* use QR decomposition to calculate determinant */
     strcpy(self->detalg, "QR");
 
+    /* set p-norm for balancing */
+    self->balance_p = 2;
+
     return 0;
 }
 
+
+/**
+ * @brief Set p-norm used for balancing matrix
+ *
+ * The balancing of the matrix will need a p-norm.
+ *
+ * This function is not thread-safe.
+ *
+ * @param [in,out] self Casimir object
+ * @param [in] pnrom: p-norm to use (>= 1)
+ * @retval 1 if successful
+ * @retval 0 if pnorm invalid
+ */
+int casimir_set_balance_pnorm(casimir_t *self, int pnorm)
+{
+    if(pnorm <= 0)
+        return 0;
+
+    self->balance_p = pnorm;
+    return 1;
+}
+
+/**
+ * @brief Get p-norm used for balancing matrix
+ *
+ * This function is not thread-safe.
+ *
+ * @param [in,out] self Casimir object
+ * @retval pnorm p-norm
+ */
+int casimir_get_balance_pnrom(casimir_t *self)
+{
+    return self->balance_p;
+}
 
 /**
  * @brief Set order of integration
@@ -1697,16 +1734,8 @@ double casimir_logdetD(casimir_t *self, int n, int m)
 
     #if 0
     /* Dump matrix */
-    {
-        printf("# m, n, log[abs(D_mn)], D_mn\n");
-        for(int i = 0; i < 2*dim; i++)
-            for(int j = 0; j < 2*dim; j++)
-            {
-                const edouble elem = matrix_get(M,i,j);
-                const sign_t sign  = matrix_get(M_sign,i,j);
-                printf("%d,%d, %.16Lg, %.16Lg\n", i,j, elem, sign*expe(elem));
-            }
-    }
+    printf("%d\n", matrix_edouble_save(M, "matrix_edouble.out"));
+    printf("%d\n", matrix_sign_save(M_sign, "matrix_signs.out"));
     #endif
 
     if(m == 0)
