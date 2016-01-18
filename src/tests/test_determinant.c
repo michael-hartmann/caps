@@ -8,7 +8,6 @@
 
 int test_determinant()
 {
-    int i = 0;
     const char *methods[] = { "QR", "LU", NULL };
     unittest_t test;
     unittest_init(&test, "logdet", "Test computation of determinant");
@@ -21,15 +20,18 @@ int test_determinant()
     matrix_set(M_sign, 1,0, +1);
     matrix_set(M_sign, 1,1, +1);
 
-    while(methods[i] != NULL)
+    for(int i = 0; methods[i] != NULL; i++)
     {
-        matrix_set(M, 0,0, loge(2L));
-        matrix_set(M, 0,1, loge(20e1000L));
-        matrix_set(M, 1,0, loge(1e-1000L));
-        matrix_set(M, 1,1, loge(1L));
+        const char *method = methods[i];
+        for(int pnorm = 1; pnorm <= 2; pnorm++)
+        {
+            matrix_set(M, 0,0, loge(2L));
+            matrix_set(M, 0,1, loge(20e1000L));
+            matrix_set(M, 1,0, loge(1e-1000L));
+            matrix_set(M, 1,1, loge(1L));
 
-        AssertAlmostEqual(&test, matrix_edouble_logdet(M, M_sign, methods[i]), log(18));
-        i++;
+            AssertAlmostEqual(&test, matrix_edouble_logdet(M, M_sign, pnorm, method), log(18));
+        }
     }
 
     matrix_edouble_free(M);
