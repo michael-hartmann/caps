@@ -20,6 +20,8 @@ MATRIX_FREE (matrix_sign, matrix_sign_t);
 
 MATRIX_ALLOC(matrix_edouble, matrix_edouble_t, edouble);
 MATRIX_FREE (matrix_edouble, matrix_edouble_t);
+MATRIX_SAVE (matrix_edouble, matrix_edouble_t, edouble);
+MATRIX_LOAD (matrix_edouble, matrix_edouble_t, edouble, matrix_edouble_alloc, matrix_edouble_free);
 
 MATRIX_LOGDET_QR (matrix_edouble, matrix_edouble_t, edouble, fabse, copysigne, sqrte, loge);
 MATRIX_LOGDET_LU (matrix_edouble, matrix_edouble_t, edouble, fabse, loge);
