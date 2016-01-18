@@ -74,7 +74,8 @@ typedef struct
     double trace_threshold; /**< threshold when Tr M is used as an approximation for log(det(1-M)) */
     pthread_t **threads;    /**< list of pthread objects */
 
-    char detalg[64];     /**< algorithm to calculate determinant */
+    char detalg[64];        /**< algorithm to calculate determinant */
+    int balance_p;          /**< norm to use for balancing matrix */
 
     casimir_mie_cache_t *mie_cache;
     /*@}*/
@@ -143,6 +144,9 @@ int casimir_set_gamma_plane(casimir_t *self, double gamma_);
 
 double casimir_get_gamma_sphere(casimir_t *self);
 double casimir_get_gamma_plane(casimir_t *self);
+
+int casimir_get_balance_pnrom(casimir_t *self);
+int casimir_set_balance_pnorm(casimir_t *self, int pnorm);
 
 void casimir_set_integration(casimir_t *self, int integration);
 int casimir_get_integration(casimir_t *self);
