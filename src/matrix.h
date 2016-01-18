@@ -74,7 +74,7 @@ void matrix_edouble_log_balance(matrix_edouble_t *A, const int p);
         if(fwrite(&size, sizeof(int), 1, f) != 1) \
             goto fail; \
 \
-        if(fwrite(ptr,   sizeof(TYPE), size, f) != (size_t)size) \
+        if(fwrite(ptr,   sizeof(TYPE), pow_2(size), f) != (size_t)pow_2(size)) \
             goto fail; \
 \
         if(fclose(f) == 0) \
@@ -94,7 +94,7 @@ void matrix_edouble_log_balance(matrix_edouble_t *A, const int p);
     { \
         MATRIX_TYPE *M = NULL; \
         FILE *f; \
-        int dim,size; \
+        int size; \
 \
         if((f = fopen(path, "r")) == NULL) \
             goto fail; \
@@ -105,15 +105,11 @@ void matrix_edouble_log_balance(matrix_edouble_t *A, const int p);
         if(size <= 0) \
             goto fail; \
 \
-        dim = sqrt(size); \
-        if(dim*dim != size) \
-            goto fail; \
-\
-        M = MATRIX_ALLOC(dim); \
+        M = MATRIX_ALLOC(size); \
         if(M == NULL) \
             goto fail; \
 \
-        if(fread(M->M, sizeof(TYPE), size, f) != (size_t)size) \
+        if(fread(M->M, sizeof(TYPE), pow_2(size), f) != (size_t)pow_2(size)) \
             goto fail; \
 \
         if(fclose(f) == 0) \
