@@ -54,13 +54,8 @@ void matrix_edouble_log_balance(matrix_edouble_t *A, const int p)
                 list_col[j] = p*matrix_get(A,j,i);
             }
 
-            edouble row_norm = logadd_m(list_row, N);
-            edouble col_norm = logadd_m(list_col, N);
-
-            /*
-            if(isinf(row_norm) || isinf(col_norm))
-                continue;
-            */
+            edouble row_norm = logadd_m(list_row, N)/p;
+            edouble col_norm = logadd_m(list_col, N)/p;
 
             /* line 7 */
             int f = 0; /* log(1)=0 */
@@ -104,17 +99,17 @@ void matrix_edouble_log_balance(matrix_edouble_t *A, const int p)
     xfree(list_row);
 }
 
-double matrix_edouble_logdet(matrix_edouble_t *M, matrix_sign_t *M_sign, const char *type)
+double matrix_edouble_logdet(matrix_edouble_t *M, matrix_sign_t *M_sign, const int pnorm, const char *type)
 {
     if(strcasecmp(type, "QR") == 0)
     {
-        matrix_edouble_log_balance(M,1);
+        matrix_edouble_log_balance(M,pnorm);
         matrix_edouble_exp(M, M_sign);
         return matrix_edouble_logdet_qr(M);
     }
     else if(strcasecmp(type, "LU") == 0)
     {
-        matrix_edouble_log_balance(M,1);
+        matrix_edouble_log_balance(M,pnorm);
         matrix_edouble_exp(M, M_sign);
         return matrix_edouble_logdet_lu(M);
     }
