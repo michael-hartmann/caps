@@ -9,10 +9,14 @@
 #define HBARC 3.161526510740123e-26 /**< \f$\hbar \mathrm{c}\f$ */
 #define KB    1.3806488e-23         /**< \f$k_\mathrm{B}\f$ */
 
-#define CASIMIR_DEFAULT_PRECISION 1e-12
-#define CASIMIR_IDLE 1000
-#define CASIMIR_FACTOR_LMAX 5
-#define CASIMIR_DEFAULT_TRACE_THRESHOLD 1e-8
+/* default values */
+#define CASIMIR_PRECISION 1e-12      /**< default precision */
+#define CASIMIR_IDLE 1000            /**< idle time in µs */
+#define CASIMIR_FACTOR_LMAX 5        /**< by default: lmax=ceil(5/LbyR) */
+#define CASIMIR_TRACE_THRESHOLD 1e-8 /**< threshold to use trace */
+
+#define CASIMIR_DETALG "QR" /**< default algorithm for matrix decomposition */
+#define CASIMIR_BALANCE_P 2 /**< default p-norm for balancing */
 
 /** define sign_t as a signed char */
 typedef char sign_t;
@@ -30,10 +34,10 @@ typedef struct
 } casimir_mie_cache_entry_t;
 
 typedef struct {
-    int nmax;  /**< maximum value of n */
-    int lmax;  /**< maximum value of \f$\ell\f$ */
+    int nmax;                            /**< maximum value of n */
+    int lmax;                            /**< maximum value of \f$\ell\f$ */
     casimir_mie_cache_entry_t **entries; /**< entries */
-    pthread_mutex_t mutex; /**< mutex for Mie cache */
+    pthread_mutex_t mutex;               /**< mutex for Mie cache */
 } casimir_mie_cache_t;
 
 /**
@@ -77,7 +81,7 @@ typedef struct
     char detalg[64];        /**< algorithm to calculate determinant */
     int balance_p;          /**< norm to use for balancing matrix */
 
-    casimir_mie_cache_t *mie_cache;
+    casimir_mie_cache_t *mie_cache; /**< Mie chache */
     /*@}*/
 } casimir_t;
 

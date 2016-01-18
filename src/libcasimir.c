@@ -351,8 +351,8 @@ int casimir_init(casimir_t *self, double LbyR, double T)
     self->T               = T;
     self->RbyScriptL      = 1./(1.+LbyR);
     self->LbyR            = LbyR;
-    self->precision       = CASIMIR_DEFAULT_PRECISION;
-    self->trace_threshold = CASIMIR_DEFAULT_TRACE_THRESHOLD;
+    self->precision       = CASIMIR_PRECISION;
+    self->trace_threshold = CASIMIR_TRACE_THRESHOLD;
     self->cores           = 1;
     self->threads         = xmalloc(self->cores*sizeof(pthread_t));
 
@@ -367,10 +367,10 @@ int casimir_init(casimir_t *self, double LbyR, double T)
     self->gamma_plane   = 0;
 
     /* use QR decomposition to calculate determinant */
-    strcpy(self->detalg, "QR");
+    strcpy(self->detalg, CASIMIR_DETALG);
 
     /* set p-norm for balancing */
-    self->balance_p = 2;
+    self->balance_p = CASIMIR_BALANCE_P;
 
     return 0;
 }
