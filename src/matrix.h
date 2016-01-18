@@ -13,7 +13,7 @@
 
 #define MATRIX_TYPEDEF(NAME, MATRIX_TYPE) \
     typedef struct { \
-        size_t size; \
+        int size; \
         MATRIX_TYPE *M; \
     } NAME
 
@@ -59,6 +59,76 @@ void matrix_edouble_log_balance(matrix_edouble_t *A, const int p);
     }
 
 #define MATRIX_FREE_HEADER(FUNCTION_PREFIX, MATRIX_TYPE) void FUNCTION_PREFIX ## _free(MATRIX_TYPE *m)
+
+
+#define MATRIX_SAVE(FUNCTION_PREFIX, MATRIX_TYPE, TYPE) \
+    int FUNCTION_PREFIX ## _save(MATRIX_TYPE *M, const char *path) \
+    { \
+        FILE *f; \
+        const int size = M->size; \
+        const TYPE *ptr = M->M; \
+\
+        if((f = fopen(path, "w")) == NULL) \
+            goto fail; \
+\
+        if(fwrite(&size, sizeof(int), 1, f) != 1) \
+            goto fail; \
+\
+        if(fwrite(ptr,   sizeof(TYPE), size, f) != (size_t)size) \
+            goto fail; \
+\
+        if(fclose(f) == 0) \
+            return 0; \
+\
+        fail: \
+        if(f != NULL) \
+            fclose(f); \
+\
+        return 1; \
+    }
+
+#define MATRIX_SAVE_HEADER(FUNCTION_PREFIX, MATRIX_TYPE) int FUNCTION_PREFIX ## _save(MATRIX_TYPE *M, const char *path)
+
+#define MATRIX_LOAD(FUNCTION_PREFIX, MATRIX_TYPE, TYPE, MATRIX_ALLOC, MATRIX_FREE) \
+    MATRIX_TYPE *FUNCTION_PREFIX ## _load(const char *path) \
+    { \
+        MATRIX_TYPE *M = NULL; \
+        FILE *f; \
+        int dim,size; \
+\
+        if((f = fopen(path, "r")) == NULL) \
+            goto fail; \
+\
+        if(fread(&size, sizeof(size), 1, f) != 1) \
+            goto fail; \
+\
+        if(size <= 0) \
+            goto fail; \
+\
+        dim = sqrt(size); \
+        if(dim*dim != size) \
+            goto fail; \
+\
+        M = MATRIX_ALLOC(dim); \
+        if(M == NULL) \
+            goto fail; \
+\
+        if(fread(M->M, sizeof(TYPE), size, f) != (size_t)size) \
+            goto fail; \
+\
+        if(fclose(f) == 0) \
+            return M; \
+\
+        fail: \
+        if(M != NULL) \
+            MATRIX_FREE(M); \
+        if(f != NULL) \
+            fclose(f); \
+\
+        return NULL; \
+    }
+
+#define MATRIX_LOAD_HEADER(FUNCTION_PREFIX, MATRIX_TYPE) MATRIX_TYPE *FUNCTION_PREFIX ## _load(const char *path)
 
 #define MATRIX_LOGDET_LU(FUNCTION_PREFIX, MATRIX_TYPE, TYPE, ABS_FUNCTION, LOG_FUNCTION) \
     TYPE FUNCTION_PREFIX ## _logdet_lu(MATRIX_TYPE *M) \
@@ -169,6 +239,8 @@ void matrix_edouble_log_balance(matrix_edouble_t *A, const int p);
 
 MATRIX_ALLOC_HEADER(matrix_edouble, matrix_edouble_t);
 MATRIX_FREE_HEADER (matrix_edouble, matrix_edouble_t);
+MATRIX_LOAD_HEADER (matrix_edouble, matrix_edouble_t);
+MATRIX_SAVE_HEADER (matrix_edouble, matrix_edouble_t);
 MATRIX_EXP_HEADER(matrix_edouble, matrix_edouble_t);
 
 MATRIX_LOGDET_QR_HEADER(matrix_edouble, matrix_edouble_t, edouble);
