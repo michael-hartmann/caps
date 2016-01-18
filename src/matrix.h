@@ -22,7 +22,6 @@
 #define matrix_set(m, i, j,v) ((m)->M[(i)*m->size+(j)]=(v))
 
 MATRIX_TYPEDEF(matrix_sign_t, sign_t);
-MATRIX_TYPEDEF(matrix_t, double);
 MATRIX_TYPEDEF(matrix_edouble_t, edouble);
 
 void matrix_edouble_log_balance(matrix_edouble_t *A, const int p);
