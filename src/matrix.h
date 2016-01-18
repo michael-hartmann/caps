@@ -8,7 +8,8 @@
 #include "libcasimir.h"
 #include "utils.h"
 
-#define LOG_FLOAT_RADIX   0.6931471805599453094172321214581765680755001343602552L
+//#define LOG_FLOAT_RADIX   0.6931471805599453094172321214581765680755001343602552L
+#define LOG_FLOAT_RADIX 1L
 #define LOG095 -0.05129329438755058
 
 #define MATRIX_TYPEDEF(NAME, MATRIX_TYPE) \
@@ -246,6 +247,6 @@ MATRIX_FREE_HEADER (matrix_sign, matrix_sign_t);
 MATRIX_LOAD_HEADER (matrix_sign, matrix_sign_t);
 MATRIX_SAVE_HEADER (matrix_sign, matrix_sign_t);
 
-double matrix_edouble_logdet(matrix_edouble_t *M, matrix_sign_t *M_sign, const char *type);
+double matrix_edouble_logdet(matrix_edouble_t *M, matrix_sign_t *M_sign, const int pnorm, const char *type);
 
 #endif
