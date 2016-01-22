@@ -91,7 +91,6 @@ void casimir_info(casimir_t *self, FILE *stream, const char *prefix)
     fprintf(stream, "%sprecision       = %g\n", prefix, self->precision);
     fprintf(stream, "%strace_threshold = %g\n", prefix, self->trace_threshold);
     fprintf(stream, "%sdetalg          = %s\n", prefix, self->detalg);
-    fprintf(stream, "%sbalance_p       = %d\n", prefix, self->balance_p);
 }
 
 /*@}*/
@@ -370,45 +369,7 @@ int casimir_init(casimir_t *self, double LbyR, double T)
     /* use QR decomposition to calculate determinant */
     strcpy(self->detalg, CASIMIR_DETALG);
 
-    /* set p-norm for balancing */
-    self->balance_p = CASIMIR_BALANCE_P;
-
     return 0;
-}
-
-
-/**
- * @brief Set p-norm used for balancing matrix
- *
- * The balancing of the matrix will need a p-norm.
- *
- * This function is not thread-safe.
- *
- * @param [in,out] self Casimir object
- * @param [in] pnrom: p-norm to use (>= 1)
- * @retval 1 if successful
- * @retval 0 if pnorm invalid
- */
-int casimir_set_balance_pnorm(casimir_t *self, int pnorm)
-{
-    if(pnorm <= 0)
-        return 0;
-
-    self->balance_p = pnorm;
-    return 1;
-}
-
-/**
- * @brief Get p-norm used for balancing matrix
- *
- * This function is not thread-safe.
- *
- * @param [in,out] self Casimir object
- * @retval pnorm p-norm
- */
-int casimir_get_balance_pnrom(casimir_t *self)
-{
-    return self->balance_p;
 }
 
 /**
@@ -1495,14 +1456,14 @@ void casimir_logdetD0(casimir_t *self, int m, double *logdet_EE, double *logdet_
     /* calculate logdet and free space */
     if(EE != NULL)
     {
-        *logdet_EE = matrix_edouble_logdet(EE, EE_sign, self->balance_p, self->detalg);
+        *logdet_EE = matrix_edouble_logdet(EE, EE_sign, self->detalg);
 
         matrix_sign_free(EE_sign);
         matrix_edouble_free(EE);
     }
     if(MM != NULL)
     {
-        *logdet_MM = matrix_edouble_logdet(MM, MM_sign, self->balance_p, self->detalg);
+        *logdet_MM = matrix_edouble_logdet(MM, MM_sign, self->detalg);
 
         matrix_sign_free(MM_sign);
         matrix_edouble_free(MM);
@@ -1760,8 +1721,8 @@ double casimir_logdetD(casimir_t *self, int n, int m)
         matrix_edouble_free(M);
         matrix_sign_free(M_sign);
 
-        logdet  = matrix_edouble_logdet(EE, EE_sign, self->balance_p, self->detalg);
-        logdet += matrix_edouble_logdet(MM, MM_sign, self->balance_p, self->detalg);
+        logdet  = matrix_edouble_logdet(EE, EE_sign, self->detalg);
+        logdet += matrix_edouble_logdet(MM, MM_sign, self->detalg);
 
         matrix_sign_free(EE_sign);
         matrix_sign_free(MM_sign);
@@ -1771,7 +1732,7 @@ double casimir_logdetD(casimir_t *self, int n, int m)
     }
     else
     {
-        logdet = matrix_edouble_logdet(M, M_sign, self->balance_p, self->detalg);
+        logdet = matrix_edouble_logdet(M, M_sign, self->detalg);
 
         matrix_edouble_free(M);
         matrix_sign_free(M_sign);
