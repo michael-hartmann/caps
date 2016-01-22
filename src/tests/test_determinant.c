@@ -23,15 +23,12 @@ int test_determinant()
     for(int i = 0; methods[i] != NULL; i++)
     {
         const char *method = methods[i];
-        for(int pnorm = 1; pnorm <= 2; pnorm++)
-        {
-            matrix_set(M, 0,0, loge(2L));
-            matrix_set(M, 0,1, loge(20e1000L));
-            matrix_set(M, 1,0, loge(1e-1000L));
-            matrix_set(M, 1,1, loge(1L));
+        matrix_set(M, 0,0, loge(2L));
+        matrix_set(M, 0,1, loge(20e1000L));
+        matrix_set(M, 1,0, loge(1e-1000L));
+        matrix_set(M, 1,1, loge(1L));
 
-            AssertAlmostEqual(&test, matrix_edouble_logdet(M, M_sign, pnorm, method), log(18));
-        }
+        AssertAlmostEqual(&test, matrix_edouble_logdet(M, M_sign, method), log(18));
     }
 
     matrix_edouble_free(M);

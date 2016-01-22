@@ -16,7 +16,6 @@
 #define CASIMIR_TRACE_THRESHOLD 1e-8 /**< threshold to use trace */
 
 #define CASIMIR_DETALG "QR" /**< default algorithm for matrix decomposition */
-#define CASIMIR_BALANCE_P 2 /**< default p-norm for balancing */
 
 /** define sign_t as a signed char */
 typedef char sign_t;
@@ -79,7 +78,6 @@ typedef struct
     pthread_t **threads;    /**< list of pthread objects */
 
     char detalg[64];        /**< algorithm to calculate determinant */
-    int balance_p;          /**< norm to use for balancing matrix */
 
     casimir_mie_cache_t *mie_cache; /**< Mie chache */
     /*@}*/
