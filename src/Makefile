@@ -2,10 +2,15 @@
 all: casimir casimir_hiT casimir_logdetD casimir_Fn ld_drude casimir_T0 casimir_tests
 
 SOURCES  = sfunc.c integration_drude.c integration_perf.c libcasimir.c matrix.c utils.c gausslaguerre.c
-CFLAGS  += -std=c99              # use C99
-CFLAGS  += -fgnu89-inline        # use traditional GNU semantics for
-CFLAGS  += -Werror -Wall -Wextra # enable warnings and make them fatal
-CFLAGS  += -Wmissing-prototypes -Wstrict-prototypes -Wshadow -Wpointer-arith -Wcast-qual -Wwrite-strings -Wno-unused-parameter
+# use C99 standard
+CFLAGS  += -std=c99
+# optimize for native CPU
+CFLAGS  += -march=native
+# use traditional GNU semantics for inline
+CFLAGS  += -fgnu89-inline
+# enable warnings and make them fatal
+CFLAGS  += -Werror -Wall -Wextra -Wmissing-prototypes -Wstrict-prototypes -Wshadow -Wpointer-arith -Wcast-qual -Wwrite-strings -Wno-unused-parameter
+
 LDFLAGS += -lm -pthread -lquadmath
 
 TARGET = "../bin/"
