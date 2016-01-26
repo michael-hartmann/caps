@@ -98,14 +98,14 @@ typedef struct
 
 typedef struct
 {
-    edouble lnA_TE;  /**< logarithm of integral A_TE */
-    edouble lnA_TM;  /**< logarithm of integral A_TM */
-    edouble lnB_TE;  /**< logarithm of integral B_TE */
-    edouble lnB_TM;  /**< logarithm of integral B_TM */
-    edouble lnC_TE;  /**< logarithm of integral C_TE */
-    edouble lnC_TM;  /**< logarithm of integral C_TM */
-    edouble lnD_TE;  /**< logarithm of integral D_TE */
-    edouble lnD_TM;  /**< logarithm of integral D_TM */
+    float80 lnA_TE;  /**< logarithm of integral A_TE */
+    float80 lnA_TM;  /**< logarithm of integral A_TM */
+    float80 lnB_TE;  /**< logarithm of integral B_TE */
+    float80 lnB_TM;  /**< logarithm of integral B_TM */
+    float80 lnC_TE;  /**< logarithm of integral C_TE */
+    float80 lnC_TM;  /**< logarithm of integral C_TM */
+    float80 lnD_TE;  /**< logarithm of integral D_TE */
+    float80 lnD_TM;  /**< logarithm of integral D_TM */
     sign_t signA_TE; /**< sign of lnA_TE */
     sign_t signA_TM; /**< sign of lnA_TM */
     sign_t signB_TE; /**< sign of lnB_TE */
@@ -124,8 +124,8 @@ void casimir_info(casimir_t *self, FILE *stream, const char *prefix);
 double casimir_epsilon(double xi, double omegap, double gamma_);
 double casimir_lnepsilon(double xi, double omegap, double gamma_);
 
-edouble casimir_lnLambda(int l1, int l2, int m, sign_t *sign);
-edouble casimir_lnXi(int l1, int l2, int m, sign_t *sign);
+float80 casimir_lnLambda(int l1, int l2, int m, sign_t *sign);
+float80 casimir_lnXi(int l1, int l2, int m, sign_t *sign);
 
 double casimir_F_SI_to_scaled(double F_SI, double ScriptL_SI);
 double casimir_F_scaled_to_SI(double F, double ScriptL_SI);
@@ -184,6 +184,6 @@ void casimir_logdetD0(casimir_t *self, int m, double *EE, double *MM);
 double casimir_logdetD(casimir_t *self, int n, int m);
 double casimir_trM(casimir_t *self, int n, int m, void *int_perf);
 
-void casimir_rp(casimir_t *self, edouble nT, edouble k, edouble *r_TE, edouble *r_TM);
+void casimir_rp(casimir_t *self, float80 nT, float80 k, float80 *r_TE, float80 *r_TM);
 
 #endif

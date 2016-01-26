@@ -8,14 +8,14 @@
 #define TE 0
 #define TM 1
 
-edouble TraceD0(casimir_t *self, int m);
-void TraceD(casimir_t *self, int n, int m, edouble Tr_EE[2], edouble Tr_MM[2]);
+float80 TraceD0(casimir_t *self, int m);
+void TraceD(casimir_t *self, int n, int m, float80 Tr_EE[2], float80 Tr_MM[2]);
 void usage(FILE *stream, const char *self);
 
-edouble TraceD0(casimir_t *self, int m)
+float80 TraceD0(casimir_t *self, int m)
 {
     double lnRbyScriptL = log(self->RbyScriptL);
-    edouble Tr_EE = 0;
+    float80 Tr_EE = 0;
 
     int min = MAX(m,1);
     int max = self->lmax;
@@ -28,13 +28,13 @@ edouble TraceD0(casimir_t *self, int m)
         double lnXiRL = casimir_lnXi(l,l,m,&sign_xi)+(2*l+1)*lnRbyScriptL;
         casimir_lnab0(l, &lna0, &sign_a0, &lnb0, &sign_b0);
 
-        Tr_EE += -sign_xi*sign_a0*expe(lna0+lnXiRL);
+        Tr_EE += -sign_xi*sign_a0*exp80(lna0+lnXiRL);
     }
 
     return Tr_EE;
 }
 
-void TraceD(casimir_t *self, int n, int m, edouble Tr_EE[2], edouble Tr_MM[2])
+void TraceD(casimir_t *self, int n, int m, float80 Tr_EE[2], float80 Tr_MM[2])
 {
     int min,max;
     Tr_EE[TE] = Tr_EE[TM] = 0;
@@ -60,12 +60,12 @@ void TraceD(casimir_t *self, int n, int m, edouble Tr_EE[2], edouble Tr_MM[2])
         casimir_integrate_drude(self, &cint, l, l, m, n, self->T);
 
         /* EE */
-        Tr_EE[TE] += -sign_al*cint.signA_TE*expe(ln_al+cint.lnA_TE);
-        Tr_EE[TM] += -sign_al*cint.signB_TM*expe(ln_al+cint.lnB_TM);
+        Tr_EE[TE] += -sign_al*cint.signA_TE*exp80(ln_al+cint.lnA_TE);
+        Tr_EE[TM] += -sign_al*cint.signB_TM*exp80(ln_al+cint.lnB_TM);
 
         /* MM */
-        Tr_MM[TE] += -sign_bl*cint.signB_TE*expe(ln_bl+cint.lnB_TE);
-        Tr_MM[TM] += -sign_bl*cint.signA_TM*expe(ln_bl+cint.lnA_TM);
+        Tr_MM[TE] += -sign_bl*cint.signB_TE*exp80(ln_bl+cint.lnB_TE);
+        Tr_MM[TM] += -sign_bl*cint.signA_TM*exp80(ln_bl+cint.lnA_TM);
     }
 }
 
@@ -79,7 +79,7 @@ int main(int argc, char *argv[])
 {
     casimir_t casimir;
     int lmax = 1;
-    edouble Tr = 0;
+    float80 Tr = 0;
     double eps = 1e-12;
 
     /* in beiden Skalierungen identisch */
@@ -129,15 +129,15 @@ int main(int argc, char *argv[])
 
         {
             Tr = 0;
-            edouble Tr_0 = 0;
+            float80 Tr_0 = 0;
 
             for(int n = 0; 1; n++)
             {
-                edouble Tr_n = 0;
+                float80 Tr_n = 0;
 
                 for(int m = 0; m <= lmax; m++)
                 {
-                    edouble Tr_EE[2], Tr_MM[2], sum;
+                    float80 Tr_EE[2], Tr_MM[2], sum;
 
                     TraceD(&casimir, n, m, Tr_EE, Tr_MM);
                     sum = Tr_EE[0] + Tr_EE[1] + Tr_MM[0] + Tr_MM[1];

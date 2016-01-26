@@ -126,11 +126,11 @@ void casimir_info(casimir_t *self, FILE *stream, const char *prefix)
  * @param [out] sign set to -1 if sign != NULL
  * @retval lnLambda \f$\log{\Lambda_{\ell_1,\ell_2}^{(m)}}\f$
  */
-edouble casimir_lnLambda(int l1, int l2, int m, sign_t *sign)
+float80 casimir_lnLambda(int l1, int l2, int m, sign_t *sign)
 {
     if(sign != NULL)
         *sign = -1;
-    return LOG2 + (loge(2*l1+1)+loge(2*l2+1)-LOG4-loge(l1)-loge(l1+1)-loge(l2)-loge(l2+1)+lnfac(l1-m)+lnfac(l2-m)-lnfac(l1+m)-lnfac(l2+m))/2.0L;
+    return LOG2 + (log80(2*l1+1)+log80(2*l2+1)-LOG4-log80(l1)-log80(l1+1)-log80(l2)-log80(l2+1)+lnfac80(l1-m)+lnfac80(l2-m)-lnfac80(l1+m)-lnfac80(l2+m))/2.0L;
 }
 
 
@@ -155,12 +155,12 @@ edouble casimir_lnLambda(int l1, int l2, int m, sign_t *sign)
  * @param [out] sign
  * @retval logXi \f$\log{\Xi(\ell_1,\ell_2,m)}\f$
  */
-edouble casimir_lnXi(int l1, int l2, int m, sign_t *sign)
+float80 casimir_lnXi(int l1, int l2, int m, sign_t *sign)
 {
     if(sign != NULL)
         *sign = MPOW(l2);
-    return (loge(2*l1+1)+loge(2*l2+1)-lnfac(l1-m)-lnfac(l2-m)-lnfac(l1+m)-lnfac(l2+m)-loge(l1)-loge(l1+1)-loge(l2)-loge(l2+1))/2.0L \
-           +lnfac(2*l1)+lnfac(2*l2)+lnfac(l1+l2)-LOG4*(2*l1+l2+1)-lnfac(l1-1)-lnfac(l2-1);
+    return (log80(2*l1+1)+log80(2*l2+1)-lnfac80(l1-m)-lnfac80(l2-m)-lnfac80(l1+m)-lnfac80(l2+m)-log80(l1)-log80(l1+1)-log80(l2)-log80(l2+1))/2.0L \
+           +lnfac80(2*l1)+lnfac80(2*l2)+lnfac80(l1+l2)-LOG4*(2*l1+l2+1)-lnfac80(l1-1)-lnfac80(l2-1);
 }
 
 
@@ -219,10 +219,10 @@ double casimir_lnepsilon(double xi, double omegap, double gamma_)
  * @param [in,out]  r_TE    Fresnel coefficient for TE mode
  * @param [in,out]  r_TM    Fresnel coefficient for TM mode
  */
-void casimir_rp(casimir_t *self, edouble nT, edouble k, edouble *r_TE, edouble *r_TM)
+void casimir_rp(casimir_t *self, float80 nT, float80 k, float80 *r_TE, float80 *r_TM)
 {
-    edouble epsilon = casimir_epsilon(nT, self->omegap_plane, self->gamma_plane);
-    edouble beta = sqrte(1 + (epsilon-1)/(1 + pow_2(k/nT)));
+    float80 epsilon = casimir_epsilon(nT, self->omegap_plane, self->gamma_plane);
+    float80 beta = sqrt80(1 + (epsilon-1)/(1 + pow_2(k/nT)));
 
     *r_TE = (1-beta)/(1+beta);
     *r_TM = (epsilon-beta)/(epsilon+beta);
@@ -792,7 +792,7 @@ void casimir_lnab0(int l, double *a0, sign_t *sign_a0, double *b0, sign_t *sign_
 {
     *sign_a0 = MPOW(l);
     *sign_b0 = MPOW(l+1);
-    *b0 = LOGPI-lngamma(l+0.5)-lngamma(l+1.5);
+    *b0 = LOGPI-lngamma80(l+0.5)-lngamma80(l+1.5);
     *a0 = *b0+log1p(1.0/l);
 }
 
@@ -815,10 +815,10 @@ void casimir_lnab0(int l, double *a0, sign_t *sign_a0, double *b0, sign_t *sign_
  */
 double casimir_lna_perf(casimir_t *self, const int l, const int n, sign_t *sign)
 {
-    edouble numerator, denominator;
-    edouble lnKlp,lnKlm,lnIlm,lnIlp;
-    edouble prefactor;
-    edouble chi = n*self->T*self->RbyScriptL;
+    float80 numerator, denominator;
+    float80 lnKlp,lnKlm,lnIlm,lnIlp;
+    float80 prefactor;
+    float80 chi = n*self->T*self->RbyScriptL;
 
     /* we could do both calculations together. but it doesn't cost much time -
      * so why bother?
@@ -836,9 +836,9 @@ double casimir_lna_perf(casimir_t *self, const int l, const int n, sign_t *sign)
     prefactor = LOGPI-LOG2+lnIlp-lnKlp;
 
     /* numerator */
-    numerator = logadd_s(loge(l), +1, loge(chi)+lnIlm-lnIlp, -1, sign);
+    numerator = logadd_s(log80(l), +1, log80(chi)+lnIlm-lnIlp, -1, sign);
     /* denominator */
-    denominator = logadd(loge(l), loge(chi)+lnKlm-lnKlp);
+    denominator = logadd(log80(l), log80(chi)+lnKlm-lnKlp);
 
     *sign *= MPOW(l+1);
     return prefactor+numerator-denominator;
@@ -863,8 +863,8 @@ double casimir_lna_perf(casimir_t *self, const int l, const int n, sign_t *sign)
  */
 double casimir_lnb_perf(casimir_t *self, const int l, const int n, sign_t *sign)
 {
-    edouble chi = n*self->T*self->RbyScriptL;
-    edouble lnInu, lnKnu;
+    float80 chi = n*self->T*self->RbyScriptL;
+    float80 lnInu, lnKnu;
 
     bessel_lnInuKnu(l, chi, &lnInu, &lnKnu);
     *sign = MPOW(l+1);
@@ -897,13 +897,13 @@ double casimir_lnb_perf(casimir_t *self, const int l, const int n, sign_t *sign)
 void casimir_lnab(casimir_t *self, const int n_mat, const int l, double *lna, double *lnb, sign_t *sign_a, sign_t *sign_b)
 {
     sign_t sign_sla, sign_slb, sign_slc, sign_sld;
-    edouble ln_n, ln_sla, ln_slb, ln_slc, ln_sld;
-    edouble lnIl, lnKl, lnIlm, lnKlm, lnIl_nchi, lnKl_nchi, lnIlm_nchi, lnKlm_nchi;
-    edouble xi = n_mat*self->T;
-    edouble chi = xi*self->RbyScriptL;
-    edouble ln_chi = loge(xi)+loge(self->RbyScriptL);
-    edouble omegap = self->omegap_sphere;
-    edouble gamma_ = self->gamma_sphere;
+    float80 ln_n, ln_sla, ln_slb, ln_slc, ln_sld;
+    float80 lnIl, lnKl, lnIlm, lnKlm, lnIl_nchi, lnKl_nchi, lnIlm_nchi, lnKlm_nchi;
+    float80 xi = n_mat*self->T;
+    float80 chi = xi*self->RbyScriptL;
+    float80 ln_chi = log80(xi)+log80(self->RbyScriptL);
+    float80 omegap = self->omegap_sphere;
+    float80 gamma_ = self->gamma_sphere;
     sign_t sign_a_num, sign_a_denom, sign_b_num, sign_b_denom;
 
     if(isinf(omegap))
@@ -918,8 +918,8 @@ void casimir_lnab(casimir_t *self, const int n_mat, const int l, double *lna, do
     bessel_lnInuKnu(l,   chi, &lnIl,  &lnKl);
     bessel_lnInuKnu(l-1, chi, &lnIlm, &lnKlm);
 
-    bessel_lnInuKnu(l,   expe(ln_n)*chi, &lnIl_nchi,  &lnKl_nchi);
-    bessel_lnInuKnu(l-1, expe(ln_n)*chi, &lnIlm_nchi, &lnKlm_nchi);
+    bessel_lnInuKnu(l,   exp80(ln_n)*chi, &lnIl_nchi,  &lnKl_nchi);
+    bessel_lnInuKnu(l-1, exp80(ln_n)*chi, &lnIlm_nchi, &lnKlm_nchi);
 
     ln_sla = lnIl_nchi + logadd_s(lnIl,      +1, ln_chi+lnIlm,           -1, &sign_sla);
     ln_slb = lnIl      + logadd_s(lnIl_nchi, +1, ln_n+ln_chi+lnIlm_nchi, -1, &sign_slb);
@@ -928,17 +928,17 @@ void casimir_lnab(casimir_t *self, const int n_mat, const int l, double *lna, do
 
     /* XXX FIXME XXX */
     /*
-    printf("n =%.15g\n", (double)expe(ln_n));
-    printf("n2=%.15g\n", (double)expe(2*ln_n));
-    printf("lnIl = %.15g\n", (double)expe(lnIl));
+    printf("n =%.15g\n", (double)exp80(ln_n));
+    printf("n2=%.15g\n", (double)exp80(2*ln_n));
+    printf("lnIl = %.15g\n", (double)exp80(lnIl));
     printf("chi=%.15g\n", (double)chi);
     */
 
     /*
-    printf("sla=%.15g\n", (double)(sign_sla*expe(ln_sla)));
-    printf("slb=%.15g\n", (double)(sign_slb*expe(ln_slb)));
-    printf("slc=%.15g\n", (double)(sign_slc*expe(ln_slc)));
-    printf("sld=%.15g\n", (double)(sign_sld*expe(ln_sld)));
+    printf("sla=%.15g\n", (double)(sign_sla*exp80(ln_sla)));
+    printf("slb=%.15g\n", (double)(sign_slb*exp80(ln_slb)));
+    printf("slc=%.15g\n", (double)(sign_slc*exp80(ln_slc)));
+    printf("sld=%.15g\n", (double)(sign_sld*exp80(ln_sld)));
     */
 
     *lna = LOGPI - LOG2 + logadd_s(2*ln_n+ln_sla, +sign_sla, ln_slb, -sign_slb, &sign_a_num) - logadd_s(2*ln_n+ln_slc, +sign_slc, ln_sld, -sign_sld, &sign_a_denom);
@@ -1385,7 +1385,7 @@ double casimir_F(casimir_t *self, int *nmax)
  */
 void casimir_logdetD0(casimir_t *self, int m, double *logdet_EE, double *logdet_MM)
 {
-    const edouble lnRbyScriptL = loge(self->RbyScriptL);
+    const float80 lnRbyScriptL = log80(self->RbyScriptL);
     matrix_edouble_t *EE = NULL, *MM = NULL;
     matrix_sign_t *EE_sign = NULL, *MM_sign = NULL;
 
@@ -1416,8 +1416,8 @@ void casimir_logdetD0(casimir_t *self, int m, double *logdet_EE, double *logdet_
             /* i: row of matrix, j: column of matrix */
             const int i = l1-min, j = l2-min;
             sign_t sign_xi;
-            const edouble lnXiRL = casimir_lnXi(l1,l2,m,&sign_xi)+(2*l1+1)*lnRbyScriptL;
-            edouble v;
+            const float80 lnXiRL = casimir_lnXi(l1,l2,m,&sign_xi)+(2*l1+1)*lnRbyScriptL;
+            float80 v;
             sign_t sign;
 
             if(EE != NULL)
@@ -1433,7 +1433,7 @@ void casimir_logdetD0(casimir_t *self, int m, double *logdet_EE, double *logdet_
                 matrix_set(EE, i,j, v);
                 matrix_set(EE_sign, i,j, sign);
 
-                TERMINATE(!isfinite(v), "EE l1=%d,l2=%d: v=%Lg (lna0=%g, lnXiRL=%Lg)", l1, l2, v, lna0, lnXiRL);
+                TERMINATE(!isfinite(v), "EE l1=%d,l2=%d: v=%Lg (lna0=%g, lnXiRL=%Lg)", l1, l2, (long double)v, lna0, (long double)lnXiRL);
             }
             if(MM != NULL)
             {
@@ -1448,7 +1448,7 @@ void casimir_logdetD0(casimir_t *self, int m, double *logdet_EE, double *logdet_
                 matrix_set(MM, i,j, v);
                 matrix_set(MM_sign, i,j, sign);
 
-                TERMINATE(!isfinite(v), "MM l1=%d,l2=%d: v=%Lg (lnb0=%g, lnXiRL=%Lg)", l1, l2, v, lnb0, lnXiRL);
+                TERMINATE(!isfinite(v), "MM l1=%d,l2=%d: v=%Lg (lnb0=%g, lnXiRL=%Lg)", l1, l2, (long double)v, lnb0, (long double)lnXiRL);
             }
         }
     }
@@ -1493,11 +1493,11 @@ double casimir_trM(casimir_t *self, int n, int m, void *obj)
     const int min = MAX(m,1);
     const int max = self->lmax;
     integration_perf_t *int_perf = obj;
-    edouble trM = 0;
+    float80 trM = 0;
 
     for(int l = min; l <= max; l++)
     {
-        edouble v;
+        float80 v;
         casimir_integrals_t cint;
         double ln_al, ln_bl;
         sign_t sign, sign_al, sign_bl;
@@ -1508,17 +1508,17 @@ double casimir_trM(casimir_t *self, int n, int m, void *obj)
 
         /* EE */
         sign_t signs_EE[] = { sign_al*cint.signA_TE, sign_al*cint.signB_TM };
-        edouble list_EE[] = { ln_al+cint.lnA_TE, ln_al+cint.lnB_TM };
+        float80 list_EE[] = { ln_al+cint.lnA_TE, ln_al+cint.lnB_TM };
 
         v = logadd_ms(list_EE, signs_EE, 2, &sign);
-        trM += sign*expe(v);
+        trM += sign*exp80(v);
 
         /* MM */
         sign_t signs_MM[] = { sign_bl*cint.signA_TM, sign_bl*cint.signB_TE };
-        edouble list_MM[] = { ln_bl+cint.lnA_TM, ln_bl+cint.lnB_TE };
+        float80 list_MM[] = { ln_bl+cint.lnA_TM, ln_bl+cint.lnB_TE };
 
         v = logadd_ms(list_MM, signs_MM, 2, &sign);
-        trM += sign*expe(v);
+        trM += sign*exp80(v);
     }
 
     return trM;
@@ -1612,8 +1612,8 @@ double casimir_logdetD(casimir_t *self, int n, int m)
             /* EE */
             {
                 sign_t sign;
-                edouble list_ij[] = { Delta_ij, ln_al1+cint.lnA_TE, ln_al1+cint.lnB_TM };
-                edouble list_ji[] = { Delta_ij, ln_al2+cint.lnA_TE, ln_al2+cint.lnB_TM };
+                float80 list_ij[] = { Delta_ij, ln_al1+cint.lnA_TE, ln_al1+cint.lnB_TM };
+                float80 list_ji[] = { Delta_ij, ln_al2+cint.lnA_TE, ln_al2+cint.lnB_TM };
 
                 sign_t signs_ij[] = { +1, -            sign_al1*cint.signA_TE, -            sign_al1*cint.signB_TM };
                 sign_t signs_ji[] = { +1, -MPOW(l1+l2)*sign_al2*cint.signA_TE, -MPOW(l1+l2)*sign_al2*cint.signB_TM };
@@ -1624,15 +1624,15 @@ double casimir_logdetD(casimir_t *self, int n, int m)
                 matrix_set(M, j,i, logadd_ms(list_ji, signs_ji, 3, &sign));
                 matrix_set(M_sign, j,i, sign);
 
-                TERMINATE(!isfinite(matrix_get(M,i,j)), "EE, i=%d,j=%d: %Lg", i,j,matrix_get(M,i,j));
-                TERMINATE(!isfinite(matrix_get(M,j,i)), "EE, i=%d,j=%d: %Lg", j,i,matrix_get(M,j,i));
+                TERMINATE(!isfinite(matrix_get(M,i,j)), "EE, i=%d,j=%d: %Lg", i,j, (long double)matrix_get(M,i,j));
+                TERMINATE(!isfinite(matrix_get(M,j,i)), "EE, i=%d,j=%d: %Lg", j,i, (long double)matrix_get(M,j,i));
             }
 
             /* MM */
             {
                 sign_t sign;
-                edouble list_ij[] = { Delta_ij, ln_bl1+cint.lnA_TM, ln_bl1+cint.lnB_TE };
-                edouble list_ji[] = { Delta_ij, ln_bl2+cint.lnA_TM, ln_bl2+cint.lnB_TE };
+                float80 list_ij[] = { Delta_ij, ln_bl1+cint.lnA_TM, ln_bl1+cint.lnB_TE };
+                float80 list_ji[] = { Delta_ij, ln_bl2+cint.lnA_TM, ln_bl2+cint.lnB_TE };
 
                 sign_t signs_ij[] = { +1, -            sign_bl1*cint.signA_TM, -            sign_bl1*cint.signB_TE };
                 sign_t signs_ji[] = { +1, -MPOW(l1+l2)*sign_bl2*cint.signA_TM, -MPOW(l1+l2)*sign_bl2*cint.signB_TE };
@@ -1643,8 +1643,8 @@ double casimir_logdetD(casimir_t *self, int n, int m)
                 matrix_set(M, j+dim,i+dim, logadd_ms(list_ji, signs_ji, 3, &sign));
                 matrix_set(M_sign, j+dim,i+dim, sign);
 
-                TERMINATE(!isfinite(matrix_get(M,i+dim,j+dim)), "MM, i=%d,j=%d: %Lg", i+dim,j+dim,matrix_get(M,i+dim,j+dim));
-                TERMINATE(!isfinite(matrix_get(M,j+dim,i+dim)), "MM, i=%d,j=%d: %Lg", j+dim,i+dim,matrix_get(M,j+dim,i+dim));
+                TERMINATE(!isfinite(matrix_get(M,i+dim,j+dim)), "MM, i=%d,j=%d: %Lg", i+dim,j+dim, (long double)matrix_get(M,i+dim,j+dim));
+                TERMINATE(!isfinite(matrix_get(M,j+dim,i+dim)), "MM, i=%d,j=%d: %Lg", j+dim,i+dim, (long double)matrix_get(M,j+dim,i+dim));
             }
 
 
@@ -1653,10 +1653,10 @@ double casimir_logdetD(casimir_t *self, int n, int m)
                 /* M_EM */
                 {
                     sign_t sign;
-                    edouble list_ij[] = { ln_al1+cint.lnC_TE, ln_al1+cint.lnD_TM };
+                    float80 list_ij[] = { ln_al1+cint.lnC_TE, ln_al1+cint.lnD_TM };
                     sign_t signs_ij[] = { -sign_al1*cint.signC_TE,  -sign_al1*cint.signD_TM };
 
-                    edouble list_ji[] = { ln_al2+cint.lnD_TE, ln_al2+cint.lnC_TM };
+                    float80 list_ji[] = { ln_al2+cint.lnD_TE, ln_al2+cint.lnC_TM };
                     sign_t signs_ji[] = { -MPOW(l1+l2+1)*sign_al2*cint.signD_TE, -MPOW(l1+l2+1)*sign_al2*cint.signC_TM };
 
                     matrix_set(M, i,dim+j, logadd_ms(list_ij, signs_ij, 2, &sign));
@@ -1665,17 +1665,17 @@ double casimir_logdetD(casimir_t *self, int n, int m)
                     matrix_set(M, j,dim+i, logadd_ms(list_ji, signs_ji, 2, &sign));
                     matrix_set(M_sign, j,dim+i, sign);
 
-                    TERMINATE(!isfinite(matrix_get(M,i,dim+j)), "EM, i=%d,j=%d: %Lg", i,j+dim,matrix_get(M,i,dim+j));
-                    TERMINATE(!isfinite(matrix_get(M,j,dim+i)), "EM, i=%d,j=%d: %Lg", j,i+dim,matrix_get(M,j,dim+i));
+                    TERMINATE(!isfinite(matrix_get(M,i,dim+j)), "EM, i=%d,j=%d: %Lg", i,j+dim, (long double)matrix_get(M,i,dim+j));
+                    TERMINATE(!isfinite(matrix_get(M,j,dim+i)), "EM, i=%d,j=%d: %Lg", j,i+dim, (long double)matrix_get(M,j,dim+i));
                 }
 
                 /* M_ME */
                 {
                     sign_t sign;
-                    edouble list_ij[] = { ln_bl1+cint.lnC_TM, ln_bl1+cint.lnD_TE };
+                    float80 list_ij[] = { ln_bl1+cint.lnC_TM, ln_bl1+cint.lnD_TE };
                     sign_t signs_ij[] = { -sign_bl1*cint.signC_TM, -sign_bl1*cint.signD_TE};
 
-                    edouble list_ji[] = { ln_bl2+cint.lnD_TM, ln_bl2+cint.lnC_TE };
+                    float80 list_ji[] = { ln_bl2+cint.lnD_TM, ln_bl2+cint.lnC_TE };
                     sign_t signs_ji[] = { -MPOW(l1+l2+1)*sign_bl2*cint.signD_TM, -MPOW(l1+l2+1)*sign_bl2*cint.signC_TE };
 
                     matrix_set(M, dim+i,j, logadd_ms(list_ij, signs_ij, 2, &sign));
@@ -1684,8 +1684,8 @@ double casimir_logdetD(casimir_t *self, int n, int m)
                     matrix_set(M, dim+j,i, logadd_ms(list_ji, signs_ji, 2, &sign));
                     matrix_set(M_sign, dim+j,i, sign);
 
-                    TERMINATE(!isfinite(matrix_get(M,dim+i,j)), "ME, i=%d,j=%d: %Lg", dim+i,j,matrix_get(M,dim+i,j));
-                    TERMINATE(!isfinite(matrix_get(M,dim+j,i)), "ME, i=%d,j=%d: %Lg", dim+j,i,matrix_get(M,dim+j,i));
+                    TERMINATE(!isfinite(matrix_get(M,dim+i,j)), "ME, i=%d,j=%d: %Lg", dim+i,j, (long double)matrix_get(M,dim+i,j));
+                    TERMINATE(!isfinite(matrix_get(M,dim+j,i)), "ME, i=%d,j=%d: %Lg", dim+j,i, (long double)matrix_get(M,dim+j,i));
                 }
             }
         }

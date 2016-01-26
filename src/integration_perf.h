@@ -10,22 +10,22 @@
 /* here are all signs considered, except the sign of the evaluation of the
  * integral. But also the -1 of Lambda(l1,l2,m) is considered here.
  */
-#define log_A0(m,nT) (2*loge(m)-2*nT)
+#define log_A0(m,nT) (2*log80(m)-2*nT)
 #define sign_A0(l2,m,rp) MPOW(1+l2+rp)
 
 #define log_B0(m,nT) (-2*nT)
 #define sign_B0(l2,m,rp) MPOW(l2+rp)
 
-#define log_C0(m,nT) (loge(m)-2*nT)
+#define log_C0(m,nT) (log80(m)-2*nT)
 #define sign_C0(l2,m,rp) MPOW(l2+rp)
 
-#define log_D0(m,nT) (loge(m)-2*nT)
+#define log_D0(m,nT) (log80(m)-2*nT)
 #define sign_D0(l2,m,rp) MPOW(l2+rp+1)
 
 
 typedef struct {
-    edouble *cache_I;
-    edouble *cache_K;
+    float80 *cache_I;
+    float80 *cache_K;
     sign_t *cache_K_signs;
     int dim_K;
     int m,lmax;
@@ -36,7 +36,7 @@ void casimir_integrate_perf_init(integration_perf_t *self, double nT, int m, int
 void casimir_integrate_perf_free(integration_perf_t *self);
 void casimir_integrate_perf(integration_perf_t *self, int l1, int l2, casimir_integrals_t *cint);
 
-edouble casimir_integrate_perf_I(integration_perf_t *self, int nu);
-edouble casimir_integrate_K(integration_perf_t *self, const int l1, const int l2, sign_t *sign);
+float80 casimir_integrate_perf_I(integration_perf_t *self, int nu);
+float80 casimir_integrate_K(integration_perf_t *self, const int l1, const int l2, sign_t *sign);
 
 #endif

@@ -32,7 +32,7 @@
  * @param [in] len_p2 length of array p2
  * @param [in] p polynomial \f$p=p1 \dot p2\f$
  */
-void polymult(edouble p1[], int len_p1, edouble p2[], int len_p2, edouble p[])
+void polymult(float80 p1[], int len_p1, float80 p2[], int len_p2, float80 p[])
 {
     for(int i = 0; i < len_p1+len_p2-1; i++)
         p[i] = 0;
@@ -58,7 +58,7 @@ void polymult(edouble p1[], int len_p1, edouble p2[], int len_p2, edouble p[])
  * @param [in] log_b number
  * @return log_sum \f$\log{\left[\exp{(\mathrm{log\_a})}+\exp{(log\_b)}\right]}\f$
  */
-inline edouble logadd(const edouble log_a, const edouble log_b)
+inline float80 logadd(const float80 log_a, const float80 log_b)
 {
     if(isinf(log_a) && log_a < 0)
         return log_b;
@@ -66,9 +66,9 @@ inline edouble logadd(const edouble log_a, const edouble log_b)
         return log_a;
 
     if(log_a > log_b)
-        return log_a + log1pe(expe(log_b-log_a));
+        return log_a + log1p80(exp80(log_b-log_a));
     else
-        return log_b + log1pe(expe(log_a-log_b));
+        return log_b + log1p80(exp80(log_a-log_b));
 }
 
 
@@ -82,7 +82,7 @@ inline edouble logadd(const edouble log_a, const edouble log_b)
  * @param [out] sign sign of result
  * @return log_sum \f$\log{\left( \mathrm{sign\_a}\cdot\exp{(\mathrm{log\_a})}+\mathrm{sign\_b} \cdot \exp{(log\_b)} \right)}\f$
  */
-edouble logadd_s(const edouble log_a, const sign_t sign_a, const edouble log_b, const sign_t sign_b, sign_t *sign)
+float80 logadd_s(const float80 log_a, const sign_t sign_a, const float80 log_b, const sign_t sign_b, sign_t *sign)
 {
     if(isinf(log_a) && log_a < 0)
     {
@@ -98,12 +98,12 @@ edouble logadd_s(const edouble log_a, const sign_t sign_a, const edouble log_b, 
     if(log_a > log_b)
     {
         *sign = sign_a;
-        return log_a + log1pe(sign_a*sign_b*expe(log_b-log_a));
+        return log_a + log1p80(sign_a*sign_b*exp80(log_b-log_a));
     }
     else
     {
         *sign = sign_b;
-        return log_b + log1pe(sign_a*sign_b*expe(log_a-log_b));
+        return log_b + log1p80(sign_a*sign_b*exp80(log_a-log_b));
     }
 }
 
@@ -117,38 +117,38 @@ edouble logadd_s(const edouble log_a, const sign_t sign_a, const edouble log_b, 
  * @param [in]  len length of list
  * @return log_sum \f$\log{\sum_{i=1}^\mathrm{len} \mathrm{sign\_i}\cdot\exp{(\mathrm{log\_i})}}\f$
  */
-inline edouble logadd_m(const edouble list[], const int len)
+inline float80 logadd_m(const float80 list[], const int len)
 {
-    edouble sum;
-    edouble max = list[0];
+    float80 sum;
+    float80 max = list[0];
 
     for(int i = 1; i < len; i++)
         if(list[i] > max)
             max = list[i];
 
-    sum = expe(list[0]-max);
+    sum = exp80(list[0]-max);
     for(int i = 1; i < len; i++)
-        sum += expe(list[i]-max);
+        sum += exp80(list[i]-max);
 
-    return max + loge(fabse(sum));
+    return max + log80(fabs80(sum));
 }
 
 
-inline edouble logadd_ms(const edouble list[], const sign_t signs[], const int len, sign_t *sign)
+inline float80 logadd_ms(const float80 list[], const sign_t signs[], const int len, sign_t *sign)
 {
-    edouble sum;
-    edouble max = list[0];
+    float80 sum;
+    float80 max = list[0];
 
     for(int i = 1; i < len; i++)
         if(list[i] > max)
             max = list[i];
 
-    sum = signs[0]*expe(list[0]-max);
+    sum = signs[0]*exp80(list[0]-max);
     for(int i = 1; i < len; i++)
-        sum += signs[i]*expe(list[i]-max);
+        sum += signs[i]*exp80(list[i]-max);
 
-    *sign = copysigne(1, sum);
-    return max + loge(fabse(sum));
+    *sign = copysign80(1, sum);
+    return max + log80(fabs80(sum));
 }
 
 /*@}*/
@@ -160,9 +160,9 @@ inline edouble logadd_ms(const edouble list[], const sign_t signs[], const int l
  * @param k
  * @return binomial \f$\log \left(\begin{array}{c} n \\ k \end{array}\right)\f$
  */
-inline edouble lbinom(int n, int k)
+inline float80 lbinom(int n, int k)
 {
-    return lgammae(1+n)-lgammae(1+k)-lgammae(1+n-k);
+    return lgamma80(1+n)-lgamma80(1+k)-lgamma80(1+n-k);
 }
 
 
@@ -171,15 +171,15 @@ inline edouble lbinom(int n, int k)
 */
 /*@{*/
 
-void bessel_lnInuKnu(int nu, const edouble x, edouble *lnInu_p, edouble *lnKnu_p)
+void bessel_lnInuKnu(int nu, const float80 x, float80 *lnInu_p, float80 *lnKnu_p)
 {
     int l;
-    edouble lnKnu = 0, lnKnup = log1pe(1./x);
-    edouble logx = loge(x);
+    float80 lnKnu = 0, lnKnup = log1p80(1./x);
+    float80 logx = log80(x);
 
     // calculate Knu, Knup
     {
-        edouble prefactor = -x+0.5*(LOGPI-LOG2-logx);
+        float80 prefactor = -x+0.5*(LOGPI-LOG2-logx);
 
         if(nu == 0)
         {
@@ -190,7 +190,7 @@ void bessel_lnInuKnu(int nu, const edouble x, edouble *lnInu_p, edouble *lnKnu_p
         {
             for(l = 2; l <= nu+1; l++)
             {
-                edouble lnKn_new = logadd(loge(2*l-1)+lnKnup-logx, lnKnu);
+                float80 lnKn_new = logadd(log80(2*l-1)+lnKnup-logx, lnKnu);
                 lnKnu  = lnKnup;
                 lnKnup = lnKn_new;
             }
@@ -209,8 +209,8 @@ void bessel_lnInuKnu(int nu, const edouble x, edouble *lnInu_p, edouble *lnKnu_p
             if(x < sqrt(nu)*1e3)
             {
                 /* small arguments */
-                lnKnu  = lgammae(nu+0.5)-LOG2+(nu+0.5)*(LOG2-logx);
-                lnKnup = lgammae(nu+1.5)-LOG2+(nu+1.5)*(LOG2-logx);
+                lnKnu  = lgamma80(nu+0.5)-LOG2+(nu+0.5)*(LOG2-logx);
+                lnKnup = lgamma80(nu+1.5)-LOG2+(nu+1.5)*(LOG2-logx);
             }
             else
             {
@@ -227,10 +227,10 @@ void bessel_lnInuKnu(int nu, const edouble x, edouble *lnInu_p, edouble *lnKnu_p
     {
         #define an(n,nu,x) (2*((nu)+0.5+(n))/(x))
 
-        edouble num   = an(2,nu,x)+1/an(1,nu,x);
-        edouble denom = an(2,nu,x);
-        edouble ratio = (an(1,nu,x)*num)/denom;
-        edouble ratio_last = 0;
+        float80 num   = an(2,nu,x)+1/an(1,nu,x);
+        float80 denom = an(2,nu,x);
+        float80 ratio = (an(1,nu,x)*num)/denom;
+        float80 ratio_last = 0;
 
         l = 3;
         while(1)
@@ -239,30 +239,30 @@ void bessel_lnInuKnu(int nu, const edouble x, edouble *lnInu_p, edouble *lnKnu_p
             denom = an(l,nu,x)+1/denom;
             ratio *= num/denom;
 
-            if(ratio_last != 0 && fabse(1.L-ratio/ratio_last) < 1e-20)
+            if(ratio_last != 0 && fabs80(1.L-ratio/ratio_last) < 1e-20)
                 break;
 
             ratio_last = ratio;
             l++;
         }
 
-        *lnInu_p = -logx-lnKnu-logadd(lnKnup-lnKnu, -loge(ratio));
+        *lnInu_p = -logx-lnKnu-logadd(lnKnup-lnKnu, -log80(ratio));
         #undef an
     }
 }
 
 
-edouble bessel_lnKnu(const int nu, const edouble x)
+float80 bessel_lnKnu(const int nu, const float80 x)
 {
-    edouble Knu;
+    float80 Knu;
     bessel_lnInuKnu(nu, x, NULL, &Knu);
     return Knu;
 }
 
 
-edouble bessel_lnInu(const int nu, const edouble x)
+float80 bessel_lnInu(const int nu, const float80 x)
 {
-    edouble Inu;
+    float80 Inu;
     bessel_lnInuKnu(nu, x, &Inu, NULL);
     return Inu;
 }
@@ -292,7 +292,7 @@ double logspace(double start, double stop, int N, int i)
  * @param n non-negative integer
  * @return doublefactorial \f$n!!\f$
  */
-edouble ln_doublefact(int n)
+float80 ln_doublefact(int n)
 {
     if(n < 0)
         return NAN;
@@ -304,12 +304,12 @@ edouble ln_doublefact(int n)
     if(n % 2 == 0) /* even */
     {
         int k = n/2;
-        return k*LOG2 + lgammae(1+k);
+        return k*LOG2 + lgamma80(1+k);
     }
     else /* odd */
     {
         int k = (n+1)/2;
-        return lgammae(1+2*k) - k*LOG2 - lgammae(1+k);
+        return lgamma80(1+2*k) - k*LOG2 - lgamma80(1+k);
     }
 }
 
@@ -350,9 +350,9 @@ edouble ln_doublefact(int n)
  * @param [out] lnplm array of logarithms of values
  * @param [out] sign corressponding signs
  */
-inline void plm_lnPlm_array(int lmax, int m, edouble x, edouble lnplm[], sign_t sign[])
+inline void plm_lnPlm_array(int lmax, int m, float80 x, float80 lnplm[], sign_t sign[])
 {
-    edouble logx = loge(x);
+    float80 logx = log80(x);
 
     if(m == 0)
     {
@@ -362,19 +362,19 @@ inline void plm_lnPlm_array(int lmax, int m, edouble x, edouble lnplm[], sign_t 
     else
     {
         sign[0]  = MPOW((int)(m/2) + m%2);
-        lnplm[0] = ln_doublefact(2*m-1) + m*0.5*loge(pow_2(x)-1); // l=m,m=m
+        lnplm[0] = ln_doublefact(2*m-1) + m*0.5*log80(pow_2(x)-1); // l=m,m=m
     }
 
     if(lmax == m)
         return;
 
     sign[1]  = sign[0];
-    lnplm[1] = lnplm[0]+logx+loge(2*m+1); // l=m+1, m=m
+    lnplm[1] = lnplm[0]+logx+log80(2*m+1); // l=m+1, m=m
 
     for(int l = m+2; l <= lmax; l++)
     {
-        lnplm[l-m] = logadd_s(loge(2*l-1)+logx+lnplm[l-m-1], sign[l-m-1], loge(l+m-1)+lnplm[l-m-2], -sign[l-m-2], &sign[l-m]);
-        lnplm[l-m]-= loge(l-m);
+        lnplm[l-m] = logadd_s(log80(2*l-1)+logx+lnplm[l-m-1], sign[l-m-1], log80(l+m-1)+lnplm[l-m-2], -sign[l-m-2], &sign[l-m]);
+        lnplm[l-m]-= log80(l-m);
     }
 }
 
@@ -389,9 +389,9 @@ inline void plm_lnPlm_array(int lmax, int m, edouble x, edouble lnplm[], sign_t 
  * @param sign sign of result
  * @return lnPlm \f$\log\left|P_\ell^m(x)\right|\f$
  */
-edouble plm_lnPlm(int l, int m, edouble x, sign_t *sign)
+float80 plm_lnPlm(int l, int m, float80 x, sign_t *sign)
 {
-    edouble plm[l-m+1];
+    float80 plm[l-m+1];
     sign_t  signs[l-m+1];
 
     plm_lnPlm_array(l, m, x, plm, signs);
@@ -410,11 +410,11 @@ edouble plm_lnPlm(int l, int m, edouble x, sign_t *sign)
  * @param x position
  * @return Plm \f$P_\ell^m(x)\f$
  */
-edouble plm_Plm(int l, int m, edouble x)
+float80 plm_Plm(int l, int m, float80 x)
 {
     sign_t sign;
-    edouble value = plm_lnPlm(l, m, x, &sign);
-    return sign*expe(value);
+    float80 value = plm_lnPlm(l, m, x, &sign);
+    return sign*exp80(value);
 }
 
 /**
@@ -428,15 +428,15 @@ edouble plm_Plm(int l, int m, edouble x)
  * @param sign sign of result
  * @return lndPlm \f$\log\left|{P_\ell^m}^\prime(x)\right|\f$
  */
-edouble plm_lndPlm(int l, int m, edouble x, sign_t *sign)
+float80 plm_lndPlm(int l, int m, float80 x, sign_t *sign)
 {
     const int lmax = l+1;
-    edouble plm[lmax-m+1];
+    float80 plm[lmax-m+1];
     sign_t signs[lmax-m+1];
 
     plm_lnPlm_array(lmax, m, x, plm, signs);
 
-    return logadd_s(loge(l-m+1)+plm[l+1-m], signs[l+1-m], loge(l+1)+loge(x)+plm[l-m], -signs[l+1-m], sign) - loge(pow_2(x)-1);
+    return logadd_s(log80(l-m+1)+plm[l+1-m], signs[l+1-m], log80(l+1)+log80(x)+plm[l-m], -signs[l+1-m], sign) - log80(pow_2(x)-1);
 }
 
 
@@ -450,11 +450,11 @@ edouble plm_lndPlm(int l, int m, edouble x, sign_t *sign)
  * @param x position
  * @return dPlm \f${P_\ell^m}^\prime(x)\f$
  */
-edouble plm_dPlm(int l, int m, edouble x)
+float80 plm_dPlm(int l, int m, float80 x)
 {
     sign_t sign;
-    edouble value = plm_lndPlm(l, m, x, &sign);
-    return sign*expe(value);
+    float80 value = plm_lndPlm(l, m, x, &sign);
+    return sign*exp80(value);
 }
 
 /**
@@ -473,14 +473,14 @@ edouble plm_dPlm(int l, int m, edouble x)
  * @param [in]  x \f$x\f$
  * @param [out] res save results in this struct
  */
-void plm_PlmPlm(int l1, int l2, int m, edouble x, plm_combination_t *res)
+void plm_PlmPlm(int l1, int l2, int m, float80 x, plm_combination_t *res)
 {
     const int lmax = MAX(l1,l2)+1;
-    edouble lnPlm[lmax-m+1];
+    float80 lnPlm[lmax-m+1];
     sign_t signs[lmax-m+1];
-    edouble logx = loge(x);
-    edouble logx2m1 = loge(pow_2(x)-1);
-    edouble lnPl1m, lnPl2m, lndPl1m, lndPl2m;
+    float80 logx = log80(x);
+    float80 logx2m1 = log80(pow_2(x)-1);
+    float80 lnPl1m, lnPl2m, lndPl1m, lndPl2m;
     sign_t sign_Pl1m, sign_Pl2m, sign_dPl1m, sign_dPl2m;
     sign_t common_sign = MPOW(m%2);
 
@@ -491,8 +491,8 @@ void plm_PlmPlm(int l1, int l2, int m, edouble x, plm_combination_t *res)
     lnPl2m    = lnPlm[l2-m];
     sign_Pl2m = signs[l2-m];
 
-    lndPl1m = logadd_s(loge(l1-m+1)+lnPlm[l1+1-m], signs[l1+1-m], loge(l1+1)+logx+lnPlm[l1-m], -signs[l1+1-m], &sign_dPl1m) - logx2m1;
-    lndPl2m = logadd_s(loge(l2-m+1)+lnPlm[l2+1-m], signs[l2+1-m], loge(l2+1)+logx+lnPlm[l2-m], -signs[l2+1-m], &sign_dPl2m) - logx2m1;
+    lndPl1m = logadd_s(log80(l1-m+1)+lnPlm[l1+1-m], signs[l1+1-m], log80(l1+1)+logx+lnPlm[l1-m], -signs[l1+1-m], &sign_dPl1m) - logx2m1;
+    lndPl2m = logadd_s(log80(l2-m+1)+lnPlm[l2+1-m], signs[l2+1-m], log80(l2+1)+logx+lnPlm[l2-m], -signs[l2+1-m], &sign_dPl2m) - logx2m1;
 
     /* Pl1m*Pl2m */
     res->lnPl1mPl2m    = lnPl1m + lnPl2m;
@@ -543,7 +543,7 @@ inline int gaunt_qmax(const int n, const int nu, const int m)
  * @param [in]  m  \f$m=\mu\f$
  * @return a0 \f$\log a_0\f$
  */
-inline edouble gaunt_log_a0(int n, int nu, int m)
+inline float80 gaunt_log_a0(int n, int nu, int m)
 {
     return lgamma(2*n+1)-lgamma(n+1)+lgamma(2*nu+1)-lgamma(1+nu)+lgamma(n+nu+1)-lgamma(2*n+2*nu+1)+lgamma(1+n+nu-2*m)-lgamma(1+n-m)-lgamma(1+nu-m);
 }
@@ -558,13 +558,13 @@ inline edouble gaunt_log_a0(int n, int nu, int m)
  * @param [in]  m  \f$m=\mu\f$
  * @return a0 \f$a_0\f$
  */
-inline edouble gaunt_a0(int n, int nu, int m)
+inline float80 gaunt_a0(int n, int nu, int m)
 {
-    return expe(gaunt_log_a0(n,nu,m));
+    return exp80(gaunt_log_a0(n,nu,m));
 }
 
 /* eq. (3) */
-#define alpha(p, n, nu) (((edouble)(pow_2(p)-pow_2(n+nu+1))*(pow_2(p)-pow_2(n-nu)))/(4*pow_2(p)-1))
+#define alpha(p, n, nu) (((float80)(pow_2(p)-pow_2(n+nu+1))*(pow_2(p)-pow_2(n-nu)))/(4*pow_2(p)-1))
 
 
 /**
@@ -591,18 +591,18 @@ inline edouble gaunt_a0(int n, int nu, int m)
  * @param [in]  m  \f$m=\mu\f$
  * @param [out] a_tilde \f$\tilde a_q\f$ list of normalized Gaunt coefficients
  */
-void gaunt(const int n_, const int nu_, const int m_, edouble a_tilde[])
+void gaunt(const int n_, const int nu_, const int m_, float80 a_tilde[])
 {
-    const edouble n  = n_;
-    const edouble nu = nu_;
-    const edouble m  = m_;
-    const edouble n4 = n+nu-2*m;
+    const float80 n  = n_;
+    const float80 nu = nu_;
+    const float80 m  = m_;
+    const float80 n4 = n+nu-2*m;
 
     /* eq. (24) */
     const int qmax = gaunt_qmax(n,nu,m);
 
     /* eq. (28) */
-    const edouble Ap = -2*m*(n-nu)*(n+nu+1);
+    const float80 Ap = -2*m*(n-nu)*(n+nu+1);
 
     if(qmax < 0)
         return;
@@ -625,10 +625,10 @@ void gaunt(const int n_, const int nu_, const int m_, edouble a_tilde[])
 
     for(int q = 3; q <= qmax; q++)
     {
-        edouble c0,c1,c2;
-        const edouble p = n+nu-2*q;
-        const edouble p1 = p-2*m;
-        const edouble p2 = p+2*m;
+        float80 c0,c1,c2;
+        const float80 p = n+nu-2*q;
+        const float80 p1 = p-2*m;
+        const float80 p2 = p+2*m;
 
         if(Ap != 0)
         {
