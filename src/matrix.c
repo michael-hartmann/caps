@@ -23,25 +23,25 @@ MATRIX_SAVE (matrix_sfloat, matrix_sfloat_t, sfloat_t);
 MATRIX_LOAD (matrix_sfloat, matrix_sfloat_t, sfloat_t, matrix_sfloat_alloc, matrix_sfloat_free);
 */
 
-MATRIX_ALLOC(matrix_float128, matrix_float128_t, float128);
-MATRIX_FREE (matrix_float128, matrix_float128_t);
-MATRIX_SAVE (matrix_float128, matrix_float128_t, float128);
-MATRIX_LOAD (matrix_float128, matrix_float128_t, float128, matrix_float128_alloc, matrix_float128_free);
+MATRIX_ALLOC(matrix_float128, matrix_float128, float128);
+MATRIX_FREE (matrix_float128, matrix_float128);
+MATRIX_SAVE (matrix_float128, matrix_float128, float128);
+MATRIX_LOAD (matrix_float128, matrix_float128, float128, matrix_float128_alloc, matrix_float128_free);
 
 MATRIX_ALLOC(matrix_sign, matrix_sign_t, sign_t);
 MATRIX_FREE (matrix_sign, matrix_sign_t);
 MATRIX_SAVE (matrix_sign, matrix_sign_t, sign_t);
 MATRIX_LOAD (matrix_sign, matrix_sign_t, sign_t, matrix_sign_alloc, matrix_sign_free);
 
-MATRIX_ALLOC(matrix_edouble, matrix_edouble_t, float80);
-MATRIX_FREE (matrix_edouble, matrix_edouble_t);
-MATRIX_SAVE (matrix_edouble, matrix_edouble_t, float80);
-MATRIX_LOAD (matrix_edouble, matrix_edouble_t, float80, matrix_edouble_alloc, matrix_edouble_free);
+MATRIX_ALLOC(matrix_float80, matrix_float80, float80);
+MATRIX_FREE (matrix_float80, matrix_float80);
+MATRIX_SAVE (matrix_float80, matrix_float80, float80);
+MATRIX_LOAD (matrix_float80, matrix_float80, float80, matrix_float80_alloc, matrix_float80_free);
 
-MATRIX_LOGDET_LU (matrix_edouble, matrix_edouble_t, float80, fabs80, log80);
-MATRIX_EXP(matrix_edouble, matrix_edouble_t, exp80);
+MATRIX_LOGDET_LU (matrix_float80, matrix_float80, float80, fabs80, log80);
+MATRIX_EXP(matrix_float80, matrix_float80, exp80);
 
-double matrix_float128_logdet_qr(matrix_float128_t *M)
+double matrix_float128_logdet_qr(matrix_float128 *M)
 {
     const int dim = M->size;
     float128 *m = M->M;
@@ -101,7 +101,7 @@ double matrix_float128_logdet_qr(matrix_float128_t *M)
     return det;
 }
 
-double matrix_edouble_logdet_qr(matrix_edouble_t *M)
+double matrix_float80_logdet_qr(matrix_float80 *M)
 {
     const int dim = M->size;
     float80 *m = M->M;
@@ -270,7 +270,7 @@ double matrix_sfloat_logdet_qr(matrix_sfloat_t *M)
 }
 #endif
 
-void matrix_edouble_log_balance(matrix_edouble_t *A)
+void matrix_float80_log_balance(matrix_float80 *A)
 {
     const int N = A->size;
     bool converged = false;
@@ -340,19 +340,19 @@ void matrix_edouble_log_balance(matrix_edouble_t *A)
     xfree(list_row);
 }
 
-double matrix_edouble_logdet(matrix_edouble_t *M, matrix_sign_t *M_sign, const char *type)
+double matrix_float80_logdet(matrix_float80 *M, matrix_sign_t *M_sign, const char *type)
 {
     if(strcasecmp(type, "QR") == 0)
     {
-        matrix_edouble_log_balance(M);
-        matrix_edouble_exp(M, M_sign);
-        return matrix_edouble_logdet_qr(M);
+        matrix_float80_log_balance(M);
+        matrix_float80_exp(M, M_sign);
+        return matrix_float80_logdet_qr(M);
     }
     else if(strcasecmp(type, "LU") == 0)
     {
-        matrix_edouble_log_balance(M);
-        matrix_edouble_exp(M, M_sign);
-        return matrix_edouble_logdet_lu(M);
+        matrix_float80_log_balance(M);
+        matrix_float80_exp(M, M_sign);
+        return matrix_float80_logdet_lu(M);
     }
     else
     {

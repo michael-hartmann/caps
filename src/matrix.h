@@ -25,12 +25,12 @@
 #define matrix_set(m, i, j,v) ((m)->M[(i)*m->size+(j)]=(v))
 
 MATRIX_TYPEDEF(matrix_sign_t, sign_t);
-MATRIX_TYPEDEF(matrix_edouble_t, float80);
+MATRIX_TYPEDEF(matrix_float80, float80);
 
 //MATRIX_TYPEDEF(matrix_sfloat_t, sfloat_t);
-MATRIX_TYPEDEF(matrix_float128_t, float128);
+MATRIX_TYPEDEF(matrix_float128, float128);
 
-void matrix_edouble_log_balance(matrix_edouble_t *A);
+void matrix_float80_log_balance(matrix_float80 *A);
 
 #define MATRIX_ALLOC(FUNCTION_PREFIX, MATRIX_TYPE, TYPE) \
     MATRIX_TYPE *FUNCTION_PREFIX ## _alloc(size_t size)  \
@@ -238,14 +238,13 @@ void matrix_edouble_log_balance(matrix_edouble_t *A);
 
 #define MATRIX_EXP_HEADER(FUNCTION_PREFIX, MATRIX_TYPE) void FUNCTION_PREFIX ## _exp(MATRIX_TYPE *M, matrix_sign_t *M_sign) \
 
-MATRIX_ALLOC_HEADER(matrix_edouble, matrix_edouble_t);
-MATRIX_FREE_HEADER (matrix_edouble, matrix_edouble_t);
-MATRIX_LOAD_HEADER (matrix_edouble, matrix_edouble_t);
-MATRIX_SAVE_HEADER (matrix_edouble, matrix_edouble_t);
-MATRIX_EXP_HEADER(matrix_edouble, matrix_edouble_t);
+MATRIX_ALLOC_HEADER(matrix_float80, matrix_float80);
+MATRIX_FREE_HEADER (matrix_float80, matrix_float80);
+MATRIX_LOAD_HEADER (matrix_float80, matrix_float80);
+MATRIX_SAVE_HEADER (matrix_float80, matrix_float80);
+MATRIX_EXP_HEADER(matrix_float80, matrix_float80);
 
-//MATRIX_LOGDET_QR_HEADER(matrix_edouble, matrix_edouble_t, edouble);
-MATRIX_LOGDET_LU_HEADER(matrix_edouble, matrix_edouble_t, float80);
+MATRIX_LOGDET_LU_HEADER(matrix_float80, matrix_float80, float80);
 
 MATRIX_ALLOC_HEADER(matrix_sign, matrix_sign_t);
 MATRIX_FREE_HEADER (matrix_sign, matrix_sign_t);
@@ -259,14 +258,14 @@ MATRIX_LOAD_HEADER (matrix_sfloat, matrix_sfloat_t);
 MATRIX_SAVE_HEADER (matrix_sfloat, matrix_sfloat_t);
 */
 
-MATRIX_ALLOC_HEADER(matrix_float128, matrix_float128_t);
-MATRIX_FREE_HEADER (matrix_float128, matrix_float128_t);
-MATRIX_LOAD_HEADER (matrix_float128, matrix_float128_t);
-MATRIX_SAVE_HEADER (matrix_float128, matrix_float128_t);
+MATRIX_ALLOC_HEADER(matrix_float128, matrix_float128);
+MATRIX_FREE_HEADER (matrix_float128, matrix_float128);
+MATRIX_LOAD_HEADER (matrix_float128, matrix_float128);
+MATRIX_SAVE_HEADER (matrix_float128, matrix_float128);
 
-double matrix_edouble_logdet(matrix_edouble_t *M, matrix_sign_t *M_sign, const char *type);
-double matrix_edouble_logdet_qr(matrix_edouble_t *M);
-double matrix_float128_logdet_qr(matrix_float128_t *M);
+double matrix_float80_logdet(matrix_float80 *M, matrix_sign_t *M_sign, const char *type);
+double matrix_float80_logdet_qr(matrix_float80 *M);
+double matrix_float128_logdet_qr(matrix_float128 *M);
 //double matrix_sfloat_logdet_qr(matrix_sfloat_t *M);
 
 #endif

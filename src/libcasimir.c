@@ -1386,7 +1386,7 @@ double casimir_F(casimir_t *self, int *nmax)
 void casimir_logdetD0(casimir_t *self, int m, double *logdet_EE, double *logdet_MM)
 {
     const float80 lnRbyScriptL = log80(self->RbyScriptL);
-    matrix_edouble_t *EE = NULL, *MM = NULL;
+    matrix_float80 *EE = NULL, *MM = NULL;
     matrix_sign_t *EE_sign = NULL, *MM_sign = NULL;
 
     const int min = MAX(m,1);
@@ -1395,12 +1395,12 @@ void casimir_logdetD0(casimir_t *self, int m, double *logdet_EE, double *logdet_
 
     if(logdet_EE != NULL)
     {
-        EE = matrix_edouble_alloc(dim);
+        EE = matrix_float80_alloc(dim);
         EE_sign = matrix_sign_alloc(dim);
     }
     if(logdet_MM != NULL)
     {
-        MM = matrix_edouble_alloc(dim);
+        MM = matrix_float80_alloc(dim);
         MM_sign = matrix_sign_alloc(dim);
     }
 
@@ -1456,17 +1456,17 @@ void casimir_logdetD0(casimir_t *self, int m, double *logdet_EE, double *logdet_
     /* calculate logdet and free space */
     if(EE != NULL)
     {
-        *logdet_EE = matrix_edouble_logdet(EE, EE_sign, self->detalg);
+        *logdet_EE = matrix_float80_logdet(EE, EE_sign, self->detalg);
 
         matrix_sign_free(EE_sign);
-        matrix_edouble_free(EE);
+        matrix_float80_free(EE);
     }
     if(MM != NULL)
     {
-        *logdet_MM = matrix_edouble_logdet(MM, MM_sign, self->detalg);
+        *logdet_MM = matrix_float80_logdet(MM, MM_sign, self->detalg);
 
         matrix_sign_free(MM_sign);
-        matrix_edouble_free(MM);
+        matrix_float80_free(MM);
     }
 }
 
@@ -1577,7 +1577,7 @@ double casimir_logdetD(casimir_t *self, int n, int m)
         return -trace;
     }
 
-    matrix_edouble_t *M   = matrix_edouble_alloc(2*dim);
+    matrix_float80 *M   = matrix_float80_alloc(2*dim);
     matrix_sign_t *M_sign = matrix_sign_alloc(2*dim);
 
     /* M_EE, -M_EM
@@ -1696,14 +1696,14 @@ double casimir_logdetD(casimir_t *self, int n, int m)
 
     #if 0
     /* Dump matrix */
-    printf("%d\n", matrix_edouble_save(M, "matrix_edouble.out"));
+    printf("%d\n", matrix_float80_save(M, "matrix_float80.out"));
     printf("%d\n", matrix_sign_save(M_sign, "matrix_signs.out"));
     #endif
 
     if(m == 0)
     {
-        matrix_edouble_t *EE = matrix_edouble_alloc(dim);
-        matrix_edouble_t *MM = matrix_edouble_alloc(dim);
+        matrix_float80 *EE = matrix_float80_alloc(dim);
+        matrix_float80 *MM = matrix_float80_alloc(dim);
 
         matrix_sign_t *EE_sign = matrix_sign_alloc(dim);
         matrix_sign_t *MM_sign = matrix_sign_alloc(dim);
@@ -1718,23 +1718,23 @@ double casimir_logdetD(casimir_t *self, int n, int m)
                 matrix_set(MM_sign, i,j, matrix_get(M_sign, i+dim,j+dim));
             }
 
-        matrix_edouble_free(M);
+        matrix_float80_free(M);
         matrix_sign_free(M_sign);
 
-        logdet  = matrix_edouble_logdet(EE, EE_sign, self->detalg);
-        logdet += matrix_edouble_logdet(MM, MM_sign, self->detalg);
+        logdet  = matrix_float80_logdet(EE, EE_sign, self->detalg);
+        logdet += matrix_float80_logdet(MM, MM_sign, self->detalg);
 
         matrix_sign_free(EE_sign);
         matrix_sign_free(MM_sign);
 
-        matrix_edouble_free(EE);
-        matrix_edouble_free(MM);
+        matrix_float80_free(EE);
+        matrix_float80_free(MM);
     }
     else
     {
-        logdet = matrix_edouble_logdet(M, M_sign, self->detalg);
+        logdet = matrix_float80_logdet(M, M_sign, self->detalg);
 
-        matrix_edouble_free(M);
+        matrix_float80_free(M);
         matrix_sign_free(M_sign);
     }
 
