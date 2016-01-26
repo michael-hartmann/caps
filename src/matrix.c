@@ -58,25 +58,25 @@ double matrix_float128_logdet_qr(matrix_float128 *M)
 
                 if(b == 0)
                 {
-                    c = copysignq(1,a);
+                    c = copysign128(1,a);
                     s = 0;
                 }
                 else if(a == 0)
                 {
                     c = 0;
-                    s = -copysignq(1, b);
+                    s = -copysign128(1, b);
                 }
-                else if(fabsq(b) > fabsq(a))
+                else if(fabs128(b) > fabs128(a))
                 {
                     const float128 t = a/b;
-                    const float128 u = copysignq(sqrtq(1+t*t),b);
+                    const float128 u = copysign128(sqrt128(1+t*t),b);
                     s = -1/u;
                     c = -s*t;
                 }
                 else
                 {
                     const float128 t = b/a;
-                    const float128 u = copysignq(sqrt80(1+t*t),a);
+                    const float128 u = copysign128(sqrt128(1+t*t),a);
                     c = 1/u;
                     s = -c*t;
                 }
@@ -96,7 +96,7 @@ double matrix_float128_logdet_qr(matrix_float128 *M)
 
     float80 det = 0;
     for(int i = 0; i < dim; i++)
-        det += logq(fabsq(m[i*dim+i]));
+        det += log128(fabs128(m[i*dim+i]));
 
     return det;
 }
