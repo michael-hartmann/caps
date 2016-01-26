@@ -6,7 +6,7 @@ CFLAGS  += -std=c99              # use C99
 CFLAGS  += -fgnu89-inline        # use traditional GNU semantics for
 CFLAGS  += -Werror -Wall -Wextra # enable warnings and make them fatal
 CFLAGS  += -Wmissing-prototypes -Wstrict-prototypes -Wshadow -Wpointer-arith -Wcast-qual -Wwrite-strings -Wno-unused-parameter
-LDFLAGS += -lm -pthread
+LDFLAGS += -lm -pthread -lquadmath
 
 TARGET = "../bin/"
 
@@ -38,8 +38,6 @@ endif
 ifeq ($(CC),icc)
     OPTIMIZATION = -fast
 endif
-
-CFLAGS += -DEXTENDED_DOUBLE
 
 
 casimir:
