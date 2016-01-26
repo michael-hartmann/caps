@@ -12,8 +12,8 @@ int test_determinant()
     unittest_t test;
     unittest_init(&test, "logdet", "Test computation of determinant");
 
-    matrix_edouble_t *M      = matrix_edouble_alloc(2);
-    matrix_sign_t    *M_sign = matrix_sign_alloc(2);
+    matrix_float80 *M      = matrix_float80_alloc(2);
+    matrix_sign_t  *M_sign = matrix_sign_alloc(2);
 
     matrix_set(M_sign, 0,0, +1);
     matrix_set(M_sign, 0,1, +1);
@@ -28,10 +28,10 @@ int test_determinant()
         matrix_set(M, 1,0, log80(1e-1000L));
         matrix_set(M, 1,1, log80(1L));
 
-        AssertAlmostEqual(&test, matrix_edouble_logdet(M, M_sign, method), log(18));
+        AssertAlmostEqual(&test, matrix_float80_logdet(M, M_sign, method), log(18));
     }
 
-    matrix_edouble_free(M);
+    matrix_float80_free(M);
     matrix_sign_free(M_sign);
 
     return test_results(&test, stderr);
