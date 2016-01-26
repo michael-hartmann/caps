@@ -5,7 +5,7 @@
 
 int test_fresnel()
 {
-    edouble r_TE, r_TM, T;
+    float80 r_TE, r_TM, T;
     double omegap, gamma_;
     unittest_t test;
     casimir_t casimir;

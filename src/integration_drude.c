@@ -16,19 +16,19 @@
 #include "integration_drude.h"
 #include "gausslaguerre.h"
 
-void integrands_drude(edouble x, integrands_drude_t *integrands, casimir_t *self, double nT, int l1, int l2, int m)
+void integrands_drude(float80 x, integrands_drude_t *integrands, casimir_t *self, double nT, int l1, int l2, int m)
 {
     plm_combination_t comb;
-    const edouble tau = 2*nT;
-    const edouble k = sqrte(pow_2(x)/4 + nT*x);
-    const edouble log_factor = loge(pow_2(x)+2*tau*x);
-    edouble r_TE, r_TM;
-    edouble lnr_TE, lnr_TM;
-    edouble A,B,C,D;
+    const float80 tau = 2*nT;
+    const float80 k = sqrt80(pow_2(x)/4 + nT*x);
+    const float80 log_factor = log80(pow_2(x)+2*tau*x);
+    float80 r_TE, r_TM;
+    float80 lnr_TE, lnr_TM;
+    float80 A,B,C,D;
 
     casimir_rp(self, nT, k, &r_TE, &r_TM);
-    lnr_TE = loge(-r_TE);
-    lnr_TM = loge(r_TM);
+    lnr_TE = log80(-r_TE);
+    lnr_TM = log80(r_TM);
 
     plm_PlmPlm(l1, l2, m, 1+x/tau, &comb);
 
@@ -74,13 +74,13 @@ void casimir_integrate_drude(casimir_t *self, casimir_integrals_t *cint, int l1,
 {
     int i;
     integrands_drude_t integrand;
-    const edouble tau = 2*n*T;
-    const edouble ln_tau = loge(tau);
-    const edouble ln_Lambda = casimir_lnLambda(l1, l2, m, NULL); /* sign: -1 */
-    edouble prefactor;
-    edouble *ln_ABCD, *lnA_TE, *lnA_TM, *lnB_TE, *lnB_TM, *lnC_TE, *lnC_TM, *lnD_TE, *lnD_TM;
+    const float80 tau = 2*n*T;
+    const float80 ln_tau = log80(tau);
+    const float80 ln_Lambda = casimir_lnLambda(l1, l2, m, NULL); /* sign: -1 */
+    float80 prefactor;
+    float80 *ln_ABCD, *lnA_TE, *lnA_TM, *lnB_TE, *lnB_TM, *lnC_TE, *lnC_TM, *lnD_TE, *lnD_TM;
     sign_t *signs_ABCD, *signs_A, *signs_B, *signs_C, *signs_D;
-    edouble *xk, *ln_wk;
+    float80 *xk, *ln_wk;
     const int N = gausslaguerre_nodes_weights(self->integration, &xk, &ln_wk);
 
     /* allocate space for signs_A, signs_B, signs_C, signs_D */
@@ -136,7 +136,7 @@ void casimir_integrate_drude(casimir_t *self, casimir_integrals_t *cint, int l1,
 
     if(m > 0)
     {
-        const edouble log_m = log(m);
+        const float80 log_m = log(m);
 
         /* A */
         prefactor = ln_Lambda + 2*log_m+ln_tau-tau; /* m²*tau*exp(-tau) */
@@ -190,20 +190,20 @@ void casimir_integrate_drude(casimir_t *self, casimir_integrals_t *cint, int l1,
 * This function returns the logarithm of the integral. The sign will be stored
 * in sign.
 */
-double log_polyintegrate(edouble p[], size_t len, int l1, int l2, int m, double tau, sign_t *sign)
+double log_polyintegrate(float80 p[], size_t len, int l1, int l2, int m, double tau, sign_t *sign)
 {
     size_t i;
     sign_t sign_lnLambda;
-    edouble value = 0;
-    const edouble ln_tau = loge(tau);
-    const edouble lnLambda = casimir_lnLambda(l1, l2, m, &sign_lnLambda);
-    const edouble lnfac_max = lgammae(1+len-1);
+    float80 value = 0;
+    const float80 ln_tau = log80(tau);
+    const float80 lnLambda = casimir_lnLambda(l1, l2, m, &sign_lnLambda);
+    const float80 lnfac_max = lgamma80(1+len-1);
 
     for(i = 0; i < len; i++)
-        value += expe(lgammae(1+i)-lnfac_max-(i+1)*ln_tau)*p[i];
+        value += exp80(lgamma80(1+i)-lnfac_max-(i+1)*ln_tau)*p[i];
 
     TERMINATE(!isfinite(value), "value=%Lg", value);
 
-    *sign = copysigne(1, value) * sign_lnLambda;
-    return lnLambda+lnfac_max+loge(fabse(value));
+    *sign = copysign80(1, value) * sign_lnLambda;
+    return lnLambda+lnfac_max+log80(fabs80(value));
 }
