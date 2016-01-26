@@ -4,7 +4,7 @@
 #include <pthread.h>
 #include <stdio.h>
 
-#include "edouble.h"
+#include "floattypes.h"
 
 #define HBARC 3.161526510740123e-26 /**< \f$\hbar \mathrm{c}\f$ */
 #define KB    1.3806488e-23         /**< \f$k_\mathrm{B}\f$ */

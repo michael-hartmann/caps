@@ -14,7 +14,7 @@
 #include <pthread.h>
 #include <unistd.h>
 
-#include "edouble.h"
+#include "floattypes.h"
 #include "integration_drude.h"
 #include "integration_perf.h"
 #include "libcasimir.h"

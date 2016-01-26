@@ -14,7 +14,7 @@
 #include "libcasimir.h"
 #include "sfunc.h"
 #include "matrix.h"
-#include "edouble.h"
+#include "floattypes.h"
 
 /*
 MATRIX_ALLOC(matrix_sfloat, matrix_sfloat_t, sfloat_t);

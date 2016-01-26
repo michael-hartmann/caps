@@ -5,7 +5,7 @@
 #include <math.h>
 #include <quadmath.h>
 
-#include "edouble.h"
+#include "floattypes.h"
 #include "libcasimir.h"
 #include "utils.h"
 
