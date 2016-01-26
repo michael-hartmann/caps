@@ -1,6 +1,16 @@
 #ifndef __UTILS_H
 #define __UTILS_H
 
+#if defined(__clang__)
+    #define COMPILER "clang/llvm"
+#elif defined(__ICC) || defined(__INTEL_COMPILER)
+    #define COMPILER "icc"
+#elif defined(__GNUC__) || defined(__GNUG__)
+    #define COMPILER "gcc"
+#else
+    #define COMPILER "unknown"
+#endif
+
 #ifndef NDEBUG
 #define TERMINATE(cond, ...) if(cond) { fprintf(stderr, "fatal error: "); fprintf(stderr, __VA_ARGS__); fprintf(stderr, " (in %s, %s:%d)\n", __func__, __FILE__, __LINE__); exit(1); }
 #define WARN(cond, ...) if(cond) { fprintf(stderr, "warning: "); fprintf(stderr, __VA_ARGS__); fprintf(stderr, " (in %s, %s:%d)\n", __func__, __FILE__, __LINE__); }

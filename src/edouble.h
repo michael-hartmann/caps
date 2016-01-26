@@ -42,14 +42,4 @@ typedef __float128  float128;
 #define lgamma128   lgammaq
 #define copysign128 copysignq
 
-#if defined(__clang__)
-    #define COMPILER "clang/llvm"
-#elif defined(__ICC) || defined(__INTEL_COMPILER)
-    #define COMPILER "icc"
-#elif defined(__GNUC__) || defined(__GNUG__)
-    #define COMPILER "gcc"
-#else
-    #define COMPILER "unknown"
-#endif
-
 #endif
