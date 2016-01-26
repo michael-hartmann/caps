@@ -2,7 +2,7 @@
 #define __INTEGRATION_DRUDE_H
 
 #include "libcasimir.h"
-#include "edouble.h"
+#include "floattypes.h"
 
 typedef struct {
     sign_t sign_A;

@@ -9,7 +9,7 @@
 #include <stdio.h>
 #include <math.h>
 
-#include "edouble.h"
+#include "floattypes.h"
 #include "sfunc.h"
 #include "utils.h"
 

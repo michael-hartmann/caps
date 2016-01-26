@@ -1,4 +1,4 @@
-#include "edouble.h"
+#include "floattypes.h"
 #include "gausslaguerre.h"
 
 static float80 xk10[] = {

@@ -1,6 +1,6 @@
 #include <math.h>
 
-#include "edouble.h"
+#include "floattypes.h"
 #include "matrix.h"
 #include "unittest.h"
 

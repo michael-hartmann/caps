@@ -11,7 +11,7 @@
 #include <unistd.h>
 
 #include "casimir.h"
-#include "edouble.h"
+#include "floattypes.h"
 #include "libcasimir.h"
 #include "sfunc.h"
 #include "utils.h"
