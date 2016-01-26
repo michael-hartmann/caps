@@ -17,8 +17,11 @@
 
 #define CASIMIR_DETALG "QR" /**< default algorithm for matrix decomposition */
 
-/** define sign_t as a signed char */
-typedef char sign_t;
+/**
+ * define sign_t as a signed char, because "char can be either signed or
+ * unsigned depending on the implementation"
+ */
+typedef signed char sign_t;
 
 
 /**
