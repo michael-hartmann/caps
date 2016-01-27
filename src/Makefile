@@ -2,9 +2,6 @@
 all: casimir
 #casimir_hiT casimir_logdetD casimir_Fn ld_drude casimir_T0 casimir_tests
 
-QD_INC = qd-2.3.17/include
-QD_LIB = qd-2.3.17/src/.libs/
-
 # Choose a compiler.
 #
 # At the moment gcc, clang and icc are supported.
@@ -23,7 +20,7 @@ CFLAGS += -I .
 CFLAGS += -Werror -Wall -Wextra -Wmissing-prototypes -Wstrict-prototypes -Wshadow -Wpointer-arith -Wcast-qual -Wwrite-strings -Wno-unused-parameter
 
 CXXFLAGS = 
-LDFLAGS += -lm -pthread -lquadmath -lqd
+LDFLAGS += -lm -pthread -lqd
 
 TARGET = "../bin/"
 
@@ -57,6 +54,13 @@ TESTS = \
     tests/test_mie_drude.o \
     tests/tests.o \
     tests/unittest.o
+
+# support float128
+CFLAGS += -DFLOAT128
+LDFLAGS += -lquadmath
+
+QD_INC = qd-2.3.17/include
+QD_LIB = qd-2.3.17/src/.libs/
 
 # Disable additional checks and assertions.
 #
