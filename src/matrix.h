@@ -3,7 +3,9 @@
 
 #include <stdio.h>
 #include <math.h>
+#ifdef FLOAT128
 #include <quadmath.h>
+#endif
 
 #include "floattypes.h"
 #include "libcasimir.h"
@@ -27,8 +29,9 @@
 MATRIX_TYPEDEF(matrix_sign_t, sign_t);
 MATRIX_TYPEDEF(matrix_float80, float80);
 
-//MATRIX_TYPEDEF(matrix_sfloat_t, sfloat_t);
+#ifdef FLOAT128
 MATRIX_TYPEDEF(matrix_float128, float128);
+#endif
 
 void matrix_float80_log_balance(matrix_float80 *A);
 
@@ -280,16 +283,19 @@ MATRIX_LOAD_HEADER (matrix_sfloat, matrix_sfloat_t);
 MATRIX_SAVE_HEADER (matrix_sfloat, matrix_sfloat_t);
 */
 
+#ifdef FLOAT128
 MATRIX_ALLOC_HEADER (matrix_float128, matrix_float128);
 MATRIX_FREE_HEADER  (matrix_float128, matrix_float128);
 MATRIX_LOAD_HEADER  (matrix_float128, matrix_float128);
 MATRIX_SAVE_HEADER  (matrix_float128, matrix_float128);
 MATRIX_MINMAX_HEADER(matrix_float128, matrix_float128, float128);
+#endif
 
 double matrix_float80_logdet(matrix_float80 *M, matrix_sign_t *M_sign, const char *type);
 double matrix_float80_logdet_qr(matrix_float80 *M);
+#ifdef FLOAT128
 double matrix_float128_logdet_qr(matrix_float128 *M);
-//double matrix_sfloat_logdet_qr(matrix_sfloat_t *M);
+#endif
 
 //double matrix_floatdd_logdet(matrix_float80 *M, matrix_sign_t *M_sign, const char *type);
 

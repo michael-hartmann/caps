@@ -26,11 +26,13 @@ MATRIX_SAVE (matrix_sfloat, matrix_sfloat_t, sfloat_t);
 MATRIX_LOAD (matrix_sfloat, matrix_sfloat_t, sfloat_t, matrix_sfloat_alloc, matrix_sfloat_free);
 */
 
+#ifdef FLOAT128
 MATRIX_ALLOC (matrix_float128, matrix_float128, float128);
 MATRIX_FREE  (matrix_float128, matrix_float128);
 MATRIX_SAVE  (matrix_float128, matrix_float128, float128);
 MATRIX_LOAD  (matrix_float128, matrix_float128, float128, matrix_float128_alloc, matrix_float128_free);
 MATRIX_MINMAX(matrix_float128, matrix_float128, float128);
+#endif
 
 MATRIX_ALLOC(matrix_sign, matrix_sign_t, sign_t);
 MATRIX_FREE (matrix_sign, matrix_sign_t);
@@ -46,6 +48,7 @@ MATRIX_MINMAX(matrix_float80, matrix_float80, float80);
 MATRIX_LOGDET_LU (matrix_float80, matrix_float80, float80, fabs80, log80);
 MATRIX_EXP(matrix_float80, matrix_float80, exp80);
 
+#ifdef FLOAT128
 double matrix_float128_logdet_qr(matrix_float128 *M)
 {
     const int dim = M->size;
@@ -105,6 +108,7 @@ double matrix_float128_logdet_qr(matrix_float128 *M)
 
     return det;
 }
+#endif
 
 double matrix_float80_logdet_qr(matrix_float80 *M)
 {
@@ -281,8 +285,8 @@ void matrix_float80_log_balance(matrix_float80 *A)
     bool converged = false;
 
     float80 *M = A->M;
-    float80 *list_row = xmalloc(N*sizeof(float128));
-    float80 *list_col = xmalloc(N*sizeof(float128));
+    float80 *list_row = xmalloc(N*sizeof(float80));
+    float80 *list_col = xmalloc(N*sizeof(float80));
 
     /* line 2 */
     while(!converged)
@@ -361,9 +365,11 @@ double matrix_float80_logdet(matrix_float80 *M, matrix_sign_t *M_sign, const cha
     }
     else if(strcasecmp(type, "DEBUG") == 0)
     {
-        const int dim = M->size;
         double tstart, tend;
-        double logdet_dd, logdet_float80, logdet_float128;
+        double logdet_dd, logdet_float80;
+        #ifdef FLOAT128
+        double logdet_float128;
+        #endif
         float80 minimum, maximum;
 
         matrix_float80_minmax(M, &minimum, &maximum);
@@ -380,6 +386,8 @@ double matrix_float80_logdet(matrix_float80 *M, matrix_sign_t *M_sign, const cha
         tend = now();
         printf("# matrix_floatdd_logdet:  %+.15g (%g)\n", logdet_dd, tend-tstart);
 
+        #ifdef FLOAT128
+        const int dim = M->size;
         tstart = now();
         matrix_float128 *M128 = matrix_float128_alloc(dim);
         for(int i = 0; i < dim*dim; i++)
@@ -389,6 +397,7 @@ double matrix_float80_logdet(matrix_float80 *M, matrix_sign_t *M_sign, const cha
         matrix_float128_free(M128);
         tend = now();
         printf("# matrix_float128_logdet: %+.15g (%g)\n", logdet_float128, tend-tstart);
+        #endif
 
         tstart = now();
         matrix_float80_exp(M, M_sign);
