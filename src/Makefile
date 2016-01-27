@@ -1,28 +1,62 @@
-.PHONY: clean doc casimir casimir_tests casimir_hiT casimir_logdetD casimir_Fn ld_drude casimir_T0
-all: casimir casimir_hiT casimir_logdetD casimir_Fn ld_drude casimir_T0 casimir_tests
+.PHONY: clean doc casimir casimir_logdetD casimir_hiT casimir_Fn ld_drude casimir_T0 casimir_tests
+all: casimir
+#casimir_hiT casimir_logdetD casimir_Fn ld_drude casimir_T0 casimir_tests
 
-SOURCES  = sfunc.c integration_drude.c integration_perf.c libcasimir.c matrix.c utils.c gausslaguerre.c
-# use C99 standard
-CFLAGS  += -std=c99
-# optimize for native CPU
-CFLAGS  += -march=native
-# use traditional GNU semantics for inline
-CFLAGS  += -fgnu89-inline
-# enable warnings and make them fatal
-CFLAGS  += -Werror -Wall -Wextra -Wmissing-prototypes -Wstrict-prototypes -Wshadow -Wpointer-arith -Wcast-qual -Wwrite-strings -Wno-unused-parameter
-
-LDFLAGS += -lm -pthread -lquadmath
-
-TARGET = "../bin/"
+QD_INC = qd-2.3.17/include
+QD_LIB = qd-2.3.17/src/.libs/
 
 # Choose a compiler.
 #
 # At the moment gcc, clang and icc are supported.
 CC = gcc
+CXX = g++
 #CC = icc
 MPICC = mpicc
 #MPICC = mpiicc
 
+# use C99 standard
+CFLAGS  = -std=c99
+# use traditional GNU semantics for inline
+CFLAGS += -fgnu89-inline
+CFLAGS += -I .
+# enable warnings and make them fatal
+CFLAGS += -Werror -Wall -Wextra -Wmissing-prototypes -Wstrict-prototypes -Wshadow -Wpointer-arith -Wcast-qual -Wwrite-strings -Wno-unused-parameter
+
+CXXFLAGS = 
+LDFLAGS += -lm -pthread -lquadmath -lqd
+
+TARGET = "../bin/"
+
+# optimize for native CPU
+OPT = -march=native -flto -O3
+
+OBJS = \
+    gausslaguerre.o \
+    integration_drude.o \
+    integration_perf.o \
+    libcasimir.o \
+    matrix.o \
+    sfunc.o \
+    utils.o \
+    dd.o
+
+TESTS = \
+    tests/test_bessels.o \
+    tests/test_doublefact.o \
+    tests/test_fresnel.o \
+    tests/test_integration_perf.o \
+    tests/test_lbinom.o \
+    tests/test_mie.o \
+    tests/test_Plm.o \
+    tests/test_Xi.o \
+    tests/test_determinant.o \
+    tests/test_epsilon.o \
+    tests/test_integration_drude.o \
+    tests/test_Lambda.o \
+    tests/test_logdet.o \
+    tests/test_mie_drude.o \
+    tests/tests.o \
+    tests/unittest.o
 
 # Disable additional checks and assertions.
 #
@@ -34,44 +68,46 @@ MPICC = mpicc
 # Disabling this option will slightly increase performance.
 #
 # If you don't know what to say here, comment out the line.
-# CFLAGS += -DNDEBUG
+# CFLAGS += -DNCHECKS
 
-# use optimization
-ifeq ($(CC),gcc)
-    OPTIMIZATION = -O3
-endif
-ifeq ($(CC),icc)
-    OPTIMIZATION = -fast
-endif
+CFLAGS += -D CASIMIR_DETALG="\"DEBUG\""
 
+%.o : %.c
+	$(CC) $(CFLAGS) $(OPT) -o $@ -c $<
 
-casimir:
-	$(CC) $(OPTIMIZATION) $(CFLAGS) $(SOURCES) casimir.c $(LDFLAGS) -o casimir
+casimir_T0.o:
+	$(MPICC) $(CFLAGS) $(OPT) -o $@ -c $<
 
-casimir_logdetD:
-	$(CC) $(OPTIMIZATION) $(CFLAGS) $(SOURCES) casimir_logdetD.c $(LDFLAGS) -o casimir_logdetD
+dd.o :
+	$(CXX) $(CXXFLAGS) $(OPT) -I $(QD_INC) -o dd.o -c dd.cpp
 
-casimir_hiT:
-	$(CC) $(OPTIMIZATION) $(CFLAGS) $(SOURCES) casimir_hiT.c $(LDFLAGS) -o casimir_hiT
+casimir: casimir.o $(OBJS)
+	$(CXX) $(CXXFLAGS) $(OPT) -L $(QD_LIB) $^ $(LDFLAGS) -o casimir
 
-casimir_Fn:
-	$(CC) $(OPTIMIZATION) $(CFLAGS) $(SOURCES) casimir_Fn.c $(LDFLAGS) -o casimir_Fn
+casimir_logdetD: casimir_logdetD.o $(OBJS)
+	$(CXX) $(CXXFLAGS) $(OPT) -L $(QD_LIB) $^ $(LDFLAGS) -o casimir_logdetD
 
-ld_drude:
-	$(CC) $(OPTIMIZATION) $(CFLAGS) $(SOURCES) ld_drude.c $(LDFLAGS) -o ld_drude
+casimir_hiT: casimir_hiT.o $(OBJS)
+	$(CXX) $(CXXFLAGS) $(OPT) -L $(QD_LIB) $^ $(LDFLAGS) -o casimir_hiT
 
-casimir_T0:
-	$(MPICC) $(OPTIMIZATION) $(CFLAGS) $(SOURCES) casimir_T0.c $(LDFLAGS) -o casimir_T0
+casimir_Fn: casimir_Fn.o $(OBJS)
+	$(CXX) $(CXXFLAGS) $(OPT) -L $(QD_LIB) $^ $(LDFLAGS) -o casimir_Fn
 
-casimir_tests:
-	$(CC) $(OPTIMIZATION) -I . $(CFLAGS) $(SOURCES) tests/unittest.c tests/test*.c $(LDFLAGS) -o casimir_tests
-	./casimir_tests
+ld_drude: ld_drude.o $(OBJS)
+	$(CXX) $(CXXFLAGS) $(OPT) -L $(QD_LIB) $^ $(LDFLAGS) -o ld_drude
+
+casimir_tests: $(TESTS) $(OBJS)
+	$(CXX) $(CXXFLAGS) $(OPT) -L $(QD_LIB) $^ $(LDFLAGS) -o casimir_tests
+	time ./casimir_tests
+
+casimir_T0: casimir_T0.o $(OBJS)
+	$(MPICC) $(CXXFLAGS) $(OPT) -L $(QD_LIB) $^ $(LDFLAGS) -o casimir_T0
 
 install:
 	cp casimir casimir_tests casimir_hiT casimir_logdetD casimir_Fn ld_drude casimir_T0 ${TARGET}
 
 clean:
-	rm -f casimir casimir_tests casimir_hiT casimir_logdetD *.o casimir_Fn ld_drude casimir_T0
+	rm -f casimir casimir_tests casimir_hiT casimir_logdetD casimir_Fn ld_drude casimir_T0 *.o tests/*.o
 
 doc:
 	doxygen doxygen.conf
