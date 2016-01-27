@@ -15,7 +15,9 @@
 #define CASIMIR_FACTOR_LMAX 5        /**< by default: lmax=ceil(5/LbyR) */
 #define CASIMIR_TRACE_THRESHOLD 1e-8 /**< threshold to use trace */
 
+#ifndef CASIMIR_DETALG
 #define CASIMIR_DETALG "QR" /**< default algorithm for matrix decomposition */
+#endif
 
 /**
  * define sign_t as a signed char, because "char can be either signed or
