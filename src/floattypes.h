@@ -5,10 +5,8 @@
 #define M_PI 3.14159265358979323846
 #endif
 
-typedef double      float64;
-typedef long double float80;
-typedef __float128  float128;
 
+typedef double      float64;
 #define log64      log
 #define exp64      exp
 #define sqrt64     sqrt
@@ -20,6 +18,7 @@ typedef __float128  float128;
 #define lgamma64   lgamma
 #define copysign64 copysign
 
+typedef long double float80;
 #define log80      logl
 #define exp80      expl
 #define sqrt80     sqrtl
@@ -31,6 +30,8 @@ typedef __float128  float128;
 #define lgamma80   lgammal
 #define copysign80 copysignl
 
+#ifdef FLOAT128
+typedef __float128  float128;
 #define log128      logq
 #define exp128      expq
 #define sqrt128     sqrtq
@@ -41,5 +42,6 @@ typedef __float128  float128;
 #define gamma128    gammaq
 #define lgamma128   lgammaq
 #define copysign128 copysignq
+#endif
 
 #endif
