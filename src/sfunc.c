@@ -130,7 +130,7 @@ inline float80 logadd_m(const float80 list[], const int len)
     for(int i = 1; i < len; i++)
         sum += exp80(list[i]-max);
 
-    return max + log80(fabs80(sum));
+    return max + log80(sum);
 }
 
 
