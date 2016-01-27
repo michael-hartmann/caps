@@ -66,6 +66,27 @@ void matrix_float80_log_balance(matrix_float80 *A);
 #define MATRIX_FREE_HEADER(FUNCTION_PREFIX, MATRIX_TYPE) void FUNCTION_PREFIX ## _free(MATRIX_TYPE *m)
 
 
+#define MATRIX_MINMAX(FUNCTION_PREFIX, MATRIX_TYPE, TYPE) \
+    void FUNCTION_PREFIX ## _minmax(MATRIX_TYPE *M, TYPE *min, TYPE *max) \
+    { \
+        const int dim = M->size; \
+        TYPE minimum = matrix_get(M, 0,0); \
+        TYPE maximum = matrix_get(M, 0,0); \
+\
+        for(int i = 0; i < dim; i++) \
+            for(int j = 0; j < dim; j++) \
+            { \
+                const TYPE elem = matrix_get(M, i,j); \
+                if(elem < minimum) minimum = elem; \
+                if(elem > maximum) maximum = elem; \
+            } \
+\
+        if(min != NULL) *min = minimum; \
+        if(max != NULL) *max = maximum; \
+    }
+
+#define MATRIX_MINMAX_HEADER(FUNCTION_PREFIX, MATRIX_TYPE, TYPE) void FUNCTION_PREFIX ## _minmax(MATRIX_TYPE *M, TYPE *min, TYPE *max)
+
 #define MATRIX_SAVE(FUNCTION_PREFIX, MATRIX_TYPE, TYPE) \
     int FUNCTION_PREFIX ## _save(MATRIX_TYPE *M, const char *path) \
     { \
@@ -238,18 +259,19 @@ void matrix_float80_log_balance(matrix_float80 *A);
 
 #define MATRIX_EXP_HEADER(FUNCTION_PREFIX, MATRIX_TYPE) void FUNCTION_PREFIX ## _exp(MATRIX_TYPE *M, matrix_sign_t *M_sign) \
 
-MATRIX_ALLOC_HEADER(matrix_float80, matrix_float80);
-MATRIX_FREE_HEADER (matrix_float80, matrix_float80);
-MATRIX_LOAD_HEADER (matrix_float80, matrix_float80);
-MATRIX_SAVE_HEADER (matrix_float80, matrix_float80);
-MATRIX_EXP_HEADER(matrix_float80, matrix_float80);
+MATRIX_ALLOC_HEADER (matrix_float80, matrix_float80);
+MATRIX_FREE_HEADER  (matrix_float80, matrix_float80);
+MATRIX_LOAD_HEADER  (matrix_float80, matrix_float80);
+MATRIX_SAVE_HEADER  (matrix_float80, matrix_float80);
+MATRIX_EXP_HEADER   (matrix_float80, matrix_float80);
+MATRIX_MINMAX_HEADER(matrix_float80, matrix_float80, float80);
 
 MATRIX_LOGDET_LU_HEADER(matrix_float80, matrix_float80, float80);
 
-MATRIX_ALLOC_HEADER(matrix_sign, matrix_sign_t);
-MATRIX_FREE_HEADER (matrix_sign, matrix_sign_t);
-MATRIX_LOAD_HEADER (matrix_sign, matrix_sign_t);
-MATRIX_SAVE_HEADER (matrix_sign, matrix_sign_t);
+MATRIX_ALLOC_HEADER (matrix_sign, matrix_sign_t);
+MATRIX_FREE_HEADER  (matrix_sign, matrix_sign_t);
+MATRIX_LOAD_HEADER  (matrix_sign, matrix_sign_t);
+MATRIX_SAVE_HEADER  (matrix_sign, matrix_sign_t);
 
 /*
 MATRIX_ALLOC_HEADER(matrix_sfloat, matrix_sfloat_t);
@@ -258,14 +280,17 @@ MATRIX_LOAD_HEADER (matrix_sfloat, matrix_sfloat_t);
 MATRIX_SAVE_HEADER (matrix_sfloat, matrix_sfloat_t);
 */
 
-MATRIX_ALLOC_HEADER(matrix_float128, matrix_float128);
-MATRIX_FREE_HEADER (matrix_float128, matrix_float128);
-MATRIX_LOAD_HEADER (matrix_float128, matrix_float128);
-MATRIX_SAVE_HEADER (matrix_float128, matrix_float128);
+MATRIX_ALLOC_HEADER (matrix_float128, matrix_float128);
+MATRIX_FREE_HEADER  (matrix_float128, matrix_float128);
+MATRIX_LOAD_HEADER  (matrix_float128, matrix_float128);
+MATRIX_SAVE_HEADER  (matrix_float128, matrix_float128);
+MATRIX_MINMAX_HEADER(matrix_float128, matrix_float128, float128);
 
 double matrix_float80_logdet(matrix_float80 *M, matrix_sign_t *M_sign, const char *type);
 double matrix_float80_logdet_qr(matrix_float80 *M);
 double matrix_float128_logdet_qr(matrix_float128 *M);
 //double matrix_sfloat_logdet_qr(matrix_sfloat_t *M);
+
+//double matrix_floatdd_logdet(matrix_float80 *M, matrix_sign_t *M_sign, const char *type);
 
 #endif
