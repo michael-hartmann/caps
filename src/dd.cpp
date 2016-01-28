@@ -6,9 +6,6 @@
 #include "matrix.h"
 #include "utils.h"
 
-using std::cout;
-using std::endl;
-
 typedef struct {
     int size;
     dd_real *M;
@@ -123,8 +120,8 @@ extern "C" double matrix_floatdd_logdet(matrix_float80 *M, matrix_sign_t *M_sign
     {
         const float80 elem = M->M[i];
         const double hi = elem;
-        const double lo = elem-hi;
-        Add->M[i] = M_sign->M[i]*exp(dd_real(hi,lo));
+        const double lo = elem-hi; /* XXX */
+        Add->M[i] = M_sign->M[i]*exp(dd_real(hi,lo)); /* ??? */
     }
 
     logdet = matrix_floatdd_logdet_qr(Add);
