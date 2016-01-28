@@ -66,9 +66,29 @@ inline float80 logadd(const float80 log_a, const float80 log_b)
         return log_a;
 
     if(log_a > log_b)
-        return log_a + log1p80(exp80(log_b-log_a));
+    {
+        const float80 diff = log_b-log_a;
+        const float80 expx = exp80(diff);
+
+        #ifdef EXPERIMENTAL_FEATURES
+        if(diff < -47)
+            return log_a + expx;
+        #endif
+
+        return log_a + log1p80(expx);
+    }
     else
-        return log_b + log1p80(exp80(log_a-log_b));
+    {
+        const float80 diff = log_a-log_b;
+        const float80 expx = exp80(diff);
+
+        #ifdef EXPERIMENTAL_FEATURES
+        if(diff < -47)
+            return log_b + expx;
+        #endif
+
+        return log_b + log1p80(expx);
+    }
 }
 
 
@@ -98,12 +118,28 @@ float80 logadd_s(const float80 log_a, const sign_t sign_a, const float80 log_b, 
     if(log_a > log_b)
     {
         *sign = sign_a;
-        return log_a + log1p80(sign_a*sign_b*exp80(log_b-log_a));
+        const float80 diff = log_b-log_a;
+        const float80 expx = sign_a*sign_b*exp80(diff);
+
+        #ifdef EXPERIMENTAL_FEATURES
+        if(diff < -47)
+            return log_a + expx;
+        #endif
+
+        return log_a + log1p80(expx);
     }
     else
     {
         *sign = sign_b;
-        return log_b + log1p80(sign_a*sign_b*exp80(log_a-log_b));
+        const float80 diff = log_a-log_b;
+        const float80 expx = sign_a*sign_b*exp80(diff);
+
+        #ifdef EXPERIMENTAL_FEATURES
+        if(diff < -47)
+            return log_b + expx;
+        #endif
+
+        return log_b + log1p80(expx);
     }
 }
 
