@@ -611,6 +611,44 @@ int casimir_set_cores(casimir_t *self, int cores)
 
 
 /**
+ * @brief Set algorithm to calculate deterimant
+ *
+ * The algorithm is given by detalg. Make sure that detalg contains a
+ * valid algorithm, otherwise the computation will fail on runtime.
+ *
+ * detalg may be: LU_FLOAT80, QR_FLOAT80, QR_FLOATDD, QR_LOG80 and (if
+ * supported) QR_FLOAT128
+ *
+ * This function is not thread-safe.
+ *
+ * @param [in,out] self Casimir object
+ * @param [in] detalg algorithm to compute deterimant
+ * @retval 1
+ */
+int casimir_set_detalg(casimir_t *self, const char *detalg)
+{
+    strncpy(self->detalg, detalg, sizeof(self->detalg)/sizeof(char)-1);
+    return 0;
+}
+
+/**
+ * @brief Get algorithm to calculate deterimant
+ *
+ * The string is stored in detalg.
+ *
+ * This function is not thread-safe.
+ *
+ * @param [in,out] self Casimir object
+ * @param [out] detalg buffer
+ * @retval 1
+ */
+int casimir_get_detalg(casimir_t *self, char detalg[128])
+{
+    strcpy(detalg, self->detalg);
+    return 1;
+}
+
+/**
  * @brief Set maximum value of l
  *
  * In general the round trip matrices are infinite. For a numerical evaluation
