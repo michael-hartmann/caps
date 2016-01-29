@@ -298,5 +298,6 @@ double matrix_float128_logdet_qr(matrix_float128 *M);
 #endif
 
 //double matrix_floatdd_logdet(matrix_float80 *M, matrix_sign_t *M_sign, const char *type);
+double matrix_float80_log_logdet_qr(matrix_float80 *M, matrix_sign_t *M_sign);
 
 #endif

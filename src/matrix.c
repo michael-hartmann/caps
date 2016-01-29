@@ -17,14 +17,7 @@
 
 #include "utils.h"
 
-extern double matrix_floatdd_logdet(matrix_float80 *M, matrix_sign_t *M_sign, const char *type);
-
-/*
-MATRIX_ALLOC(matrix_sfloat, matrix_sfloat_t, sfloat_t);
-MATRIX_FREE (matrix_sfloat, matrix_sfloat_t);
-MATRIX_SAVE (matrix_sfloat, matrix_sfloat_t, sfloat_t);
-MATRIX_LOAD (matrix_sfloat, matrix_sfloat_t, sfloat_t, matrix_sfloat_alloc, matrix_sfloat_free);
-*/
+extern double matrix_floatdd_logdet(matrix_float80 *M, matrix_sign_t *M_sign);
 
 #ifdef FLOAT128
 MATRIX_ALLOC (matrix_float128, matrix_float128, float128);
@@ -89,7 +82,7 @@ double matrix_float128_logdet_qr(matrix_float128 *M)
                     s = -c*t;
                 }
 
-                for(int n = 0; n < dim; n++)
+                for(int n = j; n < dim; n++)
                 {
                     const float128 Min = m[i*dim+n];
                     const float128 Mjn = m[j*dim+n];
@@ -110,6 +103,46 @@ double matrix_float128_logdet_qr(matrix_float128 *M)
 }
 #endif
 
+
+double matrix_float80_log_logdet_qr(matrix_float80 *M, matrix_sign_t *M_sign)
+{
+    const int dim = M->size;
+    float80 *m = M->M;
+    sign_t *m_sign = M_sign->M;
+
+    for(int j = 0; j < dim-1; j++)
+        for(int i = j+1; i < dim; i++)
+        {
+            float80 c;
+            const float80 t = m[i*dim+j]-m[j*dim+j];
+            const sign_t sign_c =  m_sign[j*dim+j];
+            const sign_t sign_s = -m_sign[i*dim+j];
+
+            if(t > 0)
+                c = -t - log1p80(exp80(-2*t))/2;
+            else
+                c = -log1p80(exp80(2*t))/2;
+
+            const float80 s = c+t;  /* sign(s) = -sign(c)*sign(t) = -sign(M[i,j]) */
+
+            for(int n = j; n < dim; n++)
+            {
+                const float80 Min = m[i*dim+n];
+                const float80 Mjn = m[j*dim+n];
+                const sign_t sign_Min = m_sign[i*dim+n];
+                const sign_t sign_Mjn = m_sign[j*dim+n];
+
+                m[i*dim+n] = logadd_s(c+Min, sign_c*sign_Min, s+Mjn,  sign_s*sign_Mjn, &m_sign[i*dim+n]);
+                m[j*dim+n] = logadd_s(c+Mjn, sign_c*sign_Mjn, s+Min, -sign_s*sign_Min, &m_sign[j*dim+n]);
+            }
+        }
+
+    float80 det = 0;
+    for(int i = 0; i < dim; i++)
+        det += m[i*dim+i];
+
+    return det;
+}
 double matrix_float80_logdet_qr(matrix_float80 *M)
 {
     const int dim = M->size;
@@ -150,7 +183,7 @@ double matrix_float80_logdet_qr(matrix_float80 *M)
                     s = -c*t;
                 }
 
-                for(int n = 0; n < dim; n++)
+                for(int n = j; n < dim; n++)
                 {
                     const float80 Min = m[i*dim+n];
                     const float80 Mjn = m[j*dim+n];
@@ -169,115 +202,6 @@ double matrix_float80_logdet_qr(matrix_float80 *M)
 
     return det;
 }
-
-#if 0
-double matrix_sfloat_logdet_qr(matrix_sfloat_t *M)
-{
-    const int dim = M->size;
-    sfloat_t zero,one;
-    sfloat_from_double(&zero, 0);
-    sfloat_from_double(&one,  1);
-
-    sfloat_t *m = M->M;
-
-    for(int j = 0; j < dim-1; j++)
-        for(int i = j+1; i < dim; i++)
-        {
-            sfloat_t c,s;
-            sfloat_t *Mij = &m[i*dim+j];
-
-
-            if(!sfloat_iszero(Mij))
-            {
-                sfloat_t *a = &m[j*dim+j];
-                sfloat_t *b = Mij;
-
-                if(sfloat_iszero(b))
-                {
-                    sfloat_copysign(&one, a, &c);
-                    s = zero;
-                }
-                else if(sfloat_iszero(a))
-                {
-                    c = zero;
-                    sfloat_copysign(&one, b, &s);
-                    sfloat_neg(&s);
-                }
-                else if(sfloat_abscompare(b, a) > 0)
-                {
-                    sfloat_t t,u,v,w;
-
-                    /* t = a/b */
-                    sfloat_div(a, b, &t);
-
-                    /* v = sqrt(1+t*t)
-                     * u = copysign80(v,b);
-                     */
-                    sfloat_mul(&t, &t, &v);
-                    sfloat_add(&one, &v, &w);
-                    sfloat_sqrt(&w);
-                    sfloat_copysign(&w, b, &u);
-
-                    /* s = -1/u; */
-                    sfloat_div(&one, &u, &s);
-                    sfloat_neg(&s);
-
-                    /* c = -s*t; */
-                    sfloat_mul(&s, &t, &c);
-                    sfloat_neg(&c);
-                }
-                else
-                {
-                    sfloat_t t,u,v,w;
-
-                    /* t = b/a*/
-                    sfloat_div(b,a,&t);
-
-                    /* v = sqrt(1+t*t)
-                     * u = copysign80(v,a)
-                     */
-                    sfloat_mul(&t,&t, &v);
-                    sfloat_add(&one, &v, &w);
-                    sfloat_sqrt(&w);
-                    sfloat_copysign(&w,a,&u);
-
-                    /* c = 1/u */
-                    sfloat_div(&one, &u, &c);
-
-                    /* s = -c*t */
-                    sfloat_mul(&c,&t,&s);
-                    sfloat_neg(&s);
-                }
-
-                for(int n = 0; n < dim; n++)
-                {
-                    sfloat_t t1,t2;
-                    sfloat_t Min = m[i*dim+n];
-                    sfloat_t Mjn = m[j*dim+n];
-
-                    /* m[i*dim+n] = c*Min + s*Mjn; */
-                    sfloat_mul(&c,&Min,&t1);
-                    sfloat_mul(&s,&Mjn,&t2);
-                    sfloat_add(&t1, &t2, &m[i*dim+n]);
-
-                    /* m[j*dim+n] = c*Mjn - s*Min; */
-                    sfloat_mul(&c,&Mjn,&t1);
-                    sfloat_mul(&s,&Min,&t2);
-                    sfloat_sub(&t1,&t2,&m[j*dim+n]);
-                }
-            }
-        }
-
-    double det = 0;
-    for(int i = 0; i < dim; i++)
-    {
-        sfloat_t *x = &m[i*dim+i];
-        det += log(fabs(x->mantisse))+x->exponent*M_LN2;
-    }
-
-    return det;
-}
-#endif
 
 void matrix_float80_log_balance(matrix_float80 *A)
 {
@@ -351,62 +275,46 @@ void matrix_float80_log_balance(matrix_float80 *A)
 
 double matrix_float80_logdet(matrix_float80 *M, matrix_sign_t *M_sign, const char *type)
 {
-    if(strcasecmp(type, "QR") == 0)
-    {
-        matrix_float80_log_balance(M);
-        matrix_float80_exp(M, M_sign);
-        return matrix_float80_logdet_qr(M);
-    }
-    else if(strcasecmp(type, "LU") == 0)
+    if(strcasecmp(type, "LU_FLOAT80") == 0)
     {
         matrix_float80_log_balance(M);
         matrix_float80_exp(M, M_sign);
         return matrix_float80_logdet_lu(M);
     }
-    else if(strcasecmp(type, "DEBUG") == 0)
+    else if(strcasecmp(type, "QR_FLOAT80") == 0)
     {
-        double tstart, tend;
-        double logdet_dd, logdet_float80;
-        #ifdef FLOAT128
-        double logdet_float128;
-        #endif
-        float80 minimum, maximum;
-
-        matrix_float80_minmax(M, &minimum, &maximum);
-        printf("# before balancing: min=%Lg, max=%Lg\n", (long double)minimum, (long double)maximum);
-
-        tstart = now();
         matrix_float80_log_balance(M);
-        tend = now();
-        matrix_float80_minmax(M, &minimum, &maximum);
-        printf("# after balancing:  min=%Lg, max=%Lg, (t=%g)\n", (long double)minimum, (long double)maximum, tend-tstart);
-
-        tstart = now();
-        logdet_dd = matrix_floatdd_logdet(M, M_sign, type);
-        tend = now();
-        printf("# matrix_floatdd_logdet:  %+.15g (%g)\n", logdet_dd, tend-tstart);
-
-        #ifdef FLOAT128
-        const int dim = M->size;
-        tstart = now();
-        matrix_float128 *M128 = matrix_float128_alloc(dim);
-        for(int i = 0; i < dim*dim; i++)
-            M128->M[i] = M_sign->M[i] * exp128(M->M[i]);
-
-        logdet_float128 = matrix_float128_logdet_qr(M128);
-        matrix_float128_free(M128);
-        tend = now();
-        printf("# matrix_float128_logdet: %+.15g (%g)\n", logdet_float128, tend-tstart);
-        #endif
-
-        tstart = now();
         matrix_float80_exp(M, M_sign);
-        logdet_float80 = matrix_float80_logdet_qr(M);
-        tend = now();
-        printf("# matrix_float80_logdet:  %+.15g (%g)\n", logdet_float80, tend-tstart);
-
-        return logdet_float80;
+        return matrix_float80_logdet_qr(M);
     }
+    else if(strcasecmp(type, "QR_FLOATDD") == 0)
+    {
+        matrix_float80_log_balance(M);
+        return matrix_floatdd_logdet(M, M_sign);
+    }
+    else if(strcasecmp(type, "QR_LOG80") == 0)
+    {
+        matrix_float80_log_balance(M);
+        return matrix_float80_log_logdet_qr(M, M_sign);
+    }
+    #ifdef FLOAT128
+    else if(strcasecmp(type, "QR_FLOAT128") == 0)
+    {
+        const int dim = M->size;
+        matrix_float128 *M128 = matrix_float128_alloc(dim);
+
+        matrix_float80_log_balance(M);
+
+        for(int i = 0; i < dim*dim; i++)
+            M128->M[i] = M_sign->M[i]*exp128(M->M[i]);
+
+        const double logdet = matrix_float128_logdet_qr(M128);
+
+        matrix_float128_free(M128);
+
+        return logdet;
+    }
+    #endif
     else
     {
         TERMINATE(1, "Algorithm not supported: %s.", type);
