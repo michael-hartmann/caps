@@ -15,21 +15,27 @@
 #define LOG_FLOAT_RADIX   0.6931471805599453094172321214581765680755001343602552L
 #define LOG095 -0.05129329438755058
 
-#define MATRIX_TYPEDEF(NAME, MATRIX_TYPE) \
+/** define matrix type */
+#define MATRIX_TYPEDEF(NAME, TYPE) \
     typedef struct { \
         int size; \
-        MATRIX_TYPE *M; \
+        TYPE *M; \
     } NAME
 
 
+/** macro to access matrix elements */
 #define matrix_get(m, i, j)   ((m)->M[(i)*m->size+(j)])
+/** macro to set matrix elements */
 #define matrix_set(m, i, j,v) ((m)->M[(i)*m->size+(j)]=(v))
 
-MATRIX_TYPEDEF(matrix_sign_t, sign_t);
+/** define various matrix types */
 MATRIX_TYPEDEF(matrix_float80, float80);
+MATRIX_TYPEDEF(matrix_sign_t, sign_t);
+#ifdef FLOAT128
+MATRIX_TYPEDEF(matrix_float128, float128);
+#endif
 
-void matrix_float80_log_balance(matrix_float80 *A);
-
+/** matrix allocation */
 #define MATRIX_ALLOC(FUNCTION_PREFIX, MATRIX_TYPE, TYPE) \
     MATRIX_TYPE *FUNCTION_PREFIX ## _alloc(size_t size)  \
     { \
@@ -257,29 +263,23 @@ void matrix_float80_log_balance(matrix_float80 *A);
 
 #define MATRIX_EXP_HEADER(FUNCTION_PREFIX, MATRIX_TYPE) void FUNCTION_PREFIX ## _exp(MATRIX_TYPE *M, matrix_sign_t *M_sign) \
 
+/** matrix functions for float80 */
 MATRIX_ALLOC_HEADER (matrix_float80, matrix_float80);
 MATRIX_FREE_HEADER  (matrix_float80, matrix_float80);
 MATRIX_LOAD_HEADER  (matrix_float80, matrix_float80);
 MATRIX_SAVE_HEADER  (matrix_float80, matrix_float80);
 MATRIX_EXP_HEADER   (matrix_float80, matrix_float80);
 MATRIX_MINMAX_HEADER(matrix_float80, matrix_float80, float80);
-
 MATRIX_LOGDET_LU_HEADER(matrix_float80, matrix_float80, float80);
 
+/** matrix functions for sign_t */
 MATRIX_ALLOC_HEADER (matrix_sign, matrix_sign_t);
 MATRIX_FREE_HEADER  (matrix_sign, matrix_sign_t);
 MATRIX_LOAD_HEADER  (matrix_sign, matrix_sign_t);
 MATRIX_SAVE_HEADER  (matrix_sign, matrix_sign_t);
 
-/*
-MATRIX_ALLOC_HEADER(matrix_sfloat, matrix_sfloat_t);
-MATRIX_FREE_HEADER (matrix_sfloat, matrix_sfloat_t);
-MATRIX_LOAD_HEADER (matrix_sfloat, matrix_sfloat_t);
-MATRIX_SAVE_HEADER (matrix_sfloat, matrix_sfloat_t);
-*/
-
+/** matrix functions for float128 */
 #ifdef FLOAT128
-MATRIX_TYPEDEF(matrix_float128, float128);
 MATRIX_ALLOC_HEADER (matrix_float128, matrix_float128);
 MATRIX_FREE_HEADER  (matrix_float128, matrix_float128);
 MATRIX_LOAD_HEADER  (matrix_float128, matrix_float128);
@@ -287,13 +287,15 @@ MATRIX_SAVE_HEADER  (matrix_float128, matrix_float128);
 MATRIX_MINMAX_HEADER(matrix_float128, matrix_float128, float128);
 #endif
 
+/* prototypes */
 double matrix_float80_logdet(matrix_float80 *M, matrix_sign_t *M_sign, const char *type);
 double matrix_float80_logdet_qr(matrix_float80 *M);
 #ifdef FLOAT128
 double matrix_float128_logdet_qr(matrix_float128 *M);
 #endif
 
-//double matrix_floatdd_logdet(matrix_float80 *M, matrix_sign_t *M_sign, const char *type);
 double matrix_float80_log_logdet_qr(matrix_float80 *M, matrix_sign_t *M_sign);
+void matrix_float80_log_balance(matrix_float80 *A);
+
 
 #endif
