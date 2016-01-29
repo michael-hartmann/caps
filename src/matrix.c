@@ -285,12 +285,6 @@ double matrix_float80_logdet(matrix_float80 *M, matrix_sign_t *M_sign, const cha
         matrix_float80_exp(M, M_sign);
         return matrix_float80_logdet_lu(M);
     }
-    else if(strcasecmp(type, "QR_FLOAT80") == 0)
-    {
-        matrix_float80_log_balance(M);
-        matrix_float80_exp(M, M_sign);
-        return matrix_float80_logdet_qr(M);
-    }
     #ifdef FLOATDD
     else if(strcasecmp(type, "QR_FLOATDD") == 0)
     {
@@ -323,7 +317,11 @@ double matrix_float80_logdet(matrix_float80 *M, matrix_sign_t *M_sign, const cha
     #endif
     else
     {
-        TERMINATE(1, "Algorithm not supported: %s.", type);
-        return 0;
+        if(strcasecmp(type, "QR_FLOAT80") != 0)
+            WARN(1, "Algorithm \"%s\" not supported. Defaulting to QR_FLOAT80.", type);
+
+        matrix_float80_log_balance(M);
+        matrix_float80_exp(M, M_sign);
+        return matrix_float80_logdet_qr(M);
     }
 }
