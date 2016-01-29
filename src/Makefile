@@ -104,7 +104,7 @@ ld_drude: ld_drude.o $(OBJS)
 
 casimir_tests: $(TESTS) $(OBJS)
 	$(CXX) $(CXXFLAGS) $(OPT) $^ $(LDFLAGS) -o casimir_tests
-	time ./casimir_tests
+	./casimir_tests
 
 casimir_T0: casimir_T0.o $(OBJS)
 	$(MPICC) $(CXXFLAGS) $(OPT) $^ $(LDFLAGS) -o casimir_T0
