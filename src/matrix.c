@@ -17,7 +17,9 @@
 
 #include "utils.h"
 
+#ifdef FLOATDD
 extern double matrix_floatdd_logdet(matrix_float80 *M, matrix_sign_t *M_sign);
+#endif
 
 /** functions for float128 */
 #ifdef FLOAT128
@@ -289,11 +291,13 @@ double matrix_float80_logdet(matrix_float80 *M, matrix_sign_t *M_sign, const cha
         matrix_float80_exp(M, M_sign);
         return matrix_float80_logdet_qr(M);
     }
+    #ifdef FLOATDD
     else if(strcasecmp(type, "QR_FLOATDD") == 0)
     {
         matrix_float80_log_balance(M);
         return matrix_floatdd_logdet(M, M_sign);
     }
+    #endif
     else if(strcasecmp(type, "QR_LOG80") == 0)
     {
         matrix_float80_log_balance(M);
