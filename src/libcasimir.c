@@ -613,11 +613,12 @@ int casimir_set_cores(casimir_t *self, int cores)
 /**
  * @brief Set algorithm to calculate deterimant
  *
- * The algorithm is given by detalg. Make sure that detalg contains a
- * valid algorithm, otherwise the computation will fail on runtime.
+ * The algorithm is given by detalg. Make sure that detalg contains a valid
+ * algorithm, otherwise the computation will print a warning on runtime and
+ * default to QR_FLOAT80.
  *
- * detalg may be: LU_FLOAT80, QR_FLOAT80, QR_FLOATDD, QR_LOG80 and (if
- * supported) QR_FLOAT128
+ * detalg may be: LU_FLOAT80, QR_FLOAT80, QR_LOG80 and (if supported)
+ * QR_FLOAT128, QR_FLOATDD
  *
  * This function is not thread-safe.
  *
