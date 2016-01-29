@@ -86,7 +86,7 @@ double matrix_floatdd_logdet_qr(matrix_floatdd *M)
                     s = -c*t;
                 }
 
-                for(int n = 0; n < dim; n++)
+                for(int n = j; n < dim; n++)
                 {
                     const dd_real Min = m[i*dim+n];
                     const dd_real Mjn = m[j*dim+n];
@@ -106,7 +106,7 @@ double matrix_floatdd_logdet_qr(matrix_floatdd *M)
     return to_double(det);
 }
 
-extern "C" double matrix_floatdd_logdet(matrix_float80 *M, matrix_sign_t *M_sign, const char *type)
+extern "C" double matrix_floatdd_logdet(matrix_float80 *M, matrix_sign_t *M_sign)
 {
     unsigned int oldcw;
     fpu_fix_start(&oldcw);
