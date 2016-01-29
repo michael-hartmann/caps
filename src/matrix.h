@@ -13,7 +13,6 @@
 
 
 #define LOG_FLOAT_RADIX   0.6931471805599453094172321214581765680755001343602552L
-//#define LOG_FLOAT_RADIX 1L
 #define LOG095 -0.05129329438755058
 
 #define MATRIX_TYPEDEF(NAME, MATRIX_TYPE) \
@@ -28,10 +27,6 @@
 
 MATRIX_TYPEDEF(matrix_sign_t, sign_t);
 MATRIX_TYPEDEF(matrix_float80, float80);
-
-#ifdef FLOAT128
-MATRIX_TYPEDEF(matrix_float128, float128);
-#endif
 
 void matrix_float80_log_balance(matrix_float80 *A);
 
@@ -284,6 +279,7 @@ MATRIX_SAVE_HEADER (matrix_sfloat, matrix_sfloat_t);
 */
 
 #ifdef FLOAT128
+MATRIX_TYPEDEF(matrix_float128, float128);
 MATRIX_ALLOC_HEADER (matrix_float128, matrix_float128);
 MATRIX_FREE_HEADER  (matrix_float128, matrix_float128);
 MATRIX_LOAD_HEADER  (matrix_float128, matrix_float128);
