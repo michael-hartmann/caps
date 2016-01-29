@@ -16,7 +16,7 @@
 #define CASIMIR_TRACE_THRESHOLD 1e-8 /**< threshold to use trace */
 
 #ifndef CASIMIR_DETALG
-#define CASIMIR_DETALG "QR" /**< default algorithm for matrix decomposition */
+#define CASIMIR_DETALG "QR_FLOAT80" /**< default algorithm for matrix decomposition */
 #endif
 
 /**
@@ -82,7 +82,7 @@ typedef struct
     double trace_threshold; /**< threshold when Tr M is used as an approximation for log(det(1-M)) */
     pthread_t **threads;    /**< list of pthread objects */
 
-    char detalg[64];        /**< algorithm to calculate determinant */
+    char detalg[128];       /**< algorithm to calculate determinant */
 
     casimir_mie_cache_t *mie_cache; /**< Mie chache */
     /*@}*/
@@ -160,6 +160,9 @@ int casimir_get_integration(casimir_t *self);
 
 int casimir_get_lmax(casimir_t *self);
 int casimir_set_lmax(casimir_t *self, int lmax);
+
+int casimir_get_detalg(casimir_t *self, char detalg[128]);
+int casimir_set_detalg(casimir_t *self, const char *detalg);
 
 int casimir_get_cores(casimir_t *self);
 int casimir_set_cores(casimir_t *self, int cores);
