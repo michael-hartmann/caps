@@ -2,6 +2,7 @@
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 #include "integration_perf.h"
 #include "libcasimir.h"
@@ -24,7 +25,7 @@ Mandatory options:\n\
 Further options:\n\
     -l, --lscale\n\
         Specify parameter lscale. The vector space has to be truncated at some\n\
-        value lmax. This program will use lmax=(R/L*lscale) (default: 3)\n\
+        value lmax. This program will use lmax=(R/L*lscale) (default: 5)\n\
 \n\
     -L\n\
         Set lmax to given value. When -L is used, -l will be ignored\n\
@@ -37,6 +38,9 @@ Further options:\n\
         Try to calculate log det D(xi) using -Tr D(xi). If |trace|>THRESHOLD,\n\
         fall back to log det D(xi).\n\
 \n\
+    --detalg DETALG\n\
+        Use DETALG to calculate determinant.\n\
+\n\
     -h,--help\n\
         Show this help\n\
 \n\
@@ -46,6 +50,7 @@ Compiled %s, %s\n", __DATE__, __TIME__);
 
 int main(int argc, char *argv[])
 {
+    char detalg[64] = { 0 };
     double T = -1;
     double lfac = 5;
     double LbyR = -1;
@@ -67,6 +72,7 @@ int main(int argc, char *argv[])
         struct option long_options[] = {
             { "buffering", no_argument,       &buffering_flag, 1 },
             { "help",      no_argument,       0, 'h' },
+            { "detalg",    required_argument, 0, 'd' },
             { "lscale",    required_argument, 0, 'l' },
             { "trace",     required_argument, 0, 't' },
             { 0, 0, 0, 0 }
@@ -106,6 +112,9 @@ int main(int argc, char *argv[])
                 break;
             case 't':
                 trace_threshold = atof(optarg);
+                break;
+            case 'd':
+                strncpy(detalg, optarg, sizeof(detalg)/sizeof(char)-1);
                 break;
             case 'h':
                 usage(stdout);
@@ -160,6 +169,9 @@ int main(int argc, char *argv[])
 
     casimir_init(&casimir, LbyR, T);
     casimir_set_lmax(&casimir, lmax);
+
+    if(strlen(detalg))
+        casimir_set_detalg(&casimir, detalg);
 
     if(trace_threshold >= 0)
         casimir_set_trace_threshold(&casimir, trace_threshold);
