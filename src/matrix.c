@@ -277,7 +277,7 @@ void matrix_float80_log_balance(matrix_float80 *A)
     xfree(list_row);
 }
 
-double matrix_float80_logdet(matrix_float80 *M, matrix_sign_t *M_sign, const char *type)
+double matrix_logdet(matrix_float80 *M, matrix_sign_t *M_sign, const char *type)
 {
     if(strcasecmp(type, "LU_FLOAT80") == 0)
     {
