@@ -19,6 +19,7 @@
 
 extern double matrix_floatdd_logdet(matrix_float80 *M, matrix_sign_t *M_sign);
 
+/** functions for float128 */
 #ifdef FLOAT128
 MATRIX_ALLOC (matrix_float128, matrix_float128, float128);
 MATRIX_FREE  (matrix_float128, matrix_float128);
@@ -27,19 +28,20 @@ MATRIX_LOAD  (matrix_float128, matrix_float128, float128, matrix_float128_alloc,
 MATRIX_MINMAX(matrix_float128, matrix_float128, float128);
 #endif
 
+/** functions for sign_t */
 MATRIX_ALLOC(matrix_sign, matrix_sign_t, sign_t);
 MATRIX_FREE (matrix_sign, matrix_sign_t);
 MATRIX_SAVE (matrix_sign, matrix_sign_t, sign_t);
 MATRIX_LOAD (matrix_sign, matrix_sign_t, sign_t, matrix_sign_alloc, matrix_sign_free);
 
+/** functions for float80 */
 MATRIX_ALLOC (matrix_float80, matrix_float80, float80);
 MATRIX_FREE  (matrix_float80, matrix_float80);
 MATRIX_SAVE  (matrix_float80, matrix_float80, float80);
 MATRIX_LOAD  (matrix_float80, matrix_float80, float80, matrix_float80_alloc, matrix_float80_free);
 MATRIX_MINMAX(matrix_float80, matrix_float80, float80);
-
-MATRIX_LOGDET_LU (matrix_float80, matrix_float80, float80, fabs80, log80);
-MATRIX_EXP(matrix_float80, matrix_float80, exp80);
+MATRIX_EXP   (matrix_float80, matrix_float80, exp80);
+MATRIX_LOGDET_LU(matrix_float80, matrix_float80, float80, fabs80, log80);
 
 #ifdef FLOAT128
 double matrix_float128_logdet_qr(matrix_float128 *M)
