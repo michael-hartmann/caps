@@ -8,7 +8,7 @@
 
 int test_determinant()
 {
-    const char *methods[] = { "QR", "LU", NULL };
+    const char *methods[] = { "QR_FLOAT80", "LU_FLOAT80", NULL };
     unittest_t test;
     unittest_init(&test, "logdet", "Test computation of determinant");
 
