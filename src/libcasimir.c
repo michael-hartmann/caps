@@ -91,6 +91,7 @@ void casimir_info(casimir_t *self, FILE *stream, const char *prefix)
     fprintf(stream, "%sprecision       = %g\n", prefix, self->precision);
     fprintf(stream, "%strace_threshold = %g\n", prefix, self->trace_threshold);
     fprintf(stream, "%sdetalg          = %s\n", prefix, self->detalg);
+    fprintf(stream, "%sbirthtime       = %g\n", prefix, self->birthtime);
 }
 
 /*@}*/
@@ -369,7 +370,22 @@ int casimir_init(casimir_t *self, double LbyR, double T)
     /* use QR decomposition to calculate determinant */
     strcpy(self->detalg, CASIMIR_DETALG);
 
+    self->birthtime = now();
+
     return 0;
+}
+
+/**
+ * @brief Get birthtime
+ *
+ * The birthtime is the timestamp when the object was initialized.
+ *
+ * @param [in] self Casimir object
+ * @retval timestamp
+ */
+double casimir_get_birthtime(casimir_t *self)
+{
+    return self->birthtime;
 }
 
 /**

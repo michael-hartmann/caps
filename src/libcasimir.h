@@ -85,6 +85,8 @@ typedef struct
     char detalg[128];       /**< algorithm to calculate determinant */
 
     casimir_mie_cache_t *mie_cache; /**< Mie chache */
+
+    double birthtime;       /**< timestamp when object was initialized */
     /*@}*/
 } casimir_t;
 
@@ -139,6 +141,8 @@ double casimir_T_scaled_to_SI(double T, double ScriptL_SI);
 
 int casimir_init(casimir_t *self, double LbyR, double T);
 void casimir_free(casimir_t *self);
+
+double casimir_get_birthtime(casimir_t *self);
 
 int casimir_set_omegap_sphere(casimir_t *self, double omegap);
 int casimir_set_omegap_plane(casimir_t *self, double omegap);
