@@ -1443,7 +1443,8 @@ void casimir_logdetD0(casimir_t *self, int m, double *logdet_EE, double *logdet_
         MM_sign = matrix_sign_alloc(dim);
     }
 
-    /* calculate the logarithm of the matrix elements of D */
+    /* calculate the logarithm of the matrix elements of -M. The function
+     * matrix_logdet1mM then calculates log(det(1-M)) = log(det(D)) */
     for(int l1 = min; l1 <= max; l1++)
     {
         sign_t sign_a0, sign_b0;
@@ -1600,8 +1601,8 @@ double casimir_logdetD(casimir_t *self, int n, int m)
         return -trace;
     }
 
-    matrix_float80 *M   = matrix_float80_alloc(2*dim);
-    matrix_sign_t *M_sign = matrix_sign_alloc(2*dim);
+    matrix_float80 *M     = matrix_float80_alloc(2*dim);
+    matrix_sign_t *M_sign = matrix_sign_alloc   (2*dim);
 
     /* M_EE, -M_EM
        M_ME,  M_MM */
@@ -1721,6 +1722,9 @@ double casimir_logdetD(casimir_t *self, int n, int m)
     printf("%d\n", matrix_float80_save(M, "matrix_float80.out"));
     printf("%d\n", matrix_sign_save(M_sign, "matrix_signs.out"));
     #endif
+
+    /* We have calculated -M here. We now call matrix_logdet1mM that will
+     * calculate log(det(1-M)) = log(det(D)) */
 
     if(m == 0)
     {
