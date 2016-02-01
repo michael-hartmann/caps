@@ -73,17 +73,16 @@ MATRIX_TYPEDEF(matrix_float128, float128);
 #define MATRIX_MINMAX(FUNCTION_PREFIX, MATRIX_TYPE, TYPE) \
     void FUNCTION_PREFIX ## _minmax(MATRIX_TYPE *M, TYPE *min, TYPE *max) \
     { \
-        const int dim = M->size; \
-        TYPE minimum = matrix_get(M, 0,0); \
-        TYPE maximum = matrix_get(M, 0,0); \
+        const int dim2 = pow_2(M->size); \
+        TYPE minimum = M->M[0]; \
+        TYPE maximum = M->M[0]; \
 \
-        for(int i = 0; i < dim; i++) \
-            for(int j = 0; j < dim; j++) \
-            { \
-                const TYPE elem = matrix_get(M, i,j); \
-                if(elem < minimum) minimum = elem; \
-                if(elem > maximum) maximum = elem; \
-            } \
+        for(int i = 1; i < dim2; i++) \
+        { \
+            const TYPE elem = M->M[i]; \
+            if     (elem < minimum) minimum = elem; \
+            else if(elem > maximum) maximum = elem; \
+        } \
 \
         if(min != NULL) *min = minimum; \
         if(max != NULL) *max = maximum; \
