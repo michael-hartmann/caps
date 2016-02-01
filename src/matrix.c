@@ -170,6 +170,11 @@ double matrix_float80_logdet_qr(matrix_float80 *M)
 
 void matrix_float80_log_balance(matrix_float80 *A)
 {
+    matrix_float80_log_balance_stop(A, LOG095);
+}
+
+void matrix_float80_log_balance_stop(matrix_float80 *A, const double stop)
+{
     const int N = A->size;
     bool converged = false;
 
@@ -219,7 +224,7 @@ void matrix_float80_log_balance(matrix_float80 *A)
             }
 
             /* line 12 */
-            if(logadd(row_norm, col_norm) < (LOG095+s))
+            if(logadd(row_norm, col_norm) < (stop+s))
             {
                 /* line 13 */
                 converged = false;

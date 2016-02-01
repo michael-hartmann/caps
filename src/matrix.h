@@ -295,8 +295,8 @@ double matrix_float80_logdet_qr(matrix_float80 *M);
 double matrix_float128_logdet_qr(matrix_float128 *M);
 #endif
 
-double matrix_float80_log_logdet_qr(matrix_float80 *M, matrix_sign_t *M_sign);
 void matrix_float80_log_balance(matrix_float80 *A);
+void matrix_float80_log_balance_stop(matrix_float80 *A, const double stop);
 
 
 #endif
