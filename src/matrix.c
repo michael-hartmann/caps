@@ -46,6 +46,7 @@ MATRIX_EXP   (matrix_float80, matrix_float80, exp80);
 MATRIX_LOGDET_LU(matrix_float80, matrix_float80, float80, fabs80, log80);
 
 #ifdef FLOAT128
+/* calculate QR decomposition of M */
 double matrix_float128_logdet_qr(matrix_float128 *M)
 {
     const int dim = M->size;
@@ -108,6 +109,7 @@ double matrix_float128_logdet_qr(matrix_float128 *M)
 #endif
 
 
+/* calculate QR decomposition of M */
 double matrix_float80_logdet_qr(matrix_float80 *M)
 {
     const int dim = M->size;
@@ -168,11 +170,13 @@ double matrix_float80_logdet_qr(matrix_float80 *M)
     return det;
 }
 
+/* balance a matrix that elements are give by log */
 void matrix_float80_log_balance(matrix_float80 *A)
 {
     matrix_float80_log_balance_stop(A, LOG095);
 }
 
+/* balance a matrix that elements are give by log with stop criterion */
 void matrix_float80_log_balance_stop(matrix_float80 *A, const double stop)
 {
     const int N = A->size;
@@ -243,6 +247,7 @@ void matrix_float80_log_balance_stop(matrix_float80 *A, const double stop)
     xfree(list_row);
 }
 
+/* calculate log(det(1-M)) */
 double matrix_logdet1mM(matrix_float80 *M, matrix_sign_t *M_sign, const char *type)
 {
     const int dim = M->size;
