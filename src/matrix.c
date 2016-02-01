@@ -238,7 +238,7 @@ void matrix_float80_log_balance(matrix_float80 *A)
     xfree(list_row);
 }
 
-double matrix_logdet(matrix_float80 *M, matrix_sign_t *M_sign, const char *type)
+double matrix_logdet1mM(matrix_float80 *M, matrix_sign_t *M_sign, const char *type)
 {
     const int dim = M->size;
     #ifdef TRACE

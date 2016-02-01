@@ -1479,14 +1479,14 @@ void casimir_logdetD0(casimir_t *self, int m, double *logdet_EE, double *logdet_
     /* calculate logdet and free space */
     if(EE != NULL)
     {
-        *logdet_EE = matrix_logdet(EE, EE_sign, self->detalg);
+        *logdet_EE = matrix_logdet1mM(EE, EE_sign, self->detalg);
 
         matrix_sign_free(EE_sign);
         matrix_float80_free(EE);
     }
     if(MM != NULL)
     {
-        *logdet_MM = matrix_logdet(MM, MM_sign, self->detalg);
+        *logdet_MM = matrix_logdet1mM(MM, MM_sign, self->detalg);
 
         matrix_sign_free(MM_sign);
         matrix_float80_free(MM);
@@ -1743,8 +1743,8 @@ double casimir_logdetD(casimir_t *self, int n, int m)
         matrix_float80_free(M);
         matrix_sign_free(M_sign);
 
-        logdet  = matrix_logdet(EE, EE_sign, self->detalg);
-        logdet += matrix_logdet(MM, MM_sign, self->detalg);
+        logdet  = matrix_logdet1mM(EE, EE_sign, self->detalg);
+        logdet += matrix_logdet1mM(MM, MM_sign, self->detalg);
 
         matrix_sign_free(EE_sign);
         matrix_sign_free(MM_sign);
@@ -1754,7 +1754,7 @@ double casimir_logdetD(casimir_t *self, int n, int m)
     }
     else
     {
-        logdet = matrix_logdet(M, M_sign, self->detalg);
+        logdet = matrix_logdet1mM(M, M_sign, self->detalg);
 
         matrix_float80_free(M);
         matrix_sign_free(M_sign);
