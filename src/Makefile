@@ -5,7 +5,6 @@ all: casimir casimir_logdetD casimir_tests
 #
 # At the moment gcc, clang and icc are supported.
 CC = gcc
-CXX = g++
 #CC = icc
 MPICC = mpicc
 #MPICC = mpiicc
@@ -46,19 +45,11 @@ CFLAGS += -DEXPERIMENTAL_FEATURES
 # enable warnings and make them fatal
 CFLAGS += -Werror -Wall -Wextra -Wmissing-prototypes -Wstrict-prototypes -Wshadow -Wpointer-arith -Wcast-qual -Wwrite-strings -Wno-unused-parameter
 
-CXXFLAGS = 
 LDFLAGS += -lm -pthread
 
 # support float128
 CFLAGS += -DFLOAT128
 LDFLAGS += -lquadmath
-
-# support double-double arithmetics
-CFLAGS += -DFLOATDD
-QD_INC = qd-2.3.17/include
-QD_LIB = qd-2.3.17/src/.libs/
-LDFLAGS += -L $(QD_LIB) -lqd
-OBJS += dd.o
 
 TARGET = "../bin/"
 
@@ -84,30 +75,27 @@ OPT = -march=native -flto -O3
 casimir_T0.o:
 	$(MPICC) $(CFLAGS) $(OPT) -o $@ -c $<
 
-dd.o :
-	$(CXX) $(CXXFLAGS) $(OPT) -I $(QD_INC) -o dd.o -c dd.cpp
-
 casimir: casimir.o $(OBJS)
-	$(CXX) $(CXXFLAGS) $(OPT) $^ $(LDFLAGS) -o casimir
+	$(CC) $(CFLAGS) $(OPT) $^ $(LDFLAGS) -o casimir
 
 casimir_logdetD: casimir_logdetD.o $(OBJS)
-	$(CXX) $(CXXFLAGS) $(OPT) $^ $(LDFLAGS) -o casimir_logdetD
+	$(CC) $(CFLAGS) $(OPT) $^ $(LDFLAGS) -o casimir_logdetD
 
 casimir_hiT: casimir_hiT.o $(OBJS)
-	$(CXX) $(CXXFLAGS) $(OPT) $^ $(LDFLAGS) -o casimir_hiT
+	$(CC) $(CFLAGS) $(OPT) $^ $(LDFLAGS) -o casimir_hiT
 
 casimir_Fn: casimir_Fn.o $(OBJS)
-	$(CXX) $(CXXFLAGS) $(OPT) $^ $(LDFLAGS) -o casimir_Fn
+	$(CC) $(CFLAGS) $(OPT) $^ $(LDFLAGS) -o casimir_Fn
 
 ld_drude: ld_drude.o $(OBJS)
-	$(CXX) $(CXXFLAGS) $(OPT) $^ $(LDFLAGS) -o ld_drude
+	$(CC) $(CFLAGS) $(OPT) $^ $(LDFLAGS) -o ld_drude
 
 casimir_tests: $(TESTS) $(OBJS)
-	$(CXX) $(CXXFLAGS) $(OPT) $^ $(LDFLAGS) -o casimir_tests
+	$(CC) $(CFLAGS) $(OPT) $^ $(LDFLAGS) -o casimir_tests
 	./casimir_tests
 
 casimir_T0: casimir_T0.o $(OBJS)
-	$(MPICC) $(CXXFLAGS) $(OPT) $^ $(LDFLAGS) -o casimir_T0
+	$(MPICC) $(CFLAGS) $(OPT) $^ $(LDFLAGS) -o casimir_T0
 
 install:
 	cp casimir casimir_tests casimir_hiT casimir_logdetD casimir_Fn ld_drude casimir_T0 ${TARGET}
