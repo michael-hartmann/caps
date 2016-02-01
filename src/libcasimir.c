@@ -1456,26 +1456,20 @@ void casimir_logdetD0(casimir_t *self, int m, double *logdet_EE, double *logdet_
             const int i = l1-min, j = l2-min;
             sign_t sign_xi;
             const float80 lnXiRL = casimir_lnXi(l1,l2,m,&sign_xi)+(2*l1+1)*lnRbyScriptL;
-            float80 v;
-            sign_t sign;
 
             if(EE != NULL)
             {
-                v    = lna0+lnXiRL;
-                sign = -sign_xi*sign_a0;
-
+                const float80 v = lna0+lnXiRL;
                 matrix_set(EE, i,j, v);
-                matrix_set(EE_sign, i,j, sign);
+                matrix_set(EE_sign, i,j, -sign_xi*sign_a0);
 
                 TERMINATE(!isfinite(v), "EE l1=%d,l2=%d: v=%Lg (lna0=%g, lnXiRL=%Lg)", l1, l2, (long double)v, lna0, (long double)lnXiRL);
             }
             if(MM != NULL)
             {
-                v    = lnb0+lnXiRL;
-                sign = sign_xi*sign_b0;
-
+                const float80 v = lnb0+lnXiRL;
                 matrix_set(MM, i,j, v);
-                matrix_set(MM_sign, i,j, sign);
+                matrix_set(MM_sign, i,j, sign_xi*sign_b0);
 
                 TERMINATE(!isfinite(v), "MM l1=%d,l2=%d: v=%Lg (lnb0=%g, lnXiRL=%Lg)", l1, l2, (long double)v, lnb0, (long double)lnXiRL);
             }
