@@ -42,6 +42,7 @@ CFLAGS  = -std=c99
 CFLAGS += -fgnu89-inline
 CFLAGS += -I .
 CFLAGS += -DEXPERIMENTAL_FEATURES
+CFLAGS += -DTRACE
 # enable warnings and make them fatal
 CFLAGS += -Werror -Wall -Wextra -Wmissing-prototypes -Wstrict-prototypes -Wshadow -Wpointer-arith -Wcast-qual -Wwrite-strings -Wno-unused-parameter
 

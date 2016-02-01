@@ -241,9 +241,20 @@ void matrix_float80_log_balance(matrix_float80 *A)
 double matrix_logdet(matrix_float80 *M, matrix_sign_t *M_sign, const char *type)
 {
     const int dim = M->size;
+    #ifdef TRACE
+    float80 minimum, maximum;
+
+    matrix_float80_minmax(M, &minimum, &maximum);
+    printf("# before balancing: min=%Lg, max=%Lg\n", minimum, maximum);
+    #endif
 
     /* balance matrix */
     matrix_float80_log_balance(M);
+
+    #ifdef TRACE
+    matrix_float80_minmax(M, &minimum, &maximum);
+    printf("# after balancing: min=%Lg, max=%Lg\n", minimum, maximum);
+    #endif
 
     if(strcasecmp(type, "LU_FLOAT80") == 0)
     {
@@ -277,12 +288,8 @@ double matrix_logdet(matrix_float80 *M, matrix_sign_t *M_sign, const char *type)
     #endif
     else
     {
-        float80 minimum, maximum;
         if(strcasecmp(type, "QR_FLOAT80") != 0)
             WARN(1, "Algorithm \"%s\" not supported. Defaulting to QR_FLOAT80.", type);
-
-        matrix_float80_minmax(M, &minimum, &maximum);
-        printf("min=%Lg, max=%Lg\n", minimum, maximum);
 
         matrix_float80_exp(M, M_sign);
 
