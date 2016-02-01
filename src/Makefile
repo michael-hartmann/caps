@@ -49,8 +49,8 @@ CFLAGS += -Werror -Wall -Wextra -Wmissing-prototypes -Wstrict-prototypes -Wshado
 LDFLAGS += -lm -pthread
 
 # support float128
-CFLAGS += -DFLOAT128
-LDFLAGS += -lquadmath
+#CFLAGS += -DFLOAT128
+#LDFLAGS += -lquadmath
 
 TARGET = "../bin/"
 
