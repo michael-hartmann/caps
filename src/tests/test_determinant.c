@@ -28,7 +28,7 @@ int test_determinant()
         matrix_set(M, 1,0, log80(1e-1000L));
         matrix_set(M, 1,1, log80(1L));
 
-        AssertAlmostEqual(&test, matrix_float80_logdet(M, M_sign, method), log(18));
+        AssertAlmostEqual(&test, matrix_logdet(M, M_sign, method), log(14));
     }
 
     matrix_float80_free(M);
