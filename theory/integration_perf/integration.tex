@@ -132,6 +132,42 @@ A_{\ell_1\ell_2,p}^{(m)}(\tau) &= \overbrace{(-1)^{\ell_2+m} \, r_p \, m^2 \, \e
 &= (-1)^m \int_0^\infty \mathrm{d}z \, \e^{-\tau z} (z^2+2z)^{m-1} \sum_{k=2m}^\nu \frac{(k+\nu)!}{2^k k! (k-2m)! (\nu-k)!} z^{k-2m}
 \end{align}
 
+
+\subsection{Drude metals}
+
+For metals that can be described by the Drude model, the integrals cannot be
+solved analytically anymore, but we have to use numerical methods. The dielectric
+function at imaginary frequencies is given by
+\begin{equation}
+\epsilon(\xi) = 1+ \frac{\omega_p^2}{\xi(\xi+\gamma)},
+\end{equation}
+where $\omega_p$ and $\gamma$ are dimensionless quantities according to Eq. (5.42) in \cite{hartmann}.
+The Fresnel coefficients for Drude metals are
+\begin{equation}
+r_\TE(\xi,k) = \frac{1-\beta}{1+\beta}, \quad\quad r_\TM(\xi,k) = \frac{\epsilon(\xi)-\beta}{\epsilon(\xi)+\beta}
+\end{equation}
+and
+\begin{equation}
+\beta = \sqrt{1+ \frac{\xi^2}{\kappa^2}\left[\epsilon(\xi)-1\right]} = \sqrt{1+ \frac{\xi^2 \left[\epsilon(\xi)-1\right]}{\xi^2+k^2}} = \sqrt{1+ \frac{\omega_p^2}{(1+\gamma/\xi)(\xi^2+k^2)}}.
+\end{equation}
+
+For the numerical evaluation of the integrals we change variables in order to
+integrate over a finite interval.
+We substitute
+\begin{align}
+k = \frac{\tau}{2}\sqrt{\frac{1}{u^2}-1}, \quad u = \sqrt{\frac{\tau^2}{\tau^2+4k^2}}, \quad \kappa = \frac{\tau}{2u}, \quad \mathrm{d}k = -\frac{\tau}{2} \frac{\mathrm{d}u}{u^3 \sqrt{\frac{1}{u^2}-1}}
+\end{align}
+in Eq. (2.65)-(2.68) from \cite{hartmann} and get
+\begin{align}
+A_{\ell_1\ell_2,p}^{(m)}(\tau) &= (-1)^{\ell_2+m} m^2 \int_0^1 \mathrm{d}u \, \frac{r_p \e^{-\tau/u}}{1-u^2} \Plm{\ell_1}{m}\left(\frac{1}{u}\right) \Plm{\ell_2}{m}\left(\frac{1}{u}\right) \\
+B_{\ell_1\ell_2,p}^{(m)}(\tau) &= (-1)^{\ell_2+m+1}   \int_0^1 \mathrm{d}u \, \frac{(1-u^2) r_p \e^{-\tau/u} }{u^4} \Plm{\ell_1}{m}^\prime\left(\frac{1}{u}\right) \Plm{\ell_2}{m}^\prime\left(\frac{1}{u}\right) \\
+C_{\ell_1\ell_2,p}^{(m)}(\tau) &= (-1)^{\ell_2+m} \imag m \int_0^1 \mathrm{d}u \, \frac{r_p \e^{-\tau/u}}{u^2} \Plm{\ell_1}{m}\left(\frac{1}{u}\right) \Plm{\ell_2}{m}^\prime\left(\frac{1}{u}\right) \\
+D_{\ell_1\ell_2,p}^{(m)}(\tau) &= (-1)^{\ell_2+m+1} \imag m \int_0^1 \mathrm{d}u \, \frac{r_p \e^{-\tau/u}}{u^2} \Plm{\ell_1}{m}^\prime\left(\frac{1}{u}\right) \Plm{\ell_2}{m}\left(\frac{1}{u}\right)
+\end{align}
+
+
+
+
 \appendix
 
 \section{Formulae}
