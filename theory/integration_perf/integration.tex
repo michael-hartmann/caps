@@ -11,8 +11,6 @@
 \usepackage{txfonts}
 \usepackage[format=plain,margin=1.5cm,small]{caption} %Legenden: mergin versetzt beitseitig nach innen, format=plain verhindert einrücken (einfacher blocksatz)
 
-\usepackage[url=false,isbn=false,eprint=false,natbib=true,style=numeric]{biblatex}
-
 \usepackage[babel]{csquotes}
 \usepackage[hidelinks]{hyperref}  % unbedingt als letztes Paket laden
 
@@ -43,7 +41,9 @@
 
 \begin{document}
 
-\section{Integration for perfect reflectors}
+\section{Integration}
+
+\subsection{Perfect reflectors}
 
 We want to compute the integrals
 \begin{align}
@@ -59,7 +59,7 @@ D_{\ell_1\ell_2,p}^{(m)}(\tau) &= (-1)^{\ell_1+\ell_2+1} C_{\ell_2\ell_1,p}^{(m)
 for perfect reflectors, where $\tau \equiv 2nT=2\xi$. The Fresnel coefficients
 for perfect reflectors, $r_\TM=-r_\TE=1$, are independent of $\vec k$ and
 can be pulled in front of the integration. The integrals \eqref{eq:A}--\eqref{eq:D}
-are identical to the integrals (6.11)--(6.14) in MASTERTHESIS after substitution $z = x/\tau$.
+are identical to the integrals (6.11)--(6.14) in \cite{hartmann} after substitution $z = x/\tau$.
 
 Using Gaunt coefficients a product of associated Legendre polynomials can be
 expressed as a sum of associated Legendre polynomials:
@@ -163,8 +163,16 @@ A_{\ell_1\ell_2,p}^{(m)}(\tau) &= \overbrace{(-1)^{\ell_2+m} \, r_p \, m^2 \, \e
 \frac{\mathrm{d}}{\mathrm{d}x} \Plm{\ell}{m}(x) = \frac{1}{(2\ell+1) \, (1-x^2)} \left[ (\ell+1)(\ell+m)\Plm{\ell-1}{m}(x) - \ell(\ell-m+1)\Plm{\ell+1}{m}(x) \right]
 \end{equation}
 
-\clearpage
 \addcontentsline{toc}{chapter}{Bibliography}
-\printbibliography
+%\printbibliography
+
+
+\begin{thebibliography}{9}
+
+\bibitem{hartmann}
+  Michael Hartmann,
+  \emph{Negative Casimir entropies in the plane–sphere geometry}, master thesis, 2014
+
+\end{thebibliography}
 
 \end{document}
