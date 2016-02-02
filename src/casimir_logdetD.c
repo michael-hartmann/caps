@@ -17,10 +17,9 @@ This program will calculate the free Casimir energy for the plane-sphere \n\
 geometry for given n,m,T,L/R. \n\
 \n\
 Mandatory options:\n\
-    -x L/R\n\
-    -T Temperature\n\
-    -n value of n\n\
-    -m value of m\n\
+    -x  L/R\n\
+    -nT imaginary frequency ξ\n\
+    -m  value of m\n\
 \n\
 Further options:\n\
     -l, --lscale\n\
@@ -51,10 +50,10 @@ Compiled %s, %s\n", __DATE__, __TIME__);
 int main(int argc, char *argv[])
 {
     char detalg[64] = { 0 };
-    double T = -1;
+    double nT = -1;
     double lfac = 5;
     double LbyR = -1;
-    int n = -1, m = -1;
+    int m = -1;
     int lmax = 0;
     int buffering_flag = 0;
     double trace_threshold = -1;
@@ -72,6 +71,7 @@ int main(int argc, char *argv[])
         struct option long_options[] = {
             { "buffering", no_argument,       &buffering_flag, 1 },
             { "help",      no_argument,       0, 'h' },
+            { "nT",        required_argument, 0, 'T' },
             { "detalg",    required_argument, 0, 'd' },
             { "lscale",    required_argument, 0, 'l' },
             { "trace",     required_argument, 0, 't' },
@@ -81,10 +81,10 @@ int main(int argc, char *argv[])
         /* getopt_long stores the option index here. */
         int option_index = 0;
       
-        c = getopt_long (argc, argv, "x:T:n:m:s:a:l:L:t:qh", long_options, &option_index);
+        c = getopt_long (argc, argv, "x:T:m:s:a:l:L:t:qh", long_options, &option_index);
       
         /* Detect the end of the options. */
-        if (c == -1)
+        if(c == -1)
             break;
       
         switch (c)
@@ -97,15 +97,12 @@ int main(int argc, char *argv[])
                 LbyR = atof(optarg);
                 break;
             case 'T':
-                T = atof(optarg);
+                nT = atof(optarg);
                 break;
             case 'L':
                 lmax = atoi(optarg);
             case 'l':
                 lfac = atof(optarg);
-                break;
-            case 'n':
-                n = atoi(optarg);
                 break;
             case 'm':
                 m = atoi(optarg);
@@ -150,15 +147,15 @@ int main(int argc, char *argv[])
         usage(stderr);
         exit(1);
     }
-    if(T <= 0)
+    if(nT <= 0)
     {
-        fprintf(stderr, "positive value for -T required\n\n");
+        fprintf(stderr, "positive value for --nT required\n\n");
         usage(stderr);
         exit(1);
     }
-    if(n < 0 || m < 0)
+    if(m < 0)
     {
-        fprintf(stderr, "n,m >= 0\n\n");
+        fprintf(stderr, "m >= 0\n\n");
         usage(stderr);
         exit(1);
     }
@@ -167,7 +164,7 @@ int main(int argc, char *argv[])
         lmax = MAX((int)ceil(lfac/LbyR), 5);
 
 
-    casimir_init(&casimir, LbyR, T);
+    casimir_init(&casimir, LbyR, nT);
     casimir_set_lmax(&casimir, lmax);
 
     if(strlen(detalg))
@@ -179,12 +176,12 @@ int main(int argc, char *argv[])
     casimir_info(&casimir, stdout, "# ");
     printf("#\n");
 
-    logdet = casimir_logdetD(&casimir, n, m);
+    logdet = casimir_logdetD(&casimir, 1, m);
 
     casimir_free(&casimir);
 
-    printf("# LbyR,T,n,m,logdetD,lmax,time\n");
-    printf("%g, %g, %d, %d, %.15g, %d, %g\n", LbyR, T, n, m, logdet, casimir.lmax, now()-start_time);
+    printf("# LbyR,nT,m,logdetD,lmax,time\n");
+    printf("%g, %g, %d, %.15g, %d, %g\n", LbyR, nT, m, logdet, casimir.lmax, now()-start_time);
 
     return 0;
 }
