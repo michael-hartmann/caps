@@ -13,6 +13,7 @@
 #include <string.h>
 #include <pthread.h>
 #include <unistd.h>
+#include <time.h>
 
 #include "floattypes.h"
 #include "integration_drude.h"
@@ -68,6 +69,11 @@ const char *casimir_compile_info(void)
  */
 void casimir_info(casimir_t *self, FILE *stream, const char *prefix)
 {
+    char buf[128];
+    time_t timestamp = self->birthtime;
+    struct tm ts = *localtime(&timestamp);
+    strftime(buf, sizeof(buf), "%a %Y-%m-%d %H:%M:%S %Z", &ts);
+
     if(prefix == NULL)
         prefix = "";
 
@@ -91,7 +97,7 @@ void casimir_info(casimir_t *self, FILE *stream, const char *prefix)
     fprintf(stream, "%sprecision       = %g\n", prefix, self->precision);
     fprintf(stream, "%strace_threshold = %g\n", prefix, self->trace_threshold);
     fprintf(stream, "%sdetalg          = %s\n", prefix, self->detalg);
-    fprintf(stream, "%sbirthtime       = %g\n", prefix, self->birthtime);
+    fprintf(stream, "%sbirthtime       = %s (%.1f)\n", prefix, buf, self->birthtime);
 }
 
 /*@}*/
@@ -222,8 +228,8 @@ double casimir_lnepsilon(double xi, double omegap, double gamma_)
  */
 void casimir_rp(casimir_t *self, float80 nT, float80 k, float80 *r_TE, float80 *r_TM)
 {
-    float80 epsilon = casimir_epsilon(nT, self->omegap_plane, self->gamma_plane);
-    float80 beta = sqrt80(1 + (epsilon-1)/(1 + pow_2(k/nT)));
+    const float80 epsilon = casimir_epsilon(nT, self->omegap_plane, self->gamma_plane);
+    const float80 beta = sqrt80(1 + (epsilon-1)/(1 + pow_2(k/nT)));
 
     *r_TE = (1-beta)/(1+beta);
     *r_TM = (epsilon-beta)/(epsilon+beta);
