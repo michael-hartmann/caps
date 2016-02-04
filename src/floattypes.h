@@ -17,6 +17,8 @@ typedef double      float64;
 #define gamma64    gamma
 #define lgamma64   lgamma
 #define copysign64 copysign
+#define fmax64     fmax
+#define fmin64     fmin
 
 typedef long double float80;
 #define log80      logl
@@ -29,6 +31,8 @@ typedef long double float80;
 #define gamma80    gammal
 #define lgamma80   lgammal
 #define copysign80 copysignl
+#define fmax80     fmaxl
+#define fmin80     fminl
 
 #ifdef FLOAT128
 typedef __float128  float128;
@@ -42,6 +46,8 @@ typedef __float128  float128;
 #define gamma128    gammaq
 #define lgamma128   lgammaq
 #define copysign128 copysignq
+#define fmax128     fmaxq
+#define fmin128     fminq
 #endif
 
 #endif
