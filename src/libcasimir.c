@@ -1617,15 +1617,18 @@ double casimir_logdetD(casimir_t *self, int n, int m)
     }
 
     if(self->integration < 0)
+    {
         casimir_integrate_perf_init(&int_perf, nT, m, self->lmax);
 
-    trace = casimir_trM(self, n, m, &int_perf);
-    if(trace < self->trace_threshold)
-    {
-        if(self->integration < 0)
-            casimir_integrate_perf_free(&int_perf);
+        /* XXX make this also work for Drude metals XXX */
+        trace = casimir_trM(self, n, m, &int_perf);
+        if(trace < self->trace_threshold)
+        {
+            if(self->integration < 0)
+                casimir_integrate_perf_free(&int_perf);
 
-        return -trace;
+            return -trace;
+        }
     }
 
     matrix_float80 *M     = matrix_float80_alloc(2*dim);
