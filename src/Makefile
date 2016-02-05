@@ -103,6 +103,7 @@ install:
 
 clean:
 	rm -f casimir casimir_tests casimir_hiT casimir_logdetD casimir_Fn ld_drude casimir_T0 *.o tests/*.o
+	rm -rf doc
 
 doc:
 	doxygen doxygen.conf
