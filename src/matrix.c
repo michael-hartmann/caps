@@ -1,7 +1,7 @@
 /**
  * @file   matrix.c
  * @author Michael Hartmann <michael.hartmann@physik.uni-augsburg.de>
- * @date   January, 2016
+ * @date   February, 2016
  * @brief  matrix functions
  */
 
