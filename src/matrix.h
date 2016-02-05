@@ -287,7 +287,7 @@ MATRIX_MINMAX_HEADER(matrix_float128, matrix_float128, float128);
 #endif
 
 /* prototypes */
-double matrix_logdet1mM(matrix_float80 *M, matrix_sign_t *M_sign, const char *type);
+double matrix_logdet1mM(matrix_float80 *M, matrix_sign_t *M_sign, const char *type, const bool pivot);
 
 double matrix_float80_logdet_qr(matrix_float80 *M);
 #ifdef FLOAT128
@@ -297,5 +297,7 @@ double matrix_float128_logdet_qr(matrix_float128 *M);
 void matrix_float80_log_balance(matrix_float80 *A);
 void matrix_float80_log_balance_stop(matrix_float80 *A, const double stop);
 
+void matrix_float80_swap(matrix_float80 *M, const int i, const int j);
+void matrix_float80_pivot(matrix_float80 *M);
 
 #endif

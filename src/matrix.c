@@ -45,6 +45,54 @@ MATRIX_MINMAX(matrix_float80, matrix_float80, float80);
 MATRIX_EXP   (matrix_float80, matrix_float80, exp80);
 MATRIX_LOGDET_LU(matrix_float80, matrix_float80, float80, fabs80, log80);
 
+void matrix_float80_swap(matrix_float80 *M, const int i, const int j)
+{
+    const int dim = M->size;
+
+    /* swap columns */
+    for(int k = 0; k < dim; k++)
+    {
+        const float80 Mkj = matrix_get(M, k,j);
+        matrix_set(M, k,j, matrix_get(M, k,i)); /* Mkj = Mki */
+        matrix_set(M, k,i, Mkj);                /* Mki = Mkj */
+    }
+
+    /* swap rows */
+    for(int k = 0; k < dim; k++)
+    {
+        const float80 Mjk = matrix_get(M, j,k);
+        matrix_set(M, j,k, matrix_get(M, i,k)); /* Mjk = Mik */
+        matrix_set(M, i,k, Mjk);                /* Mik = Mjk */
+    }
+}
+
+
+void matrix_float80_pivot(matrix_float80 *M)
+{
+    const int dim = M->size;
+
+    for(int k = 0; k < dim; k++)
+    {
+        /* find maximum */
+        int index = k;
+        float80 elem = matrix_get(M,k,k);
+
+        for(int z = k+1; z < dim; z++)
+        {
+            const float80 Mzz = matrix_get(M,z,z);
+            if(fabs80(Mzz) < fabs80(elem))
+            {
+                elem = Mzz;
+                index = z;
+            }
+        }
+
+        /* swap k <-> index */
+        if(k != index)
+            matrix_float80_swap(M,k,index);
+    }
+}
+
 #ifdef FLOAT128
 /* calculate QR decomposition of M */
 double matrix_float128_logdet_qr(matrix_float128 *M)
@@ -123,14 +171,9 @@ double matrix_float80_logdet_qr(matrix_float80 *M)
             if(Mij != 0)
             {
                 const float80 a = m[j*dim+j];
-                const float80 b = Mij;
+                const float80 b = Mij; /* b != 0 */
 
-                if(b == 0)
-                {
-                    c = copysign80(1,a);
-                    s = 0;
-                }
-                else if(a == 0)
+                if(a == 0)
                 {
                     c = 0;
                     s = -copysign80(1, b);
@@ -248,7 +291,7 @@ void matrix_float80_log_balance_stop(matrix_float80 *A, const double stop)
 }
 
 /* calculate log(det(1-M)) */
-double matrix_logdet1mM(matrix_float80 *M, matrix_sign_t *M_sign, const char *type)
+double matrix_logdet1mM(matrix_float80 *M, matrix_sign_t *M_sign, const char *type, const bool pivot)
 {
     const int dim = M->size;
     #ifdef TRACE
@@ -303,8 +346,24 @@ double matrix_logdet1mM(matrix_float80 *M, matrix_sign_t *M_sign, const char *ty
 
         matrix_float80_exp(M, M_sign);
 
+        /* add identity matrix */
         for(int i = 0; i < dim; i++)
             M->M[i*dim+i] += 1;
+
+        /* pivot */
+        if(pivot)
+        {
+            #ifdef TRACE
+            const double t0 = now();
+            printf("pivoting...\n");
+            #endif
+
+            matrix_float80_pivot(M);
+
+            #ifdef TRACE
+            printf("pivoting: t=%g\n", now()-t0);
+            #endif
+        }
 
         return matrix_float80_logdet_qr(M);
     }
