@@ -47,8 +47,6 @@ typedef struct {
     int sign_dPl1mdPl2m;
 } plm_combination_t;
 
-void polymult(float80 p1[], int len_p1, float80 p2[], int len_p2, float80 p[]);
-
 inline float80 logadd(const float80 a, const float80 b);
 inline float80 logadd_s(const float80 a, const sign_t sign_a, const float80 b, const sign_t sign_b, sign_t *sign);
 inline float80 logadd_m(const float80 list[], const int len);

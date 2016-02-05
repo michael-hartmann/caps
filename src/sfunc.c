@@ -14,36 +14,6 @@
 #include "utils.h"
 
 /**
- * @brief Multiply two polynomials
- *
- * Multiply the coefficients of the polynomials p1 and p2 with and store the
- * result in p. p must have length of at least len_p1+len_p2-1.
- *
- * The polynomials are stored by coefficients \f$a_0,...,a_N\f$.
- *
- * This function uses the naive algorithm to calculate the product of two polynomials and thus
- * this function has complexity \f$\mathcal{O}(\mathrm{len\_p1}\cdot\mathrm{len\_p2})\f$.
- *
- * This function is thread-safe.
- *
- * @param [in] p1 polynomial
- * @param [in] len_p1 length of array p1
- * @param [in] p2 polynomial
- * @param [in] len_p2 length of array p2
- * @param [in] p polynomial \f$p=p1 \dot p2\f$
- */
-void polymult(float80 p1[], int len_p1, float80 p2[], int len_p2, float80 p[])
-{
-    for(int i = 0; i < len_p1+len_p2-1; i++)
-        p[i] = 0;
-
-    for(int i = 0; i < len_p1; i++)
-        for(int j = 0; j < len_p2; j++)
-            p[i+j] += p1[i]*p2[j];
-}
-
-
-/**
 * @name Add numbers given as logarithms
 */
 /*@{*/
