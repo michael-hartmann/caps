@@ -2,9 +2,10 @@
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
-#include "libcasimir.h"
 #include "integration_perf.h"
+#include "libcasimir.h"
 #include "sfunc.h"
 #include "utils.h"
 
@@ -16,15 +17,14 @@ This program will calculate the free Casimir energy for the plane-sphere \n\
 geometry for given n,m,T,L/R. \n\
 \n\
 Mandatory options:\n\
-    -x L/R\n\
-    -T Temperature\n\
-    -n value of n\n\
-    -m value of m\n\
+    -x  L/R\n\
+    -nT imaginary frequency ξ\n\
+    -m  value of m\n\
 \n\
 Further options:\n\
     -l, --lscale\n\
         Specify parameter lscale. The vector space has to be truncated at some\n\
-        value lmax. This program will use lmax=(R/L*lscale) (default: 3)\n\
+        value lmax. This program will use lmax=(R/L*lscale) (default: 5)\n\
 \n\
     -L\n\
         Set lmax to given value. When -L is used, -l will be ignored\n\
@@ -33,8 +33,12 @@ Further options:\n\
         Enable buffering. By default buffering for stderr and stdout is\n\
         disabled.\n\
 \n\
-    -v, --verbose\n\
-        Be more verbose.\n\
+    --trace THRESHOLD\n\
+        Try to calculate log det D(xi) using -Tr D(xi). If |trace|>THRESHOLD,\n\
+        fall back to log det D(xi).\n\
+\n\
+    --detalg DETALG\n\
+        Use DETALG to calculate determinant.\n\
 \n\
     -h,--help\n\
         Show this help\n\
@@ -45,75 +49,80 @@ Compiled %s, %s\n", __DATE__, __TIME__);
 
 int main(int argc, char *argv[])
 {
-    double T = -1;
+    char detalg[64] = { 0 };
+    double nT = -1;
     double lfac = 5;
     double LbyR = -1;
-    int i, n = -1, m = -1;
+    int m = -1;
     int lmax = 0;
-    int buffering_flag = 0, verbose_flag = 0;
+    int buffering_flag = 0;
+    double trace_threshold = -1;
+    casimir_t casimir;
+    double logdet, start_time = now();
 
     printf("# %s", argv[0]);
-    for(i = 1; i < argc; i++)
+    for(int i = 1; i < argc; i++)
         printf(", %s", argv[i]);
     printf("\n");
 
     while (1)
     {
         int c;
-        struct option long_options[] =
-        {
-          { "verbose",   no_argument,       &verbose_flag,   1 },
-          { "buffering", no_argument,       &buffering_flag, 1 },
-          { "help",      no_argument,       0, 'h' },
-          { "lscale",    required_argument, 0, 'l' },
-          { 0, 0, 0, 0 }
+        struct option long_options[] = {
+            { "buffering", no_argument,       &buffering_flag, 1 },
+            { "help",      no_argument,       0, 'h' },
+            { "nT",        required_argument, 0, 'T' },
+            { "detalg",    required_argument, 0, 'd' },
+            { "lscale",    required_argument, 0, 'l' },
+            { "trace",     required_argument, 0, 't' },
+            { 0, 0, 0, 0 }
         };
 
         /* getopt_long stores the option index here. */
         int option_index = 0;
       
-        c = getopt_long (argc, argv, "x:T:n:m:s:a:l:L:vqh", long_options, &option_index);
+        c = getopt_long (argc, argv, "x:T:m:s:a:l:L:t:qh", long_options, &option_index);
       
         /* Detect the end of the options. */
-        if (c == -1)
-          break;
+        if(c == -1)
+            break;
       
         switch (c)
         {
-          case 0:
-            /* If this option set a flag, do nothing else now. */
-            if (long_options[option_index].flag != 0)
-              break;
-          case 'x':
-              LbyR = atof(optarg);
-              break;
-          case 'T':
-              T = atof(optarg);
-              break;
-          case 'L':
-              lmax = atoi(optarg);
-          case 'v':
-              verbose_flag = 1;
-              break;
-          case 'l':
-              lfac = atof(optarg);
-              break;
-          case 'n':
-              n = atoi(optarg);
-              break;
-          case 'm':
-              m = atoi(optarg);
-              break;
-          case 'h':
-              usage(stdout);
-              exit(0);
+            case 0:
+              /* If this option set a flag, do nothing else now. */
+              if (long_options[option_index].flag != 0)
+                break;
+            case 'x':
+                LbyR = atof(optarg);
+                break;
+            case 'T':
+                nT = atof(optarg);
+                break;
+            case 'L':
+                lmax = atoi(optarg);
+            case 'l':
+                lfac = atof(optarg);
+                break;
+            case 'm':
+                m = atoi(optarg);
+                break;
+            case 't':
+                trace_threshold = atof(optarg);
+                break;
+            case 'd':
+                strncpy(detalg, optarg, sizeof(detalg)/sizeof(char)-1);
+                break;
+            case 'h':
+                usage(stdout);
+                exit(0);
       
-          case '?':
-            /* getopt_long already printed an error message. */
-            break;
+            case '?':
+              /* getopt_long already printed an error message. */
+              break;
       
-          default:
-            abort();
+            default:
+              abort();
         }
     }
 
@@ -138,15 +147,15 @@ int main(int argc, char *argv[])
         usage(stderr);
         exit(1);
     }
-    if(T <= 0)
+    if(nT <= 0)
     {
-        fprintf(stderr, "positive value for -T required\n\n");
+        fprintf(stderr, "positive value for --nT required\n\n");
         usage(stderr);
         exit(1);
     }
-    if(n < 0 || m < 0)
+    if(m < 0)
     {
-        fprintf(stderr, "n,m >= 0\n\n");
+        fprintf(stderr, "m >= 0\n\n");
         usage(stderr);
         exit(1);
     }
@@ -154,33 +163,25 @@ int main(int argc, char *argv[])
     if(lmax <= 0)
         lmax = MAX((int)ceil(lfac/LbyR), 5);
 
-    printf("# lfac = %g\n", lfac);
-    printf("# LbyR = %g\n", LbyR);
-    printf("# n    = %d\n", n);
-    printf("# m    = %d\n", m);
-    printf("# lmax = %d\n", lmax);
+
+    casimir_init(&casimir, LbyR, nT);
+    casimir_set_lmax(&casimir, lmax);
+
+    if(strlen(detalg))
+        casimir_set_detalg(&casimir, detalg);
+
+    if(trace_threshold >= 0)
+        casimir_set_trace_threshold(&casimir, trace_threshold);
+
+    casimir_info(&casimir, stdout, "# ");
     printf("#\n");
 
-    {
-        double Q = 1./(1.+LbyR);
-        integration_perf_t int_perf;
-        casimir_t casimir;
-        double value, start_time = now();
+    logdet = casimir_logdetD(&casimir, 1, m);
 
-        casimir_integrate_perf_init(&int_perf, n*T, lmax);
+    casimir_free(&casimir);
 
-        casimir_init(&casimir, Q, T);
-        casimir_set_verbose(&casimir, verbose_flag);
-        casimir_set_lmax(&casimir, lmax);
-
-        value = casimir_logdetD(&casimir, n, m, &int_perf);
-
-        casimir_integrate_perf_free(&int_perf);
-        casimir_free(&casimir);
-
-        printf("# LbyR,Q,T,n,m,value,lmax,time\n");
-        printf("%.15g, %.15g, %.15g, %d, %d, %.15g, %d, %g\n", LbyR, Q, T, n, m, value, casimir.lmax, now()-start_time);
-    }
+    printf("# LbyR,nT,m,logdetD,lmax,time\n");
+    printf("%g, %g, %d, %.15g, %d, %g\n", LbyR, nT, m, logdet, casimir.lmax, now()-start_time);
 
     return 0;
 }

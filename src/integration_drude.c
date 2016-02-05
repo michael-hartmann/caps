@@ -1,7 +1,7 @@
 /**
  * @file   integration_drude.c
  * @author Michael Hartmann <michael.hartmann@physik.uni-augsburg.de>
- * @date   April, 2015
+ * @date   January, 2016
  * @brief  Perform integration for Drude planes
  */
 
@@ -10,13 +10,14 @@
 #include <string.h>
 #include <float.h>
 
-#include "edouble.h"
+#include "floattypes.h"
 #include "utils.h"
 #include "sfunc.h"
 #include "libcasimir.h"
 #include "integration_drude.h"
 #include "gausslaguerre.h"
 
+<<<<<<< HEAD
 /* **************************************** */
 /*
  * Choose one method of integration
@@ -100,10 +101,19 @@ void integrands_drude(edouble x, integrands_drude_t *integrands,
     edouble r_TE, r_TM;
     edouble lnr_TE, lnr_TM;
     edouble A,B,C,D;
+=======
+void integrands_drude(float80 x, integrands_drude_t *integrands, casimir_t *self, double nT, int l1, int l2, int m)
+{
+    plm_combination_t comb;
+    const float80 tau = 2*nT;
+    const float80 k = sqrt80(pow_2(x)/4 + nT*x);
+    const float80 log_factor = log80(pow_2(x)+2*tau*x);
+    float80 r_TE, r_TM;
+>>>>>>> upstream/master
 
     casimir_rp(self, nT, k, &r_TE, &r_TM);
-    lnr_TE = loge(-r_TE);
-    lnr_TM = loge(r_TM);
+    const float80 lnr_TE = log80(-r_TE);
+    const float80 lnr_TM = log80(r_TM);
 
     if( 1.0 + x/tau != 1.0 )
     {
@@ -787,22 +797,38 @@ static void integrands_drude_laguerre(edouble x, integrands_drude_t *integrands,
 
     plm_PlmPlm(l1, l2, m, 1+x/tau, &comb);
 
+<<<<<<< HEAD
     const edouble A = comb.lnPl1mPl2m - log_factor;
+=======
+    const float80 A = comb.lnPl1mPl2m - log_factor;
+>>>>>>> upstream/master
     integrands->lnA_TE = lnr_TE + A;
     integrands->lnA_TM = lnr_TM + A;
     integrands->sign_A = comb.sign_Pl1mPl2m;
 
+<<<<<<< HEAD
     const edouble B = comb.lndPl1mdPl2m + log_factor;
+=======
+    const float80 B = comb.lndPl1mdPl2m + log_factor;
+>>>>>>> upstream/master
     integrands->lnB_TE = lnr_TE + B;
     integrands->lnB_TM = lnr_TM + B;
     integrands->sign_B = comb.sign_dPl1mdPl2m;
 
+<<<<<<< HEAD
     const edouble C = comb.lnPl1mdPl2m;
+=======
+    const float80 C = comb.lnPl1mdPl2m;
+>>>>>>> upstream/master
     integrands->lnC_TE = lnr_TE + C;
     integrands->lnC_TM = lnr_TM + C;
     integrands->sign_C = comb.sign_Pl1mdPl2m;
 
+<<<<<<< HEAD
     const edouble D = comb.lndPl1mPl2m;
+=======
+    const float80 D = comb.lndPl1mPl2m;
+>>>>>>> upstream/master
     integrands->lnD_TE = lnr_TE + D;
     integrands->lnD_TM = lnr_TM + D;
     integrands->sign_D = comb.sign_dPl1mPl2m;
@@ -827,38 +853,34 @@ static void integrands_drude_laguerre(edouble x, integrands_drude_t *integrands,
  */
 void integrate_gauss_laguerre(casimir_t *self, casimir_integrals_t *cint, int l1, int l2, int m, int n, double T)
 {
-    int i;
     integrands_drude_t integrand;
-    const edouble tau = 2*n*T;
-    const edouble ln_tau = loge(tau);
-    const edouble ln_Lambda = casimir_lnLambda(l1, l2, m, NULL); /* sign: -1 */
-    edouble prefactor;
-    edouble *ln_ABCD, *lnA_TE, *lnA_TM, *lnB_TE, *lnB_TM, *lnC_TE, *lnC_TM, *lnD_TE, *lnD_TM;
-    sign_t *signs_ABCD, *signs_A, *signs_B, *signs_C, *signs_D;
-    edouble *xk, *ln_wk;
+    const float80 tau = 2*n*T;
+    const float80 ln_tau = log80(tau);
+    const float80 ln_Lambda = casimir_lnLambda(l1, l2, m, NULL); /* sign: -1 */
+    float80 prefactor;
+    float80 *xk, *ln_wk;
     const int N = gausslaguerre_nodes_weights(self->integration, &xk, &ln_wk);
 
     /* allocate space for signs_A, signs_B, signs_C, signs_D */
-    signs_ABCD = xmalloc(4*N*sizeof(sign_t));
-    signs_A = signs_ABCD;
-    signs_B = signs_A+1*N;
-    signs_C = signs_A+2*N;
-    signs_D = signs_A+3*N;
+    sign_t *signs_ABCD = xmalloc(4*N*sizeof(sign_t));
+    sign_t *signs_A = signs_ABCD;
+    sign_t *signs_B = signs_A+1*N;
+    sign_t *signs_C = signs_A+2*N;
+    sign_t *signs_D = signs_A+3*N;
 
     /* allocate space for lnA_TE, lnA_TM, lnB_TE, lnB_TM, lnC_TE, lnC_TM,
      * lnD_TE, lnD_TM */
-    ln_ABCD = xmalloc(4*2*N*sizeof(integrands_drude_t));
-    lnA_TE  = ln_ABCD;
-    lnA_TM  = ln_ABCD + 1*N;
-    lnB_TE  = ln_ABCD + 2*N;
-    lnB_TM  = ln_ABCD + 3*N;
-    lnC_TE  = ln_ABCD + 4*N;
-    lnC_TM  = ln_ABCD + 5*N;
-    lnD_TE  = ln_ABCD + 6*N;
-    lnD_TM  = ln_ABCD + 7*N;
+    float80 *ln_ABCD = xmalloc(4*2*N*sizeof(integrands_drude_t));
+    float80 *lnA_TE  = ln_ABCD;
+    float80 *lnA_TM  = ln_ABCD + 1*N;
+    float80 *lnB_TE  = ln_ABCD + 2*N;
+    float80 *lnB_TM  = ln_ABCD + 3*N;
+    float80 *lnC_TE  = ln_ABCD + 4*N;
+    float80 *lnC_TM  = ln_ABCD + 5*N;
+    float80 *lnD_TE  = ln_ABCD + 6*N;
+    float80 *lnD_TM  = ln_ABCD + 7*N;
 
-
-    for(i = 0; i < N; i++)
+    for(int i = 0; i < N; i++)
     {
         integrands_drude_laguerre(xk[i], &integrand, self, n*T, l1, l2, m);
 
@@ -891,7 +913,7 @@ void integrate_gauss_laguerre(casimir_t *self, casimir_integrals_t *cint, int l1
 
     if(m > 0)
     {
-        const edouble log_m = log(m);
+        const float80 log_m = log(m);
 
         /* A */
         prefactor = ln_Lambda + 2*log_m+ln_tau-tau; /* m²*tau*exp(-tau) */
@@ -945,23 +967,26 @@ void integrate_gauss_laguerre(casimir_t *self, casimir_integrals_t *cint, int l1
 * This function returns the logarithm of the integral. The sign will be stored
 * in sign.
 */
-double log_polyintegrate(edouble p[], size_t len, int l1, int l2, int m, double tau, sign_t *sign)
+#if 0
+double log_polyintegrate(float80 p[], size_t len, int l1, int l2, int m, double tau, sign_t *sign)
 {
     size_t i;
     sign_t sign_lnLambda;
-    edouble value = 0;
-    const edouble ln_tau = loge(tau);
-    const edouble lnLambda = casimir_lnLambda(l1, l2, m, &sign_lnLambda);
-    const edouble lnfac_max = lgammae(1+len-1);
+    float80 value = 0;
+    const float80 ln_tau = log80(tau);
+    const float80 lnLambda = casimir_lnLambda(l1, l2, m, &sign_lnLambda);
+    const float80 lnfac_max = lgamma80(1+len-1);
 
     for(i = 0; i < len; i++)
-        value += expe(lgammae(1+i)-lnfac_max-(i+1)*ln_tau)*p[i];
+        value += exp80(lgamma80(1+i)-lnfac_max-(i+1)*ln_tau)*p[i];
 
-    TERMINATE(isnan(value), "value is nan");
-    TERMINATE(isinf(value), "value is inf");
+    TERMINATE(!isfinite(value), "value=%Lg", value);
 
-    *sign = copysigne(1, value) * sign_lnLambda;
-    return lnLambda+lnfac_max+loge(fabse(value));
+    *sign = copysign80(1, value) * sign_lnLambda;
+    return lnLambda+lnfac_max+log80(fabs80(value));
 }
+<<<<<<< HEAD
 
+=======
+>>>>>>> upstream/master
 #endif

@@ -16,14 +16,12 @@
 #define IDLE 1000 // in µs
 #define LSCALE 7.0
 #define PRECISION 5e-9
-#define VERBOSE 1
 
 double sumF(double *values, int lmax)
 {
-    int i;
     double F = 0;
 
-    for(i = lmax-1; i >= 0; i--)
+    for(int i = lmax-1; i >= 0; i--)
         F += values[i];
 
     return F;
@@ -69,9 +67,8 @@ void *logdetD0(void *p)
     int m            = params->m;
     int lmax         = params->lmax;
 
-    casimir_init(&casimir, 1/(1+LbyR), 0.1);
+    casimir_init(&casimir, LbyR, 0.1);
     casimir_set_precision(&casimir, precision);
-    casimir_set_verbose(&casimir, VERBOSE);
     casimir_set_lmax(&casimir, lmax);
     
     casimir_logdetD0(&casimir, m, &logdet_EE, &logdet_MM);
@@ -101,7 +98,6 @@ int main(int argc, char *argv[])
     double lscale = LSCALE;
     int lmax = -1;
     int cores = 1;
-    int i, m;
     double start_time = now();
     double LbyR = -1;
     double *values, *EE;
@@ -110,14 +106,13 @@ int main(int argc, char *argv[])
     while (1)
     {
         int c;
-        struct option long_options[] =
-        {
-          { "help",      no_argument,       0, 'h' },
-          { "LbyR",      required_argument, 0, 'x' },
-          { "lmax",      required_argument, 0, 'L' },
-          { "lscale",    required_argument, 0, 'l' },
-          { "precision", required_argument, 0, 'p' },
-          { 0, 0, 0, 0 }
+        struct option long_options[] = {
+            { "help",      no_argument,       0, 'h' },
+            { "LbyR",      required_argument, 0, 'x' },
+            { "lmax",      required_argument, 0, 'L' },
+            { "lscale",    required_argument, 0, 'l' },
+            { "precision", required_argument, 0, 'p' },
+            { 0, 0, 0, 0 }
         };
 
         /* getopt_long stores the option index here. */
@@ -127,39 +122,39 @@ int main(int argc, char *argv[])
       
         /* Detect the end of the options. */
         if (c == -1)
-          break;
-      
-        switch (c)
-        {
-          case 0:
-            /* If this option set a flag, do nothing else now. */
-            if (long_options[option_index].flag != 0)
-              break;
-          case 'x':
-              LbyR = atof(optarg);
-              break;
-          case 'L':
-              lmax = atoi(optarg);
-              break;
-          case 'l':
-              lscale = atof(optarg);
-              break;
-          case 'c':
-              cores = atoi(optarg);
-              break;
-          case 'p':
-              precision = atof(optarg);
-              break;
-          case 'h':
-              usage(stdout, argv[0]);
-              exit(0);
-      
-          case '?':
-            /* getopt_long already printed an error message. */
             break;
       
-          default:
-            abort();
+        switch(c)
+        {
+            case 0:
+              /* If this option set a flag, do nothing else now. */
+              if (long_options[option_index].flag != 0)
+                break;
+            case 'x':
+                LbyR = atof(optarg);
+                break;
+            case 'L':
+                lmax = atoi(optarg);
+                break;
+            case 'l':
+                lscale = atof(optarg);
+                break;
+            case 'c':
+                cores = atoi(optarg);
+                break;
+            case 'p':
+                precision = atof(optarg);
+                break;
+            case 'h':
+                usage(stdout, argv[0]);
+                exit(0);
+      
+            case '?':
+              /* getopt_long already printed an error message. */
+              break;
+      
+            default:
+              abort();
         }
     }
 
@@ -197,24 +192,24 @@ int main(int argc, char *argv[])
     values = (double *)xmalloc(lmax*sizeof(double));
     EE     = (double *)xmalloc(lmax*sizeof(double));
 
-    for(i = 0; i < lmax; i++)
+    for(int i = 0; i < lmax; i++)
     {
         values[i] = 0;
         EE[i]     = 0;
     }
 
     threads = (pthread_t **)xmalloc(cores*sizeof(pthread_t));
-    for(i = 0; i < cores; i++)
+    for(int i = 0; i < cores; i++)
         threads[i] = NULL;
 
-    m = 0;
+    int m = 0;
     while(m < lmax)
     {
         int bye = 0;
         param_t *r;
 
         // try to start threads
-        for(i = 0; i < cores; i++)
+        for(int i = 0; i < cores; i++)
         {
             if(threads[i] == NULL)
                 threads[i] = start_thread(LbyR, m++, lmax, precision);
@@ -237,7 +232,7 @@ int main(int argc, char *argv[])
     }
 
     fprintf(stderr, "# waiting for last threads to finish\n");
-    for(i = 0; i < cores; i++)
+    for(int i = 0; i < cores; i++)
     {
         param_t *r;
         if(threads[i] != NULL)

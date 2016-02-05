@@ -53,3 +53,12 @@ if __name__ == "__main__":
     print prettyprint(lnLambda(1000,1000,501))
     print prettyprint(lnLambda(1000,1000,999))
     print prettyprint(lnLambda(1000,1000,1000))
+
+    print prettyprint(lnLambda(1500,1500,0))
+    print prettyprint(lnLambda(1500,1500,1))
+    print prettyprint(lnLambda(1500,1500,2))
+    print prettyprint(lnLambda(1500,1500,500))
+    print prettyprint(lnLambda(1500,1500,1000))
+    print prettyprint(lnLambda(1500,1500,1500))
+
+    print prettyprint(lnLambda(1500,1,0))

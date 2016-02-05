@@ -4,13 +4,14 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <strings.h>
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <unistd.h>
 #include <unistd.h>
 
 #include "casimir.h"
-#include "edouble.h"
+#include "floattypes.h"
 #include "libcasimir.h"
 #include "sfunc.h"
 #include "utils.h"
@@ -71,10 +72,6 @@ Further options:\n\
     --buffering\n\
         Enable buffering. By default buffering for stderr and stdout is\n\
         disabled.\n\
-\n\
-    -v, --verbose\n\
-        Be more verbose. This will output intermediate results and additional\n\
-        information.\n\
 \n\
     -q, --quiet\n\
         The progress is printed to stderr unless this flag is set.\n\
@@ -143,10 +140,10 @@ int main(int argc, char *argv[])
     double lfac      = DEFAULT_LFAC;
     double lT[4]     = { 0,0,0,SCALE_LIN }; /* start, stop, N, lin/log */
     double lLbyR[4]  = { 0,0,0,SCALE_LIN }; /* start, stop, N, lin/log */
-    int i, iT, iLbyR;
+    int i;
     int cores = 1;
     int lmax = 0;
-    int buffering_flag = 0, quiet_flag = 0, verbose_flag = 0;
+    int buffering_flag = 0, quiet_flag = 0;
 
     /* parse command line options */
     while (1)
@@ -154,7 +151,6 @@ int main(int argc, char *argv[])
         int c;
         struct option long_options[] =
         {
-            { "verbose",   no_argument,       &verbose_flag,   1 },
             { "quiet",     no_argument,       &quiet_flag,     1 },
             { "buffering", no_argument,       &buffering_flag, 1 },
             { "help",      no_argument,       0, 'h' },
@@ -170,7 +166,7 @@ int main(int argc, char *argv[])
         /* getopt_long stores the option index here. */
         int option_index = 0;
       
-        c = getopt_long (argc, argv, "x:T:c:s:a:l:L:p:g:w:Xvqh", long_options, &option_index);
+        c = getopt_long (argc, argv, "x:T:c:s:a:l:L:p:g:w:Xqh", long_options, &option_index);
       
         /* Detect the end of the options. */
         if(c == -1)
@@ -196,9 +192,6 @@ int main(int argc, char *argv[])
                 break;
             case 'c':
                 cores = atoi(optarg);
-                break;
-            case 'v':
-                verbose_flag = 1;
                 break;
             case 'l':
                 lfac = atof(optarg);
@@ -290,13 +283,13 @@ int main(int argc, char *argv[])
         printf("# %s\n#\n", casimir_compile_info());
 
     i = 0;
-    for(iLbyR = 0; iLbyR < lLbyR[2]; iLbyR++)
-        for(iT = 0; iT < lT[2]; iT++)
+    for(int iLbyR = 0; iLbyR < lLbyR[2]; iLbyR++)
+        for(int iT = 0; iT < lT[2]; iT++)
         {
             casimir_t casimir;
             double start_time = now();
             int nmax;
-            double F,LbyR,T,Q;
+            double F,LbyR,T;
 
             if(lLbyR[3] == SCALE_LIN)
                 LbyR = linspace(lLbyR[0], lLbyR[1], lLbyR[2], iLbyR);
@@ -308,11 +301,9 @@ int main(int argc, char *argv[])
             else
                 T = logspace(lT[0], lT[1], lT[2], iT);
 
-            Q = 1/(1+LbyR);
-            casimir_init(&casimir, Q, T);
+            casimir_init(&casimir, LbyR, T);
             casimir_set_cores(&casimir, cores);
             casimir_set_precision(&casimir, precision);
-            casimir_set_verbose(&casimir, verbose_flag);
 
             if(gamma_ > 0)
             {

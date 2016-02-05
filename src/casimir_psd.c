@@ -82,7 +82,6 @@ int main(int argc, char *argv[])
     int i;
     casimir_t casimir;
     const double LbyR = LBYR;
-    const double Q = 1/(1+LbyR);
 
     printf("# LbyR, T, F, F_psd, F_psd/F, t_psd/t, lmax\n");
     for(i = 0; i < T_N; i++)
@@ -91,7 +90,7 @@ int main(int argc, char *argv[])
         double F = 0, F_psd = 0;
         double T = linspace(T_START, T_STOP, T_N, i);
 
-        casimir_init(&casimir, Q, T);
+        casimir_init(&casimir, LbyR, T);
         casimir_set_lmax(&casimir, MAX(20,6./LbyR));
 
         t_F = -now();
