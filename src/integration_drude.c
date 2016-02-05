@@ -17,7 +17,6 @@
 #include "integration_drude.h"
 #include "gausslaguerre.h"
 
-<<<<<<< HEAD
 /* **************************************** */
 /*
  * Choose one method of integration
@@ -51,14 +50,14 @@
 
 
 struct drude_error {
-    edouble        lnA, lnB, lnC, lnD;
+    float80        lnA, lnB, lnC, lnD;
 };
 
 struct integ_context {
     casimir_t*     casimir;
     double         nT;
     int            l1, l2, m;
-    edouble        c0, c_max;
+    float80        c0, c_max;
 };
 
 
@@ -91,25 +90,15 @@ void integrate_gauss_laguerre(casimir_t *self,
  * @param [in]  l2         Value of l2
  * @param [in]  m          Value of m
  */
-void integrands_drude(edouble x, integrands_drude_t *integrands,
-			     casimir_t *self, double nT, int l1, int l2, int m)
-{
-    plm_combination_t comb;
-    const edouble tau = 2*nT;
-    const edouble k = sqrte(pow_2(x)/4 + nT*x);
-    edouble log_factor;
-    edouble r_TE, r_TM;
-    edouble lnr_TE, lnr_TM;
-    edouble A,B,C,D;
-=======
-void integrands_drude(float80 x, integrands_drude_t *integrands, casimir_t *self, double nT, int l1, int l2, int m)
+void integrands_drude(float80 x, integrands_drude_t *integrands,
+		      casimir_t *self, double nT, int l1, int l2, int m)
 {
     plm_combination_t comb;
     const float80 tau = 2*nT;
-    const float80 k = sqrt80(pow_2(x)/4 + nT*x);
-    const float80 log_factor = log80(pow_2(x)+2*tau*x);
+    const float80 k   = sqrt80(pow_2(x)/4 + nT*x);
+    float80 log_factor;
     float80 r_TE, r_TM;
->>>>>>> upstream/master
+    float80 A,B,C,D;
 
     casimir_rp(self, nT, k, &r_TE, &r_TM);
     const float80 lnr_TE = log80(-r_TE);
@@ -126,7 +115,7 @@ void integrands_drude(float80 x, integrands_drude_t *integrands, casimir_t *self
     	comb.lndPl1mPl2m  = -INFINITY;
     	comb.lndPl1mdPl2m = -INFINITY;
     }
-    log_factor = loge(pow_2(x)+2*tau*x);
+    log_factor = log80(pow_2(x)+2*tau*x);
     
     A = comb.lnPl1mPl2m - log_factor - x;
     integrands->lnA_TE = lnr_TE + A;
@@ -156,13 +145,13 @@ void integrands_drude(float80 x, integrands_drude_t *integrands, casimir_t *self
  * @param [out] integrands Logarithms and signs of the integrands
  * @param [in]  context    Context of the Drude-Integration
  */
-static inline void integrands_drude_u(edouble u, integrands_drude_t *integrands,
+static inline void integrands_drude_u(float80 u, integrands_drude_t *integrands,
 				      struct integ_context* context)
 {
     
-    edouble x         = context->c0 * pow((1+u) / (1-u), ALPHA);
-    edouble jacobi    = (pow(1+u, ALPHA-1) / pow(1-u, ALPHA + 1) * (2 * ALPHA * context->c0));
-    edouble ln_jacobi = loge(fabse(jacobi));
+    float80 x         = context->c0 * pow((1+u) / (1-u), ALPHA);
+    float80 jacobi    = (pow(1+u, ALPHA-1) / pow(1-u, ALPHA + 1) * (2 * ALPHA * context->c0));
+    float80 ln_jacobi = log80(fabs80(jacobi));
     sign_t  sign_jac  = jacobi >= 0 ? 1 : -1;
 
     integrands_drude(x, integrands, context->casimir, context->nT,
@@ -186,12 +175,12 @@ static inline void integrands_drude_u(edouble u, integrands_drude_t *integrands,
 }
 
 
-edouble inline logdiff(const edouble log_a, const edouble log_b)
+inline float80 logdiff(const float80 log_a, const float80 log_b)
 {
     if(log_a > log_b)
-	return (loge(expe(log_a) - expe(log_b))) - log_b;
+	return (log80(exp80(log_a) - exp80(log_b))) - log_b;
     else
-	return (loge(expe(log_b) - expe(log_a))) - log_a;;
+	return (log80(exp80(log_b) - exp80(log_a))) - log_a;;
 }
 
 
@@ -201,9 +190,9 @@ edouble inline logdiff(const edouble log_a, const edouble log_b)
  * error of the integration later.
  */
 static inline void init_accuracy(struct drude_error* error,
-				 edouble ln_prefactor_A,
-				 edouble ln_prefactor_B,
-				 edouble ln_prefactor_CD)
+				 float80 ln_prefactor_A,
+				 float80 ln_prefactor_B,
+				 float80 ln_prefactor_CD)
 {
     /*
      * If one prefactor is infinity (or -infinity) the iteration will stop immediately.
@@ -212,12 +201,12 @@ static inline void init_accuracy(struct drude_error* error,
     if(isinf(ln_prefactor_A))
 	error->lnA = INFINITY;
     else
-	error->lnA = loge(ACCURACY) - ln_prefactor_A;
+	error->lnA = log80(ACCURACY) - ln_prefactor_A;
 
     if(isinf(ln_prefactor_B))
 	error->lnB = INFINITY;
     else
-	error->lnB = loge(ACCURACY) - ln_prefactor_B;
+	error->lnB = log80(ACCURACY) - ln_prefactor_B;
 
     if(isinf(ln_prefactor_CD))
     {
@@ -225,8 +214,8 @@ static inline void init_accuracy(struct drude_error* error,
     }
     else
     {
-	error->lnC = loge(ACCURACY) - ln_prefactor_CD;
-	error->lnD = loge(ACCURACY) - ln_prefactor_CD;
+	error->lnC = log80(ACCURACY) - ln_prefactor_CD;
+	error->lnD = log80(ACCURACY) - ln_prefactor_CD;
     }
 }
 
@@ -243,8 +232,8 @@ static inline int is_accurate(integrands_drude_t* integrands,
 			      integrands_drude_t* last,
 			      struct drude_error* error)
 {
-    edouble tmp;
-    edouble prefactor = 4.0 / 3.0;
+    float80 tmp;
+    const float80 prefactor = 4.0 / 3.0;
 
     tmp = logdiff(integrands->lnA_TE, last->lnA_TE) - integrands->lnA_TE;
     if(prefactor + tmp > error->lnA || isnan(tmp))
@@ -393,7 +382,7 @@ static inline void drude_minus(integrands_drude_t* result,
  * "log_factor" is the logarithm of the factor.
  * id = factor * id
  */
-static inline void drude_mult_factor(integrands_drude_t* id, edouble log_factor)
+static inline void drude_mult_factor(integrands_drude_t* id, float80 log_factor)
 {
     id->lnA_TE += log_factor;
     id->lnA_TM += log_factor;
@@ -427,11 +416,11 @@ static inline void integration_simple(struct integ_context* context,
     integrands_drude_t last, partial_sum;
     integrands_drude_t f_a, f_b, temp;
     size_t steps           = 10;
-    edouble stepsize       = (context->c_max - (-1)) / steps;
-    edouble offset         = stepsize;
+    float80 stepsize       = (context->c_max - (-1)) / steps;
+    float80 offset         = stepsize;
 
-    edouble c_max = context->c_max;
-    edouble u;
+    const float80 c_max    = context->c_max;
+    float80 u;
 
     /*
      * First set "last" to infinity, so we will need a second iteration to
@@ -452,12 +441,12 @@ static inline void integration_simple(struct integ_context* context,
 	    integrands_drude_u(u, &f_b, context);
 
 	    drude_plus(&temp, &f_a, &f_b);
-	    drude_mult_factor(&temp, loge(0.5));
+	    drude_mult_factor(&temp, log80(0.5));
 	    drude_plusequal(&partial_sum, &f_b);
 	    f_a = f_b;
 	}
-	drude_mult_factor(&partial_sum, loge(0.5 * stepsize));
- 	drude_mult_factor(result, loge(0.5));
+	drude_mult_factor(&partial_sum, log80(0.5 * stepsize));
+ 	drude_mult_factor(result, log80(0.5));
 	drude_plusequal(result, &partial_sum);
 	
 	if(is_accurate(result, &last, error)) break;
@@ -488,24 +477,24 @@ static inline void integration_simple(struct integ_context* context,
 static inline void do_integrate(casimir_t* self, casimir_integrals_t* cint,
 				int l1, int l2, int m, int n, double T)
 {
-//     const edouble c0  = (l1 + l2 - 1) * nT;
-    const edouble c0  = l1 + l2 - 1;
-    const edouble tau = 2 * n * T;
+//     const float80 c0  = (l1 + l2 - 1) * nT;
+    const float80 c0  = l1 + l2 - 1;
+    const float80 tau = 2 * n * T;
     
-    edouble c_max     = pow( (10.0*c0 / (c0 - 1.0)), 1.0 / ALPHA);
+    float80 c_max     = pow( (10.0*c0 / (c0 - 1.0)), 1.0 / ALPHA);
     if(isinf(c_max))
 	c_max = 0.999;
     else
-	c_max         = (c_max - 1) / (c_max + 1);
+	c_max = (c_max - 1) / (c_max + 1);
 
     integrands_drude_t total;
     
-    const edouble ln_lambda = casimir_lnLambda(l1, l2, m, NULL); /* sign: -1 */
-    const edouble log_m = log(m);
-    const edouble ln_tau = loge(tau);
+    const float80 ln_lambda = casimir_lnLambda(l1, l2, m, NULL); /* sign: -1 */
+    const float80 log_m = log(m);
+    const float80 ln_tau = log80(tau);
 
-    edouble prefactor_A, prefactor_B, prefactor_CD;
-    edouble ln_prefactor_A, ln_prefactor_B, ln_prefactor_CD;
+    float80 prefactor_A, prefactor_B, prefactor_CD;
+    float80 ln_prefactor_A, ln_prefactor_B, ln_prefactor_CD;
     struct drude_error error;
 #ifndef INTEGRATION_GAUSS_LAGUERRE
     struct integ_context context;
@@ -525,9 +514,9 @@ static inline void do_integrate(casimir_t* self, casimir_integrals_t* cint,
     prefactor_A     = ln_lambda + 2 * log_m  + ln_tau - tau;
     prefactor_B     = ln_lambda - tau - 3 * ln_tau;
     prefactor_CD    = ln_lambda + log_m - tau - ln_tau;
-    ln_prefactor_A  = loge(fabse(prefactor_A));
-    ln_prefactor_B  = loge(fabse(prefactor_B));
-    ln_prefactor_CD = loge(fabse(prefactor_CD));
+    ln_prefactor_A  = log80(fabs80(prefactor_A));
+    ln_prefactor_B  = log80(fabs80(prefactor_B));
+    ln_prefactor_CD = log80(fabs80(prefactor_CD));
     
     init_accuracy(&error, ln_prefactor_A, ln_prefactor_B, ln_prefactor_CD);
 #ifdef INTEGRATION_SIMPLE
@@ -580,11 +569,11 @@ static inline void do_integrate(casimir_t* self, casimir_integrals_t* cint,
  * The romberg_chain we us is 1, 1/2, 1/4, 1/8, ...
  * The Index starts with 1
  */
-static inline edouble romberg_chain(unsigned int index) {
-    edouble result  = 1.0;
+static inline float80 romberg_chain(unsigned int index) {
+    float80 result  = 1.0;
     unsigned int ui = 1U << (index - 1);
 
-    result = 1.0 / (edouble)ui;
+    result = 1.0 / (float80)ui;
     return result;
 }
 
@@ -597,7 +586,7 @@ static void romberg_I11(integrands_drude_t* result,
      * In our case a = 0 and f(a)=0, so we can neglect that.
      */
     integrands_drude_u(context->c_max, result, context);
-    drude_mult_factor(result, loge(0.5 * (context->c_max - (-1.0))));
+    drude_mult_factor(result, log80(0.5 * (context->c_max - (-1.0))));
 }
 
 
@@ -609,16 +598,16 @@ static inline void romberg_In1(integrands_drude_t* I_current,
     integrands_drude_t temp;
     unsigned int i;
     unsigned int nom, denom;
-    edouble u;
-    edouble log_hn = loge(romberg_chain(n) * (context->c_max - (-1.0)));
+    float80 u;
+    float80 log_hn = log80(romberg_chain(n) * (context->c_max - (-1.0)));
     
     *I_current = *I_last;
-    drude_mult_factor(I_current, loge(0.5));
+    drude_mult_factor(I_current, log80(0.5));
 
     for(i = 1; i <= (1U << (n - 2)); ++i) {
 	nom = 2*i - 1;
 	denom = 1UL << (n - 1);
-	u = (edouble)nom / (edouble)denom * (context->c_max - (-1.0)) - 1.0;
+	u = (float80)nom / (float80)denom * (context->c_max - (-1.0)) - 1.0;
 	integrands_drude_u(u, &temp, context);
 	drude_mult_factor(&temp, log_hn);
 	drude_plusequal(&I_current[0], &temp);
@@ -637,11 +626,11 @@ static inline void romberg_subcycle(integrands_drude_t* a,
      * c: I_{n,k-1}
      */
     unsigned int prefactor = 2U << (k - 1);
-    edouble      eprefactor = (edouble)prefactor;
+    float80      eprefactor = (float80)prefactor;
     *a = *b;
-    drude_mult_factor(a, loge(eprefactor));
+    drude_mult_factor(a, log80(eprefactor));
     drude_minus(a, a, c);
-    drude_mult_factor(a, loge(1 / (eprefactor - 1.0)));
+    drude_mult_factor(a, log80(1 / (eprefactor - 1.0)));
 }
 
 
@@ -653,7 +642,7 @@ static inline int romberg_is_accurate(integrands_drude_t* cur_result,
 				      integrands_drude_t* last_result,
 				      struct drude_error* error)
 {
-    edouble tmp;
+    float80 tmp;
 
     tmp = logdiff(cur_result->lnA_TE, last_result->lnA_TE) - last_result->lnA_TE;
     if(tmp > error->lnA || isnan(tmp))
@@ -782,53 +771,37 @@ void casimir_integrate_drude(casimir_t *self, casimir_integrals_t *cint, int l1,
  */
 #ifdef INTEGRATION_GAUSS_LAGUERRE
 
-static void integrands_drude_laguerre(edouble x, integrands_drude_t *integrands,
+static void integrands_drude_laguerre(float80 x, integrands_drude_t *integrands,
 				      casimir_t *self, double nT, int l1, int l2, int m)
 {
     plm_combination_t comb;
-    const edouble tau = 2*nT;
-    const edouble k = sqrte(pow_2(x)/4 + nT*x);
-    const edouble log_factor = loge(pow_2(x)+2*tau*x);
-    edouble r_TE, r_TM;
+    const float80 tau        = 2*nT;
+    const float80 k          = sqrt80(pow_2(x)/4 + nT*x);
+    const float80 log_factor = log80(pow_2(x)+2*tau*x);
+    float80 r_TE, r_TM;
 
     casimir_rp(self, nT, k, &r_TE, &r_TM);
-    const edouble lnr_TE = loge(-r_TE);
-    const edouble lnr_TM = loge(r_TM);
+    const float80 lnr_TE = log80(-r_TE);
+    const float80 lnr_TM = log80(r_TM);
 
     plm_PlmPlm(l1, l2, m, 1+x/tau, &comb);
 
-<<<<<<< HEAD
-    const edouble A = comb.lnPl1mPl2m - log_factor;
-=======
     const float80 A = comb.lnPl1mPl2m - log_factor;
->>>>>>> upstream/master
     integrands->lnA_TE = lnr_TE + A;
     integrands->lnA_TM = lnr_TM + A;
     integrands->sign_A = comb.sign_Pl1mPl2m;
 
-<<<<<<< HEAD
-    const edouble B = comb.lndPl1mdPl2m + log_factor;
-=======
     const float80 B = comb.lndPl1mdPl2m + log_factor;
->>>>>>> upstream/master
     integrands->lnB_TE = lnr_TE + B;
     integrands->lnB_TM = lnr_TM + B;
     integrands->sign_B = comb.sign_dPl1mdPl2m;
 
-<<<<<<< HEAD
-    const edouble C = comb.lnPl1mdPl2m;
-=======
     const float80 C = comb.lnPl1mdPl2m;
->>>>>>> upstream/master
     integrands->lnC_TE = lnr_TE + C;
     integrands->lnC_TM = lnr_TM + C;
     integrands->sign_C = comb.sign_Pl1mdPl2m;
 
-<<<<<<< HEAD
-    const edouble D = comb.lndPl1mPl2m;
-=======
     const float80 D = comb.lndPl1mPl2m;
->>>>>>> upstream/master
     integrands->lnD_TE = lnr_TE + D;
     integrands->lnD_TM = lnr_TM + D;
     integrands->sign_D = comb.sign_dPl1mPl2m;
@@ -958,6 +931,7 @@ void integrate_gauss_laguerre(casimir_t *self, casimir_integrals_t *cint, int l1
     xfree(ln_ABCD);
     xfree(signs_ABCD);
 }
+#endif
 
 
 /* Integrate the function f(x)*exp(-x) from 0 to inf
@@ -985,8 +959,4 @@ double log_polyintegrate(float80 p[], size_t len, int l1, int l2, int m, double 
     *sign = copysign80(1, value) * sign_lnLambda;
     return lnLambda+lnfac_max+log80(fabs80(value));
 }
-<<<<<<< HEAD
-
-=======
->>>>>>> upstream/master
 #endif
