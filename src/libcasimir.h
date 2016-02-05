@@ -2,6 +2,7 @@
 #define __LIBCASIMIR_H
 
 #include <pthread.h>
+#include <stdbool.h>
 #include <stdio.h>
 
 #include "floattypes.h"
@@ -87,6 +88,9 @@ typedef struct
     casimir_mie_cache_t *mie_cache; /**< Mie chache */
 
     double birthtime;       /**< timestamp when object was initialized */
+
+    /* parameters that you usually do not want to change */
+    bool pivot; /**< pivot matrix before QR decomposition */
     /*@}*/
 } casimir_t;
 
