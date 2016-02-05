@@ -10,57 +10,25 @@
 NotebookFileLineBreakTest
 NotebookFileLineBreakTest
 NotebookDataPosition[       158,          7]
-NotebookDataLength[      6694,        185]
-NotebookOptionsPosition[      6111,        161]
-NotebookOutlinePosition[      6448,        176]
-CellTagsIndexPosition[      6405,        173]
+NotebookDataLength[     19342,        510]
+NotebookOptionsPosition[     17843,        462]
+NotebookOutlinePosition[     18181,        477]
+CellTagsIndexPosition[     18138,        474]
 WindowFrame->Normal*)
 
 (* Beginning of Notebook Content *)
 Notebook[{
-Cell[BoxData[
- RowBox[{
-  RowBox[{"IntA", "[", 
-   RowBox[{"\[Tau]_", ",", "l1_", ",", "l2_", ",", "m_"}], "]"}], ":=", 
-  RowBox[{
-   RowBox[{"-", "\[Tau]"}], "+", 
-   RowBox[{"Log", "[", "\[Tau]", "]"}], "+", 
-   RowBox[{"2", "*", 
-    RowBox[{"Log", "[", "m", "]"}]}], "+", 
-   RowBox[{"lnLambda", "[", 
-    RowBox[{"l1", ",", "l2", ",", "m"}], "]"}], "+", 
-   RowBox[{"Log", "[", 
-    RowBox[{"Abs", "[", 
-     RowBox[{"NIntegrate", "[", 
-      RowBox[{
-       RowBox[{
-        RowBox[{
-         RowBox[{"Exp", "[", 
-          RowBox[{"-", "x"}], "]"}], "/", 
-         RowBox[{"(", 
-          RowBox[{
-           RowBox[{"x", "^", "2"}], "+", 
-           RowBox[{"2", "*", "\[Tau]", "*", "x"}]}], ")"}]}], "*", 
-        RowBox[{"LegendreP", "[", 
-         RowBox[{"l1", ",", "m", ",", 
-          RowBox[{"1", "+", 
-           RowBox[{"x", "/", "\[Tau]"}]}]}], "]"}], "*", 
-        RowBox[{"LegendreP", "[", 
-         RowBox[{"l2", ",", "m", ",", 
-          RowBox[{"1", "+", 
-           RowBox[{"x", "/", "\[Tau]"}]}]}], "]"}]}], ",", 
-       RowBox[{"{", 
-        RowBox[{"x", ",", "0", ",", "Infinity"}], "}"}], ",", 
-       RowBox[{"WorkingPrecision", "\[Rule]", "30"}], ",", 
-       RowBox[{"AccuracyGoal", "\[Rule]", "30"}], ",", 
-       RowBox[{"PrecisionGoal", "\[Rule]", "30"}]}], "]"}], "]"}], 
-    "]"}]}]}]], "Input",
+Cell[BoxData[""], "Input",
  CellChangeTimes->{{3.646717578813547*^9, 3.646717624835292*^9}, {
    3.646717657835628*^9, 3.646717758202778*^9}, 3.646717799672433*^9, {
    3.646717867751092*^9, 3.646717907247696*^9}, {3.646721857337315*^9, 
    3.6467219211608667`*^9}, {3.6467219586268*^9, 3.6467219597958727`*^9}, {
    3.646722151765273*^9, 3.646722168881258*^9}, {3.646722205796381*^9, 
-   3.646722267227409*^9}, {3.646722319925124*^9, 3.64672234152815*^9}}],
+   3.646722267227409*^9}, {3.646722319925124*^9, 3.64672234152815*^9}, {
+   3.6501955137341433`*^9, 3.650195541239644*^9}, {3.650195591278388*^9, 
+   3.650195593005602*^9}, {3.6501956759717293`*^9, 3.6501956763372297`*^9}, {
+   3.6501957518210287`*^9, 3.650195751894847*^9}, {3.6501989822732058`*^9, 
+   3.650199002050208*^9}}],
 
 Cell[BoxData[
  RowBox[{
@@ -98,11 +66,47 @@ Cell[BoxData[
  CellChangeTimes->{{3.646721955945299*^9, 3.646722068931568*^9}, {
   3.646722129518743*^9, 3.646722130422827*^9}}],
 
-Cell[CellGroupData[{
-
 Cell[BoxData[
- RowBox[{"IntA", "[", 
-  RowBox[{"5", ",", "1540", ",", "40", ",", "1"}], "]"}]], "Input",
+ RowBox[{
+  RowBox[{"intA", "[", 
+   RowBox[{"tau_", ",", "l1_", ",", "l2_", ",", "m_"}], "]"}], ":=", 
+  RowBox[{
+   RowBox[{"-", "tau"}], "+", 
+   RowBox[{"Log", "[", "tau", "]"}], "+", 
+   RowBox[{"2", "*", 
+    RowBox[{"Log", "[", "m", "]"}]}], "+", 
+   RowBox[{"lnLambda", "[", 
+    RowBox[{"l1", ",", "l2", ",", "m"}], "]"}], "+", 
+   RowBox[{"Log", "[", 
+    RowBox[{"Abs", "[", 
+     RowBox[{"NIntegrate", "[", 
+      RowBox[{
+       RowBox[{
+        RowBox[{
+         RowBox[{"Exp", "[", 
+          RowBox[{"-", "x"}], "]"}], "/", 
+         RowBox[{"(", 
+          RowBox[{
+           RowBox[{"x", "^", "2"}], "+", 
+           RowBox[{"2", "*", "tau", "*", "x"}]}], ")"}]}], "*", 
+        RowBox[{"LegendreP", "[", 
+         RowBox[{"l1", ",", "m", ",", 
+          RowBox[{"1", "+", 
+           RowBox[{"x", "/", "tau"}]}]}], "]"}], "*", 
+        RowBox[{"LegendreP", "[", 
+         RowBox[{"l2", ",", "m", ",", 
+          RowBox[{"1", "+", 
+           RowBox[{"x", "/", "tau"}]}]}], "]"}]}], ",", 
+       RowBox[{"{", 
+        RowBox[{"x", ",", "0", ",", "Infinity"}], "}"}], ",", 
+       RowBox[{"WorkingPrecision", "\[Rule]", "120"}], ",", 
+       RowBox[{"AccuracyGoal", "\[Rule]", "20"}], ",", 
+       RowBox[{"PrecisionGoal", "\[Rule]", "20"}]}], "]"}], "]"}], 
+    "]"}]}]}]], "Input",
+ CellChangeTimes->{{3.650199004487299*^9, 3.650199071042657*^9}, {
+  3.650199129679878*^9, 3.650199129757945*^9}}],
+
+Cell[BoxData[""], "Input",
  CellChangeTimes->{{3.646721326076519*^9, 3.646721335473503*^9}, {
    3.646721375365919*^9, 3.646721378393346*^9}, {3.646721731290719*^9, 
    3.6467217323407*^9}, {3.6467218059469557`*^9, 3.646721836460635*^9}, 
@@ -110,7 +114,160 @@ Cell[BoxData[
    3.646722172263438*^9, 3.646722181696456*^9}, {3.6467222416451883`*^9, 
    3.646722243054277*^9}, {3.6467223599078093`*^9, 3.6467223987017517`*^9}, 
    3.646722541296233*^9, {3.6467225728851137`*^9, 3.646722597988078*^9}, 
-   3.646722628294861*^9}],
+   3.646722628294861*^9, {3.650195446426607*^9, 3.6501954955573997`*^9}, {
+   3.650195527347315*^9, 3.650195535148843*^9}, {3.650195570411418*^9, 
+   3.65019557047013*^9}, {3.650195872274576*^9, 3.650195872587859*^9}, {
+   3.65019856602631*^9, 3.6501985674965887`*^9}, {3.650198801182726*^9, 
+   3.650198802859783*^9}}],
+
+Cell[BoxData[""], "Input",
+ CellChangeTimes->{{3.650198813582876*^9, 3.650198813613044*^9}, 
+   3.650198972423604*^9}],
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{
+   RowBox[{"dPlm", "[", 
+    RowBox[{"l_", ",", "m_", ",", "x_"}], "]"}], ":=", 
+   RowBox[{
+    RowBox[{"(", 
+     RowBox[{
+      RowBox[{
+       RowBox[{"(", 
+        RowBox[{"l", "-", "m", "+", "1"}], ")"}], "*", 
+       RowBox[{"LegendreP", "[", 
+        RowBox[{
+         RowBox[{"l", "+", "1"}], ",", "m", ",", "x"}], "]"}]}], "-", 
+      RowBox[{
+       RowBox[{"(", 
+        RowBox[{"l", "+", "1"}], ")"}], "*", "x", "*", 
+       RowBox[{"LegendreP", "[", 
+        RowBox[{"l", ",", "m", ",", "x"}], "]"}]}]}], ")"}], "/", 
+    RowBox[{"(", 
+     RowBox[{
+      RowBox[{"x", "^", "2"}], "-", "1"}], ")"}]}]}], "\[IndentingNewLine]"}]],\
+ "Input",
+ CellChangeTimes->{{3.650195786145138*^9, 3.650195794554183*^9}, {
+  3.650197929632657*^9, 3.6501980397906446`*^9}}],
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{"intB", "[", 
+   RowBox[{"tau_", ",", "l1_", ",", "l2_", ",", "m_"}], "]"}], ":=", 
+  RowBox[{
+   RowBox[{"-", "tau"}], "-", 
+   RowBox[{"3", "*", 
+    RowBox[{"Log", "[", "tau", "]"}]}], "+", 
+   RowBox[{"lnLambda", "[", 
+    RowBox[{"l1", ",", "l2", ",", "m"}], "]"}], "+", 
+   RowBox[{"Log", "[", 
+    RowBox[{"Abs", "[", 
+     RowBox[{"NIntegrate", "[", 
+      RowBox[{
+       RowBox[{
+        RowBox[{"Exp", "[", 
+         RowBox[{"-", "x"}], "]"}], "*", 
+        RowBox[{"(", 
+         RowBox[{
+          RowBox[{"x", "^", "2"}], "+", 
+          RowBox[{"2", "*", "tau", "*", "x"}]}], ")"}], "*", 
+        RowBox[{"dPlm", "[", 
+         RowBox[{"l1", ",", "m", ",", 
+          RowBox[{"1", "+", 
+           RowBox[{"x", "/", "tau"}]}]}], "]"}], "*", 
+        RowBox[{"dPlm", "[", 
+         RowBox[{"l2", ",", "m", ",", 
+          RowBox[{"1", "+", 
+           RowBox[{"x", "/", "tau"}]}]}], "]"}]}], ",", 
+       RowBox[{"{", 
+        RowBox[{"x", ",", "0", ",", "Infinity"}], "}"}], ",", " ", 
+       RowBox[{"WorkingPrecision", "\[Rule]", "120"}], ",", 
+       RowBox[{"AccuracyGoal", "\[Rule]", "20"}], ",", 
+       RowBox[{"PrecisionGoal", "\[Rule]", "20"}]}], "]"}], "]"}], 
+    "]"}]}]}]], "Input",
+ CellChangeTimes->{{3.6501980407740383`*^9, 3.650198253517831*^9}, {
+  3.650198369609234*^9, 3.650198370779129*^9}, {3.65019861846439*^9, 
+  3.6501986222055063`*^9}}],
+
+Cell[BoxData[
+ RowBox[{"intB", "[", 
+  RowBox[{"2", ",", "500", ",", "1050", ",", "1"}], "]"}]], "Input",
+ CellChangeTimes->{{3.650198291447217*^9, 3.650198311232349*^9}, {
+   3.650198373246642*^9, 3.6501983841412067`*^9}, {3.650198509656609*^9, 
+   3.650198510329665*^9}, {3.6501985412690763`*^9, 3.6501985454416943`*^9}, {
+   3.650198578400113*^9, 3.650198582209281*^9}, {3.650198647382657*^9, 
+   3.650198648677178*^9}, {3.650198738764852*^9, 3.6501987393124647`*^9}, {
+   3.6501988529278812`*^9, 3.650198878577466*^9}, 3.650198934234252*^9, {
+   3.650198976959928*^9, 3.650198979359123*^9}}],
+
+Cell[BoxData[
+ RowBox[{"intB", "[", 
+  RowBox[{"2", ",", "500", ",", "1050", ",", "1"}], "]"}]], "Input",
+ CellChangeTimes->{{3.650198986853183*^9, 3.6501990160557213`*^9}}],
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{"intC", "[", 
+   RowBox[{"tau_", ",", "l1_", ",", "l2_", ",", "m_"}], "]"}], " ", ":=", " ", 
+  RowBox[{
+   RowBox[{"Log", "[", "m", "]"}], "-", "tau", "-", 
+   RowBox[{"Log", "[", "tau", "]"}], "+", 
+   RowBox[{"lnLambda", "[", 
+    RowBox[{"l1", ",", "l2", ",", "m"}], "]"}], "+", "\[IndentingNewLine]", 
+   RowBox[{"Log", "[", 
+    RowBox[{"Abs", "[", 
+     RowBox[{"NIntegrate", "[", 
+      RowBox[{
+       RowBox[{
+        RowBox[{"Exp", "[", 
+         RowBox[{"-", "x"}], "]"}], "*", 
+        RowBox[{"LegendreP", "[", 
+         RowBox[{"l1", ",", "m", ",", 
+          RowBox[{"1", "+", 
+           RowBox[{"x", "/", "tau"}]}]}], "]"}], "*", 
+        RowBox[{"dPlm", "[", 
+         RowBox[{"l2", ",", "m", ",", 
+          RowBox[{"1", "+", 
+           RowBox[{"x", "/", "tau"}]}]}], "]"}]}], ",", 
+       RowBox[{"{", 
+        RowBox[{"x", ",", "0", ",", "Infinity"}], "}"}], ",", 
+       RowBox[{"WorkingPrecision", "\[Rule]", "120"}], ",", 
+       RowBox[{"AccuracyGoal", "\[Rule]", "20"}], ",", 
+       RowBox[{"PrecisionGoal", "\[Rule]", "20"}]}], "]"}], "]"}], "]"}]}]}]],\
+ "Input",
+ CellChangeTimes->{
+  3.650199044986038*^9, {3.6501990760109386`*^9, 3.6501990761224194`*^9}, {
+   3.65019913614027*^9, 3.650199136825199*^9}, {3.650199180777462*^9, 
+   3.650199216053768*^9}, {3.650199291015764*^9, 3.650199385263647*^9}}],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+ RowBox[{"intC", "[", 
+  RowBox[{"2", ",", "500", ",", "1050", ",", "1"}], "]"}]], "Input",
+ CellChangeTimes->{{3.6501993932414713`*^9, 3.650199414884552*^9}, 
+   3.6501995061560583`*^9, {3.65019956332868*^9, 3.65019956477001*^9}, {
+   3.6501996077980747`*^9, 3.650199608449304*^9}, 3.650199750983886*^9}],
+
+Cell[BoxData["9826.\
+892395402413236400213787998289899965465758363064422758734386710814485429029164\
+4964840570408817244248332053743500566204903280168126348922011445501050079435`\
+123.99241620054748"], "Output",
+ CellChangeTimes->{{3.650199403940496*^9, 3.650199431723096*^9}, 
+   3.650199519585474*^9, 3.650199580638921*^9, 3.650199628488245*^9, 
+   3.65019976947342*^9}]
+}, Open  ]],
+
+Cell[BoxData[""], "Input",
+ CellChangeTimes->{{3.650198031735289*^9, 3.650198033511718*^9}}],
+
+Cell[BoxData[""], "Input",
+ CellChangeTimes->{{3.650198023046804*^9, 3.650198023632739*^9}}],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[""], "Input",
+ CellChangeTimes->{{3.650198019301688*^9, 3.650198019835333*^9}}],
 
 Cell[BoxData[
  RowBox[{
@@ -120,47 +277,191 @@ Cell[BoxData[
   ":", " "}], "\<\"NIntegrate failed to converge to prescribed accuracy after \
 \[NoBreak]\\!\\(9\\)\[NoBreak] recursive bisections in \[NoBreak]\\!\\(x\\)\
 \[NoBreak] near \[NoBreak]\\!\\({x}\\)\[NoBreak] = \
-\[NoBreak]\\!\\({1537.14369047847111786526768457`30.}\\)\[NoBreak]. \
-NIntegrate obtained \
-\[NoBreak]\\!\\(-4.12199063156789073211493300824`30.*^3738\\)\[NoBreak] and \
-\[NoBreak]\\!\\(3.10872313976050741641465437051`30.*^3734\\)\[NoBreak] for \
-the integral and error estimates. \
+\[NoBreak]\\!\\({1979.1372039064936648359768709467137871225860073689427995313`\
+60.}\\)\[NoBreak]. NIntegrate obtained \
+\[NoBreak]\\!\\(-2.\
+82104625153298749708951212783360338234895163259686594742188`60.*^6063\\)\
+\[NoBreak] and \
+\[NoBreak]\\!\\(7.14692659320792978798741037084935405140777454054485110248834`\
+60.*^6054\\)\[NoBreak] for the integral and error estimates. \
 \\!\\(\\*ButtonBox[\\\"\[RightSkeleton]\\\", ButtonStyle->\\\"Link\\\", \
 ButtonFrame->None, ButtonData:>\\\"paclet:ref/message/NIntegrate/ncvb\\\", \
 ButtonNote -> \\\"NIntegrate::ncvb\\\"]\\)\"\>"}]], "Message", "MSG",
- CellChangeTimes->{{3.646722373894116*^9, 3.6467224034116592`*^9}, 
-   3.646722543082714*^9, {3.6467225758948717`*^9, 3.646722604840898*^9}, 
-   3.64672263710043*^9}],
+ GeneratedCell->False,
+ CellAutoOverwrite->False,
+ CellChangeTimes->{{3.6501955279696712`*^9, 3.65019565180401*^9}, {
+  3.650195783339941*^9, 3.6501957893218803`*^9}}],
 
-Cell[BoxData["8589.220405008943076864934657265929446774302203494173993807938`\
-33.93395374716424"], "Output",
- CellChangeTimes->{{3.646722123794489*^9, 3.646722140065421*^9}, {
-   3.6467221752902613`*^9, 3.6467221823178873`*^9}, {3.646722243594182*^9, 
-   3.6467222718140287`*^9}, {3.646722323668915*^9, 3.646722343433613*^9}, {
-   3.646722373896153*^9, 3.6467224034133673`*^9}, 3.646722543084749*^9, {
-   3.646722575897728*^9, 3.646722604843585*^9}, 3.646722637103594*^9}]
+Cell[BoxData[
+ RowBox[{
+  StyleBox[
+   RowBox[{"NIntegrate", "::", "ncvb"}], "MessageName"], 
+  RowBox[{":", " "}], 
+  "\"\<NIntegrate failed to converge to prescribed accuracy after \[NoBreak]9\
+\[NoBreak] recursive bisections in \[NoBreak]x\[NoBreak] near \
+\[NoBreak]\!\({x}\)\[NoBreak] = \
+\[NoBreak]\!\({1979.1372039064936648359768709467137871225860073689427995313`\
+60. }\)\[NoBreak]. NIntegrate obtained \
+\[NoBreak]\!\(\(-2.\
+82104625153298749708951212783360338234895163259686594742188`60.*^6063\)\)\
+\[NoBreak] and \
+\[NoBreak]7.14692659320792978798741037084935405140777454054485110248834`60.*^\
+6054\[NoBreak] for the integral and error estimates. \!\(\*ButtonBox["\
+\[RightSkeleton]",
+Appearance->{Automatic, None},
+BaseStyle->\\\"Link\\\",
+ButtonData:>\\\"paclet:ref/message/NIntegrate/ncvb\\\",
+ButtonNote->\\\"NIntegrate::ncvb\\\"]\)\>\""}]], "Message", "MSG",
+ GeneratedCell->False,
+ CellAutoOverwrite->False,
+ CellChangeTimes->{{3.6501955279696712`*^9, 3.650195647668796*^9}}],
+
+Cell[BoxData[
+ RowBox[{"13960.\
+303673830783230046135124877945071517467595416172029983007816559248079608033081\
+538529545394321395`64.14489486545354", "+", 
+  RowBox[{"lnLambda", "[", 
+   RowBox[{"1050", ",", "1050", ",", "1"}], "]"}]}]], "Output",
+ CellChangeTimes->{3.650195631959219*^9}]
+}, Open  ]],
+
+Cell[BoxData[""], "Input",
+ CellChangeTimes->{{3.650195614362853*^9, 3.650195614405981*^9}}],
+
+Cell[BoxData[""], "Input",
+ CellChangeTimes->{3.646722075160513*^9, 3.6501956171855907`*^9}],
+
+Cell[BoxData[""], "Input",
+ CellChangeTimes->{{3.6501956187197657`*^9, 3.6501956187621403`*^9}}],
+
+Cell[BoxData[""], "Input",
+ CellChangeTimes->{{3.646722075792944*^9, 3.646722081596895*^9}, {
+   3.650195274648816*^9, 3.6501952753725653`*^9}, 3.650195982437649*^9},
+ EmphasizeSyntaxErrors->True],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+ RowBox[{"Log", "[", 
+  RowBox[{"-", 
+   RowBox[{"NIntegrate", "[", 
+    RowBox[{
+     RowBox[{
+      RowBox[{
+       RowBox[{"Exp", "[", 
+        RowBox[{
+         RowBox[{"-", "2"}], "*", "x"}], "]"}], "/", 
+       RowBox[{"(", 
+        RowBox[{
+         RowBox[{"x", "^", "2"}], "+", 
+         RowBox[{"2", "*", "x"}]}], ")"}]}], "*", 
+      RowBox[{"LegendreP", "[", 
+       RowBox[{"3000", ",", "2", ",", 
+        RowBox[{"1", "+", "x"}]}], "]"}]}], ",", 
+     RowBox[{"{", 
+      RowBox[{"x", ",", "0", ",", "Infinity"}], "}"}], ",", " ", 
+     RowBox[{"WorkingPrecision", "\[Rule]", "120"}], ",", 
+     RowBox[{"AccuracyGoal", "\[Rule]", "30"}], ",", 
+     RowBox[{"PrecisionGoal", "\[Rule]", "30"}]}], "]"}]}], "]"}]], "Input",
+ CellChangeTimes->{{3.650195276660014*^9, 3.650195427676589*^9}, 
+   3.6501959523951607`*^9, {3.650196000580735*^9, 3.650196056060439*^9}}],
+
+Cell[BoxData[
+ RowBox[{
+  StyleBox[
+   RowBox[{"NIntegrate", "::", "ncvb"}], "MessageName"], 
+  RowBox[{
+  ":", " "}], "\<\"NIntegrate failed to converge to prescribed accuracy after \
+\[NoBreak]\\!\\(9\\)\[NoBreak] recursive bisections in \[NoBreak]\\!\\(x\\)\
+\[NoBreak] near \[NoBreak]\\!\\({x}\\)\[NoBreak] = \
+\[NoBreak]\\!\\({1218.\
+205320910576088180448363295155660956281171732908260722510833527020640679489726\
+19242678756053924824515203876951736275`120.}\\)\[NoBreak]. NIntegrate \
+obtained \[NoBreak]\\!\\(-6.\
+313956503211456236129496627256093422162374011481848040925486305181331884936676\
+79477574001593822465830249523661019580785`120.*^9129\\)\[NoBreak] and \
+\[NoBreak]\\!\\(3.\
+585385064871087220373733200529986914835112370942700661888719249298913937126378\
+08862795074656780474508647902063295898377`120.*^9104\\)\[NoBreak] for the \
+integral and error estimates. \\!\\(\\*ButtonBox[\\\"\[RightSkeleton]\\\", \
+ButtonStyle->\\\"Link\\\", ButtonFrame->None, \
+ButtonData:>\\\"paclet:ref/message/NIntegrate/ncvb\\\", ButtonNote -> \
+\\\"NIntegrate::ncvb\\\"]\\)\"\>"}]], "Message", "MSG",
+ CellChangeTimes->{3.650196044618236*^9, 3.650196088107458*^9}],
+
+Cell[BoxData["21022.\
+142076443811733708986459642484693468675454120760680851410473183154566385711554\
+6881684049080726936568482582974655566931253515627864259707041317646591522356`\
+124.3226769669055"], "Output",
+ CellChangeTimes->{{3.650195983897676*^9, 3.6501960113960752`*^9}, 
+   3.650196044621323*^9, 3.6501960881104593`*^9}]
 }, Open  ]],
 
 Cell[CellGroupData[{
 
-Cell[BoxData["420.728956281089545961900600961688010729694838875585270112634`\
-32.62400240296146"], "Input",
- CellChangeTimes->{3.646722075160513*^9}],
-
-Cell[BoxData["420.728956281089545961900600961688010729694838875585270112634`\
-32.624002402961466"], "Output",
- CellChangeTimes->{3.64672207526022*^9}]
-}, Open  ]],
+Cell[BoxData[
+ RowBox[{"NIntegrate", "[", 
+  RowBox[{
+   FractionBox[
+    RowBox[{
+     RowBox[{"exp", "[", 
+      RowBox[{
+       RowBox[{"-", "2"}], " ", "x"}], "]"}], " ", 
+     RowBox[{"LegendreP", "[", 
+      RowBox[{"10", ",", "2", ",", 
+       RowBox[{"1", "+", "x"}]}], "]"}]}], 
+    RowBox[{
+     SuperscriptBox["x", "2"], "+", 
+     RowBox[{"2", " ", "x"}]}]], ",", 
+   RowBox[{"{", 
+    RowBox[{"x", ",", "0", ",", "\[Infinity]"}], "}"}], ",", 
+   RowBox[{"WorkingPrecision", "\[Rule]", "60"}], ",", 
+   RowBox[{"AccuracyGoal", "\[Rule]", "20"}], ",", 
+   RowBox[{"PrecisionGoal", "\[Rule]", "20"}]}], "]"}]], "Input",
+ CellChangeTimes->{{3.650195954880043*^9, 3.650195959824972*^9}}],
 
 Cell[BoxData[
- RowBox[{"lnLambda", 
-  RowBox[{"(", 
-   RowBox[{"4", ",", "3", ",", "2"}], ")"}]}]], "Input",
- CellChangeTimes->{{3.646722075792944*^9, 3.646722081596895*^9}},
- EmphasizeSyntaxErrors->True]
+ RowBox[{
+  StyleBox[
+   RowBox[{"NIntegrate", "::", "inumr"}], "MessageName"], 
+  RowBox[{
+  ":", " "}], "\<\"The integrand \[NoBreak]\\!\\(\\(\\(-\\(\\(495\\/128\\)\\)\
+\\)\\)\\\\ \\(\\((384 + \\(\\(6656\\\\ x\\)\\) + \\(\\(40768\\\\ x\\^2\\)\\) \
++ \\(\\(122304\\\\ x\\^3\\)\\) + \\(\\(203840\\\\ x\\^4\\)\\) + \
+\\(\\(198016\\\\ x\\^5\\)\\) + \\(\\(111384\\\\ x\\^6\\)\\) + \\(\\(33592\\\\ \
+x\\^7\\)\\) + \\(\\(4199\\\\ x\\^8\\)\\))\\)\\)\\\\ \
+\\(\\(exp[\\(\\(\\(\\(-2\\)\\)\\\\ x\\)\\)]\\)\\)\\)\[NoBreak] has evaluated \
+to non-numerical values for all sampling points in the region with boundaries \
+\[NoBreak]\\!\\({\\({\[Infinity], 0}\\)}\\)\[NoBreak]. \
+\\!\\(\\*ButtonBox[\\\"\[RightSkeleton]\\\", ButtonStyle->\\\"Link\\\", \
+ButtonFrame->None, ButtonData:>\\\"paclet:ref/message/NIntegrate/inumr\\\", \
+ButtonNote -> \\\"NIntegrate::inumr\\\"]\\)\"\>"}]], "Message", "MSG",
+ CellChangeTimes->{3.650195960368621*^9}],
+
+Cell[BoxData[
+ RowBox[{"NIntegrate", "[", 
+  RowBox[{
+   FractionBox[
+    RowBox[{
+     RowBox[{"exp", "[", 
+      RowBox[{
+       RowBox[{"-", "2"}], " ", "x"}], "]"}], " ", 
+     RowBox[{"LegendreP", "[", 
+      RowBox[{"10", ",", "2", ",", 
+       RowBox[{"1", "+", "x"}]}], "]"}]}], 
+    RowBox[{
+     SuperscriptBox["x", "2"], "+", 
+     RowBox[{"2", " ", "x"}]}]], ",", 
+   RowBox[{"{", 
+    RowBox[{"x", ",", "0", ",", "\[Infinity]"}], "}"}], ",", 
+   RowBox[{"WorkingPrecision", "\[Rule]", "60"}], ",", 
+   RowBox[{"AccuracyGoal", "\[Rule]", "20"}], ",", 
+   RowBox[{"PrecisionGoal", "\[Rule]", "20"}]}], "]"}]], "Output",
+ CellChangeTimes->{3.650195960372334*^9}]
+}, Open  ]]
 },
 WindowSize->{1611, 684},
-WindowMargins->{{Automatic, 57}, {0, Automatic}},
+WindowMargins->{{Automatic, 90}, {36, Automatic}},
 FrontEndVersion->"8.0 for Linux x86 (64-bit) (February 23, 2011)",
 StyleDefinitions->"Default.nb"
 ]
@@ -175,18 +476,42 @@ CellTagsIndex->{}
 *)
 (*NotebookFileOutline
 Notebook[{
-Cell[558, 20, 1763, 42, 69, "Input"],
-Cell[2324, 64, 1096, 34, 30, "Input"],
+Cell[558, 20, 713, 10, 30, "Input"],
+Cell[1274, 32, 1096, 34, 30, "Input"],
+Cell[2373, 68, 1430, 38, 69, "Input"],
+Cell[3806, 108, 856, 12, 30, "Input"],
+Cell[4665, 122, 118, 2, 30, InheritFromParent],
+Cell[4786, 126, 806, 24, 50, InheritFromParent],
+Cell[5595, 152, 1411, 37, 69, "Input"],
+Cell[7009, 191, 595, 9, 30, "Input"],
+Cell[7607, 202, 173, 3, 30, InheritFromParent],
+Cell[7783, 207, 1368, 33, 50, InheritFromParent],
 Cell[CellGroupData[{
-Cell[3445, 102, 640, 10, 30, "Input"],
-Cell[4088, 114, 985, 18, 44, "Message"],
-Cell[5076, 134, 473, 6, 30, "Output"]
+Cell[9176, 244, 319, 5, 30, "Input"],
+Cell[9498, 251, 372, 6, 30, "Output"]
+}, Open  ]],
+Cell[9885, 260, 92, 1, 30, "Input"],
+Cell[9980, 263, 92, 1, 30, "Input"],
+Cell[CellGroupData[{
+Cell[10097, 268, 92, 1, 30, "Input"],
+Cell[10192, 271, 1079, 21, 44, "Message"],
+Cell[11274, 294, 992, 22, 44, "Message"],
+Cell[12269, 318, 290, 6, 30, "Output"]
+}, Open  ]],
+Cell[12574, 327, 92, 1, 30, InheritFromParent],
+Cell[12669, 330, 92, 1, 30, "Input"],
+Cell[12764, 333, 96, 1, 30, InheritFromParent],
+Cell[12863, 336, 196, 3, 30, "Input"],
+Cell[CellGroupData[{
+Cell[13084, 343, 889, 23, 30, "Input"],
+Cell[13976, 368, 1165, 21, 79, "Message"],
+Cell[15144, 391, 329, 5, 30, "Output"]
 }, Open  ]],
 Cell[CellGroupData[{
-Cell[5586, 145, 149, 2, 30, InheritFromParent],
-Cell[5738, 149, 150, 2, 30, "Output"]
-}, Open  ]],
-Cell[5903, 154, 204, 5, 30, "Input"]
+Cell[15510, 401, 695, 19, 48, InheritFromParent],
+Cell[16208, 422, 944, 16, 61, "Message"],
+Cell[17155, 440, 672, 19, 48, "Output"]
+}, Open  ]]
 }
 ]
 *)

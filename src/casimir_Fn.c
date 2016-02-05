@@ -17,14 +17,12 @@
 #define IDLE 1000 // in µs
 #define LSCALE 7.0
 #define PRECISION 5e-9
-#define VERBOSE 1
 
 double sumF(double *values, int lmax)
 {
-    int i;
     double F = 0;
 
-    for(i = lmax-1; i >= 0; i--)
+    for(int i = lmax-1; i >= 0; i--)
         F += values[i];
 
     return F;
@@ -74,17 +72,12 @@ void *logdetD(void *p)
     int n            = params->n;
     int m            = params->m;
     int lmax         = params->lmax;
-    integration_perf_t int_perf;
 
-    casimir_integrate_perf_init(&int_perf, n*T, lmax);
-
-    casimir_init(&casimir, 1/(1+LbyR), T);
+    casimir_init(&casimir, LbyR, T);
     casimir_set_precision(&casimir, precision);
-    casimir_set_verbose(&casimir, VERBOSE);
     casimir_set_lmax(&casimir, lmax);
     
-    logdet = casimir_logdetD(&casimir, n, m, &int_perf);
-    casimir_integrate_perf_free(&int_perf);
+    logdet = casimir_logdetD(&casimir, n, m);
     casimir_free(&casimir);
     
     params->logdet = logdet;
@@ -99,7 +92,7 @@ int main(int argc, char *argv[])
     double lscale = LSCALE;
     int lmax = -1;
     int cores = 1;
-    int i, n = -1;
+    int n = -1;
     double start_time = now();
     double T = -1, LbyR = -1;
     double *values;
@@ -127,9 +120,9 @@ int main(int argc, char *argv[])
       
         /* Detect the end of the options. */
         if (c == -1)
-          break;
+            break;
       
-        switch (c)
+        switch(c)
         {
           case 0:
             /* If this option set a flag, do nothing else now. */
@@ -214,11 +207,11 @@ int main(int argc, char *argv[])
     
     values = (double *)xmalloc(lmax*sizeof(double));
 
-    for(i = 0; i < lmax; i++)
+    for(int i = 0; i < lmax; i++)
         values[i] = 0;
 
     threads = (pthread_t **)xmalloc(cores*sizeof(pthread_t));
-    for(i = 0; i < cores; i++)
+    for(int i = 0; i < cores; i++)
         threads[i] = NULL;
 
 
@@ -234,7 +227,7 @@ int main(int argc, char *argv[])
                 finished = 1;
 
             // try to start threads
-            for(i = 0; i < cores; i++)
+            for(int i = 0; i < cores; i++)
             {
                 if(threads[i] == NULL)
                 {

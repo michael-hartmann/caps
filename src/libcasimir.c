@@ -1,7 +1,7 @@
 /**
  * @file   libcasimir.c
  * @author Michael Hartmann <michael.hartmann@physik.uni-augsburg.de>
- * @date   July, 2015
+ * @date   January, 2016
  * @brief  library to calculate the free Casimir energy in the plane-sphere geometry
  */
 
@@ -9,11 +9,14 @@
 #define _GNU_SOURCE
 
 #include <math.h>
+#include <stdbool.h>
 #include <stdio.h>
+#include <string.h>
 #include <pthread.h>
 #include <unistd.h>
+#include <time.h>
 
-#include "edouble.h"
+#include "floattypes.h"
 #include "integration_drude.h"
 #include "integration_perf.h"
 #include "libcasimir.h"
@@ -42,15 +45,9 @@ static char CASIMIR_COMPILE_INFO[4096] = { 0 };
  */
 const char *casimir_compile_info(void)
 {
-    #ifdef USE_LAPACK
-        const char *lapack = "lapack support";
-    #else
-        const char *lapack = "no lapack support";
-    #endif
-
     snprintf(CASIMIR_COMPILE_INFO, sizeof(CASIMIR_COMPILE_INFO)/sizeof(char),
-             "Compiled on %s at %s with %s, using %s, %s",
-              __DATE__, __TIME__, COMPILER, CASIMIR_ARITHMETICS, lapack
+             "Compiled on %s at %s with %s",
+              __DATE__, __TIME__, COMPILER
             );
     return CASIMIR_COMPILE_INFO;
 }
@@ -73,6 +70,11 @@ const char *casimir_compile_info(void)
  */
 void casimir_info(casimir_t *self, FILE *stream, const char *prefix)
 {
+    char buf[128];
+    time_t timestamp = self->birthtime;
+    struct tm ts = *localtime(&timestamp);
+    strftime(buf, sizeof(buf), "%a %Y-%m-%d %H:%M:%S %Z", &ts);
+
     if(prefix == NULL)
         prefix = "";
 
@@ -91,10 +93,13 @@ void casimir_info(casimir_t *self, FILE *stream, const char *prefix)
     else
         fprintf(stream, "%d\n", self->integration);
 
-    fprintf(stream, "%slmax      = %d\n", prefix, self->lmax);
-    fprintf(stream, "%sverbose   = %d\n", prefix, self->verbose);
-    fprintf(stream, "%scores     = %d\n", prefix, self->cores);
-    fprintf(stream, "%sprecision = %g\n", prefix, self->precision);
+    fprintf(stream, "%slmax            = %d\n", prefix, self->lmax);
+    fprintf(stream, "%scores           = %d\n", prefix, self->cores);
+    fprintf(stream, "%sprecision       = %g\n", prefix, self->precision);
+    fprintf(stream, "%strace_threshold = %g\n", prefix, self->trace_threshold);
+    fprintf(stream, "%sdetalg          = %s\n", prefix, self->detalg);
+    fprintf(stream, "%spivot           = %s\n", prefix, self->pivot ? "true" : "false");
+    fprintf(stream, "%sbirthtime       = %s (%.1f)\n", prefix, buf, self->birthtime);
 }
 
 /*@}*/
@@ -130,11 +135,11 @@ void casimir_info(casimir_t *self, FILE *stream, const char *prefix)
  * @param [out] sign set to -1 if sign != NULL
  * @retval lnLambda \f$\log{\Lambda_{\ell_1,\ell_2}^{(m)}}\f$
  */
-edouble inline casimir_lnLambda(int l1, int l2, int m, sign_t *sign)
+float80 casimir_lnLambda(int l1, int l2, int m, sign_t *sign)
 {
     if(sign != NULL)
         *sign = -1;
-    return LOG2 + (loge(2.*l1+1)+loge(2*l2+1)-LOG4-loge(l1)-loge(l1+1)-loge(l2)-loge(l2+1)+lnfac(l1-m)+lnfac(l2-m)-lnfac(l1+m)-lnfac(l2+m))/2.0L;
+    return LOG2 + (log80(2*l1+1)+log80(2*l2+1)-LOG4-log80(l1)-log80(l1+1)-log80(l2)-log80(l2+1)+lnfac80(l1-m)+lnfac80(l2-m)-lnfac80(l1+m)-lnfac80(l2+m))/2.0L;
 }
 
 
@@ -159,12 +164,12 @@ edouble inline casimir_lnLambda(int l1, int l2, int m, sign_t *sign)
  * @param [out] sign
  * @retval logXi \f$\log{\Xi(\ell_1,\ell_2,m)}\f$
  */
-edouble casimir_lnXi(int l1, int l2, int m, sign_t *sign)
+float80 casimir_lnXi(int l1, int l2, int m, sign_t *sign)
 {
     if(sign != NULL)
         *sign = MPOW(l2);
-    return (loge(2*l1+1)+loge(2*l2+1)-lnfac(l1-m)-lnfac(l2-m)-lnfac(l1+m)-lnfac(l2+m)-loge(l1)-loge(l1+1)-loge(l2)-loge(l2+1))/2.0L \
-           +lnfac(2*l1)+lnfac(2*l2)+lnfac(l1+l2)-LOG4*(2*l1+l2+1)-lnfac(l1-1)-lnfac(l2-1);
+    return (log80(2*l1+1)+log80(2*l2+1)-lnfac80(l1-m)-lnfac80(l2-m)-lnfac80(l1+m)-lnfac80(l2+m)-log80(l1)-log80(l1+1)-log80(l2)-log80(l2+1))/2.0L \
+           +lnfac80(2*l1)+lnfac80(2*l2)+lnfac80(l1+l2)-LOG4*(2*l1+l2+1)-lnfac80(l1-1)-lnfac80(l2-1);
 }
 
 
@@ -223,10 +228,10 @@ double casimir_lnepsilon(double xi, double omegap, double gamma_)
  * @param [in,out]  r_TE    Fresnel coefficient for TE mode
  * @param [in,out]  r_TM    Fresnel coefficient for TM mode
  */
-void casimir_rp(casimir_t *self, edouble nT, edouble k, edouble *r_TE, edouble *r_TM)
+void casimir_rp(casimir_t *self, float80 nT, float80 k, float80 *r_TE, float80 *r_TM)
 {
-    edouble epsilon = casimir_epsilon(nT, self->omegap_plane, self->gamma_plane);
-    edouble beta = sqrte(1 + (epsilon-1)/(1 + pow_2(k/nT)));
+    const float80 epsilon = casimir_epsilon(nT, self->omegap_plane, self->gamma_plane);
+    const float80 beta = sqrt80(1 + (epsilon-1)/(1 + pow_2(k/nT)));
 
     *r_TE = (1-beta)/(1+beta);
     *r_TM = (epsilon-beta)/(epsilon+beta);
@@ -337,29 +342,28 @@ double casimir_T_scaled_to_SI(double T_scaled, double ScriptL)
  * This function is not thread-safe.
  *
  * @param [out] self Casimir object
- * @param [in]  RbyScriptL \f$\frac{R}{\mathcal{L}} = \frac{R}{R+L}\f$
+ * @param [in]  LbyR \f$\frac{L}{R}\f$
  * @param [in]  T temperature in units of \f$2\pi k_B \mathcal{L}/(\hbar c)\f$
  * @retval 0 if successful
- * @retval -1 if wrong value for RbyScriptL
+ * @retval -1 if wrong value for LbyR
  * @retval -2 if wrong value for T
  */
-int casimir_init(casimir_t *self, double RbyScriptL, double T)
+int casimir_init(casimir_t *self, double LbyR, double T)
 {
-    double LbyR = 1./RbyScriptL - 1;
-    if(RbyScriptL < 0 || RbyScriptL >= 1)
+    if(LbyR < 0)
         return -1;
     if(T < 0)
         return -2;
 
     self->lmax = (int)ceil(CASIMIR_FACTOR_LMAX/LbyR);
 
-    self->T          = T;
-    self->RbyScriptL = RbyScriptL;
-    self->LbyR       = LbyR;
-    self->precision  = CASIMIR_DEFAULT_PRECISION;
-    self->verbose    = 0;
-    self->cores      = 1;
-    self->threads    = xmalloc(self->cores*sizeof(pthread_t));
+    self->T               = T;
+    self->RbyScriptL      = 1./(1.+LbyR);
+    self->LbyR            = LbyR;
+    self->precision       = CASIMIR_PRECISION;
+    self->trace_threshold = CASIMIR_TRACE_THRESHOLD;
+    self->cores           = 1;
+    self->threads         = xmalloc(self->cores*sizeof(pthread_t));
 
     /* initialize mie cache */
     casimir_mie_cache_init(self);
@@ -371,9 +375,29 @@ int casimir_init(casimir_t *self, double RbyScriptL, double T)
     self->omegap_plane  = INFINITY;
     self->gamma_plane   = 0;
 
+    /* use QR decomposition to calculate determinant */
+    strcpy(self->detalg, CASIMIR_DETALG);
+
+    /* parameters that users usually don't change */
+    self->pivot = true;
+
+    self->birthtime = now();
+
     return 0;
 }
 
+/**
+ * @brief Get birthtime
+ *
+ * The birthtime is the timestamp when the object was initialized.
+ *
+ * @param [in] self Casimir object
+ * @retval timestamp
+ */
+double casimir_get_birthtime(casimir_t *self)
+{
+    return self->birthtime;
+}
 
 /**
  * @brief Set order of integration
@@ -614,6 +638,45 @@ int casimir_set_cores(casimir_t *self, int cores)
 
 
 /**
+ * @brief Set algorithm to calculate deterimant
+ *
+ * The algorithm is given by detalg. Make sure that detalg contains a valid
+ * algorithm, otherwise the computation will print a warning on runtime and
+ * default to QR_FLOAT80.
+ *
+ * detalg may be: LU_FLOAT80, QR_FLOAT80, QR_LOG80 and (if supported)
+ * QR_FLOAT128, QR_FLOATDD
+ *
+ * This function is not thread-safe.
+ *
+ * @param [in,out] self Casimir object
+ * @param [in] detalg algorithm to compute deterimant
+ * @retval 1
+ */
+int casimir_set_detalg(casimir_t *self, const char *detalg)
+{
+    strncpy(self->detalg, detalg, sizeof(self->detalg)/sizeof(char)-1);
+    return 0;
+}
+
+/**
+ * @brief Get algorithm to calculate deterimant
+ *
+ * The string is stored in detalg.
+ *
+ * This function is not thread-safe.
+ *
+ * @param [in,out] self Casimir object
+ * @param [out] detalg buffer
+ * @retval 1
+ */
+int casimir_get_detalg(casimir_t *self, char detalg[128])
+{
+    strcpy(detalg, self->detalg);
+    return 1;
+}
+
+/**
  * @brief Set maximum value of l
  *
  * In general the round trip matrices are infinite. For a numerical evaluation
@@ -664,43 +727,6 @@ int casimir_get_lmax(casimir_t *self)
     return self->lmax;
 }
 
-
-/**
- * @brief Get verbose flag
- *
- * Return if the verbose flag is set.
- *
- * This function is not thread-safe.
- *
- * @param [in,out] self Casimir object
- * @retval 0 if verbose flag is not set
- * @retval 1 if verbose flag is set
- */
-int casimir_get_verbose(casimir_t *self)
-{
-    return self->verbose;
-}
-
-
-/**
- * @brief Set verbose flag
- *
- * Use this function to set the verbose flag. If set to 1, this will cause the
- * library to print information to stderr.
- *
- * This function is not thread-safe.
- *
- * @param [in,out] self Casimir object
- * @param [in] verbose 1 if verbose, 0 if not verbose
- * @retval 1
- */
-int casimir_set_verbose(casimir_t *self, int verbose)
-{
-    self->verbose = verbose ? 1 : 0;
-    return 1;
-}
-
-
 /**
  * @brief Get precision
  *
@@ -736,6 +762,42 @@ int casimir_set_precision(casimir_t *self, double precision)
     return 1;
 }
 
+
+/**
+ * @brief Set threshold for trace
+ *
+ * The threshold determines when Tr M is used as an approximation for
+ * log(det(1-M)). If trace < threshold, then the value of the trace will be
+ * used. Otherwise the determinant is caclulated.
+ *
+ * This function is not thread-safe.
+ *
+ * @param [in,out] self Casimir object
+ * @param [in] threshold threshold
+ * @retval 1 if successful
+ * @retval 0 if threshold < 0
+ */
+int casimir_set_trace_threshold(casimir_t *self, double threshold)
+{
+    if(threshold < 0)
+        return 0;
+
+    self->trace_threshold = threshold;
+    return 1;
+}
+
+/**
+ * @brief Get threshold for trace
+ *
+ * This function is not thread-safe.
+ *
+ * @param [in] self Casimir object
+ * @retval threshold
+ */
+double casimir_get_trace_threshold(casimir_t *self)
+{
+    return self->trace_threshold;
+}
 
 /**
  * @brief Free memory for Casimir object
@@ -796,7 +858,7 @@ void casimir_lnab0(int l, double *a0, sign_t *sign_a0, double *b0, sign_t *sign_
 {
     *sign_a0 = MPOW(l);
     *sign_b0 = MPOW(l+1);
-    *b0 = LOGPI-lngamma(l+0.5)-lngamma(l+1.5);
+    *b0 = LOGPI-lngamma80(l+0.5)-lngamma80(l+1.5);
     *a0 = *b0+log1p(1.0/l);
 }
 
@@ -819,11 +881,10 @@ void casimir_lnab0(int l, double *a0, sign_t *sign_a0, double *b0, sign_t *sign_
  */
 double casimir_lna_perf(casimir_t *self, const int l, const int n, sign_t *sign)
 {
-    edouble nominator, denominator, frac, ret;
-    edouble lnKlp,lnKlm,lnIlm,lnIlp;
-    edouble prefactor;
-    edouble chi = n*self->T*self->RbyScriptL;
-    edouble lnfrac = log(chi)-log(l);
+    float80 numerator, denominator;
+    float80 lnKlp,lnKlm,lnIlm,lnIlp;
+    float80 prefactor;
+    float80 chi = n*self->T*self->RbyScriptL;
 
     /* we could do both calculations together. but it doesn't cost much time -
      * so why bother?
@@ -831,34 +892,22 @@ double casimir_lna_perf(casimir_t *self, const int l, const int n, sign_t *sign)
     bessel_lnInuKnu(l-1, chi, &lnIlm, &lnKlm);
     bessel_lnInuKnu(l,   chi, &lnIlp, &lnKlp);
 
+    /* We want to calculate
+     * a(chi) = (-1)^(l+1)*pi/2 * ( l*Ip-chi*Im )/( l*Kp+chi*Km )
+     *        = (-1)^(l+1)*pi/2*Ip/Kp * ( l-chi*Im/Ip )/( l+chi*Km/Kp )
+     *          \--------/ \--------/   \-------------/ \-------------/
+     *             sign     prefactor      numerator      denominator
+     */
+
     prefactor = LOGPI-LOG2+lnIlp-lnKlp;
-    *sign = MPOW(l+1);
 
-    /* numinator */
-    {
-        frac = expe(lnfrac+lnIlm-lnIlp);
-        if(frac < 1)
-            nominator = log1pe(fabse(-frac));
-        else
-        {
-            if(frac > 1)
-                *sign *= -1;
-
-            nominator = loge(fabse(1-frac));
-        }
-    }
+    /* numerator */
+    numerator = logadd_s(log80(l), +1, log80(chi)+lnIlm-lnIlp, -1, sign);
     /* denominator */
-    {
-        frac = expe(lnfrac+lnKlm-lnKlp);
-        if(frac < 1)
-            denominator = log1pe(frac);
-        else
-            denominator = log1pe(frac);
-    }
+    denominator = logadd(log80(l), log80(chi)+lnKlm-lnKlp);
 
-    ret = prefactor+nominator-denominator;
-
-    return ret;
+    *sign *= MPOW(l+1);
+    return prefactor+numerator-denominator;
 }
 
 
@@ -880,8 +929,8 @@ double casimir_lna_perf(casimir_t *self, const int l, const int n, sign_t *sign)
  */
 double casimir_lnb_perf(casimir_t *self, const int l, const int n, sign_t *sign)
 {
-    edouble chi = n*self->T*self->RbyScriptL;
-    edouble lnInu, lnKnu;
+    float80 chi = n*self->T*self->RbyScriptL;
+    float80 lnInu, lnKnu;
 
     bessel_lnInuKnu(l, chi, &lnInu, &lnKnu);
     *sign = MPOW(l+1);
@@ -914,13 +963,13 @@ double casimir_lnb_perf(casimir_t *self, const int l, const int n, sign_t *sign)
 void casimir_lnab(casimir_t *self, const int n_mat, const int l, double *lna, double *lnb, sign_t *sign_a, sign_t *sign_b)
 {
     sign_t sign_sla, sign_slb, sign_slc, sign_sld;
-    edouble ln_n, ln_sla, ln_slb, ln_slc, ln_sld;
-    edouble lnIl, lnKl, lnIlm, lnKlm, lnIl_nchi, lnKl_nchi, lnIlm_nchi, lnKlm_nchi;
-    edouble xi = n_mat*self->T;
-    edouble chi = xi*self->RbyScriptL;
-    edouble ln_chi = loge(xi)+loge(self->RbyScriptL);
-    edouble omegap = self->omegap_sphere;
-    edouble gamma_ = self->gamma_sphere;
+    float80 ln_n, ln_sla, ln_slb, ln_slc, ln_sld;
+    float80 lnIl, lnKl, lnIlm, lnKlm, lnIl_nchi, lnKl_nchi, lnIlm_nchi, lnKlm_nchi;
+    float80 xi = n_mat*self->T;
+    float80 chi = xi*self->RbyScriptL;
+    float80 ln_chi = log80(xi)+log80(self->RbyScriptL);
+    float80 omegap = self->omegap_sphere;
+    float80 gamma_ = self->gamma_sphere;
     sign_t sign_a_num, sign_a_denom, sign_b_num, sign_b_denom;
 
     if(isinf(omegap))
@@ -935,8 +984,8 @@ void casimir_lnab(casimir_t *self, const int n_mat, const int l, double *lna, do
     bessel_lnInuKnu(l,   chi, &lnIl,  &lnKl);
     bessel_lnInuKnu(l-1, chi, &lnIlm, &lnKlm);
 
-    bessel_lnInuKnu(l,   expe(ln_n)*chi, &lnIl_nchi,  &lnKl_nchi);
-    bessel_lnInuKnu(l-1, expe(ln_n)*chi, &lnIlm_nchi, &lnKlm_nchi);
+    bessel_lnInuKnu(l,   exp80(ln_n)*chi, &lnIl_nchi,  &lnKl_nchi);
+    bessel_lnInuKnu(l-1, exp80(ln_n)*chi, &lnIlm_nchi, &lnKlm_nchi);
 
     ln_sla = lnIl_nchi + logadd_s(lnIl,      +1, ln_chi+lnIlm,           -1, &sign_sla);
     ln_slb = lnIl      + logadd_s(lnIl_nchi, +1, ln_n+ln_chi+lnIlm_nchi, -1, &sign_slb);
@@ -945,17 +994,17 @@ void casimir_lnab(casimir_t *self, const int n_mat, const int l, double *lna, do
 
     /* XXX FIXME XXX */
     /*
-    printf("n =%.15g\n", (double)expe(ln_n));
-    printf("n2=%.15g\n", (double)expe(2*ln_n));
-    printf("lnIl = %.15g\n", (double)expe(lnIl));
+    printf("n =%.15g\n", (double)exp80(ln_n));
+    printf("n2=%.15g\n", (double)exp80(2*ln_n));
+    printf("lnIl = %.15g\n", (double)exp80(lnIl));
     printf("chi=%.15g\n", (double)chi);
     */
 
     /*
-    printf("sla=%.15g\n", (double)(sign_sla*expe(ln_sla)));
-    printf("slb=%.15g\n", (double)(sign_slb*expe(ln_slb)));
-    printf("slc=%.15g\n", (double)(sign_slc*expe(ln_slc)));
-    printf("sld=%.15g\n", (double)(sign_sld*expe(ln_sld)));
+    printf("sla=%.15g\n", (double)(sign_sla*exp80(ln_sla)));
+    printf("slb=%.15g\n", (double)(sign_slb*exp80(ln_slb)));
+    printf("slc=%.15g\n", (double)(sign_slc*exp80(ln_slc)));
+    printf("sld=%.15g\n", (double)(sign_sld*exp80(ln_sld)));
     */
 
     *lna = LOGPI - LOG2 + logadd_s(2*ln_n+ln_sla, +sign_sla, ln_slb, -sign_slb, &sign_a_num) - logadd_s(2*ln_n+ln_slc, +sign_slc, ln_sld, -sign_sld, &sign_a_denom);
@@ -1015,7 +1064,6 @@ void casimir_mie_cache_init(casimir_t *self)
  */
 void casimir_mie_cache_alloc(casimir_t *self, int n)
 {
-    int l;
     const int nmax = self->mie_cache->nmax;
     const int lmax = self->mie_cache->lmax;
     casimir_mie_cache_t *cache = self->mie_cache;
@@ -1024,7 +1072,7 @@ void casimir_mie_cache_alloc(casimir_t *self, int n)
     {
         cache->entries = xrealloc(cache->entries, (n+1)*sizeof(casimir_mie_cache_entry_t *));
 
-        for(l = nmax+1; l <= n; l++)
+        for(int l = nmax+1; l <= n; l++)
             cache->entries[l] = NULL;
     }
 
@@ -1039,7 +1087,7 @@ void casimir_mie_cache_alloc(casimir_t *self, int n)
         entry->sign_bl = xmalloc((lmax+1)*sizeof(sign_t));
 
         entry->ln_al[0] = entry->ln_bl[0] = NAN; /* should never be read */
-        for(l = 1; l <= lmax; l++)
+        for(int l = 1; l <= lmax; l++)
             casimir_lnab(self, n, l, &entry->ln_al[l], &entry->ln_bl[l], &entry->sign_al[l], &entry->sign_bl[l]);
     }
 
@@ -1108,7 +1156,7 @@ void casimir_mie_cache_get(casimir_t *self, int l, int n, double *ln_a, sign_t *
      */
     entry = self->mie_cache->entries[n];
 
-    /* at this point it is finally is safe to release the mutex without lock */
+    /* at this point it is finally is safe to release the mutex */
     pthread_mutex_unlock(&self->mie_cache->mutex);
 
     *ln_a   = entry->ln_al[l];
@@ -1131,7 +1179,6 @@ void casimir_mie_cache_get(casimir_t *self, int l, int n, double *ln_a, sign_t *
  */
 void casimir_mie_cache_free(casimir_t *self)
 {
-    int n;
     casimir_mie_cache_t *cache = self->mie_cache;
     casimir_mie_cache_entry_t **entries = cache->entries;
 
@@ -1143,7 +1190,7 @@ void casimir_mie_cache_free(casimir_t *self)
      * 3) the list of entries
      * 4) the mie cache object (casimir_mie_cache_t)
      */
-    for(n = 0; n <= cache->nmax; n++)
+    for(int n = 0; n <= cache->nmax; n++)
     {
         if(entries[n] != NULL)
         {
@@ -1173,12 +1220,11 @@ void casimir_mie_cache_free(casimir_t *self)
    The idea is: To avoid a loss of significance, we sum beginning with smallest
    number and add up in increasing order
 */
-static double _sum(double values[], size_t len)
+static double _sum(double values[], int len)
 {
-    int i;
     double sum = 0;
 
-    for(i = len-1; i > 0; i--)
+    for(int i = len-1; i > 0; i--)
         sum += values[i];
 
     sum += values[0]/2;
@@ -1218,11 +1264,11 @@ static pthread_t *_start_thread(casimir_t *self, int n)
 /* This function tries to join threads and writed the result to values */
 static int _join_threads(casimir_t *self, double values[], int *ncalc)
 {
-    int i, joined = 0, running = 0;
+    int joined = 0, running = 0;
     casimir_thread_t *r;
     pthread_t **threads = self->threads;
 
-    for(i = 0; i < self->cores; i++)
+    for(int i = 0; i < self->cores; i++)
     {
         if(threads[i] != NULL)
         {
@@ -1262,8 +1308,7 @@ static int _join_threads(casimir_t *self, double values[], int *ncalc)
  * is not NULL, the largest value of m calculated will be stored in mmax.
  *
  * This function is thread-safe - as long you don't change temperature, aspect
- * ratio, dielectric properties of sphere and plane, lmax, integration and
- * verbose.
+ * ratio, dielectric properties of sphere and plane, lmax and integration.
  *
  * @param [in,out] self Casimir object
  * @param [in] n Matsubara term, \f$\xi=nT\f$
@@ -1272,27 +1317,20 @@ static int _join_threads(casimir_t *self, double values[], int *ncalc)
  */
 double casimir_F_n(casimir_t *self, const int n, int *mmax)
 {
+    int m;
     double precision = self->precision;
     double sum_n = 0;
-    int m;
     const int lmax = self->lmax;
     double values[lmax+1];
-    integration_perf_t int_perf;
 
     /* perfect reflectors */
 
     for(m = 0; m <= lmax; m++)
         values[m] = 0;
 
-    if(self->integration <= 0)
-        casimir_integrate_perf_init(&int_perf, n*self->T, self->lmax);
-
     for(m = 0; m <= self->lmax; m++)
     {
-        values[m] = casimir_logdetD(self,n,m,&int_perf);
-
-        if(self->verbose)
-            fprintf(stderr, "# n=%d, m=%d, value=%.15g\n", n, m, values[m]);
+        values[m] = casimir_logdetD(self,n,m);
 
         /* If F is !=0 and value/F < 1e-16, then F+value = F. The addition
          * has no effect.
@@ -1303,12 +1341,6 @@ double casimir_F_n(casimir_t *self, const int n, int *mmax)
         if(values[0] != 0 && fabs(values[m]/sum_n) < precision)
             break;
     }
-
-    if(self->integration <= 0)
-        casimir_integrate_perf_free(&int_perf);
-
-    if(self->verbose)
-        fprintf(stderr, "# n=%d, value=%.15g\n", n, sum_n);
 
     if(mmax != NULL)
         *mmax = m;
@@ -1331,17 +1363,17 @@ double casimir_F_n(casimir_t *self, const int n, int *mmax)
  */
 double casimir_F(casimir_t *self, int *nmax)
 {
-    int i, n = 0;
+    int n = 0;
     double sum_n = 0;
     const double precision = self->precision;
     double *values = NULL;
-    size_t len = 0;
+    int len = 0;
     int ncalc = 0;
     const int cores = self->cores;
     const int delta = MAX(1024, cores);
     pthread_t **threads = self->threads;
 
-    for(i = 0; i < cores; i++)
+    for(int i = 0; i < cores; i++)
         threads[i] = NULL;
 
     /* So, here we sum up all m and n that contribute to F.
@@ -1357,7 +1389,7 @@ double casimir_F(casimir_t *self, int *nmax)
         {
             values = (double *)xrealloc(values, (len+delta)*sizeof(double));
 
-            for(i = len; i < len+delta; i++)
+            for(int i = len; i < len+delta; i++)
                 values[i] = 0;
 
             len += delta;
@@ -1365,7 +1397,7 @@ double casimir_F(casimir_t *self, int *nmax)
 
         if(cores > 1)
         {
-            for(i = 0; i < cores; i++)
+            for(int i = 0; i < cores; i++)
                 if(threads[i] == NULL)
                     threads[i] = _start_thread(self, n++);
 
@@ -1405,49 +1437,6 @@ double casimir_F(casimir_t *self, int *nmax)
 
 
 /**
- * @brief Calculate free energy using PSD
- *
- * Here be dragons.
- *
- * @param [in,out] self Casimir object
- * @param [in] psd
- * @param [out] F_n
- * @retval F Casimir free energy
- *
- * Ref: Hu, Xu, Yan, Pade spectrum decomposition of Fermi function and Bose
- * function, The Journal of Chemical Physics 133, 101106, 2010
- */
-double casimir_F_psd(casimir_t *self, double psd[][2], double *F_n)
-{
-    const double T0 = self->T;
-    int n = 1;
-    double sum = 0.5*casimir_F_n(self, 0, NULL);
-
-    while(1)
-    {
-        const double xi  = psd[n-1][0];
-        const double eta = psd[n-1][1];
-
-        if(xi == 0 || eta == 0)
-            break;
-
-        self->T = T0*xi;
-
-        sum += eta*casimir_F_n(self, n, NULL);
-
-        n++;
-    }
-
-    self->T = T0;
-
-    /* reinit mie cache */
-    casimir_mie_cache_clean(self);
-
-    return self->T/PI*sum;
-}
-
-
-/**
  * @brief Calculate \f$\log\det \mathcal{D}^{(m)}(\xi=0)\f$ for EE and MM
  *
  * This function calculates the logarithm of the determinant of the scattering
@@ -1462,102 +1451,73 @@ double casimir_F_psd(casimir_t *self, double psd[][2], double *F_n)
  */
 void casimir_logdetD0(casimir_t *self, int m, double *logdet_EE, double *logdet_MM)
 {
-    int l1,l2,min,max,dim;
-    const edouble lnRbyScriptL = loge(self->RbyScriptL);
-    matrix_edouble_t *EE = NULL, *MM = NULL;
+    const float80 lnRbyScriptL = log80(self->RbyScriptL);
+    matrix_float80 *EE = NULL, *MM = NULL;
     matrix_sign_t *EE_sign = NULL, *MM_sign = NULL;
 
-    min = MAX(m,1);
-    max = self->lmax;
-
-    dim = (max-min+1);
+    const int min = MAX(m,1);
+    const int max = self->lmax;
+    const int dim = (max-min+1);
 
     if(logdet_EE != NULL)
     {
-        EE = matrix_edouble_alloc(dim);
+        EE = matrix_float80_alloc(dim);
         EE_sign = matrix_sign_alloc(dim);
     }
     if(logdet_MM != NULL)
     {
-        MM = matrix_edouble_alloc(dim);
+        MM = matrix_float80_alloc(dim);
         MM_sign = matrix_sign_alloc(dim);
     }
 
-    /* calculate the logarithm of the matrix elements of D */
-    for(l1 = min; l1 <= max; l1++)
-        for(l2 = min; l2 <= max; l2++)
+    /* calculate the logarithm of the matrix elements of -M. The function
+     * matrix_logdet1mM then calculates log(det(1-M)) = log(det(D)) */
+    for(int l1 = min; l1 <= max; l1++)
+    {
+        sign_t sign_a0, sign_b0;
+        double lna0, lnb0;
+        casimir_lnab0(l1, &lna0, &sign_a0, &lnb0, &sign_b0);
+
+        for(int l2 = min; l2 <= max; l2++)
         {
             /* i: row of matrix, j: column of matrix */
             const int i = l1-min, j = l2-min;
-            sign_t sign_a0, sign_b0, sign_xi;
-            double lna0, lnb0;
-            const edouble lnXiRL = casimir_lnXi(l1,l2,m,&sign_xi)+(2*l1+1)*lnRbyScriptL;
-            casimir_lnab0(l1, &lna0, &sign_a0, &lnb0, &sign_b0);
-            edouble v;
-            sign_t sign;
+            sign_t sign_xi;
+            const float80 lnXiRL = casimir_lnXi(l1,l2,m,&sign_xi)+(2*l1+1)*lnRbyScriptL;
 
             if(EE != NULL)
             {
-                if(l1 != l2)
-                {
-                    v    = lna0+lnXiRL;
-                    sign = -sign_xi*sign_a0;
-                }
-                else
-                    v = logadd_s(0, +1, lna0+lnXiRL, -sign_xi*sign_a0, &sign);
-
+                const float80 v = lna0+lnXiRL;
                 matrix_set(EE, i,j, v);
-                matrix_set(EE_sign, i,j, sign);
+                matrix_set(EE_sign, i,j, -sign_xi*sign_a0);
 
-                TERMINATE(isinf(v), "EE l1=%d,l2=%d: inf (lna0=%g, lnXiRL=%g)", l1, l2, lna0, (double)lnXiRL);
-                TERMINATE(isnan(v), "EE l1=%d,l2=%d: nan (lna0=%g, lnXiRL=%g)", l1, l2, lna0, (double)lnXiRL);
+                TERMINATE(!isfinite(v), "EE l1=%d,l2=%d: v=%Lg (lna0=%g, lnXiRL=%Lg)", l1, l2, (long double)v, lna0, (long double)lnXiRL);
             }
             if(MM != NULL)
             {
-                if(l1 != l2)
-                {
-                    v    = lnb0+lnXiRL;
-                    sign = sign_xi*sign_b0;
-                }
-                else
-                    v = logadd_s(0, +1, lnb0+lnXiRL, sign_xi*sign_b0, &sign);
-
+                const float80 v = lnb0+lnXiRL;
                 matrix_set(MM, i,j, v);
-                matrix_set(MM_sign, i,j, sign);
+                matrix_set(MM_sign, i,j, sign_xi*sign_b0);
 
-                TERMINATE(isinf(v), "MM l1=%d,l2=%d: inf (lnb0=%g, lnXiRL=%g)", l1, l2, lnb0, (double)lnXiRL);
-                TERMINATE(isnan(v), "MM l1=%d,l2=%d: nan (lnb0=%g, lnXiRL=%g)", l1, l2, lnb0, (double)lnXiRL);
+                TERMINATE(!isfinite(v), "MM l1=%d,l2=%d: v=%Lg (lnb0=%g, lnXiRL=%Lg)", l1, l2, (long double)v, lnb0, (long double)lnXiRL);
             }
         }
+    }
 
-    /* balance matrices, calculate logdet and free space */
+    /* calculate logdet and free space */
     if(EE != NULL)
     {
-        matrix_edouble_log_balance(EE);
-
-        #ifdef USE_LAPACK
-            *logdet_EE = matrix_logdet_lapack(EE, EE_sign);
-        #else
-            matrix_edouble_exp(EE, EE_sign);
-            *logdet_EE = matrix_edouble_logdet(EE);
-        #endif
+        *logdet_EE = matrix_logdet1mM(EE, EE_sign, self->detalg, self->pivot);
 
         matrix_sign_free(EE_sign);
-        matrix_edouble_free(EE);
+        matrix_float80_free(EE);
     }
     if(MM != NULL)
     {
-        matrix_edouble_log_balance(MM);
-
-        #ifdef USE_LAPACK
-            *logdet_MM = matrix_logdet_lapack(MM, MM_sign);
-        #else
-            matrix_edouble_exp(MM, MM_sign);
-            *logdet_MM = matrix_edouble_logdet(MM);
-        #endif
+        *logdet_MM = matrix_logdet1mM(MM, MM_sign, self->detalg, self->pivot);
 
         matrix_sign_free(MM_sign);
-        matrix_edouble_free(MM);
+        matrix_float80_free(MM);
     }
 }
 
@@ -1571,46 +1531,45 @@ void casimir_logdetD0(casimir_t *self, int m, double *logdet_EE, double *logdet_
  * This function is thread-safe - as long you don't change lmax, temperature,
  * aspect ratio, dielectric properties of sphere and plane, and integration.
  *
+ * This function works only for perfect metals at the moment!
+ *
  * @param [in,out] self Casimir object
  * @param [in] n Matsubara term
  * @param [in] m
  * @param [in,out] integration_obj may be NULL
  * @retval trM \f$\mathrm{tr} \mathcal{D}^{(m)}(\xi=nT)\f$
  */
-double casimir_trM(casimir_t *self, int n, int m, void *integration_obj)
+double casimir_trM(casimir_t *self, int n, int m, void *obj)
 {
-    int l;
     const int min = MAX(m,1);
     const int max = self->lmax;
-    edouble trM = 0;
+    integration_perf_t *int_perf = obj;
+    float80 trM = 0;
 
-    for(l = min; l <= max; l++)
+    for(int l = min; l <= max; l++)
     {
-        edouble v;
+        float80 v;
         casimir_integrals_t cint;
         double ln_al, ln_bl;
         sign_t sign, sign_al, sign_bl;
 
         casimir_mie_cache_get(self, l, n, &ln_al, &sign_al, &ln_bl, &sign_bl);
 
-        if(self->integration > 0)
-            casimir_integrate_drude(self, &cint, l, l, m, n, self->T);
-        else
-            casimir_integrate_perf(integration_obj, l, l, m, &cint);
+        casimir_integrate_perf(int_perf, l, l, &cint);
 
         /* EE */
         sign_t signs_EE[] = { sign_al*cint.signA_TE, sign_al*cint.signB_TM };
-        edouble list_EE[] = { ln_al+cint.lnA_TE, ln_al+cint.lnB_TM };
+        float80 list_EE[] = { ln_al+cint.lnA_TE, ln_al+cint.lnB_TM };
 
         v = logadd_ms(list_EE, signs_EE, 2, &sign);
-        trM += sign*expe(v);
+        trM += sign*exp80(v);
 
         /* MM */
         sign_t signs_MM[] = { sign_bl*cint.signA_TM, sign_bl*cint.signB_TE };
-        edouble list_MM[] = { ln_bl+cint.lnA_TM, ln_bl+cint.lnB_TE };
+        float80 list_MM[] = { ln_bl+cint.lnA_TM, ln_bl+cint.lnB_TE };
 
         v = logadd_ms(list_MM, signs_MM, 2, &sign);
-        trM += sign*expe(v);
+        trM += sign*exp80(v);
     }
 
     return trM;
@@ -1629,19 +1588,19 @@ double casimir_trM(casimir_t *self, int n, int m, void *integration_obj)
  * @param [in,out] self Casimir object
  * @param [in] n Matsubara term
  * @param [in] m
- * @param [in,out] integration_obj may be NULL
  * @retval logdetD \f$\log \det \mathcal{D}^{(m)}(\xi=nT)\f$
  */
-double casimir_logdetD(casimir_t *self, int n, int m, void *integration_obj)
+double casimir_logdetD(casimir_t *self, int n, int m)
 {
-    int min,max,dim,l1,l2;
-    double logdet = 0;
-    double nTRbyScriptL = n*self->T*self->RbyScriptL;
+    const double nT = n*self->T;
+    double trace, logdet = 0;
+    const double nTRbyScriptL = nT*self->RbyScriptL;
+    const double lognTRbyScriptL = log(nTRbyScriptL);
+    integration_perf_t int_perf;
 
-    min = MAX(m,1);
-    max = self->lmax;
-
-    dim = (max-min+1);
+    const int min = MAX(m,1);
+    const int max = self->lmax;
+    const int dim = (max-min+1);
 
     if(n == 0)
     {
@@ -1657,19 +1616,30 @@ double casimir_logdetD(casimir_t *self, int n, int m, void *integration_obj)
         return logdet_EE + logdet_MM;
     }
 
-    matrix_edouble_t *M = matrix_edouble_alloc(2*dim);
-    matrix_sign_t *M_sign = matrix_sign_alloc(2*dim);
+    if(self->integration < 0)
+        casimir_integrate_perf_init(&int_perf, nT, m, self->lmax);
+
+    trace = casimir_trM(self, n, m, &int_perf);
+    if(trace < self->trace_threshold)
+    {
+        if(self->integration < 0)
+            casimir_integrate_perf_free(&int_perf);
+
+        return -trace;
+    }
+
+    matrix_float80 *M     = matrix_float80_alloc(2*dim);
+    matrix_sign_t *M_sign = matrix_sign_alloc   (2*dim);
 
     /* M_EE, -M_EM
        M_ME,  M_MM */
-    for(l1 = min; l1 <= max; l1++)
+    for(int l1 = min; l1 <= max; l1++)
     {
-        for(l2 = min; l2 <= l1; l2++)
+        for(int l2 = min; l2 <= l1; l2++)
         {
-            const int Delta_ij = (l1 == l2 ? 0 : -INFINITY);
             const int i = l1-min, j = l2-min;
             casimir_integrals_t cint;
-            double ln_al1, ln_bl1, ln_al2, ln_bl2;
+            double ln_al1, ln_bl1,ln_al2, ln_bl2;
             sign_t sign_al1, sign_bl1, sign_al2, sign_bl2;
 
             casimir_mie_cache_get(self, l1, n, &ln_al1, &sign_al1, &ln_bl1, &sign_bl1);
@@ -1677,7 +1647,6 @@ double casimir_logdetD(casimir_t *self, int n, int m, void *integration_obj)
 
             if(nTRbyScriptL < 1)
             {
-                double lognTRbyScriptL = log(nTRbyScriptL);
                 ln_al1 -= (l1-l2)*lognTRbyScriptL;
                 ln_bl1 -= (l1-l2)*lognTRbyScriptL;
 
@@ -1688,50 +1657,44 @@ double casimir_logdetD(casimir_t *self, int n, int m, void *integration_obj)
             if(self->integration > 0)
                 casimir_integrate_drude(self, &cint, l1, l2, m, n, self->T);
             else
-                casimir_integrate_perf(integration_obj, l1, l2, m, &cint);
+                casimir_integrate_perf(&int_perf, l1, l2, &cint);
 
             /* EE */
             {
                 sign_t sign;
-                edouble list_ij[] = { Delta_ij, ln_al1+cint.lnA_TE, ln_al1+cint.lnB_TM };
-                edouble list_ji[] = { Delta_ij, ln_al2+cint.lnA_TE, ln_al2+cint.lnB_TM };
+                float80 list_ij[] = { ln_al1+cint.lnA_TE, ln_al1+cint.lnB_TM };
+                float80 list_ji[] = { ln_al2+cint.lnA_TE, ln_al2+cint.lnB_TM };
 
-                sign_t signs_ij[] = { +1, -            sign_al1*cint.signA_TE, -            sign_al1*cint.signB_TM };
-                sign_t signs_ji[] = { +1, -MPOW(l1+l2)*sign_al2*cint.signA_TE, -MPOW(l1+l2)*sign_al2*cint.signB_TM };
+                sign_t signs_ij[] = { -            sign_al1*cint.signA_TE, -            sign_al1*cint.signB_TM };
+                sign_t signs_ji[] = { -MPOW(l1+l2)*sign_al2*cint.signA_TE, -MPOW(l1+l2)*sign_al2*cint.signB_TM };
 
-                matrix_set(M, i,j, logadd_ms(list_ij, signs_ij, 3, &sign));
+                matrix_set(M, i,j, logadd_ms(list_ij, signs_ij, 2, &sign));
                 matrix_set(M_sign, i,j, sign);
 
-                matrix_set(M, j,i, logadd_ms(list_ji, signs_ji, 3, &sign));
+                matrix_set(M, j,i, logadd_ms(list_ji, signs_ji, 2, &sign));
                 matrix_set(M_sign, j,i, sign);
 
-                TERMINATE(isinf(matrix_get(M,i,j)), "EE, i=%d,j=%d is inf", i,j);
-                TERMINATE(isnan(matrix_get(M,i,j)), "EE, i=%d,j=%d is nan", i,j);
-
-                TERMINATE(isinf(matrix_get(M,j,i)), "EE, i=%d,j=%d is inf", j,i);
-                TERMINATE(isnan(matrix_get(M,j,i)), "EE, i=%d,j=%d is nan", j,i);
+                TERMINATE(!isfinite(matrix_get(M,i,j)), "EE, i=%d,j=%d: %Lg", i,j, (long double)matrix_get(M,i,j));
+                TERMINATE(!isfinite(matrix_get(M,j,i)), "EE, i=%d,j=%d: %Lg", j,i, (long double)matrix_get(M,j,i));
             }
 
             /* MM */
             {
                 sign_t sign;
-                edouble list_ij[] = { Delta_ij, ln_bl1+cint.lnA_TM, ln_bl1+cint.lnB_TE };
-                edouble list_ji[] = { Delta_ij, ln_bl2+cint.lnA_TM, ln_bl2+cint.lnB_TE };
+                float80 list_ij[] = { ln_bl1+cint.lnA_TM, ln_bl1+cint.lnB_TE };
+                float80 list_ji[] = { ln_bl2+cint.lnA_TM, ln_bl2+cint.lnB_TE };
 
-                sign_t signs_ij[] = { +1, -            sign_bl1*cint.signA_TM, -            sign_bl1*cint.signB_TE };
-                sign_t signs_ji[] = { +1, -MPOW(l1+l2)*sign_bl2*cint.signA_TM, -MPOW(l1+l2)*sign_bl2*cint.signB_TE };
+                sign_t signs_ij[] = { -            sign_bl1*cint.signA_TM, -            sign_bl1*cint.signB_TE };
+                sign_t signs_ji[] = { -MPOW(l1+l2)*sign_bl2*cint.signA_TM, -MPOW(l1+l2)*sign_bl2*cint.signB_TE };
 
-                matrix_set(M, i+dim,j+dim, logadd_ms(list_ij, signs_ij, 3, &sign));
+                matrix_set(M, i+dim,j+dim, logadd_ms(list_ij, signs_ij, 2, &sign));
                 matrix_set(M_sign, i+dim,j+dim, sign);
 
-                matrix_set(M, j+dim,i+dim, logadd_ms(list_ji, signs_ji, 3, &sign));
+                matrix_set(M, j+dim,i+dim, logadd_ms(list_ji, signs_ji, 2, &sign));
                 matrix_set(M_sign, j+dim,i+dim, sign);
 
-                TERMINATE(isinf(matrix_get(M,i+dim,j+dim)), "MM, i=%d,j=%d is inf", i+dim,j+dim);
-                TERMINATE(isnan(matrix_get(M,i+dim,j+dim)), "MM, i=%d,j=%d is nan", i+dim,j+dim);
-
-                TERMINATE(isinf(matrix_get(M,j+dim,i+dim)), "MM, i=%d,j=%d is inf", j+dim,i+dim);
-                TERMINATE(isnan(matrix_get(M,j+dim,i+dim)), "MM, i=%d,j=%d is nan", j+dim,i+dim);
+                TERMINATE(!isfinite(matrix_get(M,i+dim,j+dim)), "MM, i=%d,j=%d: %Lg", i+dim,j+dim, (long double)matrix_get(M,i+dim,j+dim));
+                TERMINATE(!isfinite(matrix_get(M,j+dim,i+dim)), "MM, i=%d,j=%d: %Lg", j+dim,i+dim, (long double)matrix_get(M,j+dim,i+dim));
             }
 
 
@@ -1740,33 +1703,11 @@ double casimir_logdetD(casimir_t *self, int n, int m, void *integration_obj)
                 /* M_EM */
                 {
                     sign_t sign;
-                    edouble list_ij[] = { ln_al1+cint.lnC_TE, ln_al1+cint.lnD_TM };
+                    float80 list_ij[] = { ln_al1+cint.lnC_TE, ln_al1+cint.lnD_TM };
                     sign_t signs_ij[] = { -sign_al1*cint.signC_TE,  -sign_al1*cint.signD_TM };
 
-                    edouble list_ji[] = { ln_al2+cint.lnD_TE, ln_al2+cint.lnC_TM };
+                    float80 list_ji[] = { ln_al2+cint.lnD_TE, ln_al2+cint.lnC_TM };
                     sign_t signs_ji[] = { -MPOW(l1+l2+1)*sign_al2*cint.signD_TE, -MPOW(l1+l2+1)*sign_al2*cint.signC_TM };
-
-                    matrix_set(M, dim+i,j, logadd_ms(list_ij, signs_ij, 2, &sign));
-                    matrix_set(M_sign, dim+i,j, sign);
-
-                    matrix_set(M, dim+j,i, logadd_ms(list_ji, signs_ji, 2, &sign));
-                    matrix_set(M_sign, dim+j,i, sign);
-
-                    TERMINATE(isinf(matrix_get(M,i+dim,j)), "EM, i=%d,j=%d is inf", i+dim,j);
-                    TERMINATE(isnan(matrix_get(M,i+dim,j)), "EM, i=%d,j=%d is nan", i+dim,j);
-
-                    TERMINATE(isinf(matrix_get(M,j+dim,i)), "EM, i=%d,j=%d is inf", j+dim,i);
-                    TERMINATE(isnan(matrix_get(M,j+dim,i)), "EM, i=%d,j=%d is nan", j+dim,i);
-                }
-
-                /* M_ME */
-                {
-                    sign_t sign;
-                    edouble list_ij[] = { ln_bl1+cint.lnC_TM, ln_bl1+cint.lnD_TE };
-                    sign_t signs_ij[] = { -sign_bl1*cint.signC_TM, -sign_bl1*cint.signD_TE};
-
-                    edouble list_ji[] = { ln_bl2+cint.lnD_TM, ln_bl2+cint.lnC_TE };
-                    sign_t signs_ji[] = { -MPOW(l1+l2+1)*sign_bl2*cint.signD_TM, -MPOW(l1+l2+1)*sign_bl2*cint.signC_TE };
 
                     matrix_set(M, i,dim+j, logadd_ms(list_ij, signs_ij, 2, &sign));
                     matrix_set(M_sign, i,dim+j, sign);
@@ -1774,27 +1715,54 @@ double casimir_logdetD(casimir_t *self, int n, int m, void *integration_obj)
                     matrix_set(M, j,dim+i, logadd_ms(list_ji, signs_ji, 2, &sign));
                     matrix_set(M_sign, j,dim+i, sign);
 
-                    TERMINATE(isinf(matrix_get(M,i,j+dim)), "ME, i=%d,j=%d is inf", i,j+dim);
-                    TERMINATE(isnan(matrix_get(M,i,j+dim)), "ME, i=%d,j=%d is nan", i,j+dim);
+                    TERMINATE(!isfinite(matrix_get(M,i,dim+j)), "EM, i=%d,j=%d: %Lg", i,j+dim, (long double)matrix_get(M,i,dim+j));
+                    TERMINATE(!isfinite(matrix_get(M,j,dim+i)), "EM, i=%d,j=%d: %Lg", j,i+dim, (long double)matrix_get(M,j,dim+i));
+                }
 
-                    TERMINATE(isinf(matrix_get(M,j,i+dim)), "ME, i=%d,j=%d is inf", j,i+dim);
-                    TERMINATE(isnan(matrix_get(M,j,i+dim)), "ME, i=%d,j=%d is nan", j,i+dim);
+                /* M_ME */
+                {
+                    sign_t sign;
+                    float80 list_ij[] = { ln_bl1+cint.lnC_TM, ln_bl1+cint.lnD_TE };
+                    sign_t signs_ij[] = { -sign_bl1*cint.signC_TM, -sign_bl1*cint.signD_TE};
+
+                    float80 list_ji[] = { ln_bl2+cint.lnD_TM, ln_bl2+cint.lnC_TE };
+                    sign_t signs_ji[] = { -MPOW(l1+l2+1)*sign_bl2*cint.signD_TM, -MPOW(l1+l2+1)*sign_bl2*cint.signC_TE };
+
+                    matrix_set(M, dim+i,j, logadd_ms(list_ij, signs_ij, 2, &sign));
+                    matrix_set(M_sign, dim+i,j, sign);
+
+                    matrix_set(M, dim+j,i, logadd_ms(list_ji, signs_ji, 2, &sign));
+                    matrix_set(M_sign, dim+j,i, sign);
+
+                    TERMINATE(!isfinite(matrix_get(M,dim+i,j)), "ME, i=%d,j=%d: %Lg", dim+i,j, (long double)matrix_get(M,dim+i,j));
+                    TERMINATE(!isfinite(matrix_get(M,dim+j,i)), "ME, i=%d,j=%d: %Lg", dim+j,i, (long double)matrix_get(M,dim+j,i));
                 }
             }
         }
     }
 
+    if(self->integration < 0)
+        casimir_integrate_perf_free(&int_perf);
+
+    #if 0
+    /* Dump matrix */
+    printf("%d\n", matrix_float80_save(M, "matrix_float80.out"));
+    printf("%d\n", matrix_sign_save(M_sign, "matrix_signs.out"));
+    #endif
+
+    /* We have calculated -M here. We now call matrix_logdet1mM that will
+     * calculate log(det(1-M)) = log(det(D)) */
+
     if(m == 0)
     {
-        size_t i,j;
-        matrix_edouble_t *EE = matrix_edouble_alloc(dim);
-        matrix_edouble_t *MM = matrix_edouble_alloc(dim);
+        matrix_float80 *EE = matrix_float80_alloc(dim);
+        matrix_float80 *MM = matrix_float80_alloc(dim);
 
         matrix_sign_t *EE_sign = matrix_sign_alloc(dim);
         matrix_sign_t *MM_sign = matrix_sign_alloc(dim);
 
-        for(i = 0; i < dim; i++)
-            for(j = 0; j < dim; j++)
+        for(int i = 0; i < dim; i++)
+            for(int j = 0; j < dim; j++)
             {
                 matrix_set(EE, i,j, matrix_get(M, i,j));
                 matrix_set(EE_sign, i,j, matrix_get(M_sign, i,j));
@@ -1803,39 +1771,23 @@ double casimir_logdetD(casimir_t *self, int n, int m, void *integration_obj)
                 matrix_set(MM_sign, i,j, matrix_get(M_sign, i+dim,j+dim));
             }
 
-        matrix_edouble_free(M);
+        matrix_float80_free(M);
         matrix_sign_free(M_sign);
 
-        matrix_edouble_log_balance(MM);
-        matrix_edouble_log_balance(EE);
-
-        #ifdef USE_LAPACK
-            logdet = matrix_logdet_lapack(EE, EE_sign) + matrix_logdet_lapack(MM, MM_sign);
-        #else
-            matrix_edouble_exp(EE, EE_sign);
-            matrix_edouble_exp(MM, MM_sign);
-
-            logdet = matrix_edouble_logdet(EE)+matrix_edouble_logdet(MM);
-        #endif
+        logdet  = matrix_logdet1mM(EE, EE_sign, self->detalg, self->pivot);
+        logdet += matrix_logdet1mM(MM, MM_sign, self->detalg, self->pivot);
 
         matrix_sign_free(EE_sign);
         matrix_sign_free(MM_sign);
 
-        matrix_edouble_free(EE);
-        matrix_edouble_free(MM);
+        matrix_float80_free(EE);
+        matrix_float80_free(MM);
     }
     else
     {
-        matrix_edouble_log_balance(M);
+        logdet = matrix_logdet1mM(M, M_sign, self->detalg, self->pivot);
 
-        #ifdef USE_LAPACK
-            logdet = matrix_logdet_lapack(M, M_sign);
-        #else
-            matrix_edouble_exp(M,M_sign);
-            logdet = matrix_edouble_logdet(M);
-        #endif
-
-        matrix_edouble_free(M);
+        matrix_float80_free(M);
         matrix_sign_free(M_sign);
     }
 

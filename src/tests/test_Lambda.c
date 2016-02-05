@@ -47,5 +47,19 @@ int test_Lambda(void)
     AssertAlmostEqual(&test, casimir_lnLambda(1000,1000,999,NULL),  -13205.138555777978298175816431569216187);
     AssertAlmostEqual(&test, casimir_lnLambda(1000,1000,1000,NULL), -13212.739458237520380537287638054727456);
 
+    AssertAlmostEqual(&test, casimir_lnLambda(1500,1500,0,NULL),    -6.6204063732833962735715537724344127507);
+    AssertAlmostEqual(&test, casimir_lnLambda(1500,1500,1,NULL),    -21.247513592007159661785514225321118969);
+    AssertAlmostEqual(&test, casimir_lnLambda(1500,1500,2,NULL),    -35.874619922433837419434454683947723733);
+    AssertAlmostEqual(&test, casimir_lnLambda(1500,1500,500,NULL),  -7301.0165783989268037048388170757359000);
+    AssertAlmostEqual(&test, casimir_lnLambda(1500,1500,1000,NULL), -14460.235969925823579321977240581831393);
+    AssertAlmostEqual(&test, casimir_lnLambda(1500,1500,1500,NULL), -21030.645259418831097631857903852345427);
+
+    AssertAlmostEqual(&test, casimir_lnLambda(1500,1,0,NULL),    -3.1074706325876159457967703284850318070);
+
+    AssertAlmostEqual(&test, casimir_lnLambda(5000,1,1,NULL), -12.573207215572773561556083406674521745);
+    AssertAlmostEqual(&test, casimir_lnLambda(5000,500,1,NULL), -21.406202989196329346517820278453015337);
+    AssertAlmostEqual(&test, casimir_lnLambda(5000,2000,1,NULL), -23.484521169044081354765678610825503880);
+    AssertAlmostEqual(&test, casimir_lnLambda(5000,5000,1,NULL), -24.858732358693766195672947807355216058);
+
     return test_results(&test, stderr);
 }

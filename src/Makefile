@@ -1,46 +1,61 @@
-.PHONY: clean doc casimir casimir_tests casimir_hiT casimir_logdetD casimir_Fn ld_drude casimir_psd casimir_T0
-all: casimir casimir_hiT casimir_logdetD casimir_tests
-
-SOURCES  = sfunc.c integration_drude.c integration_perf.c libcasimir.c matrix.c utils.c gausslaguerre.c
-CFLAGS  += -Werror -Wall -Wmissing-prototypes -Wstrict-prototypes -Wshadow -Wpointer-arith -Wcast-qual -Wwrite-strings -fno-common
-LDFLAGS += -lm -pthread
-
+.PHONY: clean doc casimir casimir_logdetD casimir_hiT casimir_Fn ld_drude casimir_T0 casimir_tests
+all: casimir casimir_logdetD casimir_tests
 
 # Choose a compiler.
 #
-# At the moment gcc and icc are supported.
+# At the moment gcc, clang and icc are supported.
 CC = gcc
 #CC = icc
 MPICC = mpicc
+#MPICC = mpiicc
 
+OBJS = \
+    gausslaguerre.o \
+    integration_drude.o \
+    integration_perf.o \
+    libcasimir.o \
+    matrix.o \
+    sfunc.o \
+    utils.o
 
-# Use extended doubles for calculations.
-#
-# gcc and icc implement long double as 80-bit extended precision type on x86
-# hardware. Extended doubles are less precise than quadrupule precision, but
-# are much faster (approximately by a factor of 40).
-#
-# To use quadruple precision, comment out the line.
-#
-# If you don't know what to do here, set EXTENDED_DOUBLE to 1.
-USE_EXTENDED_DOUBLE = 1
+TESTS = \
+    tests/test_bessels.o \
+    tests/test_doublefact.o \
+    tests/test_fresnel.o \
+    tests/test_integration_perf.o \
+    tests/test_lbinom.o \
+    tests/test_mie.o \
+    tests/test_Plm.o \
+    tests/test_Xi.o \
+    tests/test_determinant.o \
+    tests/test_epsilon.o \
+    tests/test_integration_drude.o \
+    tests/test_Lambda.o \
+    tests/test_logdet.o \
+    tests/test_mie_drude.o \
+    tests/tests.o \
+    tests/unittest.o
 
+# use C99 standard
+CFLAGS  = -std=c99
+# use traditional GNU semantics for inline
+CFLAGS += -fgnu89-inline
+CFLAGS += -I .
+CFLAGS += -DEXPERIMENTAL_FEATURES
+CFLAGS += -DTRACE
+# enable warnings and make them fatal
+CFLAGS += -Werror -Wall -Wextra -Wmissing-prototypes -Wstrict-prototypes -Wshadow -Wpointer-arith -Wcast-qual -Wwrite-strings -Wno-unused-parameter
 
-# Use LAPACK to calculate the determinant.
-#
-# If you define USE_LAPACK, the LAPACK routine dgetrf will be used to perform
-# LU decompositions. The use of LAPACK is slightly faster, but LAPACK only
-# operates on doubles. This will increase the precision. For very small values
-# of the determinant, this will cause wrong results.
-#
-# Example: (no LAPACK support)
-# For T=10, x=0.0075, lmax=800, n=131 and m=64:
-#   log(det D) = 0                                      using LAPACK
-#   log(det D) = -5.45180220412611e-15          without using LAPACK
-#
-# If you don't know what to say here, comment out the line.
-# USE_LAPACK = 1
+LDFLAGS += -lm -pthread
 
+# support float128
+#CFLAGS += -DFLOAT128
+#LDFLAGS += -lquadmath
+
+TARGET = "../bin/"
+
+# optimize for native CPU
+OPT = -march=native -flto -O3
 
 # Disable additional checks and assertions.
 #
@@ -52,64 +67,43 @@ USE_EXTENDED_DOUBLE = 1
 # Disabling this option will slightly increase performance.
 #
 # If you don't know what to say here, comment out the line.
-# CFLAGS += -DNDEBUG
+# CFLAGS += -DNCHECKS
 
 
-ifdef USE_LAPACK
-    CFLAGS += -DUSE_LAPACK
-    LDFLAGS += -llapack -lblas
-endif
+%.o : %.c
+	$(CC) $(CFLAGS) $(OPT) -o $@ -c $<
 
-# use optimization
-ifeq ($(CC),gcc)
-    OPTIMIZATION = -O3
-endif
-ifeq ($(CC),icc)
-    OPTIMIZATION = -fast
-endif
+casimir_T0.o:
+	$(MPICC) $(CFLAGS) $(OPT) -o $@ -c $<
 
-# if we need quadrupole precision
-ifdef USE_EXTENDED_DOUBLE
-    CFLAGS += -DEXTENDED_DOUBLE
-else
-    ifeq ($(CC),gcc)
-        LDFLAGS += -lquadmath
-    endif
-    ifeq ($(CC),icc)
-        LDFLAGS += -Qoption,c,--extended_float_type
-    endif
-endif
+casimir: casimir.o $(OBJS)
+	$(CC) $(CFLAGS) $(OPT) $^ $(LDFLAGS) -o casimir
 
+casimir_logdetD: casimir_logdetD.o $(OBJS)
+	$(CC) $(CFLAGS) $(OPT) $^ $(LDFLAGS) -o casimir_logdetD
 
+casimir_hiT: casimir_hiT.o $(OBJS)
+	$(CC) $(CFLAGS) $(OPT) $^ $(LDFLAGS) -o casimir_hiT
 
-casimir:
-	$(CC) $(OPTIMIZATION) $(CFLAGS) $(SOURCES) casimir.c $(LDFLAGS) -o casimir
+casimir_Fn: casimir_Fn.o $(OBJS)
+	$(CC) $(CFLAGS) $(OPT) $^ $(LDFLAGS) -o casimir_Fn
 
-casimir_logdetD:
-	$(CC) $(OPTIMIZATION) $(CFLAGS) $(SOURCES) casimir_logdetD.c $(LDFLAGS) -o casimir_logdetD
+ld_drude: ld_drude.o $(OBJS)
+	$(CC) $(CFLAGS) $(OPT) $^ $(LDFLAGS) -o ld_drude
 
-casimir_hiT:
-	$(CC) $(OPTIMIZATION) $(CFLAGS) $(SOURCES) casimir_hiT.c $(LDFLAGS) -o casimir_hiT
-
-casimir_Fn:
-	$(CC) $(OPTIMIZATION) $(CFLAGS) $(SOURCES) casimir_Fn.c $(LDFLAGS) -o casimir_Fn
-
-ld_drude:
-	$(CC) $(OPTIMIZATION) $(CFLAGS) $(SOURCES) ld_drude.c $(LDFLAGS) -o ld_drude
-
-casimir_psd:
-	$(CC) $(OPTIMIZATION) $(CFLAGS) $(SOURCES) casimir_psd.c $(LDFLAGS) -o casimir_psd
-
-casimir_T0:
-	$(MPICC) $(OPTIMIZATION) $(CFLAGS) $(SOURCES) casimir_T0.c $(LDFLAGS) -o casimir_T0
-
-casimir_tests:
-	$(CC) $(OPTIMIZATION) -I . $(CFLAGS) $(SOURCES) tests/unittest.c tests/test*.c $(LDFLAGS) -o casimir_tests
+casimir_tests: $(TESTS) $(OBJS)
+	$(CC) $(CFLAGS) $(OPT) $^ $(LDFLAGS) -o casimir_tests
 	./casimir_tests
 
+casimir_T0: casimir_T0.o $(OBJS)
+	$(MPICC) $(CFLAGS) $(OPT) $^ $(LDFLAGS) -o casimir_T0
+
+install:
+	cp casimir casimir_tests casimir_hiT casimir_logdetD casimir_Fn ld_drude casimir_T0 ${TARGET}
 
 clean:
-	rm -f casimir casimir_tests casimir_hiT casimir_logdetD *.o casimir_Fn ld_drude casimir_psd
+	rm -f casimir casimir_tests casimir_hiT casimir_logdetD casimir_Fn ld_drude casimir_T0 *.o tests/*.o
+	rm -rf doc
 
 doc:
 	doxygen doxygen.conf

@@ -2,19 +2,29 @@
 #define __LIBCASIMIR_H
 
 #include <pthread.h>
+#include <stdbool.h>
 #include <stdio.h>
 
-#include "edouble.h"
+#include "floattypes.h"
 
 #define HBARC 3.161526510740123e-26 /**< \f$\hbar \mathrm{c}\f$ */
 #define KB    1.3806488e-23         /**< \f$k_\mathrm{B}\f$ */
 
-#define CASIMIR_DEFAULT_PRECISION 1e-12
-#define CASIMIR_IDLE 1000
-#define CASIMIR_FACTOR_LMAX 5
+/* default values */
+#define CASIMIR_PRECISION 1e-12      /**< default precision */
+#define CASIMIR_IDLE 1000            /**< idle time in µs */
+#define CASIMIR_FACTOR_LMAX 5        /**< by default: lmax=ceil(5/LbyR) */
+#define CASIMIR_TRACE_THRESHOLD 1e-8 /**< threshold to use trace */
 
-/** define sign_t as a signed char */
-typedef char sign_t;
+#ifndef CASIMIR_DETALG
+#define CASIMIR_DETALG "QR_FLOAT80" /**< default algorithm for matrix decomposition */
+#endif
+
+/**
+ * define sign_t as a signed char, because "char can be either signed or
+ * unsigned depending on the implementation"
+ */
+typedef signed char sign_t;
 
 
 /**
@@ -29,10 +39,10 @@ typedef struct
 } casimir_mie_cache_entry_t;
 
 typedef struct {
-    int nmax;  /**< maximum value of n */
-    int lmax;  /**< maximum value of \f$\ell\f$ */
+    int nmax;                            /**< maximum value of n */
+    int lmax;                            /**< maximum value of \f$\ell\f$ */
     casimir_mie_cache_entry_t **entries; /**< entries */
-    pthread_mutex_t mutex; /**< mutex for Mie cache */
+    pthread_mutex_t mutex;               /**< mutex for Mie cache */
 } casimir_mie_cache_t;
 
 /**
@@ -66,14 +76,21 @@ typedef struct
      * @name accuracy and numerical parameters
      */
      /*@{*/
-    int integration;     /**< 0: use perfect reflectors, >0: order of Gauss-Laguerre integration */
-    int lmax;            /**< truncation value for vector space \f$\ell_\mathrm{max}\f$ */
-    int verbose;         /**< flag that indicates to be verbose */
-    int cores;           /**< number of thread that should be used */
-    double precision;    /**< precision \f$\epsilon_p\f$ */
-    pthread_t **threads; /**< list of pthread objects */
+    int integration;        /**< 0: use perfect reflectors, >0: order of Gauss-Laguerre integration */
+    int lmax;               /**< truncation value for vector space \f$\ell_\mathrm{max}\f$ */
+    int cores;              /**< number of thread that should be used */
+    double precision;       /**< precision \f$\epsilon_p\f$ */
+    double trace_threshold; /**< threshold when Tr M is used as an approximation for log(det(1-M)) */
+    pthread_t **threads;    /**< list of pthread objects */
 
-    casimir_mie_cache_t *mie_cache;
+    char detalg[128];       /**< algorithm to calculate determinant */
+
+    casimir_mie_cache_t *mie_cache; /**< Mie chache */
+
+    double birthtime;       /**< timestamp when object was initialized */
+
+    /* parameters that you usually do not want to change */
+    bool pivot; /**< pivot matrix before QR decomposition */
     /*@}*/
 } casimir_t;
 
@@ -92,14 +109,14 @@ typedef struct
 
 typedef struct
 {
-    edouble lnA_TE;  /**< logarithm of integral A_TE */
-    edouble lnA_TM;  /**< logarithm of integral A_TM */
-    edouble lnB_TE;  /**< logarithm of integral B_TE */
-    edouble lnB_TM;  /**< logarithm of integral B_TM */
-    edouble lnC_TE;  /**< logarithm of integral C_TE */
-    edouble lnC_TM;  /**< logarithm of integral C_TM */
-    edouble lnD_TE;  /**< logarithm of integral D_TE */
-    edouble lnD_TM;  /**< logarithm of integral D_TM */
+    float80 lnA_TE;  /**< logarithm of integral A_TE */
+    float80 lnA_TM;  /**< logarithm of integral A_TM */
+    float80 lnB_TE;  /**< logarithm of integral B_TE */
+    float80 lnB_TM;  /**< logarithm of integral B_TM */
+    float80 lnC_TE;  /**< logarithm of integral C_TE */
+    float80 lnC_TM;  /**< logarithm of integral C_TM */
+    float80 lnD_TE;  /**< logarithm of integral D_TE */
+    float80 lnD_TM;  /**< logarithm of integral D_TM */
     sign_t signA_TE; /**< sign of lnA_TE */
     sign_t signA_TM; /**< sign of lnA_TM */
     sign_t signB_TE; /**< sign of lnB_TE */
@@ -118,16 +135,18 @@ void casimir_info(casimir_t *self, FILE *stream, const char *prefix);
 double casimir_epsilon(double xi, double omegap, double gamma_);
 double casimir_lnepsilon(double xi, double omegap, double gamma_);
 
-edouble casimir_lnLambda(int l1, int l2, int m, sign_t *sign);
-edouble casimir_lnXi(int l1, int l2, int m, sign_t *sign);
+float80 casimir_lnLambda(int l1, int l2, int m, sign_t *sign);
+float80 casimir_lnXi(int l1, int l2, int m, sign_t *sign);
 
 double casimir_F_SI_to_scaled(double F_SI, double ScriptL_SI);
 double casimir_F_scaled_to_SI(double F, double ScriptL_SI);
 double casimir_T_SI_to_scaled(double T_SI, double ScriptL_SI);
 double casimir_T_scaled_to_SI(double T, double ScriptL_SI);
 
-int casimir_init(casimir_t *self, double RbyScriptL, double T);
+int casimir_init(casimir_t *self, double LbyR, double T);
 void casimir_free(casimir_t *self);
+
+double casimir_get_birthtime(casimir_t *self);
 
 int casimir_set_omegap_sphere(casimir_t *self, double omegap);
 int casimir_set_omegap_plane(casimir_t *self, double omegap);
@@ -141,11 +160,17 @@ int casimir_set_gamma_plane(casimir_t *self, double gamma_);
 double casimir_get_gamma_sphere(casimir_t *self);
 double casimir_get_gamma_plane(casimir_t *self);
 
+int casimir_get_balance_pnrom(casimir_t *self);
+int casimir_set_balance_pnorm(casimir_t *self, int pnorm);
+
 void casimir_set_integration(casimir_t *self, int integration);
 int casimir_get_integration(casimir_t *self);
 
 int casimir_get_lmax(casimir_t *self);
 int casimir_set_lmax(casimir_t *self, int lmax);
+
+int casimir_get_detalg(casimir_t *self, char detalg[128]);
+int casimir_set_detalg(casimir_t *self, const char *detalg);
 
 int casimir_get_cores(casimir_t *self);
 int casimir_set_cores(casimir_t *self, int cores);
@@ -153,8 +178,9 @@ int casimir_set_cores(casimir_t *self, int cores);
 double casimir_get_precision(casimir_t *self);
 int    casimir_set_precision(casimir_t *self, double precision);
 
-int casimir_get_verbose(casimir_t *self);
-int casimir_set_verbose(casimir_t *self, int verbose);
+
+double casimir_get_trace_threshold(casimir_t *self);
+int    casimir_set_trace_threshold(casimir_t *self, double threshold);
 
 void casimir_lnab0(int l, double *a0, sign_t *sign_a0, double *b0, sign_t *sign_b0);
 void casimir_lnab(casimir_t *self, const int n, const int l, double *lna, double *lnb, sign_t *sign_a, sign_t *sign_b);
@@ -163,7 +189,6 @@ double casimir_lnb_perf(casimir_t *self, const int l, const int n, sign_t *sign)
 
 double casimir_F_n(casimir_t *self, const int n, int *mmax);
 double casimir_F(casimir_t *self, int *nmax);
-double casimir_F_psd(casimir_t *self, double psd[][2], double *F_n);
 
 void casimir_mie_cache_init(casimir_t *self);
 void casimir_mie_cache_alloc(casimir_t *self, int n);
@@ -172,9 +197,9 @@ void casimir_mie_cache_get(casimir_t *self, int l, int n, double *ln_a, sign_t *
 void casimir_mie_cache_free(casimir_t *self);
 
 void casimir_logdetD0(casimir_t *self, int m, double *EE, double *MM);
-double casimir_logdetD(casimir_t *self, int n, int m, void * obj);
-double casimir_trM(casimir_t *self, int n, int m, void *integration_obj);
+double casimir_logdetD(casimir_t *self, int n, int m);
+double casimir_trM(casimir_t *self, int n, int m, void *int_perf);
 
-void casimir_rp(casimir_t *self, edouble nT, edouble k, edouble *r_TE, edouble *r_TM);
+void casimir_rp(casimir_t *self, float80 nT, float80 k, float80 *r_TE, float80 *r_TM);
 
 #endif
