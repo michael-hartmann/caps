@@ -1,3 +1,4 @@
+#include <stdbool.h>
 #include <math.h>
 
 #include "floattypes.h"
@@ -28,7 +29,7 @@ int test_determinant()
         matrix_set(M, 1,0, log80(1e-1000L));
         matrix_set(M, 1,1, log80(1L));
 
-        AssertAlmostEqual(&test, matrix_logdet1mM(M, M_sign, method), log(14));
+        AssertAlmostEqual(&test, matrix_logdet1mM(M, M_sign, method, true), log(14));
     }
 
     matrix_float80_free(M);
