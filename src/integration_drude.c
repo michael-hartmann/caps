@@ -62,9 +62,11 @@ struct integ_context {
 
 
 /* ******************** Prototypes ******************** */
-void romberg_do_integrate(struct integ_context* context,
-			  integrands_drude_t* result,
-			  struct drude_error* error);
+#ifdef INTEGRATION_ROMBERG
+static inline void romberg_do_integrate(struct integ_context* context,
+					integrands_drude_t* result,
+					struct drude_error* error);
+#endif
 
 void integrate_gauss_laguerre(casimir_t *self,
 			      casimir_integrals_t *cint,
@@ -73,7 +75,7 @@ void integrate_gauss_laguerre(casimir_t *self,
 /* ****************** End Prototypes ****************** */
 
 
-/** @brief Evaluate the Integrals A,B,C and D without any prefactors
+/** @brief Evaluate the Integrands A,B,C and D without any prefactors
  *
  * This function calculates
  *    \frac{r_p e^{-x}}{x^2 + 2\tau x} P_{l1}^m \left(1+\frac{x}{\tau}\right) P_{l1}^m \left(1+\frac{x}{\tau}\right),
@@ -422,8 +424,8 @@ static inline void integration_simple(struct integ_context* context,
     edouble u;
 
     /*
-     * First set last to infinity, so we will need a second iteration and
-     * we can calculate a proper error.
+     * First set "last" to infinity, so we will need a second iteration to
+     * calculate a proper error.
      */
     init_infty(&last);
     init_zero(result);
@@ -495,6 +497,7 @@ static inline void do_integrate(casimir_t* self, casimir_integrals_t* cint,
     edouble prefactor_A, prefactor_B, prefactor_CD;
     edouble ln_prefactor_A, ln_prefactor_B, ln_prefactor_CD;
     struct drude_error error;
+#ifndef INTEGRATION_GAUSS_LAGUERRE
     struct integ_context context;
 
     context.l1 = l1;
@@ -504,6 +507,7 @@ static inline void do_integrate(casimir_t* self, casimir_integrals_t* cint,
     context.c0 = c0;
     context.c_max = c_max;
     context.casimir = self;
+#endif
     
     /*
      * Integral C and D have the same prefactor.
@@ -555,6 +559,12 @@ static inline void do_integrate(casimir_t* self, casimir_integrals_t* cint,
     cint->signD_TM = -MPOW(l2+m+1) * total.sign_D;
     cint->signD_TE = +MPOW(l2+m+1) * total.sign_D;
 }
+
+
+/*
+ * ******************** Romberg Integration ********************
+ */
+#ifdef INTEGRATION_ROMBERG
 
 /*
  * The romberg_chain we us is 1, 1/2, 1/4, 1/8, ...
@@ -625,6 +635,10 @@ static inline void romberg_subcycle(integrands_drude_t* a,
 }
 
 
+/*
+ * Calculate the Accuracy of the Integration.
+ * Returns 1 if the result is more accurate than "error". Else return 0.
+ */
 static inline int romberg_is_accurate(integrands_drude_t* cur_result,
 				      integrands_drude_t* last_result,
 				      struct drude_error* error)
@@ -667,9 +681,9 @@ static inline int romberg_is_accurate(integrands_drude_t* cur_result,
 }
 
 
-void romberg_do_integrate(struct integ_context* context,
-				 integrands_drude_t* result,
-				 struct drude_error* error) {
+static inline void romberg_do_integrate(struct integ_context* context,
+					integrands_drude_t* result,
+					struct drude_error* error) {
     const size_t max_order = 20;
     const size_t min_order = 2;
     integrands_drude_t I1[max_order], I2[max_order];
@@ -723,7 +737,26 @@ void romberg_do_integrate(struct integ_context* context,
     *result = I_last[n - 2];
 }
 
+#endif
 
+
+
+/** @brief Calculate integrals A,B,C,D including prefactor Lambda vor Drude metals
+ *
+ * This function calculates
+ *    Lambda(l1,l2,m)*A_(l1,l2)^(m),
+ *    Lambda(l1,l2,m)*B_(l1,l2)^(m),
+ *    Lambda(l1,l2,m)*C_(l1,l2)^(m),
+ *    Lambda(l1,l2,m)*D_(l1,l2)^(m)
+ * for Drude metals.
+ *
+ * @param [in]  self Casimir object
+ * @param [out] cint logarithms of values and signs of integrals
+ * @param [in]  l1   \f$\ell_1\f$
+ * @param [in]  l2   \f$\ell_2\f$
+ * @param [in]  m    \f$m\f$
+ * @param [in]  nT   \f$nT\f$
+ */
 void casimir_integrate_drude(casimir_t *self, casimir_integrals_t *cint, int l1, int l2, int m, int n, double T)
 {
 #if defined INTEGRATION_GAUSS_LAGUERRE
@@ -731,6 +764,48 @@ void casimir_integrate_drude(casimir_t *self, casimir_integrals_t *cint, int l1,
 #else
     do_integrate(self, cint, l1, l2, m, n, T);
 #endif
+}
+
+
+/*
+ * ******************** Gauss-Laguerre Integration ********************
+ */
+#ifdef INTEGRATION_GAUSS_LAGUERRE
+
+static void integrands_drude_laguerre(edouble x, integrands_drude_t *integrands,
+				      casimir_t *self, double nT, int l1, int l2, int m)
+{
+    plm_combination_t comb;
+    const edouble tau = 2*nT;
+    const edouble k = sqrte(pow_2(x)/4 + nT*x);
+    const edouble log_factor = loge(pow_2(x)+2*tau*x);
+    edouble r_TE, r_TM;
+
+    casimir_rp(self, nT, k, &r_TE, &r_TM);
+    const edouble lnr_TE = loge(-r_TE);
+    const edouble lnr_TM = loge(r_TM);
+
+    plm_PlmPlm(l1, l2, m, 1+x/tau, &comb);
+
+    const edouble A = comb.lnPl1mPl2m - log_factor;
+    integrands->lnA_TE = lnr_TE + A;
+    integrands->lnA_TM = lnr_TM + A;
+    integrands->sign_A = comb.sign_Pl1mPl2m;
+
+    const edouble B = comb.lndPl1mdPl2m + log_factor;
+    integrands->lnB_TE = lnr_TE + B;
+    integrands->lnB_TM = lnr_TM + B;
+    integrands->sign_B = comb.sign_dPl1mdPl2m;
+
+    const edouble C = comb.lnPl1mdPl2m;
+    integrands->lnC_TE = lnr_TE + C;
+    integrands->lnC_TM = lnr_TM + C;
+    integrands->sign_C = comb.sign_Pl1mdPl2m;
+
+    const edouble D = comb.lndPl1mPl2m;
+    integrands->lnD_TE = lnr_TE + D;
+    integrands->lnD_TM = lnr_TM + D;
+    integrands->sign_D = comb.sign_dPl1mPl2m;
 }
 
 
@@ -750,7 +825,6 @@ void casimir_integrate_drude(casimir_t *self, casimir_integrals_t *cint, int l1,
  * @param [in]  m    \f$m\f$
  * @param [in]  nT   \f$nT\f$
  */
-#ifdef NOT_DEFINED
 void integrate_gauss_laguerre(casimir_t *self, casimir_integrals_t *cint, int l1, int l2, int m, int n, double T)
 {
     int i;
@@ -786,7 +860,7 @@ void integrate_gauss_laguerre(casimir_t *self, casimir_integrals_t *cint, int l1
 
     for(i = 0; i < N; i++)
     {
-        integrands_drude(xk[i], &integrand, self, n*T, l1, l2, m);
+        integrands_drude_laguerre(xk[i], &integrand, self, n*T, l1, l2, m);
 
         lnA_TE[i]  = ln_wk[i] + integrand.lnA_TE;
         lnA_TM[i]  = ln_wk[i] + integrand.lnA_TM;
@@ -862,7 +936,6 @@ void integrate_gauss_laguerre(casimir_t *self, casimir_integrals_t *cint, int l1
     xfree(ln_ABCD);
     xfree(signs_ABCD);
 }
-#endif
 
 
 /* Integrate the function f(x)*exp(-x) from 0 to inf
@@ -890,3 +963,5 @@ double log_polyintegrate(edouble p[], size_t len, int l1, int l2, int m, double 
     *sign = copysigne(1, value) * sign_lnLambda;
     return lnLambda+lnfac_max+loge(fabse(value));
 }
+
+#endif
