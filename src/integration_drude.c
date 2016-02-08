@@ -64,13 +64,13 @@ struct integ_context {
 /* ******************** Prototypes ******************** */
 #ifdef INTEGRATION_ROMBERG
 static inline void romberg_do_integrate(struct integ_context* context,
-					integrands_drude_t* result,
-					struct drude_error* error);
+                                        integrands_drude_t* result,
+                                        struct drude_error* error);
 #endif
 
 void integrate_gauss_laguerre(casimir_t *self,
-			      casimir_integrals_t *cint,
-			      int l1, int l2, int m, int n, double T);
+                              casimir_integrals_t *cint,
+                              int l1, int l2, int m, int n, double T);
 
 /* ****************** End Prototypes ****************** */
 
@@ -91,7 +91,7 @@ void integrate_gauss_laguerre(casimir_t *self,
  * @param [in]  m          Value of m
  */
 void integrands_drude(float80 x, integrands_drude_t *integrands,
-		      casimir_t *self, double nT, int l1, int l2, int m)
+                      casimir_t *self, double nT, int l1, int l2, int m)
 {
     plm_combination_t comb;
     const float80 tau = 2*nT;
@@ -106,14 +106,18 @@ void integrands_drude(float80 x, integrands_drude_t *integrands,
 
     if( 1.0 + x/tau != 1.0 )
     {
-	plm_PlmPlm(l1, l2, m, 1.0+x/tau, &comb);
+        plm_PlmPlm(l1, l2, m, 1.0+x/tau, &comb);
     }
     else
     {
-    	comb.lnPl1mPl2m   = -INFINITY;
-    	comb.lnPl1mdPl2m  = -INFINITY;
-    	comb.lndPl1mPl2m  = -INFINITY;
-    	comb.lndPl1mdPl2m = -INFINITY;
+        comb.lnPl1mPl2m      = -INFINITY;
+        comb.lnPl1mdPl2m     = -INFINITY;
+        comb.lndPl1mPl2m     = -INFINITY;
+        comb.lndPl1mdPl2m    = -INFINITY;
+        comb.sign_Pl1mPl2m   = 1;
+        comb.sign_Pl1mdPl2m  = 1;
+        comb.sign_dPl1mPl2m  = 1;
+        comb.sign_dPl1mdPl2m = 1;
     }
     log_factor = log80(pow_2(x)+2*tau*x);
     
@@ -146,7 +150,7 @@ void integrands_drude(float80 x, integrands_drude_t *integrands,
  * @param [in]  context    Context of the Drude-Integration
  */
 static inline void integrands_drude_u(float80 u, integrands_drude_t *integrands,
-				      struct integ_context* context)
+                                      struct integ_context* context)
 {
     
     float80 x         = context->c0 * pow((1+u) / (1-u), ALPHA);
@@ -155,7 +159,7 @@ static inline void integrands_drude_u(float80 u, integrands_drude_t *integrands,
     sign_t  sign_jac  = jacobi >= 0 ? 1 : -1;
 
     integrands_drude(x, integrands, context->casimir, context->nT,
-		     context->l1, context->l2, context->m);
+                     context->l1, context->l2, context->m);
     
     integrands->lnA_TM += ln_jacobi;
     integrands->lnA_TE += ln_jacobi;
@@ -174,13 +178,16 @@ static inline void integrands_drude_u(float80 u, integrands_drude_t *integrands,
     integrands->sign_D *= sign_jac;
 }
 
-
-inline float80 logdiff(const float80 log_a, const float80 log_b)
+/*
+ * Calculate the relative difference of the logarithms of two numbers
+ * This function returns log( abs( (a - b) / b ) )
+ * log_a is the logarithm of a
+ * log_b is the logarithm of b
+ */
+inline float80 log_rel_diff(const float80 log_a, const float80 log_b)
 {
-    if(log_a > log_b)
-	return (log80(exp80(log_a) - exp80(log_b))) - log_b;
-    else
-	return (log80(exp80(log_b) - exp80(log_a))) - log_a;;
+    sign_t sign;
+    return logadd_s(log_a, +1, log_b, -1, &sign) - log_b;
 }
 
 
@@ -190,32 +197,32 @@ inline float80 logdiff(const float80 log_a, const float80 log_b)
  * error of the integration later.
  */
 static inline void init_accuracy(struct drude_error* error,
-				 float80 ln_prefactor_A,
-				 float80 ln_prefactor_B,
-				 float80 ln_prefactor_CD)
+                                 float80 ln_prefactor_A,
+                                 float80 ln_prefactor_B,
+                                 float80 ln_prefactor_CD)
 {
     /*
      * If one prefactor is infinity (or -infinity) the iteration will stop immediately.
      * It doesn't matter. At the end the result will be infinity (or -infinity).
      */
     if(isinf(ln_prefactor_A))
-	error->lnA = INFINITY;
+        error->lnA = INFINITY;
     else
-	error->lnA = log80(ACCURACY) - ln_prefactor_A;
+        error->lnA = log80(ACCURACY) - ln_prefactor_A;
 
     if(isinf(ln_prefactor_B))
-	error->lnB = INFINITY;
+        error->lnB = INFINITY;
     else
-	error->lnB = log80(ACCURACY) - ln_prefactor_B;
+        error->lnB = log80(ACCURACY) - ln_prefactor_B;
 
     if(isinf(ln_prefactor_CD))
     {
-	error->lnC = error->lnD = INFINITY;
+        error->lnC = error->lnD = INFINITY;
     }
     else
     {
-	error->lnC = log80(ACCURACY) - ln_prefactor_CD;
-	error->lnD = log80(ACCURACY) - ln_prefactor_CD;
+        error->lnC = log80(ACCURACY) - ln_prefactor_CD;
+        error->lnD = log80(ACCURACY) - ln_prefactor_CD;
     }
 }
 
@@ -229,43 +236,43 @@ static inline void init_accuracy(struct drude_error* error,
  * or 4 / 3 ( T(2n) - T(n) ).
  */
 static inline int is_accurate(integrands_drude_t* integrands,
-			      integrands_drude_t* last,
-			      struct drude_error* error)
+                              integrands_drude_t* last,
+                              struct drude_error* error)
 {
     float80 tmp;
     const float80 prefactor = 4.0 / 3.0;
 
-    tmp = logdiff(integrands->lnA_TE, last->lnA_TE) - integrands->lnA_TE;
+    tmp = log_rel_diff(integrands->lnA_TE, last->lnA_TE);
     if(prefactor + tmp > error->lnA || isnan(tmp))
-	return 0;
+        return 0;
 
-    tmp = logdiff(integrands->lnA_TM, last->lnA_TM) - integrands->lnA_TM;
+    tmp = log_rel_diff(integrands->lnA_TM, last->lnA_TM);
     if(prefactor + tmp > error->lnA || isnan(tmp))
-	return 0;
+        return 0;
 
-    tmp = logdiff(integrands->lnB_TE, last->lnB_TE) - integrands->lnB_TE;
+    tmp = log_rel_diff(integrands->lnB_TE, last->lnB_TE);
     if(prefactor + tmp > error->lnB || isnan(tmp))
-	return 0;
+        return 0;
 
-    tmp = logdiff(integrands->lnB_TM, last->lnB_TM) - integrands->lnB_TM;
+    tmp = log_rel_diff(integrands->lnB_TM, last->lnB_TM);
     if(prefactor + tmp > error->lnB || isnan(tmp))
-	return 0;
+        return 0;
 
-    tmp = logdiff(integrands->lnC_TE, last->lnC_TE) - integrands->lnC_TE;
+    tmp = log_rel_diff(integrands->lnC_TE, last->lnC_TE);
     if(prefactor + tmp > error->lnC || isnan(tmp))
-	return 0;
+        return 0;
 
-    tmp = logdiff(integrands->lnC_TM, last->lnC_TM) - integrands->lnC_TM;
+    tmp = log_rel_diff(integrands->lnC_TM, last->lnC_TM);
     if(prefactor + tmp > error->lnC || isnan(tmp))
-	return 0;
+        return 0;
 
-    tmp = logdiff(integrands->lnD_TE, last->lnD_TE) - integrands->lnD_TE;
+    tmp = log_rel_diff(integrands->lnD_TE, last->lnD_TE);
     if(prefactor + tmp > error->lnD || isnan(tmp))
-	return 0;
+        return 0;
 
-    tmp = logdiff(integrands->lnD_TM, last->lnD_TM) - integrands->lnD_TM;
+    tmp = log_rel_diff(integrands->lnD_TM, last->lnD_TM);
     if(prefactor + tmp > error->lnD || isnan(tmp))
-	return 0;
+        return 0;
 
     return 1;
 }
@@ -298,31 +305,31 @@ static inline void init_zero(integrands_drude_t* id)
  * Something like "left += right" for integrands_drude_t.
  */
 static inline void drude_plusequal(integrands_drude_t* left,
-				   integrands_drude_t* right)
+                                   integrands_drude_t* right)
 {
     left->lnA_TE = logadd_s(left->lnA_TE, left->sign_A, right->lnA_TE,
-			    right->sign_A, &left->sign_A);
+                            right->sign_A, &left->sign_A);
 
     left->lnB_TE = logadd_s(left->lnB_TE, left->sign_B, right->lnB_TE,
-			    right->sign_B, &left->sign_B);
+                            right->sign_B, &left->sign_B);
 
     left->lnC_TE = logadd_s(left->lnC_TE, left->sign_C, right->lnC_TE,
-			    right->sign_C, &left->sign_C);
+                            right->sign_C, &left->sign_C);
 
     left->lnD_TE = logadd_s(left->lnD_TE, left->sign_D, right->lnD_TE,
-			    right->sign_D, &left->sign_D);
+                            right->sign_D, &left->sign_D);
 
     left->lnA_TM = logadd_s(left->lnA_TM, left->sign_A, right->lnA_TM,
-			    right->sign_A, &left->sign_A);
+                            right->sign_A, &left->sign_A);
 
     left->lnB_TM = logadd_s(left->lnB_TM, left->sign_B, right->lnB_TM,
-			    right->sign_B, &left->sign_B);
+                            right->sign_B, &left->sign_B);
 
     left->lnC_TM = logadd_s(left->lnC_TM, left->sign_C, right->lnC_TM,
-			    right->sign_C, &left->sign_C);
+                            right->sign_C, &left->sign_C);
 
     left->lnD_TM = logadd_s(left->lnD_TM, left->sign_D, right->lnD_TM,
-			    right->sign_D, &left->sign_D);
+                            right->sign_D, &left->sign_D);
 }
 
 
@@ -331,39 +338,39 @@ static inline void drude_plusequal(integrands_drude_t* left,
  * Something like "result = left_arg + right_arg" for integrands_drude_t
  */
 static inline void drude_plus(integrands_drude_t* result,
-			      integrands_drude_t* left_arg,
-			      integrands_drude_t* right_arg)
+                              integrands_drude_t* left_arg,
+                              integrands_drude_t* right_arg)
 {
     result->lnA_TE = logadd_s(left_arg->lnA_TE, left_arg->sign_A, right_arg->lnA_TE,
-			    right_arg->sign_A, &result->sign_A);
+                            right_arg->sign_A, &result->sign_A);
 
     result->lnB_TE = logadd_s(left_arg->lnB_TE, left_arg->sign_B, right_arg->lnB_TE,
-			    right_arg->sign_B, &result->sign_B);
+                            right_arg->sign_B, &result->sign_B);
 
     result->lnC_TE = logadd_s(left_arg->lnC_TE, left_arg->sign_C, right_arg->lnC_TE,
-			    right_arg->sign_C, &result->sign_C);
+                            right_arg->sign_C, &result->sign_C);
 
     result->lnD_TE = logadd_s(left_arg->lnD_TE, left_arg->sign_D, right_arg->lnD_TE,
-			    right_arg->sign_D, &result->sign_D);
+                            right_arg->sign_D, &result->sign_D);
 
 
     result->lnA_TM = logadd_s(left_arg->lnA_TM, left_arg->sign_A, right_arg->lnA_TM,
-			      right_arg->sign_A, &result->sign_A);
+                              right_arg->sign_A, &result->sign_A);
 
     result->lnB_TM = logadd_s(left_arg->lnB_TM, left_arg->sign_B, right_arg->lnB_TM,
-			    right_arg->sign_B, &result->sign_B);
+                            right_arg->sign_B, &result->sign_B);
 
     result->lnC_TM = logadd_s(left_arg->lnC_TM, left_arg->sign_C, right_arg->lnC_TM,
-			    right_arg->sign_C, &result->sign_C);
+                            right_arg->sign_C, &result->sign_C);
 
     result->lnD_TM = logadd_s(left_arg->lnD_TM, left_arg->sign_D, right_arg->lnD_TM,
-			    right_arg->sign_D, &result->sign_D);
+                            right_arg->sign_D, &result->sign_D);
 }
 
 
 static inline void drude_minus(integrands_drude_t* result,
-			       integrands_drude_t* left_arg,
-			       integrands_drude_t* right_arg)
+                               integrands_drude_t* left_arg,
+                               integrands_drude_t* right_arg)
 {
     /*
      * Subtract the Values of two integrands_drude_t.
@@ -410,8 +417,8 @@ static inline void drude_mult_factor(integrands_drude_t* id, float80 log_factor)
  * @param [in]  error     Claimed accuracy
  */
 static inline void integration_simple(struct integ_context* context,
-				      integrands_drude_t* result,
-				      struct drude_error* error)
+                                      integrands_drude_t* result,
+                                      struct drude_error* error)
 {
     integrands_drude_t last, partial_sum;
     integrands_drude_t f_a, f_b, temp;
@@ -431,32 +438,32 @@ static inline void integration_simple(struct integ_context* context,
 
     while(steps < 10000000)
     {
-	stepsize = (c_max - (-1)) / steps;
-	init_zero(&partial_sum);
+        stepsize = (c_max - (-1)) / steps;
+        init_zero(&partial_sum);
 
-	integrands_drude_u(-1.0 + offset, &f_a, context);
-	
-	for(u = -1.0 + offset + stepsize; u < c_max; u += stepsize)
-	{
-	    integrands_drude_u(u, &f_b, context);
+        integrands_drude_u(-1.0 + offset, &f_a, context);
+        
+        for(u = -1.0 + offset + stepsize; u < c_max; u += stepsize)
+        {
+            integrands_drude_u(u, &f_b, context);
 
-	    drude_plus(&temp, &f_a, &f_b);
-	    drude_mult_factor(&temp, log80(0.5));
-	    drude_plusequal(&partial_sum, &f_b);
-	    f_a = f_b;
-	}
-	drude_mult_factor(&partial_sum, log80(0.5 * stepsize));
- 	drude_mult_factor(result, log80(0.5));
-	drude_plusequal(result, &partial_sum);
-	
-	if(is_accurate(result, &last, error)) break;
-	last = *result;
-	/*
-	 * Double the number of steps. Now the offset gets divided by two
-	 * in order to hit the points between the last iteration.
-	 */
-	steps *= 2;
-	offset /= 2.0;
+            drude_plus(&temp, &f_a, &f_b);
+            drude_mult_factor(&temp, log80(0.5));
+            drude_plusequal(&partial_sum, &f_b);
+            f_a = f_b;
+        }
+        drude_mult_factor(&partial_sum, log80(0.5 * stepsize));
+        drude_mult_factor(result, log80(0.5));
+        drude_plusequal(result, &partial_sum);
+        
+        if(is_accurate(result, &last, error)) break;
+        last = *result;
+        /*
+         * Double the number of steps. Now the offset gets divided by two
+         * in order to hit the points between the last iteration.
+         */
+        steps *= 2;
+        offset /= 2.0;
     }
 }
 
@@ -475,17 +482,17 @@ static inline void integration_simple(struct integ_context* context,
  * @param [in]  T          Scaled Temperature
  */
 static inline void do_integrate(casimir_t* self, casimir_integrals_t* cint,
-				int l1, int l2, int m, int n, double T)
+                                int l1, int l2, int m, int n, double T)
 {
-//     const float80 c0  = (l1 + l2 - 1) * nT;
+//    const float80 c0  = (l1 + l2 - 1) / (n*T);
     const float80 c0  = l1 + l2 - 1;
     const float80 tau = 2 * n * T;
     
     float80 c_max     = pow( (10.0*c0 / (c0 - 1.0)), 1.0 / ALPHA);
     if(isinf(c_max))
-	c_max = 0.999;
+        c_max = 0.999;
     else
-	c_max = (c_max - 1) / (c_max + 1);
+        c_max = (c_max - 1) / (c_max + 1);
 
     integrands_drude_t total;
     
@@ -517,8 +524,15 @@ static inline void do_integrate(casimir_t* self, casimir_integrals_t* cint,
     ln_prefactor_A  = log80(fabs80(prefactor_A));
     ln_prefactor_B  = log80(fabs80(prefactor_B));
     ln_prefactor_CD = log80(fabs80(prefactor_CD));
-    
+
+    /*
+     * First, we calculate the accuracy which is required
+     * The Integration routines calculate the Integral without any prefactors.
+     * So we have to divide the accuracy by the prefactor in order to compare it
+     * with the error of the integration later.
+     */
     init_accuracy(&error, ln_prefactor_A, ln_prefactor_B, ln_prefactor_CD);
+    
 #ifdef INTEGRATION_SIMPLE
     integration_simple(&context, &total, &error);
 #elif defined INTEGRATION_ROMBERG
@@ -566,20 +580,40 @@ static inline void do_integrate(casimir_t* self, casimir_integrals_t* cint,
 #ifdef INTEGRATION_ROMBERG
 
 /*
- * The romberg_chain we us is 1, 1/2, 1/4, 1/8, ...
+ * Use Romberg's method to integrate.
+ * The Value of the Integral is I = lim_{k \rarrow \infty} I_{1,k}
+ * In each Iteration, we will calculate a new row of the Terms I_{n,k}
+ *
+ * The approach is:
+ * 1st Iteration    I11
+ * 2nd Iteration    I21    I12
+ * 3rd Iteration    I31    I22    I13
+ * 4th Iteration    I41    I32    I23    I14
+ * 5th Iteration    I51    I42    I33    I24    I15
+ *     ...          ...    ...    ...    ...    ...
+ */
+
+/*
+ * The romberg_chain we use is: 1, 1/2, 1/4, 1/8, ...
  * The Index starts with 1
  */
 static inline float80 romberg_chain(unsigned int index) {
+    size_t i;
     float80 result  = 1.0;
-    unsigned int ui = 1U << (index - 1);
 
-    result = 1.0 / (float80)ui;
+    for(i = 1; i < index; ++i) {
+        result *= 2.0;
+    }
+    result = 1.0 / result;
     return result;
 }
 
 
+/*
+ * Calculate the Term I_{1,1}
+ */
 static void romberg_I11(integrands_drude_t* result,
-			struct integ_context* context)
+                        struct integ_context* context)
 {
     /*
      * The Term I_{1,1} is \frac{h_1}{2}(f(a) + f(b)).
@@ -590,101 +624,150 @@ static void romberg_I11(integrands_drude_t* result,
 }
 
 
+/*
+ * Calculate the Term I_{n,1}
+ * Summarized Trapezoidal-rule with several intervals
+ *
+ * This function calculates:
+ * I_{n,1} = \frac{h_n}{2} \left( f(a) + f(b) + 2 sum_{i=1}^{(h_1 / h_n) - 1} f(a + i h_n) \right)
+ */
 static inline void romberg_In1(integrands_drude_t* I_current,
-			       integrands_drude_t* I_last,
-			       struct integ_context* context,
-			       unsigned int n)
+                               integrands_drude_t* I_last,
+                               struct integ_context* context,
+                               unsigned int n)
 {
     integrands_drude_t temp;
     unsigned int i;
-    unsigned int nom, denom;
     float80 u;
     float80 log_hn = log80(romberg_chain(n) * (context->c_max - (-1.0)));
-    
+    float80 stepsize, frac;
+    size_t  num_points;
+
+    /*
+     * Divide the Interval into steps of the size 1 / (2^n)
+     * We have got 2^(n-1) points
+     */
+    stepsize = 1.0;
+    num_points = 1;
+    for(i = 1; i < n; ++i) {
+        stepsize /= 2.0;
+        num_points *= 2;
+    }
+    num_points /= 2;
+
+    /*
+     * We can reuse the points from the last iteration.
+     * "I_last" is the sum evaluated for 2^(n-1) points.
+     * We reuse theese values and add only the necessary points
+     */
     *I_current = *I_last;
+    
     drude_mult_factor(I_current, log80(0.5));
 
-    for(i = 1; i <= (1U << (n - 2)); ++i) {
-	nom = 2*i - 1;
-	denom = 1UL << (n - 1);
-	u = (float80)nom / (float80)denom * (context->c_max - (-1.0)) - 1.0;
-	integrands_drude_u(u, &temp, context);
-	drude_mult_factor(&temp, log_hn);
-	drude_plusequal(&I_current[0], &temp);
+    for(i = 1; i <= num_points; ++i) {
+        /*
+         * We already calculated the even points in the last iteration
+         * We need only the odd ones (1*stepsize, 3*stepsize, 5*stepsize ...)
+         */
+        frac = ((float80)(2*i - 1)) * stepsize;
+        u = frac * (context->c_max - (-1.0)) - 1.0;
+        integrands_drude_u(u, &temp, context);
+        drude_mult_factor(&temp, log_hn);
+        drude_plusequal(&I_current[0], &temp);
     }
 }
 
 
+/*
+ * Calculate I_{n,k} from I_{n+1,k-1} and I_{n,k-1}
+ *
+ * We use the formula:
+ * I_{n,k} = \frac{2^{2(k-1)} I_{n+1,k-1} - I_{n,k-1}}{2^{2(k-1)} - 1}
+ */
 static inline void romberg_subcycle(integrands_drude_t* a,
-				    integrands_drude_t* b,
-				    integrands_drude_t* c,
-				    unsigned int k)
+                                    integrands_drude_t* b,
+                                    integrands_drude_t* c,
+                                    unsigned int k)
 {
     /*
      * a: I_{n,k}
      * b: I_{n+1,k-1}
      * c: I_{n,k-1}
      */
-    unsigned int prefactor = 2U << (k - 1);
-    float80      eprefactor = (float80)prefactor;
+    size_t i;
+    float80 prefactor = 2.0;
+
+    for(i = 1; i < k; ++i) {
+        prefactor *= 2.0;
+    }
+    
     *a = *b;
-    drude_mult_factor(a, log80(eprefactor));
+    drude_mult_factor(a, log80(prefactor));
     drude_minus(a, a, c);
-    drude_mult_factor(a, log80(1 / (eprefactor - 1.0)));
+    drude_mult_factor(a, log80(1 / (prefactor - 1.0)));
 }
 
 
 /*
  * Calculate the Accuracy of the Integration.
+ * "cur_result" needs to be I_{1,n+1}.
+ * "last_results" needs to be I_{1,n}.
  * Returns 1 if the result is more accurate than "error". Else return 0.
  */
 static inline int romberg_is_accurate(integrands_drude_t* cur_result,
-				      integrands_drude_t* last_result,
-				      struct drude_error* error)
+                                      integrands_drude_t* last_result,
+                                      struct drude_error* error)
 {
     float80 tmp;
 
-    tmp = logdiff(cur_result->lnA_TE, last_result->lnA_TE) - last_result->lnA_TE;
+    tmp = log_rel_diff(cur_result->lnA_TE, last_result->lnA_TE);
     if(tmp > error->lnA || isnan(tmp))
-	return 0;
+        return 0;
 
-    tmp = logdiff(cur_result->lnA_TM, last_result->lnA_TM) - last_result->lnA_TM;
+    tmp = log_rel_diff(cur_result->lnA_TM, last_result->lnA_TM);
     if(tmp > error->lnA || isnan(tmp))
-	return 0;
+        return 0;
 
-    tmp = logdiff(cur_result->lnB_TE, last_result->lnB_TE) - last_result->lnB_TE;
+    tmp = log_rel_diff(cur_result->lnB_TE, last_result->lnB_TE);
     if(tmp > error->lnB || isnan(tmp))
-	return 0;
+        return 0;
 
-    tmp = logdiff(cur_result->lnB_TM, last_result->lnB_TM) - last_result->lnB_TM;
+    tmp = log_rel_diff(cur_result->lnB_TM, last_result->lnB_TM);
     if(tmp > error->lnB || isnan(tmp))
-	return 0;
+        return 0;
 
-    tmp = logdiff(cur_result->lnC_TE, last_result->lnC_TE) - last_result->lnC_TE;
+    tmp = log_rel_diff(cur_result->lnC_TE, last_result->lnC_TE);
     if(tmp > error->lnC || isnan(tmp))
-	return 0;
+        return 0;
 
-    tmp = logdiff(cur_result->lnC_TM, last_result->lnC_TM) - last_result->lnC_TM;
+    tmp = log_rel_diff(cur_result->lnC_TM, last_result->lnC_TM);
     if(tmp > error->lnC || isnan(tmp))
-	return 0;
+        return 0;
 
-    tmp = logdiff(cur_result->lnD_TE, last_result->lnD_TE) - last_result->lnD_TE;
+    tmp = log_rel_diff(cur_result->lnD_TE, last_result->lnD_TE);
     if(tmp > error->lnD || isnan(tmp))
-	return 0;
+        return 0;
 
-    tmp = logdiff(cur_result->lnD_TM, last_result->lnD_TM) - last_result->lnD_TM;
+    tmp = log_rel_diff(cur_result->lnD_TM, last_result->lnD_TM);
     if(tmp > error->lnD || isnan(tmp))
-	return 0;
+        return 0;
 
     return 1;
 }
 
 
+/*
+ * @brief Romberg integration function. Evalues the integrals without any prefactors.
+ *
+ * @param [in]  context   Drude Integration Context
+ * @param [out] result    Value of the 8 integrals (A_TE, A_TM, B_TE, B_TM, ...)
+ * @param [in]  error     Claimed accuracy
+ */
 static inline void romberg_do_integrate(struct integ_context* context,
-					integrands_drude_t* result,
-					struct drude_error* error) {
+                                        integrands_drude_t* result,
+                                        struct drude_error* error) {
     const size_t max_order = 20;
-    const size_t min_order = 2;
+    const size_t min_order = 5;
     integrands_drude_t I1[max_order], I2[max_order];
     /*
      * I_current stores the terms In,k of this cycle, while I_last stores the
@@ -704,34 +787,36 @@ static inline void romberg_do_integrate(struct integ_context* context,
     romberg_I11(&I_last[0], context);
     for(n = 2; n <= max_order; ++n)
     {
-	// Calculate I(n, 1)
-	romberg_In1(I_current, I_last, context, n);
-	// Calculate the Subcycle
-	for(k = 2; k <= n; ++k)
-	{
-	    romberg_subcycle(&I_current[k - 1], &I_current[k - 2], &I_last[k - 2], k);
-	}
+        // Calculate I(n, 1)
+        romberg_In1(I_current, I_last, context, n);
+        // Calculate the Subcycle
+        for(k = 2; k <= n; ++k)
+        {
+            romberg_subcycle(&I_current[k - 1], &I_current[k - 2], &I_last[k - 2], k);
+        }
 
-	/*
-	  Swap I_current and I_last.
-	  I_current is now the array of the last main cycle.
-	  I_last is the array for the new cycle.
-	 */
-	integrands_drude_t* id_temp;
-	id_temp   = I_current;
-	I_current = I_last;
-	I_last    = id_temp;
+        /*
+         * Swap I_current and I_last.
+         * I_current is now the array of the last main cycle.
+         * I_last is the array for the new cycle.
+         */
+        integrands_drude_t* id_temp;
+        id_temp   = I_current;
+        I_current = I_last;
+        I_last    = id_temp;
 
-	/*
-	 * Check if the result is accurate enough and exit in this case.
-	 * Keep in mind: we already swapped I_current and I_last.
-	 */
-	if(n >= min_order &&
-	   romberg_is_accurate(&I_last[n-1], &I_current[n-2], error))
-	{
-	    n++;
-	    break;
-	}
+        /*
+         * Check if the result is accurate enough and exit in this case.
+         * Do at least min_order Iterations.
+         * The error can be calculated with I_{1,n+1} and I_{1,n}.
+         * Keep in mind: we already swapped I_current and I_last.
+         */
+        if(n >= min_order &&
+           romberg_is_accurate(&I_last[n-1], &I_current[n-2], error))
+        {
+            n++;
+            break;
+        }
     }
     *result = I_last[n - 2];
 }
@@ -772,7 +857,7 @@ void casimir_integrate_drude(casimir_t *self, casimir_integrals_t *cint, int l1,
 #ifdef INTEGRATION_GAUSS_LAGUERRE
 
 static void integrands_drude_laguerre(float80 x, integrands_drude_t *integrands,
-				      casimir_t *self, double nT, int l1, int l2, int m)
+                                      casimir_t *self, double nT, int l1, int l2, int m)
 {
     plm_combination_t comb;
     const float80 tau        = 2*nT;
