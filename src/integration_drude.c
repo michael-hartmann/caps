@@ -184,7 +184,7 @@ static inline void integrands_drude_u(float80 u, integrands_drude_t *integrands,
  * log_a is the logarithm of a
  * log_b is the logarithm of b
  */
-inline float80 logdiff(const float80 log_a, const float80 log_b);
+inline float80 log_rel_diff(const float80 log_a, const float80 log_b);
 
 inline float80 log_rel_diff(const float80 log_a, const float80 log_b)
 {
