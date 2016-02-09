@@ -25,7 +25,7 @@
 //#define INTEGRATION_SIMPLE
 //#define INTEGRATION_GAUSS_LAGUERRE
 #define INTEGRATION_ROMBERG
- 
+
 /* **************************************** */
 
 /*
@@ -38,7 +38,7 @@
 /*
  * The accuracy of the Drude-Integration
  */
-#define ACCURACY 1.0e-12
+#define ACCURACY 1.0e-9
 
 
 
@@ -120,7 +120,7 @@ void integrands_drude(float80 x, integrands_drude_t *integrands,
         comb.sign_dPl1mdPl2m = 1;
     }
     log_factor = log80(pow_2(x)+2*tau*x);
-    
+
     A = comb.lnPl1mPl2m - log_factor - x;
     integrands->lnA_TE = lnr_TE + A;
     integrands->lnA_TM = lnr_TM + A;
@@ -152,7 +152,7 @@ void integrands_drude(float80 x, integrands_drude_t *integrands,
 static inline void integrands_drude_u(float80 u, integrands_drude_t *integrands,
                                       struct integ_context* context)
 {
-    
+
     float80 x         = context->c0 * pow((1+u) / (1-u), ALPHA);
     float80 jacobi    = (pow(1+u, ALPHA-1) / pow(1-u, ALPHA + 1) * (2 * ALPHA * context->c0));
     float80 ln_jacobi = log80(fabs80(jacobi));
@@ -184,6 +184,8 @@ static inline void integrands_drude_u(float80 u, integrands_drude_t *integrands,
  * log_a is the logarithm of a
  * log_b is the logarithm of b
  */
+inline float80 logdiff(const float80 log_a, const float80 log_b);
+
 inline float80 log_rel_diff(const float80 log_a, const float80 log_b)
 {
     sign_t sign;
@@ -487,7 +489,7 @@ static inline void do_integrate(casimir_t* self, casimir_integrals_t* cint,
 //    const float80 c0  = (l1 + l2 - 1) / (n*T);
     const float80 c0  = l1 + l2 - 1;
     const float80 tau = 2 * n * T;
-    
+
     float80 c_max     = pow( (10.0*c0 / (c0 - 1.0)), 1.0 / ALPHA);
     if(isinf(c_max))
         c_max = 0.999;
@@ -495,7 +497,7 @@ static inline void do_integrate(casimir_t* self, casimir_integrals_t* cint,
         c_max = (c_max - 1) / (c_max + 1);
 
     integrands_drude_t total;
-    
+
     const float80 ln_lambda = casimir_lnLambda(l1, l2, m, NULL); /* sign: -1 */
     const float80 log_m = log(m);
     const float80 ln_tau = log80(tau);
@@ -514,7 +516,7 @@ static inline void do_integrate(casimir_t* self, casimir_integrals_t* cint,
     context.c_max = c_max;
     context.casimir = self;
 #endif
-    
+
     /*
      * Integral C and D have the same prefactor.
      */
@@ -538,8 +540,8 @@ static inline void do_integrate(casimir_t* self, casimir_integrals_t* cint,
 #elif defined INTEGRATION_ROMBERG
     romberg_do_integrate(&context, &total, &error);
 #endif
-    
-    // --------------------------------------- 
+
+    // ---------------------------------------
 
     /* A */
     cint->lnA_TE = prefactor_A + total.lnA_TE;
@@ -553,7 +555,7 @@ static inline void do_integrate(casimir_t* self, casimir_integrals_t* cint,
     /* B */
     cint->lnB_TE = prefactor_B + total.lnB_TE;
     cint->lnB_TM = prefactor_B + total.lnB_TM;
-    
+
     cint->signB_TM = -MPOW(l2+m+1) * total.sign_B;
     cint->signB_TE = +MPOW(l2+m+1) * total.sign_B;
 
@@ -780,7 +782,7 @@ static inline void romberg_do_integrate(struct integ_context* context,
 
     n = 1;
     k = 1;
-    
+
     I_current = I1;
     I_last    = I2;
 
