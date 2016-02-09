@@ -217,14 +217,71 @@ int test_integration_drude(void)
     {
         casimir_integrate_drude(&casimir, &cint, 60, 50, 1, 1, 2);
 
-        AssertAlmostEqual(&test, cint.lnA_TE, 317.54496357191706674104);
-        AssertAlmostEqual(&test, cint.lnA_TM, 317.54496357191706674104);
-        AssertAlmostEqual(&test, cint.lnB_TE, 332.17054025252939692152);
-        AssertAlmostEqual(&test, cint.lnB_TM, 332.17054025252939692152);
-        AssertAlmostEqual(&test, cint.lnC_TE, 324.76202098855843751046);
-        AssertAlmostEqual(&test, cint.lnC_TM, 324.76202098855843751046);
-        AssertAlmostEqual(&test, cint.lnD_TE, 324.94434361445935795232);
-        AssertAlmostEqual(&test, cint.lnD_TM, 324.94434361445935795232);
+        AssertAlmostEqual(&test, cint.lnA_TE, 316.62412013815097289);
+        AssertAlmostEqual(&test, cint.lnA_TM, 317.54352315209682933);
+        AssertAlmostEqual(&test, cint.lnB_TE, 331.23393499264542816);
+        AssertAlmostEqual(&test, cint.lnB_TM, 332.16912114975629899);
+        AssertAlmostEqual(&test, cint.lnC_TE, 323.83328989832645695);
+        AssertAlmostEqual(&test, cint.lnC_TM, 324.76059133413377111);
+        AssertAlmostEqual(&test, cint.lnD_TE, 324.01561254123456601);
+        AssertAlmostEqual(&test, cint.lnD_TM, 324.94291396001144756);
+    }
+
+    {
+        casimir_integrate_drude(&casimir, &cint, 60, 50, 1, 20, 2);
+
+        AssertAlmostEqual(&test, cint.lnA_TE, -23.65318265503996045);
+        AssertAlmostEqual(&test, cint.lnA_TM, -23.04382999922102487);
+        AssertAlmostEqual(&test, cint.lnB_TE, -15.04360009562167746);
+        AssertAlmostEqual(&test, cint.lnB_TM, -14.4160796102882949);
+        AssertAlmostEqual(&test, cint.lnC_TE, -19.44555739844483283);
+        AssertAlmostEqual(&test, cint.lnC_TM, -18.82707294265267691);
+        AssertAlmostEqual(&test, cint.lnD_TE, -19.26284933012174582);
+        AssertAlmostEqual(&test, cint.lnD_TM, -18.6443711253022098);
+    }
+
+    {
+        casimir_integrate_drude(&casimir, &cint, 3, 50, 1, 1, 2);
+
+        AssertAlmostEqual(&test, cint.lnA_TE, 110.7995398239036024);
+        AssertAlmostEqual(&test, cint.lnA_TM, 111.2489039125052989);
+        AssertAlmostEqual(&test, cint.lnB_TE, 120.9417240007842588);
+        AssertAlmostEqual(&test, cint.lnB_TM, 121.4082261672183343);
+        AssertAlmostEqual(&test, cint.lnC_TE, 117.2678595929717113);
+        AssertAlmostEqual(&test, cint.lnC_TM, 117.7257969753548750);
+        AssertAlmostEqual(&test, cint.lnD_TE, 114.4542753759015819);
+        AssertAlmostEqual(&test, cint.lnD_TM, 114.9122156868675558);
+
+        AssertEqual(&test, cint.signA_TE, 1);
+        AssertEqual(&test, cint.signA_TM, -1);
+        AssertEqual(&test, cint.signB_TE, -1);
+        AssertEqual(&test, cint.signB_TM, 1);
+        AssertEqual(&test, cint.signC_TE, 1);
+        AssertEqual(&test, cint.signC_TM, -1);
+        AssertEqual(&test, cint.signD_TE, -1);
+        AssertEqual(&test, cint.signD_TM, 1);
+    }
+
+    {
+        casimir_integrate_drude(&casimir, &cint, 3, 50, 1, 1, 0.002);
+
+        AssertAlmostEqual(&test, cint.lnA_TE, 466.5647105204990592);
+        AssertAlmostEqual(&test, cint.lnA_TM, 470.5307287675367002);
+        AssertAlmostEqual(&test, cint.lnB_TE, 490.465218671630014);
+        AssertAlmostEqual(&test, cint.lnB_TM, 494.5058215295792516);
+        AssertAlmostEqual(&test, cint.lnC_TE, 479.9118134219486804);
+        AssertAlmostEqual(&test, cint.lnC_TM, 483.9154564095092778);
+        AssertAlmostEqual(&test, cint.lnD_TE, 477.0984027050032314);
+        AssertAlmostEqual(&test, cint.lnD_TM, 481.1020456925773873);
+
+        AssertEqual(&test, cint.signA_TE, 1);
+        AssertEqual(&test, cint.signA_TM, -1);
+        AssertEqual(&test, cint.signB_TE, -1);
+        AssertEqual(&test, cint.signB_TM, 1);
+        AssertEqual(&test, cint.signC_TE, 1);
+        AssertEqual(&test, cint.signC_TM, -1);
+        AssertEqual(&test, cint.signD_TE, -1);
+        AssertEqual(&test, cint.signD_TM, 1);
     }
 
     casimir_free(&casimir);
