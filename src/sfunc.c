@@ -20,6 +20,29 @@
 
 
 /**
+ * @brief Calculate relative difference between two numbers
+ *
+ * This function computes \f$\log(|a-b|/\mathrm{max}(a,b))\f$, where
+ * \f$\mathrm{log_a} = \log a\f$ and \f$\mathrm{log_b} = \log b\f$.
+ *
+ * @param [in] log_a number
+ * @param [in] log_b number
+ * @return log_diff_relative relative difference
+ */
+inline float80 logdiff_rel(const float80 log_a, const float80 log_b)
+{
+    if(isinf(log_a) && log_a < 0)
+        return 1;
+    else if(isinf(log_b) && log_b < 0)
+        return 1;
+
+    if(log_a > log_b)
+        return log1p80(exp80(log_b-log_a));
+    else
+        return log1p80(exp80(log_a-log_b));
+}
+
+/**
  * @brief Add two numbers given by their logarithms.
  *
  * Both numbers are assumed to be nonnegative.
@@ -40,22 +63,12 @@ inline float80 logadd(const float80 log_a, const float80 log_b)
         const float80 diff = log_b-log_a;
         const float80 expx = exp80(diff);
 
-        #ifdef EXPERIMENTAL_FEATURES
-        if(diff < -47)
-            return log_a + expx;
-        #endif
-
         return log_a + log1p80(expx);
     }
     else
     {
         const float80 diff = log_a-log_b;
         const float80 expx = exp80(diff);
-
-        #ifdef EXPERIMENTAL_FEATURES
-        if(diff < -47)
-            return log_b + expx;
-        #endif
 
         return log_b + log1p80(expx);
     }
@@ -91,11 +104,6 @@ float80 logadd_s(const float80 log_a, const sign_t sign_a, const float80 log_b, 
         const float80 diff = log_b-log_a;
         const float80 expx = sign_a*sign_b*exp80(diff);
 
-        #ifdef EXPERIMENTAL_FEATURES
-        if(diff < -47)
-            return log_a + expx;
-        #endif
-
         return log_a + log1p80(expx);
     }
     else
@@ -103,11 +111,6 @@ float80 logadd_s(const float80 log_a, const sign_t sign_a, const float80 log_b, 
         *sign = sign_b;
         const float80 diff = log_a-log_b;
         const float80 expx = sign_a*sign_b*exp80(diff);
-
-        #ifdef EXPERIMENTAL_FEATURES
-        if(diff < -47)
-            return log_b + expx;
-        #endif
 
         return log_b + log1p80(expx);
     }
