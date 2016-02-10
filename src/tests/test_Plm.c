@@ -15,6 +15,8 @@ int test_Plm()
     unittest_init(&test, "Plm", "Test associated Legendre polynomials");
 
     /* Plm */
+    AssertAlmostEqual(&test, plm_Plm(4,1,1), 0);
+
     AssertAlmostEqual(&test, plm_Plm(2,0,3), 13);
     AssertAlmostEqual(&test, plm_Plm(2,1,3), -25.455844122715710878430397035774565414);
     AssertAlmostEqual(&test, plm_Plm(2,2,3), -24);
