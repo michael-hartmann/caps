@@ -32,14 +32,14 @@
 inline float80 logdiff_rel(const float80 log_a, const float80 log_b)
 {
     if(isinf(log_a) && log_a < 0)
-        return 1;
+        return 0;
     else if(isinf(log_b) && log_b < 0)
-        return 1;
+        return 0;
 
     if(log_a > log_b)
-        return log1p80(exp80(log_b-log_a));
+        return log80(1.0 - exp80(log_b-log_a));
     else
-        return log1p80(exp80(log_a-log_b));
+        return log80(1.0 - exp80(log_a-log_b));
 }
 
 /**
