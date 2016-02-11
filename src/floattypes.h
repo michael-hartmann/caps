@@ -19,6 +19,7 @@ typedef double      float64;
 #define copysign64 copysign
 #define fmax64     fmax
 #define fmin64     fmin
+#define pow64      pow
 
 typedef long double float80;
 #define log80      logl
@@ -33,6 +34,7 @@ typedef long double float80;
 #define copysign80 copysignl
 #define fmax80     fmaxl
 #define fmin80     fminl
+#define pow80      powl
 
 #ifdef FLOAT128
 typedef __float128  float128;
@@ -48,6 +50,7 @@ typedef __float128  float128;
 #define copysign128 copysignq
 #define fmax128     fmaxq
 #define fmin128     fminq
+#define pow128      powq
 #endif
 
 #endif
