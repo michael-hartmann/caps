@@ -18,4 +18,5 @@ D: Helped to find a bug that the round-trip matrix was filled in the wrong way.
 
 N: Erik Buchenau
 E: <e.buchenau@live.de>
+D: Integration for Drude metals.
 D: Contributed a unit test.

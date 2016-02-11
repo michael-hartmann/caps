@@ -1,5 +1,6 @@
 /**
  * @file   integration_drude.c
+ * @author Erik Buchenau <e.buchenau@live.de>
  * @author Michael Hartmann <michael.hartmann@physik.uni-augsburg.de>
  * @date   January, 2016
  * @brief  Perform integration for Drude planes
@@ -1017,33 +1018,5 @@ void integrate_gauss_laguerre(casimir_t *self, casimir_integrals_t *cint, int l1
 
     xfree(ln_ABCD);
     xfree(signs_ABCD);
-}
-#endif
-
-
-/* Integrate the function f(x)*exp(-x) from 0 to inf
-* f(x) is the polynomial of length len stored in p
-* l1,l2,m are needed to calculate the prefactor Lambda(l1,l2,m)
-*
-* This function returns the logarithm of the integral. The sign will be stored
-* in sign.
-*/
-#if 0
-double log_polyintegrate(float80 p[], size_t len, int l1, int l2, int m, double tau, sign_t *sign)
-{
-    size_t i;
-    sign_t sign_lnLambda;
-    float80 value = 0;
-    const float80 ln_tau = log80(tau);
-    const float80 lnLambda = casimir_lnLambda(l1, l2, m, &sign_lnLambda);
-    const float80 lnfac_max = lgamma80(1+len-1);
-
-    for(i = 0; i < len; i++)
-        value += exp80(lgamma80(1+i)-lnfac_max-(i+1)*ln_tau)*p[i];
-
-    TERMINATE(!isfinite(value), "value=%Lg", value);
-
-    *sign = copysign80(1, value) * sign_lnLambda;
-    return lnLambda+lnfac_max+log80(fabs80(value));
 }
 #endif

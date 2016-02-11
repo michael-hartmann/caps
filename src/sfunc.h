@@ -51,6 +51,7 @@ inline float80 logadd(const float80 a, const float80 b);
 inline float80 logadd_s(const float80 a, const sign_t sign_a, const float80 b, const sign_t sign_b, sign_t *sign);
 inline float80 logadd_m(const float80 list[], const int len);
 inline float80 logadd_ms(const float80 list[], const sign_t signs[], const int len, sign_t *sign);
+inline float80 logdiff_rel(const float80 log_a, const float80 log_b);
 
 inline float80 lbinom(int n, int k);
 
