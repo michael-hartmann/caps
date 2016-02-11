@@ -41,10 +41,9 @@ CFLAGS  = -std=c99
 # use traditional GNU semantics for inline
 CFLAGS += -fgnu89-inline
 CFLAGS += -I .
-CFLAGS += -DEXPERIMENTAL_FEATURES
 #CFLAGS += -DTRACE
 # enable warnings and make them fatal
-CFLAGS += -Werror -Wall -Wextra -Wmissing-prototypes -Wstrict-prototypes -Wshadow -Wpointer-arith -Wcast-qual -Wwrite-strings -Wno-unused-parameter
+CFLAGS += -Wall -Wextra -Wmissing-prototypes -Wstrict-prototypes -Wshadow -Wpointer-arith -Wcast-qual -Wwrite-strings -Wno-unused-parameter
 
 LDFLAGS += -lm -pthread
 
