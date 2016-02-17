@@ -129,7 +129,7 @@ typedef struct
 
 
 /* prototypes */
-const char *casimir_compile_info(void);
+int  casimir_compile_info(char *str, int len);
 void casimir_info(casimir_t *self, FILE *stream, const char *prefix);
 
 double casimir_epsilon(double xi, double omegap, double gamma_);

@@ -24,9 +24,6 @@
 #include "sfunc.h"
 #include "utils.h"
 
-static char CASIMIR_COMPILE_INFO[4096] = { 0 };
-
-
 /**
 * @name Information on compilation and Casimir objects
 */
@@ -39,17 +36,22 @@ static char CASIMIR_COMPILE_INFO[4096] = { 0 };
  *
  * Do not modify or free this string!
  *
- * This function is not thread-safe.
+ * This function is thread-safe.
  *
- * @retval description constant string
+ * @param [out] str buffer for string
+ * @param [in]  len length of string
+ * @retval success bytes written if successful
+ * @retval fail <0 otherwise
  */
-const char *casimir_compile_info(void)
+int casimir_compile_info(char *str, int len)
 {
-    snprintf(CASIMIR_COMPILE_INFO, sizeof(CASIMIR_COMPILE_INFO)/sizeof(char),
+    if(len == 0)
+        return -1;
+
+    return snprintf(str, (len-1)*sizeof(char),
              "Compiled on %s at %s with %s",
               __DATE__, __TIME__, COMPILER
             );
-    return CASIMIR_COMPILE_INFO;
 }
 
 
