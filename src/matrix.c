@@ -59,7 +59,7 @@ MATRIX_LOGDET_LU(matrix_float80, matrix_float80, float80, fabs80, log80);
  */
 void matrix_float80_swap(matrix_float80 *M, const int i, const int j)
 {
-    const int dim = M->size;
+    const int dim = M->dim;
 
     /* swap columns */
     for(int k = 0; k < dim; k++)
@@ -97,7 +97,7 @@ void matrix_float80_swap(matrix_float80 *M, const int i, const int j)
  */
 void matrix_float80_pivot(matrix_float80 *M)
 {
-    const int dim = M->size;
+    const int dim = M->dim;
 
     for(int k = 0; k < dim; k++)
     {
@@ -195,7 +195,7 @@ double matrix_float128_logdet_qr(matrix_float128 *M)
  */
 double matrix_float80_logdet_qr(matrix_float80 *M)
 {
-    const int dim = M->size;
+    const int dim = M->dim;
     float80 *m = M->M;
 
     for(int j = 0; j < dim-1; j++)
@@ -257,12 +257,12 @@ void matrix_float80_log_balance(matrix_float80 *A)
 /* balance a matrix that elements are give by log with stop criterion */
 void matrix_float80_log_balance_stop(matrix_float80 *A, const double stop)
 {
-    const int N = A->size;
+    const int dim = A->dim;
     bool converged = false;
 
     float80 *M = A->M;
-    float80 *list_row = xmalloc(N*sizeof(float80));
-    float80 *list_col = xmalloc(N*sizeof(float80));
+    float80 *list_row = xmalloc(dim*sizeof(float80));
+    float80 *list_col = xmalloc(dim*sizeof(float80));
 
     /* line 2 */
     while(!converged)
@@ -271,17 +271,17 @@ void matrix_float80_log_balance_stop(matrix_float80 *A, const double stop)
         converged = true;
 
         /* line 5 */
-        for(int i = 0; i < N; i++)
+        for(int i = 0; i < dim; i++)
         {
             /* line 6 */
-            for(int j = 0; j < N; j++)
+            for(int j = 0; j < dim; j++)
             {
                 list_row[j] = matrix_get(A,i,j);
                 list_col[j] = matrix_get(A,j,i);
             }
 
-            float80 row_norm = logadd_m(list_row, N);
-            float80 col_norm = logadd_m(list_col, N);
+            float80 row_norm = logadd_m(list_row, dim);
+            float80 col_norm = logadd_m(list_col, dim);
 
             /* line 7 */
             int f = 0; /* log(1)=0 */
@@ -312,10 +312,10 @@ void matrix_float80_log_balance_stop(matrix_float80 *A, const double stop)
                 converged = false;
 
                 /* line 14 */
-                for(int k = 0; k < N; k++)
+                for(int k = 0; k < dim; k++)
                 {
-                    M[i*N+k] -= (float80)f*LOG_FLOAT_RADIX;
-                    M[k*N+i] += (float80)f*LOG_FLOAT_RADIX;
+                    M[i*dim+k] -= (float80)f*LOG_FLOAT_RADIX;
+                    M[k*dim+i] += (float80)f*LOG_FLOAT_RADIX;
                 }
             }
         }
@@ -330,9 +330,9 @@ void matrix_float80_log_balance_fast(matrix_float80 *A);
 
 void matrix_float80_log_balance_fast(matrix_float80 *A)
 {
-    const int N = A->size;
-    float80 list_row[N];
-    float80 list_col[N];
+    const int dim = A->dim;
+    float80 list_row[dim];
+    float80 list_col[dim];
 
     float80 *M = A->M;
 
@@ -344,8 +344,8 @@ void matrix_float80_log_balance_fast(matrix_float80 *A)
         int index_max[2] = {0,0};
         int index_min[2] = {0,0};
 
-        for(int i = 0; i < N; i++)
-            for(int j = 0; j < N; j++)
+        for(int i = 0; i < dim; i++)
+            for(int j = 0; j < dim; j++)
             {
                 const float80 elem = matrix_get(A, i,j);
 
@@ -375,14 +375,14 @@ void matrix_float80_log_balance_fast(matrix_float80 *A)
             const int i = indices[n];
 
             /* line 6 */
-            for(int j = 0; j < N; j++)
+            for(int j = 0; j < dim; j++)
             {
                 list_row[j] = matrix_get(A,i,j);
                 list_col[j] = matrix_get(A,j,i);
             }
 
-            float80 row_norm = logadd_m(list_row, N);
-            float80 col_norm = logadd_m(list_col, N);
+            float80 row_norm = logadd_m(list_row, dim);
+            float80 col_norm = logadd_m(list_col, dim);
 
             /* line 7 */
             int f = 0; /* log(1)=0 */
@@ -410,10 +410,10 @@ void matrix_float80_log_balance_fast(matrix_float80 *A)
             if(logadd(row_norm, col_norm) < (log(0.97)+s))
             {
                 /* line 14 */
-                for(int k = 0; k < N; k++)
+                for(int k = 0; k < dim; k++)
                 {
-                    M[i*N+k] -= (float80)f*LOG_FLOAT_RADIX;
-                    M[k*N+i] += (float80)f*LOG_FLOAT_RADIX;
+                    M[i*dim+k] -= (float80)f*LOG_FLOAT_RADIX;
+                    M[k*dim+i] += (float80)f*LOG_FLOAT_RADIX;
                 }
             }
         }
@@ -425,7 +425,7 @@ double matrix_logdet1mM(matrix_float80 *M, matrix_sign_t *M_sign, const char *ty
 {
     #define TRACE
 
-    const int dim = M->size;
+    const int dim = M->dim;
     #ifdef TRACE
     float80 minimum, maximum;
 
