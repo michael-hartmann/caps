@@ -24,6 +24,10 @@
 /* print usage */
 void usage(FILE *stream)
 {
+    char msg[4096];
+
+    casimir_compile_info(msg, 4096);
+
     fprintf(stream, "Usage: casimir [OPTIONS]\n\
 This program will calculate the free Casimir energy F(T,L/R) for the\n\
 plane-sphere geometry for given L/R and temperature T. The output is in scaled\n\
@@ -80,7 +84,7 @@ Further options:\n\
         Show this help\n\
 \n\
 \n\
-%s\n", DEFAULT_LFAC, DEFAULT_PRECISION, casimir_compile_info());
+%s\n", DEFAULT_LFAC, DEFAULT_PRECISION, msg);
 }
 
 /* parse a range given for LbyR or T from the command line.
@@ -280,7 +284,11 @@ int main(int argc, char *argv[])
     }
 
     if(!quiet_flag)
-        printf("# %s\n#\n", casimir_compile_info());
+    {
+        char msg[4096];
+        casimir_compile_info(msg, 4096);
+        printf("# %s\n#\n", msg);
+    }
 
     i = 0;
     for(int iLbyR = 0; iLbyR < lLbyR[2]; iLbyR++)
