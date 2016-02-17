@@ -45,6 +45,18 @@ MATRIX_MINMAX(matrix_float80, matrix_float80, float80);
 MATRIX_EXP   (matrix_float80, matrix_float80, exp80);
 MATRIX_LOGDET_LU(matrix_float80, matrix_float80, float80, fabs80, log80);
 
+
+/**
+ * @brief swap rows and columns
+ *
+ * This function is used for pivoting a matrix.
+ *
+ * First, columns i and j are swapped, then rows i and j are swapped.
+ *
+ * @param [in,out] M matrix
+ * @param [in] i row
+ * @param [in] j column
+ */
 void matrix_float80_swap(matrix_float80 *M, const int i, const int j)
 {
     const int dim = M->size;
@@ -67,6 +79,22 @@ void matrix_float80_swap(matrix_float80 *M, const int i, const int j)
 }
 
 
+/**
+ * @brief Pivot matrix
+ *
+ * This function pivots a matrix using swapping of rows and columns. After
+ * pivoting \f$|M_{00}| < |M_{11}| < |M_{22}| \dots f$.
+ *
+ * For some reason this pivoting contradicts what the literature suggests.
+ * However, this way of pivoting seems to work fine.  One should probably read
+ * carefully [1].
+ *
+ * [1] Algebraic and numerical techniques for the computation of matrix
+ * determinants, Pan, Yu, Stewart, Computers & Mathematics with Applications,
+ * 1997, http://dx.doi.org/10.1016/S0898-1221(97)00097-7
+ *
+ * @param [in,out] M matrix
+ */
 void matrix_float80_pivot(matrix_float80 *M)
 {
     const int dim = M->size;
@@ -157,7 +185,14 @@ double matrix_float128_logdet_qr(matrix_float128 *M)
 #endif
 
 
-/* calculate QR decomposition of M */
+/**
+ * @brief calculate QR decomposition of matrix
+ *
+ * This function calculates the QR decomposition of a matrix M and \f$\log|\det(M)|\f$.
+ *
+ * @param [in,out] M matrix
+ * @retval logdet \f$\log|\det M|\f$
+ */
 double matrix_float80_logdet_qr(matrix_float80 *M)
 {
     const int dim = M->size;
@@ -290,19 +325,117 @@ void matrix_float80_log_balance_stop(matrix_float80 *A, const double stop)
     xfree(list_row);
 }
 
+/* balance a matrix that elements are give by log with stop criterion */
+void matrix_float80_log_balance_fast(matrix_float80 *A);
+
+void matrix_float80_log_balance_fast(matrix_float80 *A)
+{
+    const int N = A->size;
+    float80 list_row[N];
+    float80 list_col[N];
+
+    float80 *M = A->M;
+
+    /* line 2 */
+    while(true)
+    {
+        float80 max = matrix_get(A, 0,0); /* value */
+        float80 min = matrix_get(A, 0,0); /* value */
+        int index_max[2] = {0,0};
+        int index_min[2] = {0,0};
+
+        for(int i = 0; i < N; i++)
+            for(int j = 0; j < N; j++)
+            {
+                const float80 elem = matrix_get(A, i,j);
+
+                if(elem > max)
+                {
+                    max = elem;
+                    index_max[0] = i;
+                    index_max[1] = j;
+                }
+                else if(elem < min)
+                {
+                    min = elem;
+                    index_min[0] = i;
+                    index_min[1] = j;
+                }
+            }
+
+        /* stop criterion */
+        if(max < 5000 && min > -5000)
+            break;
+
+        int indices[4] = { index_max[0], index_max[1], index_min[0], index_min[1] };
+
+        /* line 5 */
+        for(int n = 0; n < 4; n++)
+        {
+            const int i = indices[n];
+
+            /* line 6 */
+            for(int j = 0; j < N; j++)
+            {
+                list_row[j] = matrix_get(A,i,j);
+                list_col[j] = matrix_get(A,j,i);
+            }
+
+            float80 row_norm = logadd_m(list_row, N);
+            float80 col_norm = logadd_m(list_col, N);
+
+            /* line 7 */
+            int f = 0; /* log(1)=0 */
+            float80 s = logadd(col_norm, row_norm);
+
+            /* line 8 */
+            while(col_norm < (row_norm-LOG_FLOAT_RADIX))
+            {
+                /* line 9 */
+                col_norm += LOG_FLOAT_RADIX;
+                row_norm -= LOG_FLOAT_RADIX;
+                f        += 1;
+            }
+
+            /* line 10 */
+            while(col_norm >= (row_norm+LOG_FLOAT_RADIX))
+            {
+                /* line 11 */
+                col_norm -= LOG_FLOAT_RADIX;
+                row_norm += LOG_FLOAT_RADIX;
+                f        -= 1;
+            }
+
+            /* line 12 */
+            if(logadd(row_norm, col_norm) < (log(0.97)+s))
+            {
+                /* line 14 */
+                for(int k = 0; k < N; k++)
+                {
+                    M[i*N+k] -= (float80)f*LOG_FLOAT_RADIX;
+                    M[k*N+i] += (float80)f*LOG_FLOAT_RADIX;
+                }
+            }
+        }
+    }
+}
+
 /* calculate log(det(1-M)) */
 double matrix_logdet1mM(matrix_float80 *M, matrix_sign_t *M_sign, const char *type, const bool pivot)
 {
+    #define TRACE
+
     const int dim = M->size;
     #ifdef TRACE
     float80 minimum, maximum;
 
+    printf("now=%.1f\n", now());
     matrix_float80_minmax(M, &minimum, &maximum);
     printf("# before balancing: min=%Lg, max=%Lg\n", minimum, maximum);
     #endif
 
     /* balance matrix */
-    matrix_float80_log_balance(M);
+    matrix_float80_log_balance_fast(M);
 
     #ifdef TRACE
     matrix_float80_minmax(M, &minimum, &maximum);
