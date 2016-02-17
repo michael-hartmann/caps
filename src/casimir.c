@@ -26,7 +26,7 @@ void usage(FILE *stream)
 {
     char msg[4096];
 
-    casimir_compile_info(msg, 4096);
+    casimir_compile_info(msg, sizeof(msg)/sizeof(char));
 
     fprintf(stream, "Usage: casimir [OPTIONS]\n\
 This program will calculate the free Casimir energy F(T,L/R) for the\n\
@@ -286,7 +286,7 @@ int main(int argc, char *argv[])
     if(!quiet_flag)
     {
         char msg[4096];
-        casimir_compile_info(msg, 4096);
+        casimir_compile_info(msg, sizeof(msg)/sizeof(char));
         printf("# %s\n#\n", msg);
     }
 
