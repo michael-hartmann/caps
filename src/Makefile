@@ -38,23 +38,31 @@ TESTS = \
 
 # use C99 standard
 CFLAGS  = -std=c99
+
 # use traditional GNU semantics for inline
 CFLAGS += -fgnu89-inline
 CFLAGS += -I .
 #CFLAGS += -DTRACE
+
 # enable warnings and make them fatal
 CFLAGS += -Wall -Wextra -Wmissing-prototypes -Wstrict-prototypes -Wshadow -Wpointer-arith -Wcast-qual -Wwrite-strings -Wno-unused-parameter
 
+# ldflags
 LDFLAGS += -lm -pthread
 
 # support float128
 #CFLAGS += -DFLOAT128
 #LDFLAGS += -lquadmath
 
+# clang supports various runtime checks. This will slow down the program, but
+# it's a good and easy way to find bugs.
+#CFLAGS += -fsanitize=undefined,memory
+
 TARGET = "../bin/"
 
 # optimize for native CPU
-OPT = -march=native -flto -O3
+OPT = -march=native -O3
+OPT +=-flto
 
 # Disable additional checks and assertions.
 #
