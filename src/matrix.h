@@ -301,8 +301,7 @@ double matrix_float80_logdet_qr(matrix_float80 *M);
 double matrix_float128_logdet_qr(matrix_float128 *M);
 #endif
 
-void matrix_float80_log_balance(matrix_float80 *A);
-void matrix_float80_log_balance_stop(matrix_float80 *A, const double stop);
+void matrix_float80_log_balance(matrix_float80 *A, float80 *minimum, float80 *maximum);
 
 void matrix_float80_swap(matrix_float80 *M, const int i, const int j);
 void matrix_float80_pivot(matrix_float80 *M);

@@ -248,132 +248,21 @@ double matrix_float80_logdet_qr(matrix_float80 *M)
     return det;
 }
 
-/* balance a matrix that elements are give by log */
-void matrix_float80_log_balance(matrix_float80 *A)
-{
-    matrix_float80_log_balance_stop(A, LOG095);
-}
-
 /* balance a matrix that elements are give by log with stop criterion */
-void matrix_float80_log_balance_stop(matrix_float80 *A, const double stop)
+void matrix_float80_log_balance(matrix_float80 *A, float80 *minimum, float80 *maximum)
 {
     const int dim = A->dim;
-    bool converged = false;
 
     float80 *M = A->M;
-    float80 *list_row = xmalloc(dim*sizeof(float80));
-    float80 *list_col = xmalloc(dim*sizeof(float80));
-
-    /* line 2 */
-    while(!converged)
-    {
-        /* line 4 */
-        converged = true;
-
-        /* line 5 */
-        for(int i = 0; i < dim; i++)
-        {
-            /* line 6 */
-            for(int j = 0; j < dim; j++)
-            {
-                list_row[j] = matrix_get(A,i,j);
-                list_col[j] = matrix_get(A,j,i);
-            }
-
-            float80 row_norm = logadd_m(list_row, dim);
-            float80 col_norm = logadd_m(list_col, dim);
-
-            /* line 7 */
-            int f = 0; /* log(1)=0 */
-            float80 s = logadd(col_norm, row_norm);
-
-            /* line 8 */
-            while(col_norm < (row_norm-LOG_FLOAT_RADIX))
-            {
-                /* line 9 */
-                col_norm += LOG_FLOAT_RADIX;
-                row_norm -= LOG_FLOAT_RADIX;
-                f        += 1;
-            }
-
-            /* line 10 */
-            while(col_norm >= (row_norm+LOG_FLOAT_RADIX))
-            {
-                /* line 11 */
-                col_norm -= LOG_FLOAT_RADIX;
-                row_norm += LOG_FLOAT_RADIX;
-                f        -= 1;
-            }
-
-            /* line 12 */
-            if(logadd(row_norm, col_norm) < (stop+s))
-            {
-                /* line 13 */
-                converged = false;
-
-                /* line 14 */
-                for(int k = 0; k < dim; k++)
-                {
-                    M[i*dim+k] -= (float80)f*LOG_FLOAT_RADIX;
-                    M[k*dim+i] += (float80)f*LOG_FLOAT_RADIX;
-                }
-            }
-        }
-    }
-
-    xfree(list_col);
-    xfree(list_row);
-}
-
-/* balance a matrix that elements are give by log with stop criterion */
-void matrix_float80_log_balance_fast(matrix_float80 *A);
-
-void matrix_float80_log_balance_fast(matrix_float80 *A)
-{
-    const int dim = A->dim;
     float80 list_row[dim];
     float80 list_col[dim];
-
-    float80 *M = A->M;
 
     /* line 2 */
     while(true)
     {
-        float80 max = matrix_get(A, 0,0); /* value */
-        float80 min = matrix_get(A, 0,0); /* value */
-        int index_max[2] = {0,0};
-        int index_min[2] = {0,0};
-
-        for(int i = 0; i < dim; i++)
-            for(int j = 0; j < dim; j++)
-            {
-                const float80 elem = matrix_get(A, i,j);
-
-                if(elem > max)
-                {
-                    max = elem;
-                    index_max[0] = i;
-                    index_max[1] = j;
-                }
-                else if(elem < min)
-                {
-                    min = elem;
-                    index_min[0] = i;
-                    index_min[1] = j;
-                }
-            }
-
-        /* stop criterion */
-        if(max < 5000 && min > -5000)
-            break;
-
-        int indices[4] = { index_max[0], index_max[1], index_min[0], index_min[1] };
-
         /* line 5 */
-        for(int n = 0; n < 4; n++)
+        for(int i = 0; i < dim; i++)
         {
-            const int i = indices[n];
-
             /* line 6 */
             for(int j = 0; j < dim; j++)
             {
@@ -386,7 +275,6 @@ void matrix_float80_log_balance_fast(matrix_float80 *A)
 
             /* line 7 */
             int f = 0; /* log(1)=0 */
-            float80 s = logadd(col_norm, row_norm);
 
             /* line 8 */
             while(col_norm < (row_norm-LOG_FLOAT_RADIX))
@@ -406,15 +294,23 @@ void matrix_float80_log_balance_fast(matrix_float80 *A)
                 f        -= 1;
             }
 
-            /* line 12 */
-            if(logadd(row_norm, col_norm) < (log(0.97)+s))
+            /* line 14 */
+            for(int k = 0; k < dim; k++)
             {
-                /* line 14 */
-                for(int k = 0; k < dim; k++)
-                {
-                    M[i*dim+k] -= (float80)f*LOG_FLOAT_RADIX;
-                    M[k*dim+i] += (float80)f*LOG_FLOAT_RADIX;
-                }
+                M[i*dim+k] -= (float80)f*LOG_FLOAT_RADIX;
+                M[k*dim+i] += (float80)f*LOG_FLOAT_RADIX;
+            }
+
+            float80 min,max;
+            matrix_float80_minmax(A,&min,&max);
+            if(min > -4000 && max < 4000)
+            {
+                if(minimum != NULL)
+                    *minimum = min;
+                if(maximum != NULL)
+                    *maximum = max;
+
+                return;
             }
         }
     }
@@ -423,26 +319,17 @@ void matrix_float80_log_balance_fast(matrix_float80 *A)
 /* calculate log(det(1-M)) */
 double matrix_logdet1mM(casimir_t *casimir, matrix_float80 *M, matrix_sign_t *M_sign)
 {
-    const char *detalg = casimir->detalg;
-    const bool pivot   = casimir->pivot;
-    #define TRACE
-
     const int dim = M->dim;
-    #ifdef TRACE
+    const char *detalg = casimir->detalg;
+    double t = now();
     float80 minimum, maximum;
-
-    printf("now=%.1f\n", now());
-    matrix_float80_minmax(M, &minimum, &maximum);
-    printf("# before balancing: min=%Lg, max=%Lg\n", minimum, maximum);
-    #endif
+    int h,m,s;
 
     /* balance matrix */
-    matrix_float80_log_balance_fast(M);
+    matrix_float80_log_balance(M, &minimum, &maximum);
 
-    #ifdef TRACE
-    matrix_float80_minmax(M, &minimum, &maximum);
-    printf("# after balancing: min=%Lg, max=%Lg\n", minimum, maximum);
-    #endif
+    sec2human(now()-t, &h, &m, &s);
+    casimir_printf(casimir, 2, "# balancing: %02d:%02d:%02d (min=%Lg, max=%Lg)\n", h,m,s, minimum, maximum);
 
     if(strcasecmp(detalg, "LU_FLOAT80") == 0)
     {
@@ -486,20 +373,16 @@ double matrix_logdet1mM(casimir_t *casimir, matrix_float80 *M, matrix_sign_t *M_
             M->M[i*dim+i] += 1;
 
         /* pivot */
-        if(pivot)
-        {
-            #ifdef TRACE
-            const double t0 = now();
-            printf("pivoting...\n");
-            #endif
-
+        if(casimir->pivot)
             matrix_float80_pivot(M);
 
-            #ifdef TRACE
-            printf("pivoting: t=%g\n", now()-t0);
-            #endif
-        }
+        t = now();
+        const double logdet = matrix_float80_logdet_qr(M);
 
-        return matrix_float80_logdet_qr(M);
+        sec2human(now()-t, &h, &m, &s);
+        casimir_printf(casimir, 2, "# QR-decomposition: %02d:%02d:%02d\n", h,m,s);
+        casimir_printf(casimir, 2, "#\n");
+
+        return logdet;
     }
 }
