@@ -89,6 +89,8 @@ typedef struct
 
     double birthtime;       /**< timestamp when object was initialized */
 
+    int priority;           /**< priority */
+
     /* parameters that you usually do not want to change */
     bool pivot; /**< pivot matrix before QR decomposition */
     /*@}*/
@@ -131,6 +133,7 @@ typedef struct
 /* prototypes */
 int  casimir_compile_info(char *str, int len);
 void casimir_info(casimir_t *self, FILE *stream, const char *prefix);
+int casimir_printf(casimir_t *self, int priority, const char *format, ...);
 
 double casimir_epsilon(double xi, double omegap, double gamma_);
 double casimir_lnepsilon(double xi, double omegap, double gamma_);

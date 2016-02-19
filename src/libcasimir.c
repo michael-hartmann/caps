@@ -1,7 +1,7 @@
 /**
  * @file   libcasimir.c
  * @author Michael Hartmann <michael.hartmann@physik.uni-augsburg.de>
- * @date   January, 2016
+ * @date   February, 2016
  * @brief  library to calculate the free Casimir energy in the plane-sphere geometry
  */
 
@@ -9,12 +9,13 @@
 #define _GNU_SOURCE
 
 #include <math.h>
+#include <pthread.h>
+#include <stdarg.h>
 #include <stdbool.h>
 #include <stdio.h>
 #include <string.h>
-#include <pthread.h>
-#include <unistd.h>
 #include <time.h>
+#include <unistd.h>
 
 #include "floattypes.h"
 #include "integration_drude.h"
@@ -102,6 +103,19 @@ void casimir_info(casimir_t *self, FILE *stream, const char *prefix)
     fprintf(stream, "%sdetalg          = %s\n", prefix, self->detalg);
     fprintf(stream, "%spivot           = %s\n", prefix, self->pivot ? "true" : "false");
     fprintf(stream, "%sbirthtime       = %s (%.1f)\n", prefix, buf, self->birthtime);
+}
+
+int casimir_printf(casimir_t *self, int priority, const char *format, ...)
+{
+    if(self->priority < priority)
+        return 0;
+
+    va_list args;
+    va_start(args, format);
+    int ret = vprintf(format, args);
+    va_end(args);
+
+    return ret;
 }
 
 /*@}*/
@@ -379,6 +393,8 @@ int casimir_init(casimir_t *self, double LbyR, double T)
 
     /* use QR decomposition to calculate determinant */
     strcpy(self->detalg, CASIMIR_DETALG);
+
+    self->priority = 2;
 
     /* parameters that users usually don't change */
     self->pivot = true;
@@ -1509,14 +1525,14 @@ void casimir_logdetD0(casimir_t *self, int m, double *logdet_EE, double *logdet_
     /* calculate logdet and free space */
     if(EE != NULL)
     {
-        *logdet_EE = matrix_logdet1mM(EE, EE_sign, self->detalg, self->pivot);
+        *logdet_EE = matrix_logdet1mM(self, EE, EE_sign);
 
         matrix_sign_free(EE_sign);
         matrix_float80_free(EE);
     }
     if(MM != NULL)
     {
-        *logdet_MM = matrix_logdet1mM(MM, MM_sign, self->detalg, self->pivot);
+        *logdet_MM = matrix_logdet1mM(self, MM, MM_sign);
 
         matrix_sign_free(MM_sign);
         matrix_float80_free(MM);
@@ -1779,8 +1795,8 @@ double casimir_logdetD(casimir_t *self, int n, int m)
         matrix_float80_free(M);
         matrix_sign_free(M_sign);
 
-        logdet  = matrix_logdet1mM(EE, EE_sign, self->detalg, self->pivot);
-        logdet += matrix_logdet1mM(MM, MM_sign, self->detalg, self->pivot);
+        logdet  = matrix_logdet1mM(self, EE, EE_sign);
+        logdet += matrix_logdet1mM(self, MM, MM_sign);
 
         matrix_sign_free(EE_sign);
         matrix_sign_free(MM_sign);
@@ -1790,7 +1806,7 @@ double casimir_logdetD(casimir_t *self, int n, int m)
     }
     else
     {
-        logdet = matrix_logdet1mM(M, M_sign, self->detalg, self->pivot);
+        logdet = matrix_logdet1mM(self, M, M_sign);
 
         matrix_float80_free(M);
         matrix_sign_free(M_sign);
