@@ -325,9 +325,11 @@ double matrix_logdet1mM(casimir_t *casimir, matrix_float80 *M, matrix_sign_t *M_
     float80 minimum, maximum;
     int h,m,s;
 
+    sec2human(t-casimir->birthtime, &h, &m, &s);
+    casimir_printf(casimir, 2, "# calculating matrix elements: %02d:%02d:%02d\n", h,m,s);
+
     /* balance matrix */
     matrix_float80_log_balance(M, &minimum, &maximum);
-
     sec2human(now()-t, &h, &m, &s);
     casimir_printf(casimir, 2, "# balancing: %02d:%02d:%02d (min=%Lg, max=%Lg)\n", h,m,s, minimum, maximum);
 
@@ -341,22 +343,36 @@ double matrix_logdet1mM(casimir_t *casimir, matrix_float80 *M, matrix_sign_t *M_
             M->M[i*dim+i] += 1;
 
         /* calculate log(det(M)) */
-        return matrix_float80_logdet_lu(M);
+        t = now();
+        const double logdet = matrix_float80_logdet_lu(M);
+        TERMINATE(logdet > 0, "logdet > 0: %g", logdet);
+
+        sec2human(now()-t, &h, &m, &s);
+        casimir_printf(casimir, 2, "# QR-decomposition: %02d:%02d:%02d\n", h,m,s);
+        casimir_printf(casimir, 2, "#\n");
+
+        return logdet;
     }
     #ifdef FLOAT128
     else if(strcasecmp(detalg, "QR_FLOAT128") == 0)
     {
+        size_t dim2 = (size_t)dim*(size_t)dim;
         matrix_float128 *M128 = matrix_float128_alloc(dim);
 
-        for(int i = 0; i < dim*dim; i++)
+        for(size_t i = 0; i < dim2; i++)
             M128->M[i] = M_sign->M[i]*exp128(M->M[i]);
 
         for(int i = 0; i < dim; i++)
             M128->M[i*dim+i] += 1;
 
         const double logdet = matrix_float128_logdet_qr(M128);
+        TERMINATE(logdet > 0, "logdet > 0: %g", logdet);
 
         matrix_float128_free(M128);
+
+        sec2human(now()-t, &h, &m, &s);
+        casimir_printf(casimir, 2, "# QR-decomposition: %02d:%02d:%02d\n", h,m,s);
+        casimir_printf(casimir, 2, "#\n");
 
         return logdet;
     }
@@ -378,6 +394,7 @@ double matrix_logdet1mM(casimir_t *casimir, matrix_float80 *M, matrix_sign_t *M_
 
         t = now();
         const double logdet = matrix_float80_logdet_qr(M);
+        TERMINATE(logdet > 0, "logdet > 0: %g", logdet);
 
         sec2human(now()-t, &h, &m, &s);
         casimir_printf(casimir, 2, "# QR-decomposition: %02d:%02d:%02d\n", h,m,s);
