@@ -421,8 +421,10 @@ void matrix_float80_log_balance_fast(matrix_float80 *A)
 }
 
 /* calculate log(det(1-M)) */
-double matrix_logdet1mM(matrix_float80 *M, matrix_sign_t *M_sign, const char *type, const bool pivot)
+double matrix_logdet1mM(casimir_t *casimir, matrix_float80 *M, matrix_sign_t *M_sign)
 {
+    const char *detalg = casimir->detalg;
+    const bool pivot   = casimir->pivot;
     #define TRACE
 
     const int dim = M->dim;
@@ -442,7 +444,7 @@ double matrix_logdet1mM(matrix_float80 *M, matrix_sign_t *M_sign, const char *ty
     printf("# after balancing: min=%Lg, max=%Lg\n", minimum, maximum);
     #endif
 
-    if(strcasecmp(type, "LU_FLOAT80") == 0)
+    if(strcasecmp(detalg, "LU_FLOAT80") == 0)
     {
         /* exponentiate */
         matrix_float80_exp(M, M_sign);
@@ -455,7 +457,7 @@ double matrix_logdet1mM(matrix_float80 *M, matrix_sign_t *M_sign, const char *ty
         return matrix_float80_logdet_lu(M);
     }
     #ifdef FLOAT128
-    else if(strcasecmp(type, "QR_FLOAT128") == 0)
+    else if(strcasecmp(detalg, "QR_FLOAT128") == 0)
     {
         matrix_float128 *M128 = matrix_float128_alloc(dim);
 
@@ -474,8 +476,8 @@ double matrix_logdet1mM(matrix_float80 *M, matrix_sign_t *M_sign, const char *ty
     #endif
     else
     {
-        if(strcasecmp(type, "QR_FLOAT80") != 0)
-            WARN(1, "Algorithm \"%s\" not supported. Defaulting to QR_FLOAT80.", type);
+        if(strcasecmp(detalg, "QR_FLOAT80") != 0)
+            WARN(1, "Algorithm \"%s\" not supported. Defaulting to QR_FLOAT80.", detalg);
 
         matrix_float80_exp(M, M_sign);
 

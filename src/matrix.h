@@ -294,7 +294,7 @@ MATRIX_MINMAX_HEADER(matrix_float128, matrix_float128, float128);
 #endif
 
 /* prototypes */
-double matrix_logdet1mM(matrix_float80 *M, matrix_sign_t *M_sign, const char *type, const bool pivot);
+double matrix_logdet1mM(casimir_t *casimir, matrix_float80 *M, matrix_sign_t *M_sign);
 
 double matrix_float80_logdet_qr(matrix_float80 *M);
 #ifdef FLOAT128
