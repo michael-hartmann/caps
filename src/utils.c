@@ -5,6 +5,7 @@
  * @brief  helper functions
  */
 
+#include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/time.h>
@@ -93,4 +94,13 @@ void swap(double *a, double *b)
     double t = *a;
     *a = *b;
     *b = t;
+}
+
+void sec2human(double t, int *h, int *m, int *s)
+{
+    int time = round(t);
+
+    *s = time % 60;
+    *m = (time % 3600)/60;
+    *h = time/3600;
 }
