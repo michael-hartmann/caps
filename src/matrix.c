@@ -319,7 +319,7 @@ void matrix_float80_log_balance(matrix_float80 *A, float80 *minimum, float80 *ma
 /* calculate log(det(1-M)) */
 double matrix_logdet1mM(casimir_t *casimir, matrix_float80 *M, matrix_sign_t *M_sign)
 {
-    const int dim = M->dim;
+    const size_t dim = M->dim;
     const char *detalg = casimir->detalg;
     double t = now();
     float80 minimum, maximum;
@@ -339,7 +339,7 @@ double matrix_logdet1mM(casimir_t *casimir, matrix_float80 *M, matrix_sign_t *M_
         matrix_float80_exp(M, M_sign);
 
         /* add unity matrix */
-        for(int i = 0; i < dim; i++)
+        for(size_t i = 0; i < dim; i++)
             M->M[i*dim+i] += 1;
 
         /* calculate log(det(M)) */
@@ -356,13 +356,13 @@ double matrix_logdet1mM(casimir_t *casimir, matrix_float80 *M, matrix_sign_t *M_
     #ifdef FLOAT128
     else if(strcasecmp(detalg, "QR_FLOAT128") == 0)
     {
-        size_t dim2 = (size_t)dim*(size_t)dim;
+        size_t dim2 = pow_2(dim);
         matrix_float128 *M128 = matrix_float128_alloc(dim);
 
         for(size_t i = 0; i < dim2; i++)
             M128->M[i] = M_sign->M[i]*exp128(M->M[i]);
 
-        for(int i = 0; i < dim; i++)
+        for(size_t i = 0; i < dim; i++)
             M128->M[i*dim+i] += 1;
 
         const double logdet = matrix_float128_logdet_qr(M128);
@@ -379,13 +379,26 @@ double matrix_logdet1mM(casimir_t *casimir, matrix_float80 *M, matrix_sign_t *M_
     #endif
     else
     {
+        float80 *A = M->M;
         if(strcasecmp(detalg, "QR_FLOAT80") != 0)
             WARN(1, "Algorithm \"%s\" not supported. Defaulting to QR_FLOAT80.", detalg);
 
         matrix_float80_exp(M, M_sign);
 
+        float80 trace  = 0;
+        float80 trace2 = 0;
+        for(size_t i = 0; i < dim; i++)
+        {
+            for(size_t k = 0; k < dim; k++)
+                trace2 += A[i*dim+k]*A[k*dim+i];
+
+            trace += A[i*dim+i];
+        }
+        casimir_printf(casimir, 2, "# Mercator (1): %Lg\n", +trace);
+        casimir_printf(casimir, 2, "# Mercator (2): %Lg\n", +trace-trace2/2);
+
         /* add identity matrix */
-        for(int i = 0; i < dim; i++)
+        for(size_t i = 0; i < dim; i++)
             M->M[i*dim+i] += 1;
 
         /* pivot */
@@ -394,6 +407,7 @@ double matrix_logdet1mM(casimir_t *casimir, matrix_float80 *M, matrix_sign_t *M_
 
         t = now();
         const double logdet = matrix_float80_logdet_qr(M);
+        WARN(logdet > trace-trace2/2, "value of logdet > truncated Mercator series: logdet=%g, Mercator (2): %Lg", logdet, trace-trace2/2);
         TERMINATE(logdet > 0, "logdet > 0: %g", logdet);
 
         sec2human(now()-t, &h, &m, &s);
