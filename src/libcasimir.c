@@ -32,10 +32,8 @@
 
 /** @brief Return string with information about the binary
  *
- * The returned string contains date and time of compilation, the compiler and
- * kind of arithmetics the binary uses.
- *
- * Do not modify or free this string!
+ * The string contains date and time of compilation, the compiler and kind of
+ * arithmetics the binary uses.
  *
  * This function is thread-safe.
  *
