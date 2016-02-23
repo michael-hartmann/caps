@@ -45,7 +45,7 @@ CFLAGS += -I .
 #CFLAGS += -DTRACE
 
 # enable warnings and make them fatal
-CFLAGS += -Wall -Wextra -Wmissing-prototypes -Wstrict-prototypes -Wshadow -Wpointer-arith -Wcast-qual -Wwrite-strings -Wno-unused-parameter
+CFLAGS += -Wall -Werror -Wextra -Wmissing-prototypes -Wstrict-prototypes -Wshadow -Wpointer-arith -Wcast-qual -Wwrite-strings -Wno-unused-parameter
 
 # ldflags
 LDFLAGS += -lm -pthread
