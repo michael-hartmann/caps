@@ -101,11 +101,14 @@ void casimir_info(casimir_t *self, FILE *stream, const char *prefix)
     fprintf(stream, "%sdetalg          = %s\n", prefix, self->detalg);
     fprintf(stream, "%spivot           = %s\n", prefix, self->pivot ? "true" : "false");
     fprintf(stream, "%sbirthtime       = %s (%.1f)\n", prefix, buf, self->birthtime);
+
+    if(strlen(self->dump_filename))
+        fprintf(stream, "%sdump_filename   = %s (len: %zu)\n", prefix, self->dump_filename, strlen(self->dump_filename));
 }
 
-int casimir_printf(casimir_t *self, int priority, const char *format, ...)
+int casimir_debug(casimir_t *self, const char *format, ...)
 {
-    if(self->priority < priority)
+    if(!self->debug)
         return 0;
 
     va_list args;
@@ -390,12 +393,17 @@ int casimir_init(casimir_t *self, double LbyR, double T)
     self->gamma_plane   = 0;
 
     /* use QR decomposition to calculate determinant */
+    memset(self->detalg, 0, sizeof(self->detalg));
     strcpy(self->detalg, CASIMIR_DETALG);
 
-    self->priority = 2;
+    /* set debug flag */
+    self->debug = true;
 
     /* parameters that users usually don't change */
     self->pivot = true;
+
+    /* don't dump matrix by default */
+    memset(self->dump_filename, 0, sizeof(self->dump_filename));
 
     self->birthtime = now();
 
@@ -1764,11 +1772,23 @@ double casimir_logdetD(casimir_t *self, int n, int m)
     if(self->integration < 0)
         casimir_integrate_perf_free(&int_perf);
 
-    #if 0
-    /* Dump matrix */
-    printf("%d\n", matrix_float80_save(M, "matrix_float80.out"));
-    printf("%d\n", matrix_sign_save(M_sign, "matrix_signs.out"));
-    #endif
+    /* XXX this is not good... XXX */
+    if(strlen(self->dump_filename))
+    {
+        /* Dump matrix */
+        char filename[256];
+        int ret;
+
+        strcpy(filename, self->dump_filename);
+        strcat(filename, "_float80.out");
+        ret = matrix_float80_save(M, filename);
+        WARN(!ret, "Couldn't dump matrix %s", filename);
+
+        strcpy(filename, self->dump_filename);
+        strcat(filename, "_signs.out");
+        ret = matrix_sign_save(M_sign, filename);
+        WARN(!ret, "Couldn't dump matrix %s", filename);
+    }
 
     /* We have calculated -M here. We now call matrix_logdet1mM that will
      * calculate log(det(1-M)) = log(det(D)) */

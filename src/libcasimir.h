@@ -84,12 +84,13 @@ typedef struct
     pthread_t **threads;    /**< list of pthread objects */
 
     char detalg[128];       /**< algorithm to calculate determinant */
+    char dump_filename[128]; /**< dump matrix to filename */
 
     casimir_mie_cache_t *mie_cache; /**< Mie chache */
 
     double birthtime;       /**< timestamp when object was initialized */
 
-    int priority;           /**< priority */
+    bool debug;           /**< debug flag for more information */
 
     /* parameters that you usually do not want to change */
     bool pivot; /**< pivot matrix before QR decomposition */
@@ -133,7 +134,7 @@ typedef struct
 /* prototypes */
 int  casimir_compile_info(char *str, int len);
 void casimir_info(casimir_t *self, FILE *stream, const char *prefix);
-int casimir_printf(casimir_t *self, int priority, const char *format, ...);
+int casimir_debug(casimir_t *self, const char *format, ...);
 
 double casimir_epsilon(double xi, double omegap, double gamma_);
 double casimir_lnepsilon(double xi, double omegap, double gamma_);
