@@ -77,6 +77,9 @@ MATRIX_TYPEDEF(matrix_float128, float128);
 #define MATRIX_MINMAX(FUNCTION_PREFIX, MATRIX_TYPE, TYPE) \
     void FUNCTION_PREFIX ## _minmax(MATRIX_TYPE *M, TYPE *min, TYPE *max) \
     { \
+        if(min == NULL && max == NULL) \
+            return; \
+\
         const int dim = M->dim; \
         const size_t dim2 = (size_t)dim*(size_t)dim; \
         TYPE minimum = M->M[0]; \
