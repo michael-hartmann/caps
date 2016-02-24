@@ -375,27 +375,49 @@ void matrix_float80_log_balance(matrix_float80 *A, float80 *minimum, float80 *ma
 double matrix_logdet1mM(casimir_t *casimir, matrix_float80 *M, matrix_sign_t *M_sign)
 {
     const size_t dim = M->dim;
+    const bool debug   = casimir->debug;
     const char *detalg = casimir->detalg;
     double t = now();
     float80 minimum, maximum;
     int h,m,s;
 
-    sec2human(t-casimir->birthtime, &h, &m, &s);
-    matrix_float80_minmax(M,&minimum,&maximum);
-    casimir_debug(casimir, "# calculating matrix elements: %02d:%02d:%02d (min=%Lg, max=%Lg)\n", h,m,s, minimum, maximum);
+    if(debug)
+    {
+        sec2human(t-casimir->birthtime, &h, &m, &s);
+        matrix_float80_minmax(M,&minimum,&maximum);
+        casimir_debug(casimir, "# calculating matrix elements: %02d:%02d:%02d (min=%Lg, max=%Lg)\n", h,m,s, minimum, maximum);
+    }
 
-    t = now();
-    matrix_precondition(M);
-    sec2human(now()-t, &h, &m, &s);
-    matrix_float80_minmax(M,&minimum,&maximum);
-    casimir_debug(casimir, "# precondition: %02d:%02d:%02d (min=%Lg, max=%Lg)\n", h,m,s, minimum, maximum);
+    if(casimir->precondition)
+    {
+        if(debug)
+            t = now();
+
+        matrix_precondition(M);
+
+        if(debug)
+        {
+            sec2human(now()-t, &h, &m, &s);
+            matrix_float80_minmax(M,&minimum,&maximum);
+            casimir_debug(casimir, "# precondition: %02d:%02d:%02d (min=%Lg, max=%Lg)\n", h,m,s, minimum, maximum);
+        }
+    }
 
     /* balance matrix */
-    t = now();
-    matrix_float80_log_balance(M, &minimum, &maximum);
-    sec2human(now()-t, &h, &m, &s);
-    matrix_float80_minmax(M,&minimum,&maximum);
-    casimir_debug(casimir, "# balancing: %02d:%02d:%02d (min=%Lg, max=%Lg)\n", h,m,s, minimum, maximum);
+    if(casimir->balance)
+    {
+        if(debug)
+            t = now();
+
+        matrix_float80_log_balance(M, &minimum, &maximum);
+
+        if(debug)
+        {
+            sec2human(now()-t, &h, &m, &s);
+            matrix_float80_minmax(M,&minimum,&maximum);
+            casimir_debug(casimir, "# balancing: %02d:%02d:%02d (min=%Lg, max=%Lg)\n", h,m,s, minimum, maximum);
+        }
+    }
 
     if(strcasecmp(detalg, "LU_FLOAT80") == 0)
     {
@@ -449,17 +471,18 @@ double matrix_logdet1mM(casimir_t *casimir, matrix_float80 *M, matrix_sign_t *M_
 
         matrix_float80_exp(M, M_sign);
 
-        float80 trace  = 0;
-        float80 trace2 = 0;
+        float80 traceM  = 0;
+        float80 traceM2 = 0;
         for(size_t i = 0; i < dim; i++)
         {
             for(size_t k = 0; k < dim; k++)
-                trace2 += A[i*dim+k]*A[k*dim+i];
+                traceM2 += A[i*dim+k]*A[k*dim+i];
 
-            trace += A[i*dim+i];
+            traceM += A[i*dim+i];
         }
-        casimir_debug(casimir, "# Mercator (1): %Lg\n", +trace);
-        casimir_debug(casimir, "# Mercator (2): %Lg\n", +trace-trace2/2);
+
+        casimir_debug(casimir, "# Mercator (1): %Lg\n", +traceM);
+        casimir_debug(casimir, "# Mercator (2): %Lg\n", +traceM-traceM2/2);
 
         /* add identity matrix */
         for(size_t i = 0; i < dim; i++)
@@ -467,11 +490,22 @@ double matrix_logdet1mM(casimir_t *casimir, matrix_float80 *M, matrix_sign_t *M_
 
         /* pivot */
         if(casimir->pivot)
+        {
+            if(debug)
+                t = now();
+
             matrix_float80_pivot(M);
+
+            if(debug)
+            {
+                sec2human(now()-t, &h, &m, &s);
+                casimir_debug(casimir, "# precondition: %02d:%02d:%02d\n", h,m,s);
+            }
+        }
 
         t = now();
         const double logdet = matrix_float80_logdet_qr(M);
-        WARN(logdet > trace-trace2/2, "value of logdet > truncated Mercator series: logdet=%g, Mercator (2): %Lg", logdet, trace-trace2/2);
+        WARN(logdet > traceM-traceM2/2, "value of logdet > truncated Mercator series: logdet=%g, Mercator (2): %Lg", logdet, traceM-traceM2/2);
         TERMINATE(logdet > 0, "logdet > 0: %g", logdet);
 
         sec2human(now()-t, &h, &m, &s);
