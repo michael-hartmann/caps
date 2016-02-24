@@ -328,6 +328,10 @@ double matrix_logdet1mM(casimir_t *casimir, matrix_float80 *M, matrix_sign_t *M_
     sec2human(t-casimir->birthtime, &h, &m, &s);
     casimir_printf(casimir, 2, "# calculating matrix elements: %02d:%02d:%02d\n", h,m,s);
 
+
+    matrix_float80_minmax(M,&minimum,&maximum);
+    casimir_printf(casimir, 2, "# before balancing: min=%Lg, max=%Lg\n", h,m,s, minimum, maximum);
+
     /* balance matrix */
     matrix_float80_log_balance(M, &minimum, &maximum);
     sec2human(now()-t, &h, &m, &s);
