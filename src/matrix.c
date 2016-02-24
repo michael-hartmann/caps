@@ -248,6 +248,61 @@ double matrix_float80_logdet_qr(matrix_float80 *M)
     return det;
 }
 
+void matrix_precondition(matrix_float80 *A)
+{
+    double b;
+    const int dim = A->dim;
+    const int dimby2 = dim/2;
+
+    /* do linear regression => y(x) = a + b*x */
+    {
+        double y[dimby2];
+        const double xm = (dimby2-1)/2.;
+        double ym = 0;
+
+        for(int i = 0; i < dimby2; i++)
+        {
+            y[i] = matrix_get(A, dimby2-1-i, i);
+            ym += y[i];
+        }
+
+        ym /= dimby2;
+
+        double num = 0, denom = 0;
+        for(int i = 0; i < dimby2; i++)
+        {
+            num   += (i-xm)*(y[i]-ym);
+            denom += pow_2(i-xm);
+        }
+
+        b = num/denom;
+        /* a = ym-b*xm; */
+    }
+
+    for(int i = 0; i < dimby2; i++)
+        for(int j = 0; j < dimby2; j++)
+        {
+            float80 scale = (i-j)*log(b);
+            float80 elem;
+
+            /* EE */
+            elem = matrix_get(A, i,j);
+            matrix_set(A, i,j, elem+scale);
+
+            /* EM */
+            elem = matrix_get(A, i+dimby2,j);
+            matrix_set(A, i+dimby2,j, elem+scale);
+
+            /* ME */
+            elem = matrix_get(A, i,j+dimby2);
+            matrix_set(A, i,j+dimby2, elem+scale);
+
+            /* MM */
+            elem = matrix_get(A, i+dimby2,j+dimby2);
+            matrix_set(A, i+dimby2,j+dimby2, elem+scale);
+        }
+}
+
 /* balance a matrix that elements are give by log with stop criterion */
 void matrix_float80_log_balance(matrix_float80 *A, float80 *minimum, float80 *maximum)
 {
@@ -326,16 +381,21 @@ double matrix_logdet1mM(casimir_t *casimir, matrix_float80 *M, matrix_sign_t *M_
     int h,m,s;
 
     sec2human(t-casimir->birthtime, &h, &m, &s);
-    casimir_printf(casimir, 2, "# calculating matrix elements: %02d:%02d:%02d\n", h,m,s);
-
-
     matrix_float80_minmax(M,&minimum,&maximum);
-    casimir_printf(casimir, 2, "# before balancing: min=%Lg, max=%Lg\n", h,m,s, minimum, maximum);
+    casimir_debug(casimir, "# calculating matrix elements: %02d:%02d:%02d (min=%Lg, max=%Lg)\n", h,m,s, minimum, maximum);
+
+    t = now();
+    matrix_precondition(M);
+    sec2human(now()-t, &h, &m, &s);
+    matrix_float80_minmax(M,&minimum,&maximum);
+    casimir_debug(casimir, "# precondition: %02d:%02d:%02d (min=%Lg, max=%Lg)\n", h,m,s, minimum, maximum);
 
     /* balance matrix */
+    t = now();
     matrix_float80_log_balance(M, &minimum, &maximum);
     sec2human(now()-t, &h, &m, &s);
-    casimir_printf(casimir, 2, "# balancing: %02d:%02d:%02d (min=%Lg, max=%Lg)\n", h,m,s, minimum, maximum);
+    matrix_float80_minmax(M,&minimum,&maximum);
+    casimir_debug(casimir, "# balancing: %02d:%02d:%02d (min=%Lg, max=%Lg)\n", h,m,s, minimum, maximum);
 
     if(strcasecmp(detalg, "LU_FLOAT80") == 0)
     {
@@ -352,8 +412,8 @@ double matrix_logdet1mM(casimir_t *casimir, matrix_float80 *M, matrix_sign_t *M_
         TERMINATE(logdet > 0, "logdet > 0: %g", logdet);
 
         sec2human(now()-t, &h, &m, &s);
-        casimir_printf(casimir, 2, "# QR-decomposition: %02d:%02d:%02d\n", h,m,s);
-        casimir_printf(casimir, 2, "#\n");
+        casimir_debug(casimir, "# QR-decomposition: %02d:%02d:%02d\n", h,m,s);
+        casimir_debug(casimir, "#\n");
 
         return logdet;
     }
@@ -375,8 +435,8 @@ double matrix_logdet1mM(casimir_t *casimir, matrix_float80 *M, matrix_sign_t *M_
         matrix_float128_free(M128);
 
         sec2human(now()-t, &h, &m, &s);
-        casimir_printf(casimir, 2, "# QR-decomposition: %02d:%02d:%02d\n", h,m,s);
-        casimir_printf(casimir, 2, "#\n");
+        casimir_debug(casimir, "# QR-decomposition: %02d:%02d:%02d\n", h,m,s);
+        casimir_debug(casimir, "#\n");
 
         return logdet;
     }
@@ -398,8 +458,8 @@ double matrix_logdet1mM(casimir_t *casimir, matrix_float80 *M, matrix_sign_t *M_
 
             trace += A[i*dim+i];
         }
-        casimir_printf(casimir, 2, "# Mercator (1): %Lg\n", +trace);
-        casimir_printf(casimir, 2, "# Mercator (2): %Lg\n", +trace-trace2/2);
+        casimir_debug(casimir, "# Mercator (1): %Lg\n", +trace);
+        casimir_debug(casimir, "# Mercator (2): %Lg\n", +trace-trace2/2);
 
         /* add identity matrix */
         for(size_t i = 0; i < dim; i++)
@@ -415,8 +475,8 @@ double matrix_logdet1mM(casimir_t *casimir, matrix_float80 *M, matrix_sign_t *M_
         TERMINATE(logdet > 0, "logdet > 0: %g", logdet);
 
         sec2human(now()-t, &h, &m, &s);
-        casimir_printf(casimir, 2, "# QR-decomposition: %02d:%02d:%02d\n", h,m,s);
-        casimir_printf(casimir, 2, "#\n");
+        casimir_debug(casimir, "# QR-decomposition: %02d:%02d:%02d\n", h,m,s);
+        casimir_debug(casimir, "#\n");
 
         return logdet;
     }
