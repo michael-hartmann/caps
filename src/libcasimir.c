@@ -99,6 +99,7 @@ void casimir_info(casimir_t *self, FILE *stream, const char *prefix)
     fprintf(stream, "%sprecision       = %g\n", prefix, self->precision);
     fprintf(stream, "%strace_threshold = %g\n", prefix, self->trace_threshold);
     fprintf(stream, "%sdetalg          = %s\n", prefix, self->detalg);
+    fprintf(stream, "%sbalance         = %s\n", prefix, self->balance ? "true" : "false");
     fprintf(stream, "%spivot           = %s\n", prefix, self->pivot ? "true" : "false");
     fprintf(stream, "%sprecondition    = %s\n", prefix, self->precondition ? "true" : "false");
     fprintf(stream, "%sbirthtime       = %s (%.1f)\n", prefix, buf, self->birthtime);
@@ -399,6 +400,9 @@ int casimir_init(casimir_t *self, double LbyR, double T)
 
     /* set debug flag */
     self->debug = true;
+
+    /* balance matrix */
+    self->balance = true;
 
     /* parameters that users usually don't change */
     self->pivot = true;
