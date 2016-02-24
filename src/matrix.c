@@ -122,7 +122,14 @@ void matrix_float80_pivot(matrix_float80 *M)
 }
 
 #ifdef FLOAT128
-/* calculate QR decomposition of M */
+/**
+ * @brief calculate QR decomposition of matrix
+ *
+ * This function calculates the QR decomposition of a matrix M and \f$\log|\det(M)|\f$.
+ *
+ * @param [in,out] M matrix
+ * @retval logdet \f$\log|\det M|\f$
+ */
 double matrix_float128_logdet_qr(matrix_float128 *M)
 {
     const int dim = M->size;
@@ -248,6 +255,15 @@ double matrix_float80_logdet_qr(matrix_float80 *M)
     return det;
 }
 
+
+/** @brief Precondition matrix
+ *
+ * This function preconditions the matrix A. The scaling of the matrix elements
+ * ~b^(l1-l2) is estimated using linear regression of the anti diagonal of
+ * M_EE. Then a similarity transform is performed.
+ *
+ * @param [in,out] A matrix
+ */
 void matrix_precondition(matrix_float80 *A)
 {
     double b;
@@ -303,7 +319,17 @@ void matrix_precondition(matrix_float80 *A)
         }
 }
 
-/* balance a matrix that elements are give by log with stop criterion */
+
+/** @brief Balance matrix A
+ *
+ * Balance a matrix that elements are give by logarithms.
+ *
+ * If minimum/maximum is not NULL, the minimum/maximum of A after balancing.
+ *
+ * @param [in,out] A matrix (elements given as logarithms)
+ * @param [out]    minimum after balancing smallest matrix element (logarithm)
+ * @param [out]    minimum after balancing larges matrix element (logarithm)
+ */
 void matrix_float80_log_balance(matrix_float80 *A, float80 *minimum, float80 *maximum)
 {
     const int dim = A->dim;
@@ -371,7 +397,17 @@ void matrix_float80_log_balance(matrix_float80 *A, float80 *minimum, float80 *ma
     }
 }
 
-/* calculate log(det(1-M)) */
+/** @brief Calculate log(det(Id-M)) for matrix M
+ *
+ * This function calculates log(det(Id-M)) for matrix M. If set in casimir, the
+ * function will precondition and balance the matrix M. Then a QR decomposition of Id-M
+ * is performed and log(det(Id-M)) is calculated and returned.
+ *
+ * @param [in]     casimir casimir object
+ * @param [in,out] M round trip matrix M (matrix elements given as logarithms)
+ * @param [in]     M_sign signs of matrix elements M
+ * @retval logdet log(det(Id-M))
+ */
 double matrix_logdet1mM(casimir_t *casimir, matrix_float80 *M, matrix_sign_t *M_sign)
 {
     const size_t dim = M->dim;
