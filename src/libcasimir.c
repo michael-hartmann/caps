@@ -1664,6 +1664,7 @@ double casimir_logdetD(casimir_t *self, int n, int m)
             casimir_mie_cache_get(self, l1, n, &ln_al1, &sign_al1, &ln_bl1, &sign_bl1);
             casimir_mie_cache_get(self, l2, n, &ln_al2, &sign_al2, &ln_bl2, &sign_bl2);
 
+            /* rescaling for nT small: see master thesis Hartmann, section 5.7 */
             if(nTRbyScriptL < 1)
             {
                 ln_al1 -= (l1-l2)*lognTRbyScriptL;
