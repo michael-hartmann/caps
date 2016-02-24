@@ -90,10 +90,10 @@ typedef struct
 
     double birthtime;       /**< timestamp when object was initialized */
 
-    bool debug;           /**< debug flag for more information */
-
     /* parameters that you usually do not want to change */
-    bool pivot; /**< pivot matrix before QR decomposition */
+    bool debug;        /**< debug flag for more information */
+    bool pivot;        /**< pivot matrix before QR decomposition */
+    bool precondition; /**< use preconditioner */
     /*@}*/
 } casimir_t;
 
