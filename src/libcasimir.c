@@ -8,6 +8,7 @@
 
 #define _GNU_SOURCE
 
+#include <float.h>
 #include <math.h>
 #include <pthread.h>
 #include <stdarg.h>
@@ -369,6 +370,8 @@ double casimir_T_scaled_to_SI(double T_scaled, double ScriptL)
  */
 int casimir_init(casimir_t *self, double LbyR, double T)
 {
+    TERMINATE(LDBL_MANT_DIG < 64, "No support for 80-bit extended precision, long double has %d bits.", LDBL_MANT_DIG);
+
     if(LbyR < 0)
         return -1;
     if(T < 0)
