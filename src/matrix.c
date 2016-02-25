@@ -108,7 +108,7 @@ void matrix_float80_pivot(matrix_float80 *M)
         for(int z = k+1; z < dim; z++)
         {
             const float80 Mzz = matrix_get(M,z,z);
-            if(fabs80(Mzz) < fabs80(elem))
+            if(fabs80(Mzz) > fabs80(elem))
             {
                 elem = Mzz;
                 index = z;
@@ -273,7 +273,7 @@ void matrix_precondition(matrix_float80 *A)
     /* do linear regression => y(x) = a + b*x */
     {
         double y[dimby2];
-        const double xm = (dimby2-1)/2.;
+        const double xm = (dimby2-1)/2.; /* sum formula: (0+1+2+...)/(dimby-1) **/
         double ym = 0;
 
         for(int i = 0; i < dimby2; i++)
@@ -298,7 +298,7 @@ void matrix_precondition(matrix_float80 *A)
     for(int i = 0; i < dimby2; i++)
         for(int j = 0; j < dimby2; j++)
         {
-            float80 scale = (i-j)*log(b);
+            const float80 scale = 2*(i-j)*log80(b); /* ??? */
             float80 elem;
 
             /* EE */
@@ -319,6 +319,59 @@ void matrix_precondition(matrix_float80 *A)
         }
 }
 
+void matrix_float80_balance(matrix_float80 *A)
+{
+    const float80 beta = 2;
+    const double stop = 0.95;
+    const int dim = A->dim;
+    bool converged = false;
+    float80 *M = A->M;
+
+    while(!converged)
+    {
+        converged = true;
+
+        for(int i = 0; i < dim; i++)
+        {
+            float80 c = 0, r = 0;
+
+            for(int j = 0; j < dim; j++)
+            {
+                c += fabs80(matrix_get(A,j,i));
+                r += fabs80(matrix_get(A,i,j));
+            }
+
+            const float80 s = c+r;
+            float80 f = 1;
+
+            while(c < r/beta)
+            {
+                c *= beta;
+                r /= beta;
+                f *= beta;
+            }
+
+            while(c >= beta*r)
+            {
+                c /= beta;
+                r *= beta;
+                f /= beta;
+            }
+
+            if((c+r) < stop*s)
+            {
+                converged = false;
+
+                /* line 14 */
+                for(int k = 0; k < dim; k++)
+                {
+                    M[i*dim+k] /= f;
+                    M[k*dim+i] *= f;
+                }
+            }
+        }
+    }
+}
 
 /** @brief Balance matrix A
  *
@@ -328,19 +381,29 @@ void matrix_precondition(matrix_float80 *A)
  *
  * @param [in,out] A matrix (elements given as logarithms)
  * @param [out]    minimum after balancing smallest matrix element (logarithm)
- * @param [out]    minimum after balancing larges matrix element (logarithm)
+ * @param [out]    maximum after balancing largest matrix element (logarithm)
  */
-void matrix_float80_log_balance(matrix_float80 *A, float80 *minimum, float80 *maximum)
+void matrix_float80_log_balance(matrix_float80 *A)
 {
+    const double stop = log(0.95);
     const int dim = A->dim;
+    bool converged = false;
 
     float80 *M = A->M;
-    float80 list_row[dim];
-    float80 list_col[dim];
+    float80 *list_row = xmalloc(dim*sizeof(float80));
+    float80 *list_col = xmalloc(dim*sizeof(float80));
 
     /* line 2 */
-    while(true)
+    while(!converged)
     {
+        float80 minimum,maximum;
+        matrix_float80_minmax(A,&minimum,&maximum);
+        if(minimum > -6000 && maximum < 6000)
+            break;
+
+        /* line 4 */
+        converged = true;
+
         /* line 5 */
         for(int i = 0; i < dim; i++)
         {
@@ -356,6 +419,7 @@ void matrix_float80_log_balance(matrix_float80 *A, float80 *minimum, float80 *ma
 
             /* line 7 */
             int f = 0; /* log(1)=0 */
+            float80 s = logadd(col_norm, row_norm);
 
             /* line 8 */
             while(col_norm < (row_norm-LOG_FLOAT_RADIX))
@@ -375,27 +439,26 @@ void matrix_float80_log_balance(matrix_float80 *A, float80 *minimum, float80 *ma
                 f        -= 1;
             }
 
-            /* line 14 */
-            for(int k = 0; k < dim; k++)
+            /* line 12 */
+            if(logadd(row_norm, col_norm) < (stop+s))
             {
-                M[i*dim+k] -= (float80)f*LOG_FLOAT_RADIX;
-                M[k*dim+i] += (float80)f*LOG_FLOAT_RADIX;
-            }
+                /* line 13 */
+                converged = false;
 
-            float80 min,max;
-            matrix_float80_minmax(A,&min,&max);
-            if(min > -4000 && max < 4000)
-            {
-                if(minimum != NULL)
-                    *minimum = min;
-                if(maximum != NULL)
-                    *maximum = max;
-
-                return;
+                /* line 14 */
+                for(int k = 0; k < dim; k++)
+                {
+                    M[i*dim+k] -= (float80)f*LOG_FLOAT_RADIX;
+                    M[k*dim+i] += (float80)f*LOG_FLOAT_RADIX;
+                }
             }
         }
     }
+
+    xfree(list_col);
+    xfree(list_row);
 }
+
 
 /** @brief Calculate log(det(Id-M)) for matrix M
  *
@@ -445,13 +508,13 @@ double matrix_logdet1mM(casimir_t *casimir, matrix_float80 *M, matrix_sign_t *M_
         if(debug)
             t = now();
 
-        matrix_float80_log_balance(M, &minimum, &maximum);
+        matrix_float80_log_balance(M);
 
         if(debug)
         {
             sec2human(now()-t, &h, &m, &s);
             matrix_float80_minmax(M,&minimum,&maximum);
-            casimir_debug(casimir, "# balancing: %02d:%02d:%02d (min=%Lg, max=%Lg)\n", h,m,s, minimum, maximum);
+            casimir_debug(casimir, "# log balancing: %02d:%02d:%02d (min=%Lg, max=%Lg)\n", h,m,s, minimum, maximum);
         }
     }
 
@@ -520,6 +583,22 @@ double matrix_logdet1mM(casimir_t *casimir, matrix_float80 *M, matrix_sign_t *M_
         casimir_debug(casimir, "# Mercator (1): %Lg\n", +traceM);
         casimir_debug(casimir, "# Mercator (2): %Lg\n", +traceM-traceM2/2);
 
+        /* balance */
+        if(casimir->balance)
+        {
+            if(debug)
+                t = now();
+
+            matrix_float80_balance(M);
+
+            if(debug)
+            {
+                sec2human(now()-t, &h, &m, &s);
+                matrix_float80_minmax(M,&minimum,&maximum);
+                casimir_debug(casimir, "# balancing: %02d:%02d:%02d (min=%Lg, max=%Lg)\n", h,m,s, minimum, maximum);
+            }
+        }
+
         /* add identity matrix */
         for(size_t i = 0; i < dim; i++)
             M->M[i*dim+i] += 1;
@@ -535,7 +614,7 @@ double matrix_logdet1mM(casimir_t *casimir, matrix_float80 *M, matrix_sign_t *M_
             if(debug)
             {
                 sec2human(now()-t, &h, &m, &s);
-                casimir_debug(casimir, "# precondition: %02d:%02d:%02d\n", h,m,s);
+                casimir_debug(casimir, "# pivot: %02d:%02d:%02d\n", h,m,s);
             }
         }
 
