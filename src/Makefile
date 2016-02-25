@@ -42,7 +42,6 @@ CFLAGS  = -std=c99
 # use traditional GNU semantics for inline
 CFLAGS += -fgnu89-inline
 CFLAGS += -I .
-#CFLAGS += -DTRACE
 
 # enable warnings and make them fatal
 CFLAGS += -Wall -Werror -Wextra -Wmissing-prototypes -Wstrict-prototypes -Wshadow -Wpointer-arith -Wcast-qual -Wwrite-strings -Wno-unused-parameter
