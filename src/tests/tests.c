@@ -33,7 +33,7 @@ int main(int argc, char *argv[])
     test_besselI();
     test_besselK();
     test_mie();
-    test_determinant();
+    //test_determinant();
 
     test_integration_perf();
 
