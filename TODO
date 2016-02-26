@@ -1,0 +1,43 @@
+Testing
+=======
+
+Current status:
+At the moment we use a handwritten unit testing framework. This framework
+woorks fine, but is quite limited.
+
+Problem:
+Testing is limited at the moment.
+
+Goal:
+Use another unit testing framework, support fuzzy testing and make different
+"classes" of tests. For example it would be handy to have fast tests to check
+if a change of the source code caused a bug, and also tests that will take a
+while, but do a full check.
+
+
+Drude and generic metals
+========================
+
+Current status:
+Perfect mirrors and (partly) Drude mirrors are supported.
+
+Problem:
+There is no adaptive procedure for integration and no error estimation. There
+is no support for real mirrors.
+
+Goal:
+Add a integration with error estimation, support real mirrors.
+
+
+Estimation and extrapolation of log(det(Id-M)) calculation
+==========================================================
+
+Current status:
+The round trip matrix M is balanced, and the determinant of Id-M is calculated
+using a QR decomposition.
+
+Problem:
+There is no estimation of the truncation error due to a finite value of lmax.
+
+Goal:
+Add estimation for truncation error, support extrapolating.
