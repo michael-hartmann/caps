@@ -23,7 +23,7 @@ int main(int argc, char *argv[])
     test_lbinom();
     test_Lambda();
     test_Xi();
-    //test_mie_drude();
+    test_mie_drude();
 
     test_fresnel();
     test_integration_drude();
@@ -33,7 +33,7 @@ int main(int argc, char *argv[])
     test_besselI();
     test_besselK();
     test_mie();
-    test_determinant();
+    //test_determinant();
 
     test_integration_perf();
 

@@ -1,20 +1,22 @@
 /**
  * @file   libcasimir.c
  * @author Michael Hartmann <michael.hartmann@physik.uni-augsburg.de>
- * @date   January, 2016
+ * @date   February, 2016
  * @brief  library to calculate the free Casimir energy in the plane-sphere geometry
  */
 
 
 #define _GNU_SOURCE
 
+#include <float.h>
 #include <math.h>
+#include <pthread.h>
+#include <stdarg.h>
 #include <stdbool.h>
 #include <stdio.h>
 #include <string.h>
-#include <pthread.h>
-#include <unistd.h>
 #include <time.h>
+#include <unistd.h>
 
 #include "floattypes.h"
 #include "integration_drude.h"
@@ -24,9 +26,6 @@
 #include "sfunc.h"
 #include "utils.h"
 
-static char CASIMIR_COMPILE_INFO[4096] = { 0 };
-
-
 /**
 * @name Information on compilation and Casimir objects
 */
@@ -34,22 +33,25 @@ static char CASIMIR_COMPILE_INFO[4096] = { 0 };
 
 /** @brief Return string with information about the binary
  *
- * The returned string contains date and time of compilation, the compiler and
- * kind of arithmetics the binary uses.
+ * The string contains date and time of compilation, the compiler and kind of
+ * arithmetics the binary uses.
  *
- * Do not modify or free this string!
+ * This function is thread-safe.
  *
- * This function is not thread-safe.
- *
- * @retval description constant string
+ * @param [out] str buffer for string
+ * @param [in]  len length of string
+ * @retval success bytes written if successful
+ * @retval fail <0 otherwise
  */
-const char *casimir_compile_info(void)
+int casimir_compile_info(char *str, int len)
 {
-    snprintf(CASIMIR_COMPILE_INFO, sizeof(CASIMIR_COMPILE_INFO)/sizeof(char),
+    if(len == 0)
+        return -1;
+
+    return snprintf(str, (len-1)*sizeof(char),
              "Compiled on %s at %s with %s",
               __DATE__, __TIME__, COMPILER
             );
-    return CASIMIR_COMPILE_INFO;
 }
 
 
@@ -98,8 +100,26 @@ void casimir_info(casimir_t *self, FILE *stream, const char *prefix)
     fprintf(stream, "%sprecision       = %g\n", prefix, self->precision);
     fprintf(stream, "%strace_threshold = %g\n", prefix, self->trace_threshold);
     fprintf(stream, "%sdetalg          = %s\n", prefix, self->detalg);
+    fprintf(stream, "%sbalance         = %s\n", prefix, self->balance ? "true" : "false");
     fprintf(stream, "%spivot           = %s\n", prefix, self->pivot ? "true" : "false");
+    fprintf(stream, "%sprecondition    = %s\n", prefix, self->precondition ? "true" : "false");
     fprintf(stream, "%sbirthtime       = %s (%.1f)\n", prefix, buf, self->birthtime);
+
+    if(strlen(self->dump_filename))
+        fprintf(stream, "%sdump_filename   = %s (len: %zu)\n", prefix, self->dump_filename, strlen(self->dump_filename));
+}
+
+int casimir_debug(casimir_t *self, const char *format, ...)
+{
+    if(!self->debug)
+        return 0;
+
+    va_list args;
+    va_start(args, format);
+    int ret = vprintf(format, args);
+    va_end(args);
+
+    return ret;
 }
 
 /*@}*/
@@ -358,6 +378,8 @@ double casimir_T_scaled_to_SI(double T_scaled, double ScriptL)
  */
 int casimir_init(casimir_t *self, double LbyR, double T)
 {
+    TERMINATE(LDBL_MANT_DIG < 64, "No support for 80-bit extended precision, long double has %d bits.", LDBL_MANT_DIG);
+
     if(LbyR < 0)
         return -1;
     if(T < 0)
@@ -384,10 +406,23 @@ int casimir_init(casimir_t *self, double LbyR, double T)
     self->gamma_plane   = 0;
 
     /* use QR decomposition to calculate determinant */
+    memset(self->detalg, 0, sizeof(self->detalg));
     strcpy(self->detalg, CASIMIR_DETALG);
+
+    /* set debug flag */
+    self->debug = true;
+
+    /* balance matrix */
+    self->balance = true;
 
     /* parameters that users usually don't change */
     self->pivot = true;
+
+    /* use precondition per default */
+    self->precondition = true;
+
+    /* don't dump matrix by default */
+    memset(self->dump_filename, 0, sizeof(self->dump_filename));
 
     self->birthtime = now();
 
@@ -1479,7 +1514,7 @@ void casimir_logdetD0(casimir_t *self, int m, double *logdet_EE, double *logdet_
     }
 
     /* calculate the logarithm of the matrix elements of -M. The function
-     * matrix_logdet1mM then calculates log(det(1-M)) = log(det(D)) */
+     * matrix_logdetIdpM then calculates log(det(1-M)) = log(det(D)) */
     for(int l1 = min; l1 <= max; l1++)
     {
         sign_t sign_a0, sign_b0;
@@ -1515,14 +1550,14 @@ void casimir_logdetD0(casimir_t *self, int m, double *logdet_EE, double *logdet_
     /* calculate logdet and free space */
     if(EE != NULL)
     {
-        *logdet_EE = matrix_logdet1mM(EE, EE_sign, self->detalg, self->pivot);
+        *logdet_EE = matrix_logdetIdpM(self, EE, EE_sign);
 
         matrix_sign_free(EE_sign);
         matrix_float80_free(EE);
     }
     if(MM != NULL)
     {
-        *logdet_MM = matrix_logdet1mM(MM, MM_sign, self->detalg, self->pivot);
+        *logdet_MM = matrix_logdetIdpM(self, MM, MM_sign);
 
         matrix_sign_free(MM_sign);
         matrix_float80_free(MM);
@@ -1656,6 +1691,7 @@ double casimir_logdetD(casimir_t *self, int n, int m)
             casimir_mie_cache_get(self, l1, n, &ln_al1, &sign_al1, &ln_bl1, &sign_bl1);
             casimir_mie_cache_get(self, l2, n, &ln_al2, &sign_al2, &ln_bl2, &sign_bl2);
 
+            /* rescaling for nT small: see master thesis Hartmann, section 5.7 */
             if(nTRbyScriptL < 1)
             {
                 ln_al1 -= (l1-l2)*lognTRbyScriptL;
@@ -1755,13 +1791,25 @@ double casimir_logdetD(casimir_t *self, int n, int m)
     if(self->integration < 0)
         casimir_integrate_perf_free(&int_perf);
 
-    #if 0
-    /* Dump matrix */
-    printf("%d\n", matrix_float80_save(M, "matrix_float80.out"));
-    printf("%d\n", matrix_sign_save(M_sign, "matrix_signs.out"));
-    #endif
+    /* XXX this is not good... XXX */
+    if(strlen(self->dump_filename))
+    {
+        /* Dump matrix */
+        char filename[256];
+        int ret;
 
-    /* We have calculated -M here. We now call matrix_logdet1mM that will
+        strcpy(filename, self->dump_filename);
+        strcat(filename, "_float80.out");
+        ret = matrix_float80_save(M, filename);
+        WARN(!ret, "Couldn't dump matrix %s", filename);
+
+        strcpy(filename, self->dump_filename);
+        strcat(filename, "_signs.out");
+        ret = matrix_sign_save(M_sign, filename);
+        WARN(!ret, "Couldn't dump matrix %s", filename);
+    }
+
+    /* We have calculated -M here. We now call matrix_logdetIdpM that will
      * calculate log(det(1-M)) = log(det(D)) */
 
     if(m == 0)
@@ -1785,8 +1833,8 @@ double casimir_logdetD(casimir_t *self, int n, int m)
         matrix_float80_free(M);
         matrix_sign_free(M_sign);
 
-        logdet  = matrix_logdet1mM(EE, EE_sign, self->detalg, self->pivot);
-        logdet += matrix_logdet1mM(MM, MM_sign, self->detalg, self->pivot);
+        logdet  = matrix_logdetIdpM(self, EE, EE_sign);
+        logdet += matrix_logdetIdpM(self, MM, MM_sign);
 
         matrix_sign_free(EE_sign);
         matrix_sign_free(MM_sign);
@@ -1796,7 +1844,7 @@ double casimir_logdetD(casimir_t *self, int n, int m)
     }
     else
     {
-        logdet = matrix_logdet1mM(M, M_sign, self->detalg, self->pivot);
+        logdet = matrix_logdetIdpM(self, M, M_sign);
 
         matrix_float80_free(M);
         matrix_sign_free(M_sign);
