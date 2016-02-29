@@ -253,8 +253,16 @@ void casimir_rp(casimir_t *self, float80 nT, float80 k, float80 *r_TE, float80 *
     const float80 epsilon = casimir_epsilon(nT, self->omegap_plane, self->gamma_plane);
     const float80 beta = sqrt80(1 + (epsilon-1)/(1 + pow_2(k/nT)));
 
-    *r_TE = (1-beta)/(1+beta);
-    *r_TM = (epsilon-beta)/(epsilon+beta);
+    if(isinf(beta))
+    {
+        *r_TM = 1.0;
+        *r_TE = -1.0;
+    }
+    else
+    {
+        *r_TE = (1-beta)/(1+beta);
+        *r_TM = (epsilon-beta)/(epsilon+beta);
+    }
 }
 
 /*@}*/
