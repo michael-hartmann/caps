@@ -460,18 +460,70 @@ void matrix_float80_log_balance(matrix_float80 *A)
 }
 
 
-/** @brief Calculate log(det(Id-M)) for matrix M
+/** @brief Calculate log(det(Id+M)) for matrix M
  *
- * This function calculates log(det(Id-M)) for matrix M. If set in casimir, the
- * function will precondition and balance the matrix M. Then a QR decomposition of Id-M
- * is performed and log(det(Id-M)) is calculated and returned.
+ * This function calculates log(det(Id+M)) for a matrix M which elements are in
+ * logarithmic presentation and the signs are stores in M_sign.  A matrix
+ * element of M is therefore: M_ij = (M_sign)_ij * exp(M_ij)
+ *
+ * As M is usually a bad conditioned matrix, the calculation is performed in
+ * the following way:
+ * 1) Preconditioning
+ * 2) Balancing of logarithmic elements
+ * 3) Exponentiating
+ * 4) Adding identity matrix
+ * 5) Balancing
+ * 6) Pivoting
+ * 7) QR decomposition
+ * 8) Calculating log(det(Id+M))
+ *
+ * 1) Preconditioning will drastically reduce the orders of magnitudes of the
+ * largest and smallest matrix elements. See function \ref matrix_precondition.
+ * (This step will be performed if casimir->precondtion is true.)
+ *
+ * 2) Balancing logarithmic elements: This will further reduce the orders of
+ * magnitudes of largest and smallest matrix elements. Balancing is stopped as
+ * soon as it is possible to exponentiate all matrix elements without loss of
+ * significance. (This step will be performed if casimir->balance is true.)
+ *
+ * 3) Exponentiating: All matrix elements are exponentiated and the signs of
+ * M_signs are multiplied.
+ *
+ * 4) Adding identity matrix: Now we have Id+M
+ *
+ * 5) Balancing: We further balance the matrix to make the QR decomposition
+ * more stable. But now we can operate on a "normal" matrix and the algorithm
+ * is much faster than in step 2). (This step will be performed if
+ * casimir->balance is true.)
+ *
+ * 6) Pivoting: See \ref matrix_float80_pivot. (The step will be performed if
+ * casimir->pivot is true.)
+ *
+ * 7) QR decomposition: We use a series of Givens rotations to perform a QR
+ * decomposition: Id+M = Q*R. Note that we only calculate R.
+ *
+ * 8) Calculating log(det(Id+M)): We calcalculate
+ * log(det(Id+M)) = log(det(QR)) = log(det(R)) = \sum_i log|R_ii|
+ * (We assume that the determinant is positive and therefore log(det(Id+M)) is
+ * a real number.)
+ *
+ * log(det(Id+M)) can also be calculated using the Mercator series:
+ * log(det(Id+M)) \approx trace(M) - trace(M/2) + ...  We compute the first two
+ * terms of this series and check if the truncated Mercator series mercator2 <
+ * log(det(Id+M)). If this is not true a warning will be printed.
+ *
+ * If log(det(Id+M)) > 0 the program is terminated and an error is printed to
+ * stderr.
+ *
+ * This function will also print debugging information (mostly timing) to
+ * stderr if casimir->debug is set to true.
  *
  * @param [in]     casimir casimir object
  * @param [in,out] M round trip matrix M (matrix elements given as logarithms)
  * @param [in]     M_sign signs of matrix elements M
  * @retval logdet log(det(Id-M))
  */
-double matrix_logdet1mM(casimir_t *casimir, matrix_float80 *M, matrix_sign_t *M_sign)
+double matrix_logdetIdpM(casimir_t *casimir, matrix_float80 *M, matrix_sign_t *M_sign)
 {
     const size_t dim = M->dim;
     const bool debug   = casimir->debug;
@@ -570,8 +622,8 @@ double matrix_logdet1mM(casimir_t *casimir, matrix_float80 *M, matrix_sign_t *M_
 
         matrix_float80_exp(M, M_sign);
 
-        float80 traceM  = 0;
-        float80 traceM2 = 0;
+        float80 traceM  = 0; /* trace(M)  */
+        float80 traceM2 = 0; /* trace(M²) */
         for(size_t i = 0; i < dim; i++)
         {
             for(size_t k = 0; k < dim; k++)
@@ -580,8 +632,17 @@ double matrix_logdet1mM(casimir_t *casimir, matrix_float80 *M, matrix_sign_t *M_
             traceM += A[i*dim+i];
         }
 
-        casimir_debug(casimir, "# Mercator (1): %Lg\n", +traceM);
-        casimir_debug(casimir, "# Mercator (2): %Lg\n", +traceM-traceM2/2);
+        /* The mercator series for matrices is
+         * log(Id+M) = M - M²/2 + ...
+         *
+         * Here:
+         * log(det(Id+M)) = trace(log(Id+M)) = trace(M) - trace(M²)/2 + ...
+         */
+        const float80 mercator1 = traceM;
+        const float80 mercator2 = traceM-traceM2/2;
+
+        casimir_debug(casimir, "# Mercator: log(det(Id+M)) = trace(M)               = %.10Lg\n", mercator1);
+        casimir_debug(casimir, "# Mercator: log(det(Id+M)) = trace(M) - trace(M²)/2 = %.10Lg\n", mercator2);
 
         /* balance */
         if(casimir->balance)
@@ -620,7 +681,7 @@ double matrix_logdet1mM(casimir_t *casimir, matrix_float80 *M, matrix_sign_t *M_
 
         t = now();
         const double logdet = matrix_float80_logdet_qr(M);
-        WARN(logdet > traceM-traceM2/2, "value of logdet > truncated Mercator series: logdet=%g, Mercator (2): %Lg", logdet, traceM-traceM2/2);
+        WARN(logdet > mercator2 && fabs80(logdet-mercator2) > 1e-8, "value of logdet > truncated Mercator series: logdet=%.14g, Mercator (2): %.14Lg", logdet, mercator2);
         TERMINATE(logdet > 0, "logdet > 0: %g", logdet);
 
         sec2human(now()-t, &h, &m, &s);
