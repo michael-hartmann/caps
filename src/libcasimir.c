@@ -1506,7 +1506,7 @@ void casimir_logdetD0(casimir_t *self, int m, double *logdet_EE, double *logdet_
     }
 
     /* calculate the logarithm of the matrix elements of -M. The function
-     * matrix_logdet1mM then calculates log(det(1-M)) = log(det(D)) */
+     * matrix_logdetIdpM then calculates log(det(1-M)) = log(det(D)) */
     for(int l1 = min; l1 <= max; l1++)
     {
         sign_t sign_a0, sign_b0;
@@ -1542,14 +1542,14 @@ void casimir_logdetD0(casimir_t *self, int m, double *logdet_EE, double *logdet_
     /* calculate logdet and free space */
     if(EE != NULL)
     {
-        *logdet_EE = matrix_logdet1mM(self, EE, EE_sign);
+        *logdet_EE = matrix_logdetIdpM(self, EE, EE_sign);
 
         matrix_sign_free(EE_sign);
         matrix_float80_free(EE);
     }
     if(MM != NULL)
     {
-        *logdet_MM = matrix_logdet1mM(self, MM, MM_sign);
+        *logdet_MM = matrix_logdetIdpM(self, MM, MM_sign);
 
         matrix_sign_free(MM_sign);
         matrix_float80_free(MM);
@@ -1801,7 +1801,7 @@ double casimir_logdetD(casimir_t *self, int n, int m)
         WARN(!ret, "Couldn't dump matrix %s", filename);
     }
 
-    /* We have calculated -M here. We now call matrix_logdet1mM that will
+    /* We have calculated -M here. We now call matrix_logdetIdpM that will
      * calculate log(det(1-M)) = log(det(D)) */
 
     if(m == 0)
@@ -1825,8 +1825,8 @@ double casimir_logdetD(casimir_t *self, int n, int m)
         matrix_float80_free(M);
         matrix_sign_free(M_sign);
 
-        logdet  = matrix_logdet1mM(self, EE, EE_sign);
-        logdet += matrix_logdet1mM(self, MM, MM_sign);
+        logdet  = matrix_logdetIdpM(self, EE, EE_sign);
+        logdet += matrix_logdetIdpM(self, MM, MM_sign);
 
         matrix_sign_free(EE_sign);
         matrix_sign_free(MM_sign);
@@ -1836,7 +1836,7 @@ double casimir_logdetD(casimir_t *self, int n, int m)
     }
     else
     {
-        logdet = matrix_logdet1mM(self, M, M_sign);
+        logdet = matrix_logdetIdpM(self, M, M_sign);
 
         matrix_float80_free(M);
         matrix_sign_free(M_sign);
