@@ -17,6 +17,7 @@
 #include "libcasimir.h"
 #include "integration_drude.h"
 #include "gausslaguerre.h"
+//#include "plm_cache.h"
 
 /* **************************************** */
 /*
@@ -38,7 +39,15 @@
 /*
  * The accuracy of the Drude-Integration
  */
-#define ACCURACY 1.0e-9
+#define ACCURACY DRUDE_INTEG_ACCURACY
+
+
+/*
+ * Cache the values of the legendre polynomials. If not defined the program
+ * will caclulate the values of plm with the function "plm_PlmPlm" from sfunc.c.
+ * ----- Experimental code ------
+ */
+//#define USE_PLM_CACHE
 
 
 
@@ -53,13 +62,6 @@
 
 struct drude_error {
     float80        lnA, lnB, lnC, lnD;
-};
-
-struct integ_context {
-    casimir_t*     casimir;
-    double         nT;
-    int            l1, l2, m;
-    float80        c0, c_max;
 };
 
 
@@ -93,9 +95,14 @@ void integrate_gauss_laguerre(casimir_t *self,
                               casimir_integrals_t *cint,
                               int l1, int l2, int m, int n, double T);
 
+void integrands_drude(float80 x, integrands_drude_t *integrands,
+                      struct integ_context* context,
+                      unsigned int index,
+                      unsigned int iteration);
+
 /* ****************** End Prototypes ****************** */
 
-
+#ifdef INTEGRATION_ROMBERG
 /** @brief Evaluate the Integrands A,B,C and D without any prefactors
  *
  * This function calculates
@@ -112,22 +119,28 @@ void integrate_gauss_laguerre(casimir_t *self,
  * @param [in]  m          Value of m
  */
 void integrands_drude(float80 x, integrands_drude_t *integrands,
-                      casimir_t *self, double nT, int l1, int l2, int m)
+                      struct integ_context* context,
+                      unsigned int index,
+                      unsigned int iteration)
 {
     plm_combination_t comb;
-    const float80 tau = 2*nT;
-    const float80 k   = sqrt80(pow_2(x)/4 + nT*x);
+    const float80 tau = 2 * context->nT;
+    const float80 k   = sqrt80(pow_2(x) / 4 + context->nT * x);
     float80 log_factor;
     float80 r_TE, r_TM;
     float80 A,B,C,D;
 
-    casimir_rp(self, nT, k, &r_TE, &r_TM);
+    casimir_rp(context->casimir, context->nT, k, &r_TE, &r_TM);
     const float80 lnr_TE = log80(-r_TE);
     const float80 lnr_TM = log80(r_TM);
 
     if( 1.0 + x/tau != 1.0 )
     {
-        plm_PlmPlm(l1, l2, m, 1.0+x/tau, &comb);
+#ifdef USE_PLM_CACHE
+        plm_cache_PlmPlm(context->l1, context->l2, context->m, 1.0+x/tau, &comb);
+#else
+        plm_PlmPlm(context->l1, context->l2, context->m, 1.0+x/tau, &comb);
+#endif
     }
     else
     {
@@ -171,7 +184,9 @@ void integrands_drude(float80 x, integrands_drude_t *integrands,
  * @param [in]  context    Context of the Drude-Integration
  */
 static inline void integrands_drude_u(float80 u, integrands_drude_t *integrands,
-                                      struct integ_context* context)
+                                      struct integ_context* context,
+                                      unsigned int index,
+                                      unsigned int iteration)
 {
 
     float80 x         = context->c0 * pow80_alpha((1+u) / (1-u));
@@ -194,8 +209,7 @@ static inline void integrands_drude_u(float80 u, integrands_drude_t *integrands,
         integrands->sign_D = +1;
     }
     else {
-        integrands_drude(x, integrands, context->casimir, context->nT,
-                         context->l1, context->l2, context->m);
+        integrands_drude(x, integrands, context, index, iteration);
     
         integrands->lnA_TM += ln_jacobi;
         integrands->lnA_TE += ln_jacobi;
@@ -392,10 +406,7 @@ static inline void do_integrate(casimir_t* self, casimir_integrals_t* cint,
 //    const float80 c0  = (l1 + l2 - 1) / (n*T);
     const float80 c0  = l1 + l2 - 1;
     const float80 tau = 2 * n * T;
-
-    float80 c_max     = pow80( (10.0*c0 / (c0 - 1.0)), 1.0 / ALPHA);
-    c_max = (c_max - 1) / (c_max + 1);
-
+    float80 c_max;
     integrands_drude_t total;
 
     const float80 ln_lambda = casimir_lnLambda(l1, l2, m, NULL); /* sign: -1 */
@@ -405,7 +416,13 @@ static inline void do_integrate(casimir_t* self, casimir_integrals_t* cint,
     float80 prefactor_A, prefactor_B, prefactor_CD;
     float80 ln_prefactor_A, ln_prefactor_B, ln_prefactor_CD;
     struct drude_error error;
-#ifndef INTEGRATION_GAUSS_LAGUERRE
+
+    if(fabs80(c0 - 1.0) >= LDBL_EPSILON) {
+        c_max = pow80( (10.0*c0 / (c0 - 1.0)), 1.0 / ALPHA);
+        c_max = (c_max - 1) / (c_max + 1);
+    } else {
+        c_max = 1.0;
+    }
     struct integ_context context;
 
     context.l1 = l1;
@@ -415,7 +432,6 @@ static inline void do_integrate(casimir_t* self, casimir_integrals_t* cint,
     context.c0 = c0;
     context.c_max = c_max;
     context.casimir = self;
-#endif
 
     /*
      * Integral C and D have the same prefactor.
@@ -474,7 +490,6 @@ static inline void do_integrate(casimir_t* self, casimir_integrals_t* cint,
 /*
  * ******************** Romberg Integration ********************
  */
-#ifdef INTEGRATION_ROMBERG
 
 /*
  * Use Romberg's method to integrate.
@@ -509,7 +524,7 @@ static void romberg_I11(integrands_drude_t* result,
      * The Term I_{1,1} is \frac{h_1}{2}(f(a) + f(b)).
      * In our case a = 0 and f(a)=0, so we can neglect that.
      */
-    integrands_drude_u(context->c_max, result, context);
+    integrands_drude_u(context->c_max, result, context, 0, 1);
     drude_mult_factor(result, log80(0.5 * (context->c_max - (-1.0))));
 }
 
@@ -561,7 +576,7 @@ static inline void romberg_In1(integrands_drude_t* I_current,
          */
         frac = ((float80)(2*i - 1)) * stepsize;
         u = frac * (context->c_max - (-1.0)) - 1.0;
-        integrands_drude_u(u, &temp, context);
+        integrands_drude_u(u, &temp, context, i, n);
         drude_mult_factor(&temp, log_hn);
         drude_plusequal(&I_current[0], &temp);
     }
@@ -652,7 +667,7 @@ static inline int romberg_is_accurate(integrands_drude_t* cur_result,
 static inline void integrate_romberg(struct integ_context* context,
                                         integrands_drude_t* result,
                                         struct drude_error* error) {
-    const size_t max_order = 20;
+    const size_t max_order = 40;
     const size_t min_order = 5;
     integrands_drude_t I1[max_order], I2[max_order];
     /*
