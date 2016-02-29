@@ -45,9 +45,21 @@ MATRIX_MINMAX(matrix_float80, matrix_float80, float80);
 MATRIX_EXP   (matrix_float80, matrix_float80, exp80);
 MATRIX_LOGDET_LU(matrix_float80, matrix_float80, float80, fabs80, log80);
 
+
+/**
+ * @brief swap rows and columns
+ *
+ * This function is used for pivoting a matrix.
+ *
+ * First, columns i and j are swapped, then rows i and j are swapped.
+ *
+ * @param [in,out] M matrix
+ * @param [in] i row
+ * @param [in] j column
+ */
 void matrix_float80_swap(matrix_float80 *M, const int i, const int j)
 {
-    const int dim = M->size;
+    const int dim = M->dim;
 
     /* swap columns */
     for(int k = 0; k < dim; k++)
@@ -67,9 +79,25 @@ void matrix_float80_swap(matrix_float80 *M, const int i, const int j)
 }
 
 
+/**
+ * @brief Pivot matrix
+ *
+ * This function pivots a matrix using swapping of rows and columns. After
+ * pivoting \f$|M_{00}| < |M_{11}| < |M_{22}| \dots f$.
+ *
+ * For some reason this pivoting contradicts what the literature suggests.
+ * However, this way of pivoting seems to work fine.  One should probably read
+ * carefully [1].
+ *
+ * [1] Algebraic and numerical techniques for the computation of matrix
+ * determinants, Pan, Yu, Stewart, Computers & Mathematics with Applications,
+ * 1997, http://dx.doi.org/10.1016/S0898-1221(97)00097-7
+ *
+ * @param [in,out] M matrix
+ */
 void matrix_float80_pivot(matrix_float80 *M)
 {
-    const int dim = M->size;
+    const int dim = M->dim;
 
     for(int k = 0; k < dim; k++)
     {
@@ -80,7 +108,7 @@ void matrix_float80_pivot(matrix_float80 *M)
         for(int z = k+1; z < dim; z++)
         {
             const float80 Mzz = matrix_get(M,z,z);
-            if(fabs80(Mzz) < fabs80(elem))
+            if(fabs80(Mzz) > fabs80(elem))
             {
                 elem = Mzz;
                 index = z;
@@ -94,7 +122,14 @@ void matrix_float80_pivot(matrix_float80 *M)
 }
 
 #ifdef FLOAT128
-/* calculate QR decomposition of M */
+/**
+ * @brief calculate QR decomposition of matrix
+ *
+ * This function calculates the QR decomposition of a matrix M and \f$\log|\det(M)|\f$.
+ *
+ * @param [in,out] M matrix
+ * @retval logdet \f$\log|\det M|\f$
+ */
 double matrix_float128_logdet_qr(matrix_float128 *M)
 {
     const int dim = M->size;
@@ -157,10 +192,17 @@ double matrix_float128_logdet_qr(matrix_float128 *M)
 #endif
 
 
-/* calculate QR decomposition of M */
+/**
+ * @brief calculate QR decomposition of matrix
+ *
+ * This function calculates the QR decomposition of a matrix M and \f$\log|\det(M)|\f$.
+ *
+ * @param [in,out] M matrix
+ * @retval logdet \f$\log|\det M|\f$
+ */
 double matrix_float80_logdet_qr(matrix_float80 *M)
 {
-    const int dim = M->size;
+    const int dim = M->dim;
     float80 *m = M->M;
 
     for(int j = 0; j < dim-1; j++)
@@ -213,40 +255,167 @@ double matrix_float80_logdet_qr(matrix_float80 *M)
     return det;
 }
 
-/* balance a matrix that elements are give by log */
-void matrix_float80_log_balance(matrix_float80 *A)
+
+/** @brief Precondition matrix
+ *
+ * This function preconditions the matrix A. The scaling of the matrix elements
+ * ~b^(l1-l2) is estimated using linear regression of the anti diagonal of
+ * M_EE. Then a similarity transform is performed.
+ *
+ * @param [in,out] A matrix
+ */
+void matrix_precondition(matrix_float80 *A)
 {
-    matrix_float80_log_balance_stop(A, LOG095);
+    double b;
+    const int dim = A->dim;
+    const int dimby2 = dim/2;
+
+    /* do linear regression => y(x) = a + b*x */
+    {
+        double y[dimby2];
+        const double xm = (dimby2-1)/2.; /* sum formula: (0+1+2+...)/(dimby-1) **/
+        double ym = 0;
+
+        for(int i = 0; i < dimby2; i++)
+        {
+            y[i] = matrix_get(A, dimby2-1-i, i);
+            ym += y[i];
+        }
+
+        ym /= dimby2;
+
+        double num = 0, denom = 0;
+        for(int i = 0; i < dimby2; i++)
+        {
+            num   += (i-xm)*(y[i]-ym);
+            denom += pow_2(i-xm);
+        }
+
+        b = num/denom;
+        /* a = ym-b*xm; */
+    }
+
+    for(int i = 0; i < dimby2; i++)
+        for(int j = 0; j < dimby2; j++)
+        {
+            const float80 scale = 2*(i-j)*log80(b); /* ??? */
+            float80 elem;
+
+            /* EE */
+            elem = matrix_get(A, i,j);
+            matrix_set(A, i,j, elem+scale);
+
+            /* EM */
+            elem = matrix_get(A, i+dimby2,j);
+            matrix_set(A, i+dimby2,j, elem+scale);
+
+            /* ME */
+            elem = matrix_get(A, i,j+dimby2);
+            matrix_set(A, i,j+dimby2, elem+scale);
+
+            /* MM */
+            elem = matrix_get(A, i+dimby2,j+dimby2);
+            matrix_set(A, i+dimby2,j+dimby2, elem+scale);
+        }
 }
 
-/* balance a matrix that elements are give by log with stop criterion */
-void matrix_float80_log_balance_stop(matrix_float80 *A, const double stop)
+void matrix_float80_balance(matrix_float80 *A)
 {
-    const int N = A->size;
+    const float80 beta = 2;
+    const double stop = 0.95;
+    const int dim = A->dim;
+    bool converged = false;
+    float80 *M = A->M;
+
+    while(!converged)
+    {
+        converged = true;
+
+        for(int i = 0; i < dim; i++)
+        {
+            float80 c = 0, r = 0;
+
+            for(int j = 0; j < dim; j++)
+            {
+                c += fabs80(matrix_get(A,j,i));
+                r += fabs80(matrix_get(A,i,j));
+            }
+
+            const float80 s = c+r;
+            float80 f = 1;
+
+            while(c < r/beta)
+            {
+                c *= beta;
+                r /= beta;
+                f *= beta;
+            }
+
+            while(c >= beta*r)
+            {
+                c /= beta;
+                r *= beta;
+                f /= beta;
+            }
+
+            if((c+r) < stop*s)
+            {
+                converged = false;
+
+                /* line 14 */
+                for(int k = 0; k < dim; k++)
+                {
+                    M[i*dim+k] /= f;
+                    M[k*dim+i] *= f;
+                }
+            }
+        }
+    }
+}
+
+/** @brief Balance matrix A
+ *
+ * Balance a matrix that elements are give by logarithms.
+ *
+ * If minimum/maximum is not NULL, the minimum/maximum of A after balancing.
+ *
+ * @param [in,out] A matrix (elements given as logarithms)
+ * @param [out]    minimum after balancing smallest matrix element (logarithm)
+ * @param [out]    maximum after balancing largest matrix element (logarithm)
+ */
+void matrix_float80_log_balance(matrix_float80 *A)
+{
+    const double stop = log(0.95);
+    const int dim = A->dim;
     bool converged = false;
 
     float80 *M = A->M;
-    float80 *list_row = xmalloc(N*sizeof(float80));
-    float80 *list_col = xmalloc(N*sizeof(float80));
+    float80 *list_row = xmalloc(dim*sizeof(float80));
+    float80 *list_col = xmalloc(dim*sizeof(float80));
 
     /* line 2 */
     while(!converged)
     {
+        float80 minimum,maximum;
+        matrix_float80_minmax(A,&minimum,&maximum);
+        if(minimum > -6000 && maximum < 6000)
+            break;
+
         /* line 4 */
         converged = true;
 
         /* line 5 */
-        for(int i = 0; i < N; i++)
+        for(int i = 0; i < dim; i++)
         {
             /* line 6 */
-            for(int j = 0; j < N; j++)
+            for(int j = 0; j < dim; j++)
             {
                 list_row[j] = matrix_get(A,i,j);
                 list_col[j] = matrix_get(A,j,i);
             }
 
-            float80 row_norm = logadd_m(list_row, N);
-            float80 col_norm = logadd_m(list_col, N);
+            float80 row_norm = logadd_m(list_row, dim);
+            float80 col_norm = logadd_m(list_col, dim);
 
             /* line 7 */
             int f = 0; /* log(1)=0 */
@@ -277,10 +446,10 @@ void matrix_float80_log_balance_stop(matrix_float80 *A, const double stop)
                 converged = false;
 
                 /* line 14 */
-                for(int k = 0; k < N; k++)
+                for(int k = 0; k < dim; k++)
                 {
-                    M[i*N+k] -= (float80)f*LOG_FLOAT_RADIX;
-                    M[k*N+i] += (float80)f*LOG_FLOAT_RADIX;
+                    M[i*dim+k] -= (float80)f*LOG_FLOAT_RADIX;
+                    M[k*dim+i] += (float80)f*LOG_FLOAT_RADIX;
                 }
             }
         }
@@ -290,81 +459,235 @@ void matrix_float80_log_balance_stop(matrix_float80 *A, const double stop)
     xfree(list_row);
 }
 
-/* calculate log(det(1-M)) */
-double matrix_logdet1mM(matrix_float80 *M, matrix_sign_t *M_sign, const char *type, const bool pivot)
-{
-    const int dim = M->size;
-    #ifdef TRACE
-    float80 minimum, maximum;
 
-    matrix_float80_minmax(M, &minimum, &maximum);
-    printf("# before balancing: min=%Lg, max=%Lg\n", minimum, maximum);
-    #endif
+/** @brief Calculate log(det(Id+M)) for matrix M
+ *
+ * This function calculates log(det(Id+M)) for a matrix M which elements are in
+ * logarithmic presentation and the signs are stores in M_sign.  A matrix
+ * element of M is therefore: M_ij = (M_sign)_ij * exp(M_ij)
+ *
+ * As M is usually a bad conditioned matrix, the calculation is performed in
+ * the following way:
+ * 1) Preconditioning
+ * 2) Balancing of logarithmic elements
+ * 3) Exponentiating
+ * 4) Adding identity matrix
+ * 5) Balancing
+ * 6) Pivoting
+ * 7) QR decomposition
+ * 8) Calculating log(det(Id+M))
+ *
+ * 1) Preconditioning will drastically reduce the orders of magnitudes of the
+ * largest and smallest matrix elements. See function \ref matrix_precondition.
+ * (This step will be performed if casimir->precondtion is true.)
+ *
+ * 2) Balancing logarithmic elements: This will further reduce the orders of
+ * magnitudes of largest and smallest matrix elements. Balancing is stopped as
+ * soon as it is possible to exponentiate all matrix elements without loss of
+ * significance. (This step will be performed if casimir->balance is true.)
+ *
+ * 3) Exponentiating: All matrix elements are exponentiated and the signs of
+ * M_signs are multiplied.
+ *
+ * 4) Adding identity matrix: Now we have Id+M
+ *
+ * 5) Balancing: We further balance the matrix to make the QR decomposition
+ * more stable. But now we can operate on a "normal" matrix and the algorithm
+ * is much faster than in step 2). (This step will be performed if
+ * casimir->balance is true.)
+ *
+ * 6) Pivoting: See \ref matrix_float80_pivot. (The step will be performed if
+ * casimir->pivot is true.)
+ *
+ * 7) QR decomposition: We use a series of Givens rotations to perform a QR
+ * decomposition: Id+M = Q*R. Note that we only calculate R.
+ *
+ * 8) Calculating log(det(Id+M)): We calcalculate
+ * log(det(Id+M)) = log(det(QR)) = log(det(R)) = \sum_i log|R_ii|
+ * (We assume that the determinant is positive and therefore log(det(Id+M)) is
+ * a real number.)
+ *
+ * log(det(Id+M)) can also be calculated using the Mercator series:
+ * log(det(Id+M)) \approx trace(M) - trace(M/2) + ...  We compute the first two
+ * terms of this series and check if the truncated Mercator series mercator2 <
+ * log(det(Id+M)). If this is not true a warning will be printed.
+ *
+ * If log(det(Id+M)) > 0 the program is terminated and an error is printed to
+ * stderr.
+ *
+ * This function will also print debugging information (mostly timing) to
+ * stderr if casimir->debug is set to true.
+ *
+ * @param [in]     casimir casimir object
+ * @param [in,out] M round trip matrix M (matrix elements given as logarithms)
+ * @param [in]     M_sign signs of matrix elements M
+ * @retval logdet log(det(Id-M))
+ */
+double matrix_logdetIdpM(casimir_t *casimir, matrix_float80 *M, matrix_sign_t *M_sign)
+{
+    const size_t dim = M->dim;
+    const bool debug   = casimir->debug;
+    const char *detalg = casimir->detalg;
+    double t = now();
+    float80 minimum, maximum;
+    int h,m,s;
+
+    if(debug)
+    {
+        sec2human(t-casimir->birthtime, &h, &m, &s);
+        matrix_float80_minmax(M,&minimum,&maximum);
+        casimir_debug(casimir, "# calculating matrix elements: %02d:%02d:%02d (min=%Lg, max=%Lg)\n", h,m,s, minimum, maximum);
+    }
+
+    if(casimir->precondition)
+    {
+        if(debug)
+            t = now();
+
+        matrix_precondition(M);
+
+        if(debug)
+        {
+            sec2human(now()-t, &h, &m, &s);
+            matrix_float80_minmax(M,&minimum,&maximum);
+            casimir_debug(casimir, "# precondition: %02d:%02d:%02d (min=%Lg, max=%Lg)\n", h,m,s, minimum, maximum);
+        }
+    }
 
     /* balance matrix */
-    matrix_float80_log_balance(M);
+    if(casimir->balance)
+    {
+        if(debug)
+            t = now();
 
-    #ifdef TRACE
-    matrix_float80_minmax(M, &minimum, &maximum);
-    printf("# after balancing: min=%Lg, max=%Lg\n", minimum, maximum);
-    #endif
+        matrix_float80_log_balance(M);
 
-    if(strcasecmp(type, "LU_FLOAT80") == 0)
+        if(debug)
+        {
+            sec2human(now()-t, &h, &m, &s);
+            matrix_float80_minmax(M,&minimum,&maximum);
+            casimir_debug(casimir, "# log balancing: %02d:%02d:%02d (min=%Lg, max=%Lg)\n", h,m,s, minimum, maximum);
+        }
+    }
+
+    if(strcasecmp(detalg, "LU_FLOAT80") == 0)
     {
         /* exponentiate */
         matrix_float80_exp(M, M_sign);
 
         /* add unity matrix */
-        for(int i = 0; i < dim; i++)
+        for(size_t i = 0; i < dim; i++)
             M->M[i*dim+i] += 1;
 
         /* calculate log(det(M)) */
-        return matrix_float80_logdet_lu(M);
+        t = now();
+        const double logdet = matrix_float80_logdet_lu(M);
+        TERMINATE(logdet > 0, "logdet > 0: %g", logdet);
+
+        sec2human(now()-t, &h, &m, &s);
+        casimir_debug(casimir, "# QR-decomposition: %02d:%02d:%02d\n", h,m,s);
+        casimir_debug(casimir, "#\n");
+
+        return logdet;
     }
     #ifdef FLOAT128
-    else if(strcasecmp(type, "QR_FLOAT128") == 0)
+    else if(strcasecmp(detalg, "QR_FLOAT128") == 0)
     {
+        size_t dim2 = pow_2(dim);
         matrix_float128 *M128 = matrix_float128_alloc(dim);
 
-        for(int i = 0; i < dim*dim; i++)
+        for(size_t i = 0; i < dim2; i++)
             M128->M[i] = M_sign->M[i]*exp128(M->M[i]);
 
-        for(int i = 0; i < dim; i++)
+        for(size_t i = 0; i < dim; i++)
             M128->M[i*dim+i] += 1;
 
         const double logdet = matrix_float128_logdet_qr(M128);
+        TERMINATE(logdet > 0, "logdet > 0: %g", logdet);
 
         matrix_float128_free(M128);
+
+        sec2human(now()-t, &h, &m, &s);
+        casimir_debug(casimir, "# QR-decomposition: %02d:%02d:%02d\n", h,m,s);
+        casimir_debug(casimir, "#\n");
 
         return logdet;
     }
     #endif
     else
     {
-        if(strcasecmp(type, "QR_FLOAT80") != 0)
-            WARN(1, "Algorithm \"%s\" not supported. Defaulting to QR_FLOAT80.", type);
+        float80 *A = M->M;
+        if(strcasecmp(detalg, "QR_FLOAT80") != 0)
+            WARN(1, "Algorithm \"%s\" not supported. Defaulting to QR_FLOAT80.", detalg);
 
         matrix_float80_exp(M, M_sign);
 
+        float80 traceM  = 0; /* trace(M)  */
+        float80 traceM2 = 0; /* trace(M²) */
+        for(size_t i = 0; i < dim; i++)
+        {
+            for(size_t k = 0; k < dim; k++)
+                traceM2 += A[i*dim+k]*A[k*dim+i];
+
+            traceM += A[i*dim+i];
+        }
+
+        /* The mercator series for matrices is
+         * log(Id+M) = M - M²/2 + ...
+         *
+         * Here:
+         * log(det(Id+M)) = trace(log(Id+M)) = trace(M) - trace(M²)/2 + ...
+         */
+        const float80 mercator1 = traceM;
+        const float80 mercator2 = traceM-traceM2/2;
+
+        casimir_debug(casimir, "# Mercator: log(det(Id+M)) = trace(M)               = %.10Lg\n", mercator1);
+        casimir_debug(casimir, "# Mercator: log(det(Id+M)) = trace(M) - trace(M²)/2 = %.10Lg\n", mercator2);
+
+        /* balance */
+        if(casimir->balance)
+        {
+            if(debug)
+                t = now();
+
+            matrix_float80_balance(M);
+
+            if(debug)
+            {
+                sec2human(now()-t, &h, &m, &s);
+                matrix_float80_minmax(M,&minimum,&maximum);
+                casimir_debug(casimir, "# balancing: %02d:%02d:%02d (min=%Lg, max=%Lg)\n", h,m,s, minimum, maximum);
+            }
+        }
+
         /* add identity matrix */
-        for(int i = 0; i < dim; i++)
+        for(size_t i = 0; i < dim; i++)
             M->M[i*dim+i] += 1;
 
         /* pivot */
-        if(pivot)
+        if(casimir->pivot)
         {
-            #ifdef TRACE
-            const double t0 = now();
-            printf("pivoting...\n");
-            #endif
+            if(debug)
+                t = now();
 
             matrix_float80_pivot(M);
 
-            #ifdef TRACE
-            printf("pivoting: t=%g\n", now()-t0);
-            #endif
+            if(debug)
+            {
+                sec2human(now()-t, &h, &m, &s);
+                casimir_debug(casimir, "# pivot: %02d:%02d:%02d\n", h,m,s);
+            }
         }
 
-        return matrix_float80_logdet_qr(M);
+        t = now();
+        const double logdet = matrix_float80_logdet_qr(M);
+        WARN(logdet > mercator2 && fabs80(logdet-mercator2) > 1e-8, "value of logdet > truncated Mercator series: logdet=%.14g, Mercator (2): %.14Lg", logdet, mercator2);
+        TERMINATE(logdet > 0, "logdet > 0: %g", logdet);
+
+        sec2human(now()-t, &h, &m, &s);
+        casimir_debug(casimir, "# QR-decomposition: %02d:%02d:%02d\n", h,m,s);
+        casimir_debug(casimir, "#\n");
+
+        return logdet;
     }
 }

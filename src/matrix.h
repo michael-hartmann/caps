@@ -18,15 +18,15 @@
 /** define matrix type */
 #define MATRIX_TYPEDEF(NAME, TYPE) \
     typedef struct { \
-        int size; \
+        int dim; \
         TYPE *M; \
     } NAME
 
 
 /** macro to access matrix elements */
-#define matrix_get(m, i, j)   ((m)->M[(i)*m->size+(j)])
+#define matrix_get(m, i, j)   ((m)->M[(i)*m->dim+(j)])
 /** macro to set matrix elements */
-#define matrix_set(m, i, j,v) ((m)->M[(i)*m->size+(j)]=(v))
+#define matrix_set(m, i, j,v) ((m)->M[(i)*m->dim+(j)]=(v))
 
 /** define various matrix types */
 MATRIX_TYPEDEF(matrix_float80, float80);
@@ -37,14 +37,18 @@ MATRIX_TYPEDEF(matrix_float128, float128);
 
 /** matrix allocation */
 #define MATRIX_ALLOC(FUNCTION_PREFIX, MATRIX_TYPE, TYPE) \
-    MATRIX_TYPE *FUNCTION_PREFIX ## _alloc(size_t size)  \
+    MATRIX_TYPE *FUNCTION_PREFIX ## _alloc(int dim)  \
     { \
+        if(dim <= 0) \
+            return NULL; \
+\
         MATRIX_TYPE *matrix = xmalloc(sizeof(MATRIX_TYPE)); \
         if(matrix == NULL) \
             return NULL; \
  \
-        matrix->size = size; \
-        matrix->M = xmalloc(size*size*sizeof(TYPE)); \
+        const int dim2 = (size_t)dim*(size_t)dim; \
+        matrix->dim = dim; \
+        matrix->M = xmalloc(dim2*sizeof(TYPE)); \
         if(matrix->M == NULL) \
         { \
             FUNCTION_PREFIX ## _free(matrix); \
@@ -54,7 +58,7 @@ MATRIX_TYPEDEF(matrix_float128, float128);
         return matrix; \
     }
 
-#define MATRIX_ALLOC_HEADER(FUNCTION_PREFIX, MATRIX_TYPE) MATRIX_TYPE *FUNCTION_PREFIX ## _alloc(size_t size)
+#define MATRIX_ALLOC_HEADER(FUNCTION_PREFIX, MATRIX_TYPE) MATRIX_TYPE *FUNCTION_PREFIX ## _alloc(int dim)
 
 #define MATRIX_FREE(FUNCTION_PREFIX, MATRIX_TYPE) \
     void FUNCTION_PREFIX ## _free(MATRIX_TYPE *m) \
@@ -73,11 +77,15 @@ MATRIX_TYPEDEF(matrix_float128, float128);
 #define MATRIX_MINMAX(FUNCTION_PREFIX, MATRIX_TYPE, TYPE) \
     void FUNCTION_PREFIX ## _minmax(MATRIX_TYPE *M, TYPE *min, TYPE *max) \
     { \
-        const int dim2 = pow_2(M->size); \
+        if(min == NULL && max == NULL) \
+            return; \
+\
+        const int dim = M->dim; \
+        const size_t dim2 = (size_t)dim*(size_t)dim; \
         TYPE minimum = M->M[0]; \
         TYPE maximum = M->M[0]; \
 \
-        for(int i = 1; i < dim2; i++) \
+        for(size_t i = 1; i < dim2; i++) \
         { \
             const TYPE elem = M->M[i]; \
             if     (elem < minimum) minimum = elem; \
@@ -94,16 +102,17 @@ MATRIX_TYPEDEF(matrix_float128, float128);
     int FUNCTION_PREFIX ## _save(MATRIX_TYPE *M, const char *path) \
     { \
         FILE *f; \
-        const int size = M->size; \
+        const int dim = M->dim; \
+        const size_t dim2 = (size_t)dim*(size_t)dim; \
         const TYPE *ptr = M->M; \
 \
         if((f = fopen(path, "w")) == NULL) \
             goto fail; \
 \
-        if(fwrite(&size, sizeof(int), 1, f) != 1) \
+        if(fwrite(&dim, sizeof(int), 1, f) != 1) \
             goto fail; \
 \
-        if(fwrite(ptr,   sizeof(TYPE), pow_2(size), f) != (size_t)pow_2(size)) \
+        if(fwrite(ptr, sizeof(TYPE), dim2, f) != dim2) \
             goto fail; \
 \
         if(fclose(f) == 0) \
@@ -123,22 +132,24 @@ MATRIX_TYPEDEF(matrix_float128, float128);
     { \
         MATRIX_TYPE *M = NULL; \
         FILE *f; \
-        int size; \
+        int dim; \
 \
         if((f = fopen(path, "r")) == NULL) \
             goto fail; \
 \
-        if(fread(&size, sizeof(size), 1, f) != 1) \
+        if(fread(&dim, sizeof(dim), 1, f) != 1) \
             goto fail; \
 \
-        if(size <= 0) \
+        if(dim <= 0) \
             goto fail; \
 \
-        M = MATRIX_ALLOC(size); \
+        const size_t dim2 = (size_t)dim*(size_t)dim; \
+\
+        M = MATRIX_ALLOC(dim); \
         if(M == NULL) \
             goto fail; \
 \
-        if(fread(M->M, sizeof(TYPE), pow_2(size), f) != (size_t)pow_2(size)) \
+        if(fread(M->M, sizeof(TYPE), dim2, f) != dim2) \
             goto fail; \
 \
         if(fclose(f) == 0) \
@@ -158,30 +169,29 @@ MATRIX_TYPEDEF(matrix_float128, float128);
 #define MATRIX_LOGDET_LU(FUNCTION_PREFIX, MATRIX_TYPE, TYPE, ABS_FUNCTION, LOG_FUNCTION) \
     TYPE FUNCTION_PREFIX ## _logdet_lu(MATRIX_TYPE *M) \
     { \
-        const int dim = M->size; \
-        int i,j,k; \
+        const int dim = M->dim; \
         TYPE sum, det = 0; \
         TYPE *a = M->M; \
 \
-        for(j = 0; j < dim; j++) \
+        for(int j = 0; j < dim; j++) \
         { \
-            for(i = 0; i < j+1; i++) \
+            for(int i = 0; i < j+1; i++) \
             { \
                 sum = 0; \
-                for(k = 0; k < i; k++) \
+                for(int k = 0; k < i; k++) \
                     sum += a[i*dim+k]*a[k*dim+j]; \
                 a[i*dim+j] -= sum; \
             } \
-            for(i = j+1; i < dim; i++) \
+            for(int i = j+1; i < dim; i++) \
             { \
                 sum = 0; \
-                for(k = 0; k < j; k++) \
+                for(int k = 0; k < j; k++) \
                     sum += a[i*dim+k]*a[k*dim+j]; \
                 a[i*dim+j] = (a[i*dim+j]-sum)/a[j*dim+j]; \
             } \
         } \
 \
-        for(i = 0; i < dim; i++) \
+        for(int i = 0; i < dim; i++) \
             det += LOG_FUNCTION(ABS_FUNCTION(a[i*dim+i])); \
         return det; \
     }
@@ -189,7 +199,7 @@ MATRIX_TYPEDEF(matrix_float128, float128);
 #define MATRIX_LOGDET_QR(FUNCTION_PREFIX, MATRIX_TYPE, TYPE, ABS_FUNCTION, COPYSIGN_FUNCTION, SQRT_FUNCTION, LOG_FUNCTION) \
     TYPE FUNCTION_PREFIX ## _logdet_qr(MATRIX_TYPE *M) \
     { \
-        int dim = M->size; \
+        const int dim = M->size; \
         TYPE det = 0; \
         TYPE *m = M->M; \
 \
@@ -253,11 +263,11 @@ MATRIX_TYPEDEF(matrix_float128, float128);
 #define MATRIX_EXP(FUNCTION_PREFIX, MATRIX_TYPE, EXP_FUNCTION) \
     void FUNCTION_PREFIX ## _exp(MATRIX_TYPE *M, matrix_sign_t *M_sign) \
     { \
-        const int dim = M->size; \
- \
-        for(int i = 0; i < dim; i++) \
-            for(int j = 0; j < dim; j++) \
-                matrix_set(M, i,j, matrix_get(M_sign,i,j)*EXP_FUNCTION(matrix_get(M,i,j))); \
+        const int dim = M->dim; \
+        const size_t dim2 = (size_t)dim*(size_t)dim; \
+\
+        for(size_t i = 0; i < dim2; i++) \
+            M->M[i] = M_sign->M[i]*EXP_FUNCTION(M->M[i]); \
     }
 
 #define MATRIX_EXP_HEADER(FUNCTION_PREFIX, MATRIX_TYPE) void FUNCTION_PREFIX ## _exp(MATRIX_TYPE *M, matrix_sign_t *M_sign) \
@@ -287,15 +297,17 @@ MATRIX_MINMAX_HEADER(matrix_float128, matrix_float128, float128);
 #endif
 
 /* prototypes */
-double matrix_logdet1mM(matrix_float80 *M, matrix_sign_t *M_sign, const char *type, const bool pivot);
+double matrix_logdetIdpM(casimir_t *casimir, matrix_float80 *M, matrix_sign_t *M_sign);
 
 double matrix_float80_logdet_qr(matrix_float80 *M);
 #ifdef FLOAT128
 double matrix_float128_logdet_qr(matrix_float128 *M);
 #endif
 
+void matrix_precondition(matrix_float80 *A);
+
 void matrix_float80_log_balance(matrix_float80 *A);
-void matrix_float80_log_balance_stop(matrix_float80 *A, const double stop);
+void matrix_float80_balance(matrix_float80 *A);
 
 void matrix_float80_swap(matrix_float80 *M, const int i, const int j);
 void matrix_float80_pivot(matrix_float80 *M);
