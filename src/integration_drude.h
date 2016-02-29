@@ -4,6 +4,12 @@
 #include "libcasimir.h"
 #include "floattypes.h"
 
+
+/*
+ * The accuracy of the Drude-Integration
+ */
+#define DRUDE_INTEG_ACCURACY 1e-9
+
 typedef struct {
     sign_t sign_A;
     float80 lnA_TE;
@@ -22,9 +28,18 @@ typedef struct {
     float80 lnD_TM;
 } integrands_drude_t;
 
+
+struct integ_context {
+    casimir_t*     casimir;
+    double         nT;
+    int            l1, l2, m;
+    float80        c0, c_max;
+};
+
+
 void casimir_integrate_drude(casimir_t *self, casimir_integrals_t *cint, int l1, int l2, int m, int n, double T);
 
-void integrands_drude(float80 x, integrands_drude_t *integrands, casimir_t *self, double nT, int l1, int l2, int m);
+//void integrands_drude(float80 x, integrands_drude_t *integrands, casimir_t *self, double nT, int l1, int l2, int m);
 
 double log_polyintegrate(float80 p[], size_t len, int l1, int l2, int m, double tau, sign_t *sign);
 
