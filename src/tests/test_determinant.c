@@ -8,6 +8,7 @@
 
 #include "test_determinant.h"
 
+/* XXX this test is broken at the moment XXX */
 int test_determinant()
 {
     const char *methods[] = { "QR_FLOAT80", "LU_FLOAT80", NULL };
@@ -36,7 +37,7 @@ int test_determinant()
         matrix_set(M, 1,0, log80(1e-1000L));
         matrix_set(M, 1,1, log80(1L));
 
-        AssertAlmostEqual(&test, matrix_logdet1mM(&casimir, M, M_sign), log(14));
+        AssertAlmostEqual(&test, matrix_logdetIdpM(&casimir, M, M_sign), log(14));
     }
 
     matrix_float80_free(M);
