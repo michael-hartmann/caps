@@ -104,9 +104,6 @@ void casimir_info(casimir_t *self, FILE *stream, const char *prefix)
     fprintf(stream, "%spivot           = %s\n", prefix, self->pivot ? "true" : "false");
     fprintf(stream, "%sprecondition    = %s\n", prefix, self->precondition ? "true" : "false");
     fprintf(stream, "%sbirthtime       = %s (%.1f)\n", prefix, buf, self->birthtime);
-
-    if(strlen(self->dump_filename))
-        fprintf(stream, "%sdump_filename   = %s (len: %zu)\n", prefix, self->dump_filename, strlen(self->dump_filename));
 }
 
 int casimir_debug(casimir_t *self, const char *format, ...)
@@ -427,9 +424,6 @@ int casimir_init(casimir_t *self, double LbyR, double T)
     /* use QR decomposition to calculate determinant */
     memset(self->detalg, 0, sizeof(self->detalg));
     strcpy(self->detalg, CASIMIR_DETALG);
-
-    /* don't dump matrix by default */
-    memset(self->dump_filename, 0, sizeof(self->dump_filename));
 
     self->birthtime = now();
 
@@ -1813,23 +1807,16 @@ double casimir_logdetD(casimir_t *self, int n, int m)
     if(self->integration < 0)
         casimir_integrate_perf_free(&int_perf);
 
-    /* XXX this is not good... XXX */
-    if(strlen(self->dump_filename))
-    {
+    #if 0
         /* Dump matrix */
-        char filename[256];
         int ret;
 
-        strcpy(filename, self->dump_filename);
-        strcat(filename, "_float80.out");
-        ret = matrix_float80_save(M, filename);
-        WARN(!ret, "Couldn't dump matrix %s", filename);
+        ret = matrix_float80_save(M, "M.out");
+        WARN(!ret, "Couldn't dump matrix M.out");
 
-        strcpy(filename, self->dump_filename);
-        strcat(filename, "_signs.out");
-        ret = matrix_sign_save(M_sign, filename);
-        WARN(!ret, "Couldn't dump matrix %s", filename);
-    }
+        ret = matrix_sign_save(M_sign, "M_sign.out");
+        WARN(!ret, "Couldn't dump matrix M_sign.out");
+    #endif
 
     /* We have calculated -M here. We now call matrix_logdetIdpM that will
      * calculate log(det(1-M)) = log(det(D)) */
