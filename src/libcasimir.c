@@ -408,21 +408,25 @@ int casimir_init(casimir_t *self, double LbyR, double T)
     self->omegap_plane  = INFINITY;
     self->gamma_plane   = 0;
 
-    /* use QR decomposition to calculate determinant */
-    memset(self->detalg, 0, sizeof(self->detalg));
-    strcpy(self->detalg, CASIMIR_DETALG);
+    /**
+     * parameters that users usually don't change
+     */
 
     /* set debug flag */
     self->debug = false;
 
-    /* balance matrix */
+    /* precondition matrix before QR decomposition */
+    self->precondition = true;
+
+    /* balance matrix before QR decomposition */
     self->balance = true;
 
-    /* parameters that users usually don't change */
+    /* pivot matrix before QR decomposition */
     self->pivot = true;
 
-    /* use precondition per default */
-    self->precondition = true;
+    /* use QR decomposition to calculate determinant */
+    memset(self->detalg, 0, sizeof(self->detalg));
+    strcpy(self->detalg, CASIMIR_DETALG);
 
     /* don't dump matrix by default */
     memset(self->dump_filename, 0, sizeof(self->dump_filename));
