@@ -1034,6 +1034,9 @@ double casimir_lnb_perf(casimir_t *self, const int l, const int n, sign_t *sign)
  *
  * sign_a and sign_b must be valid pointers and must not be NULL.
  *
+ * Note: If sla =~ slb or slc =~ sld, there is a loss of significance when
+ * calculating sla-slb or slc-sld.
+ *
  * This function is thread safe - as long you don't change temperature, aspect
  * ratio and dielectric properties of sphere.
  *
@@ -1057,27 +1060,37 @@ void casimir_lnab(casimir_t *self, const int n_mat, const int l, double *lna, do
 
     /* Mie coefficients for Drude metals */
 
+    /* ξ = nT */
+    const float80 xi = n_mat*self->T;
+
+    /* χ = ξ*R/(R+L) = ξ/(1+L/R) */
+    const float80 chi    = xi/(1+self->LbyR);
+    const float80 ln_chi = log80(xi)-log1p80(self->LbyR);
+
+    /**
+     * Note: n is the refraction index, n_mat the Matsubara index
+     * n    = sqrt(ε(ξ,ω_p,γ))
+     * ln_n = ln(ε(ξ,ω_p,γ))/2
+     */
+    const float80 ln_n = casimir_lnepsilon(xi, self->omegap_sphere, self->gamma_sphere)/2;
+    const float80 n    = exp80(ln_n);
+
+    float80 lnIlp, lnKlp, lnIlm, lnKlm, lnIlp_nchi, lnKlp_nchi, lnIlm_nchi, lnKlm_nchi;
+
+    bessel_lnInuKnu(l,   chi, &lnIlp, &lnKlp); /* I_{l+0.5}(χ), K_{l+0.5}(χ) */
+    bessel_lnInuKnu(l-1, chi, &lnIlm, &lnKlm); /* K_{l-0.5}(χ), K_{l-0.5}(χ) */
+
+    bessel_lnInuKnu(l,   n*chi, &lnIlp_nchi, &lnKlp_nchi); /* I_{l+0.5}(nχ), K_{l+0.5}(nχ) */
+    bessel_lnInuKnu(l-1, n*chi, &lnIlm_nchi, &lnKlm_nchi); /* K_{l-0.5}(nχ), K_{l-0.5}(nχ) */
+
     sign_t sign_sla, sign_slb, sign_slc, sign_sld;
-    float80 lnIl, lnKl, lnIlm, lnKlm, lnIl_nchi, lnKl_nchi, lnIlm_nchi, lnKlm_nchi;
-    sign_t sign_a_num, sign_a_denom, sign_b_num, sign_b_denom;
+    const float80 ln_sla = lnIlp_nchi + logadd_s(lnIlp,      +1, ln_chi+lnIlm,           -1, &sign_sla);
+    const float80 ln_slb = lnIlp      + logadd_s(lnIlp_nchi, +1, ln_n+ln_chi+lnIlm_nchi, -1, &sign_slb);
+    const float80 ln_slc = lnIlp_nchi + logadd_s(lnKlp,      +1, ln_chi+lnKlm,           +1, &sign_slc);
+    const float80 ln_sld = lnKlp      + logadd_s(lnIlp_nchi, +1, ln_n+ln_chi+lnIlm_nchi, -1, &sign_sld);
 
-    const float80 xi     = n_mat*self->T;
-    const float80 chi    = xi*self->RbyScriptL;
-    const float80 ln_chi = log80(xi)+log80(self->RbyScriptL);
-    const float80 ln_n   = casimir_lnepsilon(xi, self->omegap_sphere, self->gamma_sphere)/2;
-
-    bessel_lnInuKnu(l,   chi, &lnIl,  &lnKl);
-    bessel_lnInuKnu(l-1, chi, &lnIlm, &lnKlm);
-
-    bessel_lnInuKnu(l,   exp80(ln_n)*chi, &lnIl_nchi,  &lnKl_nchi);
-    bessel_lnInuKnu(l-1, exp80(ln_n)*chi, &lnIlm_nchi, &lnKlm_nchi);
-
-    const float80 ln_sla = lnIl_nchi + logadd_s(lnIl,      +1, ln_chi+lnIlm,           -1, &sign_sla);
-    const float80 ln_slb = lnIl      + logadd_s(lnIl_nchi, +1, ln_n+ln_chi+lnIlm_nchi, -1, &sign_slb);
-    const float80 ln_slc = lnIl_nchi + logadd_s(lnKl,      +1, ln_chi+lnKlm,           +1, &sign_slc);
-    const float80 ln_sld = lnKl      + logadd_s(lnIl_nchi, +1, ln_n+ln_chi+lnIlm_nchi, -1, &sign_sld);
-
-    /* XXX FIXME XXX */
+    /**
+     */
     /*
     printf("n =%.18Lg\n",     exp80(ln_n));
     printf("n2=%.18Lg\n",     exp80(2*ln_n));
@@ -1090,6 +1103,7 @@ void casimir_lnab(casimir_t *self, const int n_mat, const int l, double *lna, do
     printf("sld=%.18Lg\n", sign_sld*exp80(ln_sld));
     */
 
+    sign_t sign_a_num, sign_a_denom, sign_b_num, sign_b_denom;
     *lna = LOGPI - LOG2 + logadd_s(2*ln_n+ln_sla, +sign_sla, ln_slb, -sign_slb, &sign_a_num) - logadd_s(2*ln_n+ln_slc, +sign_slc, ln_sld, -sign_sld, &sign_a_denom);
     *lnb = LOGPI - LOG2 + logadd_s(       ln_sla, +sign_sla, ln_slb, -sign_slb, &sign_b_num) - logadd_s(       ln_slc, +sign_slc, ln_sld, -sign_sld, &sign_b_denom);
 
