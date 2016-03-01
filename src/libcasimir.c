@@ -1689,8 +1689,6 @@ double casimir_logdetD(casimir_t *self, int n, int m)
 {
     const double nT = n*self->T;
     double trace, logdet = 0;
-    const double nTRbyScriptL = nT*self->RbyScriptL;
-    const double lognTRbyScriptL = log(nTRbyScriptL);
     integration_perf_t int_perf;
 
     const int min = MAX(m,1);
@@ -1732,7 +1730,6 @@ double casimir_logdetD(casimir_t *self, int n, int m)
     /* M_EE, -M_EM
        M_ME,  M_MM */
     for(int l1 = min; l1 <= max; l1++)
-    {
         for(int l2 = min; l2 <= l1; l2++)
         {
             const int i = l1-min, j = l2-min;
@@ -1743,7 +1740,10 @@ double casimir_logdetD(casimir_t *self, int n, int m)
             casimir_mie_cache_get(self, l1, n, &ln_al1, &sign_al1, &ln_bl1, &sign_bl1);
             casimir_mie_cache_get(self, l2, n, &ln_al2, &sign_al2, &ln_bl2, &sign_bl2);
 
+            #if 0
             /* rescaling for nT small: see master thesis Hartmann, section 5.7 */
+            const double lognTRbyScriptL = log(nTRbyScriptL);
+            const double nTRbyScriptL = nT*self->RbyScriptL;
             if(nTRbyScriptL < 1)
             {
                 ln_al1 -= (l1-l2)*lognTRbyScriptL;
@@ -1752,6 +1752,7 @@ double casimir_logdetD(casimir_t *self, int n, int m)
                 ln_al2 -= (l2-l1)*lognTRbyScriptL;
                 ln_bl2 -= (l2-l1)*lognTRbyScriptL;
             }
+            #endif
 
             if(self->integration > 0)
                 casimir_integrate_drude(self, &cint, l1, l2, m, n, self->T);
@@ -1838,7 +1839,6 @@ double casimir_logdetD(casimir_t *self, int n, int m)
                 }
             }
         }
-    }
 
     if(self->integration < 0)
         casimir_integrate_perf_free(&int_perf);
