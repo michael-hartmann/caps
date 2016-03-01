@@ -1,11 +1,12 @@
 /**
  * @file   libcasimir.c
  * @author Michael Hartmann <michael.hartmann@physik.uni-augsburg.de>
- * @date   February, 2016
+ * @date   March, 2016
  * @brief  library to calculate the free Casimir energy in the plane-sphere geometry
  */
 
 
+/* for usleep and pthread_tryjoin_np */
 #define _GNU_SOURCE
 
 #include <float.h>
