@@ -15,7 +15,7 @@
 
 /** @brief Wrapper for malloc
  *
- * This function is a wrapper for malloc. If an error occures, the error handler will be called.
+ * This function is a wrapper for malloc. If malloc fails TERMINATE is called.
  *
  * @param size size of bytes to allocate
  * @retval ptr pointer to memory
@@ -32,8 +32,8 @@ void *xmalloc(size_t size)
 
 /** @brief Wrapper for realloc
  *
- * This function is a wrapper for realloc. If an error occures, the error
- * handler will be called.
+ * This function is a wrapper for realloc. If realloc fails TERMINATE is
+ * called.
  *
  * @param oldptr ptr to old memory
  * @param size size
@@ -50,8 +50,7 @@ void *xrealloc(void *p, size_t size)
 
 /** @brief Wrapper for xfree
  *
- * This function is a wrapper for free. If an error occures, the error handler
- * will be called.
+ * This function is a wrapper for free.
  *
  * You usually want to use the macro xfree that also sets the pointer p to
  * NULL.
