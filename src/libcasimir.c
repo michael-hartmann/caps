@@ -109,6 +109,17 @@ void casimir_info(casimir_t *self, FILE *stream, const char *prefix)
     fprintf(stream, "%sbirthtime       = %s (%.1f)\n", prefix, buf, self->birthtime);
 }
 
+
+/**
+ * @brief Print debugging information
+ *
+ * Print debugging information to stderr if self->debug is set to true.
+ *
+ * @param [in] self Casimir object
+ * @param [in] format format string
+ * @param [in] ... variables for for format string
+ * @retval chars number of characters printed (see vprintf)
+ */
 int casimir_debug(casimir_t *self, const char *format, ...)
 {
     if(!self->debug)
@@ -116,7 +127,7 @@ int casimir_debug(casimir_t *self, const char *format, ...)
 
     va_list args;
     va_start(args, format);
-    int ret = vprintf(format, args);
+    int ret = vfprintf(stderr, format, args);
     va_end(args);
 
     return ret;
