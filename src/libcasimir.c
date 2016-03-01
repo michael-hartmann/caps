@@ -115,6 +115,18 @@ void casimir_info(casimir_t *self, FILE *stream, const char *prefix)
  *
  * Print debugging information to stderr if self->debug is set to true.
  *
+ * A general note on debugging and error handling:
+ *
+ * 1) When an fatal error occures, for example allocating memory failed, the
+ * program should terminate using the macro TERMINATE from utils.h.
+ *
+ * 2) If there was potentially a problem the program should use the macro WARN.
+ * This macro will print a warning to stderr, but it will not terminate the
+ * program. For example if there might be numerical instabilities or
+ * convergence problems, but it is not 100% clear, the program should use WARN.
+ *
+ * 3) For debugging information / profiling information use casimir_debug.
+ *
  * @param [in] self Casimir object
  * @param [in] format format string
  * @param [in] ... variables for for format string
