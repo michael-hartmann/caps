@@ -151,6 +151,8 @@ double casimir_T_scaled_to_SI(double T, double ScriptL_SI);
 int casimir_init(casimir_t *self, double LbyR, double T);
 void casimir_free(casimir_t *self);
 
+void casimir_set_debug(casimir_t *self, bool debug);
+
 double casimir_get_birthtime(casimir_t *self);
 
 int casimir_set_omegap_sphere(casimir_t *self, double omegap);

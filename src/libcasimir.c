@@ -413,7 +413,7 @@ int casimir_init(casimir_t *self, double LbyR, double T)
     strcpy(self->detalg, CASIMIR_DETALG);
 
     /* set debug flag */
-    self->debug = true;
+    self->debug = false;
 
     /* balance matrix */
     self->balance = true;
@@ -430,6 +430,21 @@ int casimir_init(casimir_t *self, double LbyR, double T)
     self->birthtime = now();
 
     return 0;
+}
+
+
+/**
+ * @brief Enable/disable debugging information
+ *
+ * This will enable/disable debugging information wether the flag debug is true
+ * or false.
+ *
+ * @param [in] self Casimir object
+ * @param [in] debug flag, true to enable, false to disable debugging
+ */
+void casimir_set_debug(casimir_t *self, bool debug)
+{
+    self->debug = debug;
 }
 
 /**
