@@ -12,6 +12,10 @@
 /* print usage */
 static void usage(FILE *stream)
 {
+    char info[256];
+
+    casimir_compile_info(info, sizeof(info));
+
     fprintf(stream, "Usage: casimir_logdetD [OPTIONS]\n\
 This program will calculate the free Casimir energy for the plane-sphere \n\
 geometry for given n,m,T,L/R. \n\
@@ -47,7 +51,7 @@ Further options:\n\
         Show this help\n\
 \n\
 \n\
-Compiled %s, %s\n", __DATE__, __TIME__);
+%s\n", info);
 }
 
 int main(int argc, char *argv[])
