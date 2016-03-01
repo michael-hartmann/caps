@@ -126,14 +126,17 @@ void integrands_drude(float80 x, integrands_drude_t *integrands,
     plm_combination_t comb;
     const float80 tau = 2 * context->nT;
     const float80 k   = sqrt80(pow_2(x) / 4 + context->nT * x);
-    float80 log_factor;
     float80 r_TE, r_TM;
-    float80 A,B,C,D;
 
     casimir_rp(context->casimir, context->nT, k, &r_TE, &r_TM);
     const float80 lnr_TE = log80(-r_TE);
     const float80 lnr_TM = log80(r_TM);
 
+    /* XXX
+     * Sollte die Bedingung nicht so aussehen? (die Bedingungen sind meiner
+     * Meinung nach aequivalent)
+     * if( fabs80(x/tau - 1.0) < LDBL_EPSILON ) {
+     */
     if( 1.0 + x/tau != 1.0 )
     {
 #ifdef USE_PLM_CACHE
@@ -153,24 +156,24 @@ void integrands_drude(float80 x, integrands_drude_t *integrands,
         comb.sign_dPl1mPl2m  = 1;
         comb.sign_dPl1mdPl2m = 1;
     }
-    log_factor = log80(pow_2(x)+2*tau*x);
+    const float80 log_factor = log80(pow_2(x)+2*tau*x);
 
-    A = comb.lnPl1mPl2m - log_factor - x;
+    const float80 A = comb.lnPl1mPl2m - log_factor - x;
     integrands->lnA_TE = lnr_TE + A;
     integrands->lnA_TM = lnr_TM + A;
     integrands->sign_A = comb.sign_Pl1mPl2m;
 
-    B = comb.lndPl1mdPl2m + log_factor - x;
+    const float80 B = comb.lndPl1mdPl2m + log_factor - x;
     integrands->lnB_TE = lnr_TE + B;
     integrands->lnB_TM = lnr_TM + B;
     integrands->sign_B = comb.sign_dPl1mdPl2m;
 
-    C = comb.lnPl1mdPl2m - x;
+    const float80 C = comb.lnPl1mdPl2m - x;
     integrands->lnC_TE = lnr_TE + C;
     integrands->lnC_TM = lnr_TM + C;
     integrands->sign_C = comb.sign_Pl1mdPl2m;
 
-    D = comb.lndPl1mPl2m;
+    const float80 D = comb.lndPl1mPl2m;
     integrands->lnD_TE = lnr_TE + D - x;
     integrands->lnD_TM = lnr_TM + D - x;
     integrands->sign_D = comb.sign_dPl1mPl2m;
@@ -188,12 +191,8 @@ static inline void integrands_drude_u(float80 u, integrands_drude_t *integrands,
                                       unsigned int index,
                                       unsigned int iteration)
 {
-
-    float80 x         = context->c0 * pow80_alpha((1+u) / (1-u));
-    float80 jacobi    = (pow80_alpha_m(1+u) / pow80_alpha_p(1-u) * (2 * ALPHA * context->c0));
-    float80 ln_jacobi = log80(fabs80(jacobi));
-
-    if( fabs80(u - 1.0) < LDBL_EPSILON ) {
+    if( fabs80(u - 1.0) < LDBL_EPSILON )
+    {
         integrands->lnA_TE = -INFINITY;
         integrands->lnA_TM = -INFINITY;
         integrands->lnB_TE = -INFINITY;
@@ -208,7 +207,12 @@ static inline void integrands_drude_u(float80 u, integrands_drude_t *integrands,
         integrands->sign_C = +1;
         integrands->sign_D = +1;
     }
-    else {
+    else
+    {
+        const float80 x         = context->c0 * pow80_alpha((1+u) / (1-u));
+        const float80 jacobi    = (pow80_alpha_m(1+u) / pow80_alpha_p(1-u) * (2 * ALPHA * context->c0));
+        const float80 ln_jacobi = log80(fabs80(jacobi));
+
         integrands_drude(x, integrands, context, index, iteration);
     
         integrands->lnA_TM += ln_jacobi;
@@ -249,9 +253,7 @@ static inline void init_accuracy(struct drude_error* error,
         error->lnB = log80(ACCURACY);
 
     if(isinf(ln_prefactor_CD))
-    {
         error->lnC = error->lnD = INFINITY;
-    }
     else
     {
         error->lnC = log80(ACCURACY);
@@ -410,38 +412,48 @@ static inline void do_integrate(casimir_t* self, casimir_integrals_t* cint,
     integrands_drude_t total;
 
     const float80 ln_lambda = casimir_lnLambda(l1, l2, m, NULL); /* sign: -1 */
-    const float80 log_m = log(m);
-    const float80 ln_tau = log80(tau);
+    const float80 log_m   = log80(m); /* XXX m kann 0 sein, dann log_m = -inf */
+    const float80 log_tau = log80(tau);
 
-    float80 prefactor_A, prefactor_B, prefactor_CD;
-    float80 ln_prefactor_A, ln_prefactor_B, ln_prefactor_CD;
     struct drude_error error;
 
-    if(fabs80(c0 - 1.0) >= LDBL_EPSILON) {
+    if(fabs80(c0 - 1.0) >= LDBL_EPSILON)
+    {
         c_max = pow80( (10.0*c0 / (c0 - 1.0)), 1.0 / ALPHA);
         c_max = (c_max - 1) / (c_max + 1);
-    } else {
-        c_max = 1.0;
     }
-    struct integ_context context;
+    else
+        c_max = 1.0;
 
-    context.l1 = l1;
-    context.l2 = l2;
-    context.m  = m;
-    context.nT = n * T;
-    context.c0 = c0;
-    context.c_max = c_max;
-    context.casimir = self;
+    struct integ_context context = {
+        .l1      = l1,
+        .l2      = l2,
+        .m       = m,
+        .nT      = n*T,
+        .c0      = c0,
+        .c_max   = c_max,
+        .casimir = self
+    };
+
 
     /*
      * Integral C and D have the same prefactor.
      */
-    prefactor_A     = ln_lambda + 2 * log_m  + ln_tau - tau;
-    prefactor_B     = ln_lambda - tau - 3 * ln_tau;
-    prefactor_CD    = ln_lambda + log_m - tau - ln_tau;
-    ln_prefactor_A  = log80(fabs80(prefactor_A));
-    ln_prefactor_B  = log80(fabs80(prefactor_B));
-    ln_prefactor_CD = log80(fabs80(prefactor_CD));
+    const float80 prefactor_A     = ln_lambda + 2 * log_m  + log_tau - tau;
+    const float80 prefactor_B     = ln_lambda - tau - 3 * log_tau;
+    const float80 prefactor_CD    = ln_lambda + log_m - tau - log_tau;
+
+    /* XXX
+     * Hmm, ist prefactor_A nicht schon log(prefactor_A) etc...?
+     * Also, warum log?
+     * Also ich sehe schon, dass du das in init_accuracy irgendwie brauchst,
+     * aber so wirklich klar ist mir das nicht. Vor allem, wenn du das nur in
+     * init_accuracy brauchst, warum rechnest du es dann nicht in init_accuracy
+     * aus?
+     */
+    const float80 ln_prefactor_A  = log80(fabs80(prefactor_A));
+    const float80 ln_prefactor_B  = log80(fabs80(prefactor_B));
+    const float80 ln_prefactor_CD = log80(fabs80(prefactor_CD));
 
     /*
      * First, we calculate the accuracy which is required
@@ -542,23 +554,14 @@ static inline void romberg_In1(integrands_drude_t* I_current,
                                unsigned int n)
 {
     integrands_drude_t temp;
-    unsigned int i;
-    float80 u;
     float80 log_hn = log80(romberg_chain(n) * (context->c_max - (-1.0)));
-    float80 stepsize, frac;
-    size_t  num_points;
 
     /*
      * Divide the Interval into steps of the size 1 / (2^n)
-     * We have got 2^(n-1) points
+     * We have got 2^(n-2) points
      */
-    stepsize = 1.0;
-    num_points = 1;
-    for(i = 1; i < n; ++i) {
-        stepsize /= 2.0;
-        num_points *= 2;
-    }
-    num_points /= 2;
+    const size_t num_points = pow(2, n-2);
+    const float80 stepsize  = pow(0.5, n-1); 
 
     /*
      * We can reuse the points from the last iteration.
@@ -569,13 +572,14 @@ static inline void romberg_In1(integrands_drude_t* I_current,
     
     drude_mult_factor(I_current, log80(0.5));
 
-    for(i = 1; i <= num_points; ++i) {
+    for(unsigned int i = 1; i <= num_points; ++i)
+    {
         /*
          * We already calculated the even points in the last iteration
          * We need only the odd ones (1*stepsize, 3*stepsize, 5*stepsize ...)
          */
-        frac = ((float80)(2*i - 1)) * stepsize;
-        u = frac * (context->c_max - (-1.0)) - 1.0;
+        const float80 frac = ((float80)(2*i - 1)) * stepsize;
+        const float80 u = frac * (context->c_max - (-1.0)) - 1.0;
         integrands_drude_u(u, &temp, context, i, n);
         drude_mult_factor(&temp, log_hn);
         drude_plusequal(&I_current[0], &temp);
@@ -599,8 +603,7 @@ static inline void romberg_subcycle(integrands_drude_t* a,
      * b: I_{n+1,k-1}
      * c: I_{n,k-1}
      */
-    float80 prefactor;
-    prefactor = pow80(2, 2 * (k-1));
+    const float80 prefactor = pow80(2, 2 * (k-1));
     
     *a = *b;
     drude_mult_factor(a, log80(prefactor));
@@ -666,7 +669,8 @@ static inline int romberg_is_accurate(integrands_drude_t* cur_result,
  */
 static inline void integrate_romberg(struct integ_context* context,
                                         integrands_drude_t* result,
-                                        struct drude_error* error) {
+                                        struct drude_error* error)
+{
     const size_t max_order = 40;
     const size_t min_order = 5;
     integrands_drude_t I1[max_order], I2[max_order];
@@ -720,6 +724,14 @@ static inline void integrate_romberg(struct integ_context* context,
         }
     }
     *result = I_last[n - 2];
+
+    /* XXX
+     Was pasiert hier?
+     Hier ist das Ergebnis der Intergration nicht genau genug, d.h. wir sollten
+     zumindest eine Warnung ausgeben?
+     Sowas wie:
+     WARN(1, "Failed to achieve accuracy of %g.", ACCURACY);
+    */
 }
 
 #endif
