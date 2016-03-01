@@ -139,7 +139,7 @@ int casimir_debug(casimir_t *self, const char *format, ...)
 
     va_list args;
     va_start(args, format);
-    int ret = vfprintf(stderr, format, args);
+    const int ret = vfprintf(stderr, format, args);
     va_end(args);
 
     return ret;
@@ -966,10 +966,8 @@ void casimir_lnab0(int l, double *a0, sign_t *sign_a0, double *b0, sign_t *sign_
  */
 double casimir_lna_perf(casimir_t *self, const int l, const int n, sign_t *sign)
 {
-    float80 numerator, denominator;
     float80 lnKlp,lnKlm,lnIlm,lnIlp;
-    float80 prefactor;
-    float80 chi = n*self->T*self->RbyScriptL;
+    const float80 chi = n*self->T*self->RbyScriptL;
 
     /* we could do both calculations together. but it doesn't cost much time -
      * so why bother?
@@ -984,12 +982,12 @@ double casimir_lna_perf(casimir_t *self, const int l, const int n, sign_t *sign)
      *             sign     prefactor      numerator      denominator
      */
 
-    prefactor = LOGPI-LOG2+lnIlp-lnKlp;
+    const float80 prefactor = LOGPI-LOG2+lnIlp-lnKlp;
 
     /* numerator */
-    numerator = logadd_s(log80(l), +1, log80(chi)+lnIlm-lnIlp, -1, sign);
+    const float80 numerator = logadd_s(log80(l), +1, log80(chi)+lnIlm-lnIlp, -1, sign);
     /* denominator */
-    denominator = logadd(log80(l), log80(chi)+lnKlm-lnKlp);
+    const float80 denominator = logadd(log80(l), log80(chi)+lnKlm-lnKlp);
 
     *sign *= MPOW(l+1);
     return prefactor+numerator-denominator;
@@ -1014,7 +1012,7 @@ double casimir_lna_perf(casimir_t *self, const int l, const int n, sign_t *sign)
  */
 double casimir_lnb_perf(casimir_t *self, const int l, const int n, sign_t *sign)
 {
-    float80 chi = n*self->T*self->RbyScriptL;
+    const float80 chi = n*self->T*self->RbyScriptL;
     float80 lnInu, lnKnu;
 
     bessel_lnInuKnu(l, chi, &lnInu, &lnKnu);
