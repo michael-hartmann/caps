@@ -30,7 +30,7 @@ int _AssertEqual(int line, unittest_t *test, int x, int y)
     else
     {
         test->failed++;
-        fprintf(stderr, "FAILED: %d != %d on line %d\n", x, y, line);
+        fprintf(stderr, KRED "FAILED" KNRM ": %d != %d on line %d\n", x, y, line);
         return 1;
     }
 }
@@ -45,7 +45,7 @@ int _Assert(int line, unittest_t *test, int boolean)
     else
     {
         test->failed++;
-        fprintf(stderr, "FAILED: on line %d\n", line);
+        fprintf(stderr, KRED "FAILED" KNRM ": on line %d\n", line);
         return 1;
     }
 }
@@ -60,7 +60,7 @@ int _AssertAlmostEqual(int line, unittest_t *test, double x, double y, double ep
     else
     {
         test->failed++;
-        fprintf(stderr, "FAILED: %.20g != %.20g (%g) on line %d\n", x, y, fabs(1-x/y), line);
+        fprintf(stderr, KRED "FAILED" KNRM ": %.20g != %.20g (%g) on line %d\n", x, y, fabs(1-x/y), line);
         return 1;
     }
 }
