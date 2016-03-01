@@ -41,14 +41,16 @@
  * @param [out] str buffer for string
  * @param [in]  len length of string
  * @retval success bytes written if successful
- * @retval fail <0 otherwise
+ * @retval fail <0 if size == 0
  */
-int casimir_compile_info(char *str, int len)
+int casimir_compile_info(char *str, size_t size)
 {
-    if(len == 0)
+    if(size == 0)
         return -1;
 
-    return snprintf(str, (len-1)*sizeof(char),
+    /* snprintf() writes at most size bytes (including the terminating null
+     * byte ('\0')) to str. */
+    return snprintf(str, size,
              "Compiled on %s at %s with %s",
               __DATE__, __TIME__, COMPILER
             );
