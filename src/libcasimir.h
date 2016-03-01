@@ -133,7 +133,7 @@ typedef struct
 
 
 /* prototypes */
-int  casimir_compile_info(char *str, int len);
+int  casimir_compile_info(char *str, size_t size);
 void casimir_info(casimir_t *self, FILE *stream, const char *prefix);
 int casimir_debug(casimir_t *self, const char *format, ...);
 
