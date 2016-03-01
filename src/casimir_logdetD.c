@@ -40,6 +40,9 @@ Further options:\n\
     --detalg DETALG\n\
         Use DETALG to calculate determinant.\n\
 \n\
+    -d, --debug\n\
+        Enable debugging information.\n\
+\n\
     -h,--help\n\
         Show this help\n\
 \n\
@@ -59,6 +62,7 @@ int main(int argc, char *argv[])
     double trace_threshold = -1;
     casimir_t casimir;
     double logdet, start_time = now();
+    bool debug = false;
 
     printf("# %s", argv[0]);
     for(int i = 1; i < argc; i++)
@@ -71,6 +75,7 @@ int main(int argc, char *argv[])
         struct option long_options[] = {
             { "buffering", no_argument,       &buffering_flag, 1 },
             { "help",      no_argument,       0, 'h' },
+            { "debug",     no_argument,       0, 'D' },
             { "nT",        required_argument, 0, 'T' },
             { "detalg",    required_argument, 0, 'd' },
             { "lscale",    required_argument, 0, 'l' },
@@ -81,7 +86,7 @@ int main(int argc, char *argv[])
         /* getopt_long stores the option index here. */
         int option_index = 0;
       
-        c = getopt_long (argc, argv, "x:T:m:s:a:l:L:t:qh", long_options, &option_index);
+        c = getopt_long (argc, argv, "x:T:m:s:a:l:L:t:qhD", long_options, &option_index);
       
         /* Detect the end of the options. */
         if(c == -1)
@@ -112,6 +117,9 @@ int main(int argc, char *argv[])
                 break;
             case 'd':
                 strncpy(detalg, optarg, sizeof(detalg)/sizeof(char)-1);
+                break;
+            case 'D':
+                debug = true;
                 break;
             case 'h':
                 usage(stdout);
@@ -166,6 +174,7 @@ int main(int argc, char *argv[])
 
     casimir_init(&casimir, LbyR, nT);
     casimir_set_lmax(&casimir, lmax);
+    casimir_set_debug(&casimir, debug);
 
     if(strlen(detalg))
         casimir_set_detalg(&casimir, detalg);
