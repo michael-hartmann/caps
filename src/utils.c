@@ -1,7 +1,7 @@
 /**
  * @file   utils.c
  * @author Michael Hartmann <michael.hartmann@physik.uni-augsburg.de>
- * @date   February, 2016
+ * @date   March, 2016
  * @brief  helper functions
  */
 
@@ -13,37 +13,6 @@
 
 #include "utils.h"
 
-void (*error_handler)(const char *) = default_error_handler;
-
-/** @brief Set error handler
- *
- * Set callback to a function f that is called when an error occured during
- * calls to malloc, realloc or free. The function is given a string with an
- * description of the error.
- *
- * The default error handler prints the message to stderr and exits
- *
- * @param f callback to error handler
- */
-void set_defaut_error_handler(void (*f)(const char *))
-{
-    error_handler = f;
-}
-
-
-/** @brief Default error handler
- *
- * This function prints the string reason to stderr and calls exit(1).
- *
- * @param reason string with description of error
- */
-void default_error_handler(const char *reason)
-{
-    fprintf(stderr, "%s\n", reason);
-    exit(1);
-}
-
-
 /** @brief Wrapper for malloc
  *
  * This function is a wrapper for malloc. If an error occures, the error handler will be called.
@@ -54,8 +23,8 @@ void default_error_handler(const char *reason)
 void *xmalloc(size_t size)
 {
     void *p = malloc(size);
-    if(p == NULL)
-        error_handler("malloc failed.");
+
+    TERMINATE(p == NULL, "malloc failed");
 
     return p;
 }
@@ -73,11 +42,8 @@ void *xmalloc(size_t size)
 void *xrealloc(void *p, size_t size)
 {
     void *p2 = realloc(p, size);
-    if(p2 == NULL)
-    {
-        free(p);
-        error_handler("realloc failed.");
-    }
+
+    TERMINATE(p2 == NULL, "realloc failed");
 
     return p2;
 }
@@ -94,9 +60,6 @@ void *xrealloc(void *p, size_t size)
  */
 void _xfree(void *ptr)
 {
-    if(ptr == NULL)
-        error_handler("free on NULL.");
-
     free(ptr);
 }
 

@@ -24,9 +24,6 @@
 
 double now(void);
 
-void set_defaut_error_handler(void (*f)(const char *));
-void default_error_handler(const char *str);
-
 void *xmalloc(size_t size);
 void *xrealloc(void *p, size_t size);
 void _xfree(void *p);
