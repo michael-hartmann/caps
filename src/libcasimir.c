@@ -1047,24 +1047,24 @@ double casimir_lnb_perf(casimir_t *self, const int l, const int n, sign_t *sign)
  */
 void casimir_lnab(casimir_t *self, const int n_mat, const int l, double *lna, double *lnb, sign_t *sign_a, sign_t *sign_b)
 {
-    sign_t sign_sla, sign_slb, sign_slc, sign_sld;
-    float80 ln_n, ln_sla, ln_slb, ln_slc, ln_sld;
-    float80 lnIl, lnKl, lnIlm, lnKlm, lnIl_nchi, lnKl_nchi, lnIlm_nchi, lnKlm_nchi;
-    float80 xi = n_mat*self->T;
-    float80 chi = xi*self->RbyScriptL;
-    float80 ln_chi = log80(xi)+log80(self->RbyScriptL);
-    float80 omegap = self->omegap_sphere;
-    float80 gamma_ = self->gamma_sphere;
-    sign_t sign_a_num, sign_a_denom, sign_b_num, sign_b_denom;
-
-    if(isinf(omegap))
+    if(isinf(self->omegap_sphere))
     {
+        /* Mie coefficients for perfect reflectors */
         *lna = casimir_lna_perf(self, l, n_mat, sign_a);
         *lnb = casimir_lnb_perf(self, l, n_mat, sign_b);
         return;
     }
 
-    ln_n = casimir_lnepsilon(xi, omegap, gamma_)/2;
+    /* Mie coefficients for Drude metals */
+
+    sign_t sign_sla, sign_slb, sign_slc, sign_sld;
+    float80 lnIl, lnKl, lnIlm, lnKlm, lnIl_nchi, lnKl_nchi, lnIlm_nchi, lnKlm_nchi;
+    sign_t sign_a_num, sign_a_denom, sign_b_num, sign_b_denom;
+
+    const float80 xi     = n_mat*self->T;
+    const float80 chi    = xi*self->RbyScriptL;
+    const float80 ln_chi = log80(xi)+log80(self->RbyScriptL);
+    const float80 ln_n   = casimir_lnepsilon(xi, self->omegap_sphere, self->gamma_sphere)/2;
 
     bessel_lnInuKnu(l,   chi, &lnIl,  &lnKl);
     bessel_lnInuKnu(l-1, chi, &lnIlm, &lnKlm);
@@ -1072,24 +1072,22 @@ void casimir_lnab(casimir_t *self, const int n_mat, const int l, double *lna, do
     bessel_lnInuKnu(l,   exp80(ln_n)*chi, &lnIl_nchi,  &lnKl_nchi);
     bessel_lnInuKnu(l-1, exp80(ln_n)*chi, &lnIlm_nchi, &lnKlm_nchi);
 
-    ln_sla = lnIl_nchi + logadd_s(lnIl,      +1, ln_chi+lnIlm,           -1, &sign_sla);
-    ln_slb = lnIl      + logadd_s(lnIl_nchi, +1, ln_n+ln_chi+lnIlm_nchi, -1, &sign_slb);
-    ln_slc = lnIl_nchi + logadd_s(lnKl,      +1, ln_chi+lnKlm,           +1, &sign_slc);
-    ln_sld = lnKl      + logadd_s(lnIl_nchi, +1, ln_n+ln_chi+lnIlm_nchi, -1, &sign_sld);
+    const float80 ln_sla = lnIl_nchi + logadd_s(lnIl,      +1, ln_chi+lnIlm,           -1, &sign_sla);
+    const float80 ln_slb = lnIl      + logadd_s(lnIl_nchi, +1, ln_n+ln_chi+lnIlm_nchi, -1, &sign_slb);
+    const float80 ln_slc = lnIl_nchi + logadd_s(lnKl,      +1, ln_chi+lnKlm,           +1, &sign_slc);
+    const float80 ln_sld = lnKl      + logadd_s(lnIl_nchi, +1, ln_n+ln_chi+lnIlm_nchi, -1, &sign_sld);
 
     /* XXX FIXME XXX */
     /*
-    printf("n =%.15g\n", (double)exp80(ln_n));
-    printf("n2=%.15g\n", (double)exp80(2*ln_n));
-    printf("lnIl = %.15g\n", (double)exp80(lnIl));
-    printf("chi=%.15g\n", (double)chi);
-    */
+    printf("n =%.18Lg\n",     exp80(ln_n));
+    printf("n2=%.18Lg\n",     exp80(2*ln_n));
+    printf("lnIl = %.18Lg\n", exp80(lnIl));
+    printf("chi=%.18Lg\n",    chi);
 
-    /*
-    printf("sla=%.15g\n", (double)(sign_sla*exp80(ln_sla)));
-    printf("slb=%.15g\n", (double)(sign_slb*exp80(ln_slb)));
-    printf("slc=%.15g\n", (double)(sign_slc*exp80(ln_slc)));
-    printf("sld=%.15g\n", (double)(sign_sld*exp80(ln_sld)));
+    printf("sla=%.18Lg\n", sign_sla*exp80(ln_sla));
+    printf("slb=%.18Lg\n", sign_slb*exp80(ln_slb));
+    printf("slc=%.18Lg\n", sign_slc*exp80(ln_slc));
+    printf("sld=%.18Lg\n", sign_sld*exp80(ln_sld));
     */
 
     *lna = LOGPI - LOG2 + logadd_s(2*ln_n+ln_sla, +sign_sla, ln_slb, -sign_slb, &sign_a_num) - logadd_s(2*ln_n+ln_slc, +sign_slc, ln_sld, -sign_sld, &sign_a_denom);
