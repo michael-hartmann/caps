@@ -69,7 +69,7 @@ if __name__ == "__main__":
     def usage(self, stream=stdout):
         print("%s LbyR  T" % (self),         file=stream)
         print("\tLbyR: ratio L/R, LbyR > 0", file=stream)
-        print("\tT:    temperature, T > 0",  file=stream)
+        print("\tT:    temperature, T >= 0", file=stream)
 
     if len(argv) < 3:
         usage(argv[0])
@@ -79,10 +79,10 @@ if __name__ == "__main__":
         LbyR = float(argv[1])
         T    = float(argv[2])
 
-        if LbyR < 0:
+        if LbyR <= 0:
             raise BaseException("LbyR must be positive")
         if T < 0:
-            raise BaseException("T must be positive")
+            raise BaseException("T must be non-negative")
     except:
         usage(argv[0], stream=stderr)
         exit(1)
