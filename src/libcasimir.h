@@ -2,6 +2,7 @@
 #define __LIBCASIMIR_H
 
 #include <pthread.h>
+#include <stdarg.h>
 #include <stdbool.h>
 #include <stdio.h>
 
@@ -89,11 +90,15 @@ typedef struct
 
     double birthtime;       /**< timestamp when object was initialized */
 
+    bool verbose; /**< verbose flag */
+
     /* parameters that you usually do not want to change */
     bool debug;        /**< debug flag for more information */
     bool balance;      /**< balance matrix before QR decomposition */
     bool pivot;        /**< pivot matrix before QR decomposition */
     bool precondition; /**< use preconditioner */
+
+    pthread_mutex_t mutex; /**< mutex for printing */
     /*@}*/
 } casimir_t;
 
@@ -134,7 +139,10 @@ typedef struct
 /* prototypes */
 int  casimir_compile_info(char *str, size_t size);
 void casimir_info(casimir_t *self, FILE *stream, const char *prefix);
+
+int casimir_vfprintf(casimir_t *self, FILE *stream, const char *format, va_list args);
 int casimir_debug(casimir_t *self, const char *format, ...);
+int casimir_verbose(casimir_t *self, const char *format, ...);
 
 double casimir_epsilon(double xi, double omegap, double gamma_);
 double casimir_lnepsilon(double xi, double omegap, double gamma_);
@@ -151,6 +159,10 @@ int casimir_init(casimir_t *self, double LbyR, double T);
 void casimir_free(casimir_t *self);
 
 void casimir_set_debug(casimir_t *self, bool debug);
+bool casimir_get_debug(casimir_t *self);
+
+void casimir_set_verbose(casimir_t *self, bool verbose);
+bool casimir_get_verbose(casimir_t *self);
 
 double casimir_get_birthtime(casimir_t *self);
 
