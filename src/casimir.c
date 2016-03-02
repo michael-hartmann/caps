@@ -19,6 +19,7 @@
 /* default values for precision and lfac */
 #define DEFAULT_PRECISION 1e-10
 #define DEFAULT_LFAC 5
+#define MIN_LMAX 20
 
 
 /* print usage */
@@ -62,7 +63,8 @@ Further options:\n\
 \n\
     -l, --lscale\n\
         Specify parameter lscale. The vector space has to be truncated for\n\
-        some value lmax. This program will use lmax=(R/L*lscale) (default: %d)\n\
+        some value lmax. This program will use lmax=MAX(R/L*lscale, %d)\n\
+        (default: %d)\n\
 \n\
     -L LMAX\n\
         Set lmax to the value LMAX. When -L is specified, -l will be ignored\n\
@@ -84,7 +86,7 @@ Further options:\n\
         Show this help\n\
 \n\
 \n\
-%s\n", DEFAULT_LFAC, DEFAULT_PRECISION, msg);
+%s\n", MIN_LMAX, DEFAULT_LFAC, DEFAULT_PRECISION, msg);
 }
 
 /* parse a range given for LbyR or T from the command line.
@@ -327,7 +329,7 @@ int main(int argc, char *argv[])
             if(lmax > 0)
                 casimir_set_lmax(&casimir, lmax);
             else
-                casimir_set_lmax(&casimir, MAX((int)ceil(lfac/LbyR), DEFAULT_LFAC));
+                casimir_set_lmax(&casimir, MAX((int)ceil(lfac/LbyR), MIN_LMAX));
 
 
             if(!quiet_flag)
