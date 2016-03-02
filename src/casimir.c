@@ -29,64 +29,67 @@ void usage(FILE *stream)
 
     casimir_compile_info(msg, sizeof(msg)/sizeof(char));
 
-    fprintf(stream, "Usage: casimir [OPTIONS]\n\
-This program will calculate the free Casimir energy F(T,L/R) for the\n\
-plane-sphere geometry for given L/R and temperature T. The output is in scaled\n\
-units.\n\
-\n\
-Mandatory options:\n\
-    -x, --LbyR L/R\n\
-        Separation L between sphere and plane divided by radius of sphere,\n\
-        where L/R > 0.\n\
-        If you want to calculate several points, you may pass start and stop\n\
-        value and the amount of points to be calculated.\n\
-        Examples:\n\
-            $ ./casimir -T 1 -x 0.5,0.9,5\n\
-            This will calculate five free energies for Q=0.5,...,0,9 in linear\n\
-            scale.\n\
-            $ ./casimir -T 1 -x 0.5,0.9,5,log\n\
-            This will calculate five free energies for Q=0.5,...,0,9, but using\n\
-            a logarithmic scale.\n\
-\n\
-    -T TEMPERATURE\n\
-        Temperature in units of hbar*c/(2pi*kB*(L+R)). You may use the same\n\
-        syntax like for -x to calculate a range of points.\n\
-\n\
-Further options:\n\
-    -g, --gamma\n\
-        Set value of relaxation frequency gamma of Drude metals in units of\n\
-        c/(L+R). If omitted, gamma = 0.\n\
-\n\
-    -w, --omegap\n\
-        Set value of Plasma frequency omega_p of Drude metals in units of\n\
-        c/omegaP. If omitted, omegap = INFINITY.\n\
-\n\
-    -l, --lscale\n\
-        Specify parameter lscale. The vector space has to be truncated for\n\
-        some value lmax. This program will use lmax=MAX(R/L*lscale, %d)\n\
-        (default: %d)\n\
-\n\
-    -L LMAX\n\
-        Set lmax to the value LMAX. When -L is specified, -l will be ignored\n\
-\n\
-    -c, --cores CORES\n\
-        Use CORES of processors for the calculation (default: 1)\n\
-\n\
-    -p, --precision\n\
-        Set precision to given value (default: %g)\n\
-\n\
-    --buffering\n\
-        Enable buffering. By default buffering for stderr and stdout is\n\
-        disabled.\n\
-\n\
-    -q, --quiet\n\
-        The progress is printed to stderr unless this flag is set.\n\
-\n\
-    -h,--help\n\
-        Show this help\n\
-\n\
-\n\
-%s\n", MIN_LMAX, DEFAULT_LFAC, DEFAULT_PRECISION, msg);
+    fprintf(stream, "Usage: casimir [OPTIONS]\n"
+"This program will calculate the free Casimir energy F(T,L/R) for the\n"
+"plane-sphere geometry for given L/R and temperature T. The output is in scaled\n"
+"units.\n"
+"\n"
+"Mandatory options:\n"
+"    -x, --LbyR L/R\n"
+"        Separation L between sphere and plane divided by radius of sphere,\n"
+"        where L/R > 0.\n"
+"        If you want to calculate several points, you may pass start and stop\n"
+"        value and the amount of points to be calculated.\n"
+"        Examples:\n"
+"            $ ./casimir -T 1 -x 0.5,0.9,5\n"
+"            This will calculate five free energies for Q=0.5,...,0,9 in linear\n"
+"            scale.\n"
+"            $ ./casimir -T 1 -x 0.5,0.9,5,log\n"
+"            This will calculate five free energies for Q=0.5,...,0,9, but using\n"
+"            a logarithmic scale.\n"
+"\n"
+"    -T TEMPERATURE\n"
+"        Temperature in units of hbar*c/(2pi*kB*(L+R)). You may use the same\n"
+"        syntax like for -x to calculate a range of points.\n"
+"\n"
+"Further options:\n"
+"    -g, --gamma\n"
+"        Set value of relaxation frequency gamma of Drude metals in units of\n"
+"        c/(L+R). If omitted, gamma = 0.\n"
+"\n"
+"    -w, --omegap\n"
+"        Set value of Plasma frequency omega_p of Drude metals in units of\n"
+"        c/omegaP. If omitted, omegap = INFINITY.\n"
+"\n"
+"    -l, --lscale\n"
+"        Specify parameter lscale. The vector space has to be truncated for\n"
+"        some value lmax. This program will use lmax=MAX(R/L*lscale, %d)\n"
+"        (default: %d)\n"
+"\n"
+"    -L LMAX\n"
+"        Set lmax to the value LMAX. When -L is specified, -l will be ignored\n"
+"\n"
+"    -c, --cores CORES\n"
+"        Use CORES of processors for the calculation (default: 1)\n"
+"\n"
+"    -p, --precision\n"
+"        Set precision to given value (default: %g)\n"
+"\n"
+"    --buffering\n"
+"        Enable buffering. By default buffering for stderr and stdout is\n"
+"        disabled.\n"
+"\n"
+"    --verbose\n"
+"        Be more verbose.\n"
+"\n"
+"    -q, --quiet\n"
+"        The progress is printed to stderr unless this flag is set.\n"
+"\n"
+"    -h,--help\n"
+"        Show this help\n"
+"\n"
+"\n"
+"%s\n", MIN_LMAX, DEFAULT_LFAC, DEFAULT_PRECISION, msg);
 }
 
 /* parse a range given for LbyR or T from the command line.
@@ -149,7 +152,7 @@ int main(int argc, char *argv[])
     int i;
     int cores = 1;
     int lmax = 0;
-    int buffering_flag = 0, quiet_flag = 0;
+    int buffering_flag = 0, quiet_flag = 0, verbose_flag = 0;
 
     /* parse command line options */
     while (1)
@@ -158,6 +161,7 @@ int main(int argc, char *argv[])
         struct option long_options[] =
         {
             { "quiet",     no_argument,       &quiet_flag,     1 },
+            { "verbose",   no_argument,       &verbose_flag,   1 },
             { "buffering", no_argument,       &buffering_flag, 1 },
             { "help",      no_argument,       0, 'h' },
             { "LbyR",      required_argument, 0, 'x' },
@@ -312,6 +316,7 @@ int main(int argc, char *argv[])
                 T = logspace(lT[0], lT[1], lT[2], iT);
 
             casimir_init(&casimir, LbyR, T);
+            casimir_set_verbose(&casimir, verbose_flag);
             casimir_set_cores(&casimir, cores);
             casimir_set_precision(&casimir, precision);
 
@@ -333,13 +338,13 @@ int main(int argc, char *argv[])
 
 
             if(!quiet_flag)
-            {
                 casimir_info(&casimir, stdout, "# ");
-                printf("#\n# LbyR, T, F, lmax, nmax, time\n");
-            }
 
             F = casimir_F(&casimir, &nmax);
             casimir_free(&casimir);
+
+            if(!quiet_flag)
+                printf("#\n# LbyR, T, F, lmax, nmax, time\n");
 
             printf("%.15g, %.15g, %.15g, %d, %d, %g\n", LbyR, T, F, casimir.lmax, nmax, now()-start_time);
 
