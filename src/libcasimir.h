@@ -84,7 +84,6 @@ typedef struct
     pthread_t **threads;    /**< list of pthread objects */
 
     char detalg[128];       /**< algorithm to calculate determinant */
-    char dump_filename[128]; /**< dump matrix to filename */
 
     casimir_mie_cache_t *mie_cache; /**< Mie chache */
 
