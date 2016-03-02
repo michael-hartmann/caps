@@ -1692,8 +1692,6 @@ void casimir_logdetD0(casimir_t *self, int m, double *logdet_EE, double *logdet_
  * This function is thread-safe - as long you don't change lmax, temperature,
  * aspect ratio, dielectric properties of sphere and plane, and integration.
  *
- * This function works only for perfect metals at the moment!
- *
  * @param [in,out] self Casimir object
  * @param [in] n Matsubara term
  * @param [in] m
@@ -1716,7 +1714,10 @@ double casimir_trM(casimir_t *self, int n, int m, void *obj)
 
         casimir_mie_cache_get(self, l, n, &ln_al, &sign_al, &ln_bl, &sign_bl);
 
-        casimir_integrate_perf(int_perf, l, l, &cint);
+        if(self->integration > 0)
+            casimir_integrate_drude(self, &cint, l, l, m, n, self->T);
+        else
+            casimir_integrate_perf(int_perf, l, l, &cint);
 
         /* EE */
         sign_t signs_EE[] = { sign_al*cint.signA_TE, sign_al*cint.signB_TM };
