@@ -111,6 +111,27 @@ void casimir_info(casimir_t *self, FILE *stream, const char *prefix)
 
 
 /**
+ * @brief Thread safe wrapper to vfprintf
+ *
+ * This function is a wrapper to vfprintf and will print to stream, but it uses
+ * locks to make this function thread-safe.
+ *
+ * @param [in] self Casimir object
+ * @param [in] stream stream to print
+ * @param [in] format format string
+ * @param [in] args arguments for format string
+ * @retval chars number of characters printed
+ */
+int casimir_vfprintf(casimir_t *self, FILE *stream, const char *format, va_list args)
+{
+    pthread_mutex_lock(&self->mutex);
+    int ret = vfprintf(stderr, format, args);
+    pthread_mutex_unlock(&self->mutex);
+
+    return ret;
+}
+
+/**
  * @brief Print debugging information
  *
  * Print debugging information to stderr if self->debug is set to true.
@@ -130,7 +151,7 @@ void casimir_info(casimir_t *self, FILE *stream, const char *prefix)
  * @param [in] self Casimir object
  * @param [in] format format string
  * @param [in] ... variables for for format string
- * @retval chars number of characters printed (see vprintf)
+ * @retval chars number of characters printed (see \ref casimir_vprintf)
  */
 int casimir_debug(casimir_t *self, const char *format, ...)
 {
@@ -139,7 +160,28 @@ int casimir_debug(casimir_t *self, const char *format, ...)
 
     va_list args;
     va_start(args, format);
-    const int ret = vfprintf(stderr, format, args);
+    int ret = casimir_vfprintf(self, stderr, format, args);
+    va_end(args);
+
+    return ret;
+}
+
+/**
+ * @brief Print to stdout if flag verbose is set
+ *
+ * @param [in] self Casimir object
+ * @param [in] format format string
+ * @param [in] ... variables for for format string
+ * @retval chars number of characters printed (see \ref casimir_vprintf)
+ */
+int casimir_verbose(casimir_t *self, const char *format, ...)
+{
+    if(!self->verbose)
+        return 0;
+
+    va_list args;
+    va_start(args, format);
+    int ret = casimir_vfprintf(self, stdout, format, args);
     va_end(args);
 
     return ret;
@@ -431,6 +473,12 @@ int casimir_init(casimir_t *self, double LbyR, double T)
     self->omegap_plane  = INFINITY;
     self->gamma_plane   = 0;
 
+    /* set verbose flag */
+    self->verbose = false;
+
+    /* initialize mutex for printf */
+    pthread_mutex_init(&self->mutex, NULL);
+
     /**
      * parameters that users usually don't change
      */
@@ -469,6 +517,21 @@ int casimir_init(casimir_t *self, double LbyR, double T)
 void casimir_set_debug(casimir_t *self, bool debug)
 {
     self->debug = debug;
+}
+
+bool casimir_get_debug(casimir_t *self)
+{
+    return self->debug;
+}
+
+void casimir_set_verbose(casimir_t *self, bool verbose)
+{
+    self->verbose = verbose;
+}
+
+bool casimir_get_verbose(casimir_t *self)
+{
+    return self->verbose;
 }
 
 /**
@@ -897,6 +960,8 @@ double casimir_get_trace_threshold(casimir_t *self)
  */
 void casimir_free(casimir_t *self)
 {
+    pthread_mutex_destroy(&self->mutex);
+
     casimir_mie_cache_free(self);
 
     if(self->threads != NULL)
@@ -1426,6 +1491,7 @@ double casimir_F_n(casimir_t *self, const int n, int *mmax)
     for(m = 0; m <= self->lmax; m++)
     {
         values[m] = casimir_logdetD(self,n,m);
+        casimir_verbose(self, "# n=%d, m=%d, logdetD=%.15g\n", n, m, values[m]);
 
         /* If F is !=0 and value/F < 1e-16, then F+value = F. The addition
          * has no effect.
