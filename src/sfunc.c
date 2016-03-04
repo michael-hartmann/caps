@@ -182,13 +182,12 @@ inline float80 lbinom(int n, int k)
 
 void bessel_lnInuKnu(int nu, const float80 x, float80 *lnInu_p, float80 *lnKnu_p)
 {
-    int l;
+    const float80 logx = log80(x);
     float80 lnKnu = 0, lnKnup = log1p80(1./x);
-    float80 logx = log80(x);
 
-    // calculate Knu, Knup
+    /* calculate Knu, Knup */
     {
-        float80 prefactor = -x+0.5*(LOGPI-LOG2-logx);
+        const float80 prefactor = -x+0.5*(LOGPI-LOG2-logx);
 
         if(nu == 0)
         {
@@ -197,7 +196,7 @@ void bessel_lnInuKnu(int nu, const float80 x, float80 *lnInu_p, float80 *lnKnu_p
         }
         else
         {
-            for(l = 2; l <= nu+1; l++)
+            for(int l = 2; l <= nu+1; l++)
             {
                 float80 lnKn_new = logadd(log80(2*l-1)+lnKnup-logx, lnKnu);
                 lnKnu  = lnKnup;
@@ -208,25 +207,7 @@ void bessel_lnInuKnu(int nu, const float80 x, float80 *lnInu_p, float80 *lnKnu_p
             lnKnu  = prefactor+lnKnu;
         }
 
-        if(isnan(lnKnup) || isinf(lnKnup))
-        {
-            WARN(1, "Couldn't calculate Bessel functions, falling back to approximations, nu=%d, x=%Lg\n", nu, x);
-
-            /* so, we couldn't calculate lnKnup and lnKnu. Maybe we can at
-             * least use the asymptotic behaviour for small values.
-             */
-            if(x < sqrt(nu)*1e3)
-            {
-                /* small arguments */
-                lnKnu  = lgamma80(nu+0.5)-LOG2+(nu+0.5)*(LOG2-logx);
-                lnKnup = lgamma80(nu+1.5)-LOG2+(nu+1.5)*(LOG2-logx);
-            }
-            else
-            {
-                TERMINATE(1, "Couldn't calculate Bessel functions, nu=%d, x=%Lg\n", nu, x);
-                lnKnu = lnKnup = -INFINITY;
-            }
-        }
+        TERMINATE(isnan(lnKnup) || isinf(lnKnup), "Couldn't calculate Bessel functions, nu=%d, x=%Lg\n", nu, x);
 
         if(lnKnu_p != NULL)
             *lnKnu_p = lnKnu;
@@ -241,8 +222,7 @@ void bessel_lnInuKnu(int nu, const float80 x, float80 *lnInu_p, float80 *lnKnu_p
         float80 ratio = (an(1,nu,x)*num)/denom;
         float80 ratio_last = 0;
 
-        l = 3;
-        while(1)
+        for(int l = 3; 1; l++)
         {
             num   = an(l,nu,x)+1/num;
             denom = an(l,nu,x)+1/denom;
@@ -252,7 +232,6 @@ void bessel_lnInuKnu(int nu, const float80 x, float80 *lnInu_p, float80 *lnKnu_p
                 break;
 
             ratio_last = ratio;
-            l++;
         }
 
         *lnInu_p = -logx-lnKnu-logadd(lnKnup-lnKnu, -log80(ratio));
