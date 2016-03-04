@@ -205,20 +205,18 @@ float80 casimir_integrate_K(integration_perf_t *self, const int l1, const int l2
  */
 void casimir_integrate_perf_init(integration_perf_t *self, double nT, int m, int lmax)
 {
-    int elems_I, elems_K;
-
     self->nT   = nT;
     self->lmax = lmax;
     self->m    = m;
 
     /* allocate memory and initialize chache for I */
-    elems_I = 2*(lmax+2);
+    const int elems_I = 2*(lmax+2);
     self->cache_I = xmalloc(elems_I*sizeof(float80));
     for(int i = 0; i < elems_I; i++)
         self->cache_I[i] = NAN;
 
     /* allocate memory and initialize chache for K */
-    elems_K = pow_2(lmax+2);
+    const int elems_K = pow_2(lmax+2);
     self->cache_K_signs = xmalloc(elems_K*sizeof(sign_t));
     self->cache_K = xmalloc(elems_K*sizeof(float80));
     for(int i = 0; i < elems_K; i++)
@@ -234,21 +232,13 @@ void casimir_integrate_perf_init(integration_perf_t *self, double nT, int m, int
  */
 void casimir_integrate_perf_free(integration_perf_t *self)
 {
-    if(self->cache_I != NULL)
-    {
-        xfree(self->cache_I);
-        self->cache_I = NULL;
-    }
-    if(self->cache_K != NULL)
-    {
-        xfree(self->cache_K);
-        self->cache_K = NULL;
-    }
-    if(self->cache_K_signs != NULL)
-    {
-        xfree(self->cache_K_signs);
-        self->cache_K_signs = NULL;
-    }
+    xfree(self->cache_I);
+    xfree(self->cache_K);
+    xfree(self->cache_K_signs);
+
+    self->cache_I = NULL;
+    self->cache_K = NULL;
+    self->cache_K_signs = NULL;
 }
 
 /* integrate for m=0 */
