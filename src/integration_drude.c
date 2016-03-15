@@ -17,7 +17,7 @@
 #include "libcasimir.h"
 #include "integration_drude.h"
 #include "gausslaguerre.h"
-//#include "plm_cache.h"
+#include "plm_cache.h"
 
 /* **************************************** */
 /*
@@ -43,7 +43,7 @@
 
 
 /*
- * Cache the values of the legendre polynomials. If not defined the program
+ * Cache the values of the legendre polynomials. If not defined, the program
  * will caclulate the values of plm with the function "plm_PlmPlm" from sfunc.c.
  * ----- Experimental code ------
  */
@@ -132,15 +132,10 @@ void integrands_drude(float80 x, integrands_drude_t *integrands,
     const float80 lnr_TE = log80(-r_TE);
     const float80 lnr_TM = log80(r_TM);
 
-    /* XXX
-     * Sollte die Bedingung nicht so aussehen? (die Bedingungen sind meiner
-     * Meinung nach aequivalent)
-     * if( fabs80(x/tau - 1.0) < LDBL_EPSILON ) {
-     */
-    if( 1.0 + x/tau != 1.0 )
+    if( fabs80(x/tau - 1.0) >= LDBL_EPSILON )
     {
 #ifdef USE_PLM_CACHE
-        plm_cache_PlmPlm(context->l1, context->l2, context->m, 1.0+x/tau, &comb);
+        plm_cache_PlmPlm(context, 1.0+x/tau, &comb, index, iteration);
 #else
         plm_PlmPlm(context->l1, context->l2, context->m, 1.0+x/tau, &comb);
 #endif
@@ -412,7 +407,7 @@ static inline void do_integrate(casimir_t* self, casimir_integrals_t* cint,
     integrands_drude_t total;
 
     const float80 ln_lambda = casimir_lnLambda(l1, l2, m, NULL); /* sign: -1 */
-    const float80 log_m   = log80(m); /* XXX m kann 0 sein, dann log_m = -inf */
+    const float80 log_m   = log80(m);
     const float80 log_tau = log80(tau);
 
     struct drude_error error;
@@ -443,26 +438,27 @@ static inline void do_integrate(casimir_t* self, casimir_integrals_t* cint,
     const float80 prefactor_B     = ln_lambda - tau - 3 * log_tau;
     const float80 prefactor_CD    = ln_lambda + log_m - tau - log_tau;
 
-    /* XXX
-     * Hmm, ist prefactor_A nicht schon log(prefactor_A) etc...?
-     * Also, warum log?
-     * Also ich sehe schon, dass du das in init_accuracy irgendwie brauchst,
-     * aber so wirklich klar ist mir das nicht. Vor allem, wenn du das nur in
-     * init_accuracy brauchst, warum rechnest du es dann nicht in init_accuracy
-     * aus?
-     */
-    const float80 ln_prefactor_A  = log80(fabs80(prefactor_A));
-    const float80 ln_prefactor_B  = log80(fabs80(prefactor_B));
-    const float80 ln_prefactor_CD = log80(fabs80(prefactor_CD));
-
     /*
      * First, we calculate the accuracy which is required
-     * If one of the prefactors is -infinity, we don't need to check if the integral
-     * converges. The result will be -infinity.
+     * If one of the prefactors is -infinity (e.g. when m = 0), we don't
+     * need to check if the integral converges. The result will be -infinity.
      */
-    init_accuracy(&error, ln_prefactor_A, ln_prefactor_B, ln_prefactor_CD);
-    
+    init_accuracy(&error, prefactor_A, prefactor_B, prefactor_CD);
+
+    /*
+     * First, the plm_cache needs to be initialized. When we change l1,l2,m or nT
+     * we have to call the free function.
+     */
+#ifdef USE_PLM_CACHE
+    plm_cache_init(&context, n);
+#endif
+
     integrate_romberg(&context, &total, &error);
+
+#ifdef USE_PLM_CACHE
+    plm_cache_free(&context);
+#endif
+
 
     // ---------------------------------------
 
@@ -671,7 +667,7 @@ static inline void integrate_romberg(struct integ_context* context,
                                         integrands_drude_t* result,
                                         struct drude_error* error)
 {
-    const size_t max_order = 40;
+    const size_t max_order = 20;
     const size_t min_order = 5;
     integrands_drude_t I1[max_order], I2[max_order];
     /*
@@ -720,18 +716,24 @@ static inline void integrate_romberg(struct integ_context* context,
            romberg_is_accurate(&I_last[n-1], &I_current[n-2], error))
         {
             n++;
-            break;
+            
+            /*
+             * Integral converged. Return the result of the last iteration.
+             */
+            *result = I_last[n - 2];
+            return;
         }
     }
-    *result = I_last[n - 2];
+    /*
+     * We did "max_order" iterations and the integral is still not accurate
+     * enough.
+     */
+    WARN(1, "Drude-Integration: Failed to achieve accuracy of %g.", ACCURACY);
 
-    /* XXX
-     Was pasiert hier?
-     Hier ist das Ergebnis der Intergration nicht genau genug, d.h. wir sollten
-     zumindest eine Warnung ausgeben?
-     Sowas wie:
-     WARN(1, "Failed to achieve accuracy of %g.", ACCURACY);
-    */
+    /*
+     * Leave this function and the return the result of the last iteration.
+     */
+    *result = I_last[n - 2];
 }
 
 #endif
@@ -761,6 +763,22 @@ void casimir_integrate_drude(casimir_t *self, casimir_integrals_t *cint, int l1,
 #else
     do_integrate(self, cint, l1, l2, m, n, T);
 #endif
+}
+
+
+void casimir_integrate_drude_init(casimir_t* self)
+{
+#if (defined INTEGRATION_ROMBERG && defined USE_PLM_CACHE)
+    plm_create_cache(self);
+#endif
+}
+
+
+void casimir_integrate_drude_free()
+{
+#if (defined INTEGRATION_ROMBERG && defined USE_PLM_CACHE)
+    plm_destroy_cache();
+#endif    
 }
 
 
