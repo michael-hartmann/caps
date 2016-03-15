@@ -63,18 +63,6 @@ TARGET = "../bin/"
 OPT = -march=native -O3
 OPT +=-flto
 
-# Disable additional checks and assertions.
-#
-# This option will cause the program to perform additional checks. If an error
-# occures, a error message will be printed and the program will be terminated.
-# Without this option, the program will proceed calculating and return
-# incorrect results, most likely NANs.
-#
-# Disabling this option will slightly increase performance.
-#
-# If you don't know what to say here, comment out the line.
-# CFLAGS += -DNCHECKS
-
 
 %.o : %.c
 	$(CC) $(CFLAGS) $(OPT) -o $@ -c $<

@@ -63,12 +63,12 @@ MATRIX_TYPEDEF(matrix_float128, float128);
 #define MATRIX_FREE(FUNCTION_PREFIX, MATRIX_TYPE) \
     void FUNCTION_PREFIX ## _free(MATRIX_TYPE *m) \
     { \
-        if(m->M != NULL) \
+        if(m != NULL) \
         { \
             xfree(m->M); \
             m->M = NULL; \
+            xfree(m); \
         } \
-        xfree(m); \
     }
 
 #define MATRIX_FREE_HEADER(FUNCTION_PREFIX, MATRIX_TYPE) void FUNCTION_PREFIX ## _free(MATRIX_TYPE *m)
