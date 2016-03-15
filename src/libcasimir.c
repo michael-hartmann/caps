@@ -1351,10 +1351,14 @@ void casimir_mie_cache_free(casimir_t *self)
     {
         if(entries[n] != NULL)
         {
-            xfree(entries[n]->ln_al);
-            xfree(entries[n]->ln_bl);
-            xfree(entries[n]->sign_bl);
-            xfree(entries[n]->sign_al);
+            if(entries[n]->ln_al != NULL)
+                xfree(entries[n]->ln_al);
+            if(entries[n]->sign_al != NULL)
+                xfree(entries[n]->sign_al);
+            if(entries[n]->ln_bl != NULL)
+                xfree(entries[n]->ln_bl);
+            if(entries[n]->sign_bl != NULL)
+                xfree(entries[n]->sign_bl);
 
             xfree(entries[n]);
         }
