@@ -178,9 +178,6 @@ int casimir_set_gamma_plane(casimir_t *self, double gamma_);
 double casimir_get_gamma_sphere(casimir_t *self);
 double casimir_get_gamma_plane(casimir_t *self);
 
-int casimir_get_balance_pnrom(casimir_t *self);
-int casimir_set_balance_pnorm(casimir_t *self, int pnorm);
-
 void casimir_set_integration(casimir_t *self, int integration);
 int casimir_get_integration(casimir_t *self);
 
