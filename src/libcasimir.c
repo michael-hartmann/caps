@@ -433,6 +433,9 @@ double casimir_T_scaled_to_SI(double T_scaled, double ScriptL)
  * This function will initialize a Casimir object with sphere and plane perfect
  * reflectors.
  *
+ * By default, the value of lmax is chosen by:
+ * lmax = ceil(max(CASIMIR_MINIMUM_LMAX, CASIMIR_FACTOR_LMAX/LbyR))
+ *
  * Restrictions: \f$T > 0\f$, \f$0 < R/\mathcal{L} < 1\f$
  *
  * This function is not thread-safe.
@@ -448,12 +451,12 @@ int casimir_init(casimir_t *self, double LbyR, double T)
 {
     TERMINATE(LDBL_MANT_DIG < 64, "No support for 80-bit extended precision, long double has %d bits.", LDBL_MANT_DIG);
 
-    if(LbyR < 0)
+    if(LbyR <= 0)
         return -1;
-    if(T < 0)
+    if(T <= 0)
         return -2;
 
-    self->lmax = (int)ceil(CASIMIR_FACTOR_LMAX/LbyR);
+    self->lmax = ceil(MAX(CASIMIR_MINIMUM_LMAX, CASIMIR_FACTOR_LMAX/LbyR));
 
     self->T               = T;
     self->RbyScriptL      = 1./(1.+LbyR);
