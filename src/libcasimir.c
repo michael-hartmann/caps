@@ -125,7 +125,7 @@ void casimir_info(casimir_t *self, FILE *stream, const char *prefix)
 int casimir_vfprintf(casimir_t *self, FILE *stream, const char *format, va_list args)
 {
     pthread_mutex_lock(&self->mutex);
-    int ret = vfprintf(stderr, format, args);
+    int ret = vfprintf(stream, format, args);
     pthread_mutex_unlock(&self->mutex);
 
     return ret;
