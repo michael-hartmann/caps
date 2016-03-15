@@ -14,6 +14,7 @@
 /* default values */
 #define CASIMIR_PRECISION 1e-12      /**< default precision */
 #define CASIMIR_IDLE 1000            /**< idle time in µs */
+#define CASIMIR_MINIMUM_LMAX 20      /**< minimum value for lmax */
 #define CASIMIR_FACTOR_LMAX 5        /**< by default: lmax=ceil(5/LbyR) */
 #define CASIMIR_TRACE_THRESHOLD 1e-8 /**< threshold to use trace */
 
