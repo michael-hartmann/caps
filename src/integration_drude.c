@@ -848,7 +848,8 @@ void integrate_gauss_laguerre(casimir_t *self, casimir_integrals_t *cint, int l1
     const float80 ln_Lambda = casimir_lnLambda(l1, l2, m, NULL); /* sign: -1 */
     float80 prefactor;
     float80 *xk, *ln_wk;
-    const int N = gausslaguerre_nodes_weights(self->integration, &xk, &ln_wk);
+    /* XXX use order 50 at the moment XXX */
+    const int N = gausslaguerre_nodes_weights(50, &xk, &ln_wk);
 
     /* allocate space for signs_A, signs_B, signs_C, signs_D */
     sign_t *signs_ABCD = xmalloc(4*N*sizeof(sign_t));
