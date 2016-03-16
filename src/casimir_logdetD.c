@@ -12,46 +12,45 @@
 /* print usage */
 static void usage(FILE *stream)
 {
-    char info[256];
-
+    char info[1024] = { 0 };
     casimir_compile_info(info, sizeof(info));
 
-    fprintf(stream, "Usage: casimir_logdetD [OPTIONS]\n\
-This program will calculate the free Casimir energy for the plane-sphere \n\
-geometry for given n,m,T,L/R. \n\
-\n\
-Mandatory options:\n\
-    -x  L/R\n\
-    -nT imaginary frequency ξ\n\
-    -m  value of m\n\
-\n\
-Further options:\n\
-    -l, --lscale\n\
-        Specify parameter lscale. The vector space has to be truncated at some\n\
-        value lmax. This program will use lmax=(R/L*lscale) (default: 5)\n\
-\n\
-    -L\n\
-        Set lmax to given value. When -L is used, -l will be ignored\n\
-\n\
-    --buffering\n\
-        Enable buffering. By default buffering for stderr and stdout is\n\
-        disabled.\n\
-\n\
-    --trace THRESHOLD\n\
-        Try to calculate log det D(xi) using -Tr D(xi). If |trace|>THRESHOLD,\n\
-        fall back to log det D(xi).\n\
-\n\
-    --detalg DETALG\n\
-        Use DETALG to calculate determinant.\n\
-\n\
-    -d, --debug\n\
-        Enable debugging information.\n\
-\n\
-    -h,--help\n\
-        Show this help\n\
-\n\
-\n\
-%s\n", info);
+    fprintf(stream,
+"Usage: casimir_logdetD [OPTIONS]\n"
+"This program will calculate the free Casimir energy for the plane-sphere\n"
+"geometry for given n,m,T,L/R.\n"
+"\n"
+"Mandatory options:\n"
+"    -x  L/R\n"
+"    -nT imaginary frequency ξ\n"
+"    -m  value of m\n"
+"\n"
+"Further options:\n"
+"    -l, --lscale\n"
+"        Specify parameter lscale. The vector space has to be truncated at some\n"
+"        value lmax. This program will use lmax=(R/L*lscale) (default: 5)\n"
+"\n"
+"    -L\n"
+"        Set lmax to given value. When -L is used, -l will be ignored\n"
+"\n"
+"    --buffering\n"
+"        Enable buffering. By default buffering for stderr and stdout is\n"
+"        disabled.\n"
+"\n"
+"    --trace THRESHOLD\n"
+"        Try to calculate log det D(xi) using -Tr D(xi). If |trace|>THRESHOLD,\n"
+"        fall back to log det D(xi).\n"
+"\n"
+"    --detalg DETALG\n"
+"        Use DETALG to calculate determinant.\n"
+"\n"
+"    -d, --debug\n"
+"        Enable debugging information.\n"
+"\n"
+"    -h,--help\n"
+"        Show this help\n"
+"\n"
+"%s\n", info);
 }
 
 int main(int argc, char *argv[])
@@ -138,7 +137,7 @@ int main(int argc, char *argv[])
         }
     }
 
-    // disable buffering
+    /* disable buffering */
     if(!buffering_flag)
     {
         fflush(stdin);
