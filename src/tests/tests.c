@@ -26,16 +26,15 @@ int main(int argc, char *argv[])
     test_mie_drude();
 
     test_fresnel();
-    test_integration_drude();
     test_Plm();
     test_doublefact();
     test_epsilon();
     test_besselI();
     test_besselK();
     test_mie();
-    //test_determinant();
 
     test_integration_perf();
+    test_integration_drude();
 
     test_logdet();
 
