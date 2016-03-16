@@ -56,6 +56,7 @@ static void usage(FILE *stream)
 int main(int argc, char *argv[])
 {
     char detalg[64] = { 0 };
+    double gamma_ = 0, omegap = INFINITY;
     double nT = -1;
     double lfac = 5;
     double LbyR = -1;
@@ -82,13 +83,15 @@ int main(int argc, char *argv[])
             { "detalg",    required_argument, 0, 'd' },
             { "lscale",    required_argument, 0, 'l' },
             { "trace",     required_argument, 0, 't' },
+            { "omegap",    required_argument, 0, 'w' },
+            { "gamma",     required_argument, 0, 'g' },
             { 0, 0, 0, 0 }
         };
 
         /* getopt_long stores the option index here. */
         int option_index = 0;
       
-        int c = getopt_long (argc, argv, "x:T:m:s:a:l:L:t:qhD", long_options, &option_index);
+        int c = getopt_long (argc, argv, "x:T:m:s:a:l:w:g:L:t:qhD", long_options, &option_index);
       
         /* Detect the end of the options. */
         if(c == -1)
@@ -105,6 +108,12 @@ int main(int argc, char *argv[])
                 break;
             case 'T':
                 nT = atof(optarg);
+                break;
+            case 'w':
+                omegap = atof(optarg);
+                break;
+            case 'g':
+                gamma_ = atof(optarg);
                 break;
             case 'L':
                 lmax = atoi(optarg);
@@ -145,37 +154,47 @@ int main(int argc, char *argv[])
         setvbuf(stderr, NULL, _IONBF, 0);
     }
 
-    if(lfac <= 0)
-    {
-        fprintf(stderr, "--lfac must be positive\n\n");
-        usage(stderr);
-        exit(1);
-    }
-    if(LbyR <= 0)
-    {
-        fprintf(stderr, "-x must be positive\n\n");
-        usage(stderr);
-        exit(1);
-    }
-    if(nT <= 0)
-    {
-        fprintf(stderr, "positive value for --nT required\n\n");
-        usage(stderr);
-        exit(1);
-    }
-    if(m < 0)
-    {
-        fprintf(stderr, "m >= 0\n\n");
-        usage(stderr);
-        exit(1);
-    }
+    /* check parameters */
+    do {
+        if(lfac <= 0)
+            fprintf(stderr, "--lfac must be positive.");
+        else if(LbyR <= 0)
+            fprintf(stderr, "-x must be positive.");
+        else if(nT <= 0)
+            fprintf(stderr, "--nT must be positive value.");
+        else if(m < 0)
+            fprintf(stderr, "m >= 0\n\n");
+        else if(omegap < 0)
+            fprintf(stderr, "--omegap, -w must be non negative.");
+        else if(gamma_ < 0)
+            fprintf(stderr, "--gamma, -g must be non negative.");
+        else
+            /* everything ok */
+            break;
 
-    if(lmax <= 0)
-        lmax = MAX((int)ceil(lfac/LbyR), 5);
-
+        /* error occured: print usage and exit */
+        fprintf(stderr, "\n\n");
+        usage(stderr);
+        exit(1);
+    } while(0);
 
     casimir_init(&casimir, LbyR, nT);
-    casimir_set_lmax(&casimir, lmax);
+
+    if(lmax)
+        casimir_set_lmax(&casimir, lmax);
+
+
+    if(gamma_ > 0)
+    {
+        casimir_set_gamma_sphere(&casimir, gamma_);
+        casimir_set_gamma_plane (&casimir, gamma_);
+    }
+    if(isfinite(omegap))
+    {
+        casimir_set_omegap_sphere(&casimir, omegap);
+        casimir_set_omegap_plane (&casimir, omegap);
+    }
+
     casimir_set_debug(&casimir, debug);
 
     if(strlen(detalg))
@@ -191,8 +210,8 @@ int main(int argc, char *argv[])
 
     casimir_free(&casimir);
 
-    printf("# LbyR,nT,m,logdetD,lmax,time\n");
-    printf("%g, %g, %d, %.15g, %d, %g\n", LbyR, nT, m, logdet, casimir.lmax, now()-start_time);
+    printf("# LbyR, nT, omegap, gamma, m, logdetD, lmax, time\n");
+    printf("%g, %g, %g, %g, %d, %.15g, %d, %g\n", LbyR, nT, omegap, gamma_, m, logdet, casimir.lmax, now()-start_time);
 
     return 0;
 }
