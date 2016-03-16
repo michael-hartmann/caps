@@ -34,14 +34,10 @@ static void usage(FILE *stream)
 "       Set value of relaxation frequency gamma of Drude metals in units of\n"
 "       c/(L+R). If omitted, gamma = 0.\n"
 "\n"
-"    -l, --lscale\n"
-"        Specify parameter lscale. The vector space has to be truncated at some\n"
-"        value lmax.\n"
-"\n"
 "    -L\n"
 "        Set lmax to given value. When -L is used, -l will be ignored.\n"
 "\n"
-"    --buffering\n"
+"    -b, --buffering\n"
 "        Enable buffering. By default buffering for stderr and stdout is\n"
 "        disabled.\n"
 "\n"
@@ -52,7 +48,7 @@ static void usage(FILE *stream)
 "    --detalg DETALG\n"
 "        Use DETALG to calculate determinant.\n"
 "\n"
-"    -d, --debug\n"
+"    -D, --debug\n"
 "        Enable debugging information.\n"
 "\n"
 "    -h,--help\n"
@@ -63,54 +59,54 @@ static void usage(FILE *stream)
 
 int main(int argc, char *argv[])
 {
-    char detalg[64] = { 0 };
-    double gamma_ = 0, omegap = INFINITY;
-    double nT = -1;
-    double lfac = 5;
-    double LbyR = -1;
+    double start_time = now();
+
+    /* geometry, Matsubara frequency */
+    double LbyR = -1, nT = -1;
     int m = -1;
+
+    /* material properties, be default: perfect reflectors */
+    double gamma_ = 0, omegap = INFINITY;
+
+    /* numerical parameters */
     int lmax = 0;
-    int buffering_flag = 0;
     double trace_threshold = -1;
-    casimir_t casimir;
-    double logdet, start_time = now();
-    bool debug = false;
+    char detalg[64] = { 0 };
 
-    printf("# %s", argv[0]);
-    for(int i = 1; i < argc; i++)
-        printf(", %s", argv[i]);
-    printf("\n");
+    /* flags */
+    bool debug = false, buffering = false;
 
-    while (1)
+    while(1)
     {
         struct option long_options[] = {
-            { "buffering", no_argument,       &buffering_flag, 1 },
             { "help",      no_argument,       0, 'h' },
+            { "buffering", no_argument,       0, 'b' },
             { "debug",     no_argument,       0, 'D' },
+
             { "nT",        required_argument, 0, 'T' },
             { "detalg",    required_argument, 0, 'd' },
             { "lscale",    required_argument, 0, 'l' },
             { "trace",     required_argument, 0, 't' },
             { "omegap",    required_argument, 0, 'w' },
             { "gamma",     required_argument, 0, 'g' },
+
             { 0, 0, 0, 0 }
         };
 
         /* getopt_long stores the option index here. */
         int option_index = 0;
-      
-        int c = getopt_long (argc, argv, "x:T:m:s:a:l:w:g:L:t:qhD", long_options, &option_index);
-      
+        int c = getopt_long (argc, argv, "x:T:m:s:a:l:w:g:L:t:bqhDv", long_options, &option_index);
+
         /* Detect the end of the options. */
         if(c == -1)
             break;
-      
+
         switch(c)
         {
             case 0:
-              /* If this option set a flag, do nothing else now. */
-              if(long_options[option_index].flag != 0)
-                break;
+                /* If this option set a flag, do nothing else now. */
+                if(long_options[option_index].flag != 0)
+                    break;
             case 'x':
                 LbyR = atof(optarg);
                 break;
@@ -125,8 +121,6 @@ int main(int argc, char *argv[])
                 break;
             case 'L':
                 lmax = atoi(optarg);
-            case 'l':
-                lfac = atof(optarg);
                 break;
             case 'm':
                 m = atoi(optarg);
@@ -137,24 +131,27 @@ int main(int argc, char *argv[])
             case 'd':
                 strncpy(detalg, optarg, sizeof(detalg)/sizeof(char)-1);
                 break;
+            case 'b':
+                buffering = true;
+                break;
             case 'D':
                 debug = true;
                 break;
             case 'h':
                 usage(stdout);
                 exit(0);
-      
+
             case '?':
                 /* getopt_long already printed an error message. */
                 break;
-      
+
             default:
                 abort();
         }
     }
 
     /* disable buffering */
-    if(!buffering_flag)
+    if(!buffering)
     {
         fflush(stdin);
         fflush(stderr);
@@ -164,9 +161,7 @@ int main(int argc, char *argv[])
 
     /* check parameters */
     do {
-        if(lfac <= 0)
-            fprintf(stderr, "--lfac must be positive.");
-        else if(LbyR <= 0)
+        if(LbyR <= 0)
             fprintf(stderr, "-x must be positive.");
         else if(nT <= 0)
             fprintf(stderr, "--nT must be positive value.");
@@ -186,11 +181,17 @@ int main(int argc, char *argv[])
         exit(1);
     } while(0);
 
+    /* print command line options to stdout */
+    printf("# %s", argv[0]);
+    for(int i = 1; i < argc; i++)
+        printf(", %s", argv[i]);
+    printf("\n");
+
+    casimir_t casimir;
     casimir_init(&casimir, LbyR, nT);
 
     if(lmax)
         casimir_set_lmax(&casimir, lmax);
-
 
     if(gamma_ > 0)
     {
@@ -214,12 +215,12 @@ int main(int argc, char *argv[])
     casimir_info(&casimir, stdout, "# ");
     printf("#\n");
 
-    logdet = casimir_logdetD(&casimir, 1, m);
-
-    casimir_free(&casimir);
+    double logdet = casimir_logdetD(&casimir, 1, m);
 
     printf("# LbyR, nT, omegap, gamma, m, logdetD, lmax, time\n");
     printf("%g, %g, %g, %g, %d, %.15g, %d, %g\n", LbyR, nT, omegap, gamma_, m, logdet, casimir.lmax, now()-start_time);
+
+    casimir_free(&casimir);
 
     return 0;
 }
