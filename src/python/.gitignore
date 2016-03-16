@@ -1,0 +1,3 @@
+build/
+libcasimir.c
+*.so
