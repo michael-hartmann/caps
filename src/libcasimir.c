@@ -1727,10 +1727,14 @@ double casimir_logdetD(casimir_t *self, int n, int m)
     }
 
     if(isinf(self->omegap_plane))
-    {
         /* perfect reflector */
         casimir_integrate_perf_init(&int_perf, nT, m, self->lmax);
+    else
+        /* drude mirror */
+        casimir_integrate_drude_init(self);
 
+    if(isinf(self->omegap_plane))
+    {
         /* XXX make this also work for Drude metals XXX */
         const double trace = casimir_trM(self, n, m, &int_perf);
         if(trace < self->trace_threshold)
@@ -1743,9 +1747,6 @@ double casimir_logdetD(casimir_t *self, int n, int m)
             return -trace;
         }
     }
-    else
-        /* drude mirror */
-        casimir_integrate_drude_init(self);
 
     matrix_float80 *M     = matrix_float80_alloc(2*dim);
     matrix_sign_t *M_sign = matrix_sign_alloc   (2*dim);
