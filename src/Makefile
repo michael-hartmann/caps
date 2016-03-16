@@ -16,7 +16,8 @@ OBJS = \
     libcasimir.o \
     matrix.o \
     sfunc.o \
-    utils.o
+    utils.o \
+    plm_cache.o
 
 TESTS = \
     tests/test_bessels.o \

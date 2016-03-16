@@ -694,7 +694,7 @@ double matrix_logdetIdpM(casimir_t *casimir, matrix_float80 *M, matrix_sign_t *M
         t = now();
         const double logdet = matrix_float80_logdet_qr(M);
         WARN(logdet > mercator2 && fabs80(logdet-mercator2) > 1e-8, "value of logdet > truncated Mercator series: logdet=%.14g, Mercator (2): %.14Lg", logdet, mercator2);
-        TERMINATE(logdet > 0, "logdet > 0: %g", logdet);
+        WARN(logdet > 0, "logdet > 0: %g", logdet);
 
         sec2human(now()-t, &h, &m, &s);
         casimir_debug(casimir, "# QR-decomposition: %02d:%02d:%02d\n", h,m,s);

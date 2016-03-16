@@ -1354,10 +1354,14 @@ void casimir_mie_cache_free(casimir_t *self)
     {
         if(entries[n] != NULL)
         {
-            xfree(entries[n]->ln_al);
-            xfree(entries[n]->ln_bl);
-            xfree(entries[n]->sign_bl);
-            xfree(entries[n]->sign_al);
+            if(entries[n]->ln_al != NULL)
+                xfree(entries[n]->ln_al);
+            if(entries[n]->sign_al != NULL)
+                xfree(entries[n]->sign_al);
+            if(entries[n]->ln_bl != NULL)
+                xfree(entries[n]->ln_bl);
+            if(entries[n]->sign_bl != NULL)
+                xfree(entries[n]->sign_bl);
 
             xfree(entries[n]);
         }
@@ -1786,22 +1790,39 @@ double casimir_logdetD(casimir_t *self, int n, int m)
             return -trace;
         }
     }
+    else
+    {
+        casimir_integrate_drude_init(self);
+    }
 
     matrix_float80 *M     = matrix_float80_alloc(2*dim);
     matrix_sign_t *M_sign = matrix_sign_alloc   (2*dim);
 
     /* M_EE, -M_EM
        M_ME,  M_MM */
-    for(int l1 = min; l1 <= max; l1++)
+    /*
+     * Theese two for-loops are a little bit difficult to understand.
+     * They do the same as
+     *     for(int l1 = min; l1 <= max; ++l1)
+     *         for(int l2 = min; l2 <= l1; ++l2).
+     * But they change the order of the evaluation.
+     * This doesn't change the result, since the order of evaluation doesn't matter. But it is faster
+     * for Drude, because we can reuse most of the legendre polynomials (see plm_cache.c).
+     * This will successively evaluate the matrix-elements with the same "l1 + l2".
+     */
+    for(int l1_plus_l2 = 2 * min; l1_plus_l2 <= 2 * max; ++l1_plus_l2)
     {
-        const int i = l1-min;
-        double ln_al1, ln_bl1;
-        sign_t sign_al1, sign_bl1;
-
-        casimir_mie_cache_get(self, l1, n, &ln_al1, &sign_al1, &ln_bl1, &sign_bl1);
-
-        for(int l2 = min; l2 <= l1; l2++)
+        for(int l2 = min; l2 <= l1_plus_l2 / 2; ++l2)
         {
+            const int l1 = l1_plus_l2 - l2;
+            if(l1 > max) continue;
+
+            const int i = l1-min;
+            double ln_al1, ln_bl1;
+            sign_t sign_al1, sign_bl1;
+
+            casimir_mie_cache_get(self, l1, n, &ln_al1, &sign_al1, &ln_bl1, &sign_bl1);
+
             const int j = l2-min;
             casimir_integrals_t cint;
             double ln_al2, ln_bl2;
@@ -1898,17 +1919,19 @@ double casimir_logdetD(casimir_t *self, int n, int m)
 
     if(self->integration < 0)
         casimir_integrate_perf_free(&int_perf);
+    else
+        casimir_integrate_drude_free();
 
-    #if 0
-        /* Dump matrix */
-        int ret;
+#if 0
+    /* Dump matrix */
+    int ret;
 
-        ret = matrix_float80_save(M, "M.out");
-        WARN(!ret, "Couldn't dump matrix M.out");
+    ret = matrix_float80_save(M, "M.out");
+    WARN(!ret, "Couldn't dump matrix M.out");
 
-        ret = matrix_sign_save(M_sign, "M_sign.out");
-        WARN(!ret, "Couldn't dump matrix M_sign.out");
-    #endif
+    ret = matrix_sign_save(M_sign, "M_sign.out");
+    WARN(!ret, "Couldn't dump matrix M_sign.out");
+#endif
 
     /* We have calculated -M here. We now call matrix_logdetIdpM that will
      * calculate log(det(1-M)) = log(det(D)) */
