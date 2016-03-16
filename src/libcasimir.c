@@ -1748,8 +1748,9 @@ double casimir_trM(casimir_t *self, int n, int m, void *obj)
  */
 double casimir_logdetD(casimir_t *self, int n, int m)
 {
+    const double start = now();
     const double nT = n*self->T;
-    double trace, logdet = 0;
+    double logdet = 0;
     integration_perf_t int_perf;
 
     const int min = MAX(m,1);
@@ -1775,19 +1776,19 @@ double casimir_logdetD(casimir_t *self, int n, int m)
         casimir_integrate_perf_init(&int_perf, nT, m, self->lmax);
 
         /* XXX make this also work for Drude metals XXX */
-        trace = casimir_trM(self, n, m, &int_perf);
+        const double trace = casimir_trM(self, n, m, &int_perf);
         if(trace < self->trace_threshold)
         {
             if(self->integration < 0)
                 casimir_integrate_perf_free(&int_perf);
 
+            casimir_debug(self, "# calculating matrix elements (trace approximation): %gs\n", now()-start);
+
             return -trace;
         }
     }
     else
-    {
         casimir_integrate_drude_init(self);
-    }
 
     matrix_float80 *M     = matrix_float80_alloc(2*dim);
     matrix_sign_t *M_sign = matrix_sign_alloc   (2*dim);
@@ -1915,6 +1916,8 @@ double casimir_logdetD(casimir_t *self, int n, int m)
         casimir_integrate_perf_free(&int_perf);
     else
         casimir_integrate_drude_free();
+
+    casimir_debug(self, "# calculating matrix elements: %gs\n", now()-start);
 
 #if 0
     /* Dump matrix */
