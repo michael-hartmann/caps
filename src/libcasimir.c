@@ -92,11 +92,6 @@ void casimir_info(casimir_t *self, FILE *stream, const char *prefix)
     fprintf(stream, "%somegap_plane  = %g\n", prefix, self->omegap_plane);
     fprintf(stream, "%sgamma_sphere  = %g\n", prefix, self->gamma_sphere);
     fprintf(stream, "%sgamma_plane   = %g\n", prefix, self->gamma_plane);
-    fprintf(stream, "%sintegration   = ", prefix);
-    if(self->integration <= 0)
-        fprintf(stream, "analytic (perfect mirrors)\n");
-    else
-        fprintf(stream, "%d\n", self->integration);
 
     fprintf(stream, "%slmax            = %d\n", prefix, self->lmax);
     fprintf(stream, "%scores           = %d\n", prefix, self->cores);
@@ -315,9 +310,7 @@ double casimir_lnepsilon(double xi, double omegap, double gamma_)
  */
 void casimir_rp(casimir_t *self, float80 nT, float80 k, float80 *r_TE, float80 *r_TM)
 {
-    const float80 epsilon = casimir_epsilon(nT, self->omegap_plane, self->gamma_plane);
-
-    if(isinf(epsilon))
+    if(isinf(self->omegap_plane))
     {
         /* perfect reflectors */
         *r_TM = 1.0;
@@ -326,6 +319,7 @@ void casimir_rp(casimir_t *self, float80 nT, float80 k, float80 *r_TE, float80 *
     else
     {
         /* Drude metals */
+        const float80 epsilon = casimir_epsilon(nT, self->omegap_plane, self->gamma_plane);
         const float80 beta = sqrt80(1 + (epsilon-1)/(1 + pow_2(k/nT)));
 
         *r_TE = (1-beta)/(1+beta);
@@ -470,7 +464,6 @@ int casimir_init(casimir_t *self, double LbyR, double T)
     casimir_mie_cache_init(self);
 
     /* perfect reflectors */
-    self->integration   = -1; /* perfect reflectors */
     self->omegap_sphere = INFINITY;
     self->gamma_sphere  = 0;
     self->omegap_plane  = INFINITY;
@@ -550,40 +543,6 @@ double casimir_get_birthtime(casimir_t *self)
     return self->birthtime;
 }
 
-/**
- * @brief Set order of integration
- *
- * Set order/type of integration.
- *
- * This function is not thread-safe.
- *
- * @param [in,out] self Casimir object
- * @param [in] integration: 0 perfect reflectors, >0: order of Gauss-Laguerre integration
- */
-void casimir_set_integration(casimir_t *self, int integration)
-{
-    if(integration <= 0)
-        self->integration = 0;
-    else
-        self->integration = integration;
-}
-
-/**
- * @brief Get order of integration
- *
- * Get order/type of integration.
- *
- * This function is not thread-safe.
- *
- * @param [in,out] self Casimir object
- * @retval 0 if analytic integration for perfect reflectors
- * @retval order of integration for Gauss-Laguerre
- */
-int casimir_get_integration(casimir_t *self)
-{
-    return self->integration;
-}
-
 
 /**
  * @brief Set \f$\omega_\mathrm{P}\f$ for the sphere
@@ -602,7 +561,6 @@ int casimir_set_omegap_sphere(casimir_t *self, double omegap)
     if(omegap > 0)
     {
         self->omegap_sphere = omegap;
-        self->integration   = 50;
         return 1;
     }
     return 0;
@@ -625,7 +583,6 @@ int casimir_set_omegap_plane(casimir_t *self, double omegap)
     if(omegap > 0)
     {
         self->omegap_plane = omegap;
-        self->integration  = 50;
         return 1;
     }
     return 0;
@@ -680,7 +637,6 @@ int casimir_set_gamma_sphere(casimir_t *self, double gamma_)
     if(gamma_ > 0)
     {
         self->gamma_sphere = gamma_;
-        self->integration = 50;
         return 1;
     }
     return 0;
@@ -703,7 +659,6 @@ int casimir_set_gamma_plane(casimir_t *self, double gamma_)
     if(gamma_ > 0)
     {
         self->gamma_plane = gamma_;
-        self->integration = 50;
         return 1;
     }
     return 0;
@@ -1708,10 +1663,10 @@ double casimir_trM(casimir_t *self, int n, int m, void *obj)
 
         casimir_mie_cache_get(self, l, n, &ln_al, &sign_al, &ln_bl, &sign_bl);
 
-        if(self->integration > 0)
-            casimir_integrate_drude(self, &cint, l, l, m, n, self->T);
-        else
+        if(isinf(self->omegap_plane))
             casimir_integrate_perf(int_perf, l, l, &cint);
+        else
+            casimir_integrate_drude(self, &cint, l, l, m, n, self->T);
 
         /* EE */
         sign_t signs_EE[] = { sign_al*cint.signA_TE, sign_al*cint.signB_TM };
@@ -1771,15 +1726,16 @@ double casimir_logdetD(casimir_t *self, int n, int m)
         return logdet_EE + logdet_MM;
     }
 
-    if(self->integration < 0)
+    if(isinf(self->omegap_plane))
     {
+        /* perfect reflector */
         casimir_integrate_perf_init(&int_perf, nT, m, self->lmax);
 
         /* XXX make this also work for Drude metals XXX */
         const double trace = casimir_trM(self, n, m, &int_perf);
         if(trace < self->trace_threshold)
         {
-            if(self->integration < 0)
+            if(isinf(self->omegap_plane))
                 casimir_integrate_perf_free(&int_perf);
 
             casimir_debug(self, "# calculating matrix elements (trace approximation): %gs\n", now()-start);
@@ -1788,6 +1744,7 @@ double casimir_logdetD(casimir_t *self, int n, int m)
         }
     }
     else
+        /* drude mirror */
         casimir_integrate_drude_init(self);
 
     matrix_float80 *M     = matrix_float80_alloc(2*dim);
@@ -1825,10 +1782,10 @@ double casimir_logdetD(casimir_t *self, int n, int m)
 
             casimir_mie_cache_get(self, l2, n, &ln_al2, &sign_al2, &ln_bl2, &sign_bl2);
 
-            if(self->integration > 0)
-                casimir_integrate_drude(self, &cint, l1, l2, m, n, self->T);
-            else
+            if(isinf(self->omegap_plane))
                 casimir_integrate_perf(&int_perf, l1, l2, &cint);
+            else
+                casimir_integrate_drude(self, &cint, l1, l2, m, n, self->T);
 
             /* EE */
             {
@@ -1912,7 +1869,7 @@ double casimir_logdetD(casimir_t *self, int n, int m)
         }
     }
 
-    if(self->integration < 0)
+    if(isinf(self->omegap_plane))
         casimir_integrate_perf_free(&int_perf);
     else
         casimir_integrate_drude_free();
@@ -1935,6 +1892,7 @@ double casimir_logdetD(casimir_t *self, int n, int m)
 
     if(m == 0)
     {
+        /* The memory footprint can be improved here */
         matrix_float80 *EE = matrix_float80_alloc(dim);
         matrix_float80 *MM = matrix_float80_alloc(dim);
 
