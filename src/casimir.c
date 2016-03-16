@@ -157,7 +157,6 @@ int main(int argc, char *argv[])
     /* parse command line options */
     while (1)
     {
-        int c;
         struct option long_options[] =
         {
             { "quiet",     no_argument,       &quiet_flag,     1 },
@@ -175,13 +174,13 @@ int main(int argc, char *argv[])
 
         /* getopt_long stores the option index here. */
         int option_index = 0;
-      
-        c = getopt_long (argc, argv, "x:T:c:s:a:l:L:p:g:w:Xqh", long_options, &option_index);
-      
+
+        int c = getopt_long (argc, argv, "x:T:c:s:a:l:L:p:g:w:Xqh", long_options, &option_index);
+
         /* Detect the end of the options. */
         if(c == -1)
             break;
-      
+
         switch (c)
         {
             case 0:
@@ -218,11 +217,11 @@ int main(int argc, char *argv[])
             case 'h':
                 usage(stdout);
                 exit(0);
-      
+
             case '?':
                 /* getopt_long already printed an error message. */
                 break;
-      
+
             default:
                 abort();
         }
