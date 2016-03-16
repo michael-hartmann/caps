@@ -322,7 +322,6 @@ void matrix_precondition(matrix_float80 *A)
 void matrix_float80_balance(matrix_float80 *A)
 {
     const float80 beta = 2;
-    const double stop = 0.95;
     const int dim = A->dim;
     bool converged = false;
     float80 *M = A->M;
@@ -358,7 +357,7 @@ void matrix_float80_balance(matrix_float80 *A)
                 f /= beta;
             }
 
-            if((c+r) < stop*s)
+            if((c+r) < BALANCE_STOP*s)
             {
                 converged = false;
 
