@@ -539,45 +539,32 @@ double matrix_logdetIdpM(casimir_t *casimir, matrix_float80 *M, matrix_sign_t *M
     const size_t dim = M->dim;
     const bool debug   = casimir->debug;
     const char *detalg = casimir->detalg;
-    double t = now();
-    float80 minimum, maximum;
-    int h,m,s;
-
-    if(debug)
-    {
-        sec2human(t-casimir->birthtime, &h, &m, &s);
-        matrix_float80_minmax(M,&minimum,&maximum);
-        casimir_debug(casimir, "# calculating matrix elements: %02d:%02d:%02d (min=%Lg, max=%Lg)\n", h,m,s, minimum, maximum);
-    }
+    double logdetD;
 
     if(casimir->precondition)
     {
-        if(debug)
-            t = now();
-
+        const double start = now();
         matrix_precondition(M);
 
         if(debug)
         {
-            sec2human(now()-t, &h, &m, &s);
+            float80 minimum, maximum;
             matrix_float80_minmax(M,&minimum,&maximum);
-            casimir_debug(casimir, "# precondition: %02d:%02d:%02d (min=%Lg, max=%Lg)\n", h,m,s, minimum, maximum);
+            casimir_debug(casimir, "# precondition: %gs (min=%Lg, max=%Lg)\n", now()-start, minimum, maximum);
         }
     }
 
     /* balance matrix */
     if(casimir->balance)
     {
-        if(debug)
-            t = now();
-
+        const double start = now();
         matrix_float80_log_balance(M);
 
         if(debug)
         {
-            sec2human(now()-t, &h, &m, &s);
+            float80 minimum, maximum;
             matrix_float80_minmax(M,&minimum,&maximum);
-            casimir_debug(casimir, "# log balancing: %02d:%02d:%02d (min=%Lg, max=%Lg)\n", h,m,s, minimum, maximum);
+            casimir_debug(casimir, "# log balancing: %gs (min=%Lg, max=%Lg)\n", now()-start, minimum, maximum);
         }
     }
 
@@ -591,15 +578,7 @@ double matrix_logdetIdpM(casimir_t *casimir, matrix_float80 *M, matrix_sign_t *M
             M->M[i*dim+i] += 1;
 
         /* calculate log(det(M)) */
-        t = now();
-        const double logdet = matrix_float80_logdet_lu(M);
-        TERMINATE(logdet > 0, "logdet > 0: %g", logdet);
-
-        sec2human(now()-t, &h, &m, &s);
-        casimir_debug(casimir, "# QR-decomposition: %02d:%02d:%02d\n", h,m,s);
-        casimir_debug(casimir, "#\n");
-
-        return logdet;
+        logdetD = matrix_float80_logdet_lu(M);
     }
     #ifdef FLOAT128
     else if(strcasecmp(detalg, "QR_FLOAT128") == 0)
@@ -613,14 +592,9 @@ double matrix_logdetIdpM(casimir_t *casimir, matrix_float80 *M, matrix_sign_t *M
         for(size_t i = 0; i < dim; i++)
             M128->M[i*dim+i] += 1;
 
-        const double logdet = matrix_float128_logdet_qr(M128);
-        TERMINATE(logdet > 0, "logdet > 0: %g", logdet);
+        logdetD = matrix_float128_logdet_qr(M128);
 
         matrix_float128_free(M128);
-
-        sec2human(now()-t, &h, &m, &s);
-        casimir_debug(casimir, "# QR-decomposition: %02d:%02d:%02d\n", h,m,s);
-        casimir_debug(casimir, "#\n");
 
         return logdet;
     }
@@ -658,17 +632,9 @@ double matrix_logdetIdpM(casimir_t *casimir, matrix_float80 *M, matrix_sign_t *M
         /* balance */
         if(casimir->balance)
         {
-            if(debug)
-                t = now();
-
+            const double start = now();
             matrix_float80_balance(M);
-
-            if(debug)
-            {
-                sec2human(now()-t, &h, &m, &s);
-                matrix_float80_minmax(M,&minimum,&maximum);
-                casimir_debug(casimir, "# balancing: %02d:%02d:%02d (min=%Lg, max=%Lg)\n", h,m,s, minimum, maximum);
-            }
+            casimir_debug(casimir, "# balancing: %gs\n", now()-start);
         }
 
         /* add identity matrix */
@@ -678,27 +644,20 @@ double matrix_logdetIdpM(casimir_t *casimir, matrix_float80 *M, matrix_sign_t *M
         /* pivot */
         if(casimir->pivot)
         {
-            if(debug)
-                t = now();
-
+            const double start = now();
             matrix_float80_pivot(M);
-
-            if(debug)
-            {
-                sec2human(now()-t, &h, &m, &s);
-                casimir_debug(casimir, "# pivot: %02d:%02d:%02d\n", h,m,s);
-            }
+            casimir_debug(casimir, "# pivot: %gs\n", now()-start);
         }
 
-        t = now();
-        const double logdet = matrix_float80_logdet_qr(M);
-        WARN(logdet > mercator2 && fabs80(logdet-mercator2) > 1e-8, "value of logdet > truncated Mercator series: logdet=%.14g, Mercator (2): %.14Lg", logdet, mercator2);
-        WARN(logdet > 0, "logdet > 0: %g", logdet);
+        /* QR decomposition */
+        {
+            const double start = now();
+            logdetD = matrix_float80_logdet_qr(M);
+            casimir_debug(casimir, "# QR decomposition: %gs\n", now()-start);
+        }
 
-        sec2human(now()-t, &h, &m, &s);
-        casimir_debug(casimir, "# QR-decomposition: %02d:%02d:%02d\n", h,m,s);
-        casimir_debug(casimir, "#\n");
-
-        return logdet;
+        WARN(logdetD > mercator2 && fabs80(logdetD-mercator2) > 1e-8, "value of logdet > truncated Mercator series: logdet=%.14g, Mercator (2): %.14Lg", logdetD, mercator2);
     }
+
+    return logdetD;
 }
