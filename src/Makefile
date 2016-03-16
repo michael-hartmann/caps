@@ -28,7 +28,6 @@ TESTS = \
     tests/test_mie.o \
     tests/test_Plm.o \
     tests/test_Xi.o \
-    tests/test_determinant.o \
     tests/test_epsilon.o \
     tests/test_integration_drude.o \
     tests/test_Lambda.o \
