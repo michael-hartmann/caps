@@ -74,7 +74,6 @@ int main(int argc, char *argv[])
 
     while (1)
     {
-        int c;
         struct option long_options[] = {
             { "buffering", no_argument,       &buffering_flag, 1 },
             { "help",      no_argument,       0, 'h' },
@@ -89,17 +88,17 @@ int main(int argc, char *argv[])
         /* getopt_long stores the option index here. */
         int option_index = 0;
       
-        c = getopt_long (argc, argv, "x:T:m:s:a:l:L:t:qhD", long_options, &option_index);
+        int c = getopt_long (argc, argv, "x:T:m:s:a:l:L:t:qhD", long_options, &option_index);
       
         /* Detect the end of the options. */
         if(c == -1)
             break;
       
-        switch (c)
+        switch(c)
         {
             case 0:
               /* If this option set a flag, do nothing else now. */
-              if (long_options[option_index].flag != 0)
+              if(long_options[option_index].flag != 0)
                 break;
             case 'x':
                 LbyR = atof(optarg);
@@ -129,11 +128,11 @@ int main(int argc, char *argv[])
                 exit(0);
       
             case '?':
-              /* getopt_long already printed an error message. */
-              break;
+                /* getopt_long already printed an error message. */
+                break;
       
             default:
-              abort();
+                abort();
         }
     }
 
