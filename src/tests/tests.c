@@ -7,7 +7,6 @@
 #include "test_doublefact.h"
 #include "test_epsilon.h"
 #include "test_fresnel.h"
-#include "test_determinant.h"
 #include "test_integration_drude.h"
 #include "test_integration_perf.h"
 #include "test_Lambda.h"
