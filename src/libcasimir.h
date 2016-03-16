@@ -78,7 +78,6 @@ typedef struct
      * @name accuracy and numerical parameters
      */
      /*@{*/
-    int integration;        /**< 0: use perfect reflectors, >0: order of Gauss-Laguerre integration */
     int lmax;               /**< truncation value for vector space \f$\ell_\mathrm{max}\f$ */
     int cores;              /**< number of thread that should be used */
     double precision;       /**< precision \f$\epsilon_p\f$ */
@@ -178,9 +177,6 @@ int casimir_set_gamma_plane(casimir_t *self, double gamma_);
 
 double casimir_get_gamma_sphere(casimir_t *self);
 double casimir_get_gamma_plane(casimir_t *self);
-
-void casimir_set_integration(casimir_t *self, int integration);
-int casimir_get_integration(casimir_t *self);
 
 int casimir_get_lmax(casimir_t *self);
 int casimir_set_lmax(casimir_t *self, int lmax);
