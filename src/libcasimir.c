@@ -1292,13 +1292,10 @@ void casimir_mie_cache_clean(casimir_t *self)
  */
 void casimir_mie_cache_get(casimir_t *self, int l, int n, double *ln_a, sign_t *sign_a, double *ln_b, sign_t *sign_b)
 {
-    casimir_mie_cache_entry_t *entry;
-    int nmax;
-
     /* this mutex is important to prevent memory corruption */
     pthread_mutex_lock(&self->mie_cache->mutex);
 
-    nmax = self->mie_cache->nmax;
+    int nmax = self->mie_cache->nmax;
     if(n > nmax || self->mie_cache->entries[n] == NULL)
         casimir_mie_cache_alloc(self, n);
 
@@ -1314,7 +1311,7 @@ void casimir_mie_cache_get(casimir_t *self, int l, int n, double *ln_a, sign_t *
      * in memory and the pointer self->mie_cache->entries becomes invalid. This
      * will usually cause a segmentation fault.
      */
-    entry = self->mie_cache->entries[n];
+    casimir_mie_cache_entry_t *entry = self->mie_cache->entries[n];
 
     /* at this point it is finally is safe to release the mutex */
     pthread_mutex_unlock(&self->mie_cache->mutex);
