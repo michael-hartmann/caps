@@ -154,7 +154,7 @@ struct plm_cache
      * Matsubara term. Each thread should build up one object
      * of struct plm_cache
      */
-    int n;
+    double nT;
 
     /*
      * Values of the legendre polynomials of the last successful cache access.
@@ -330,7 +330,7 @@ static inline void shift_cache_values(struct plm_cache* cache)
  * to use the plm_cache later.
  * In order to cleanup the allocated space, it is neccessary to call "plm_destroy_cach".
  */
-void plm_create_cache(casimir_t* casimir)
+void plm_create_cache(integration_drude_t* int_drude)
 {
     // TODO: Make this work for multiple threads
     struct plm_cache* cache = glob_cache;
@@ -339,9 +339,8 @@ void plm_create_cache(casimir_t* casimir)
     // TODO: Make this work for multiple threads
     glob_cache = cache;
 
-    cache->n = 0;
-    cache->m = 0;
-    cache->casimir = casimir;
+    cache->m  = int_drude->m;
+    cache->nT = int_drude->nT;
     
 #ifdef CACHE_STATS
     cache->cache_hits   = 0;
@@ -362,7 +361,7 @@ void plm_create_cache(casimir_t* casimir)
  * Free the space of the plm_cache. If you call "plm_create_cache" you have to call
  * this function at the end to avoid "dangling pointers".
  */
-void plm_destroy_cache()
+void plm_destroy_cache(integration_drude_t* int_drude)
 {
     // TODO: Make this work for multiple threads
     struct plm_cache* cache = glob_cache;
@@ -381,7 +380,7 @@ void plm_destroy_cache()
  * context is the integration context (see integration_drude.h).
  * n is the index of the Matsubara sum.
  */
-void plm_cache_init(struct integ_context* context, int n)
+void plm_cache_init(struct integ_context* context, double nT)
 {
     struct plm_cache* cache;
 
@@ -397,11 +396,11 @@ void plm_cache_init(struct integ_context* context, int n)
     if(context->l2 == context->m
        || context->m != cache->m
        || context->l2 + context->l1 != cache->l1_plus_l2
-       || cache->n != n)
+       || cache->nT != nT)
     {
         cache->l1_plus_l2 = context->l1 + context->l2;
         cache->m          = context->m;
-        cache->n          = n;
+        cache->nT         = nT;
                 
         /*
          * The last values are useless. We need to invalidate them

@@ -37,12 +37,24 @@ struct integ_context {
 };
 
 
-void casimir_integrate_drude_init(casimir_t* self);
+// Forward Declaration
+struct plm_cache;
 
-void casimir_integrate_drude_free(void);
+typedef struct {
+    struct plm_cache*    plm_cache;
+
+    int m;
+    double nT;
+    int lmax;
+} integration_drude_t;
 
 
-void casimir_integrate_drude(casimir_t *self, casimir_integrals_t *cint, int l1, int l2, int m, int n, double T);
+void casimir_integrate_drude_init(integration_drude_t* int_drude, double nT, int m, int lmax);
+
+void casimir_integrate_drude_free(integration_drude_t* int_drude);
+
+
+void casimir_integrate_drude(casimir_t* self, integration_drude_t* int_drude, int l1, int l2, casimir_integrals_t* cint);
 
 //void integrands_drude(float80 x, integrands_drude_t *integrands, casimir_t *self, double nT, int l1, int l2, int m);
 
