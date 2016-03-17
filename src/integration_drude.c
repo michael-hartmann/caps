@@ -47,7 +47,7 @@
  * will caclulate the values of plm with the function "plm_PlmPlm" from sfunc.c.
  * ----- Experimental code ------
  */
-//#define USE_PLM_CACHE
+#define USE_PLM_CACHE
 
 
 
