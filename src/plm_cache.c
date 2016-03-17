@@ -230,10 +230,6 @@ static inline int pow_i(int base, int exp)
 }
 
 
-// TODO: Make this work for multiple threads
-static struct plm_cache* glob_cache;
-
-
 /*
  * Allocate the space for one object of the type "struct cache_values".
  * You need to call free_cache_values if you don't need it anymore.
@@ -332,13 +328,9 @@ static inline void shift_cache_values(struct plm_cache* cache)
  */
 void plm_create_cache(integration_drude_t* int_drude)
 {
-    // TODO: Make this work for multiple threads
-    struct plm_cache* cache = glob_cache;
+    int_drude->plm_cache = xmalloc(sizeof(struct plm_cache));
+    struct plm_cache* cache = int_drude->plm_cache;    
     
-    cache = xmalloc(sizeof(struct plm_cache));
-    // TODO: Make this work for multiple threads
-    glob_cache = cache;
-
     cache->m  = int_drude->m;
     cache->nT = int_drude->nT;
     
@@ -363,14 +355,13 @@ void plm_create_cache(integration_drude_t* int_drude)
  */
 void plm_destroy_cache(integration_drude_t* int_drude)
 {
-    // TODO: Make this work for multiple threads
-    struct plm_cache* cache = glob_cache;
+    struct plm_cache* cache = int_drude->plm_cache;
 
     free_cache_values(&cache->current);
     free_cache_values(&cache->last);
     free_cache_values(&cache->lastlast);
 
-    xfree(cache);
+    free(cache);
 }
 
 
@@ -378,14 +369,10 @@ void plm_destroy_cache(integration_drude_t* int_drude)
  * Call this function before one complete integration. After that you can access the
  * polynomials with plm_cache_PlmPlm. At the end call plm_cache_free.
  * context is the integration context (see integration_drude.h).
- * n is the index of the Matsubara sum.
  */
-void plm_cache_init(struct integ_context* context, double nT)
+void plm_cache_init(struct integ_context* context)
 {
-    struct plm_cache* cache;
-
-    // TODO: Make this work for multiple threads
-    cache = glob_cache;
+    struct plm_cache* cache = context->int_drude->plm_cache;
 
     /*
      * If l2 == m is true, we have the first integration in one cycle.
@@ -396,11 +383,11 @@ void plm_cache_init(struct integ_context* context, double nT)
     if(context->l2 == context->m
        || context->m != cache->m
        || context->l2 + context->l1 != cache->l1_plus_l2
-       || cache->nT != nT)
+       || cache->nT != context->nT)
     {
         cache->l1_plus_l2 = context->l1 + context->l2;
         cache->m          = context->m;
-        cache->nT         = nT;
+        cache->nT         = context->nT;
                 
         /*
          * The last values are useless. We need to invalidate them
@@ -426,14 +413,11 @@ void plm_cache_init(struct integ_context* context, double nT)
 /*
  * Call this function after one single integration. 
  */
-void plm_cache_free(struct integ_context* context)
+void plm_cache_free(integration_drude_t* int_drude)
 {
 #ifdef CACHE_STATS
-    struct plm_cache* cache;
+    const struct plm_cache* cache = int_drude->plm_cache;
     unsigned long ratio;
-
-    // TODO: Make this work for multiple threads
-    cache = glob_cache;
 
     if(cache->cache_hits + cache->cache_misses == 0)
         ratio = 0UL;
@@ -510,8 +494,7 @@ void plm_cache_PlmPlm(struct integ_context* context, float80 x, plm_combination_
     l2 = context->l2;
     m  = context->m;
     
-    // TODO: Make this work for multiple threads
-    cache = glob_cache;
+    cache = context->int_drude->plm_cache;
 
     /*
      * If we calculate a bigger iteration than "max_iteration" something has gone wrong.
