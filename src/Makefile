@@ -1,4 +1,4 @@
-.PHONY: clean doc casimir casimir_logdetD casimir_hiT casimir_Fn ld_drude casimir_T0 casimir_tests
+.PHONY: clean doc casimir casimir_logdetD casimir_hiT casimir_Fn ld_drude casimir_T0 casimir_tests dependencies
 all: casimir casimir_logdetD casimir_tests
 
 # Choose a compiler.
@@ -63,6 +63,9 @@ TARGET = "../bin/"
 OPT = -march=native -O3
 OPT +=-flto
 
+dependecies: $(OBJS:.o=.c)
+	$(CC) -MM $^ > ./.depend
+-include .depend
 
 %.o : %.c
 	$(CC) $(CFLAGS) $(OPT) -o $@ -c $<
@@ -70,8 +73,8 @@ OPT +=-flto
 casimir_T0.o:
 	$(MPICC) $(CFLAGS) $(OPT) -o $@ -c $<
 
-casimir: casimir.o $(OBJS)
-	$(CC) $(CFLAGS) $(OPT) $^ $(LDFLAGS) -o casimir
+casimir: casimir.o $(OBJS) dependencies
+	$(CC) $(CFLAGS) $(OPT) casimir.o $(OBJS) $(LDFLAGS) -o casimir
 
 casimir_logdetD: casimir_logdetD.o $(OBJS)
 	$(CC) $(CFLAGS) $(OPT) $^ $(LDFLAGS) -o casimir_logdetD
