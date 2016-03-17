@@ -29,14 +29,6 @@ typedef struct {
 } integrands_drude_t;
 
 
-struct integ_context {
-    casimir_t*     casimir;
-    double         nT;
-    int            l1, l2, m;
-    float80        c0, c_max;
-};
-
-
 // Forward Declaration
 struct plm_cache;
 
@@ -47,6 +39,16 @@ typedef struct {
     double nT;
     int lmax;
 } integration_drude_t;
+
+
+struct integ_context {
+    casimir_t*     casimir;
+    integration_drude_t* int_drude;
+    
+    double         nT;
+    int            l1, l2, m;
+    float80        c0, c_max;
+};
 
 
 void casimir_integrate_drude_init(integration_drude_t* int_drude, double nT, int m, int lmax);

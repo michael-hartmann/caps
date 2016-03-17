@@ -13,6 +13,6 @@ void plm_cache_PlmPlm(struct integ_context* context, float80 x, plm_combination_
                       unsigned int index, unsigned int iteration);
 
 
-void plm_cache_init(struct integ_context* context, double nT);
+void plm_cache_init(struct integ_context* context);
 
-void plm_cache_free(struct integ_context* context);
+void plm_cache_free(integration_drude_t* int_drude);

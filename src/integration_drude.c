@@ -422,13 +422,14 @@ static inline void do_integrate(casimir_t* self, casimir_integrals_t* cint,
         c_max = 1.0;
 
     struct integ_context context = {
-        .l1      = l1,
-        .l2      = l2,
-        .m       = m,
-        .nT      = nT,
-        .c0      = c0,
-        .c_max   = c_max,
-        .casimir = self
+        .l1        = l1,
+        .l2        = l2,
+        .m         = m,
+        .nT        = nT,
+        .c0        = c0,
+        .c_max     = c_max,
+        .casimir   = self,
+        .int_drude = int_drude
     };
 
 
@@ -451,13 +452,13 @@ static inline void do_integrate(casimir_t* self, casimir_integrals_t* cint,
      * we have to call the free function.
      */
 #ifdef USE_PLM_CACHE
-    plm_cache_init(&context, context.nT);
+    plm_cache_init(&context);
 #endif
 
     integrate_romberg(&context, &total, &error);
 
 #ifdef USE_PLM_CACHE
-    plm_cache_free(&context);
+    plm_cache_free(int_drude);
 #endif
 
 
