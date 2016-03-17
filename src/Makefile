@@ -63,7 +63,7 @@ TARGET = "../bin/"
 OPT = -march=native -O3
 OPT +=-flto
 
-dependecies: $(OBJS:.o=.c)
+dependencies: $(OBJS:.o=.c)
 	$(CC) -MM $^ > ./.depend
 -include .depend
 
