@@ -59,7 +59,7 @@ void usage(FILE *stream)
 "\n"
 "    -w, --omegap\n"
 "        Set value of Plasma frequency omega_p of Drude metals in units of\n"
-"        c/omegaP. If omitted, omegap = INFINITY.\n"
+"        c/(L+R). If omitted, omegap = INFINITY.\n"
 "\n"
 "    -l, --lscale\n"
 "        Specify parameter lscale. The vector space has to be truncated for\n"
