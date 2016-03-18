@@ -1595,19 +1595,13 @@ void casimir_logdetD0(casimir_t *self, int m, double *logdet_EE, double *logdet_
 
             if(EE != NULL)
             {
-                const float80 v = lna0+lnXiRL;
-                matrix_set(EE, i,j, v);
+                matrix_set(EE, i,j, lna0+lnXiRL);
                 matrix_set(EE_sign, i,j, -sign_xi*sign_a0);
-
-                TERMINATE(!isfinite(v), "EE l1=%d,l2=%d: v=%Lg (lna0=%g, lnXiRL=%Lg)", l1, l2, (long double)v, lna0, (long double)lnXiRL);
             }
             if(MM != NULL)
             {
-                const float80 v = lnb0+lnXiRL;
-                matrix_set(MM, i,j, v);
+                matrix_set(MM, i,j, lnb0+lnXiRL);
                 matrix_set(MM_sign, i,j, sign_xi*sign_b0);
-
-                TERMINATE(!isfinite(v), "MM l1=%d,l2=%d: v=%Lg (lnb0=%g, lnXiRL=%Lg)", l1, l2, (long double)v, lnb0, (long double)lnXiRL);
             }
         }
     }
