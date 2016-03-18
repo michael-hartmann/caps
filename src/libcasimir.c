@@ -1742,7 +1742,7 @@ double casimir_logdetD(casimir_t *self, int n, int m)
             if(isinf(self->omegap_plane))
                 casimir_integrate_perf_free(&int_perf);
 
-            casimir_debug(self, "# calculating matrix elements (trace approximation): %gs\n", now()-start);
+            casimir_debug(self, "# calculating %dx%d matrix elements (trace approximation): %gs\n", 2*dim, 2*dim, now()-start);
 
             return -trace;
         }
@@ -1875,7 +1875,7 @@ double casimir_logdetD(casimir_t *self, int n, int m)
     else
         casimir_integrate_drude_free();
 
-    casimir_debug(self, "# calculating matrix elements: %gs\n", now()-start);
+    casimir_debug(self, "# calculating %dx%d matrix elements (trace approximation): %gs\n", 2*dim, 2*dim, now()-start);
 
 #if 0
     /* Dump matrix */
