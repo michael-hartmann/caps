@@ -93,7 +93,7 @@ static inline void integrate_romberg(struct integ_context* context,
 
 void integrate_gauss_laguerre(casimir_t *self,
                               casimir_integrals_t *cint,
-                              int l1, int l2, int m, int n, double T);
+                              int l1, int l2, int m, double nT);
 
 void integrands_drude(float80 x, integrands_drude_t *integrands,
                       struct integ_context* context,
@@ -756,7 +756,7 @@ static inline void integrate_romberg(struct integ_context* context,
 void casimir_integrate_drude(integration_drude_t* int_drude, int l1, int l2, casimir_integrals_t* cint)
 {
 #if defined INTEGRATION_GAUSS_LAGUERRE
-    integrate_gauss_laguerre(int_drude->self, cint, l1, l2, int_drude->m, int_drude->nT);
+    integrate_gauss_laguerre(int_drude->casimir, cint, l1, l2, int_drude->m, int_drude->nT);
 #else
     do_integrate(cint, l1, l2, int_drude);
 #endif
@@ -874,7 +874,7 @@ void integrate_gauss_laguerre(casimir_t *self, casimir_integrals_t *cint, int l1
 
     for(int i = 0; i < N; i++)
     {
-        integrands_drude_laguerre(xk[i], &integrand, self, n*T, l1, l2, m);
+        integrands_drude_laguerre(xk[i], &integrand, self, nT, l1, l2, m);
 
         lnA_TE[i]  = ln_wk[i] + integrand.lnA_TE;
         lnA_TM[i]  = ln_wk[i] + integrand.lnA_TM;
