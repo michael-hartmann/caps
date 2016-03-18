@@ -539,8 +539,8 @@ double matrix_logdetIdpM(casimir_t *casimir, matrix_float80 *M, matrix_sign_t *M
     const size_t dim = M->dim;
     const bool debug   = casimir->debug;
     const char *detalg = casimir->detalg;
-    double logdetD;
 
+    /* precondition matrix */
     if(casimir->precondition)
     {
         const double start = now();
@@ -568,45 +568,39 @@ double matrix_logdetIdpM(casimir_t *casimir, matrix_float80 *M, matrix_sign_t *M
         }
     }
 
-    if(strcasecmp(detalg, "LU_FLOAT80") == 0)
-    {
-        /* exponentiate */
-        matrix_float80_exp(M, M_sign);
-
-        /* add unity matrix */
-        for(size_t i = 0; i < dim; i++)
-            M->M[i*dim+i] += 1;
-
-        /* calculate log(det(M)) */
-        logdetD = matrix_float80_logdet_lu(M);
-    }
     #ifdef FLOAT128
-    else if(strcasecmp(detalg, "QR_FLOAT128") == 0)
+    if(strcasecmp(detalg, "QR_FLOAT128") == 0)
     {
         size_t dim2 = pow_2(dim);
         matrix_float128 *M128 = matrix_float128_alloc(dim);
 
+        /* exponentiate */
         for(size_t i = 0; i < dim2; i++)
             M128->M[i] = M_sign->M[i]*exp128(M->M[i]);
 
+        /* add identity matrix */
         for(size_t i = 0; i < dim; i++)
             M128->M[i*dim+i] += 1;
 
-        logdetD = matrix_float128_logdet_qr(M128);
+        /* calculate logdetD */
+        double logdetD = matrix_float128_logdet_qr(M128);
 
+        /* free matrix */
         matrix_float128_free(M128);
 
         return logdet;
     }
-    #endif
     else
+    #endif
     {
         float80 *A = M->M;
-        if(strcasecmp(detalg, "QR_FLOAT80") != 0)
-            WARN(1, "Algorithm \"%s\" not supported. Defaulting to QR_FLOAT80.", detalg);
+        if(strcasecmp(detalg, "QR_FLOAT80") != 0 && strcasecmp(detalg, "LU_FLOAT80") != 0)
+            WARN(1, "Algorithm \"%s\" not supported. Using QR_FLOAT80.", detalg);
 
+        /* exponentiate matrix */
         matrix_float80_exp(M, M_sign);
 
+        /* Calculate trace(M) and trace(M²) */
         float80 traceM  = 0; /* trace(M)  */
         float80 traceM2 = 0; /* trace(M²) */
         for(size_t i = 0; i < dim; i++)
@@ -621,13 +615,13 @@ double matrix_logdetIdpM(casimir_t *casimir, matrix_float80 *M, matrix_sign_t *M
          * log(Id+M) = M - M²/2 + ...
          *
          * Here:
-         * log(det(Id+M)) = trace(log(Id+M)) = trace(M) - trace(M²)/2 + ...
+         * log det(Id+M) = trace log(Id+M) = trace(M) - trace(M²)/2 + ...
          */
         const float80 mercator1 = traceM;
         const float80 mercator2 = traceM-traceM2/2;
 
-        casimir_debug(casimir, "# Mercator: log(det(Id+M)) = trace(M)               = %.10Lg\n", mercator1);
-        casimir_debug(casimir, "# Mercator: log(det(Id+M)) = trace(M) - trace(M²)/2 = %.10Lg\n", mercator2);
+        casimir_debug(casimir, "# Mercator: log det(Id+M) ≈ tr M            = %.10Lg\n", mercator1);
+        casimir_debug(casimir, "# Mercator: log det(Id+M) ≈ tr M - tr(M²)/2 = %.10Lg\n", mercator2);
 
         /* balance */
         if(casimir->balance)
@@ -651,13 +645,18 @@ double matrix_logdetIdpM(casimir_t *casimir, matrix_float80 *M, matrix_sign_t *M
 
         /* QR decomposition */
         {
+            double logdetD;
             const double start = now();
-            logdetD = matrix_float80_logdet_qr(M);
+
+            if(strcasecmp(detalg, "LU_FLOAT80") == 0)
+                logdetD = matrix_float80_logdet_lu(M);
+            else
+                logdetD = matrix_float80_logdet_qr(M);
+
             casimir_debug(casimir, "# QR decomposition: %gs\n", now()-start);
+
+            WARN(logdetD > mercator2 && fabs80(logdetD-mercator2) > 1e-8, "value of logdet > truncated Mercator series: logdet=%.14g, Mercator (2): %.14Lg", logdetD, mercator2);
+            return logdetD;
         }
-
-        WARN(logdetD > mercator2 && fabs80(logdetD-mercator2) > 1e-8, "value of logdet > truncated Mercator series: logdet=%.14g, Mercator (2): %.14Lg", logdetD, mercator2);
     }
-
-    return logdetD;
 }
