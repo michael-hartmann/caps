@@ -1667,7 +1667,7 @@ double casimir_trM(casimir_t *self, int n, int m, void *obj)
         if(isinf(self->omegap_plane))
             casimir_integrate_perf(int_perf, l, l, &cint);
         else
-            casimir_integrate_drude(self, int_drude, l, l, &cint);
+            casimir_integrate_drude(int_drude, l, l, &cint);
 
         /* EE */
         sign_t signs_EE[] = { sign_al*cint.signA_TE, sign_al*cint.signB_TM };
@@ -1738,7 +1738,7 @@ double casimir_logdetD(casimir_t *self, int n, int m)
         casimir_integrate_perf_init(&int_perf, nT, m, self->lmax);
     else
         /* drude mirror */
-        casimir_integrate_drude_init(&int_drude, nT, m, self->lmax);
+        casimir_integrate_drude_init(self, &int_drude, nT, m, self->lmax);
 
     if(isinf(self->omegap_plane))
     {
@@ -1793,7 +1793,7 @@ double casimir_logdetD(casimir_t *self, int n, int m)
             if(isinf(self->omegap_plane))
                 casimir_integrate_perf(&int_perf, l1, l2, &cint);
             else
-                casimir_integrate_drude(self, &int_drude, l1, l2, &cint);
+                casimir_integrate_drude(&int_drude, l1, l2, &cint);
 
             /* EE */
             {

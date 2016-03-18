@@ -13,8 +13,8 @@ static void drude_integrate(casimir_t* casimir, casimir_integrals_t* cint,
                             int l1, int l2, int m, int n, double T)
 {
     integration_drude_t int_drude;
-    casimir_integrate_drude_init(&int_drude, n * T, m, MAX(l1, l2));
-    casimir_integrate_drude(casimir, &int_drude, l1, l2, cint);
+    casimir_integrate_drude_init(casimir, &int_drude, n * T, m, MAX(l1, l2));
+    casimir_integrate_drude(&int_drude, l1, l2, cint);
     casimir_integrate_drude_free(&int_drude);
 }
 
