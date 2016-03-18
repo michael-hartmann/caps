@@ -1427,13 +1427,12 @@ static int _join_threads(casimir_t *self, double values[], int *ncalc)
 double casimir_F_n(casimir_t *self, const int n, int *mmax)
 {
     int m;
-    double precision = self->precision;
-    double sum_n = 0;
+    const double precision = self->precision;
     const int lmax = self->lmax;
+    double sum_n = 0;
     double values[lmax+1];
 
-    /* perfect reflectors */
-
+    /* initialize to 0 */
     for(m = 0; m <= lmax; m++)
         values[m] = 0;
 
@@ -1442,10 +1441,9 @@ double casimir_F_n(casimir_t *self, const int n, int *mmax)
         values[m] = casimir_logdetD(self,n,m);
         casimir_verbose(self, "# n=%d, m=%d, logdetD=%.15g\n", n, m, values[m]);
 
-        /* If F is !=0 and value/F < 1e-16, then F+value = F. The addition
-         * has no effect.
-         * As for larger m value will be even smaller, we can skip the
-         * summation here.
+        /* The stop criterion is as follows: If
+         * logdetD(n,m)/(\sum_i^m logdetD(n,i)) < precision
+         * we can skip the summation.
          */
         sum_n = _sum(values, lmax+1);
         if(values[0] != 0 && fabs(values[m]/sum_n) < precision)
