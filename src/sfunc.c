@@ -20,6 +20,36 @@
 
 
 /**
+ * @brief Sum len array elements of input
+ *
+ * Use Kahan summation algorithm to reduce the numerical error obtained by
+ * adding all array elements of input.
+ *
+ * See: https://en.wikipedia.org/wiki/Kahan_summation_algorithm
+ *
+ * @param [in] input array
+ * @param [in] len length of array
+ * @retval sum
+ */
+float80 kahan_sum(float80 input[], size_t len)
+{
+    float80 sum = 0;
+    float80 c = 0; /* running compensation for lost low-order bits */
+
+    for(size_t i = 0; i < len; i++)
+    {
+        float80 y = input[i] - c;
+        float80 t = sum + y;
+        c = (t - sum) - y;
+        sum = t;
+    }
+
+    return sum;
+}
+
+
+
+/**
  * @brief Calculate relative difference between two numbers
  *
  * This function computes \f$\log(|a-b|/\mathrm{max}(a,b))\f$, where
