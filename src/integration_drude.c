@@ -389,15 +389,12 @@ static inline void drude_mult_factor(integrands_drude_t* id, float80 log_factor)
  * This Function calculates the integrals A,B,C,D for the simple- and
  * romberg-method with all the necessary prefactors.
  *
- * @param [in]  self       Casimir object
  * @param [out] cint       Logarithms of values and signs of integrals
  * @param [in]  l1         Value of l1
  * @param [in]  l2         Value of l2
- * @param [in]  m          Value of m
- * @param [in]  n          Index of the Matsubara-Term
- * @param [in]  T          Scaled Temperature
+ * @param [in]  int_drude  Drude integration object
  */
-static inline void do_integrate(casimir_t* self, casimir_integrals_t* cint,
+static inline void do_integrate(casimir_integrals_t* cint,
                                 int l1, int l2, integration_drude_t* int_drude)
 {
     int m             = int_drude->m;
@@ -428,7 +425,7 @@ static inline void do_integrate(casimir_t* self, casimir_integrals_t* cint,
         .nT        = nT,
         .c0        = c0,
         .c_max     = c_max,
-        .casimir   = self,
+        .casimir   = int_drude->casimir,
         .int_drude = int_drude
     };
 
@@ -756,21 +753,22 @@ static inline void integrate_romberg(struct integ_context* context,
  * @param [in]  l2   \f$\ell_2\f$
  * @param [out] cint logarithms of values and signs of integrals
  */
-void casimir_integrate_drude(casimir_t* self, integration_drude_t* int_drude, int l1, int l2, casimir_integrals_t* cint)
+void casimir_integrate_drude(integration_drude_t* int_drude, int l1, int l2, casimir_integrals_t* cint)
 {
 #if defined INTEGRATION_GAUSS_LAGUERRE
-    integrate_gauss_laguerre(self, cint, l1, l2, int_drude->m, int_drude->nT);
+    integrate_gauss_laguerre(int_drude->self, cint, l1, l2, int_drude->m, int_drude->nT);
 #else
-    do_integrate(self, cint, l1, l2, int_drude);
+    do_integrate(cint, l1, l2, int_drude);
 #endif
 }
 
 
-void casimir_integrate_drude_init(integration_drude_t* int_drude, double nT, int m, int lmax)
+void casimir_integrate_drude_init(casimir_t* self, integration_drude_t* int_drude, double nT, int m, int lmax)
 {
-    int_drude->nT = nT;
-    int_drude->m = m;
-    int_drude->lmax = lmax;
+    int_drude->casimir = self;
+    int_drude->nT      = nT;
+    int_drude->m       = m;
+    int_drude->lmax    = lmax;
     
 #if (defined INTEGRATION_ROMBERG && defined USE_PLM_CACHE)
     plm_create_cache(int_drude);
