@@ -959,12 +959,12 @@ void casimir_free(casimir_t *self)
  * @param [out] b0 coefficient \f$b_{\ell,0}^\mathrm{perf}\f$
  * @param [out] sign_b0 sign of \f$b_{\ell,0}^\mathrm{perf}\f$
  */
-void casimir_lnab0(int l, double *a0, sign_t *sign_a0, double *b0, sign_t *sign_b0)
+void casimir_lnab0(int l, float80 *a0, sign_t *sign_a0, float80 *b0, sign_t *sign_b0)
 {
     *sign_a0 = MPOW(l);
     *sign_b0 = MPOW(l+1);
     *b0 = LOGPI-lngamma80(l+0.5)-lngamma80(l+1.5);
-    *a0 = *b0+log1p(1.0/l);
+    *a0 = *b0+log1p80(1.0L/l);
 }
 
 
@@ -1583,7 +1583,7 @@ void casimir_logdetD0(casimir_t *self, int m, double *logdet_EE, double *logdet_
     for(int l1 = min; l1 <= max; l1++)
     {
         sign_t sign_a0, sign_b0;
-        double lna0, lnb0;
+        float80 lna0, lnb0;
         casimir_lnab0(l1, &lna0, &sign_a0, &lnb0, &sign_b0);
 
         for(int l2 = min; l2 <= max; l2++)
