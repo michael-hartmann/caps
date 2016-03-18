@@ -248,11 +248,11 @@ double matrix_float80_logdet_qr(matrix_float80 *M)
             }
         }
 
-    float80 det = 0;
+    float80 det_i[dim];
     for(int i = 0; i < dim; i++)
-        det += log80(fabs80(m[i*dim+i]));
+        det_i[i]= log80(fabs80(m[i*dim+i]));
 
-    return det;
+    return kahan_sum(det_i, dim);
 }
 
 
