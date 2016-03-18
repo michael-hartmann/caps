@@ -1766,21 +1766,19 @@ double casimir_logdetD(casimir_t *self, int n, int m)
         for(int l2 = min; l2 <= l1_plus_l2 / 2; ++l2)
         {
             const int l1 = l1_plus_l2 - l2;
-            if(l1 > max) continue;
+            if(l1 > max)
+                continue;
 
             const int i = l1-min;
-            double ln_al1, ln_bl1;
-            sign_t sign_al1, sign_bl1;
+            const int j = l2-min;
+
+            double ln_al1, ln_bl1, ln_al2, ln_bl2;
+            sign_t sign_al1, sign_bl1, sign_al2, sign_bl2;
 
             casimir_mie_cache_get(self, l1, n, &ln_al1, &sign_al1, &ln_bl1, &sign_bl1);
-
-            const int j = l2-min;
-            casimir_integrals_t cint;
-            double ln_al2, ln_bl2;
-            sign_t sign_al2, sign_bl2;
-
             casimir_mie_cache_get(self, l2, n, &ln_al2, &sign_al2, &ln_bl2, &sign_bl2);
 
+            casimir_integrals_t cint;
             if(isinf(self->omegap_plane))
                 casimir_integrate_perf(&int_perf, l1, l2, &cint);
             else
@@ -1789,80 +1787,56 @@ double casimir_logdetD(casimir_t *self, int n, int m)
             /* EE */
             {
                 sign_t sign;
-                float80 list_ij[] = { ln_al1+cint.lnA_TE, ln_al1+cint.lnB_TM };
-                float80 list_ji[] = { ln_al2+cint.lnA_TE, ln_al2+cint.lnB_TM };
+                /* A_TE + B_TM */
+                float80 sum = logadd_s(cint.lnA_TE, cint.signA_TE, cint.lnB_TM, cint.signB_TM, &sign);
 
-                sign_t signs_ij[] = { -            sign_al1*cint.signA_TE, -            sign_al1*cint.signB_TM };
-                sign_t signs_ji[] = { -MPOW(l1+l2)*sign_al2*cint.signA_TE, -MPOW(l1+l2)*sign_al2*cint.signB_TM };
+                matrix_set(M, i,j, ln_al1+sum);
+                matrix_set(M, j,i, ln_al2+sum);
 
-                matrix_set(M, i,j, logadd_ms(list_ij, signs_ij, 2, &sign));
-                matrix_set(M_sign, i,j, sign);
-
-                matrix_set(M, j,i, logadd_ms(list_ji, signs_ji, 2, &sign));
-                matrix_set(M_sign, j,i, sign);
-
-                TERMINATE(!isfinite(matrix_get(M,i,j)), "EE, i=%d,j=%d: %Lg", i,j, (long double)matrix_get(M,i,j));
-                TERMINATE(!isfinite(matrix_get(M,j,i)), "EE, i=%d,j=%d: %Lg", j,i, (long double)matrix_get(M,j,i));
+                matrix_set(M_sign, i,j, -            sign_al1*sign);
+                matrix_set(M_sign, j,i, -MPOW(l1+l2)*sign_al2*sign);
             }
 
             /* MM */
             {
                 sign_t sign;
-                float80 list_ij[] = { ln_bl1+cint.lnA_TM, ln_bl1+cint.lnB_TE };
-                float80 list_ji[] = { ln_bl2+cint.lnA_TM, ln_bl2+cint.lnB_TE };
+                /* A_TM + B_TE */
+                float80 sum = logadd_s(cint.lnA_TM, cint.signA_TM, cint.lnB_TE, cint.signB_TE, &sign);
 
-                sign_t signs_ij[] = { -            sign_bl1*cint.signA_TM, -            sign_bl1*cint.signB_TE };
-                sign_t signs_ji[] = { -MPOW(l1+l2)*sign_bl2*cint.signA_TM, -MPOW(l1+l2)*sign_bl2*cint.signB_TE };
+                matrix_set(M, i+dim,j+dim, ln_bl1+sum);
+                matrix_set(M, j+dim,i+dim, ln_bl2+sum);
 
-                matrix_set(M, i+dim,j+dim, logadd_ms(list_ij, signs_ij, 2, &sign));
-                matrix_set(M_sign, i+dim,j+dim, sign);
-
-                matrix_set(M, j+dim,i+dim, logadd_ms(list_ji, signs_ji, 2, &sign));
-                matrix_set(M_sign, j+dim,i+dim, sign);
-
-                TERMINATE(!isfinite(matrix_get(M,i+dim,j+dim)), "MM, i=%d,j=%d: %Lg", i+dim,j+dim, (long double)matrix_get(M,i+dim,j+dim));
-                TERMINATE(!isfinite(matrix_get(M,j+dim,i+dim)), "MM, i=%d,j=%d: %Lg", j+dim,i+dim, (long double)matrix_get(M,j+dim,i+dim));
+                matrix_set(M_sign, i+dim,j+dim, -            sign_bl1*sign);
+                matrix_set(M_sign, j+dim,i+dim, -MPOW(l1+l2)*sign_bl2*sign);
             }
 
 
             if(m != 0)
             {
+                sign_t sign1, sign2;
+
+                /* C_TE + D_TM */
+                float80 sum1 = logadd_s(cint.lnC_TE, cint.signC_TE, cint.lnD_TM, cint.signD_TM, &sign1);
+
+                /* C_TM + D_TE */
+                float80 sum2 = logadd_s(cint.lnC_TM, cint.signC_TM, cint.lnD_TE, cint.signD_TE, &sign2);
+
                 /* M_EM */
                 {
-                    sign_t sign;
-                    float80 list_ij[] = { ln_al1+cint.lnC_TE, ln_al1+cint.lnD_TM };
-                    sign_t signs_ij[] = { -sign_al1*cint.signC_TE,  -sign_al1*cint.signD_TM };
+                    matrix_set(M, i,dim+j, ln_al1+sum1);
+                    matrix_set(M, j,dim+i, ln_al2+sum2);
 
-                    float80 list_ji[] = { ln_al2+cint.lnD_TE, ln_al2+cint.lnC_TM };
-                    sign_t signs_ji[] = { -MPOW(l1+l2+1)*sign_al2*cint.signD_TE, -MPOW(l1+l2+1)*sign_al2*cint.signC_TM };
-
-                    matrix_set(M, i,dim+j, logadd_ms(list_ij, signs_ij, 2, &sign));
-                    matrix_set(M_sign, i,dim+j, sign);
-
-                    matrix_set(M, j,dim+i, logadd_ms(list_ji, signs_ji, 2, &sign));
-                    matrix_set(M_sign, j,dim+i, sign);
-
-                    TERMINATE(!isfinite(matrix_get(M,i,dim+j)), "EM, i=%d,j=%d: %Lg", i,j+dim, (long double)matrix_get(M,i,dim+j));
-                    TERMINATE(!isfinite(matrix_get(M,j,dim+i)), "EM, i=%d,j=%d: %Lg", j,i+dim, (long double)matrix_get(M,j,dim+i));
+                    matrix_set(M_sign, i,dim+j, -              sign_al1*sign1);
+                    matrix_set(M_sign, j,dim+i, -MPOW(l1+l2+1)*sign_al2*sign2);
                 }
 
                 /* M_ME */
                 {
-                    sign_t sign;
-                    float80 list_ij[] = { ln_bl1+cint.lnC_TM, ln_bl1+cint.lnD_TE };
-                    sign_t signs_ij[] = { -sign_bl1*cint.signC_TM, -sign_bl1*cint.signD_TE};
+                    matrix_set(M, dim+i,j, ln_bl1+sum2);
+                    matrix_set(M, dim+j,i, ln_bl2+sum1);
 
-                    float80 list_ji[] = { ln_bl2+cint.lnD_TM, ln_bl2+cint.lnC_TE };
-                    sign_t signs_ji[] = { -MPOW(l1+l2+1)*sign_bl2*cint.signD_TM, -MPOW(l1+l2+1)*sign_bl2*cint.signC_TE };
-
-                    matrix_set(M, dim+i,j, logadd_ms(list_ij, signs_ij, 2, &sign));
-                    matrix_set(M_sign, dim+i,j, sign);
-
-                    matrix_set(M, dim+j,i, logadd_ms(list_ji, signs_ji, 2, &sign));
-                    matrix_set(M_sign, dim+j,i, sign);
-
-                    TERMINATE(!isfinite(matrix_get(M,dim+i,j)), "ME, i=%d,j=%d: %Lg", dim+i,j, (long double)matrix_get(M,dim+i,j));
-                    TERMINATE(!isfinite(matrix_get(M,dim+j,i)), "ME, i=%d,j=%d: %Lg", dim+j,i, (long double)matrix_get(M,dim+j,i));
+                    matrix_set(M_sign, dim+i,j, -              sign_bl1*sign2);
+                    matrix_set(M_sign, dim+j,i, -MPOW(l1+l2+1)*sign_bl2*sign1);
                 }
             }
         }
