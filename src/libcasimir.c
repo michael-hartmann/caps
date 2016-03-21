@@ -483,13 +483,13 @@ int casimir_init(casimir_t *self, double LbyR, double T)
     self->debug = false;
 
     /* precondition matrix before QR decomposition */
-    self->precondition = true;
+    self->precondition = false;
 
     /* balance matrix before QR decomposition */
     self->balance = true;
 
     /* pivot matrix before QR decomposition */
-    self->pivot = true;
+    self->pivot = false;
 
     /* use QR decomposition to calculate determinant */
     memset(self->detalg, 0, sizeof(self->detalg));
