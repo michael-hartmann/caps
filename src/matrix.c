@@ -656,6 +656,7 @@ double matrix_logdetIdpM(casimir_t *casimir, matrix_float80 *M, matrix_sign_t *M
             casimir_debug(casimir, "# QR decomposition: %gs\n", now()-start);
         }
 
+        TERMINATE(!isfinite(logdetD), "logdetD is not finite: %g", logdetD);
         WARN(logdetD > mercator2 && fabs80(logdetD-mercator2) > 1e-8, "value of logdet > truncated Mercator series: logdet=%.14g, Mercator (2): %.14Lg", logdetD, mercator2);
     }
 
