@@ -250,7 +250,10 @@ double matrix_float80_logdet_qr(matrix_float80 *M)
 
     float80 det_i[dim];
     for(int i = 0; i < dim; i++)
+    {
         det_i[i]= log80(fabs80(m[i*dim+i]));
+        TERMINATE(!isfinite(det_i[i]), "not finite: %Lg (i: %d, orig: %Lg)\n", det_i[i], i, m[i*dim+i]);
+    }
 
     return kahan_sum(det_i, dim);
 }
@@ -269,6 +272,8 @@ void matrix_precondition(matrix_float80 *A)
     double b;
     const int dim = A->dim;
     const int dimby2 = dim/2;
+
+    /* XXX DOES NOT ALWAYS WORK, ERRORS FOR SMALL LMAX XXX */
 
     /* do linear regression => y(x) = a + b*x */
     {
