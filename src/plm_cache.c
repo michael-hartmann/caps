@@ -18,7 +18,7 @@
 /*
  * The cache will save the values up to "max_iteration"
  */
-#define max_iteration 20
+#define max_iteration 15
 
 /*
  * The cache will not save the values below "min_iteration"
@@ -41,7 +41,7 @@
 /*
  * Debug this file
  */
-#define DEBUG_PLM_CACHE
+//#define DEBUG_PLM_CACHE
 
 
 enum cache_flags
@@ -54,42 +54,23 @@ enum cache_flags
 
 
 /*
- * This structure stores the legendre polynoms for a specific
- * value of l1, l2, m.
+ * This structure stores the legendre polynoms.
  */
 struct cache_entry
 {
-    unsigned int      l1, l2;
-
-    /*
-     * Value and sign of P_{l1}^m
-     */
-    float80           lnPl1;
-    sign_t            sign_Pl1;
-
-    /*
-     * Value and sign of P_{l2}^m
-     */
-    float80           lnPl2;
-    sign_t            sign_Pl2;
-
-    /*
-     * Value and sign of P_{l1+1}^m
-     */
-    float80           lnPl1p1;
-    sign_t            sign_Pl1p1;
-
-    /*
-     * Value and sign of P_{l2+1}^m
-     */
-    float80           lnPl2p1;
-    sign_t            sign_Pl2p1;
-
     /*
      * m % 2. We need this, when we calculate the combinations.
      * They share the prefactor for their sign.
      */
     sign_t            common_sign;
+
+
+    /*
+     * We will save the logarithms and signs of legendre polynomials.
+     * This will contain polynomials up the order MAX(l1, l2) + 1.
+     */
+    float80*          plm_array;
+    sign_t*           plm_array_signs;
 };
 
 
@@ -128,6 +109,19 @@ struct cache_values
      * memory since we don't allocate space for the "struct cache_entry"s.
      */
     struct cache_iteration iterations[max_iteration + 1];
+
+    /*
+     * We will allocate the space for "plm_array" and "plm_array_signs" in
+     * "struct cache_entry" at the beginning of the integration. The pointer of the
+     * allocated memory space will be saved here, in order to free it up later.
+     * We will allocate one big bulk of memory at the beginning of the integration.
+     * This will save many (thousands) of small allocations, which can be problematic
+     * for some memory allocators.
+     * Don't use theese pointers directly (use "plm_array" and "plm_array_signs" in
+     * "struct cache_entry" instead). Use this only to free memory at the end.
+     */
+    float80* plm_array_space;
+    sign_t*  plm_sign_space;
 };
 
 
@@ -157,21 +151,9 @@ struct plm_cache
     double nT;
 
     /*
-     * Values of the legendre polynomials of the last successful cache access.
-     * Theese are the values for l1_last = l1 + 1 and l2_last = l1 - 1.
+     * Values of the legendre polynomials.
      */
-    struct cache_values last;
-
-    /*
-     * Values of the legendre polynomials of the last but one successful cache access.
-     * Theese are the values for l1_last = l1 + 2 and l2_last = l1 - 2.
-     */
-    struct cache_values lastlast;
-
-    /*
-     * Values of the legendre polynomials of the current access
-     */
-    struct cache_values current;
+    struct cache_values values;
 
 #ifdef CACHE_STATS
     /*
@@ -196,12 +178,6 @@ static inline struct cache_entry* get_cache_value(struct integ_context* context,
                                                   struct plm_cache* cache,
                                                   unsigned int index,
                                                   unsigned int iteration);
-
-static inline void plm_recursive(struct integ_context* context,
-                                 float80 x,
-                                 struct cache_entry* current,
-                                 struct cache_entry* last,
-                                 struct cache_entry* lastlast);
 
 static inline void calculate_cache_entry(struct integ_context* context,
                                          float80 x,
@@ -234,13 +210,43 @@ static inline int pow_i(int base, int exp)
  * Allocate the space for one object of the type "struct cache_values".
  * You need to call free_cache_values if you don't need it anymore.
  */
-static void alloc_cache_values(struct cache_values* cv)
+static void alloc_cache_values(struct cache_values* cv,
+                               integration_drude_t* int_drude)
 {
     size_t i;
     struct cache_iteration* ci;
 
+    /*
+     * We need all the polynomials from order m to order lmax + 1.
+     * Here is the memory it takes.
+     */
+    size_t array_size = (int_drude->lmax - int_drude->m + 1) * sizeof(float80);
+    size_t sign_size  = (int_drude->lmax - int_drude->m + 1) * sizeof(sign_t);
+
+    /*
+     * 2nd iteration will take 1 entry. 3 rd iteration will take 2. 4th 4, 5th 8 etc.
+     * The total number of entries is:
+     *    2^{min_iteration} + 2^{min_iteration + 1} + ... + 2^{max_iteration}
+     * This is equal to:
+     *    2^{max_iteration + 1} - 2^{min_iteration}
+     */
+    size_t total_entries = pow_i(2, max_iteration + 1) - pow_i(2, min_iteration);
+    
+    /*
+     * Allocate memory for all the plm_arrays and plm_signs at once
+     */
+    float80* arrays = xmalloc(total_entries * array_size);
+    sign_t*   signs = xmalloc(total_entries * sign_size);
+
+    /*
+     * We will save the pointers here, to free them up later.
+     */
+    cv->plm_array_space = arrays;
+    cv->plm_sign_space  = signs;
+    
     for(i = min_iteration; i <= max_iteration; ++i)
     {
+        size_t entries = pow_i(2, i - 2);
         ci = &cv->iterations[i];
         /*
          * The uninitialized values at the moment are useless. So we won't set the
@@ -251,7 +257,17 @@ static void alloc_cache_values(struct cache_values* cv)
          * In each iteration i the romberg integration uses 2^(i-2) new points.
          * We will allocate the memory for it now.
          */
-        ci->entry = xmalloc(pow_i(2, i - 2) * sizeof(struct cache_entry));
+        ci->entry = xmalloc(entries * sizeof(struct cache_entry));
+
+        
+        for(size_t j = 0; j < entries; ++j)
+        {
+            ci->entry[j].plm_array = arrays;
+            ci->entry[j].plm_array_signs = signs;
+            arrays += (int_drude->lmax - int_drude->m + 1);
+            signs += (int_drude->lmax - int_drude->m + 1);
+        }
+
     }
 }
 
@@ -259,12 +275,19 @@ static void alloc_cache_values(struct cache_values* cv)
 /*
  * Free the space for one object of the type "struct cache_values".
  */
-static void free_cache_values(struct cache_values* cv)
+static void free_cache_values(struct cache_values* cv,
+                              integration_drude_t* int_drude)
 {
-    size_t i;
     struct cache_iteration* ci;
 
-    for(i = min_iteration; i <= max_iteration; ++i)
+    /*
+     * First, free up the big bulk. All the plm_arrays and signs in all cache_entrys
+     * are going to be "free"d now.
+     */
+    xfree(cv->plm_array_space);
+    xfree(cv->plm_sign_space);
+
+    for(size_t i = max_iteration; i >= min_iteration; --i)
     {
         ci = &cv->iterations[i];
         xfree(ci->entry);
@@ -290,38 +313,6 @@ static inline void inval_cache_values(struct cache_values* cv)
 
 
 /*
- * Shift the values of the plm_cache
- * last       ->     lastlast
- * current    ->     last
- * lastlast   ->     current
- * This is fast, because we don't need to copy the values in memory. We only need to change
- * some pointers.
- */
-static inline void shift_cache_values(struct plm_cache* cache)
-{
-    struct cache_entry* entry;
-    unsigned char flags;
-    size_t i;
-
-    for(i = min_iteration; i <= max_iteration; ++i)
-    {
-        entry = cache->lastlast.iterations[i].entry;
-        flags = cache->lastlast.iterations[i].flags;
-        
-        cache->lastlast.iterations[i].entry = cache->last.iterations[i].entry;
-        cache->lastlast.iterations[i].flags = cache->last.iterations[i].flags;
-        
-        cache->last.iterations[i].entry = cache->current.iterations[i].entry;
-        cache->last.iterations[i].flags = cache->current.iterations[i].flags;
-        
-        cache->current.iterations[i].entry = entry;
-        cache->current.iterations[i].flags = flags;
-        cache->current.iterations[i].flags &= ~CACHE_FLAG_VALID;
-    }
-}
-
-
-/*
  * Create a new "struct plm_cache". Each thread has to call this function in order
  * to use the plm_cache later.
  * In order to cleanup the allocated space, it is neccessary to call "plm_destroy_cach".
@@ -342,10 +333,7 @@ void plm_create_cache(integration_drude_t* int_drude)
     /*
      * Allocate the memory for the last and the first cache access
      */
-    alloc_cache_values(&cache->current);
-    alloc_cache_values(&cache->last);
-    alloc_cache_values(&cache->lastlast);
-
+    alloc_cache_values(&cache->values, int_drude);
 }
 
 
@@ -357,10 +345,7 @@ void plm_destroy_cache(integration_drude_t* int_drude)
 {
     struct plm_cache* cache = int_drude->plm_cache;
 
-    free_cache_values(&cache->current);
-    free_cache_values(&cache->last);
-    free_cache_values(&cache->lastlast);
-
+    free_cache_values(&cache->values, int_drude);
     free(cache);
 }
 
@@ -392,20 +377,7 @@ void plm_cache_init(struct integ_context* context)
         /*
          * The last values are useless. We need to invalidate them
          */
-        inval_cache_values(&cache->last);
-        inval_cache_values(&cache->lastlast);
-        inval_cache_values(&cache->current);
-    }
-    else
-    {
-        /*
-         * New integration with the same n and the same m and the same l1 + l2.
-         * E.g. the last iteration was l1 = 7, l2 = 3 and the current iteration is l1 = 6, l2 = 4.
-         * We can reuse the old values, but we need to shift them (because now, the values from
-         * last_iteration need to be stored it the member "last").
-         * This is the case we wan't to optimize. It should be called very oftern.
-         */
-        shift_cache_values(cache);
+        inval_cache_values(&cache->values);
     }
 }
 
@@ -434,6 +406,7 @@ void plm_cache_free(integration_drude_t* int_drude)
 
 
 #ifdef DEBUG_PLM_CACHE
+
 /*
  * Check the values of the cache access. It will calculate the "polynom combinations"
  * using plm_PlmPlm from sfunc.c and compare the result.
@@ -453,16 +426,17 @@ static void check_values(int l1, int l2, int m, float80 x,
      * We will use the correct values instead.
      * When the problem is solved add theese line.
      */
-    //assert(ALMOST_EQUAL(real_values->lnPl1mPl2m, comb->lnPl1mPl2m));
-    //assert(ALMOST_EQUAL(real_values->lnPl1mdPl2m, comb->lnPl1mdPl2m));
-    //assert(ALMOST_EQUAL(real_values->lndPl1mPl2m, comb->lndPl1mPl2m));
-    //assert(ALMOST_EQUAL(real_values->lndPl1mdPl2m, comb->lndPl1mdPl2m));
+    assert(ALMOST_EQUAL(real_values->lnPl1mPl2m, comb->lnPl1mPl2m));
+    assert(ALMOST_EQUAL(real_values->lnPl1mdPl2m, comb->lnPl1mdPl2m));
+    assert(ALMOST_EQUAL(real_values->lndPl1mPl2m, comb->lndPl1mPl2m));
+    assert(ALMOST_EQUAL(real_values->lndPl1mdPl2m, comb->lndPl1mdPl2m));
 
-    //assert(real_values->sign_Pl1mPl2m == comb->sign_Pl1mPl2m);
-    //assert(real_values->sign_Pl1mdPl2m == comb->sign_Pl1mdPl2m);
-    //assert(real_values->sign_dPl1mPl2m == comb->sign_dPl1mPl2m);
-    //assert(real_values->sign_dPl1mdPl2m == comb->sign_dPl1mdPl2m);
+    assert(real_values->sign_Pl1mPl2m == comb->sign_Pl1mPl2m);
+    assert(real_values->sign_Pl1mdPl2m == comb->sign_Pl1mdPl2m);
+    assert(real_values->sign_dPl1mPl2m == comb->sign_dPl1mPl2m);
+    assert(real_values->sign_dPl1mdPl2m == comb->sign_dPl1mdPl2m);
 }
+
 #endif
 
 
@@ -512,8 +486,13 @@ void plm_cache_PlmPlm(struct integ_context* context, float80 x, plm_combination_
         return;
     }
 
-    if(iteration >= min_iteration)
+    if(iteration >= min_iteration && iteration <= max_iteration)
     {
+        /*
+         * This is the "fast-path". Most calls of this function should be able to get the
+         * values from the cache. This is much faster, than calling "plm_PlmPlm".
+         */
+        
         entry = get_cache_value(context, x, cache, index, iteration);
         plm_combination(context, x, entry, comb);
 
@@ -526,13 +505,6 @@ void plm_cache_PlmPlm(struct integ_context* context, float80 x, plm_combination_
         plm_PlmPlm(l1, l2, m, x, &real_values);
         
         check_values(l1, l2, m, x, comb, &real_values);
-
-        /*
-         * FIXME: At the moment the values for lnPl1 and lnPl1p1 are not correct.
-         * We will use the correct values instead.
-         * When the problem is solved remove this line.
-         */
-        *comb = real_values;
 #endif
     }
     else
@@ -551,26 +523,17 @@ static inline struct cache_entry* get_cache_value(struct integ_context* context,
                                                   unsigned int index,
                                                   unsigned int iteration)
 {
-    struct cache_iteration* last_i;
-    struct cache_iteration* lastlast_i;
     struct cache_iteration* current_i;
-
-    struct cache_entry* last;
-    struct cache_entry* lastlast;
     struct cache_entry* current;
     
-    last_i     = &cache->last.iterations[iteration];
-    lastlast_i = &cache->lastlast.iterations[iteration];
-    current_i  = &cache->current.iterations[iteration];
+    current_i  = &cache->values.iterations[iteration];
 
-    if(!(last_i->flags & CACHE_FLAG_VALID
-         && lastlast_i->flags & CACHE_FLAG_VALID))
+    if(!(current_i->flags & CACHE_FLAG_VALID))
     {
         /*
          * Can't use the last values. Need to calculate them.
          */
         calculate_cache_entry(context, x, &current_i->entry[index-1]);
-        current  = &current_i->entry[index-1];
 
 #ifdef CACHE_STATS
         /*
@@ -581,17 +544,6 @@ static inline struct cache_entry* get_cache_value(struct integ_context* context,
     }
     else
     {
-        last     = &last_i->entry[index-1];
-        lastlast = &lastlast_i->entry[index-1];
-        current  = &current_i->entry[index-1];
-
-        /*
-         * Calculate the value from the last two tuples of l1l2.
-         */
-        current->l1 = context->l1;
-        current->l2 = context->l2;
-        plm_recursive(context, x, current, last, lastlast);
-
 #ifdef CACHE_STATS
         /*
          * Update the statistics of this cache
@@ -599,14 +551,16 @@ static inline struct cache_entry* get_cache_value(struct integ_context* context,
         cache->cache_hits++;
 #endif
     }
-
+    
+    current  = &current_i->entry[index-1];
     current->common_sign = MPOW(context->m % 2);
 
     /*
      * Since the integration function calculates all the points for one iteration,
      * we can set all points in this iteration to valid (regardless of the index).
      */
-    current_i->flags |= CACHE_FLAG_VALID;
+    if((int)index == pow_i(2, iteration - 2))
+        current_i->flags |= CACHE_FLAG_VALID;
     
     return current;
 }
@@ -625,88 +579,10 @@ static inline void calculate_cache_entry(struct integ_context* context,
     const int l2   = context->l2;
     const int lmax = MAX(l1, l2) + 1;
     const int m    = context->m;
-    float80 lnPlm[lmax-m+1];
-    sign_t signs[lmax-m+1];
+    float80* lnPlm = entry->plm_array;
+    sign_t*  signs = entry->plm_array_signs;
 
-    entry->l1 = l1;
-    entry->l2 = l2;
-
-    plm_lnPlm_array(lmax, context->m, x, lnPlm, signs);
-
-    entry->lnPl1     = lnPlm[l1 - m];
-    entry->sign_Pl1  = signs[l1 - m];
-
-    entry->lnPl2     = lnPlm[l2 - m];
-    entry->sign_Pl2  = signs[l2 - m];
-
-    entry->lnPl1p1    = lnPlm[l1 + 1 - m];
-    entry->sign_Pl1p1 = signs[l1 + 1 - m];
-
-    entry->lnPl2p1    = lnPlm[l2 + 1 - m];
-    entry->sign_Pl2p1 = signs[l2 + 1 - m];
-}
-
-
-static inline void plm_recursive(struct integ_context* context,
-                                 float80 x,
-                                 struct cache_entry* current,
-                                 struct cache_entry* last,
-                                 struct cache_entry* lastlast)
-{
-    sign_t sign;
-    const float80 logx = log80(x);
-    const int l1       = current->l1;
-    const int l2       = current->l2;
-    const int m        = context->m;
-    
-    assert(last->l1 == current->l1 + 1);
-    assert(last->l2 == current->l2 - 1);
-    assert(lastlast->l1 == current->l1 + 2);
-    assert(lastlast->l2 == current->l2 - 2);
-
-    /*
-     * current->Pl2 = ( (2*l2-1) * x * last->Pl2 - (l2 - 1 + m) * lastlast->Pl2 ) / (l2 - m)
-     */
-    current->lnPl2 = logadd_s( log80(2 * l2 - 1) + logx + last->lnPl2,
-                               last->sign_Pl2,
-                               log80(l2 - 1 + m) + lastlast->lnPl2,
-                               -lastlast->sign_Pl2,
-                               &sign );
-    current->lnPl2 -= log80(l2 - m);
-    current->sign_Pl2 = sign;
-
-    /*
-     * current->Pl1 = ( (2*l1+3) * x * last->Pl1 - (l1 + 2 - m) * lastlast->Pl1 ) / (l1 + 1 + m)
-     */
-    current->lnPl1 = logadd_s( log80(2 * l1 + 3) + logx + last->lnPl1,
-                               last->sign_Pl1,
-                               log80(l1 + 2 - m) + lastlast->lnPl1,
-                               -lastlast->sign_Pl1,
-                               &sign );
-    current->lnPl1 -= log80(l1 + 1 + m);
-    current->sign_Pl1 = sign;
-
-    /*
-     * current->Pl2p1 = ( (2*l2+1) * x * last->Pl2p1 - (l2 + m) * lastlast->Pl2p1 ) / (l2 + 1 - m)
-     */
-    current->lnPl2p1 = logadd_s( log80(2 * l2 + 1) + logx + last->lnPl2p1,
-                               last->sign_Pl2p1,
-                               log80(l2 + m) + lastlast->lnPl2p1,
-                               -lastlast->sign_Pl2p1,
-                               &sign );
-    current->lnPl2p1 -= log80(l2 + 1 - m);
-    current->sign_Pl2p1 = sign;
-
-    /*
-     * current->Pl1p1 = ( (2*l1+5) * x * last->Pl1p1 - (l1 + 3 - m) * lastlast->Pl1p1 ) / (l1 + 2 + m)
-     */
-    current->lnPl1p1 = logadd_s( log80(2 * l1 + 5) + logx + last->lnPl1p1,
-                                 last->sign_Pl1p1,
-                                 log80(l1 + 3 - m) + lastlast->lnPl1p1,
-                                 -lastlast->sign_Pl1p1,
-                                 &sign );
-    current->lnPl1p1 -= log80(l1 + 2 + m);
-    current->sign_Pl1p1 = sign;
+    plm_lnPlm_array(lmax, m, x, lnPlm, signs);
 }
 
 
@@ -735,30 +611,33 @@ static inline void plm_combination(struct integ_context* context,
     const float80 logx2m1     = log80(pow_2(x) - 1);
     const float80 logx        = log80(x);
 
-        
-    lndPl1 = logadd_s( log80(l1-m+1) + entry->lnPl1p1,
-                       entry->sign_Pl1p1,
-                       log80(l1+1) + logx + entry->lnPl1,
-                       -entry->sign_Pl1,
+    const float80* plm_array  = entry->plm_array;
+    const sign_t*  plm_signs  = entry->plm_array_signs;
+
+
+    lndPl1 = logadd_s( log80(l1-m+1) + plm_array[l1 - m + 1],
+                       plm_signs[l1 - m + 1],
+                       log80(l1+1) + logx + plm_array[l1 - m],
+                       -plm_signs[l1 - m],
                        &sign_lndPl1) - logx2m1;
 
-    lndPl2 = logadd_s( log80(l2-m+1) + entry->lnPl2p1,
-                       entry->sign_Pl2p1,
-                       log80(l2+1) + logx + entry->lnPl2,
-                       -entry->sign_Pl2,
+    lndPl2 = logadd_s( log80(l2-m+1) + plm_array[l2 - m + 1],
+                       plm_signs[l2 - m + 1],
+                       log80(l2+1) + logx + plm_array[l2 - m],
+                       -plm_signs[l2 - m],
                        &sign_lndPl2) - logx2m1;
     
     /* Pl1m*Pl2m */
-    comb->lnPl1mPl2m      = entry->lnPl1 + entry->lnPl2;
-    comb->sign_Pl1mPl2m   = entry->common_sign * entry->sign_Pl1 * entry->sign_Pl2;
+    comb->lnPl1mPl2m      = plm_array[l1 - m] + plm_array[l2 - m];
+    comb->sign_Pl1mPl2m   = entry->common_sign * plm_signs[l1 - m] * plm_signs[l2 - m];
 
     /* Pl1m*dPl2m */
-    comb->lnPl1mdPl2m     = entry->lnPl1 + lndPl2;
-    comb->sign_Pl1mdPl2m  = entry->common_sign * entry->sign_Pl1 * sign_lndPl2;
+    comb->lnPl1mdPl2m     = plm_array[l1 - m] + lndPl2;
+    comb->sign_Pl1mdPl2m  = entry->common_sign * plm_signs[l1 - m] * sign_lndPl2;
 
-    /* dPl1m*Pl2m */    
-    comb->lndPl1mPl2m     = lndPl1 + entry->lnPl2;
-    comb->sign_dPl1mPl2m  = entry->common_sign * sign_lndPl1 * entry->sign_Pl2;
+    /* dPl1m*Pl2m */
+    comb->lndPl1mPl2m     = lndPl1 +plm_array[l2 - m];
+    comb->sign_dPl1mPl2m  = entry->common_sign * sign_lndPl1 * plm_signs[l2 - m];
 
     /* dPl1m*dPl2m */
     comb->lndPl1mdPl2m    = lndPl1 + lndPl2;
