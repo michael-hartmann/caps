@@ -219,7 +219,7 @@ float80 casimir_lnLambda(int l1, int l2, int m, sign_t *sign)
 {
     if(sign != NULL)
         *sign = -1;
-    return LOG2 + (log80(2*l1+1)+log80(2*l2+1)-LOG4-log80(l1)-log80(l1+1)-log80(l2)-log80(l2+1)+lnfac80(l1-m)+lnfac80(l2-m)-lnfac80(l1+m)-lnfac80(l2+m))/2.0L;
+    return (log80(2*l1+1)+log80(2*l2+1)-log80(l1)-log80(l1+1)-log80(l2)-log80(l2+1)+lnfac80(l1-m)+lnfac80(l2-m)-lnfac80(l1+m)-lnfac80(l2+m))/2.0L;
 }
 
 
@@ -270,7 +270,7 @@ float80 casimir_lnXi(int l1, int l2, int m, sign_t *sign)
  */
 double casimir_epsilon(double xi, double omegap, double gamma_)
 {
-    return 1+omegap*omegap/(xi*(xi+gamma_));
+    return 1+pow_2(omegap)/(xi*(xi+gamma_));
 }
 
 
@@ -291,7 +291,7 @@ double casimir_epsilon(double xi, double omegap, double gamma_)
  */
 double casimir_lnepsilon(double xi, double omegap, double gamma_)
 {
-    return log1p(omegap*omegap/(xi*(xi+gamma_)));
+    return log1p(pow_2(omegap)/(xi*(xi+gamma_)));
 }
 
 
@@ -320,7 +320,7 @@ void casimir_rp(casimir_t *self, float80 nT, float80 k, float80 *r_TE, float80 *
     {
         /* Drude metals */
         const float80 epsilon = casimir_epsilon(nT, self->omegap_plane, self->gamma_plane);
-        const float80 beta = sqrt80(1 + (epsilon-1)/(1 + pow_2(k/nT)));
+        const float80 beta = sqrt80(1 + pow_2(nT)/(pow_2(nT)+pow_2(k)) * (epsilon-1));
 
         *r_TE = (1-beta)/(1+beta);
         *r_TM = (epsilon-beta)/(epsilon+beta);
@@ -483,13 +483,13 @@ int casimir_init(casimir_t *self, double LbyR, double T)
     self->debug = false;
 
     /* precondition matrix before QR decomposition */
-    self->precondition = true;
+    self->precondition = false;
 
     /* balance matrix before QR decomposition */
     self->balance = true;
 
     /* pivot matrix before QR decomposition */
-    self->pivot = true;
+    self->pivot = false;
 
     /* use QR decomposition to calculate determinant */
     memset(self->detalg, 0, sizeof(self->detalg));
@@ -1743,6 +1743,11 @@ double casimir_logdetD(casimir_t *self, int n, int m)
     matrix_float80 *M     = matrix_float80_alloc(2*dim);
     matrix_sign_t *M_sign = matrix_sign_alloc   (2*dim);
 
+    /* set matrix elements to NAN */
+    if(1)
+        for(int i = 0; i < pow_2(M->dim); i++)
+            M->M[i] = NAN;
+
     /* M_EE, -M_EM
        M_ME,  M_MM */
     /*
@@ -1842,6 +1847,32 @@ double casimir_logdetD(casimir_t *self, int n, int m)
         casimir_integrate_drude_free();
 
     casimir_debug(self, "# calculating %dx%d matrix elements (trace approximation): %gs\n", 2*dim, 2*dim, now()-start);
+
+    /* check if matrix elements are finite */
+    if(1)
+    {
+        for(int l1 = min; l1 <= max; l1++)
+            for(int l2 = min; l2 <= max; l2++)
+            {
+                const int i = l1-min;
+                const int j = l2-min;
+                const float80 elem_EE = matrix_get(M, i,j);
+                const float80 elem_MM = matrix_get(M, i+dim,j+dim);
+
+                TERMINATE(!isfinite(elem_EE), "matrix element not finite: P=EE, l1=%d, l2=%d, elem=%Lg", l1,l2, elem_EE);
+                TERMINATE(!isfinite(elem_MM), "matrix element not finite: P=MM, l1=%d, l2=%d, elem=%Lg", l1,l2, elem_MM);
+
+                if(m != 0)
+                {
+                    const float80 elem_EM = matrix_get(M, i+dim,j);
+                    const float80 elem_ME = matrix_get(M, i,j+dim);
+
+                    TERMINATE(!isfinite(elem_EM), "matrix element not finite: P=EM, l1=%d, l2=%d, elem=%Lg", l1,l2, elem_EM);
+                    TERMINATE(!isfinite(elem_ME), "matrix element not finite: P=EM, l1=%d, l2=%d, elem=%Lg", l1,l2, elem_EM);
+                }
+
+            }
+    }
 
 #if 0
     /* Dump matrix */
