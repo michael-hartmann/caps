@@ -1656,6 +1656,7 @@ double casimir_trM(casimir_t *self, int n, int m, void *obj)
     const int min = MAX(m,1);
     const int max = self->lmax;
     integration_perf_t *int_perf = obj;
+    integration_drude_t *int_drude = obj;
     float80 trM = 0;
 
     for(int l = min; l <= max; l++)
@@ -1670,7 +1671,7 @@ double casimir_trM(casimir_t *self, int n, int m, void *obj)
         if(isinf(self->omegap_plane))
             casimir_integrate_perf(int_perf, l, l, &cint);
         else
-            casimir_integrate_drude(self, &cint, l, l, m, n, self->T);
+            casimir_integrate_drude(int_drude, l, l, &cint);
 
         /* EE */
         sign_t signs_EE[] = { sign_al*cint.signA_TE, sign_al*cint.signB_TM };
@@ -1711,6 +1712,12 @@ double casimir_logdetD(casimir_t *self, int n, int m)
     const double nT = n*self->T;
     double logdet = 0;
     integration_perf_t int_perf;
+    
+    integration_drude_t int_drude = {
+        .plm_cache = NULL,
+        .m         = m,
+        .nT        = n * self->T
+    };
 
     const int min = MAX(m,1);
     const int max = self->lmax;
@@ -1735,7 +1742,7 @@ double casimir_logdetD(casimir_t *self, int n, int m)
         casimir_integrate_perf_init(&int_perf, nT, m, self->lmax);
     else
         /* drude mirror */
-        casimir_integrate_drude_init(self);
+        casimir_integrate_drude_init(self, &int_drude, nT, m, self->lmax);
 
     if(isinf(self->omegap_plane))
     {
@@ -1793,7 +1800,7 @@ double casimir_logdetD(casimir_t *self, int n, int m)
             if(isinf(self->omegap_plane))
                 casimir_integrate_perf(&int_perf, l1, l2, &cint);
             else
-                casimir_integrate_drude(self, &cint, l1, l2, m, n, self->T);
+                casimir_integrate_drude(&int_drude, l1, l2, &cint);
 
             /* EE */
             {
@@ -1856,7 +1863,7 @@ double casimir_logdetD(casimir_t *self, int n, int m)
     if(isinf(self->omegap_plane))
         casimir_integrate_perf_free(&int_perf);
     else
-        casimir_integrate_drude_free();
+        casimir_integrate_drude_free(&int_drude);
 
     casimir_debug(self, "# calculating %dx%d matrix elements (trace approximation): %gs\n", 2*dim, 2*dim, now()-start);
 
