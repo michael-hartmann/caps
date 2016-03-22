@@ -1048,15 +1048,26 @@ double casimir_lnb_perf(casimir_t *self, const int l, const int n, sign_t *sign)
  * For \f$\omega_\mathrm{P} = \infty\f$ the Mie coefficient for perfect
  * reflectors are returned (see casimir_lna_perf and casimir_lnb_perf).
  *
- * Cf. Eqs. (3.30) and (3.31).
- *
  * sign_a and sign_b must be valid pointers and must not be NULL.
+ *
+ * For Drude metals we calculate the Mie coefficients al(iξ) und bl(iξ) using
+ * the expressions taken from [1]. Ref. [1] is the erratum to [2]. Please note
+ * that the equations (3.30) and (3.31) in [3] are wrong.
  *
  * Note: If sla =~ slb or slc =~ sld, there is a loss of significance when
  * calculating sla-slb or slc-sld.
  *
  * This function is thread safe - as long you don't change temperature, aspect
  * ratio and dielectric properties of sphere.
+ *
+ * References:
+ * [1] Erratum: Thermal Casimir effect for Drude metals in the plane-sphere
+ * geometry, Canaguier-Durand, Neto, Lambrecht, Reynaud (2010)
+ * http://journals.aps.org/pra/abstract/10.1103/PhysRevA.83.039905
+ * [2] Thermal Casimir effect for Drude metals in the plane-sphere geometry,
+ * Canaguier-Durand, Neto, Lambrecht, Reynaud (2010),
+ * http://journals.aps.org/pra/abstract/10.1103/PhysRevA.82.012511
+ * [3] Negative Casimir entropies in the plane-sphere geometry, Hartmann, 2014
  *
  * @param [in,out] self Casimir object
  * @param [in] n_mat Matsubara term, \f$\xi = nT\f$
@@ -1084,11 +1095,12 @@ void casimir_lnab(casimir_t *self, const int n_mat, const int l, double *lna, do
     /* χ = ξ*R/(R+L) = ξ/(1+L/R) */
     const float80 chi    = xi/(1+self->LbyR);
     const float80 ln_chi = log80(xi)-log1p80(self->LbyR);
+    const float80 ln_l   = log80(l);
 
     /**
      * Note: n is the refraction index, n_mat the Matsubara index
      * n    = sqrt(ε(ξ,ω_p,γ))
-     * ln_n = ln(ε(ξ,ω_p,γ))/2
+     * ln_n = ln(sqrt(ε(ξ,ω_p,γ)))
      */
     const float80 ln_n = casimir_lnepsilon(xi, self->omegap_sphere, self->gamma_sphere)/2;
     const float80 n    = exp80(ln_n);
@@ -1102,10 +1114,10 @@ void casimir_lnab(casimir_t *self, const int n_mat, const int l, double *lna, do
     bessel_lnInuKnu(l-1, n*chi, &lnIlm_nchi, &lnKlm_nchi); /* K_{l-0.5}(nχ), K_{l-0.5}(nχ) */
 
     sign_t sign_sla, sign_slb, sign_slc, sign_sld;
-    const float80 ln_sla = lnIlp_nchi + logadd_s(lnIlp,      +1, ln_chi+lnIlm,           -1, &sign_sla);
-    const float80 ln_slb = lnIlp      + logadd_s(lnIlp_nchi, +1, ln_n+ln_chi+lnIlm_nchi, -1, &sign_slb);
-    const float80 ln_slc = lnIlp_nchi + logadd_s(lnKlp,      +1, ln_chi+lnKlm,           +1, &sign_slc);
-    const float80 ln_sld = lnKlp      + logadd_s(lnIlp_nchi, +1, ln_n+ln_chi+lnIlm_nchi, -1, &sign_sld);
+    const float80 ln_sla = lnIlp_nchi + logadd_s(ln_l+lnIlp,      +1,      ln_chi+lnIlm,      -1, &sign_sla);
+    const float80 ln_slb = lnIlp      + logadd_s(ln_l+lnIlp_nchi, +1, ln_n+ln_chi+lnIlm_nchi, -1, &sign_slb);
+    const float80 ln_slc = lnIlp_nchi + logadd_s(ln_l+lnKlp,      +1,      ln_chi+lnKlm,      +1, &sign_slc);
+    const float80 ln_sld = lnKlp      + logadd_s(ln_l+lnIlp_nchi, +1, ln_n+ln_chi+lnIlm_nchi, -1, &sign_sld);
 
     /**
      */
@@ -1125,8 +1137,8 @@ void casimir_lnab(casimir_t *self, const int n_mat, const int l, double *lna, do
     *lna = LOGPI - LOG2 + logadd_s(2*ln_n+ln_sla, +sign_sla, ln_slb, -sign_slb, &sign_a_num) - logadd_s(2*ln_n+ln_slc, +sign_slc, ln_sld, -sign_sld, &sign_a_denom);
     *lnb = LOGPI - LOG2 + logadd_s(       ln_sla, +sign_sla, ln_slb, -sign_slb, &sign_b_num) - logadd_s(       ln_slc, +sign_slc, ln_sld, -sign_sld, &sign_b_denom);
 
-    *sign_a = sign_a_num*sign_a_denom;
-    *sign_b = sign_b_num*sign_b_denom;
+    *sign_a = MPOW(l+1)*sign_a_num*sign_a_denom;
+    *sign_b = MPOW(l+1)*sign_b_num*sign_b_denom;
 }
 
 
