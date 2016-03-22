@@ -47,7 +47,7 @@
  * will caclulate the values of plm with the function "plm_PlmPlm" from sfunc.c.
  * ----- Experimental code ------
  */
-//#define USE_PLM_CACHE
+#define USE_PLM_CACHE
 
 
 
@@ -93,7 +93,7 @@ static inline void integrate_romberg(struct integ_context* context,
 
 void integrate_gauss_laguerre(casimir_t *self,
                               casimir_integrals_t *cint,
-                              int l1, int l2, int m, int n, double T);
+                              int l1, int l2, int m, double nT);
 
 void integrands_drude(float80 x, integrands_drude_t *integrands,
                       struct integ_context* context,
@@ -389,20 +389,18 @@ static inline void drude_mult_factor(integrands_drude_t* id, float80 log_factor)
  * This Function calculates the integrals A,B,C,D for the simple- and
  * romberg-method with all the necessary prefactors.
  *
- * @param [in]  self       Casimir object
  * @param [out] cint       Logarithms of values and signs of integrals
  * @param [in]  l1         Value of l1
  * @param [in]  l2         Value of l2
- * @param [in]  m          Value of m
- * @param [in]  n          Index of the Matsubara-Term
- * @param [in]  T          Scaled Temperature
+ * @param [in]  int_drude  Drude integration object
  */
-static inline void do_integrate(casimir_t* self, casimir_integrals_t* cint,
-                                int l1, int l2, int m, int n, double T)
+static inline void do_integrate(casimir_integrals_t* cint,
+                                int l1, int l2, integration_drude_t* int_drude)
 {
-//    const float80 c0  = (l1 + l2 - 1) / (n*T);
+    int m             = int_drude->m;
+    double nT         = int_drude->nT;
     const float80 c0  = l1 + l2 - 1;
-    const float80 tau = 2 * n * T;
+    const float80 tau = 2 * nT;
     float80 c_max;
     integrands_drude_t total;
 
@@ -421,13 +419,14 @@ static inline void do_integrate(casimir_t* self, casimir_integrals_t* cint,
         c_max = 1.0;
 
     struct integ_context context = {
-        .l1      = l1,
-        .l2      = l2,
-        .m       = m,
-        .nT      = n*T,
-        .c0      = c0,
-        .c_max   = c_max,
-        .casimir = self
+        .l1        = l1,
+        .l2        = l2,
+        .m         = m,
+        .nT        = nT,
+        .c0        = c0,
+        .c_max     = c_max,
+        .casimir   = int_drude->casimir,
+        .int_drude = int_drude
     };
 
 
@@ -450,13 +449,13 @@ static inline void do_integrate(casimir_t* self, casimir_integrals_t* cint,
      * we have to call the free function.
      */
 #ifdef USE_PLM_CACHE
-    plm_cache_init(&context, n);
+    plm_cache_init(&context);
 #endif
 
     integrate_romberg(&context, &total, &error);
 
 #ifdef USE_PLM_CACHE
-    plm_cache_free(&context);
+    plm_cache_free(int_drude);
 #endif
 
 
@@ -749,36 +748,39 @@ static inline void integrate_romberg(struct integ_context* context,
  *    Lambda(l1,l2,m)*D_(l1,l2)^(m)
  * for Drude metals.
  *
- * @param [in]  self Casimir object
- * @param [out] cint logarithms of values and signs of integrals
+ * @param [in]  Drude integration object
  * @param [in]  l1   \f$\ell_1\f$
  * @param [in]  l2   \f$\ell_2\f$
- * @param [in]  m    \f$m\f$
- * @param [in]  nT   \f$nT\f$
+ * @param [out] cint logarithms of values and signs of integrals
  */
-void casimir_integrate_drude(casimir_t *self, casimir_integrals_t *cint, int l1, int l2, int m, int n, double T)
+void casimir_integrate_drude(integration_drude_t* int_drude, int l1, int l2, casimir_integrals_t* cint)
 {
 #if defined INTEGRATION_GAUSS_LAGUERRE
-    integrate_gauss_laguerre(self, cint, l1, l2, m, n, T);
+    integrate_gauss_laguerre(int_drude->casimir, cint, l1, l2, int_drude->m, int_drude->nT);
 #else
-    do_integrate(self, cint, l1, l2, m, n, T);
+    do_integrate(cint, l1, l2, int_drude);
 #endif
 }
 
 
-void casimir_integrate_drude_init(casimir_t* self)
+void casimir_integrate_drude_init(casimir_t* self, integration_drude_t* int_drude, double nT, int m, int lmax)
 {
+    int_drude->casimir = self;
+    int_drude->nT      = nT;
+    int_drude->m       = m;
+    int_drude->lmax    = lmax;
+    
 #if (defined INTEGRATION_ROMBERG && defined USE_PLM_CACHE)
-    plm_create_cache(self);
+    plm_create_cache(int_drude);
 #endif
 }
 
 
-void casimir_integrate_drude_free()
+void casimir_integrate_drude_free(integration_drude_t* int_drude)
 {
 #if (defined INTEGRATION_ROMBERG && defined USE_PLM_CACHE)
-    plm_destroy_cache();
-#endif    
+    plm_destroy_cache(int_drude);
+#endif
 }
 
 
@@ -840,10 +842,10 @@ static void integrands_drude_laguerre(float80 x, integrands_drude_t *integrands,
  * @param [in]  m    \f$m\f$
  * @param [in]  nT   \f$nT\f$
  */
-void integrate_gauss_laguerre(casimir_t *self, casimir_integrals_t *cint, int l1, int l2, int m, int n, double T)
+void integrate_gauss_laguerre(casimir_t *self, casimir_integrals_t *cint, int l1, int l2, int m, double nT)
 {
     integrands_drude_t integrand;
-    const float80 tau = 2*n*T;
+    const float80 tau = 2*nT;
     const float80 ln_tau = log80(tau);
     const float80 ln_Lambda = casimir_lnLambda(l1, l2, m, NULL); /* sign: -1 */
     float80 prefactor;
@@ -872,7 +874,7 @@ void integrate_gauss_laguerre(casimir_t *self, casimir_integrals_t *cint, int l1
 
     for(int i = 0; i < N; i++)
     {
-        integrands_drude_laguerre(xk[i], &integrand, self, n*T, l1, l2, m);
+        integrands_drude_laguerre(xk[i], &integrand, self, nT, l1, l2, m);
 
         lnA_TE[i]  = ln_wk[i] + integrand.lnA_TE;
         lnA_TM[i]  = ln_wk[i] + integrand.lnA_TM;
