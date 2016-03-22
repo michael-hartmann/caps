@@ -4,6 +4,7 @@
 #include "libcasimir.h"
 #include "integration_drude.h"
 #include "sfunc.h"
+#include "floattypes.h"
 
 #define TE 0
 #define TM 1
@@ -24,8 +25,8 @@ float80 TraceD0(casimir_t *self, int m)
     for(int l = min; l <= max; l++)
     {
         sign_t sign_a0, sign_b0, sign_xi;
-        double lna0, lnb0;
-        double lnXiRL = casimir_lnXi(l,l,m,&sign_xi)+(2*l+1)*lnRbyScriptL;
+        float80 lna0, lnb0;
+        float80 lnXiRL = casimir_lnXi(l,l,m,&sign_xi)+(2*l+1)*lnRbyScriptL;
         casimir_lnab0(l, &lna0, &sign_a0, &lnb0, &sign_b0);
 
         Tr_EE += -sign_xi*sign_a0*exp80(lna0+lnXiRL);
@@ -40,6 +41,12 @@ void TraceD(casimir_t *self, int n, int m, float80 Tr_EE[2], float80 Tr_MM[2])
     Tr_EE[TE] = Tr_EE[TM] = 0;
     Tr_MM[TE] = Tr_MM[TM] = 0;
 
+    integration_drude_t int_drude = {
+        .plm_cache = NULL,
+        .m         = m,
+        .nT        = n*self->T
+    };
+
     min = MAX(m,1);
     max = self->lmax;
 
@@ -49,6 +56,7 @@ void TraceD(casimir_t *self, int n, int m, float80 Tr_EE[2], float80 Tr_MM[2])
         return;
     }
 
+    casimir_integrate_drude_init(self, &int_drude, n*self->T, m, self->lmax);
     for(int l = min; l <= max; l++)
     {
         casimir_integrals_t cint;
@@ -57,7 +65,7 @@ void TraceD(casimir_t *self, int n, int m, float80 Tr_EE[2], float80 Tr_MM[2])
 
         casimir_mie_cache_get(self, l, n, &ln_al, &sign_al, &ln_bl, &sign_bl);
 
-        casimir_integrate_drude(self, &cint, l, l, m, n, self->T);
+        casimir_integrate_drude(&int_drude, l, l, &cint);
 
         /* EE */
         Tr_EE[TE] += -sign_al*cint.signA_TE*exp80(ln_al+cint.lnA_TE);
@@ -67,6 +75,8 @@ void TraceD(casimir_t *self, int n, int m, float80 Tr_EE[2], float80 Tr_MM[2])
         Tr_MM[TE] += -sign_bl*cint.signB_TE*exp80(ln_bl+cint.lnB_TE);
         Tr_MM[TM] += -sign_bl*cint.signA_TM*exp80(ln_bl+cint.lnA_TM);
     }
+
+    casimir_integrate_drude_free(&int_drude);
 }
 
 void usage(FILE *stream, const char *self)
@@ -118,9 +128,6 @@ int main(int argc, char *argv[])
         /* set gamma */
         casimir_set_gamma_sphere(&casimir, gamma_);
         casimir_set_gamma_plane (&casimir, gamma_);
-
-        /* set order of Gauss-Laguerre integration */
-        casimir_set_integration(&casimir, 150);
 
         casimir_info(&casimir, stdout, "# ");
 
