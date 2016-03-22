@@ -421,11 +421,6 @@ static void check_values(int l1, int l2, int m, float80 x,
 {
 #define ALMOST_EQUAL(x,y) ((x) == (y) || fabs80(1 - (x)/(y)) < 1e-9)
 
-    /*
-     * FIXME: At the moment the values for lnPl1 and lnPl1p1 are not correct.
-     * We will use the correct values instead.
-     * When the problem is solved add theese line.
-     */
     assert(ALMOST_EQUAL(real_values->lnPl1mPl2m, comb->lnPl1mPl2m));
     assert(ALMOST_EQUAL(real_values->lnPl1mdPl2m, comb->lnPl1mdPl2m));
     assert(ALMOST_EQUAL(real_values->lndPl1mPl2m, comb->lndPl1mPl2m));
