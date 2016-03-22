@@ -9,6 +9,15 @@
 
 #define Assert_Drude(test, x, y) _AssertAlmostEqual(__LINE__, (test), (x), (y), DRUDE_INTEG_ACCURACY)
 
+static void drude_integrate(casimir_t* casimir, casimir_integrals_t* cint,
+                            int l1, int l2, int m, int n, double T)
+{
+    integration_drude_t int_drude;
+    casimir_integrate_drude_init(casimir, &int_drude, n * T, m, MAX(l1, l2));
+    casimir_integrate_drude(&int_drude, l1, l2, cint);
+    casimir_integrate_drude_free(&int_drude);
+}
+
 int test_integration_drude(void)
 {
     casimir_integrals_t cint;
@@ -25,7 +34,7 @@ int test_integration_drude(void)
     casimir_set_gamma_plane(&casimir, gamma_);
 
     {
-        casimir_integrate_drude(&casimir, &cint, 250, 250, 1, 1, 1.0);
+        drude_integrate(&casimir, &cint, 250, 250, 1, 1, 1.0);
 
         Assert_Drude(&test, cint.lnA_TE, 2584.8354863970);
         AssertEqual(&test, cint.signA_TE, +1);
@@ -35,7 +44,7 @@ int test_integration_drude(void)
     }
 
     {
-        casimir_integrate_drude(&casimir, &cint, 3, 2, 1, 1, 1);
+        drude_integrate(&casimir, &cint, 3, 2, 1, 1, 1);
 
         Assert_Drude(&test, cint.lnA_TE, -0.62981145199252068602408);
         AssertEqual(&test, cint.signA_TE, +1);
@@ -59,7 +68,7 @@ int test_integration_drude(void)
     }
 
     {
-        casimir_integrate_drude(&casimir, &cint, 3, 2, 2, 1, 1);
+        drude_integrate(&casimir, &cint, 3, 2, 2, 1, 1);
 
         Assert_Drude(&test, cint.lnA_TE, -0.7132786835392315505014);
         AssertEqual(&test, cint.signA_TE, +1);
@@ -83,7 +92,7 @@ int test_integration_drude(void)
     }
 
     {
-        casimir_integrate_drude(&casimir, &cint, 3, 2, 1, 1, 2);
+        drude_integrate(&casimir, &cint, 3, 2, 1, 1, 2);
 
         Assert_Drude(&test, cint.lnA_TE, -4.1459191747317624709052);
         AssertEqual(&test, cint.signA_TE, +1);
@@ -107,7 +116,7 @@ int test_integration_drude(void)
     }
 
     {
-        casimir_integrate_drude(&casimir, &cint, 4, 2, 1, 1, 2);
+        drude_integrate(&casimir, &cint, 4, 2, 1, 1, 2);
 
         Assert_Drude(&test, cint.lnA_TE, -3.4410543260111500276103);
         AssertEqual(&test, cint.signA_TE, +1);
@@ -131,7 +140,7 @@ int test_integration_drude(void)
     }
 
     {
-        casimir_integrate_drude(&casimir, &cint, 4, 3, 1, 1, 2);
+        drude_integrate(&casimir, &cint, 4, 3, 1, 1, 2);
 
         Assert_Drude(&test, cint.lnA_TE, -2.6626325469377015011493);
         AssertEqual(&test, cint.signA_TE, -1);
@@ -155,7 +164,7 @@ int test_integration_drude(void)
     }
 
     {
-        casimir_integrate_drude(&casimir, &cint, 4, 3, 1, 1, 20);
+        drude_integrate(&casimir, &cint, 4, 3, 1, 1, 20);
 
         Assert_Drude(&test, cint.lnA_TE, -43.137947441949791493356);
         Assert_Drude(&test, cint.lnA_TM, -43.120372668298594245786);
@@ -168,7 +177,7 @@ int test_integration_drude(void)
     }
 
     {
-        casimir_integrate_drude(&casimir, &cint, 4, 3, 1, 1, 0.01);
+        drude_integrate(&casimir, &cint, 4, 3, 1, 1, 0.01);
 
         Assert_Drude(&test, cint.lnA_TE, 29.361786303876121509058);
         Assert_Drude(&test, cint.lnA_TM, 29.727644399301097042065);
@@ -181,14 +190,14 @@ int test_integration_drude(void)
     }
 
     {
-        casimir_integrate_drude(&casimir, &cint, 20, 20, 0, 1, 2);
+        drude_integrate(&casimir, &cint, 20, 20, 0, 1, 2);
 
         Assert_Drude(&test, cint.lnB_TE, 80.261829579383622339087);
         Assert_Drude(&test, cint.lnB_TM, 80.616659994373914035408);
     }
 
     {
-        casimir_integrate_drude(&casimir, &cint, 20, 20, 1, 1, 2);
+        drude_integrate(&casimir, &cint, 20, 20, 1, 1, 2);
 
         Assert_Drude(&test, cint.lnA_TE, 69.659355648443184396324);
         Assert_Drude(&test, cint.lnA_TM, 69.996776884623239716192);
@@ -201,7 +210,7 @@ int test_integration_drude(void)
     }
 
     {
-        casimir_integrate_drude(&casimir, &cint, 7, 7, 1, 1, 2);
+        drude_integrate(&casimir, &cint, 7, 7, 1, 1, 2);
 
         Assert_Drude(&test, cint.lnA_TE, 6.6971469912051709882689);
         Assert_Drude(&test, cint.lnA_TM, 6.8044855533996484279007);
@@ -214,7 +223,7 @@ int test_integration_drude(void)
     }
 
     {
-        casimir_integrate_drude(&casimir, &cint, 60, 7, 1, 1, 4);
+        drude_integrate(&casimir, &cint, 60, 7, 1, 1, 4);
 
         Assert_Drude(&test, cint.lnA_TE, 111.142136572991446682);
         Assert_Drude(&test, cint.lnA_TM, 111.67030961586370531194);
@@ -227,7 +236,7 @@ int test_integration_drude(void)
     }
 
     {
-        casimir_integrate_drude(&casimir, &cint, 60, 50, 1, 1, 2);
+        drude_integrate(&casimir, &cint, 60, 50, 1, 1, 2);
 
         Assert_Drude(&test, cint.lnA_TE, 316.6241201381509729508);
         Assert_Drude(&test, cint.lnA_TM, 317.54352315209682942627);
@@ -240,7 +249,7 @@ int test_integration_drude(void)
     }
 
     {
-        casimir_integrate_drude(&casimir, &cint, 60, 7, 1, 1, 2.0);
+        drude_integrate(&casimir, &cint, 60, 7, 1, 1, 2.0);
 
         Assert_Drude(&test, cint.lnA_TE, 157.03473913126033297558);
         AssertEqual(&test, cint.signA_TE, -1);
@@ -264,7 +273,7 @@ int test_integration_drude(void)
     }
 
     {
-        casimir_integrate_drude(&casimir, &cint, 80, 7, 1, 1, 2.0);
+        drude_integrate(&casimir, &cint, 80, 7, 1, 1, 2.0);
 
         Assert_Drude(&test, cint.lnA_TE, 229.1597844213887940905);
         AssertEqual(&test, cint.signA_TE, -1);
@@ -288,7 +297,7 @@ int test_integration_drude(void)
     }
 
     {
-        casimir_integrate_drude(&casimir, &cint, 100, 7, 1, 1, 2.0);
+        drude_integrate(&casimir, &cint, 100, 7, 1, 1, 2.0);
 
         Assert_Drude(&test, cint.lnA_TE, 306.06932889220031152131);
         AssertEqual(&test, cint.signA_TE, -1);
@@ -312,7 +321,7 @@ int test_integration_drude(void)
     }
 
     {
-        casimir_integrate_drude(&casimir, &cint, 120, 7, 1, 1, 2.0);
+        drude_integrate(&casimir, &cint, 120, 7, 1, 1, 2.0);
 
         Assert_Drude(&test, cint.lnA_TE, 386.83594323128082725092);
         AssertEqual(&test, cint.signA_TE, -1);
@@ -336,7 +345,7 @@ int test_integration_drude(void)
     }
 
     {
-        casimir_integrate_drude(&casimir, &cint, 140, 7, 1, 1, 2.0);
+        drude_integrate(&casimir, &cint, 140, 7, 1, 1, 2.0);
 
         Assert_Drude(&test, cint.lnA_TE, 470.83515226908617063882);
         AssertEqual(&test, cint.signA_TE, -1);
@@ -360,7 +369,7 @@ int test_integration_drude(void)
     }
 
     {
-        casimir_integrate_drude(&casimir, &cint, 160, 7, 1, 1, 2.0);
+        drude_integrate(&casimir, &cint, 160, 7, 1, 1, 2.0);
 
         Assert_Drude(&test, cint.lnA_TE, 557.61732254018995416991);
         AssertEqual(&test, cint.signA_TE, -1);
@@ -384,7 +393,7 @@ int test_integration_drude(void)
     }
 
     {
-        casimir_integrate_drude(&casimir, &cint, 180, 7, 1, 1, 2.0);
+        drude_integrate(&casimir, &cint, 180, 7, 1, 1, 2.0);
 
         Assert_Drude(&test, cint.lnA_TE, 646.8430237940884399506);
         AssertEqual(&test, cint.signA_TE, -1);
@@ -408,7 +417,7 @@ int test_integration_drude(void)
     }
 
     {
-        casimir_integrate_drude(&casimir, &cint, 200, 7, 1, 1, 2.0);
+        drude_integrate(&casimir, &cint, 200, 7, 1, 1, 2.0);
 
         Assert_Drude(&test, cint.lnA_TE, 738.2468187234904583539);
         AssertEqual(&test, cint.signA_TE, -1);
@@ -432,7 +441,7 @@ int test_integration_drude(void)
     }
 
     {
-        casimir_integrate_drude(&casimir, &cint, 220, 7, 1, 1, 2.0);
+        drude_integrate(&casimir, &cint, 220, 7, 1, 1, 2.0);
 
         Assert_Drude(&test, cint.lnA_TE, 831.6153798455399456949);
         AssertEqual(&test, cint.signA_TE, -1);
@@ -456,7 +465,7 @@ int test_integration_drude(void)
     }
 
     {
-        casimir_integrate_drude(&casimir, &cint, 9, 80, 1, 1, 4.0);
+        drude_integrate(&casimir, &cint, 9, 80, 1, 1, 4.0);
 
         Assert_Drude(&test, cint.lnA_TE, 175.36573435960625587165);
         AssertEqual(&test, cint.signA_TE, 1);
@@ -480,7 +489,7 @@ int test_integration_drude(void)
     }
 
     {
-        casimir_integrate_drude(&casimir, &cint, 9, 100, 1, 1, 4.0);
+        drude_integrate(&casimir, &cint, 9, 100, 1, 1, 4.0);
 
         Assert_Drude(&test, cint.lnA_TE, 238.86268895832442365318);
         AssertEqual(&test, cint.signA_TE, 1);
@@ -504,7 +513,7 @@ int test_integration_drude(void)
     }
 
     {
-        casimir_integrate_drude(&casimir, &cint, 9, 120, 1, 1, 4.0);
+        drude_integrate(&casimir, &cint, 9, 120, 1, 1, 4.0);
 
         Assert_Drude(&test, cint.lnA_TE, 306.13652842451938959492);
         AssertEqual(&test, cint.signA_TE, 1);
@@ -528,7 +537,7 @@ int test_integration_drude(void)
     }
 
     {
-        casimir_integrate_drude(&casimir, &cint, 9, 160, 1, 1, 4.0);
+        drude_integrate(&casimir, &cint, 9, 160, 1, 1, 4.0);
 
         Assert_Drude(&test, cint.lnA_TE, 449.7790071372679505321);
         AssertEqual(&test, cint.signA_TE, 1);
@@ -552,7 +561,7 @@ int test_integration_drude(void)
     }
 
     {
-        casimir_integrate_drude(&casimir, &cint, 9, 180, 1, 1, 4.0);
+        drude_integrate(&casimir, &cint, 9, 180, 1, 1, 4.0);
 
         Assert_Drude(&test, cint.lnA_TE, 525.38273677174897945043);
         AssertEqual(&test, cint.signA_TE, 1);
@@ -576,7 +585,7 @@ int test_integration_drude(void)
     }
 
     {
-        casimir_integrate_drude(&casimir, &cint, 9, 200, 1, 1, 4.0);
+        drude_integrate(&casimir, &cint, 9, 200, 1, 1, 4.0);
 
         Assert_Drude(&test, cint.lnA_TE, 603.13928713058383832956);
         AssertEqual(&test, cint.signA_TE, 1);
@@ -600,7 +609,7 @@ int test_integration_drude(void)
     }
 
     {
-        casimir_integrate_drude(&casimir, &cint, 9, 220, 1, 1, 4.0);
+        drude_integrate(&casimir, &cint, 9, 220, 1, 1, 4.0);
 
         Assert_Drude(&test, cint.lnA_TE, 682.84005247565439576229);
         AssertEqual(&test, cint.signA_TE, 1);
@@ -624,7 +633,7 @@ int test_integration_drude(void)
     }
 
     {
-        casimir_integrate_drude(&casimir, &cint, 80, 80, 1, 1, 0.1);
+        drude_integrate(&casimir, &cint, 80, 80, 1, 1, 0.1);
 
         Assert_Drude(&test, cint.lnA_TE, 1000.3265010697618353497);
         AssertEqual(&test, cint.signA_TE, 1);
@@ -648,7 +657,7 @@ int test_integration_drude(void)
     }
 
     {
-        casimir_integrate_drude(&casimir, &cint, 100, 100, 1, 1, 0.1);
+        drude_integrate(&casimir, &cint, 100, 100, 1, 1, 0.1);
 
         Assert_Drude(&test, cint.lnA_TE, 1298.8895358853346095728);
         AssertEqual(&test, cint.signA_TE, 1);
@@ -672,7 +681,7 @@ int test_integration_drude(void)
     }
 
     {
-        casimir_integrate_drude(&casimir, &cint, 120, 120, 1, 1, 0.1);
+        drude_integrate(&casimir, &cint, 120, 120, 1, 1, 0.1);
 
         Assert_Drude(&test, cint.lnA_TE, 1605.7090416488913082738);
         AssertEqual(&test, cint.signA_TE, 1);
@@ -696,7 +705,7 @@ int test_integration_drude(void)
     }
 
     {
-        casimir_integrate_drude(&casimir, &cint, 140, 140, 1, 1, 0.1);
+        drude_integrate(&casimir, &cint, 140, 140, 1, 1, 0.1);
 
         Assert_Drude(&test, cint.lnA_TE, 1919.3701648903651043616);
         AssertEqual(&test, cint.signA_TE, 1);
@@ -720,7 +729,7 @@ int test_integration_drude(void)
     }
 
     {
-        casimir_integrate_drude(&casimir, &cint, 160, 160, 1, 1, 0.1);
+        drude_integrate(&casimir, &cint, 160, 160, 1, 1, 0.1);
 
         Assert_Drude(&test, cint.lnA_TE, 2238.8723967764613720782);
         AssertEqual(&test, cint.signA_TE, 1);
@@ -744,7 +753,7 @@ int test_integration_drude(void)
     }
 
     {
-        casimir_integrate_drude(&casimir, &cint, 180, 180, 1, 1, 0.1);
+        drude_integrate(&casimir, &cint, 180, 180, 1, 1, 0.1);
 
         Assert_Drude(&test, cint.lnA_TE, 2563.470686525182629642);
         AssertEqual(&test, cint.signA_TE, 1);
@@ -768,7 +777,7 @@ int test_integration_drude(void)
     }
 
     {
-        casimir_integrate_drude(&casimir, &cint, 200, 200, 1, 1, 0.1);
+        drude_integrate(&casimir, &cint, 200, 200, 1, 1, 0.1);
 
         Assert_Drude(&test, cint.lnA_TE, 2892.5886402561011254211);
         AssertEqual(&test, cint.signA_TE, 1);
@@ -792,7 +801,7 @@ int test_integration_drude(void)
     }
 
     {
-        casimir_integrate_drude(&casimir, &cint, 220, 220, 1, 1, 0.1);
+        drude_integrate(&casimir, &cint, 220, 220, 1, 1, 0.1);
 
         Assert_Drude(&test, cint.lnA_TE, 3225.7670587947173173257);
         AssertEqual(&test, cint.signA_TE, 1);
@@ -816,7 +825,7 @@ int test_integration_drude(void)
     }
 
     {
-        casimir_integrate_drude(&casimir, &cint, 250, 250, 1, 1, 1.0);
+        drude_integrate(&casimir, &cint, 250, 250, 1, 1, 1.0);
 
         Assert_Drude(&test, cint.lnA_TE, 2584.83548639709);
         AssertEqual(&test, cint.signA_TE, 1);
@@ -840,7 +849,7 @@ int test_integration_drude(void)
     }
 
     {
-        casimir_integrate_drude(&casimir, &cint, 300, 300, 1, 1, 1.0);
+        drude_integrate(&casimir, &cint, 300, 300, 1, 1, 1.0);
 
         Assert_Drude(&test, cint.lnA_TE, 3214.70927052218);
         AssertEqual(&test, cint.signA_TE, 1);
@@ -864,7 +873,7 @@ int test_integration_drude(void)
     }
 
     {
-        casimir_integrate_drude(&casimir, &cint, 350, 350, 1, 1, 1.0);
+        drude_integrate(&casimir, &cint, 350, 350, 1, 1, 1.0);
 
         Assert_Drude(&test, cint.lnA_TE, 3861.47392585065);
         AssertEqual(&test, cint.signA_TE, 1);
@@ -888,7 +897,7 @@ int test_integration_drude(void)
     }
 
     {
-        casimir_integrate_drude(&casimir, &cint, 400, 400, 1, 1, 1.0);
+        drude_integrate(&casimir, &cint, 400, 400, 1, 1, 1.0);
 
         Assert_Drude(&test, cint.lnA_TE, 4522.68187003210);
         AssertEqual(&test, cint.signA_TE, 1);
@@ -912,7 +921,7 @@ int test_integration_drude(void)
     }
 
     {
-        casimir_integrate_drude(&casimir, &cint, 450, 450, 1, 1, 1.0);
+        drude_integrate(&casimir, &cint, 450, 450, 1, 1, 1.0);
 
         Assert_Drude(&test, cint.lnA_TE, 5196.50632803109);
         AssertEqual(&test, cint.signA_TE, 1);
@@ -936,7 +945,7 @@ int test_integration_drude(void)
     }
 
     {
-        casimir_integrate_drude(&casimir, &cint, 500, 500, 1, 1, 1.0);
+        drude_integrate(&casimir, &cint, 500, 500, 1, 1, 1.0);
 
         Assert_Drude(&test, cint.lnA_TE, 5881.53140000397);
         AssertEqual(&test, cint.signA_TE, 1);
@@ -960,7 +969,7 @@ int test_integration_drude(void)
     }
 
     {
-        casimir_integrate_drude(&casimir, &cint, 550, 550, 1, 1, 1.0);
+        drude_integrate(&casimir, &cint, 550, 550, 1, 1, 1.0);
 
         Assert_Drude(&test, cint.lnA_TE, 6576.62729898170);
         AssertEqual(&test, cint.signA_TE, 1);
@@ -984,7 +993,7 @@ int test_integration_drude(void)
     }
 
     {
-        casimir_integrate_drude(&casimir, &cint, 600, 600, 1, 1, 1.0);
+        drude_integrate(&casimir, &cint, 600, 600, 1, 1, 1.0);
 
         Assert_Drude(&test, cint.lnA_TE, 7280.87150394715);
         AssertEqual(&test, cint.signA_TE, 1);
@@ -1008,7 +1017,7 @@ int test_integration_drude(void)
     }
 
     {
-        casimir_integrate_drude(&casimir, &cint, 700, 700, 1, 1, 1.0);
+        drude_integrate(&casimir, &cint, 700, 700, 1, 1, 1.0);
 
         Assert_Drude(&test, cint.lnA_TE, 8713.85357201649);
         AssertEqual(&test, cint.signA_TE, 1);
@@ -1032,7 +1041,7 @@ int test_integration_drude(void)
     }
 
     {
-        casimir_integrate_drude(&casimir, &cint, 600, 800, 1, 1, 1.0);
+        drude_integrate(&casimir, &cint, 600, 800, 1, 1, 1.0);
 
         Assert_Drude(&test, cint.lnA_TE, 8713.87413933327);
         AssertEqual(&test, cint.signA_TE, 1);
@@ -1056,13 +1065,13 @@ int test_integration_drude(void)
     }
 
     {
-        casimir_integrate_drude(&casimir, &cint, 200, 50, 1, 1, 1.0);
+        drude_integrate(&casimir, &cint, 200, 50, 1, 1, 1.0);
 
         Assert_Drude(&test, cint.lnA_TE, 1111.9532800424704341389);
     }
 
     {
-        casimir_integrate_drude(&casimir, &cint, 113, 78, 1, 1, 0.001);
+        drude_integrate(&casimir, &cint, 113, 78, 1, 1, 0.001);
 
         Assert_Drude(&test, cint.lnA_TE, 2101.5903803939422367503);
         AssertEqual(&test, cint.signA_TE, 1);
@@ -1086,7 +1095,7 @@ int test_integration_drude(void)
     }
 
     {
-        casimir_integrate_drude(&casimir, &cint, 116, 79, 1, 1, 0.005);
+        drude_integrate(&casimir, &cint, 116, 79, 1, 1, 0.005);
 
         Assert_Drude(&test, cint.lnA_TE, 1839.5275727640859964752);
         AssertEqual(&test, cint.signA_TE, -1);
@@ -1110,7 +1119,7 @@ int test_integration_drude(void)
     }
 
     {
-        casimir_integrate_drude(&casimir, &cint, 119, 80, 1, 1, 0.01);
+        drude_integrate(&casimir, &cint, 119, 80, 1, 1, 0.01);
 
         Assert_Drude(&test, cint.lnA_TE, 1745.1807796059782470124);
         AssertEqual(&test, cint.signA_TE, 1);
@@ -1134,7 +1143,7 @@ int test_integration_drude(void)
     }
 
     {
-        casimir_integrate_drude(&casimir, &cint, 122, 81, 1, 1, 0.05);
+        drude_integrate(&casimir, &cint, 122, 81, 1, 1, 0.05);
 
         Assert_Drude(&test, cint.lnA_TE, 1461.1105990660488679524);
         AssertEqual(&test, cint.signA_TE, -1);
@@ -1158,7 +1167,7 @@ int test_integration_drude(void)
     }
 
     {
-        casimir_integrate_drude(&casimir, &cint, 125, 82, 1, 1, 0.1);
+        drude_integrate(&casimir, &cint, 125, 82, 1, 1, 0.1);
 
         Assert_Drude(&test, cint.lnA_TE, 1352.0773458174128010077);
         AssertEqual(&test, cint.signA_TE, 1);
@@ -1182,7 +1191,7 @@ int test_integration_drude(void)
     }
 
     {
-        casimir_integrate_drude(&casimir, &cint, 128, 83, 1, 1, 0.5);
+        drude_integrate(&casimir, &cint, 128, 83, 1, 1, 0.5);
 
         Assert_Drude(&test, cint.lnA_TE, 1045.5928923853170743104);
         AssertEqual(&test, cint.signA_TE, -1);
@@ -1206,7 +1215,7 @@ int test_integration_drude(void)
     }
 
     {
-        casimir_integrate_drude(&casimir, &cint, 131, 84, 1, 1, 1.0);
+        drude_integrate(&casimir, &cint, 131, 84, 1, 1, 1.0);
 
         Assert_Drude(&test, cint.lnA_TE, 921.63791055013489151963);
         AssertEqual(&test, cint.signA_TE, 1);
@@ -1230,7 +1239,7 @@ int test_integration_drude(void)
     }
 
     {
-        casimir_integrate_drude(&casimir, &cint, 134, 85, 1, 1, 5.0);
+        drude_integrate(&casimir, &cint, 134, 85, 1, 1, 5.0);
 
         Assert_Drude(&test, cint.lnA_TE, 592.37447130269161042673);
         AssertEqual(&test, cint.signA_TE, -1);
@@ -1254,7 +1263,7 @@ int test_integration_drude(void)
     }
 
     {
-        casimir_integrate_drude(&casimir, &cint, 137, 86, 1, 1, 10.0);
+        drude_integrate(&casimir, &cint, 137, 86, 1, 1, 10.0);
 
         Assert_Drude(&test, cint.lnA_TE, 453.26912531298965194264);
         AssertEqual(&test, cint.signA_TE, 1);
@@ -1278,7 +1287,7 @@ int test_integration_drude(void)
     }
 
     {
-        casimir_integrate_drude(&casimir, &cint, 141, 87, 1, 1, 50.0);
+        drude_integrate(&casimir, &cint, 141, 87, 1, 1, 50.0);
 
         Assert_Drude(&test, cint.lnA_TE, 93.056102414849808321233);
         AssertEqual(&test, cint.signA_TE, -1);
@@ -1302,7 +1311,7 @@ int test_integration_drude(void)
     }
 
     {
-        casimir_integrate_drude(&casimir, &cint, 144, 88, 1, 1, 100.0);
+        drude_integrate(&casimir, &cint, 144, 88, 1, 1, 100.0);
 
         Assert_Drude(&test, cint.lnA_TE, -90.430034469224345470401);
         AssertEqual(&test, cint.signA_TE, 1);
@@ -1326,7 +1335,7 @@ int test_integration_drude(void)
     }
 
     {
-        casimir_integrate_drude(&casimir, &cint, 147, 89, 1, 1, 200.0);
+        drude_integrate(&casimir, &cint, 147, 89, 1, 1, 200.0);
 
         Assert_Drude(&test, cint.lnA_TE, -346.03971818453141707627);
         AssertEqual(&test, cint.signA_TE, -1);
@@ -1355,35 +1364,35 @@ int test_integration_drude(void)
     casimir_set_gamma_plane(&casimir, 0.0);
 
     {
-        casimir_integrate_drude(&casimir, &cint, 1050, 1050, 1, 1, 1);
+        drude_integrate(&casimir, &cint, 1050, 1050, 1, 1, 1);
         Assert_Drude(&test, cint.lnA_TM, 13940.125756903571190096123124106829015888756201576644);
         Assert_Drude(&test, cint.lnB_TM, 13967.9514623712062733110267893316781893739350523);
         Assert_Drude(&test, cint.lnC_TM, 13954.03837148533464206);
     }
 
     {
-        casimir_integrate_drude(&casimir, &cint, 1050, 1, 1, 1, 1);
+        drude_integrate(&casimir, &cint, 1050, 1, 1, 1, 1);
         Assert_Drude(&test, cint.lnA_TM, 6244.485496882807753109);
         Assert_Drude(&test, cint.lnB_TM, 6263.969792590335805);
         Assert_Drude(&test, cint.lnC_TM, 6250.748896960319286622);
     }
 
     {
-        casimir_integrate_drude(&casimir, &cint, 1, 1050, 1, 1, 1);
+        drude_integrate(&casimir, &cint, 1, 1050, 1, 1, 1);
         Assert_Drude(&test, cint.lnA_TM, 6244.485496882807753109081179);
         Assert_Drude(&test, cint.lnB_TM, 6263.969792590335805037405705);
         Assert_Drude(&test, cint.lnC_TM, 6257.7054405868224491877);
     }
 
     {
-        casimir_integrate_drude(&casimir, &cint, 500, 1050, 1, 1, 1);
+        drude_integrate(&casimir, &cint, 500, 1050, 1, 1, 1);
         Assert_Drude(&test, cint.lnA_TM, 9813.28363230087848);
         Assert_Drude(&test, cint.lnB_TM, 9839.7598665288218618873847);
         Assert_Drude(&test, cint.lnC_TM, 9826.8923954024132364);
     }
 
     {
-        casimir_integrate_drude(&casimir, &cint, 1, 1, 1, 1, 1);
+        drude_integrate(&casimir, &cint, 1, 1, 1, 1, 1);
         Assert_Drude(&test, cint.lnA_TM, -2.980829253011726);
         Assert_Drude(&test, cint.lnB_TM, -2.0645385211375711716721);
         Assert_Drude(&test, cint.lnC_TM, -2.5753641449035618548786);
@@ -1391,7 +1400,7 @@ int test_integration_drude(void)
     }
 
     {
-        casimir_integrate_drude(&casimir, &cint, 241, 73, 1, 1, 30);
+        drude_integrate(&casimir, &cint, 241, 73, 1, 1, 30);
         Assert_Drude(&test, cint.lnA_TM, 406.63047665158294437064);
         Assert_Drude(&test, cint.lnB_TM, 419.71230683599700819362);
         Assert_Drude(&test, cint.lnC_TM, 412.57255550309976814896);
@@ -1399,7 +1408,7 @@ int test_integration_drude(void)
     }
 
     {
-        casimir_integrate_drude(&casimir, &cint, 241, 1, 1, 1, 30);
+        drude_integrate(&casimir, &cint, 241, 1, 1, 1, 30);
         Assert_Drude(&test, cint.lnA_TM, 249.75276347175786475423);
         Assert_Drude(&test, cint.lnB_TM, 258.05248402595679167552);
         Assert_Drude(&test, cint.lnC_TM, 251.17334248392289626321);
@@ -1407,27 +1416,27 @@ int test_integration_drude(void)
     }
 
     {
-        casimir_integrate_drude(&casimir, &cint, 241, 241, 1, 1, 30);
+        drude_integrate(&casimir, &cint, 241, 241, 1, 1, 30);
         Assert_Drude(&test, cint.lnA_TM, 838.84852861683729524124);
         Assert_Drude(&test, cint.lnB_TM, 853.98316452183914507246);
         Assert_Drude(&test, cint.lnC_TM, 846.41479992430049881808);
     }
 
     {
-        casimir_integrate_drude(&casimir, &cint, 3, 2, 1, 1, 2);
+        drude_integrate(&casimir, &cint, 3, 2, 1, 1, 2);
         Assert_Drude(&test, cint.lnA_TM, -4.094372316589062);
         Assert_Drude(&test, cint.lnB_TM, -1.970116759119433);
         Assert_Drude(&test, cint.lnC_TM, -3.298725852652321);
     }
 
     {
-        casimir_integrate_drude(&casimir, &cint, 4, 4, 0, 1, 0.005);
+        drude_integrate(&casimir, &cint, 4, 4, 0, 1, 0.005);
         Assert_Drude(&test, cint.lnB_TM, 56.977025325953406);
     }
 
 
     {
-        casimir_integrate_drude(&casimir, &cint, 4, 4, 1, 1, 0.005);
+        drude_integrate(&casimir, &cint, 4, 4, 1, 1, 0.005);
         Assert_Drude(&test, cint.lnA_TM, 40.74560144887208);
         AssertEqual(&test, cint.signA_TM, -1);
         Assert_Drude(&test, cint.lnB_TM, 56.75388164708835);
@@ -1439,7 +1448,7 @@ int test_integration_drude(void)
     }
 
     {
-        casimir_integrate_drude(&casimir, &cint, 40, 40, 1, 1, 0.25);
+        drude_integrate(&casimir, &cint, 40, 40, 1, 1, 0.25);
         Assert_Drude(&test, cint.lnA_TM, 367.258716490769);
         Assert_Drude(&test, cint.lnB_TM, 384.7742430107486);
         Assert_Drude(&test, cint.lnC_TM, 376.010190217081);
@@ -1447,7 +1456,7 @@ int test_integration_drude(void)
     }
 
     {
-        casimir_integrate_drude(&casimir, &cint, 40, 40, 1, 1, 1);
+        drude_integrate(&casimir, &cint, 40, 40, 1, 1, 1);
         Assert_Drude(&test, cint.lnA_TM, 257.7297499756845);
         Assert_Drude(&test, cint.lnB_TM, 272.472669228606);
         Assert_Drude(&test, cint.lnC_TM, 265.0949179301248);
@@ -1455,7 +1464,7 @@ int test_integration_drude(void)
     }
 
     {
-        casimir_integrate_drude(&casimir, &cint, 40, 40, 40, 1, 1);
+        drude_integrate(&casimir, &cint, 40, 40, 40, 1, 1);
         Assert_Drude(&test, cint.lnA_TM, 212.0868844486187);
         Assert_Drude(&test, cint.lnB_TM, 219.4533537701274);
         Assert_Drude(&test, cint.lnC_TM, 215.7638420201849);
@@ -1463,7 +1472,7 @@ int test_integration_drude(void)
     }
 
     {
-        casimir_integrate_drude(&casimir, &cint, 7, 4, 3, 1, 8);
+        drude_integrate(&casimir, &cint, 7, 4, 3, 1, 8);
         Assert_Drude(&test, cint.lnA_TM, -17.1928436859713);
         Assert_Drude(&test, cint.lnB_TM, -16.0865392641165);
         Assert_Drude(&test, cint.lnC_TM, -16.83090135860425);
@@ -1471,7 +1480,7 @@ int test_integration_drude(void)
     }
 
     {
-        casimir_integrate_drude(&casimir, &cint, 20, 20, 3, 1, 13);
+        drude_integrate(&casimir, &cint, 20, 20, 3, 1, 13);
         Assert_Drude(&test, cint.lnA_TM, -5.202385074993125);
         Assert_Drude(&test, cint.lnB_TM, -0.5773666089005467);
         Assert_Drude(&test, cint.lnC_TM, -2.905312825257782);
@@ -1479,7 +1488,7 @@ int test_integration_drude(void)
     }
 
     {
-        casimir_integrate_drude(&casimir, &cint, 20, 20, 3, 1, 0.001);
+        drude_integrate(&casimir, &cint, 20, 20, 3, 1, 0.001);
         Assert_Drude(&test, cint.lnA_TM, 368.3408666279195);
         Assert_Drude(&test, cint.lnB_TM, 391.916763894729);
         Assert_Drude(&test, cint.lnC_TM, 380.1161563573135);
@@ -1487,7 +1496,7 @@ int test_integration_drude(void)
     }
 
     {
-        casimir_integrate_drude(&casimir, &cint, 20, 20, 3, 1, 0.01);
+        drude_integrate(&casimir, &cint, 20, 20, 3, 1, 0.01);
         Assert_Drude(&test, cint.lnA_TM, 278.540045473523);
         Assert_Drude(&test, cint.lnB_TM, 297.5107725493697);
         Assert_Drude(&test, cint.lnC_TM, 288.0127501055992);
@@ -1495,7 +1504,7 @@ int test_integration_drude(void)
     }
 
     {
-        casimir_integrate_drude(&casimir, &cint, 20, 20, 3, 1, 0.1);
+        drude_integrate(&casimir, &cint, 20, 20, 3, 1, 0.1);
         Assert_Drude(&test, cint.lnA_TM, 188.7389740846992);
         Assert_Drude(&test, cint.lnB_TM, 203.1045304770997);
         Assert_Drude(&test, cint.lnC_TM, 195.9090931914071);
@@ -1503,7 +1512,7 @@ int test_integration_drude(void)
     }
 
     {
-        casimir_integrate_drude(&casimir, &cint, 20, 20, 3, 1, 1);
+        drude_integrate(&casimir, &cint, 20, 20, 3, 1, 1);
         Assert_Drude(&test, cint.lnA_TM, 98.91288744548656);
         Assert_Drude(&test, cint.lnB_TM, 108.6732240307656);
         Assert_Drude(&test, cint.lnC_TM, 103.7803782982835);
@@ -1511,7 +1520,7 @@ int test_integration_drude(void)
     }
 
     {
-        casimir_integrate_drude(&casimir, &cint, 20, 20, 3, 1, 10);
+        drude_integrate(&casimir, &cint, 20, 20, 3, 1, 10);
         Assert_Drude(&test, cint.lnA_TM, 6.660701378819416);
         Assert_Drude(&test, cint.lnB_TM, 11.81202300232528);
         Assert_Drude(&test, cint.lnC_TM, 9.221979692552173);
@@ -1519,7 +1528,7 @@ int test_integration_drude(void)
     }
 
     {
-        casimir_integrate_drude(&casimir, &cint, 20, 20, 3, 1, 100);
+        drude_integrate(&casimir, &cint, 20, 20, 3, 1, 100);
         Assert_Drude(&test, cint.lnA_TM, -201.8065316849248);
         Assert_Drude(&test, cint.lnB_TM, -200.7135958357346);
         Assert_Drude(&test, cint.lnC_TM, -201.2774897833974);
@@ -1527,7 +1536,7 @@ int test_integration_drude(void)
     }
 
     {
-        casimir_integrate_drude(&casimir, &cint, 20, 10, 3, 1, 0.1);
+        drude_integrate(&casimir, &cint, 20, 10, 3, 1, 0.1);
         Assert_Drude(&test, cint.lnA_TM, 131.0962726931826);
         Assert_Drude(&test, cint.lnB_TM, 144.184735156638);
         Assert_Drude(&test, cint.lnC_TM, 137.2769797021334);
@@ -1535,7 +1544,7 @@ int test_integration_drude(void)
     }
 
     {
-        casimir_integrate_drude(&casimir, &cint, 20, 15, 10, 1, 5);
+        drude_integrate(&casimir, &cint, 20, 15, 10, 1, 5);
         Assert_Drude(&test, cint.lnA_TM, 22.41543637237407);
         Assert_Drude(&test, cint.lnB_TM, 26.04398834917292);
         Assert_Drude(&test, cint.lnC_TM, 24.07623857473362);
@@ -1543,7 +1552,7 @@ int test_integration_drude(void)
     }
 
     {
-        casimir_integrate_drude(&casimir, &cint, 50, 15, 10, 1, 10);
+        drude_integrate(&casimir, &cint, 50, 15, 10, 1, 10);
         Assert_Drude(&test, cint.lnA_TM, 45.60713807155988);
         Assert_Drude(&test, cint.lnB_TM, 49.99651015278684);
         Assert_Drude(&test, cint.lnC_TM, 47.201688624453);
@@ -1551,7 +1560,7 @@ int test_integration_drude(void)
     }
 
     {
-        casimir_integrate_drude(&casimir, &cint, 100, 25, 20, 1, 20);
+        drude_integrate(&casimir, &cint, 100, 25, 20, 1, 20);
         Assert_Drude(&test, cint.lnA_TM, 84.50837701530297);
         Assert_Drude(&test, cint.lnB_TM, 88.66027006552913);
         Assert_Drude(&test, cint.lnC_TM, 85.90224599747752);
@@ -1559,7 +1568,7 @@ int test_integration_drude(void)
     }
 
     {
-        casimir_integrate_drude(&casimir, &cint, 60, 55, 40, 1, 0.11);
+        drude_integrate(&casimir, &cint, 60, 55, 40, 1, 0.11);
         Assert_Drude(&test, cint.lnA_TM, 645.1730223683922);
         Assert_Drude(&test, cint.lnB_TM, 658.4063308419369);
         Assert_Drude(&test, cint.lnC_TM, 651.7418041758159);
@@ -1567,66 +1576,66 @@ int test_integration_drude(void)
     }
 
     {
-        casimir_integrate_drude(&casimir, &cint, 40, 40, 1, 1, 2.5);
+        drude_integrate(&casimir, &cint, 40, 40, 1, 1, 2.5);
         Assert_Drude(&test, cint.lnA_TM, 185.27722707813169721211989855051);
         Assert_Drude(&test, cint.lnB_TM, 198.1874611137788);
         Assert_Drude(&test, cint.lnC_TM, 191.72604045861798912);
     }
 
     {
-        casimir_integrate_drude(&casimir, &cint, 140, 40, 1, 1, 2.5);
+        drude_integrate(&casimir, &cint, 140, 40, 1, 1, 2.5);
         Assert_Drude(&test, cint.lnA_TM, 575.400220880156994701641252076629);
         Assert_Drude(&test, cint.lnB_TM, 591.1921970497888542);
         Assert_Drude(&test, cint.lnC_TM, 582.6670391327286);
     }
 
     {
-        casimir_integrate_drude(&casimir, &cint, 240, 40, 1, 1, 2.5);
+        drude_integrate(&casimir, &cint, 240, 40, 1, 1, 2.5);
         Assert_Drude(&test, cint.lnA_TM, 1025.59108523802829059595981668750);
         Assert_Drude(&test, cint.lnB_TM, 1042.807725206889176);
         Assert_Drude(&test, cint.lnC_TM, 1033.30173547300948);
     }
 
     {
-        casimir_integrate_drude(&casimir, &cint, 540, 40, 1, 1, 2.5);
+        drude_integrate(&casimir, &cint, 540, 40, 1, 1, 2.5);
         Assert_Drude(&test, cint.lnA_TM, 2561.62734676892999652846813001817);
         Assert_Drude(&test, cint.lnB_TM, 2581.1132494456470771627);
         Assert_Drude(&test, cint.lnC_TM, 2570.068090210887226712719);
     }
 
     {
-        casimir_integrate_drude(&casimir, &cint, 1540, 40, 1, 1, 2.5);
+        drude_integrate(&casimir, &cint, 1540, 40, 1, 1, 2.5);
         Assert_Drude(&test, cint.lnA_TM, 8589.22040500894307686493465726593);
         Assert_Drude(&test, cint.lnB_TM, 8611.759673402576546371338);
         Assert_Drude(&test, cint.lnC_TM, 8598.66439349824405764);
     }
 
     {
-        casimir_integrate_drude(&casimir, &cint, 2000, 40, 1, 1, 2.5);
+        drude_integrate(&casimir, &cint, 2000, 40, 1, 1, 2.5);
         Assert_Drude(&test, cint.lnA_TM, 11616.33666207935);
         Assert_Drude(&test, cint.lnB_TM, 11639.648487984291931);
         Assert_Drude(&test, cint.lnC_TM, 11626.03631835250693323);
     }
 
     {
-        casimir_integrate_drude(&casimir, &cint, 2000, 1, 1, 1, 2.5);
+        drude_integrate(&casimir, &cint, 2000, 1, 1, 1, 2.5);
         Assert_Drude(&test, cint.lnA_TM, 11358.3678862878775413115);
         Assert_Drude(&test, cint.lnB_TM, 11377.9522208393254813978);
         Assert_Drude(&test, cint.lnC_TM, 11364.359353960757194524);
     }
 
     {
-        casimir_integrate_drude(&casimir, &cint, 200, 1, 0, 1, 2.5);
+        drude_integrate(&casimir, &cint, 200, 1, 0, 1, 2.5);
         Assert_Drude(&test, cint.lnB_TM, 682.0020149230455);
     }
 
     {
-        casimir_integrate_drude(&casimir, &cint, 2000, 1, 0, 1, 2.5);
+        drude_integrate(&casimir, &cint, 2000, 1, 0, 1, 2.5);
         Assert_Drude(&test, cint.lnB_TM, 11378.29904124447803687331);
     }
 
     {
-        casimir_integrate_drude(&casimir, &cint, 2000, 40, 1, 1, 1);
+        drude_integrate(&casimir, &cint, 2000, 40, 1, 1, 1);
         Assert_Drude(&test, cint.lnA_TM, 13484.656037918688437);
         Assert_Drude(&test, cint.lnB_TM, 13509.800445322035821193049198451);
         Assert_Drude(&test, cint.lnC_TM, 13495.271984956561221915441695);
@@ -1634,56 +1643,56 @@ int test_integration_drude(void)
 
 
     {
-        casimir_integrate_drude(&casimir, &cint, 2000, 2000, 1, 1, 1);
+        drude_integrate(&casimir, &cint, 2000, 2000, 1, 1, 1);
         Assert_Drude(&test, cint.lnA_TM, 29149.71533012066508345912);
         Assert_Drude(&test, cint.lnB_TM, 29180.1186899274219145148);
         Assert_Drude(&test, cint.lnC_TM, 29164.91688500840021851842);
     }
 
     {
-        casimir_integrate_drude(&casimir, &cint, 2000, 1000, 1, 1, 1);
+        drude_integrate(&casimir, &cint, 2000, 1000, 1, 1, 1);
         Assert_Drude(&test, cint.lnA_TM, 20993.7437127492067941699865154);
         Assert_Drude(&test, cint.lnB_TM, 21022.8784778726214390197843);
         Assert_Drude(&test, cint.lnC_TM, 21007.9643550261185783165);
     }
 
     {
-        casimir_integrate_drude(&casimir, &cint, 2000, 1, 1, 1, 0.5);
+        drude_integrate(&casimir, &cint, 2000, 1, 1, 1, 0.5);
         Assert_Drude(&test, cint.lnA_TM, 14577.246711903825292880294853452);
         Assert_Drude(&test, cint.lnB_TM, 14600.0499192823994956727755285068);
         Assert_Drude(&test, cint.lnC_TM, 14584.84761448839861741754014567215621);
     }
 
     {
-        casimir_integrate_drude(&casimir, &cint, 2000, 1, 1, 1, 10);
+        drude_integrate(&casimir, &cint, 2000, 1, 1, 1, 10);
         Assert_Drude(&test, cint.lnA_TM, 8585.7322779497324918261);
         Assert_Drude(&test, cint.lnB_TM, 8602.54407061632099700814913677598);
         Assert_Drude(&test, cint.lnC_TM, 8590.3374981457216867851698439);
     }
 
     {
-        casimir_integrate_drude(&casimir, &cint, 4000, 1, 1, 1, 1);
+        drude_integrate(&casimir, &cint, 4000, 1, 1, 1, 1);
         Assert_Drude(&test, cint.lnA_TM, 29164.30634417171784698325);
         Assert_Drude(&test, cint.lnB_TM, 29187.80244882461237368);
         Assert_Drude(&test, cint.lnC_TM, 29171.907246756275540666256);
     }
 
     {
-        casimir_integrate_drude(&casimir, &cint, 4000, 2000, 1, 1, 1);
+        drude_integrate(&casimir, &cint, 4000, 2000, 1, 1, 1);
         Assert_Drude(&test, cint.lnA_TM, 46169.30412583713741863288);
         Assert_Drude(&test, cint.lnB_TM, 46201.211646391476308900991);
         Assert_Drude(&test, cint.lnC_TM, 46184.911229183740231533516827);
     }
 
     {
-        casimir_integrate_drude(&casimir, &cint, 4000, 4000, 1, 1, 1);
+        drude_integrate(&casimir, &cint, 4000, 4000, 1, 1, 1);
         Assert_Drude(&test, cint.lnA_TM, 63868.6657467722265411811);
         Assert_Drude(&test, cint.lnB_TM, 63901.841820324801967);
         Assert_Drude(&test, cint.lnC_TM, 63885.2537210446057222743554823);
     }
 
     {
-        casimir_integrate_drude(&casimir, &cint, 500, 500, 1, 1, 1.006);
+        drude_integrate(&casimir, &cint, 500, 500, 1, 1, 1.006);
         Assert_Drude(&test, cint.lnA_TM, 5880.145418565579706653290311279924286563566945608969682962480558534581786);
         Assert_Drude(&test, cint.lnB_TM, 5904.990886305616635574177976966139243575449897572646531806921581807454247);
         Assert_Drude(&test, cint.lnC_TM, 5892.567652184402156243850461817790605864901360854261291722500861621079491);
@@ -1691,7 +1700,7 @@ int test_integration_drude(void)
     }
 
     {
-        casimir_integrate_drude(&casimir, &cint, 499, 500, 1, 1, 1.006);
+        drude_integrate(&casimir, &cint, 499, 500, 1, 1, 1.006);
         Assert_Drude(&test, cint.lnA_TM, 5873.247644850501700848005625848572206294394325680038496156282856954543478);
         Assert_Drude(&test, cint.lnB_TM, 5898.089108585147827540904685136290828084996798178646217185451773987029079);
         Assert_Drude(&test, cint.lnC_TM, 5885.668876966959763457112814499634871743366485689495287378961086374547958);
@@ -1699,7 +1708,7 @@ int test_integration_drude(void)
     }
 
     {
-        casimir_integrate_drude(&casimir, &cint, 500, 499, 1, 1, 1.006);
+        drude_integrate(&casimir, &cint, 500, 499, 1, 1, 1.006);
         Assert_Drude(&test, cint.lnA_TM, 5873.247644850501700848005625848572206294394325680038496156282856954543478);
         Assert_Drude(&test, cint.lnB_TM, 5898.089108585147827540904685136290828084996798178646217185451773987029079);
         Assert_Drude(&test, cint.lnC_TM, 5885.666874964285038289757983818757214367337478685908564744676071164769226);
@@ -1707,7 +1716,7 @@ int test_integration_drude(void)
     }
 
     {
-        casimir_integrate_drude(&casimir, &cint, 499, 499, 1, 1,  1.006);
+        drude_integrate(&casimir, &cint, 499, 499, 1, 1,  1.006);
         Assert_Drude(&test, cint.lnA_TM, 5866.350873639756594278938154316878502875775073387778089826355287796266225);
         Assert_Drude(&test, cint.lnB_TM, 5891.188331362990374000578938922984773493968146030458032951120864889446638);
         Assert_Drude(&test, cint.lnC_TM, 5878.769101247160551296372865772325533805896297034676801385673068702228523);
@@ -1715,7 +1724,7 @@ int test_integration_drude(void)
     }
 
     {
-        casimir_integrate_drude(&casimir, &cint, 200, 200, 1, 1, 1.006);
+        drude_integrate(&casimir, &cint, 200, 200, 1, 1, 1.006);
         Assert_Drude(&test, cint.lnA_TM, 1975.767096926493948364578286189828228822723485260602372040682771555386593);
         Assert_Drude(&test, cint.lnB_TM, 1996.945898960585135363127239781841983882569826371795585966870453220538568);
         Assert_Drude(&test, cint.lnC_TM, 1986.35524636210021458561037266323954886067698626041262792808131074279971);
@@ -1723,7 +1732,7 @@ int test_integration_drude(void)
     }
 
     {
-        casimir_integrate_drude(&casimir, &cint, 201, 199, 1, 1,  1.006);
+        drude_integrate(&casimir, &cint, 201, 199, 1, 1,  1.006);
         Assert_Drude(&test, cint.lnA_TM, 1975.76712170967901909630632990248917658766444079226758033464543591258041);
         Assert_Drude(&test, cint.lnB_TM, 1996.945898743456163521589687237776467526903757736254664642401390499554195);
         Assert_Drude(&test, cint.lnC_TM, 1986.350258603304040900412142964201303792493786158794697788127912783088005);
@@ -1731,7 +1740,7 @@ int test_integration_drude(void)
     }
 
     {
-        casimir_integrate_drude(&casimir, &cint, 1, 2, 1, 1,  1.006);
+        drude_integrate(&casimir, &cint, 1, 2, 1, 1,  1.006);
         Assert_Drude(&test, cint.lnA_TM, -2.339923455106124005554798782243353095693901455689575867856081014682324586);
         Assert_Drude(&test, cint.lnB_TM, -0.6736624574273509838711334310684649842252665724200226758604799345224393973);
         Assert_Drude(&test, cint.lnC_TM, -1.363077277081885731378935504250430542739743833222871115852865737072863219);
@@ -1739,7 +1748,7 @@ int test_integration_drude(void)
     }
 
     {
-        casimir_integrate_drude(&casimir, &cint, 2, 1, 1, 1,  1.006);
+        drude_integrate(&casimir, &cint, 2, 1, 1, 1,  1.006);
         Assert_Drude(&test, cint.lnA_TM, -2.339923455106124005554798782243353095693901455689575867856081014682324586);
         Assert_Drude(&test, cint.lnB_TM, -0.6736624574273509838711334310684649842252665724200226758604799345224393973);
         Assert_Drude(&test, cint.lnC_TM, -1.831883423580260237202605565635544138614431556772498548761012276038582097);
@@ -1747,7 +1756,7 @@ int test_integration_drude(void)
     }
 
     {
-        casimir_integrate_drude(&casimir, &cint, 1, 1, 1, 1, 1.006);
+        drude_integrate(&casimir, &cint, 1, 1, 1, 1, 1.006);
         Assert_Drude(&test, cint.lnA_TM, -2.998811324689273716593897834310454621521738584722626358695413310706611303);
         Assert_Drude(&test, cint.lnB_TM, -2.08729623546325568208182858341472166512674251862231861269070482888007109);
         Assert_Drude(&test, cint.lnC_TM, -2.595336266989119347157555830395184063132956853912460002945057793600666948);
@@ -1755,7 +1764,7 @@ int test_integration_drude(void)
     }
 
     {
-        casimir_integrate_drude(&casimir, &cint, 1, 500, 1, 1,  1.006);
+        drude_integrate(&casimir, &cint, 1, 500, 1, 1,  1.006);
         Assert_Drude(&test, cint.lnA_TM, 2595.536799689232189132097458491885340008891921765359782557085782932445143);
         Assert_Drude(&test, cint.lnB_TM, 2612.784371554692815301128903227217788398596035743007173804862451217505851);
         Assert_Drude(&test, cint.lnC_TM, 2607.26688661763036080100424831203262202790938673585476359897048874019501);
@@ -1763,7 +1772,7 @@ int test_integration_drude(void)
     }
 
     {
-        casimir_integrate_drude(&casimir, &cint, 500, 1, 1, 1,  1.006);
+        drude_integrate(&casimir, &cint, 500, 1, 1, 1,  1.006);
         Assert_Drude(&test, cint.lnA_TM, 2595.536799689232189132097458491885340008891921765359782557085782932445143);
         Assert_Drude(&test, cint.lnB_TM, 2612.784371554692815301128903227217788398596035743007173804862451217505851);
         Assert_Drude(&test, cint.lnC_TM, 2601.052286639743501207037424084674992544735252498822692375343512556374755);
@@ -1771,25 +1780,27 @@ int test_integration_drude(void)
     }
 
     {
-        casimir_integrate_drude(&casimir, &cint, 4000 ,4000 ,1 ,1 , 1);
+        drude_integrate(&casimir, &cint, 4000 ,4000 ,1 ,1 , 1);
         Assert_Drude(&test, cint.lnA_TM, 63868.6657467722265411811000471834427);
         Assert_Drude(&test, cint.lnB_TM, 63901.84182032480196706998988829691231125220392684855064349853042);
     }
 
     {
-        casimir_integrate_drude(&casimir, &cint, 4000 ,2000 ,1 ,1, 1);
+        drude_integrate(&casimir, &cint, 4000 ,2000 ,1 ,1, 1);
         Assert_Drude(&test, cint.lnA_TM, 46169.30412583713741863288035766593016712961550218654);
         Assert_Drude(&test, cint.lnB_TM, 46201.2116463914763089009910622677286368913618141444483663);
         Assert_Drude(&test, cint.lnC_TM, 46184.911229183740231533516827);
     }
 
     {
-        casimir_integrate_drude(&casimir, &cint, 4000, 1000, 1, 1, 1);
+        drude_integrate(&casimir, &cint, 4000, 1000, 1, 1, 1);
         Assert_Drude(&test, cint.lnA_TM, 37559.147788784669482290944857175749);
         Assert_Drude(&test, cint.lnC_TM, 37573.8793900544332570436073011074230654516);
     }
+
 
     casimir_free(&casimir);
 
     return test_results(&test, stderr);
 }
+
