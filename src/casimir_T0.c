@@ -445,7 +445,7 @@ void usage(FILE *stream)
 "        Set precision to given value (default: %g)\n"
 "\n"
 "    -N, --order\n"
-"        Order of Gauss-Laguerre integrateion (default: %d)\n"
+"        Order of Gauss-Laguerre integration (default: %d)\n"
 "\n"
 "    -h,--help\n"
 "        Show this help\n",
