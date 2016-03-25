@@ -98,9 +98,10 @@ void casimir_info(casimir_t *self, FILE *stream, const char *prefix)
     fprintf(stream, "%sprecision       = %g\n", prefix, self->precision);
     fprintf(stream, "%strace_threshold = %g\n", prefix, self->trace_threshold);
     fprintf(stream, "%sdetalg          = %s\n", prefix, self->detalg);
-    fprintf(stream, "%sbalance         = %s\n", prefix, self->balance ? "true" : "false");
-    fprintf(stream, "%spivot           = %s\n", prefix, self->pivot ? "true" : "false");
+    fprintf(stream, "%sbalance         = %s\n", prefix, self->balance      ? "true" : "false");
+    fprintf(stream, "%spivot           = %s\n", prefix, self->pivot        ? "true" : "false");
     fprintf(stream, "%sprecondition    = %s\n", prefix, self->precondition ? "true" : "false");
+    fprintf(stream, "%scheck_elems     = %s\n", prefix, self->check_elems  ? "true" : "false");
     fprintf(stream, "%sbirthtime       = %s (%.1f)\n", prefix, buf, self->birthtime);
 }
 
@@ -478,6 +479,9 @@ int casimir_init(casimir_t *self, double LbyR, double T)
     /**
      * parameters that users usually don't change
      */
+
+    /* set debug flag */
+    self->check_elems = true;
 
     /* set debug flag */
     self->debug = false;
@@ -1655,13 +1659,13 @@ double casimir_trM(casimir_t *self, int n, int m, void *obj)
 {
     const int min = MAX(m,1);
     const int max = self->lmax;
-    integration_perf_t *int_perf = obj;
+    integration_perf_t  *int_perf  = obj;
     integration_drude_t *int_drude = obj;
     float80 trM = 0;
 
     for(int l = min; l <= max; l++)
     {
-        float80 v;
+        float80 sum;
         casimir_integrals_t cint;
         double ln_al, ln_bl;
         sign_t sign, sign_al, sign_bl;
@@ -1674,18 +1678,14 @@ double casimir_trM(casimir_t *self, int n, int m, void *obj)
             casimir_integrate_drude(int_drude, l, l, &cint);
 
         /* EE */
-        sign_t signs_EE[] = { sign_al*cint.signA_TE, sign_al*cint.signB_TM };
-        float80 list_EE[] = { ln_al+cint.lnA_TE, ln_al+cint.lnB_TM };
-
-        v = logadd_ms(list_EE, signs_EE, 2, &sign);
-        trM += sign*exp80(v);
+        /* A_TE + B_TM */
+        sum = logadd_s(cint.lnA_TE, cint.signA_TE, cint.lnB_TM, cint.signB_TM, &sign);
+        trM += sign*sign_al*exp80(ln_al+sum);
 
         /* MM */
-        sign_t signs_MM[] = { sign_bl*cint.signA_TM, sign_bl*cint.signB_TE };
-        float80 list_MM[] = { ln_bl+cint.lnA_TM, ln_bl+cint.lnB_TE };
-
-        v = logadd_ms(list_MM, signs_MM, 2, &sign);
-        trM += sign*exp80(v);
+        /* A_TM + B_TE */
+        sum = logadd_s(cint.lnA_TM, cint.signA_TM, cint.lnB_TE, cint.signB_TE, &sign);
+        trM += sign*sign_al*exp80(ln_bl+sum);
     }
 
     return trM;
@@ -1737,35 +1737,49 @@ double casimir_logdetD(casimir_t *self, int n, int m)
         return logdet_EE + logdet_MM;
     }
 
-    if(isinf(self->omegap_plane))
-        /* perfect reflector */
-        casimir_integrate_perf_init(&int_perf, nT, m, self->lmax);
-    else
-        /* drude mirror */
-        casimir_integrate_drude_init(self, &int_drude, nT, m, self->lmax);
-
+    double trace;
     if(isinf(self->omegap_plane))
     {
-        /* XXX make this also work for Drude metals XXX */
-        const double trace = casimir_trM(self, n, m, &int_perf);
-        if(trace < self->trace_threshold)
-        {
-            if(isinf(self->omegap_plane))
-                casimir_integrate_perf_free(&int_perf);
+        /* perfect reflector */
+        casimir_integrate_perf_init(&int_perf, nT, m, self->lmax);
+        trace = casimir_trM(self, n, m, &int_perf);
+    }
+    else
+    {
+        /* drude mirror */
+        casimir_integrate_drude_init(self, &int_drude, nT, m, self->lmax);
+        trace = casimir_trM(self, n, m, &int_drude);
+    }
 
-            casimir_debug(self, "# calculating %dx%d matrix elements (trace approximation): %gs\n", 2*dim, 2*dim, now()-start);
+    /* If |tr M| is smaller than trace_threshold, we use the approximation
+     *      log det D = log det(Id-M) ≈ -tr M
+     * instead of calculating all matrix elements of M and computing the
+     * determinant. So, if the trace of the round trip matrix M is small, we
+     * don't have to compute O(lmax²), but only O(lmax) matrix elements. This
+     * will drastically speed up the calculation!
+     */
+    if(fabs(trace) < self->trace_threshold)
+    {
+        /* free integration object */
+        if(isinf(self->omegap_plane))
+            casimir_integrate_perf_free(&int_perf);
+        else
+            casimir_integrate_drude_free(&int_drude);
 
-            return -trace;
-        }
+        casimir_debug(self, "# calculated %dx%d matrix elements (trace approximation): %gs\n", 2*dim, 2*dim, now()-start);
+
+        return -trace;
     }
 
     matrix_float80 *M     = matrix_float80_alloc(2*dim);
     matrix_sign_t *M_sign = matrix_sign_alloc   (2*dim);
 
     /* set matrix elements to NAN */
-    if(1)
+    if(self->check_elems)
+    {
         for(int i = 0; i < pow_2(M->dim); i++)
             M->M[i] = NAN;
+    }
 
     /* M_EE, -M_EM
        M_ME,  M_MM */
@@ -1868,7 +1882,7 @@ double casimir_logdetD(casimir_t *self, int n, int m)
     casimir_debug(self, "# calculating %dx%d matrix elements (trace approximation): %gs\n", 2*dim, 2*dim, now()-start);
 
     /* check if matrix elements are finite */
-    if(1)
+    if(self->check_elems)
     {
         for(int l1 = min; l1 <= max; l1++)
             for(int l2 = min; l2 <= max; l2++)
