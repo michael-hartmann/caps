@@ -1559,7 +1559,7 @@ double casimir_trM(casimir_t *self, int n, int m, void *obj)
         /* MM */
         /* A_TM + B_TE */
         sum = logadd_s(cint.lnA_TM, cint.signA_TM, cint.lnB_TE, cint.signB_TE, &sign);
-        trM += sign*sign_al*exp80(ln_bl+sum);
+        trM += sign*sign_bl*exp80(ln_bl+sum);
     }
 
     return trM;
