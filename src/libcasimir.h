@@ -151,11 +151,6 @@ double casimir_lnepsilon(double xi, double omegap, double gamma_);
 float80 casimir_lnLambda(int l1, int l2, int m, sign_t *sign);
 float80 casimir_lnXi(int l1, int l2, int m, sign_t *sign);
 
-double casimir_F_SI_to_scaled(double F_SI, double ScriptL_SI);
-double casimir_F_scaled_to_SI(double F, double ScriptL_SI);
-double casimir_T_SI_to_scaled(double T_SI, double ScriptL_SI);
-double casimir_T_scaled_to_SI(double T, double ScriptL_SI);
-
 int casimir_init(casimir_t *self, double LbyR, double T);
 void casimir_free(casimir_t *self);
 
