@@ -544,7 +544,7 @@ inline int gaunt_qmax(const int n, const int nu, const int m)
  */
 inline float80 gaunt_log_a0(int n, int nu, int m)
 {
-    return lgamma(2*n+1)-lgamma(n+1)+lgamma(2*nu+1)-lgamma(1+nu)+lgamma(n+nu+1)-lgamma(2*n+2*nu+1)+lgamma(1+n+nu-2*m)-lgamma(1+n-m)-lgamma(1+nu-m);
+    return lgamma80(2*n+1)-lgamma80(n+1)+lgamma80(2*nu+1)-lgamma80(1+nu)+lgamma80(n+nu+1)-lgamma80(2*n+2*nu+1)+lgamma80(1+n+nu-2*m)-lgamma80(1+n-m)-lgamma80(1+nu-m);
 }
 
 /**
