@@ -71,11 +71,6 @@ int casimir_compile_info(char *str, size_t size)
  */
 void casimir_info(casimir_t *self, FILE *stream, const char *prefix)
 {
-    char buf[128];
-    time_t timestamp = self->birthtime;
-    struct tm ts = *localtime(&timestamp);
-    strftime(buf, sizeof(buf), "%a %Y-%m-%d %H:%M:%S %Z", &ts);
-
     if(prefix == NULL)
         prefix = "";
 
@@ -98,7 +93,6 @@ void casimir_info(casimir_t *self, FILE *stream, const char *prefix)
     fprintf(stream, "%spivot           = %s\n", prefix, self->pivot        ? "true" : "false");
     fprintf(stream, "%sprecondition    = %s\n", prefix, self->precondition ? "true" : "false");
     fprintf(stream, "%scheck_elems     = %s\n", prefix, self->check_elems  ? "true" : "false");
-    fprintf(stream, "%sbirthtime       = %s (%.1f)\n", prefix, buf, self->birthtime);
 }
 
 
@@ -408,8 +402,6 @@ int casimir_init(casimir_t *self, double LbyR, double T)
     memset(self->detalg, 0, sizeof(self->detalg));
     strcpy(self->detalg, CASIMIR_DETALG);
 
-    self->birthtime = now();
-
     return 0;
 }
 
@@ -442,20 +434,6 @@ bool casimir_get_verbose(casimir_t *self)
 {
     return self->verbose;
 }
-
-/**
- * @brief Get birthtime
- *
- * The birthtime is the timestamp when the object was initialized.
- *
- * @param [in] self Casimir object
- * @retval timestamp
- */
-double casimir_get_birthtime(casimir_t *self)
-{
-    return self->birthtime;
-}
-
 
 /**
  * @brief Set \f$\omega_\mathrm{P}\f$ for the sphere
