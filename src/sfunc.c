@@ -89,19 +89,9 @@ inline float80 logadd(const float80 log_a, const float80 log_b)
         return log_a;
 
     if(log_a > log_b)
-    {
-        const float80 diff = log_b-log_a;
-        const float80 expx = exp80(diff);
-
-        return log_a + log1p80(expx);
-    }
+        return log_a + log1p80(exp80(log_b-log_a));
     else
-    {
-        const float80 diff = log_a-log_b;
-        const float80 expx = exp80(diff);
-
-        return log_b + log1p80(expx);
-    }
+        return log_b + log1p80(exp80(log_a-log_b));
 }
 
 
@@ -131,18 +121,12 @@ float80 logadd_s(const float80 log_a, const sign_t sign_a, const float80 log_b, 
     if(log_a > log_b)
     {
         *sign = sign_a;
-        const float80 diff = log_b-log_a;
-        const float80 expx = sign_a*sign_b*exp80(diff);
-
-        return log_a + log1p80(expx);
+        return log_a + log1p80(sign_a*sign_b*exp80(log_b-log_a));
     }
     else
     {
         *sign = sign_b;
-        const float80 diff = log_a-log_b;
-        const float80 expx = sign_a*sign_b*exp80(diff);
-
-        return log_b + log1p80(expx);
+        return log_b + log1p80(sign_a*sign_b*exp80(log_a-log_b));
     }
 }
 
