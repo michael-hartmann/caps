@@ -296,9 +296,6 @@ double logspace(double start, double stop, int N, int i)
  */
 float80 ln_doublefact(int n)
 {
-    if(n < 0)
-        return NAN;
-
     /* see e.g. http://en.wikipedia.org/wiki/Double_factorial */
     if(n == 0 || n == 1) /* 0!! = 1!! = 0 */
         return 0;
