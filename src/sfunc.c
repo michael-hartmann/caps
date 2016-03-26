@@ -221,7 +221,7 @@ void bessel_lnInuKnu(int nu, const float80 x, float80 *lnInu_p, float80 *lnKnu_p
             lnKnu  = prefactor+lnKnu;
         }
 
-        TERMINATE(isnan(lnKnup) || isinf(lnKnup), "Couldn't calculate Bessel functions, nu=%d, x=%Lg\n", nu, x);
+        TERMINATE(!isfinite(lnKnup), "Couldn't calculate Bessel functions, nu=%d, x=%Lg\n", nu, x);
 
         if(lnKnu_p != NULL)
             *lnKnu_p = lnKnu;
@@ -242,7 +242,7 @@ void bessel_lnInuKnu(int nu, const float80 x, float80 *lnInu_p, float80 *lnKnu_p
             denom = an(l,nu,x)+1/denom;
             ratio *= num/denom;
 
-            if(ratio_last != 0 && fabs80(1.L-ratio/ratio_last) < 1e-20)
+            if(ratio_last != 0 && fabs80(1.L-ratio/ratio_last) < 1e-20L)
                 break;
 
             ratio_last = ratio;
