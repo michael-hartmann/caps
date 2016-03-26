@@ -35,11 +35,10 @@ static void casimir_integrate_perf_m0(integration_perf_t *self, int l1, int l2, 
  */
 static float80 polyintegrate(float80 p[], const int len_p, const int offset, const float80 tau)
 {
-    int k;
     const float80 log_tau = log80(tau);
     float80 list[len_p];
 
-    for(k = offset; k < len_p+offset; k++)
+    for(int k = offset; k < len_p+offset; k++)
         list[k-offset] = lgamma80(k+1)-(k+1)*log_tau+p[k-offset];
 
     return logadd_m(list, len_p);
