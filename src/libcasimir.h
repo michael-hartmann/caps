@@ -196,9 +196,8 @@ double casimir_get_trace_threshold(casimir_t *self);
 int    casimir_set_trace_threshold(casimir_t *self, double threshold);
 
 void casimir_lnab0(int l, float80 *a0, sign_t *sign_a0, float80 *b0, sign_t *sign_b0);
-void casimir_lnab(casimir_t *self, const int n, const int l, double *lna, double *lnb, sign_t *sign_a, sign_t *sign_b);
-double casimir_lna_perf(casimir_t *self, const int l, const int n, sign_t *sign);
-double casimir_lnb_perf(casimir_t *self, const int l, const int n, sign_t *sign);
+void casimir_lnab(casimir_t *self, int n, int l, double *lna, double *lnb, sign_t *sign_a, sign_t *sign_b);
+void casimir_lnab_perf(casimir_t *self, int n, int l, double *lna, double *lnb, sign_t *sign_a, sign_t *sign_b);
 
 double casimir_F_n(casimir_t *self, const int n, int *mmax);
 double casimir_F(casimir_t *self, int *nmax);

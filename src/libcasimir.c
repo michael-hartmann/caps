@@ -973,9 +973,16 @@ void casimir_lnab0(int l, float80 *a0, sign_t *sign_a0, float80 *b0, sign_t *sig
 
 
 /**
- * @brief Return logarithm of Mie coefficient \f$a_\ell\f$ for perfect reflectors and its sign
+ * @brief Calculate Mie coefficients for perfect reflectors
+ *
+ * This function calculates the logarithms of the Mie coefficients
+ * \f$a_\ell(i\chi)\f$ and \f$b_\ell(i\chi)\f$ for perfect reflectors and their
+ * signs. The Mie coefficients are evaluated at the argument
+ * \f$\chi=nTR/(R+L)\f$.
  *
  * The frequency will be determined by n: \f$\xi = nT\f$
+ *
+ * lna, lnb, sign_a and sign_b must be valid pointers and must not be NULL.
  *
  * Restrictions: \f$\ell \ge 1\f$, \f$\ell \ge 0\f$
  *
@@ -988,7 +995,7 @@ void casimir_lnab0(int l, float80 *a0, sign_t *sign_a0, float80 *b0, sign_t *sig
  * @param [out] sign sign of \f$a_\ell\f$
  * @retval logarithm of Mie coefficient \f$a_\ell\f$
  */
-double casimir_lna_perf(casimir_t *self, const int l, const int n, sign_t *sign)
+void casimir_lnab_perf(casimir_t *self, int n, int l, double *lna, double *lnb, sign_t *sign_a, sign_t *sign_b)
 {
     float80 lnKlp,lnKlm,lnIlm,lnIlp;
     const float80 chi = n*self->T*self->RbyScriptL;
@@ -999,50 +1006,29 @@ double casimir_lna_perf(casimir_t *self, const int l, const int n, sign_t *sign)
     bessel_lnInuKnu(l-1, chi, &lnIlm, &lnKlm);
     bessel_lnInuKnu(l,   chi, &lnIlp, &lnKlp);
 
+    /* Calculate b_l(chi), i.e. lnb and sign_b */
+    *lnb    = LOGPI-LOG2+lnIlp-lnKlp;
+    *sign_b = MPOW(l+1);
+
     /* We want to calculate
-     * a(chi) = (-1)^(l+1)*pi/2 * ( l*Ip-chi*Im )/( l*Kp+chi*Km )
-     *        = (-1)^(l+1)*pi/2*Ip/Kp * ( l-chi*Im/Ip )/( l+chi*Km/Kp )
-     *          \--------/ \--------/   \-------------/ \-------------/
-     *             sign     prefactor      numerator      denominator
+     * a_l(chi) = (-1)^(l+1)*pi/2 * ( l*Ip-chi*Im )/( l*Kp+chi*Km )
+     *          = (-1)^(l+1)*pi/2*Ip/Kp * ( l-chi*Im/Ip )/( l+chi*Km/Kp )
+     *            \--------/ \--------/   \-------------/ \-------------/
+     *               sign    |b_l(chi)|      numerator      denominator
+     *
+     *          = b_l(chi) * numerator/denominator
+     *
+     * Note that chi,Km,Kp>0 and thus denominator >= 1 (and it has positive
+     * sign).
      */
 
-    const float80 prefactor = LOGPI-LOG2+lnIlp-lnKlp;
+    /* numerator and denominator to calculate al */
+    sign_t sign_numerator;
+    float80 numerator   = logadd_s(log80(l), +1, log80(chi)+lnIlm-lnIlp, -1, &sign_numerator);
+    float80 denominator = logadd(log80(l), log80(chi)+lnKlm-lnKlp);
 
-    /* numerator */
-    const float80 numerator = logadd_s(log80(l), +1, log80(chi)+lnIlm-lnIlp, -1, sign);
-    /* denominator */
-    const float80 denominator = logadd(log80(l), log80(chi)+lnKlm-lnKlp);
-
-    *sign *= MPOW(l+1);
-    return prefactor+numerator-denominator;
-}
-
-
-/**
- * @brief Return logarithm of Mie coefficient \f$b_\ell\f$ for perfect reflectors and its sign
- *
- * The frequency will be determined by n: \f$\xi = nT\f$
- *
- * Restrictions: \f$\ell \ge 1\f$, \f$\ell \ge 0\f$
- *
- * This function is thread safe - as long you don't change temperature and
- * aspect ratio.
- *
- * @param [in,out] self Casimir object
- * @param [in] l \f$\ell\f$
- * @param [in] n Matsubara term, \f$\xi = nT\f$
- * @param [out] sign sign of \f$b_\ell\f$
- * @retval logarithm of Mie coefficient \f$b_\ell\f$
- */
-double casimir_lnb_perf(casimir_t *self, const int l, const int n, sign_t *sign)
-{
-    const float80 chi = n*self->T*self->RbyScriptL;
-    float80 lnInu, lnKnu;
-
-    bessel_lnInuKnu(l, chi, &lnInu, &lnKnu);
-    *sign = MPOW(l+1);
-
-    return LOGPI-LOG2+lnInu-lnKnu;
+    *lna    = *lnb+numerator-denominator;
+    *sign_a = *sign_b*sign_numerator;
 }
 
 
@@ -1050,9 +1036,9 @@ double casimir_lnb_perf(casimir_t *self, const int l, const int n, sign_t *sign)
  * @brief Return logarithm of Mie coefficients \f$a_\ell\f$, \f$b_\ell\f$ for Drude model
  *
  * For \f$\omega_\mathrm{P} = \infty\f$ the Mie coefficient for perfect
- * reflectors are returned (see casimir_lna_perf and casimir_lnb_perf).
+ * reflectors are returned (see \ref casimir_lnab_perf).
  *
- * sign_a and sign_b must be valid pointers and must not be NULL.
+ * lna, lnb, sign_a and sign_b must be valid pointers and must not be NULL.
  *
  * For Drude metals we calculate the Mie coefficients al(iξ) und bl(iξ) using
  * the expressions taken from [1]. Ref. [1] is the erratum to [2]. Please note
@@ -1081,13 +1067,12 @@ double casimir_lnb_perf(casimir_t *self, const int l, const int n, sign_t *sign)
  * @param [out] sign_a sign of Mie coefficient \f$a_\ell\f$
  * @param [out] sign_b sign of Mie coefficient \f$b_\ell\f$
  */
-void casimir_lnab(casimir_t *self, const int n_mat, const int l, double *lna, double *lnb, sign_t *sign_a, sign_t *sign_b)
+void casimir_lnab(casimir_t *self, int n_mat, int l, double *lna, double *lnb, sign_t *sign_a, sign_t *sign_b)
 {
     if(isinf(self->omegap_sphere))
     {
         /* Mie coefficients for perfect reflectors */
-        *lna = casimir_lna_perf(self, l, n_mat, sign_a);
-        *lnb = casimir_lnb_perf(self, l, n_mat, sign_b);
+        casimir_lnab_perf(self, n_mat, l, lna, lnb, sign_a, sign_b);
         return;
     }
 
