@@ -88,8 +88,6 @@ typedef struct
 
     casimir_mie_cache_t *mie_cache; /**< Mie chache */
 
-    double birthtime;       /**< timestamp when object was initialized */
-
     bool verbose; /**< verbose flag */
 
     /* parameters that you usually do not want to change */
@@ -159,8 +157,6 @@ bool casimir_get_debug(casimir_t *self);
 
 void casimir_set_verbose(casimir_t *self, bool verbose);
 bool casimir_get_verbose(casimir_t *self);
-
-double casimir_get_birthtime(casimir_t *self);
 
 int casimir_set_omegap_sphere(casimir_t *self, double omegap);
 int casimir_set_omegap_plane(casimir_t *self, double omegap);
