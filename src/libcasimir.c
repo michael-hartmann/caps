@@ -953,7 +953,9 @@ void casimir_free(casimir_t *self)
  * \f$a_{\ell,0}^\mathrm{perf}\f$, \f$b_{\ell,0}^\mathrm{perf}\f$ and their
  * signs.
  *
- * In scaled units: \f$\chi = nT \frac{R}{\mathcal{L}}\f$
+ * The Mie coefficients are evaluated at \f$\chi = nTR/(R+L)\f$.
+ *
+ * The pointers a0, sign_a0, b0 and sign_b0 must not be NULL.
  *
  * This function is thread-safe.
  *
