@@ -4,34 +4,37 @@
 
 #include "test_mie.h"
 
-static double _mie_lna_perf(int l, double arg, sign_t *sign)
+static double _mie_lna_perf(int l, double arg, sign_t *sign_a)
 {
+    double lna, lnb;
+    sign_t dummy;
+
     casimir_t self;
     casimir_init(&self, 1, 2*arg);
-    return casimir_lna_perf(&self, l, 1, sign);
+
+    casimir_lnab_perf(&self, 1, l, &lna, &lnb, sign_a, &dummy);
+
+    return lna;
 }
 
-static double _mie_lnb_perf(int l, double arg, sign_t *sign)
+static double _mie_lnb_perf(int l, double arg, sign_t *sign_b)
 {
-    double result;
+    double lna, lnb;
+    sign_t dummy;
+
     casimir_t self;
-
     casimir_init(&self, 1, 2*arg);
-    result = casimir_lnb_perf(&self, l, 1, sign);
-    casimir_free(&self);
 
-    return result;
+    casimir_lnab_perf(&self, 1, l, &lna, &lnb, &dummy, sign_b);
+
+    return lnb;
 }
 
 int test_mie(void)
 {
-    const double T = 1; /* this value doesn't matter */
     sign_t sign;
-    casimir_t self;
     unittest_t test;
     unittest_init(&test, "Mie", "Test Mie functions al,bl for various parameters");
-
-    casimir_init(&self, 1, T);
 
     AssertAlmostEqual(&test, _mie_lna_perf(3,3,&sign), 1.69245030620195999527136501278285739542);
     AssertEqual(&test, sign, -1);
