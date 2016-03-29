@@ -158,17 +158,8 @@ bool casimir_get_debug(casimir_t *self);
 void casimir_set_verbose(casimir_t *self, bool verbose);
 bool casimir_get_verbose(casimir_t *self);
 
-int casimir_set_omegap_sphere(casimir_t *self, double omegap);
-int casimir_set_omegap_plane(casimir_t *self, double omegap);
-
-double casimir_get_omegap_sphere(casimir_t *self);
-double casimir_get_omegap_plane(casimir_t *self);
-
-int casimir_set_gamma_sphere(casimir_t *self, double gamma_);
-int casimir_set_gamma_plane(casimir_t *self, double gamma_);
-
-double casimir_get_gamma_sphere(casimir_t *self);
-double casimir_get_gamma_plane(casimir_t *self);
+int casimir_set_drude(casimir_t *self, double omegap_plane, double gamma_plane, double omegap_sphere, double gamma_sphere);
+int casimir_get_drude(casimir_t *self, double *omegap_plane, double *gamma_plane, double *omegap_sphere, double *gamma_sphere);
 
 int casimir_get_lmax(casimir_t *self);
 int casimir_set_lmax(casimir_t *self, int lmax);

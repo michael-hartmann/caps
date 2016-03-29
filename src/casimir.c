@@ -67,7 +67,7 @@ void usage(FILE *stream)
 "        lmax=MAX(R/L*lscale,%d) (default: %d)\n"
 "\n"
 "    -L LMAX\n"
-"        Set lmax to LMAX. When -L is specified -l will be ignored.\n"
+"        Set lmax to LMAX. When -L is specified and positive -l will be ignored.\n"
 "\n"
 "    -c, --cores CORES\n"
 "        Use CORES of processors for computation (default: 1)\n"
@@ -153,7 +153,7 @@ void parse_range(const char param, const char *_optarg, double list[])
 
 int main(int argc, char *argv[])
 {
-    double gamma_ = 0, omegap = 0;
+    double gamma_ = 0, omegap = INFINITY;
     double trace_threshold = -1;
     double precision = DEFAULT_PRECISION;
     double lfac      = DEFAULT_LFAC;
@@ -254,8 +254,6 @@ int main(int argc, char *argv[])
     {
         if(lfac <= 0)
             fprintf(stderr, "wrong argument for -l, --lscale: lscale must be positive\n\n");
-        else if(lmax < 1)
-            fprintf(stderr, "wrong argument for -L: lmax must be positive\n\n");
         else if(precision <= 0)
             fprintf(stderr, "wrong argument for -p, --precision: precision must be positive\n\n");
         else if(lLbyR[0] <= 0 || lLbyR[1] <= 0)
@@ -266,8 +264,8 @@ int main(int argc, char *argv[])
             fprintf(stderr, "wrong argument for -c: number of cores must be >= 1\n\n");
         else if(gamma_ < 0)
             fprintf(stderr, "wrong argument for --gamma: gamma must be nonnegative\n\n");
-        else if(omegap < 0)
-            fprintf(stderr, "wrong argument for --omegap: omegap must be nonnegative\n\n");
+        else if(omegap <= 0)
+            fprintf(stderr, "wrong argument for --omegap: omegap must be positive\n\n");
         else
             /* everythink ok */
             break;
@@ -312,16 +310,8 @@ int main(int argc, char *argv[])
             casimir_set_cores(&casimir, cores);
             casimir_set_precision(&casimir, precision);
 
-            if(gamma_ > 0)
-            {
-                casimir_set_gamma_sphere(&casimir, gamma_);
-                casimir_set_gamma_plane (&casimir, gamma_);
-            }
-            if(omegap > 0)
-            {
-                casimir_set_omegap_sphere(&casimir, omegap);
-                casimir_set_omegap_plane (&casimir, omegap);
-            }
+            if(isfinite(omegap))
+                casimir_set_drude(&casimir, omegap, gamma_, omegap, gamma_);
 
             if(lmax > 0)
                 casimir_set_lmax(&casimir, lmax);
@@ -342,14 +332,10 @@ int main(int argc, char *argv[])
             if(i == 0 || !quiet_flag)
                 printf("# L/R, (2π*kB*T*(L+R))/(ħc), ωp*(L+R)/c, γ*(L+R)/c, F*(L+R)/(ħc), lmax, nmax, time\n");
 
-            /* Note that this frontend only supports plane and sphere to have
-             * the same material properties. So it's ok that we get omegap and
-             * gamma for sphere.
-             */
+
             printf("%g, %g, %g, %g, %.12g, %d, %d, %g\n",
                 LbyR, T,
-                casimir_get_omegap_sphere(&casimir),
-                casimir_get_gamma_sphere(&casimir),
+                omegap, gamma_,
                 F, casimir.lmax, nmax, now()-start_time
             );
 
