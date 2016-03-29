@@ -22,15 +22,18 @@ int main(int argc, char *argv[])
     test_lbinom();
     test_Lambda();
     test_Xi();
-    test_mie_drude();
 
-    test_fresnel();
-    test_Plm();
-    test_doublefact();
-    test_epsilon();
     test_besselI();
     test_besselK();
+
     test_mie();
+    test_mie_drude();
+
+    test_epsilon();
+    test_fresnel();
+
+    test_doublefact();
+    test_Plm();
 
     test_integration_perf();
     test_integration_drude();
