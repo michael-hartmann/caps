@@ -10,7 +10,6 @@
 #include "test_integration_drude.h"
 #include "test_integration_perf.h"
 #include "test_Lambda.h"
-#include "test_lbinom.h"
 #include "test_logdet.h"
 #include "test_mie.h"
 #include "test_mie_drude.h"
@@ -19,7 +18,6 @@
 
 int main(int argc, char *argv[])
 {
-    test_lbinom();
     test_Lambda();
     test_Xi();
 

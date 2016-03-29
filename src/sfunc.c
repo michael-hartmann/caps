@@ -176,18 +176,6 @@ inline float80 logadd_ms(const float80 list[], const sign_t signs[], const int l
 
 /*@}*/
 
-/**
- * @brief Calculate logarithm of Binomial coefficient
- *
- * @param n
- * @param k
- * @return binomial \f$\log \left(\begin{array}{c} n \\ k \end{array}\right)\f$
- */
-inline float80 lbinom(int n, int k)
-{
-    return lgamma80(1+n)-lgamma80(1+k)-lgamma80(1+n-k);
-}
-
 
 /**
 * @name Bessel functions
