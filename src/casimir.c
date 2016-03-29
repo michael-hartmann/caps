@@ -159,7 +159,6 @@ int main(int argc, char *argv[])
     double lfac      = DEFAULT_LFAC;
     double lT[4]     = { 0,0,0,SCALE_LIN }; /* start, stop, N, lin/log */
     double lLbyR[4]  = { 0,0,0,SCALE_LIN }; /* start, stop, N, lin/log */
-    int i;
     int cores = 1;
     int lmax = 0;
     int buffering_flag = 0, quiet_flag = 0, verbose_flag = 0;
@@ -251,56 +250,32 @@ int main(int argc, char *argv[])
     }
 
     /* check command line arguments */
+    do
     {
         if(lfac <= 0)
-        {
             fprintf(stderr, "wrong argument for -l, --lscale: lscale must be positive\n\n");
-            usage(stderr);
-            exit(1);
-        }
-        if(lmax < 0)
-        {
+        else if(lmax < 1)
             fprintf(stderr, "wrong argument for -L: lmax must be positive\n\n");
-            usage(stderr);
-            exit(1);
-        }
-        if(precision <= 0)
-        {
+        else if(precision <= 0)
             fprintf(stderr, "wrong argument for -p, --precision: precision must be positive\n\n");
-            usage(stderr);
-            exit(1);
-        }
-        if(lLbyR[0] <= 0 || lLbyR[1] <= 0)
-        {
+        else if(lLbyR[0] <= 0 || lLbyR[1] <= 0)
             fprintf(stderr, "wrong argument for -x: x=L/R must be positive\n\n");
-            usage(stderr);
-            exit(1);
-        }
-        if(lT[0] <= 0)
-        {
+        else if(lT[0] <= 0 || lT[1] <= 0)
             fprintf(stderr, "wrong argument for -T: temperature must be positive\n\n");
-            usage(stderr);
-            exit(1);
-        }
-        if(cores < 1)
-        {
+        else if(cores < 1)
             fprintf(stderr, "wrong argument for -c: number of cores must be >= 1\n\n");
-            usage(stderr);
-            exit(1);
-        }
-        if(gamma_ < 0)
-        {
+        else if(gamma_ < 0)
             fprintf(stderr, "wrong argument for --gamma: gamma must be nonnegative\n\n");
-            usage(stderr);
-            exit(1);
-        }
-        if(omegap < 0)
-        {
+        else if(omegap < 0)
             fprintf(stderr, "wrong argument for --omegap: omegap must be nonnegative\n\n");
-            usage(stderr);
-            exit(1);
-        }
-    }
+        else
+            /* everythink ok */
+            break;
+
+        /* print usage and exit */
+        usage(stderr);
+        exit(1);
+    } while(0);
 
     if(!quiet_flag)
     {
@@ -309,7 +284,7 @@ int main(int argc, char *argv[])
         printf("# %s\n#\n", msg);
     }
 
-    i = 0;
+    int i = 0;
     for(int iLbyR = 0; iLbyR < lLbyR[2]; iLbyR++)
         for(int iT = 0; iT < lT[2]; iT++)
         {
@@ -364,7 +339,6 @@ int main(int argc, char *argv[])
                 printf("#\n");
 
             /* if quiet, print this line just once */
-            printf("XXX %d\n", i);
             if(i == 0 || !quiet_flag)
                 printf("# L/R, (2π*kB*T*(L+R))/(ħc), ωp*(L+R)/c, γ*(L+R)/c, F*(L+R)/(ħc), lmax, nmax, time\n");
 
