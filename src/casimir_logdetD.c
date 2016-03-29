@@ -216,8 +216,8 @@ int main(int argc, char *argv[])
 
     double logdet = casimir_logdetD(&casimir, 1, m);
 
-    printf("# LbyR, nT, omegap, gamma, m, logdetD, lmax, time\n");
-    printf("%g, %g, %g, %g, %d, %.15g, %d, %g\n", LbyR, nT, omegap, gamma_, m, logdet, casimir.lmax, now()-start_time);
+    printf("# L/R, ξ*(L+R)/c, ωp*(L+R)/c, γ*(L+R)/c, m, logdetD, lmax, time\n");
+    printf("%g, %g, %g, %g, %d, %.12g, %d, %g\n", LbyR, nT, omegap, gamma_, m, logdet, casimir.lmax, now()-start_time);
 
     casimir_free(&casimir);
 

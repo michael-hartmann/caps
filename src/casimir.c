@@ -27,7 +27,7 @@ void usage(FILE *stream)
 {
     char msg[4096];
 
-    casimir_compile_info(msg, sizeof(msg)/sizeof(char));
+    casimir_compile_info(msg, sizeof(msg));
 
     fprintf(stream, "Usage: casimir [OPTIONS]\n"
 "This program will calculate the free Casimir energy F(T,L/R) for the\n"
@@ -49,17 +49,17 @@ void usage(FILE *stream)
 "            a logarithmic scale.\n"
 "\n"
 "    -T TEMPERATURE\n"
-"        Temperature in units of ħ*c/(2π*kB*(L+R)). You may use the same\n"
+"        Temperature in units of ħc/(2π*kB*(L+R)). You may use the same\n"
 "        syntax like for -x to calculate several points.\n"
 "\n"
 "Further options:\n"
 "    -g, --gamma\n"
-"        Set value of relaxation frequency gamma of Drude metals in units of\n"
-"        c/(L+R). If omitted, gamma = 0.\n"
+"        Set value of relaxation frequency γ of Drude metals in units of\n"
+"        c/(L+R). If omitted, γ = 0.\n"
 "\n"
 "    -w, --omegap\n"
-"        Set value of Plasma frequency omega_p of Drude metals in units of\n"
-"        c/(L+R). If omitted, omegap = INFINITY.\n"
+"        Set value of Plasma frequency ωp of Drude metals in units of\n"
+"        c/(L+R). If omitted, ωp = INFINITY.\n"
 "\n"
 "    -l, --lscale\n"
 "        Specify parameter lscale. The vector space has to be truncated for\n"
@@ -361,9 +361,23 @@ int main(int argc, char *argv[])
             casimir_free(&casimir);
 
             if(!quiet_flag)
-                printf("#\n# LbyR, T, F, lmax, nmax, time\n");
+                printf("#\n");
 
-            printf("%.15g, %.15g, %.15g, %d, %d, %g\n", LbyR, T, F, casimir.lmax, nmax, now()-start_time);
+            /* if quiet, print this line just once */
+            printf("XXX %d\n", i);
+            if(i == 0 || !quiet_flag)
+                printf("# L/R, (2π*kB*T*(L+R))/(ħc), ωp*(L+R)/c, γ*(L+R)/c, F*(L+R)/(ħc), lmax, nmax, time\n");
+
+            /* Note that this frontend only supports plane and sphere to have
+             * the same material properties. So it's ok that we get omegap and
+             * gamma for sphere.
+             */
+            printf("%g, %g, %g, %g, %.12g, %d, %d, %g\n",
+                LbyR, T,
+                casimir_get_omegap_sphere(&casimir),
+                casimir_get_gamma_sphere(&casimir),
+                F, casimir.lmax, nmax, now()-start_time
+            );
 
             if(!quiet_flag)
             {

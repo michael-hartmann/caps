@@ -360,8 +360,8 @@ int master(int argc, char *argv[], int cores)
     F0 = integral/alpha/M_PI;
 
     printf("#\n");
-    printf("# L/R, lmax, order, alpha, F(T=0)\n");
-    printf("%.15g, %d, %d, %.15g, %.15Lg\n", LbyR, lmax, order, alpha, F0);
+    printf("# L/R, lmax, order, alpha, F(T=0)*(L+R)/(ħc)\n");
+    printf("%g, %d, %d, %.15g, %.12Lg\n", LbyR, lmax, order, alpha, F0);
 
     /* free memory */
     for(int i = 0; i < order; i++)
