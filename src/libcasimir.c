@@ -436,154 +436,62 @@ bool casimir_get_verbose(casimir_t *self)
 }
 
 /**
- * @brief Set \f$\omega_\mathrm{P}\f$ for the sphere
+ * @brief Set material parameters for Drude metals
  *
- * Set the plasma frequency for the sphere.
+ * Set material parameters of plane and sphere for Drude metals.
  *
  * This function is not thread-safe.
  *
  * @param [in,out] self Casimir object
- * @param [in] omegap \f$\omega_\mathrm{P}\f$ plasma frequency
+ * @param [in] omegap_plane  \f$\omega_\mathrm{P}\f$ plasma frequency for plane in units of \f$c/(L+R)\f$
+ * @param [in] gamma_plane   \f$\gamma\f$            relaxation frequency for plane in units of \f$c/(L+R)\f$
+ * @param [in] omegap_sphere \f$\omega_\mathrm{P}\f$ plasma frequency for sphere in units of \f$c/(L+R)\f$
+ * @param [in] gamma_sphere  \f$\gamma\f$            relaxation frequency for sphere in units of \f$c/(L+R)\f$
  * @retval 1 if successful
- * @retval 0 if \f$\omega_\mathrm{P} < 0\f$
+ * @retval 0 if \f$\omega_\mathrm{P} <= 0\f$ or \f$\gamma < 0\f$ (for plane or sphere)
  */
-int casimir_set_omegap_sphere(casimir_t *self, double omegap)
+int casimir_set_drude(casimir_t *self, double omegap_plane, double gamma_plane, double omegap_sphere, double gamma_sphere)
 {
-    if(omegap > 0)
+    if(omegap_plane > 0 && gamma_plane >= 0 && omegap_sphere > 0 && gamma_sphere >= 0)
     {
-        self->omegap_sphere = omegap;
+        self->omegap_sphere = omegap_sphere;
+        self->gamma_sphere  = gamma_sphere;
+        self->omegap_plane  = omegap_plane;
+        self->gamma_plane   = gamma_plane;
+
         return 1;
     }
     return 0;
 }
 
 /**
- * @brief Set \f$\omega_\mathrm{P}\f$ for the plane
+ * @brief Get material parameters for Drude metals
  *
- * Set the plasma frequency for the plane.
+ * Get material parameters of plane and sphere for Drude metals. The values are
+ * written to the memory pointed to by omegap_plane, gamma_plane, omegap_sphere
+ * and gamma_sphere. If one pointer is NULL, no value is written.
  *
  * This function is not thread-safe.
  *
  * @param [in,out] self Casimir object
- * @param [in] omegap \f$\omega_\mathrm{P}\f$ plasma frequency
- * @retval 1 if successful
- * @retval 0 if \f$omega_\mathrm{P} < 0\f$
+ * @param [out] omegap_plane  \f$\omega_\mathrm{P}\f$ plasma frequency for plane in units of \f$c/(L+R)\f$
+ * @param [out] gamma_plane   \f$\gamma\f$            relaxation frequency for plane in units of \f$c/(L+R)\f$
+ * @param [out] omegap_sphere \f$\omega_\mathrm{P}\f$ plasma frequency for sphere in units of \f$c/(L+R)\f$
+ * @param [out] gamma_sphere  \f$\gamma\f$            relaxation frequency for sphere in units of \f$c/(L+R)\f$
+ * @return 0
  */
-int casimir_set_omegap_plane(casimir_t *self, double omegap)
+int casimir_get_drude(casimir_t *self, double *omegap_plane, double *gamma_plane, double *omegap_sphere, double *gamma_sphere)
 {
-    if(omegap > 0)
-    {
-        self->omegap_plane = omegap;
-        return 1;
-    }
+    if(omegap_plane != NULL)
+        *omegap_plane = self->omegap_plane;
+    if(gamma_plane != NULL)
+        *gamma_plane = self->gamma_plane;
+    if(omegap_sphere != NULL)
+        *omegap_sphere = self->omegap_sphere;
+    if(gamma_sphere != NULL)
+        *gamma_sphere = self->gamma_sphere;
+
     return 0;
-}
-
-
-/**
- * @brief Get \f$\omega_\mathrm{P}\f$ for the sphere
- *
- * Get the plasma frequency for the sphere.
- *
- * This function is not thread-safe.
- *
- * @param [in,out] self Casimir object
- * @retval plasma frequency
- */
-double casimir_get_omegap_sphere(casimir_t *self)
-{
-    return self->omegap_sphere;
-}
-
-/**
- * @brief Get \f$\omega_\mathrm{P}\f$ for the plane
- *
- * Get the plasma frequency \f$\omega_\mathrm{P}\f$ for the plane.
- *
- * This function is not thread-safe.
- *
- * @param [in,out] self Casimir object
- * @retval omegap \f$\omega_\mathrm{P}\f$plasma frequency
- */
-double casimir_get_omegap_plane(casimir_t *self)
-{
-    return self->omegap_plane;
-}
-
-
-/**
- * @brief Set \f$\gamma\f$ for the sphere
- *
- * Set the relaxation frequency for the sphere.
- *
- * This function is not thread-safe.
- *
- * @param [in,out] self Casimir object
- * @param [in] gamma_ \f$\gamma\f$ relaxation frequency
- * @retval 1 if successful
- * @retval 0 if \f$\gamma < 0\f$
- */
-int casimir_set_gamma_sphere(casimir_t *self, double gamma_)
-{
-    if(gamma_ > 0)
-    {
-        self->gamma_sphere = gamma_;
-        return 1;
-    }
-    return 0;
-}
-
-/**
- * @brief Set \f$\gamma\f$ for the plane
- *
- * Set the relaxation frequency \f$\gamma\f$ for the plane.
- *
- * This function is not thread-safe.
- *
- * @param [in,out] self Casimir object
- * @param [in] gamma_ relaxation frequency
- * @retval 1 if successful
- * @retval 0 if \f$\gamma < 0\f$
- */
-int casimir_set_gamma_plane(casimir_t *self, double gamma_)
-{
-    if(gamma_ > 0)
-    {
-        self->gamma_plane = gamma_;
-        return 1;
-    }
-    return 0;
-}
-
-
-/**
- * @brief Get \f$\gamma\f$ for the sphere
- *
- * Get the relaxation frequency \f$\gamma\f$ for the sphere.
- *
- * This function is not thread-safe.
- *
- * @param [in,out] self Casimir object
- * @retval gamma \f$\gamma\f$ relaxation frequency
- */
-double casimir_get_gamma_sphere(casimir_t *self)
-{
-    return self->gamma_sphere;
-}
-
-/**
- * @brief Get \f$\gamma\f$ for the plane
- *
- * Get the relaxation frequency for the plane.
- *
- * This function is not thread-safe.
- *
- * @param [in,out] self Casimir object
- * @retval gamma \f$\gamma\f$ relaxation frequency
- */
-double casimir_get_gamma_plane(casimir_t *self)
-{
-    return self->gamma_plane;
 }
 
 

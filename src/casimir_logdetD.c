@@ -192,16 +192,8 @@ int main(int argc, char *argv[])
     if(lmax)
         casimir_set_lmax(&casimir, lmax);
 
-    if(gamma_ > 0)
-    {
-        casimir_set_gamma_sphere(&casimir, gamma_);
-        casimir_set_gamma_plane (&casimir, gamma_);
-    }
-    if(isfinite(omegap))
-    {
-        casimir_set_omegap_sphere(&casimir, omegap);
-        casimir_set_omegap_plane (&casimir, omegap);
-    }
+    if(gamma_ >= 0 && isfinite(omegap))
+        casimir_set_drude(&casimir, omegap, gamma_, omegap, gamma_);
 
     casimir_set_debug(&casimir, debug);
 

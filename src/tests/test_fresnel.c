@@ -17,8 +17,7 @@ int test_fresnel()
     gamma_ = 6.9e-1;
     casimir_init(&casimir, 1/0.5-1, T);
 
-    casimir_set_omegap_plane(&casimir, omegap);
-    casimir_set_gamma_plane(&casimir,  gamma_);
+    casimir_set_drude(&casimir, omegap, gamma_, omegap, gamma_);
 
     casimir_rp(&casimir, 1*T, 1, &r_TE, &r_TM);
     AssertAlmostEqual(&test, r_TE, -0.97252954726278);

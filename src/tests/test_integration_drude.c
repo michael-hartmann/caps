@@ -30,8 +30,7 @@ int test_integration_drude(void)
     omegap = 1.32e2;
     gamma_ = 6.9e-1;
     casimir_init(&casimir, 1/0.5-1, 1);
-    casimir_set_omegap_plane(&casimir, omegap);
-    casimir_set_gamma_plane(&casimir, gamma_);
+    casimir_set_drude(&casimir, omegap, gamma_, omegap, gamma_);
 
     {
         drude_integrate(&casimir, &cint, 250, 250, 1, 1, 1.0);
@@ -1360,8 +1359,7 @@ int test_integration_drude(void)
 
 
     /* test drude integration for perfect reflectors */
-    casimir_set_omegap_plane(&casimir, INFINITY);
-    casimir_set_gamma_plane(&casimir, 0.0);
+    casimir_set_drude(&casimir, INFINITY, 0, INFINITY, 0);
 
     {
         drude_integrate(&casimir, &cint, 1050, 1050, 1, 1, 1);
