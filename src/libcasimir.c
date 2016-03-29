@@ -1431,6 +1431,8 @@ void casimir_logdetD0(casimir_t *self, int m, double *logdet_EE, double *logdet_
  * This function is thread-safe - as long you don't change lmax, temperature,
  * aspect ratio, dielectric properties of sphere and plane, and integration.
  *
+ * Does not work for n = 0.
+ *
  * @param [in,out] self Casimir object
  * @param [in] n Matsubara term
  * @param [in] m
@@ -1444,6 +1446,9 @@ double casimir_trM(casimir_t *self, int n, int m, void *obj)
     integration_perf_t  *int_perf  = obj;
     integration_drude_t *int_drude = obj;
     float80 trM = 0;
+
+    /* XXX fix this XXX */
+    TERMINATE(n == 0, "This function does not work for n=0");
 
     for(int l = min; l <= max; l++)
     {
