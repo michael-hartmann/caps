@@ -26,8 +26,4 @@ void _xfree(void *p);
 int cinstr(const char *str, char c);
 const char *indexn(const char *str, char c, int n);
 
-void swap(double *a, double *b);
-
-void sec2human(double t, int *h, int *m, int *s);
-
 #endif
