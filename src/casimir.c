@@ -17,7 +17,7 @@
 #include "utils.h"
 
 /* default values for precision and lfac */
-#define DEFAULT_PRECISION 1e-10
+#define DEFAULT_PRECISION 1e-8
 #define DEFAULT_LFAC 5
 #define MIN_LMAX 20
 
