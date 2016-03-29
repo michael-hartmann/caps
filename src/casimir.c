@@ -138,9 +138,21 @@ void parse_range(const char param, const char *_optarg, double list[])
                 exit(1);
             }
 
+            if(list[0] == list[1])
+            {
+                fprintf(stderr, "start value must not be stop value");
+                usage(stderr);
+                exit(1);
+            }
+
             /* ensure that start < stop */
             if(list[0] > list[1])
-                swap(&list[0], &list[1]);
+            {
+                /* swap list[0] and list[1] */
+                double temp = list[0];
+                list[0] = list[1];
+                list[1] = temp;
+            }
             break;
 
         default:
@@ -150,6 +162,22 @@ void parse_range(const char param, const char *_optarg, double list[])
     }
 }
 
+
+static double linspace(double start, double stop, int N, int i)
+{
+    if(N == 1)
+        return start;
+    else
+        return start+(stop-start)*i/(N-1);
+}
+
+static double logspace(double start, double stop, int N, int i)
+{
+    if(N == 1)
+        return start;
+    else
+        return start*pow(pow(stop/start, 1./(N-1)), i);
+}
 
 int main(int argc, char *argv[])
 {
