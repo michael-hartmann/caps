@@ -412,13 +412,13 @@ int slave(MPI_Comm master_comm, int rank)
 void usage(FILE *stream)
 {
     fprintf(stderr,
-"Usage: casimir_T0 [OPTIONS]\n"
+"Usage: casimir_T0 [OPTIONS]\n\n"
 "This program will calculate the free Casimir energy F(T=0,L/R) for the\n"
-"plane-sphere geometry for given L/R and temperature T. The output is in scaled\n"
-"units.\n"
+"plane-sphere geometry for given L/R and temperature T. The output is in\n"
+"units of ħc/(L+R).\n"
 "\n"
-"This program uses MPI for parallization. The program needs at least two cores\n"
-"to run.\n"
+"This program uses MPI for parallization. The program needs at least two\n"
+"cores to run.\n"
 "\n"
 "The free eenergy at T=0 is calculated using integration:\n"
 "   F(L/R) = \\int_0^\\infty dξ logdet D(ξ)\n"
