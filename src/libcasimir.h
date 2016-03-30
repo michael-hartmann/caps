@@ -143,8 +143,7 @@ int casimir_vfprintf(casimir_t *self, FILE *stream, const char *format, va_list 
 int casimir_debug(casimir_t *self, const char *format, ...);
 int casimir_verbose(casimir_t *self, const char *format, ...);
 
-double casimir_epsilon(double xi, double omegap, double gamma_);
-double casimir_lnepsilon(double xi, double omegap, double gamma_);
+float80 casimir_epsilonm1(float80 xi, double omegap, double gamma_);
 
 float80 casimir_lnLambda(int l1, int l2, int m, sign_t *sign);
 float80 casimir_lnXi(int l1, int l2, int m, sign_t *sign);
