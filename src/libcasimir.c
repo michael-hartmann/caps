@@ -1499,7 +1499,7 @@ double casimir_logdetD(casimir_t *self, int n, int m)
     const double nT = n*self->T;
     double logdet = 0;
     integration_perf_t int_perf;
-    
+
     integration_drude_t int_drude = {
         .plm_cache = NULL,
         .m         = m,
