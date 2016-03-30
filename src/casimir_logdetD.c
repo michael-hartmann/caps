@@ -21,21 +21,21 @@ static void usage(FILE *stream)
 "geometry for given n,m,T,L/R.\n"
 "\n"
 "Mandatory options:\n"
-"    -x  L/R\n"
-"    -nT imaginary frequency ξ in units of c/(L+R)\n"
-"    -m  value of m\n"
+"    -x, --LbyR  L/R\n"
+"    --nT        imaginary frequency ξ in units of c/(L+R)\n"
+"    -m          value of m\n"
 "\n"
 "Further options:\n"
-"    -w, --omegap\n"
+"    -w, --omegap OMEGAP\n"
 "       Set value of Plasma frequency omega_p of Drude metals in units of\n"
 "       c/(L+R). If omitted, omegap = INFINITY.\n"
 "\n"
-"    -g, --gamma\n"
+"    -g, --gamma GAMMA\n"
 "       Set value of relaxation frequency gamma of Drude metals in units of\n"
 "       c/(L+R). If omitted, gamma = 0.\n"
 "\n"
-"    -L\n"
-"        Set lmax to given value. When -L is used, -l will be ignored.\n"
+"    -L, --lmax LMAX\n"
+"        Set lmax to LMAX. When -L is used, -l will be ignored.\n"
 "\n"
 "    -b, --buffering\n"
 "        Enable buffering. By default buffering for stderr and stdout is\n"
@@ -82,8 +82,10 @@ int main(int argc, char *argv[])
             { "buffering", no_argument,       0, 'b' },
             { "debug",     no_argument,       0, 'D' },
 
+            { "LbyR",      required_argument, 0, 'x' },
             { "nT",        required_argument, 0, 'T' },
             { "detalg",    required_argument, 0, 'd' },
+            { "lmax",      required_argument, 0, 'L' },
             { "lscale",    required_argument, 0, 'l' },
             { "trace",     required_argument, 0, 't' },
             { "omegap",    required_argument, 0, 'w' },
@@ -94,7 +96,7 @@ int main(int argc, char *argv[])
 
         /* getopt_long stores the option index here. */
         int option_index = 0;
-        int c = getopt_long (argc, argv, "x:T:m:s:a:l:w:g:L:t:bqhDv", long_options, &option_index);
+        int c = getopt_long (argc, argv, "x:T:m:l:w:g:d:L:t:bhD", long_options, &option_index);
 
         /* Detect the end of the options. */
         if(c == -1)
