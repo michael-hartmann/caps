@@ -314,6 +314,8 @@ float80 ln_doublefact(int n)
  * This function calculates the associated Legendre polynomials for
  * \f$\ell=m,...,\ell_\mathrm{max}\f$.
  *
+ * See https://en.wikipedia.org/wiki/Associated_Legendre_polynomials .
+ *
  * @param [in] lmax maximum value of \f$\ell\f$
  * @param [in] m order
  * @param [in] x position to evaluate associated Legendre polynomial
@@ -332,7 +334,7 @@ inline void plm_lnPlm_array(int lmax, int m, float80 x, float80 lnplm[], sign_t 
     else
     {
         sign[0]  = MPOW((int)(m/2) + m%2);
-        lnplm[0] = ln_doublefact(2*m-1) + m*0.5*log80(pow_2(x)-1); // l=m,m=m
+        lnplm[0] = ln_doublefact(2*m-1) + m*0.5L*log80(pow_2(x)-1); // l=m,m=m
     }
 
     if(lmax == m)
@@ -341,11 +343,9 @@ inline void plm_lnPlm_array(int lmax, int m, float80 x, float80 lnplm[], sign_t 
     sign[1]  = sign[0];
     lnplm[1] = lnplm[0]+logx+log80(2*m+1); // l=m+1, m=m
 
+    /* (l-m)*P_l^m(x) = x*(2l-1)*P_(l-1)^m(x) - (l+m-1)*P_(l-2)^m(x) */
     for(int l = m+2; l <= lmax; l++)
-    {
-        lnplm[l-m] = logadd_s(log80(2*l-1)+logx+lnplm[l-m-1], sign[l-m-1], log80(l+m-1)+lnplm[l-m-2], -sign[l-m-2], &sign[l-m]);
-        lnplm[l-m]-= log80(l-m);
-    }
+        lnplm[l-m] = logadd_s(log80(2*l-1)+logx+lnplm[l-m-1], sign[l-m-1], log80(l+m-1)+lnplm[l-m-2], -sign[l-m-2], &sign[l-m]) - log80(l-m);
 }
 
 /**
