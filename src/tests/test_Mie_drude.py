@@ -65,7 +65,7 @@ if __name__ == "__main__":
     print()
     print("int test_mie_drude(void)")
     print("{")
-    print("    double lna, lnb;")
+    print("    float80 lna, lnb;")
     print("    double omegap, gamma_;");
     print("    sign_t sign_a, sign_b;")
     print("    casimir_t casimir;")
