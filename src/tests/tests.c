@@ -5,7 +5,6 @@
 #include "test_bessels.h"
 #include "test_casimirF.h"
 #include "test_doublefact.h"
-#include "test_epsilon.h"
 #include "test_fresnel.h"
 #include "test_integration_drude.h"
 #include "test_integration_perf.h"
@@ -27,7 +26,6 @@ int main(int argc, char *argv[])
     test_mie();
     test_mie_drude();
 
-    test_epsilon();
     test_fresnel();
 
     test_doublefact();
