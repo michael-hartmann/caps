@@ -802,7 +802,7 @@ void casimir_lnab0(int l, float80 *a0, sign_t *sign_a0, float80 *b0, sign_t *sig
  * @param [out] sign sign of \f$a_\ell\f$
  * @retval logarithm of Mie coefficient \f$a_\ell\f$
  */
-void casimir_lnab_perf(casimir_t *self, int n, int l, double *lna, double *lnb, sign_t *sign_a, sign_t *sign_b)
+void casimir_lnab_perf(casimir_t *self, int n, int l, float80 *lna, float80 *lnb, sign_t *sign_a, sign_t *sign_b)
 {
     float80 lnKlp,lnKlm,lnIlm,lnIlp;
     const float80 chi = n*self->T*self->RbyScriptL;
@@ -874,7 +874,7 @@ void casimir_lnab_perf(casimir_t *self, int n, int l, double *lna, double *lnb, 
  * @param [out] sign_a sign of Mie coefficient \f$a_\ell\f$
  * @param [out] sign_b sign of Mie coefficient \f$b_\ell\f$
  */
-void casimir_lnab(casimir_t *self, int n_mat, int l, double *lna, double *lnb, sign_t *sign_a, sign_t *sign_b)
+void casimir_lnab(casimir_t *self, int n_mat, int l, float80 *lna, float80 *lnb, sign_t *sign_a, sign_t *sign_b)
 {
     if(isinf(self->omegap_sphere))
     {
@@ -1004,8 +1004,8 @@ void casimir_mie_cache_alloc(casimir_t *self, int n)
         cache->entries[n] = xmalloc(sizeof(casimir_mie_cache_entry_t));
         casimir_mie_cache_entry_t *entry = cache->entries[n];
 
-        entry->ln_al   = xmalloc((lmax+1)*sizeof(double));
-        entry->ln_bl   = xmalloc((lmax+1)*sizeof(double));
+        entry->ln_al   = xmalloc((lmax+1)*sizeof(float80));
+        entry->ln_bl   = xmalloc((lmax+1)*sizeof(float80));
         entry->sign_al = xmalloc((lmax+1)*sizeof(sign_t));
         entry->sign_bl = xmalloc((lmax+1)*sizeof(sign_t));
 
@@ -1053,7 +1053,7 @@ void casimir_mie_cache_clean(casimir_t *self)
  * @param [out] ln_b logarithm of \f$b_\ell\f$
  * @param [out] sign_b sign of \f$b_\ell\f$
  */
-void casimir_mie_cache_get(casimir_t *self, int l, int n, double *ln_a, sign_t *sign_a, double *ln_b, sign_t *sign_b)
+void casimir_mie_cache_get(casimir_t *self, int l, int n, float80 *ln_a, sign_t *sign_a, float80 *ln_b, sign_t *sign_b)
 {
     /* this mutex is important to prevent memory corruption */
     pthread_mutex_lock(&self->mie_cache->mutex);
@@ -1076,7 +1076,7 @@ void casimir_mie_cache_get(casimir_t *self, int l, int n, double *ln_a, sign_t *
      */
     casimir_mie_cache_entry_t *entry = self->mie_cache->entries[n];
 
-    /* at this point it is finally is safe to release the mutex */
+    /* at this point it is finally safe to release the mutex */
     pthread_mutex_unlock(&self->mie_cache->mutex);
 
     *ln_a   = entry->ln_al[l];
@@ -1464,7 +1464,7 @@ double casimir_trM(casimir_t *self, int n, int m, void *obj)
     {
         float80 sum;
         casimir_integrals_t cint;
-        double ln_al, ln_bl;
+        float80 ln_al, ln_bl;
         sign_t sign, sign_al, sign_bl;
 
         casimir_mie_cache_get(self, l, n, &ln_al, &sign_al, &ln_bl, &sign_bl);
@@ -1601,7 +1601,7 @@ double casimir_logdetD(casimir_t *self, int n, int m)
             const int i = l1-min;
             const int j = l2-min;
 
-            double ln_al1, ln_bl1, ln_al2, ln_bl2;
+            float80 ln_al1, ln_bl1, ln_al2, ln_bl2;
             sign_t sign_al1, sign_bl1, sign_al2, sign_bl2;
 
             casimir_mie_cache_get(self, l1, n, &ln_al1, &sign_al1, &ln_bl1, &sign_bl1);
