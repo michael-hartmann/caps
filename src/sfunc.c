@@ -294,7 +294,7 @@ float80 ln_doublefact(int n)
  *
  * This function calculates associated legendre functions and its derivatives
  * for \f$m \ge 0\f$ and \f$x \ge 1\f$.
- * 
+ *
  * Associated Legendre polynomials are defined as follows:
  * \f[
  *     P_\ell^m(x) = (-1)^m (1-x^2)^{m/2} \frac{\mathrm{d}^m}{\mathrm{d}x^m} P_\ell(x)
