@@ -66,7 +66,7 @@ void usage(FILE *stream)
 "        some maximum value lmax. This program will use\n"
 "        lmax=MAX(R/L*lscale,%d) (default: %d)\n"
 "\n"
-"    -L LMAX\n"
+"    -L, --lmax LMAX\n"
 "        Set lmax to LMAX. When -L is specified and positive -l will be ignored.\n"
 "\n"
 "    -c, --cores CORES\n"
@@ -202,6 +202,7 @@ int main(int argc, char *argv[])
             { "help",      no_argument,       0, 'h' },
             { "LbyR",      required_argument, 0, 'x' },
             { "lscale",    required_argument, 0, 'l' },
+            { "lmax",      required_argument, 0, 'L' },
             { "cores",     required_argument, 0, 'c' },
             { "precision", required_argument, 0, 'p' },
             { "gamma",     required_argument, 0, 'g' },
@@ -213,7 +214,7 @@ int main(int argc, char *argv[])
         /* getopt_long stores the option index here. */
         int option_index = 0;
 
-        int c = getopt_long (argc, argv, "x:T:c:s:a:l:L:t:p:g:w:Xqh", long_options, &option_index);
+        int c = getopt_long (argc, argv, "x:T:c:l:L:t:p:g:w:qh", long_options, &option_index);
 
         /* Detect the end of the options. */
         if(c == -1)
@@ -306,7 +307,7 @@ int main(int argc, char *argv[])
     if(!quiet_flag)
     {
         char msg[4096];
-        casimir_compile_info(msg, sizeof(msg)/sizeof(char));
+        casimir_compile_info(msg, sizeof(msg));
         printf("# %s\n#\n", msg);
     }
 
