@@ -1137,9 +1137,9 @@ void casimir_mie_cache_free(casimir_t *self)
    The idea is: To avoid a loss of significance, we sum beginning with smallest
    number and add up in increasing order
 */
-static double _sum(double values[], int len)
+static float80 _sum(double values[], int len)
 {
-    double sum = 0;
+    float80 sum = 0;
 
     for(int i = len-1; i > 0; i--)
         sum += values[i];
