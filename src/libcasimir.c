@@ -247,9 +247,9 @@ float80 casimir_lnXi(int l1, int l2, int m, sign_t *sign)
 /**
  * @brief Calculate \f$\epsilon(i\xi)\f$ for Drude model
  *
- * This function returns the dielectric function
+ * This function returns the dielectric minus one
  * \f[
- *      \epsilon(i\xi) = 1 + \frac{\omega_\mathrm{P}^2}{\xi(\xi+\gamma)}
+ *      \epsilon(i\xi)-1 = \frac{\omega_\mathrm{P}^2}{\xi(\xi+\gamma)}
  * \f]
  *
  * This function is thread-safe.
@@ -257,32 +257,12 @@ float80 casimir_lnXi(int l1, int l2, int m, sign_t *sign)
  * @param [in]  xi     \f$\xi\f$ imaginary frequency (in scaled units: \f$\xi=nT\f$)
  * @param [in]  omegap \f$\omega_\mathrm{P}\f$ Plasma frequency
  * @param [in]  gamma_ \f$\gamma\f$ relaxation frequency
- * @retval epsilon \f$\epsilon(\xi, \omega_\mathrm{P}, \gamma)\f$
+ * @retval epsilon \f$\epsilon(\xi, \omega_\mathrm{P}, \gamma)-1\f$
  */
-double casimir_epsilon(double xi, double omegap, double gamma_)
+float80 casimir_epsilonm1(float80 xi, double omegap, double gamma_)
 {
-    return 1+pow_2(omegap)/(xi*(xi+gamma_));
-}
-
-
-/**
- * @brief Calculate \f$\log \epsilon(i\xi)\f$ for Drude model
- *
- * This function returns the logarithm of the dielectric function
- * \f[
- *      \epsilon(i\xi) = 1 + \frac{\omega_\mathrm{P}^2}{\xi(\xi+\gamma)}
- * \f]
- *
- * This function is thread-safe.
- *
- * @param [in]  xi     \f$\xi\f$ imaginary frequency (in scaled units: \f$\xi=nT\f$)
- * @param [in]  omegap \f$\omega_\mathrm{P}\f$ Plasma frequency
- * @param [in]  gamma_ \f$\gamma\f$ relaxation frequency
- * @retval lnepsilon \f$\log{\epsilon(\xi, \omega_\mathrm{P}, \gamma)}\f$
- */
-double casimir_lnepsilon(double xi, double omegap, double gamma_)
-{
-    return log1p(pow_2(omegap)/(xi*(xi+gamma_)));
+    /* cast omegap and gamma_ to float80 for more accurancy */
+    return pow_2((float80)omegap)/(xi*(xi+(float80)gamma_));
 }
 
 
@@ -309,12 +289,42 @@ void casimir_rp(casimir_t *self, float80 nT, float80 k, float80 *r_TE, float80 *
     }
     else
     {
-        /* Drude metals */
-        const float80 epsilon = casimir_epsilon(nT, self->omegap_plane, self->gamma_plane);
-        const float80 beta = sqrt80(1 + pow_2(nT)/(pow_2(nT)+pow_2(k)) * (epsilon-1));
+        /* Drude metals
+        *
+         * In scaled units
+         *     β = sqrt( 1 + ξ²/(ξ²+k²)*(ε-1) ) = sqrt(1+x),
+         * where
+         *     x = ξ²/(ξ²+k²)*(ε-1).
+         *
+         * We calculate x. If x is small, β≈1 and a loss of significance
+         * occures when calculating 1-β.
+         *
+         * For this reason we use the Taylor series
+         *     sqrt(1+x) ≈ 1 + x/2 - x²/8 + x³/16
+         * to avoid a loss of significance if x is small.
+         *
+         * Note: ξ=nT
+         */
 
-        *r_TE = (1-beta)/(1+beta);
-        *r_TM = (epsilon-beta)/(epsilon+beta);
+        const float80 epsilonm1 = casimir_epsilonm1(nT, self->omegap_plane, self->gamma_plane);
+        const float80 x         = pow_2(nT)/(pow_2(nT)+pow_2(k))*epsilonm1;
+
+        if(fabs80(x) < 1e-6)
+        {
+            /* β-1 = sqrt(1+x)-1 = x/2 - x²/8 + x³/16 + O(x^4) */
+            const float80 betam1 = x/2 - pow_2(x)/8 - pow_3(x)/16;
+
+            *r_TE = -betam1/(2+betam1);
+            *r_TM = (epsilonm1-betam1)/(epsilonm1+2+betam1);
+        }
+        else
+        {
+            const float80 beta = sqrt80(1+x);
+
+            *r_TE = (1-beta)/(1+beta);
+            *r_TM = (epsilonm1+1-beta)/(epsilonm1+1+beta);
+        }
+
     }
 }
 
@@ -886,9 +896,9 @@ void casimir_lnab(casimir_t *self, int n_mat, int l, double *lna, double *lnb, s
     /**
      * Note: n is the refraction index, n_mat the Matsubara index
      * n    = sqrt(ε(ξ,ω_p,γ))
-     * ln_n = ln(sqrt(ε(ξ,ω_p,γ)))
+     * ln_n = ln(sqrt(ε)) = ln(ε)/2 = ln(1+(ε-1))/2 = log1p(ε-1)/2
      */
-    const float80 ln_n = casimir_lnepsilon(xi, self->omegap_sphere, self->gamma_sphere)/2;
+    const float80 ln_n = log1p80(casimir_epsilonm1(xi, self->omegap_sphere, self->gamma_sphere))/2;
     const float80 n    = exp80(ln_n);
 
     float80 lnIlp, lnKlp, lnIlm, lnKlm, lnIlp_nchi, lnKlp_nchi, lnIlm_nchi, lnKlm_nchi;
