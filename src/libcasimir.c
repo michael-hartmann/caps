@@ -560,7 +560,7 @@ int casimir_set_cores(casimir_t *self, int cores)
  * default to QR_FLOAT80.
  *
  * detalg may be: LU_FLOAT80, QR_FLOAT80, QR_LOG80 and (if supported)
- * QR_FLOAT128, QR_FLOATDD
+ * QR_FLOAT128.
  *
  * This function is not thread-safe.
  *

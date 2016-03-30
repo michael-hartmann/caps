@@ -17,10 +17,6 @@
 
 #include "utils.h"
 
-#ifdef FLOATDD
-extern double matrix_floatdd_logdet(matrix_float80 *M, matrix_sign_t *M_sign);
-#endif
-
 /** functions for float128 */
 #ifdef FLOAT128
 MATRIX_ALLOC (matrix_float128, matrix_float128, float128);
