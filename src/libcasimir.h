@@ -34,9 +34,9 @@ typedef signed char sign_t;
  */
 typedef struct
 {
-    double *ln_al;   /**< list of Mie coefficients \f$a_\ell\f$ (logarithms) */
+    float80 *ln_al;  /**< list of Mie coefficients \f$a_\ell\f$ (logarithms) */
     sign_t *sign_al; /**< list of signs of Mie coefficients \f$a_\ell\f$ */
-    double *ln_bl;   /**< list of Mie coefficients \f$b_\ell\f$ (logarithms) */
+    float80 *ln_bl;  /**< list of Mie coefficients \f$b_\ell\f$ (logarithms) */
     sign_t *sign_bl; /**< list of signs of Mie coefficients \f$b_\ell\f$ */
 } casimir_mie_cache_entry_t;
 
@@ -177,8 +177,8 @@ double casimir_get_trace_threshold(casimir_t *self);
 int    casimir_set_trace_threshold(casimir_t *self, double threshold);
 
 void casimir_lnab0(int l, float80 *a0, sign_t *sign_a0, float80 *b0, sign_t *sign_b0);
-void casimir_lnab(casimir_t *self, int n, int l, double *lna, double *lnb, sign_t *sign_a, sign_t *sign_b);
-void casimir_lnab_perf(casimir_t *self, int n, int l, double *lna, double *lnb, sign_t *sign_a, sign_t *sign_b);
+void casimir_lnab(casimir_t *self, int n, int l, float80 *lna, float80 *lnb, sign_t *sign_a, sign_t *sign_b);
+void casimir_lnab_perf(casimir_t *self, int n, int l, float80 *lna, float80 *lnb, sign_t *sign_a, sign_t *sign_b);
 
 double casimir_F_n(casimir_t *self, const int n, int *mmax);
 double casimir_F(casimir_t *self, int *nmax);
@@ -186,7 +186,7 @@ double casimir_F(casimir_t *self, int *nmax);
 void casimir_mie_cache_init(casimir_t *self);
 void casimir_mie_cache_alloc(casimir_t *self, int n);
 void casimir_mie_cache_clean(casimir_t *self);
-void casimir_mie_cache_get(casimir_t *self, int l, int n, double *ln_a, sign_t *sign_a, double *ln_b, sign_t *sign_b);
+void casimir_mie_cache_get(casimir_t *self, int l, int n, float80 *ln_a, sign_t *sign_a, float80 *ln_b, sign_t *sign_b);
 void casimir_mie_cache_free(casimir_t *self);
 
 void casimir_logdetD0(casimir_t *self, int m, double *EE, double *MM);
