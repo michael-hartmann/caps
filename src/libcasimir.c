@@ -889,7 +889,7 @@ void casimir_lnab(casimir_t *self, int n_mat, int l, double *lna, double *lnb, s
     const float80 xi = n_mat*self->T;
 
     /* χ = ξ*R/(R+L) = ξ/(1+L/R) */
-    const float80 chi    = xi/(1+self->LbyR);
+    const float80 chi    = xi/(1.L+self->LbyR);
     const float80 ln_chi = log80(xi)-log1p80(self->LbyR);
     const float80 ln_l   = log80(l);
 
