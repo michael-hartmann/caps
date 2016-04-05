@@ -359,7 +359,7 @@ int main(int argc, char *argv[])
 
             /* if quiet, print this line just once */
             if(i == 0 || !quiet_flag)
-                printf("# L/R, (2π*kB*T*(L+R))/(ħc), ωp*(L+R)/c, γ*(L+R)/c, F*(L+R)/(ħc), lmax, nmax, time\n");
+                printf("# L/R, 2π*kB*T*(L+R)/(ħc), ωp*(L+R)/c, γ*(L+R)/c, F*(L+R)/(ħc), lmax, nmax, time\n");
 
 
             printf("%g, %g, %g, %g, %.12g, %d, %d, %g\n",
