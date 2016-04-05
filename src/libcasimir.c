@@ -80,8 +80,8 @@ void casimir_info(casimir_t *self, FILE *stream, const char *prefix)
     fprintf(stream, "%sT       = %g\n", prefix, self->T);
 
     fprintf(stream, "%somegap_sphere = %g\n", prefix, self->omegap_sphere);
-    fprintf(stream, "%somegap_plane  = %g\n", prefix, self->omegap_plane);
     fprintf(stream, "%sgamma_sphere  = %g\n", prefix, self->gamma_sphere);
+    fprintf(stream, "%somegap_plane  = %g\n", prefix, self->omegap_plane);
     fprintf(stream, "%sgamma_plane   = %g\n", prefix, self->gamma_plane);
 
     fprintf(stream, "%slmax            = %d\n", prefix, self->lmax);
@@ -324,7 +324,6 @@ void casimir_rp(casimir_t *self, float80 nT, float80 k, float80 *r_TE, float80 *
             *r_TE = (1-beta)/(1+beta);
             *r_TM = (epsilonm1+1-beta)/(epsilonm1+1+beta);
         }
-
     }
 }
 
