@@ -128,7 +128,7 @@ void matrix_float80_pivot(matrix_float80 *M)
  */
 double matrix_float128_logdet_qr(matrix_float128 *M)
 {
-    const int dim = M->size;
+    const int dim = M->dim;
     float128 *m = M->M;
 
     for(int j = 0; j < dim-1; j++)
@@ -589,7 +589,7 @@ double matrix_logdetIdpM(casimir_t *casimir, matrix_float80 *M, matrix_sign_t *M
         /* free matrix */
         matrix_float128_free(M128);
 
-        return logdet;
+        return logdetD;
     }
     else
     #endif
