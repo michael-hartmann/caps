@@ -472,7 +472,7 @@ void plm_PlmPlm(int l1, int l2, int m, float80 x, plm_combination_t *res)
     res->lnPl1mdPl2m    = lnPl1m + lndPl2m;
     res->sign_Pl1mdPl2m = common_sign * sign_Pl1m * sign_dPl2m;
 
-    /* dPl1m*dPl2m */
+    /* dPl1m*Pl2m */
     res->lndPl1mPl2m    = lndPl1m + lnPl2m;
     res->sign_dPl1mPl2m = common_sign * sign_dPl1m * sign_Pl2m;
 
