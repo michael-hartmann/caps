@@ -1,0 +1,163 @@
+\documentclass[
+    a4paper,%             A4 Papier
+    twoside,%             Zweiseitig/Einseitigtotocnumbered,%    Literaturverzeichnis nummeriert einfügen
+    index=totoc,
+    parskip=half,
+    headsepline,%         Linie nach Kopfzeile
+    11pt,%                Größere Schrift, besser lesbar am bildschrim
+    fleqn,%								linksbündig abgesetzte Formeln
+]{scrbook}
+
+\usepackage[english]{babel}
+\usepackage{setspace}
+\usepackage{a4wide}					 				%Bessere Ausnutzung der DinA4 größe ohne Randbemerkungen, auch a4 möglich
+\usepackage[T1]{fontenc}						%Europäischer Schriftsatz
+\usepackage[utf8]{inputenc}
+\usepackage{graphicx}								%Einbindung von Graphiken
+\usepackage{amssymb,amsmath}				%Mathe und Schriftsatz
+\usepackage{prettyref}
+\usepackage{diagbox}
+\usepackage{xspace}
+\usepackage{colortbl}
+\usepackage{enumitem}
+\usepackage{bbm}
+\usepackage[format=plain,margin=1.5cm,small]{caption} %Legenden: mergin versetzt beitseitig nach innen, format=plain verhindert einrücken (einfacher blocksatz)
+
+\usepackage{tikz}
+\newcommand*\circled[1]{\tikz[baseline=(char.base)]{
+                \node[shape=circle,draw,inner sep=2pt] (char) {#1};}}
+
+%Graphikerweiterungen für eps-Graphiken
+\usepackage{subcaption}
+\usepackage{sty/floatfig}
+\usepackage{braket}
+
+% index generation
+\usepackage{makeidx}
+\makeindex
+ 
+\usepackage{courier}            % Courier als \ttdefault
+
+\setkomafont{sectioning}{\normalfont\bfseries}
+\setkomafont{captionlabel}{\normalfont\bfseries}
+%\setkomafont{pagehead}{\normalfont\itshape}
+\setkomafont{descriptionlabel}{\normalfont\bfseries}
+
+% Tabellen:
+
+% gr\"{o}{\ss}ere Zeilenh\"{o}he
+\setlength{\extrarowheight}{0.1cm}
+
+% Neue Spaltenstile, f\"{u}r Dezimalzahlen
+\newcolumntype{1}{D{.}{.}{1.13}}
+% und grau hinterlegte Tabellenzellen
+\newcolumntype{G}{>{\columncolor[gray]{0.8}}c}
+
+% Abk\"{u}rzung f\"{u}r graue Tabellenzelle
+\newcommand{\GS}[1]{\multicolumn{1}{G}{#1}}
+
+% Farbe zwischen Doppellinien aus \hhline:
+\doublerulesepcolor{white}
+
+
+\usepackage{txfonts}
+\usepackage[scaled=1]{helvet}
+
+
+% Tabelleneinbindung
+\usepackage{array}
+\usepackage{float}
+
+\renewcommand{\baselinestretch}{1.1}
+
+% Mehr Platz für Bilder auf den Seiten:
+\renewcommand{\topfraction}{.95}
+\renewcommand{\bottomfraction}{.95}
+\renewcommand{\textfraction}{.05}
+
+% EPS-Grafiken:
+\graphicspath{{images/}}
+% \setlength{\intextsep}{5ex plus 1ex minus 1ex}
+
+% Erstellung von Index
+\usepackage{makeidx}
+\makeindex
+\definecolor{ForestGreen}{rgb}{0, 0.545, 0} %definiert dunkleres grün mit name in rgb (werte zwischen 0 und 1)
+\usepackage{hyphenat} %Silbentrennung verhindern mit: \nohyphens{***}
+
+\usepackage{wrapfig}
+
+\usepackage[url=false,isbn=false,eprint=false,natbib=true,style=numeric,backend=biber]{biblatex}
+
+\usepackage[babel]{csquotes}
+\bibliography{lit}  % bindet lit.bib ein
+\usepackage[hidelinks]{hyperref}  % unbedingt als letztes Paket laden
+
+% generalized vector
+\renewcommand{\vec}[1]{{\mathbf{#1}}}
+
+% e0, µ0
+\newcommand{\epsO}{\epsilon_0}
+\newcommand{\muO}{\mu_0}
+
+% imaginary unit
+\newcommand{\imag}{i}
+
+% speed of light
+\renewcommand{\c}{\mathrm{c}}
+
+% euler's number
+\newcommand{\e}{e}
+
+% column vector
+\newcommand{\cvec}[3]{\begin{pmatrix} #1 \\ #2 \\ #3 \end{pmatrix}}
+
+% Re and Im
+\renewcommand{\Re}{\mathrm{Re}}
+\renewcommand{\Im}{\mathrm{Im}}
+
+% complex conjugate
+\newcommand{\conjugate}[1]{#1^*}
+
+% abs function
+\newcommand{\abs}[1]{\left|#1\right|}
+
+% soll gleich sein
+\newcommand{\se}{\stackrel{!}{=}}
+
+% TE, TM
+\newcommand{\TE}{\mathrm{TE}}
+\newcommand{\TM}{\mathrm{TM}}
+
+\newcommand{\wignerd}{\mathrm{d}}
+
+\newcommand{\PE}{\text{E}}
+\newcommand{\PM}{\text{M}}
+
+\newcommand{\kb}{k_\text{B}}
+
+\newcommand{\Ylm}[1]{Y_{#1}}
+\newcommand{\Plm}[2]{{\text{P}_{#1}^{#2}}}
+\newcommand{\barPlm}[2]{{\bar{\text{P}}_{#1}^{#2}}}
+
+\newcommand{\Nlm}[1]{\text{N}_{#1}}
+
+\newcommand{\sep}{\quad}
+
+\newcommand{\SI}{\text{SI}}
+\newcommand{\F}{\ensuremath{\mathcal{F}}}
+\renewcommand{\L}{\ensuremath{\mathcal{L}}}
+
+\newcommand{\Id}{\mathbbm{1}}
+\newcommand{\qe}{e}
+\newcommand{\me}{m_\qe}
+\newcommand{\nee}{n_\qe}
+\newcommand{\lmax}{{\ell_\text{max}}}
+
+
+\DeclareMathOperator{\Tr}{Tr}
+
+\renewcommand{\log}{\text{ln}}
+
+\newcommand{\Li}{\operatorname{Li}}
+\newcommand{\qmax}{{q_\text{max}}}
