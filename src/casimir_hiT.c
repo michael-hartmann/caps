@@ -60,7 +60,7 @@ void *logdetD0(void *p)
 {       
     casimir_t casimir;
     double start = now();
-    double logdet_EE, logdet_MM;
+    double logdet_EE = 0, logdet_MM = 0;
     param_t *params = p;
     double LbyR      = params->LbyR;
     double precision = params->precision;
