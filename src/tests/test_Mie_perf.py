@@ -17,8 +17,8 @@ def prettyprint(args, length=40):
 
 
 def lnab(l,chi):
-    al = pi/2 * ( l*besseli(l+0.5,chi)-chi*besseli(l-0.5,chi) )/( l*besselk(l+0.5,chi)+chi*besselk(l-0.5,chi) )
-    bl = pi/2 * besseli(l+0.5,chi)/besselk(l+0.5,chi)
+    al = (-1)**(l+1) * pi/2 * ( l*besseli(l+0.5,chi)-chi*besseli(l-0.5,chi) )/( l*besselk(l+0.5,chi)+chi*besselk(l-0.5,chi) )
+    bl = (-1)**(l+1) * pi/2 * besseli(l+0.5,chi)/besselk(l+0.5,chi)
 
     return log(abs(al)), sign(al), log(abs(bl)), sign(bl)
 
