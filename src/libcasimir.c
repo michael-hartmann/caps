@@ -1611,11 +1611,7 @@ void casimir_logdetD0(casimir_t *self, int m, double *logdet_EE, double *logdet_
         }
     }
 
-    /* Calculate logdet and free space.
-     * Note that we actually calculate |log(det(M-Id))|, which gives the same
-     * result as log(det(Id-M)). This is merely a trick so we don't have to
-     * bother about signs.
-     */
+    /* Calculate logdet=log(det(Id-M)) and free space. */
     if(EE != NULL)
     {
         *logdet_EE = matrix_logdet(self, EE, NULL, -1);
