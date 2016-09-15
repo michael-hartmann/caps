@@ -10,8 +10,7 @@ sources = [
     "../libcasimir.c",
     "../matrix.c",
     "../sfunc.c",
-    "../utils.c",
-    "../plm_cache.c"
+    "../utils.c"
 ]
 
 CFLAGS = [

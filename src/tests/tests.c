@@ -33,7 +33,7 @@ int main(int argc, char *argv[])
     test_mie();
 
     test_integration_perf();
-    test_integration_drude();
+    //test_integration_drude();
 
     test_logdet();
 
