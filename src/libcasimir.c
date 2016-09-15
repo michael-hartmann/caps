@@ -1,7 +1,7 @@
 /**
  * @file   libcasimir.c
  * @author Michael Hartmann <michael.hartmann@physik.uni-augsburg.de>
- * @date   March, 2016
+ * @date   September, 2016
  * @brief  library to calculate the free Casimir energy in the plane-sphere geometry
  */
 
@@ -480,7 +480,7 @@ int casimir_init(casimir_t *self, double LbyR, double T)
      * parameters that users usually don't change
      */
 
-    /* set debug flag */
+    /* check matrix elements */
     self->check_elems = true;
 
     /* set debug flag */
@@ -1575,66 +1575,55 @@ double casimir_F(casimir_t *self, int *nmax)
  */
 void casimir_logdetD0(casimir_t *self, int m, double *logdet_EE, double *logdet_MM)
 {
-    const float80 lnRbyScriptL = log80(self->RbyScriptL);
+    /* y = log(R/(R+L)/2) */
+    const float80 y = log80(self->RbyScriptL/2);
     matrix_float80 *EE = NULL, *MM = NULL;
-    matrix_sign_t *EE_sign = NULL, *MM_sign = NULL;
 
     const int min = MAX(m,1);
     const int max = self->lmax;
-    const int dim = (max-min+1);
+    const int dim = max-min+1;
 
     if(logdet_EE != NULL)
-    {
         EE = matrix_float80_alloc(dim);
-        EE_sign = matrix_sign_alloc(dim);
-    }
     if(logdet_MM != NULL)
-    {
         MM = matrix_float80_alloc(dim);
-        MM_sign = matrix_sign_alloc(dim);
-    }
 
-    /* calculate the logarithm of the matrix elements of -M. The function
-     * matrix_logdetIdpM then calculates log(det(1-M)) = log(det(D)) */
+    /* calculate the logarithm of the matrix elements of M. */
     for(int l1 = min; l1 <= max; l1++)
     {
-        sign_t sign_a0, sign_b0;
-        float80 lna0, lnb0;
-        casimir_lnab0(l1, &lna0, &sign_a0, &lnb0, &sign_b0);
-
-        for(int l2 = min; l2 <= max; l2++)
+        for(int l2 = l1; l2 <= max; l2++)
         {
             /* i: row of matrix, j: column of matrix */
             const int i = l1-min, j = l2-min;
-            sign_t sign_xi;
-            const float80 lnXiRL = casimir_lnXi(l1,l2,m,&sign_xi)+(2*l1+1)*lnRbyScriptL;
+            const float80 elem_EE = (l1+l2+1)*y + lngamma80(1+l1+l2) - 0.5*( lngamma80(1+l1+m)+lngamma80(1+l1-m) + lngamma80(1+l2+m)+lngamma80(1+l2-m) );
+            const float80 elem_MM = elem_EE+0.5*(log(l1)+log(l2)-log(1+l1)-log(1+l2));
 
             if(EE != NULL)
             {
-                matrix_set(EE, i,j, lna0+lnXiRL);
-                matrix_set(EE_sign, i,j, -sign_xi*sign_a0);
+                matrix_set(EE, i,j, elem_EE);
+                matrix_set(EE, j,i, elem_EE);
             }
             if(MM != NULL)
             {
-                matrix_set(MM, i,j, lnb0+lnXiRL);
-                matrix_set(MM_sign, i,j, sign_xi*sign_b0);
+                matrix_set(MM, i,j, elem_MM);
+                matrix_set(MM, j,i, elem_MM);
             }
         }
     }
 
-    /* calculate logdet and free space */
+    /* Calculate logdet and free space.
+     * Note that we actually calculate |log(det(M-Id))|, which gives the same
+     * result as log(det(Id-M)). This is merely a trick so we don't have to
+     * bother about signs.
+     */
     if(EE != NULL)
     {
-        *logdet_EE = matrix_logdetIdpM(self, EE, EE_sign);
-
-        matrix_sign_free(EE_sign);
+        *logdet_EE = matrix_logdet(self, EE, NULL, -1);
         matrix_float80_free(EE);
     }
     if(MM != NULL)
     {
-        *logdet_MM = matrix_logdetIdpM(self, MM, MM_sign);
-
-        matrix_sign_free(MM_sign);
+        *logdet_MM = matrix_logdet(self, MM, NULL, -1);
         matrix_float80_free(MM);
     }
 }
