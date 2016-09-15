@@ -12,6 +12,7 @@
 #include "test_Lambda.h"
 #include "test_lbinom.h"
 #include "test_logdet.h"
+#include "test_logdet_HT.h"
 #include "test_mie.h"
 #include "test_mie_drude.h"
 #include "test_Plm.h"
@@ -35,6 +36,7 @@ int main(int argc, char *argv[])
     test_integration_perf();
     //test_integration_drude();
 
+    test_logdet_HT();
     test_logdet();
 
     return 0;

@@ -31,6 +31,7 @@ TESTS = \
     tests/test_integration_drude.o \
     tests/test_Lambda.o \
     tests/test_logdet.o \
+    tests/test_logdet_HT.o \
     tests/test_mie_drude.o \
     tests/tests.o \
     tests/unittest.o
