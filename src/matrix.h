@@ -262,8 +262,8 @@ MATRIX_TYPEDEF(matrix_float128, float128);
 
 #define MATRIX_LOGDET_LU_HEADER(FUNCTION_PREFIX, MATRIX_TYPE, TYPE) TYPE FUNCTION_PREFIX ## _logdet_lu(MATRIX_TYPE *M)
 
-#define MATRIX_EXP(FUNCTION_PREFIX, MATRIX_TYPE, EXP_FUNCTION) \
-    void FUNCTION_PREFIX ## _exp(MATRIX_TYPE *M, matrix_sign_t *M_sign) \
+#define MATRIX_EXP(FUNCTION_PREFIX, MATRIX_TYPE, TYPE, EXP_FUNCTION) \
+    void FUNCTION_PREFIX ## _exp(MATRIX_TYPE *M, matrix_sign_t *M_sign, TYPE z) \
     { \
         const int dim = M->dim; \
         const size_t dim2 = (size_t)dim*(size_t)dim; \
@@ -271,23 +271,23 @@ MATRIX_TYPEDEF(matrix_float128, float128);
         if(M_sign) \
         { \
             for(size_t i = 0; i < dim2; i++) \
-                M->M[i] = M_sign->M[i]*EXP_FUNCTION(M->M[i]); \
+                M->M[i] = z*M_sign->M[i]*EXP_FUNCTION(M->M[i]); \
         } \
         else \
         { \
             for(size_t i = 0; i < dim2; i++) \
-                M->M[i] = EXP_FUNCTION(M->M[i]); \
+                M->M[i] = z*EXP_FUNCTION(M->M[i]); \
         } \
     }
 
-#define MATRIX_EXP_HEADER(FUNCTION_PREFIX, MATRIX_TYPE) void FUNCTION_PREFIX ## _exp(MATRIX_TYPE *M, matrix_sign_t *M_sign) \
+#define MATRIX_EXP_HEADER(FUNCTION_PREFIX, MATRIX_TYPE, TYPE) void FUNCTION_PREFIX ## _exp(MATRIX_TYPE *M, matrix_sign_t *M_sign, TYPE z) \
 
 /** matrix functions for float80 */
 MATRIX_ALLOC_HEADER (matrix_float80, matrix_float80);
 MATRIX_FREE_HEADER  (matrix_float80, matrix_float80);
 MATRIX_LOAD_HEADER  (matrix_float80, matrix_float80);
 MATRIX_SAVE_HEADER  (matrix_float80, matrix_float80);
-MATRIX_EXP_HEADER   (matrix_float80, matrix_float80);
+MATRIX_EXP_HEADER   (matrix_float80, matrix_float80, float80);
 MATRIX_MINMAX_HEADER(matrix_float80, matrix_float80, float80);
 MATRIX_LOGDET_LU_HEADER(matrix_float80, matrix_float80, float80);
 

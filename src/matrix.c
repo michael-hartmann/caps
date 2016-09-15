@@ -42,7 +42,7 @@ MATRIX_FREE  (matrix_float80, matrix_float80);
 MATRIX_SAVE  (matrix_float80, matrix_float80, float80);
 MATRIX_LOAD  (matrix_float80, matrix_float80, float80, matrix_float80_alloc, matrix_float80_free);
 MATRIX_MINMAX(matrix_float80, matrix_float80, float80);
-MATRIX_EXP   (matrix_float80, matrix_float80, exp80);
+MATRIX_EXP   (matrix_float80, matrix_float80, float80, exp80);
 MATRIX_LOGDET_LU(matrix_float80, matrix_float80, float80, fabs80, log80);
 
 
@@ -465,9 +465,9 @@ void matrix_float80_log_balance(matrix_float80 *A)
 
 
 /**
- * @brief Calculate \f$\log\det(z\mathrm{Id}+M)\f$ for matrix M
+ * @brief Calculate \f$\log\det(\mathrm{Id}+z*M)\f$ for matrix M
  *
- * This function calculates \f$\log\det(z\mathrm{Id}+M)\f$ for a matrix \f$M\f$
+ * This function calculates \f$\log\det(\mathrm{Id}+zM)\f$ for a matrix \f$M\f$
  * which elements are in logarithmic representation and which signs are stored
  * in M_sign. A matrix element of \f$M\f$ is given by \f$\tilde M_{ij} =
  * (\mathrm{M\_sign})_{ij} \exp(M_{ij})\f$. If M_sign is NULL, it is assumed
@@ -479,7 +479,7 @@ void matrix_float80_log_balance(matrix_float80 *A)
  * Mercator series \f$\mathrm{mercator2} < \log\det(\mathrm{Id}+M)\f$. If this
  * is not true a warning will be printed.
  *
- * If \f$\log\det(z\mathrm{Id}+M) > 0\f$ the program is terminated and an error
+ * If \f$\log\det(\mathrm{Id}+zM) > 0\f$ the program is terminated and an error
  * is printed to stderr.
  *
  * As \f$M\f$ is usually a bad conditioned matrix, the calculation is performed
@@ -506,7 +506,7 @@ void matrix_float80_log_balance(matrix_float80 *A)
  *
  * - 4) Adding identity matrix
  *
- *   Add identify matrix: \f$M_{ij} = z*\mathrm{Id} + M_{ij}\f$
+ *   Add identify matrix: \f$M_{ij} = \mathrm{Id} + zM_{ij}\f$
  *
  * - 5) Balancing
  *
@@ -538,8 +538,8 @@ void matrix_float80_log_balance(matrix_float80 *A)
  * @param [in]     casimir casimir object
  * @param [in,out] M round trip matrix M (matrix elements given as logarithms); M will be overwritten.
  * @param [in]     M_sign signs of matrix elements M
- * @param [in]     z factor z in log(det(z*Id+M))
- * @retval logdet  \f$\log\det(z\mathrm{Id}+M)\f$
+ * @param [in]     z factor z in log(det(Id+z*M))
+ * @retval logdet  \f$\log\det(\mathrm{Id}+z*M)\f$
  */
 double matrix_logdet(casimir_t *casimir, matrix_float80 *M, matrix_sign_t *M_sign, float80 z)
 {
@@ -585,17 +585,17 @@ double matrix_logdet(casimir_t *casimir, matrix_float80 *M, matrix_sign_t *M_sig
         if(M_sign)
         {
             for(size_t i = 0; i < dim2; i++)
-                M128->M[i] = M_sign->M[i]*exp128(M->M[i]);
+                M128->M[i] = z*M_sign->M[i]*exp128(M->M[i]);
         }
         else
         {
             for(size_t i = 0; i < dim2; i++)
-                M128->M[i] = exp128(M->M[i]);
+                M128->M[i] = z*exp128(M->M[i]);
         }
 
         /* add identity matrix */
         for(size_t i = 0; i < dim; i++)
-            M128->M[i*dim+i] = 1+z*M128->M[i*dim+i];
+            M128->M[i*dim+i] += 1;
 
         /* calculate logdetD */
         double logdetD = matrix_float128_logdet_qr(M128);
@@ -613,7 +613,7 @@ double matrix_logdet(casimir_t *casimir, matrix_float80 *M, matrix_sign_t *M_sig
             WARN(1, "Algorithm \"%s\" not supported. Using QR_FLOAT80.", detalg);
 
         /* exponentiate matrix */
-        matrix_float80_exp(M, M_sign);
+        matrix_float80_exp(M, M_sign, z);
 
         /* Calculate trace(M) and trace(M²) */
         float80 traceM  = 0; /* trace(M)  */
@@ -648,7 +648,7 @@ double matrix_logdet(casimir_t *casimir, matrix_float80 *M, matrix_sign_t *M_sig
 
         /* add identity matrix */
         for(size_t i = 0; i < dim; i++)
-            M->M[i*dim+i] = z+M->M[i*dim+i];
+            M->M[i*dim+i] += 1;
 
         /* pivot */
         if(casimir->pivot)
