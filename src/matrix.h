@@ -268,8 +268,16 @@ MATRIX_TYPEDEF(matrix_float128, float128);
         const int dim = M->dim; \
         const size_t dim2 = (size_t)dim*(size_t)dim; \
 \
-        for(size_t i = 0; i < dim2; i++) \
-            M->M[i] = M_sign->M[i]*EXP_FUNCTION(M->M[i]); \
+        if(M_sign) \
+        { \
+            for(size_t i = 0; i < dim2; i++) \
+                M->M[i] = M_sign->M[i]*EXP_FUNCTION(M->M[i]); \
+        } \
+        else \
+        { \
+            for(size_t i = 0; i < dim2; i++) \
+                M->M[i] = EXP_FUNCTION(M->M[i]); \
+        } \
     }
 
 #define MATRIX_EXP_HEADER(FUNCTION_PREFIX, MATRIX_TYPE) void FUNCTION_PREFIX ## _exp(MATRIX_TYPE *M, matrix_sign_t *M_sign) \
@@ -299,6 +307,7 @@ MATRIX_MINMAX_HEADER(matrix_float128, matrix_float128, float128);
 #endif
 
 /* prototypes */
+double matrix_logdet(casimir_t *casimir, matrix_float80 *M, matrix_sign_t *M_sign, float80 z);
 double matrix_logdetIdpM(casimir_t *casimir, matrix_float80 *M, matrix_sign_t *M_sign);
 
 double matrix_float80_logdet_qr(matrix_float80 *M);
