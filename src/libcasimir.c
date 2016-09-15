@@ -1912,10 +1912,10 @@ double casimir_logdetD(casimir_t *self, int n, int m)
     int ret;
 
     ret = matrix_float80_save(M, "M.out");
-    WARN(!ret, "Couldn't dump matrix M.out");
+    WARN(ret, "Couldn't dump matrix M.out");
 
     ret = matrix_sign_save(M_sign, "M_sign.out");
-    WARN(!ret, "Couldn't dump matrix M_sign.out");
+    WARN(ret, "Couldn't dump matrix M_sign.out");
 #endif
 
     /* We have calculated -M here. We now call matrix_logdetIdpM that will
