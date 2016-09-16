@@ -22,7 +22,6 @@ int main(int argc, char *argv[])
 {
     test_lbinom();
     test_Lambda();
-    test_Xi();
     test_mie_drude();
 
     test_fresnel();

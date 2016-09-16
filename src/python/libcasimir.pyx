@@ -22,10 +22,8 @@ cdef extern from "libcasimir.h":
     void casimir_set_verbose(casimir_t *self, bool verbose)
 
     float80 casimir_lnLambda(int l1, int l2, int m, sign_t *sign)
-    float80 casimir_lnXi(int l1, int l2, int m, sign_t *sign)
     double casimir_epsilon(double xi, double omegap, double gamma_)
 
-    void casimir_lnab0(int l, double *a0, sign_t *sign_a0, double *b0, sign_t *sign_b0)
     void casimir_lnab(casimir_t *self, const int n_mat, const int l, double *lna, double *lnb, sign_t *sign_a, sign_t *sign_b)
 
     double casimir_F(casimir_t *self, int *nmax) nogil
@@ -130,12 +128,6 @@ cdef class Casimir:
         return longdouble_c2py(res), <int>sign
 
 
-    def lnXi(Casimir self, int l1, int l2, int m):
-        cdef sign_t sign
-        cdef float80 res = casimir_lnXi(l1, l2, m, &sign)
-        return longdouble_c2py(res), <int>sign
-
-
     def epsilon(Casimir self, double xi, double omegap, double gamma_):
         return casimir_epsilon(xi, omegap, gamma_)
 
@@ -164,13 +156,6 @@ cdef class Casimir:
         raise NotImplementedError()
 
     
-    def lnab0(Casimir self, int l):
-        cdef sign_t sign_a0, sign_b0
-        cdef double a0,b0
-        casimir_lnab0(l, &a0, &sign_a0, &b0, &sign_b0)
-        return a0,sign_a0,b0,sign_b0
-
-
     def lnab(Casimir self, int n_mat, int l):
         cdef double lna, lnb
         cdef sign_t sign_a, sign_b
