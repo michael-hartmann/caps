@@ -670,8 +670,3 @@ double matrix_logdet(casimir_t *casimir, matrix_float80 *M, matrix_sign_t *M_sig
         }
     }
 }
-
-double matrix_logdetIdpM(casimir_t *casimir, matrix_float80 *M, matrix_sign_t *M_sign)
-{
-    return matrix_logdet(casimir, M, M_sign, 1);
-}
