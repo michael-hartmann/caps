@@ -145,12 +145,7 @@ double matrix_float128_logdet_qr(matrix_float128 *M)
                 const float128 a = m[j*dim+j];
                 const float128 b = Mij;
 
-                if(b == 0)
-                {
-                    c = copysign128(1,a);
-                    s = 0;
-                }
-                else if(a == 0)
+                if(a == 0)
                 {
                     c = 0;
                     s = -copysign128(1, b);
