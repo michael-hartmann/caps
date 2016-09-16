@@ -534,7 +534,7 @@ int casimir_set_cores(casimir_t *self, int cores)
  * This function is not thread-safe.
  *
  * @param [in,out] self Casimir object
- * @param [in] detalg algorithm to compute deterimant
+ * @param [in] detalg algorithm to compute determinant
  * @retval 1
  */
 int casimir_set_detalg(casimir_t *self, const char *detalg)
@@ -544,7 +544,7 @@ int casimir_set_detalg(casimir_t *self, const char *detalg)
 }
 
 /**
- * @brief Get algorithm to calculate deterimant
+ * @brief Get algorithm to calculate determinant
  *
  * The string is stored in detalg.
  *
