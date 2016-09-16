@@ -202,25 +202,19 @@ MATRIX_TYPEDEF(matrix_float128, float128);
     TYPE FUNCTION_PREFIX ## _logdet_qr(MATRIX_TYPE *M) \
     { \
         const int dim = M->size; \
-        TYPE det = 0; \
-        TYPE *m = M->M; \
+        TYPE const *m = M->M; /* the pointer is constant, the data is not */ \
 \
         for(int j = 0; j < dim-1; j++) \
             for(int i = j+1; i < dim; i++) \
-            {\
-                TYPE c,s, Mij = m[i*dim+j]; \
+            { \
+                const TYPE b = m[i*dim+j]; /* Mij */ \
 \
-                if(Mij != 0) \
+                if(b != 0) \
                 { \
-                    const TYPE a = m[j*dim+j]; \
-                    const TYPE b = Mij; \
+                    TYPE c,s; \
+                    const TYPE a = m[j*dim+j]; /* Mjj */ \
 \
-                    if(b == 0) \
-                    { \
-                        c = COPYSIGN_FUNCTION(1,a); \
-                        s = 0; \
-                    } \
-                    else if(a == 0) \
+                    if(a == 0) \
                     { \
                         c = 0; \
                         s = -COPYSIGN_FUNCTION(1, b); \
@@ -253,9 +247,10 @@ MATRIX_TYPEDEF(matrix_float128, float128);
                 } \
             } \
  \
+        TYPE logdet = 0; \
         for(int i = 0; i < dim; i++) \
-            det += LOG_FUNCTION(ABS_FUNCTION(m[i*dim+i])); \
-        return det; \
+            logdet += LOG_FUNCTION(ABS_FUNCTION(m[i*dim+i])); \
+        return logdet; \
     }
 
 //#define MATRIX_LOGDET_QR_HEADER(FUNCTION_PREFIX, MATRIX_TYPE, TYPE) TYPE FUNCTION_PREFIX ## _logdet_qr(MATRIX_TYPE *M)
