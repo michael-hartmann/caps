@@ -35,11 +35,10 @@ static void casimir_integrate_perf_m0(integration_perf_t *self, int l1, int l2, 
  */
 static float80 polyintegrate(float80 p[], const int len_p, const int offset, const float80 tau)
 {
-    int k;
     const float80 log_tau = log80(tau);
     float80 list[len_p];
 
-    for(k = offset; k < len_p+offset; k++)
+    for(int k = offset; k < len_p+offset; k++)
         list[k-offset] = lgamma80(k+1)-(k+1)*log_tau+p[k-offset];
 
     return logadd_m(list, len_p);
@@ -126,7 +125,7 @@ float80 casimir_integrate_perf_I(integration_perf_t *self, int nu)
         log_polymult(p1, m, p2, nu+1-2*m, p); /* len: nu-m */
 
         v = self->cache_I[nu] = polyintegrate(p, -m+nu, m-1, tau);
-        TERMINATE(!isfinite(v) || isnan(v), "I=%Lg, nu=%d, m=%d\n", v, nu, m);
+        TERMINATE(!isfinite(v), "I=%Lg, nu=%d, m=%d\n", v, nu, m);
 
         xfree(p1);
         xfree(p2);
@@ -307,7 +306,7 @@ void casimir_integrate_perf(integration_perf_t *self, int l1, int l2, casimir_in
     if(m == 0)
     {
         casimir_integrate_perf_m0(self, l1, l2, cint);
-        TERMINATE(!isfinite(cint->lnB_TM) || isnan(cint->lnB_TM), "lnB=%Lg, l1=%d,l2=%d,m=%d,nT=%Lg", cint->lnB_TM,l1,l2,m,nT);
+        TERMINATE(!isfinite(cint->lnB_TM), "lnB=%Lg, l1=%d,l2=%d,m=%d,nT=%Lg", cint->lnB_TM,l1,l2,m,nT);
 
         return;
     }
@@ -391,8 +390,8 @@ void casimir_integrate_perf(integration_perf_t *self, int l1, int l2, casimir_in
         cint->signD_TE = sign*sign_D0(l2,m,TE);
     }
 
-    TERMINATE(!isfinite(cint->lnA_TM) || isnan(cint->lnA_TM), "lnA=%Lg, l1=%d,l2=%d,m=%d,nT=%Lg", cint->lnA_TM,l1,l2,m,nT);
-    TERMINATE(!isfinite(cint->lnB_TM) || isnan(cint->lnB_TM), "lnB=%Lg, l1=%d,l2=%d,m=%d,nT=%Lg", cint->lnB_TM,l1,l2,m,nT);
-    TERMINATE(!isfinite(cint->lnC_TM) || isnan(cint->lnC_TM), "lnC=%Lg, l1=%d,l2=%d,m=%d,nT=%Lg", cint->lnC_TM,l1,l2,m,nT);
-    TERMINATE(!isfinite(cint->lnD_TM) || isnan(cint->lnD_TM), "lnD=%Lg, l1=%d,l2=%d,m=%d,nT=%Lg", cint->lnD_TM,l1,l2,m,nT);
+    TERMINATE(!isfinite(cint->lnA_TM), "lnA=%Lg, l1=%d,l2=%d,m=%d,nT=%Lg", cint->lnA_TM,l1,l2,m,nT);
+    TERMINATE(!isfinite(cint->lnB_TM), "lnB=%Lg, l1=%d,l2=%d,m=%d,nT=%Lg", cint->lnB_TM,l1,l2,m,nT);
+    TERMINATE(!isfinite(cint->lnC_TM), "lnC=%Lg, l1=%d,l2=%d,m=%d,nT=%Lg", cint->lnC_TM,l1,l2,m,nT);
+    TERMINATE(!isfinite(cint->lnD_TM), "lnD=%Lg, l1=%d,l2=%d,m=%d,nT=%Lg", cint->lnD_TM,l1,l2,m,nT);
 }

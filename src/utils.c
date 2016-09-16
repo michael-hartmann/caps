@@ -115,36 +115,3 @@ const char *indexn(const char *str, char c, int n)
 
     return NULL;
 }
-
-/** @brief Swap values a and b
- *
- * After the call: a=b and b=a.
- *
- * @param a first double
- * @param b second double
- */
-void swap(double *a, double *b)
-{
-    double t = *a;
-    *a = *b;
-    *b = t;
-}
-
-
-/** @brief Convert seconds to HH:MM:SS
- *
- * Convert seconds to hours, minutes and seconds.
- *
- * @param t seconds
- * @param h hours
- * @param m minutes
- * @param s seconds
- */
-void sec2human(double t, int *h, int *m, int *s)
-{
-    int time = round(t);
-
-    *s = time % 60;
-    *m = (time % 3600)/60;
-    *h = time/3600;
-}

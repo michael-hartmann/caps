@@ -16,34 +16,33 @@ static void usage(FILE *stream)
     casimir_compile_info(info, sizeof(info));
 
     fprintf(stream,
-"Usage: casimir_logdetD [OPTIONS]\n"
+"Usage: casimir_logdetD [OPTIONS]\n\n"
 "This program will calculate the free Casimir energy for the plane-sphere\n"
 "geometry for given n,m,T,L/R.\n"
 "\n"
 "Mandatory options:\n"
-"    -x  L/R\n"
-"    -nT imaginary frequency ξ\n"
-"    -m  value of m\n"
+"    -x, --LbyR  L/R\n"
+"    --nT        imaginary frequency ξ in units of c/(L+R)\n"
+"    -m          value of m\n"
 "\n"
 "Further options:\n"
-"    -w, --omegap\n"
+"    -w, --omegap OMEGAP\n"
 "       Set value of Plasma frequency omega_p of Drude metals in units of\n"
-"       c/omegaP. If omitted, omegap = INFINITY.\n"
+"       c/(L+R). If omitted, omegap = INFINITY.\n"
 "\n"
-"    -g, --gamma\n"
+"    -g, --gamma GAMMA\n"
 "       Set value of relaxation frequency gamma of Drude metals in units of\n"
 "       c/(L+R). If omitted, gamma = 0.\n"
 "\n"
-"    -L\n"
-"        Set lmax to given value. When -L is used, -l will be ignored.\n"
+"    -L, --lmax LMAX\n"
+"        Set lmax to LMAX. When -L is used, -l will be ignored.\n"
 "\n"
 "    -b, --buffering\n"
 "        Enable buffering. By default buffering for stderr and stdout is\n"
 "        disabled.\n"
 "\n"
 "    --trace THRESHOLD\n"
-"        Try to calculate log det D(xi) using -Tr D(xi). If |trace|>THRESHOLD,\n"
-"        fall back to log det D(xi).\n"
+"        Try to calculate log det D(xi) using -Tr D(xi) if |trace|<THRESHOLD.\n"
 "\n"
 "    --detalg DETALG\n"
 "        Use DETALG to calculate determinant.\n"
@@ -83,8 +82,10 @@ int main(int argc, char *argv[])
             { "buffering", no_argument,       0, 'b' },
             { "debug",     no_argument,       0, 'D' },
 
+            { "LbyR",      required_argument, 0, 'x' },
             { "nT",        required_argument, 0, 'T' },
             { "detalg",    required_argument, 0, 'd' },
+            { "lmax",      required_argument, 0, 'L' },
             { "lscale",    required_argument, 0, 'l' },
             { "trace",     required_argument, 0, 't' },
             { "omegap",    required_argument, 0, 'w' },
@@ -95,7 +96,7 @@ int main(int argc, char *argv[])
 
         /* getopt_long stores the option index here. */
         int option_index = 0;
-        int c = getopt_long (argc, argv, "x:T:m:s:a:l:w:g:L:t:bqhDv", long_options, &option_index);
+        int c = getopt_long (argc, argv, "x:T:m:l:w:g:d:L:t:bhD", long_options, &option_index);
 
         /* Detect the end of the options. */
         if(c == -1)
@@ -193,16 +194,8 @@ int main(int argc, char *argv[])
     if(lmax)
         casimir_set_lmax(&casimir, lmax);
 
-    if(gamma_ > 0)
-    {
-        casimir_set_gamma_sphere(&casimir, gamma_);
-        casimir_set_gamma_plane (&casimir, gamma_);
-    }
-    if(isfinite(omegap))
-    {
-        casimir_set_omegap_sphere(&casimir, omegap);
-        casimir_set_omegap_plane (&casimir, omegap);
-    }
+    if(gamma_ >= 0 && isfinite(omegap))
+        casimir_set_drude(&casimir, omegap, gamma_, omegap, gamma_);
 
     casimir_set_debug(&casimir, debug);
 
@@ -217,8 +210,8 @@ int main(int argc, char *argv[])
 
     double logdet = casimir_logdetD(&casimir, 1, m);
 
-    printf("# LbyR, nT, omegap, gamma, m, logdetD, lmax, time\n");
-    printf("%g, %g, %g, %g, %d, %.15g, %d, %g\n", LbyR, nT, omegap, gamma_, m, logdet, casimir.lmax, now()-start_time);
+    printf("# L/R, ξ*(L+R)/c, ωp*(L+R)/c, γ*(L+R)/c, m, logdetD, lmax, time\n");
+    printf("%g, %g, %g, %g, %d, %.12g, %d, %g\n", LbyR, nT, omegap, gamma_, m, logdet, casimir.lmax, now()-start_time);
 
     casimir_free(&casimir);
 

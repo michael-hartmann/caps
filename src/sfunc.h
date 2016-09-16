@@ -55,14 +55,9 @@ inline float80 logadd_m(const float80 list[], const int len);
 inline float80 logadd_ms(const float80 list[], const sign_t signs[], const int len, sign_t *sign);
 inline float80 logdiff_rel(const float80 log_a, const float80 log_b);
 
-inline float80 lbinom(int n, int k);
-
 float80 bessel_lnInu(const int n, const float80 x);
 float80 bessel_lnKnu(const int n, const float80 x);
 void bessel_lnInuKnu(int nu, const float80 x, float80 *lnInu_p, float80 *lnKnu_p);
-
-double linspace(double start, double stop, int N, int i);
-double logspace(double start, double stop, int N, int i);
 
 float80 ln_doublefact(int n);
 

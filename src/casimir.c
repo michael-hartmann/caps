@@ -17,7 +17,7 @@
 #include "utils.h"
 
 /* default values for precision and lfac */
-#define DEFAULT_PRECISION 1e-10
+#define DEFAULT_PRECISION 1e-8
 #define DEFAULT_LFAC 5
 #define MIN_LMAX 20
 
@@ -27,59 +27,61 @@ void usage(FILE *stream)
 {
     char msg[4096];
 
-    casimir_compile_info(msg, sizeof(msg)/sizeof(char));
+    casimir_compile_info(msg, sizeof(msg));
 
     fprintf(stream, "Usage: casimir [OPTIONS]\n"
 "This program will calculate the free Casimir energy F(T,L/R) for the\n"
-"plane-sphere geometry for given L/R and temperature T. The output is in scaled\n"
-"units.\n"
+"plane-sphere geometry for aspect ratio L/R and temperature T. The output is in\n"
+"units of ħc/(L+R).\n"
 "\n"
 "Mandatory options:\n"
 "    -x, --LbyR L/R\n"
-"        Separation L between sphere and plane divided by radius of sphere,\n"
-"        where L/R > 0.\n"
-"        If you want to calculate several points, you may pass start and stop\n"
-"        value and the amount of points to be calculated.\n"
+"        Separation L between surface of sphere and plane divided by radius\n"
+"        of sphere, where L/R > 0.\n"
+"        If you want to calculate several points, you may pass a start and stop\n"
+"        value, and the number of points to be calculated.\n"
 "        Examples:\n"
 "            $ ./casimir -T 1 -x 0.5,0.9,5\n"
-"            This will calculate five free energies for Q=0.5,...,0,9 in linear\n"
-"            scale.\n"
+"            This will calculate the free Casimir energy for L/R=0.5,0.6,0.7,0.8\n"
+"            and 0,9 (linear scale)\n"
 "            $ ./casimir -T 1 -x 0.5,0.9,5,log\n"
-"            This will calculate five free energies for Q=0.5,...,0,9, but using\n"
+"            This will calculate five free energies for L/R=0.5,...,0,9, but using\n"
 "            a logarithmic scale.\n"
 "\n"
 "    -T TEMPERATURE\n"
-"        Temperature in units of hbar*c/(2pi*kB*(L+R)). You may use the same\n"
-"        syntax like for -x to calculate a range of points.\n"
+"        Temperature in units of ħc/(2π*kB*(L+R)). You may use the same\n"
+"        syntax like for -x to calculate several points.\n"
 "\n"
 "Further options:\n"
 "    -g, --gamma\n"
-"        Set value of relaxation frequency gamma of Drude metals in units of\n"
-"        c/(L+R). If omitted, gamma = 0.\n"
+"        Set value of relaxation frequency γ of Drude metals in units of\n"
+"        c/(L+R). If omitted, γ = 0.\n"
 "\n"
 "    -w, --omegap\n"
-"        Set value of Plasma frequency omega_p of Drude metals in units of\n"
-"        c/(L+R). If omitted, omegap = INFINITY.\n"
+"        Set value of Plasma frequency ωp of Drude metals in units of\n"
+"        c/(L+R). If omitted, ωp = INFINITY.\n"
 "\n"
 "    -l, --lscale\n"
 "        Specify parameter lscale. The vector space has to be truncated for\n"
-"        some value lmax. This program will use lmax=MAX(R/L*lscale, %d)\n"
-"        (default: %d)\n"
+"        some maximum value lmax. This program will use\n"
+"        lmax=MAX(R/L*lscale,%d) (default: %d)\n"
 "\n"
-"    -L LMAX\n"
-"        Set lmax to the value LMAX. When -L is specified, -l will be ignored\n"
+"    -L, --lmax LMAX\n"
+"        Set lmax to LMAX. When -L is specified and positive -l will be ignored.\n"
 "\n"
 "    -c, --cores CORES\n"
-"        Use CORES of processors for the calculation (default: 1)\n"
+"        Use CORES of processors for computation (default: 1)\n"
 "\n"
 "    -p, --precision\n"
-"        Set precision to given value (default: %g)\n"
+"        Set precision to given value. The value determines when the sum over\n"
+"        the Matsubara frequencies and the sum over m is truncated. The sum is\n"
+"        truncated when |F_n(m)/F_n(0)| < precision. (default: %g)\n"
 "\n"
 "   -t, --trace-threshold\n"
 "        Set threshold for trace approximation. If trace of M is smaller\n"
-"        than the threshold, the trace will used as an approximation:\n"
+"        than the threshold, the trace will be used as an approximation:\n"
 "           log det (Id-M) ≈ -Tr M\n"
-"        If trace-threshold is 0, the approximation will never be used.\n"
+"        If trace-threshold is 0, this approximation will never be used.\n"
 "        (default: %g)\n"
 "\n"
 "    --buffering\n"
@@ -136,9 +138,21 @@ void parse_range(const char param, const char *_optarg, double list[])
                 exit(1);
             }
 
+            if(list[0] == list[1])
+            {
+                fprintf(stderr, "start value must not be stop value");
+                usage(stderr);
+                exit(1);
+            }
+
             /* ensure that start < stop */
             if(list[0] > list[1])
-                swap(&list[0], &list[1]);
+            {
+                /* swap list[0] and list[1] */
+                double temp = list[0];
+                list[0] = list[1];
+                list[1] = temp;
+            }
             break;
 
         default:
@@ -149,15 +163,30 @@ void parse_range(const char param, const char *_optarg, double list[])
 }
 
 
+static double linspace(double start, double stop, int N, int i)
+{
+    if(N == 1)
+        return start;
+    else
+        return start+(stop-start)*i/(N-1);
+}
+
+static double logspace(double start, double stop, int N, int i)
+{
+    if(N == 1)
+        return start;
+    else
+        return start*pow(pow(stop/start, 1./(N-1)), i);
+}
+
 int main(int argc, char *argv[])
 {
-    double gamma_ = 0, omegap = 0;
+    double gamma_ = 0, omegap = INFINITY;
     double trace_threshold = -1;
     double precision = DEFAULT_PRECISION;
     double lfac      = DEFAULT_LFAC;
     double lT[4]     = { 0,0,0,SCALE_LIN }; /* start, stop, N, lin/log */
     double lLbyR[4]  = { 0,0,0,SCALE_LIN }; /* start, stop, N, lin/log */
-    int i;
     int cores = 1;
     int lmax = 0;
     int buffering_flag = 0, quiet_flag = 0, verbose_flag = 0;
@@ -173,6 +202,7 @@ int main(int argc, char *argv[])
             { "help",      no_argument,       0, 'h' },
             { "LbyR",      required_argument, 0, 'x' },
             { "lscale",    required_argument, 0, 'l' },
+            { "lmax",      required_argument, 0, 'L' },
             { "cores",     required_argument, 0, 'c' },
             { "precision", required_argument, 0, 'p' },
             { "gamma",     required_argument, 0, 'g' },
@@ -184,7 +214,7 @@ int main(int argc, char *argv[])
         /* getopt_long stores the option index here. */
         int option_index = 0;
 
-        int c = getopt_long (argc, argv, "x:T:c:s:a:l:L:t:p:g:w:Xqh", long_options, &option_index);
+        int c = getopt_long (argc, argv, "x:T:c:l:L:t:p:g:w:qh", long_options, &option_index);
 
         /* Detect the end of the options. */
         if(c == -1)
@@ -249,65 +279,39 @@ int main(int argc, char *argv[])
     }
 
     /* check command line arguments */
+    do
     {
         if(lfac <= 0)
-        {
             fprintf(stderr, "wrong argument for -l, --lscale: lscale must be positive\n\n");
-            usage(stderr);
-            exit(1);
-        }
-        if(lmax < 0)
-        {
-            fprintf(stderr, "wrong argument for -L: lmax must be positive\n\n");
-            usage(stderr);
-            exit(1);
-        }
-        if(precision <= 0)
-        {
+        else if(precision <= 0)
             fprintf(stderr, "wrong argument for -p, --precision: precision must be positive\n\n");
-            usage(stderr);
-            exit(1);
-        }
-        if(lLbyR[0] <= 0 || lLbyR[1] <= 0)
-        {
+        else if(lLbyR[0] <= 0 || lLbyR[1] <= 0)
             fprintf(stderr, "wrong argument for -x: x=L/R must be positive\n\n");
-            usage(stderr);
-            exit(1);
-        }
-        if(lT[0] <= 0)
-        {
+        else if(lT[0] <= 0 || lT[1] <= 0)
             fprintf(stderr, "wrong argument for -T: temperature must be positive\n\n");
-            usage(stderr);
-            exit(1);
-        }
-        if(cores < 1)
-        {
+        else if(cores < 1)
             fprintf(stderr, "wrong argument for -c: number of cores must be >= 1\n\n");
-            usage(stderr);
-            exit(1);
-        }
-        if(gamma_ < 0)
-        {
+        else if(gamma_ < 0)
             fprintf(stderr, "wrong argument for --gamma: gamma must be nonnegative\n\n");
-            usage(stderr);
-            exit(1);
-        }
-        if(omegap < 0)
-        {
-            fprintf(stderr, "wrong argument for --omegap: omegap must be nonnegative\n\n");
-            usage(stderr);
-            exit(1);
-        }
-    }
+        else if(omegap <= 0)
+            fprintf(stderr, "wrong argument for --omegap: omegap must be positive\n\n");
+        else
+            /* everythink ok */
+            break;
+
+        /* print usage and exit */
+        usage(stderr);
+        exit(1);
+    } while(0);
 
     if(!quiet_flag)
     {
         char msg[4096];
-        casimir_compile_info(msg, sizeof(msg)/sizeof(char));
+        casimir_compile_info(msg, sizeof(msg));
         printf("# %s\n#\n", msg);
     }
 
-    i = 0;
+    int i = 0;
     for(int iLbyR = 0; iLbyR < lLbyR[2]; iLbyR++)
         for(int iT = 0; iT < lT[2]; iT++)
         {
@@ -335,16 +339,8 @@ int main(int argc, char *argv[])
             casimir_set_cores(&casimir, cores);
             casimir_set_precision(&casimir, precision);
 
-            if(gamma_ > 0)
-            {
-                casimir_set_gamma_sphere(&casimir, gamma_);
-                casimir_set_gamma_plane (&casimir, gamma_);
-            }
-            if(omegap > 0)
-            {
-                casimir_set_omegap_sphere(&casimir, omegap);
-                casimir_set_omegap_plane (&casimir, omegap);
-            }
+            if(isfinite(omegap))
+                casimir_set_drude(&casimir, omegap, gamma_, omegap, gamma_);
 
             if(lmax > 0)
                 casimir_set_lmax(&casimir, lmax);
@@ -359,9 +355,18 @@ int main(int argc, char *argv[])
             casimir_free(&casimir);
 
             if(!quiet_flag)
-                printf("#\n# LbyR, T, F, lmax, nmax, time\n");
+                printf("#\n");
 
-            printf("%.15g, %.15g, %.15g, %d, %d, %g\n", LbyR, T, F, casimir.lmax, nmax, now()-start_time);
+            /* if quiet, print this line just once */
+            if(i == 0 || !quiet_flag)
+                printf("# L/R, 2π*kB*T*(L+R)/(ħc), ωp*(L+R)/c, γ*(L+R)/c, F*(L+R)/(ħc), lmax, nmax, time\n");
+
+
+            printf("%g, %g, %g, %g, %.12g, %d, %d, %g\n",
+                LbyR, T,
+                omegap, gamma_,
+                F, casimir.lmax, nmax, now()-start_time
+            );
 
             if(!quiet_flag)
             {
