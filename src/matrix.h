@@ -303,7 +303,6 @@ MATRIX_MINMAX_HEADER(matrix_float128, matrix_float128, float128);
 
 /* prototypes */
 double matrix_logdet(casimir_t *casimir, matrix_float80 *M, matrix_sign_t *M_sign, float80 z);
-double matrix_logdetIdpM(casimir_t *casimir, matrix_float80 *M, matrix_sign_t *M_sign);
 
 double matrix_float80_logdet_qr(matrix_float80 *M);
 #ifdef FLOAT128
