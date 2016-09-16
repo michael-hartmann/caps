@@ -1715,31 +1715,20 @@ double casimir_logdetD(casimir_t *self, int n, int m)
 
     /* M_EE, -M_EM
        M_ME,  M_MM */
-    /*
-     * Theese two for-loops are a little bit difficult to understand.
-     * They do the same as
-     *     for(int l1 = min; l1 <= max; ++l1)
-     *         for(int l2 = min; l2 <= l1; ++l2).
-     * But they change the order of the evaluation.
-     * This doesn't change the result, since the order of evaluation doesn't matter. But it is faster
-     * for Drude, because we can reuse most of the legendre polynomials (see plm_cache.c).
-     * This will successively evaluate the matrix-elements with the same "l1 + l2".
-     */
-    for(int l1_plus_l2 = 2 * min; l1_plus_l2 <= 2 * max; ++l1_plus_l2)
+    for(int l1 = min; l1 <= max; l1++)
     {
-        for(int l2 = min; l2 <= l1_plus_l2 / 2; ++l2)
+        const int i = l1-min;
+
+        sign_t sign_al1, sign_bl1;
+        double ln_al1, ln_bl1;
+        casimir_mie_cache_get(self, l1, n, &ln_al1, &sign_al1, &ln_bl1, &sign_bl1);
+
+        for(int l2 = min; l2 <= l1; l2++)
         {
-            const int l1 = l1_plus_l2 - l2;
-            if(l1 > max)
-                continue;
-
-            const int i = l1-min;
             const int j = l2-min;
+            sign_t sign_al2, sign_bl2;
+            double ln_al2, ln_bl2;
 
-            double ln_al1, ln_bl1, ln_al2, ln_bl2;
-            sign_t sign_al1, sign_bl1, sign_al2, sign_bl2;
-
-            casimir_mie_cache_get(self, l1, n, &ln_al1, &sign_al1, &ln_bl1, &sign_bl1);
             casimir_mie_cache_get(self, l2, n, &ln_al2, &sign_al2, &ln_bl2, &sign_bl2);
 
             casimir_integrals_t cint;
