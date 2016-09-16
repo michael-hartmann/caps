@@ -149,7 +149,6 @@ double casimir_epsilon(double xi, double omegap, double gamma_);
 double casimir_lnepsilon(double xi, double omegap, double gamma_);
 
 float80 casimir_lnLambda(int l1, int l2, int m, sign_t *sign);
-float80 casimir_lnXi(int l1, int l2, int m, sign_t *sign);
 
 double casimir_F_SI_to_scaled(double F_SI, double ScriptL_SI);
 double casimir_F_scaled_to_SI(double F, double ScriptL_SI);
@@ -195,7 +194,6 @@ int    casimir_set_precision(casimir_t *self, double precision);
 double casimir_get_trace_threshold(casimir_t *self);
 int    casimir_set_trace_threshold(casimir_t *self, double threshold);
 
-void casimir_lnab0(int l, float80 *a0, sign_t *sign_a0, float80 *b0, sign_t *sign_b0);
 void casimir_lnab(casimir_t *self, const int n, const int l, double *lna, double *lnb, sign_t *sign_a, sign_t *sign_b);
 double casimir_lna_perf(casimir_t *self, const int l, const int n, sign_t *sign);
 double casimir_lnb_perf(casimir_t *self, const int l, const int n, sign_t *sign);
