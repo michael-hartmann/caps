@@ -1659,8 +1659,8 @@ double casimir_logdetD(casimir_t *self, int n, int m)
                 matrix_set(M, i,j, ln_al1+sum);
                 matrix_set(M, j,i, ln_al2+sum);
 
-                matrix_set(M_sign, i,j, -            sign_al1*sign);
-                matrix_set(M_sign, j,i, -MPOW(l1+l2)*sign_al2*sign);
+                matrix_set(M_sign, i,j,             sign_al1*sign);
+                matrix_set(M_sign, j,i, MPOW(l1+l2)*sign_al2*sign);
             }
 
             /* MM */
@@ -1672,8 +1672,8 @@ double casimir_logdetD(casimir_t *self, int n, int m)
                 matrix_set(M, i+dim,j+dim, ln_bl1+sum);
                 matrix_set(M, j+dim,i+dim, ln_bl2+sum);
 
-                matrix_set(M_sign, i+dim,j+dim, -            sign_bl1*sign);
-                matrix_set(M_sign, j+dim,i+dim, -MPOW(l1+l2)*sign_bl2*sign);
+                matrix_set(M_sign, i+dim,j+dim,             sign_bl1*sign);
+                matrix_set(M_sign, j+dim,i+dim, MPOW(l1+l2)*sign_bl2*sign);
             }
 
 
@@ -1692,8 +1692,8 @@ double casimir_logdetD(casimir_t *self, int n, int m)
                     matrix_set(M, i,dim+j, ln_al1+sum1);
                     matrix_set(M, j,dim+i, ln_al2+sum2);
 
-                    matrix_set(M_sign, i,dim+j, -              sign_al1*sign1);
-                    matrix_set(M_sign, j,dim+i, -MPOW(l1+l2+1)*sign_al2*sign2);
+                    matrix_set(M_sign, i,dim+j,               sign_al1*sign1);
+                    matrix_set(M_sign, j,dim+i, MPOW(l1+l2+1)*sign_al2*sign2);
                 }
 
                 /* M_ME */
@@ -1701,8 +1701,8 @@ double casimir_logdetD(casimir_t *self, int n, int m)
                     matrix_set(M, dim+i,j, ln_bl1+sum2);
                     matrix_set(M, dim+j,i, ln_bl2+sum1);
 
-                    matrix_set(M_sign, dim+i,j, -              sign_bl1*sign2);
-                    matrix_set(M_sign, dim+j,i, -MPOW(l1+l2+1)*sign_bl2*sign1);
+                    matrix_set(M_sign, dim+i,j,               sign_bl1*sign2);
+                    matrix_set(M_sign, dim+j,i, MPOW(l1+l2+1)*sign_bl2*sign1);
                 }
             }
         }
@@ -1777,8 +1777,8 @@ double casimir_logdetD(casimir_t *self, int n, int m)
         matrix_float80_free(M);
         matrix_sign_free(M_sign);
 
-        logdet  = matrix_logdetIdpM(self, EE, EE_sign);
-        logdet += matrix_logdetIdpM(self, MM, MM_sign);
+        logdet  = matrix_logdet(self, EE, EE_sign, -1);
+        logdet += matrix_logdet(self, MM, MM_sign, -1);
 
         matrix_sign_free(EE_sign);
         matrix_sign_free(MM_sign);
@@ -1788,7 +1788,7 @@ double casimir_logdetD(casimir_t *self, int n, int m)
     }
     else
     {
-        logdet = matrix_logdetIdpM(self, M, M_sign);
+        logdet = matrix_logdet(self, M, M_sign, -1);
 
         matrix_float80_free(M);
         matrix_sign_free(M_sign);
