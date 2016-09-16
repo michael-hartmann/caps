@@ -1,4 +1,4 @@
-.PHONY: clean doc casimir casimir_logdetD casimir_hiT casimir_Fn ld_drude casimir_T0 casimir_tests dependencies dependencies_test
+.PHONY: clean doc casimir casimir_logdetD casimir_hiT casimir_Fn casimir_T0 casimir_tests dependencies dependencies_test
 all: casimir casimir_logdetD casimir_tests
 
 # Choose a compiler.
@@ -88,9 +88,6 @@ casimir_hiT: casimir_hiT.o $(OBJS) dependencies
 casimir_Fn: casimir_Fn.o $(OBJS) dependencies
 	$(CC) $(CFLAGS) $(OPT) casimir_Fn.o $(OBJS) $(LDFLAGS) -o casimir_Fn
 
-ld_drude: ld_drude.o $(OBJS) dependencies
-	$(CC) $(CFLAGS) $(OPT) ld_drude.o $(OBJS) $(LDFLAGS) -o ld_drude
-
 casimir_tests: $(TESTS) $(OBJS) dependencies_test
 	$(CC) $(CFLAGS) $(OPT) $(TESTS) $(OBJS) $(LDFLAGS) -o casimir_tests
 	./casimir_tests
@@ -99,10 +96,10 @@ casimir_T0: casimir_T0.o $(OBJS) dependencies
 	$(MPICC) $(CFLAGS) $(OPT) casimir_T0.o $(OBJS) $(LDFLAGS) -o casimir_T0
 
 install:
-	cp casimir casimir_tests casimir_hiT casimir_logdetD casimir_Fn ld_drude casimir_T0 ${TARGET}
+	cp casimir casimir_tests casimir_hiT casimir_logdetD casimir_Fn casimir_T0 ${TARGET}
 
 clean:
-	rm -f casimir casimir_tests casimir_hiT casimir_logdetD casimir_Fn ld_drude casimir_T0 *.o tests/*.o $(DEPEND_FILE)
+	rm -f casimir casimir_tests casimir_hiT casimir_logdetD casimir_Fn casimir_T0 *.o tests/*.o $(DEPEND_FILE)
 	rm -rf doc
 
 doc:
