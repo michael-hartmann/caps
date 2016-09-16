@@ -33,11 +33,11 @@ void usage(FILE *stream, const char *name)
     fprintf(stream, "Usage: %s -x L/R [-l lscale -L lmax -p precision]\n\n", name);
     fprintf(stream, "\t-x L/R:    ratio of L and R, L/R > 0\n");
     fprintf(stream, "\t-n n:      Matsubara term\n");
-    fprintf(stream, "\t-T T:      temperature\n");
-    fprintf(stream, "\t-L lmax:   use lmax\n"); 
-    fprintf(stream, "\t-l lscale: use lmax = lscale*R/L (ignored if -L is used), default: %g\n", LSCALE); 
-    fprintf(stream, "\t-p prec:   use precision, default: %g\n", PRECISION); 
-    fprintf(stream, "\t-c cores:  how many cores to use, default: 1\n");
+    fprintf(stream, "\t-T T:      temperature in units of ħ*c/(2π*kB*(L+R))\n");
+    fprintf(stream, "\t-L lmax:   set lmax\n");
+    fprintf(stream, "\t-l lscale: lmax = lscale*R/L (ignored if -L is used), default: %g\n", LSCALE);
+    fprintf(stream, "\t-p prec:   precision, default: %g\n", PRECISION);
+    fprintf(stream, "\t-c cores:  cores used for computation, default: 1\n");
 }
 
 pthread_t *start_thread(double LbyR, double T, int n, int m, int lmax, double precision)
@@ -61,7 +61,7 @@ pthread_t *start_thread(double LbyR, double T, int n, int m, int lmax, double pr
 
 
 void *logdetD(void *p)
-{       
+{
     casimir_t casimir;
     double start = now();
     double logdet;
@@ -76,10 +76,10 @@ void *logdetD(void *p)
     casimir_init(&casimir, LbyR, T);
     casimir_set_precision(&casimir, precision);
     casimir_set_lmax(&casimir, lmax);
-    
+
     logdet = casimir_logdetD(&casimir, n, m);
     casimir_free(&casimir);
-    
+
     params->logdet = logdet;
     params->time   = now()-start;
 
@@ -115,13 +115,13 @@ int main(int argc, char *argv[])
 
         /* getopt_long stores the option index here. */
         int option_index = 0;
-      
+
         c = getopt_long (argc, argv, "x:L:l:p:n:T:c:h", long_options, &option_index);
-      
+
         /* Detect the end of the options. */
         if (c == -1)
             break;
-      
+
         switch(c)
         {
           case 0:
@@ -152,11 +152,11 @@ int main(int argc, char *argv[])
           case 'h':
               usage(stdout, argv[0]);
               exit(0);
-      
+
           case '?':
             /* getopt_long already printed an error message. */
             break;
-      
+
           default:
             abort();
         }
@@ -204,7 +204,7 @@ int main(int argc, char *argv[])
     }
 
     fprintf(stderr, "# L/R=%.15g, T=%.15g, n=%d, precision=%g, lmax=%d, cores=%d\n", LbyR, T, n, precision, lmax, cores);
-    
+
     values = (double *)xmalloc(lmax*sizeof(double));
 
     for(int i = 0; i < lmax; i++)

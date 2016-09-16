@@ -89,19 +89,9 @@ inline float80 logadd(const float80 log_a, const float80 log_b)
         return log_a;
 
     if(log_a > log_b)
-    {
-        const float80 diff = log_b-log_a;
-        const float80 expx = exp80(diff);
-
-        return log_a + log1p80(expx);
-    }
+        return log_a + log1p80(exp80(log_b-log_a));
     else
-    {
-        const float80 diff = log_a-log_b;
-        const float80 expx = exp80(diff);
-
-        return log_b + log1p80(expx);
-    }
+        return log_b + log1p80(exp80(log_a-log_b));
 }
 
 
@@ -131,18 +121,12 @@ float80 logadd_s(const float80 log_a, const sign_t sign_a, const float80 log_b, 
     if(log_a > log_b)
     {
         *sign = sign_a;
-        const float80 diff = log_b-log_a;
-        const float80 expx = sign_a*sign_b*exp80(diff);
-
-        return log_a + log1p80(expx);
+        return log_a + log1p80(sign_a*sign_b*exp80(log_b-log_a));
     }
     else
     {
         *sign = sign_b;
-        const float80 diff = log_a-log_b;
-        const float80 expx = sign_a*sign_b*exp80(diff);
-
-        return log_b + log1p80(expx);
+        return log_b + log1p80(sign_a*sign_b*exp80(log_a-log_b));
     }
 }
 
@@ -192,18 +176,6 @@ inline float80 logadd_ms(const float80 list[], const sign_t signs[], const int l
 
 /*@}*/
 
-/**
- * @brief Calculate logarithm of Binomial coefficient
- *
- * @param n
- * @param k
- * @return binomial \f$\log \left(\begin{array}{c} n \\ k \end{array}\right)\f$
- */
-inline float80 lbinom(int n, int k)
-{
-    return lgamma80(1+n)-lgamma80(1+k)-lgamma80(1+n-k);
-}
-
 
 /**
 * @name Bessel functions
@@ -237,7 +209,7 @@ void bessel_lnInuKnu(int nu, const float80 x, float80 *lnInu_p, float80 *lnKnu_p
             lnKnu  = prefactor+lnKnu;
         }
 
-        TERMINATE(isnan(lnKnup) || isinf(lnKnup), "Couldn't calculate Bessel functions, nu=%d, x=%Lg\n", nu, x);
+        TERMINATE(!isfinite(lnKnup), "Couldn't calculate Bessel functions, nu=%d, x=%Lg\n", nu, x);
 
         if(lnKnu_p != NULL)
             *lnKnu_p = lnKnu;
@@ -258,7 +230,7 @@ void bessel_lnInuKnu(int nu, const float80 x, float80 *lnInu_p, float80 *lnKnu_p
             denom = an(l,nu,x)+1/denom;
             ratio *= num/denom;
 
-            if(ratio_last != 0 && fabs80(1.L-ratio/ratio_last) < 1e-20)
+            if(ratio_last != 0 && fabs80(1.L-ratio/ratio_last) < 1e-20L)
                 break;
 
             ratio_last = ratio;
@@ -287,23 +259,6 @@ float80 bessel_lnInu(const int nu, const float80 x)
 
 /*@}*/
 
-double linspace(double start, double stop, int N, int i)
-{
-    if(N == 1)
-        return start;
-    else
-        return start+(stop-start)*i/(N-1);
-}
-
-
-double logspace(double start, double stop, int N, int i)
-{
-    if(N == 1)
-        return start;
-    else
-        return start*pow(pow(stop/start, 1./(N-1)), i);
-}
-
 /**
  * @brief Calculate double factorial \f$n!!\f$
  *
@@ -312,9 +267,6 @@ double logspace(double start, double stop, int N, int i)
  */
 float80 ln_doublefact(int n)
 {
-    if(n < 0)
-        return NAN;
-
     /* see e.g. http://en.wikipedia.org/wiki/Double_factorial */
     if(n == 0 || n == 1) /* 0!! = 1!! = 0 */
         return 0;
@@ -342,7 +294,7 @@ float80 ln_doublefact(int n)
  *
  * This function calculates associated legendre functions and its derivatives
  * for \f$m \ge 0\f$ and \f$x \ge 1\f$.
- * 
+ *
  * Associated Legendre polynomials are defined as follows:
  * \f[
  *     P_\ell^m(x) = (-1)^m (1-x^2)^{m/2} \frac{\mathrm{d}^m}{\mathrm{d}x^m} P_\ell(x)
@@ -362,6 +314,8 @@ float80 ln_doublefact(int n)
  * This function calculates the associated Legendre polynomials for
  * \f$\ell=m,...,\ell_\mathrm{max}\f$.
  *
+ * See https://en.wikipedia.org/wiki/Associated_Legendre_polynomials .
+ *
  * @param [in] lmax maximum value of \f$\ell\f$
  * @param [in] m order
  * @param [in] x position to evaluate associated Legendre polynomial
@@ -380,7 +334,7 @@ inline void plm_lnPlm_array(int lmax, int m, float80 x, float80 lnplm[], sign_t 
     else
     {
         sign[0]  = MPOW((int)(m/2) + m%2);
-        lnplm[0] = ln_doublefact(2*m-1) + m*0.5*log80(pow_2(x)-1); // l=m,m=m
+        lnplm[0] = ln_doublefact(2*m-1) + m*0.5L*log80(pow_2(x)-1); // l=m,m=m
     }
 
     if(lmax == m)
@@ -389,11 +343,9 @@ inline void plm_lnPlm_array(int lmax, int m, float80 x, float80 lnplm[], sign_t 
     sign[1]  = sign[0];
     lnplm[1] = lnplm[0]+logx+log80(2*m+1); // l=m+1, m=m
 
+    /* (l-m)*P_l^m(x) = x*(2l-1)*P_(l-1)^m(x) - (l+m-1)*P_(l-2)^m(x) */
     for(int l = m+2; l <= lmax; l++)
-    {
-        lnplm[l-m] = logadd_s(log80(2*l-1)+logx+lnplm[l-m-1], sign[l-m-1], log80(l+m-1)+lnplm[l-m-2], -sign[l-m-2], &sign[l-m]);
-        lnplm[l-m]-= log80(l-m);
-    }
+        lnplm[l-m] = logadd_s(log80(2*l-1)+logx+lnplm[l-m-1], sign[l-m-1], log80(l+m-1)+lnplm[l-m-2], -sign[l-m-2], &sign[l-m]) - log80(l-m);
 }
 
 /**
@@ -520,7 +472,7 @@ void plm_PlmPlm(int l1, int l2, int m, float80 x, plm_combination_t *res)
     res->lnPl1mdPl2m    = lnPl1m + lndPl2m;
     res->sign_Pl1mdPl2m = common_sign * sign_Pl1m * sign_dPl2m;
 
-    /* dPl1m*dPl2m */
+    /* dPl1m*Pl2m */
     res->lndPl1mPl2m    = lndPl1m + lnPl2m;
     res->sign_dPl1mPl2m = common_sign * sign_dPl1m * sign_Pl2m;
 
@@ -563,7 +515,7 @@ inline int gaunt_qmax(const int n, const int nu, const int m)
  */
 inline float80 gaunt_log_a0(int n, int nu, int m)
 {
-    return lgamma(2*n+1)-lgamma(n+1)+lgamma(2*nu+1)-lgamma(1+nu)+lgamma(n+nu+1)-lgamma(2*n+2*nu+1)+lgamma(1+n+nu-2*m)-lgamma(1+n-m)-lgamma(1+nu-m);
+    return lgamma80(2*n+1)-lgamma80(n+1)+lgamma80(2*nu+1)-lgamma80(1+nu)+lgamma80(n+nu+1)-lgamma80(2*n+2*nu+1)+lgamma80(1+n+nu-2*m)-lgamma80(1+n-m)-lgamma80(1+nu-m);
 }
 
 /**

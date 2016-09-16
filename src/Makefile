@@ -23,10 +23,8 @@ TESTS = \
     tests/test_doublefact.o \
     tests/test_fresnel.o \
     tests/test_integration_perf.o \
-    tests/test_lbinom.o \
     tests/test_mie.o \
     tests/test_Plm.o \
-    tests/test_epsilon.o \
     tests/test_integration_drude.o \
     tests/test_Lambda.o \
     tests/test_logdet.o \

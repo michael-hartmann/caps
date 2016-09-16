@@ -34,9 +34,9 @@ typedef signed char sign_t;
  */
 typedef struct
 {
-    double *ln_al;   /**< list of Mie coefficients \f$a_\ell\f$ (logarithms) */
+    float80 *ln_al;  /**< list of Mie coefficients \f$a_\ell\f$ (logarithms) */
     sign_t *sign_al; /**< list of signs of Mie coefficients \f$a_\ell\f$ */
-    double *ln_bl;   /**< list of Mie coefficients \f$b_\ell\f$ (logarithms) */
+    float80 *ln_bl;  /**< list of Mie coefficients \f$b_\ell\f$ (logarithms) */
     sign_t *sign_bl; /**< list of signs of Mie coefficients \f$b_\ell\f$ */
 } casimir_mie_cache_entry_t;
 
@@ -87,8 +87,6 @@ typedef struct
     char detalg[128];       /**< algorithm to calculate determinant */
 
     casimir_mie_cache_t *mie_cache; /**< Mie chache */
-
-    double birthtime;       /**< timestamp when object was initialized */
 
     bool verbose; /**< verbose flag */
 
@@ -145,8 +143,7 @@ int casimir_vfprintf(casimir_t *self, FILE *stream, const char *format, va_list 
 int casimir_debug(casimir_t *self, const char *format, ...);
 int casimir_verbose(casimir_t *self, const char *format, ...);
 
-double casimir_epsilon(double xi, double omegap, double gamma_);
-double casimir_lnepsilon(double xi, double omegap, double gamma_);
+float80 casimir_epsilonm1(float80 xi, double omegap, double gamma_);
 
 float80 casimir_lnLambda(int l1, int l2, int m, sign_t *sign);
 
@@ -159,19 +156,8 @@ bool casimir_get_debug(casimir_t *self);
 void casimir_set_verbose(casimir_t *self, bool verbose);
 bool casimir_get_verbose(casimir_t *self);
 
-double casimir_get_birthtime(casimir_t *self);
-
-int casimir_set_omegap_sphere(casimir_t *self, double omegap);
-int casimir_set_omegap_plane(casimir_t *self, double omegap);
-
-double casimir_get_omegap_sphere(casimir_t *self);
-double casimir_get_omegap_plane(casimir_t *self);
-
-int casimir_set_gamma_sphere(casimir_t *self, double gamma_);
-int casimir_set_gamma_plane(casimir_t *self, double gamma_);
-
-double casimir_get_gamma_sphere(casimir_t *self);
-double casimir_get_gamma_plane(casimir_t *self);
+int casimir_set_drude(casimir_t *self, double omegap_plane, double gamma_plane, double omegap_sphere, double gamma_sphere);
+int casimir_get_drude(casimir_t *self, double *omegap_plane, double *gamma_plane, double *omegap_sphere, double *gamma_sphere);
 
 int casimir_get_lmax(casimir_t *self);
 int casimir_set_lmax(casimir_t *self, int lmax);
@@ -189,9 +175,9 @@ int    casimir_set_precision(casimir_t *self, double precision);
 double casimir_get_trace_threshold(casimir_t *self);
 int    casimir_set_trace_threshold(casimir_t *self, double threshold);
 
-void casimir_lnab(casimir_t *self, const int n, const int l, double *lna, double *lnb, sign_t *sign_a, sign_t *sign_b);
-double casimir_lna_perf(casimir_t *self, const int l, const int n, sign_t *sign);
-double casimir_lnb_perf(casimir_t *self, const int l, const int n, sign_t *sign);
+void casimir_lnab0(int l, float80 *a0, sign_t *sign_a0, float80 *b0, sign_t *sign_b0);
+void casimir_lnab(casimir_t *self, int n, int l, float80 *lna, float80 *lnb, sign_t *sign_a, sign_t *sign_b);
+void casimir_lnab_perf(casimir_t *self, int n, int l, float80 *lna, float80 *lnb, sign_t *sign_a, sign_t *sign_b);
 
 double casimir_F_n(casimir_t *self, const int n, int *mmax);
 double casimir_F(casimir_t *self, int *nmax);
@@ -199,7 +185,7 @@ double casimir_F(casimir_t *self, int *nmax);
 void casimir_mie_cache_init(casimir_t *self);
 void casimir_mie_cache_alloc(casimir_t *self, int n);
 void casimir_mie_cache_clean(casimir_t *self);
-void casimir_mie_cache_get(casimir_t *self, int l, int n, double *ln_a, sign_t *sign_a, double *ln_b, sign_t *sign_b);
+void casimir_mie_cache_get(casimir_t *self, int l, int n, float80 *ln_a, sign_t *sign_a, float80 *ln_b, sign_t *sign_b);
 void casimir_mie_cache_free(casimir_t *self);
 
 void casimir_logdetD0(casimir_t *self, int m, double *EE, double *MM);

@@ -42,13 +42,9 @@
  * @param [out] str buffer for string
  * @param [in]  len length of string
  * @retval success bytes written if successful
- * @retval fail <0 if size == 0
  */
 int casimir_compile_info(char *str, size_t size)
 {
-    if(size == 0)
-        return -1;
-
     /* snprintf() writes at most size bytes (including the terminating null
      * byte ('\0')) to str. */
     return snprintf(str, size,
@@ -75,11 +71,6 @@ int casimir_compile_info(char *str, size_t size)
  */
 void casimir_info(casimir_t *self, FILE *stream, const char *prefix)
 {
-    char buf[128];
-    time_t timestamp = self->birthtime;
-    struct tm ts = *localtime(&timestamp);
-    strftime(buf, sizeof(buf), "%a %Y-%m-%d %H:%M:%S %Z", &ts);
-
     if(prefix == NULL)
         prefix = "";
 
@@ -89,8 +80,8 @@ void casimir_info(casimir_t *self, FILE *stream, const char *prefix)
     fprintf(stream, "%sT       = %g\n", prefix, self->T);
 
     fprintf(stream, "%somegap_sphere = %g\n", prefix, self->omegap_sphere);
-    fprintf(stream, "%somegap_plane  = %g\n", prefix, self->omegap_plane);
     fprintf(stream, "%sgamma_sphere  = %g\n", prefix, self->gamma_sphere);
+    fprintf(stream, "%somegap_plane  = %g\n", prefix, self->omegap_plane);
     fprintf(stream, "%sgamma_plane   = %g\n", prefix, self->gamma_plane);
 
     fprintf(stream, "%slmax            = %d\n", prefix, self->lmax);
@@ -102,7 +93,6 @@ void casimir_info(casimir_t *self, FILE *stream, const char *prefix)
     fprintf(stream, "%spivot           = %s\n", prefix, self->pivot        ? "true" : "false");
     fprintf(stream, "%sprecondition    = %s\n", prefix, self->precondition ? "true" : "false");
     fprintf(stream, "%scheck_elems     = %s\n", prefix, self->check_elems  ? "true" : "false");
-    fprintf(stream, "%sbirthtime       = %s (%.1f)\n", prefix, buf, self->birthtime);
 }
 
 
@@ -227,9 +217,9 @@ float80 casimir_lnLambda(int l1, int l2, int m, sign_t *sign)
 /**
  * @brief Calculate \f$\epsilon(i\xi)\f$ for Drude model
  *
- * This function returns the dielectric function
+ * This function returns the dielectric minus one
  * \f[
- *      \epsilon(i\xi) = 1 + \frac{\omega_\mathrm{P}^2}{\xi(\xi+\gamma)}
+ *      \epsilon(i\xi)-1 = \frac{\omega_\mathrm{P}^2}{\xi(\xi+\gamma)}
  * \f]
  *
  * This function is thread-safe.
@@ -237,32 +227,12 @@ float80 casimir_lnLambda(int l1, int l2, int m, sign_t *sign)
  * @param [in]  xi     \f$\xi\f$ imaginary frequency (in scaled units: \f$\xi=nT\f$)
  * @param [in]  omegap \f$\omega_\mathrm{P}\f$ Plasma frequency
  * @param [in]  gamma_ \f$\gamma\f$ relaxation frequency
- * @retval epsilon \f$\epsilon(\xi, \omega_\mathrm{P}, \gamma)\f$
+ * @retval epsilon \f$\epsilon(\xi, \omega_\mathrm{P}, \gamma)-1\f$
  */
-double casimir_epsilon(double xi, double omegap, double gamma_)
+float80 casimir_epsilonm1(float80 xi, double omegap, double gamma_)
 {
-    return 1+pow_2(omegap)/(xi*(xi+gamma_));
-}
-
-
-/**
- * @brief Calculate \f$\log \epsilon(i\xi)\f$ for Drude model
- *
- * This function returns the logarithm of the dielectric function
- * \f[
- *      \epsilon(i\xi) = 1 + \frac{\omega_\mathrm{P}^2}{\xi(\xi+\gamma)}
- * \f]
- *
- * This function is thread-safe.
- *
- * @param [in]  xi     \f$\xi\f$ imaginary frequency (in scaled units: \f$\xi=nT\f$)
- * @param [in]  omegap \f$\omega_\mathrm{P}\f$ Plasma frequency
- * @param [in]  gamma_ \f$\gamma\f$ relaxation frequency
- * @retval lnepsilon \f$\log{\epsilon(\xi, \omega_\mathrm{P}, \gamma)}\f$
- */
-double casimir_lnepsilon(double xi, double omegap, double gamma_)
-{
-    return log1p(pow_2(omegap)/(xi*(xi+gamma_)));
+    /* cast omegap and gamma_ to float80 for more accurancy */
+    return pow_2((float80)omegap)/(xi*(xi+(float80)gamma_));
 }
 
 
@@ -289,12 +259,41 @@ void casimir_rp(casimir_t *self, float80 nT, float80 k, float80 *r_TE, float80 *
     }
     else
     {
-        /* Drude metals */
-        const float80 epsilon = casimir_epsilon(nT, self->omegap_plane, self->gamma_plane);
-        const float80 beta = sqrt80(1 + pow_2(nT)/(pow_2(nT)+pow_2(k)) * (epsilon-1));
+        /* Drude metals
+        *
+         * In scaled units
+         *     β = sqrt( 1 + ξ²/(ξ²+k²)*(ε-1) ) = sqrt(1+x),
+         * where
+         *     x = ξ²/(ξ²+k²)*(ε-1).
+         *
+         * We calculate x. If x is small, β≈1 and a loss of significance
+         * occures when calculating 1-β.
+         *
+         * For this reason we use the Taylor series
+         *     sqrt(1+x) ≈ 1 + x/2 - x²/8 + x³/16
+         * to avoid a loss of significance if x is small.
+         *
+         * Note: ξ=nT
+         */
 
-        *r_TE = (1-beta)/(1+beta);
-        *r_TM = (epsilon-beta)/(epsilon+beta);
+        const float80 epsilonm1 = casimir_epsilonm1(nT, self->omegap_plane, self->gamma_plane);
+        const float80 x         = pow_2(nT)/(pow_2(nT)+pow_2(k))*epsilonm1;
+
+        if(fabs80(x) < 1e-6)
+        {
+            /* β-1 = sqrt(1+x)-1 = x/2 - x²/8 + x³/16 + O(x^4) */
+            const float80 betam1 = x/2 - pow_2(x)/8 - pow_3(x)/16;
+
+            *r_TE = -betam1/(2+betam1);
+            *r_TM = (epsilonm1-betam1)/(epsilonm1+2+betam1);
+        }
+        else
+        {
+            const float80 beta = sqrt80(1+x);
+
+            *r_TE = (1-beta)/(1+beta);
+            *r_TM = (epsilonm1+1-beta)/(epsilonm1+1+beta);
+        }
     }
 }
 
@@ -382,8 +381,6 @@ int casimir_init(casimir_t *self, double LbyR, double T)
     memset(self->detalg, 0, sizeof(self->detalg));
     strcpy(self->detalg, CASIMIR_DETALG);
 
-    self->birthtime = now();
-
     return 0;
 }
 
@@ -418,168 +415,62 @@ bool casimir_get_verbose(casimir_t *self)
 }
 
 /**
- * @brief Get birthtime
+ * @brief Set material parameters for Drude metals
  *
- * The birthtime is the timestamp when the object was initialized.
- *
- * @param [in] self Casimir object
- * @retval timestamp
- */
-double casimir_get_birthtime(casimir_t *self)
-{
-    return self->birthtime;
-}
-
-
-/**
- * @brief Set \f$\omega_\mathrm{P}\f$ for the sphere
- *
- * Set the plasma frequency for the sphere.
+ * Set material parameters of plane and sphere for Drude metals.
  *
  * This function is not thread-safe.
  *
  * @param [in,out] self Casimir object
- * @param [in] omegap \f$\omega_\mathrm{P}\f$ plasma frequency
+ * @param [in] omegap_plane  \f$\omega_\mathrm{P}\f$ plasma frequency for plane in units of \f$c/(L+R)\f$
+ * @param [in] gamma_plane   \f$\gamma\f$            relaxation frequency for plane in units of \f$c/(L+R)\f$
+ * @param [in] omegap_sphere \f$\omega_\mathrm{P}\f$ plasma frequency for sphere in units of \f$c/(L+R)\f$
+ * @param [in] gamma_sphere  \f$\gamma\f$            relaxation frequency for sphere in units of \f$c/(L+R)\f$
  * @retval 1 if successful
- * @retval 0 if \f$\omega_\mathrm{P} < 0\f$
+ * @retval 0 if \f$\omega_\mathrm{P} <= 0\f$ or \f$\gamma < 0\f$ (for plane or sphere)
  */
-int casimir_set_omegap_sphere(casimir_t *self, double omegap)
+int casimir_set_drude(casimir_t *self, double omegap_plane, double gamma_plane, double omegap_sphere, double gamma_sphere)
 {
-    if(omegap > 0)
+    if(omegap_plane > 0 && gamma_plane >= 0 && omegap_sphere > 0 && gamma_sphere >= 0)
     {
-        self->omegap_sphere = omegap;
+        self->omegap_sphere = omegap_sphere;
+        self->gamma_sphere  = gamma_sphere;
+        self->omegap_plane  = omegap_plane;
+        self->gamma_plane   = gamma_plane;
+
         return 1;
     }
     return 0;
 }
 
 /**
- * @brief Set \f$\omega_\mathrm{P}\f$ for the plane
+ * @brief Get material parameters for Drude metals
  *
- * Set the plasma frequency for the plane.
+ * Get material parameters of plane and sphere for Drude metals. The values are
+ * written to the memory pointed to by omegap_plane, gamma_plane, omegap_sphere
+ * and gamma_sphere. If one pointer is NULL, no value is written.
  *
  * This function is not thread-safe.
  *
  * @param [in,out] self Casimir object
- * @param [in] omegap \f$\omega_\mathrm{P}\f$ plasma frequency
- * @retval 1 if successful
- * @retval 0 if \f$omega_\mathrm{P} < 0\f$
+ * @param [out] omegap_plane  \f$\omega_\mathrm{P}\f$ plasma frequency for plane in units of \f$c/(L+R)\f$
+ * @param [out] gamma_plane   \f$\gamma\f$            relaxation frequency for plane in units of \f$c/(L+R)\f$
+ * @param [out] omegap_sphere \f$\omega_\mathrm{P}\f$ plasma frequency for sphere in units of \f$c/(L+R)\f$
+ * @param [out] gamma_sphere  \f$\gamma\f$            relaxation frequency for sphere in units of \f$c/(L+R)\f$
+ * @return 0
  */
-int casimir_set_omegap_plane(casimir_t *self, double omegap)
+int casimir_get_drude(casimir_t *self, double *omegap_plane, double *gamma_plane, double *omegap_sphere, double *gamma_sphere)
 {
-    if(omegap > 0)
-    {
-        self->omegap_plane = omegap;
-        return 1;
-    }
+    if(omegap_plane != NULL)
+        *omegap_plane = self->omegap_plane;
+    if(gamma_plane != NULL)
+        *gamma_plane = self->gamma_plane;
+    if(omegap_sphere != NULL)
+        *omegap_sphere = self->omegap_sphere;
+    if(gamma_sphere != NULL)
+        *gamma_sphere = self->gamma_sphere;
+
     return 0;
-}
-
-
-/**
- * @brief Get \f$\omega_\mathrm{P}\f$ for the sphere
- *
- * Get the plasma frequency for the sphere.
- *
- * This function is not thread-safe.
- *
- * @param [in,out] self Casimir object
- * @retval plasma frequency
- */
-double casimir_get_omegap_sphere(casimir_t *self)
-{
-    return self->omegap_sphere;
-}
-
-/**
- * @brief Get \f$\omega_\mathrm{P}\f$ for the plane
- *
- * Get the plasma frequency \f$\omega_\mathrm{P}\f$ for the plane.
- *
- * This function is not thread-safe.
- *
- * @param [in,out] self Casimir object
- * @retval omegap \f$\omega_\mathrm{P}\f$plasma frequency
- */
-double casimir_get_omegap_plane(casimir_t *self)
-{
-    return self->omegap_plane;
-}
-
-
-/**
- * @brief Set \f$\gamma\f$ for the sphere
- *
- * Set the relaxation frequency for the sphere.
- *
- * This function is not thread-safe.
- *
- * @param [in,out] self Casimir object
- * @param [in] gamma_ \f$\gamma\f$ relaxation frequency
- * @retval 1 if successful
- * @retval 0 if \f$\gamma < 0\f$
- */
-int casimir_set_gamma_sphere(casimir_t *self, double gamma_)
-{
-    if(gamma_ > 0)
-    {
-        self->gamma_sphere = gamma_;
-        return 1;
-    }
-    return 0;
-}
-
-/**
- * @brief Set \f$\gamma\f$ for the plane
- *
- * Set the relaxation frequency \f$\gamma\f$ for the plane.
- *
- * This function is not thread-safe.
- *
- * @param [in,out] self Casimir object
- * @param [in] gamma_ relaxation frequency
- * @retval 1 if successful
- * @retval 0 if \f$\gamma < 0\f$
- */
-int casimir_set_gamma_plane(casimir_t *self, double gamma_)
-{
-    if(gamma_ > 0)
-    {
-        self->gamma_plane = gamma_;
-        return 1;
-    }
-    return 0;
-}
-
-
-/**
- * @brief Get \f$\gamma\f$ for the sphere
- *
- * Get the relaxation frequency \f$\gamma\f$ for the sphere.
- *
- * This function is not thread-safe.
- *
- * @param [in,out] self Casimir object
- * @retval gamma \f$\gamma\f$ relaxation frequency
- */
-double casimir_get_gamma_sphere(casimir_t *self)
-{
-    return self->gamma_sphere;
-}
-
-/**
- * @brief Get \f$\gamma\f$ for the plane
- *
- * Get the relaxation frequency for the plane.
- *
- * This function is not thread-safe.
- *
- * @param [in,out] self Casimir object
- * @retval gamma \f$\gamma\f$ relaxation frequency
- */
-double casimir_get_gamma_plane(casimir_t *self)
-{
-    return self->gamma_plane;
 }
 
 
@@ -638,7 +529,7 @@ int casimir_set_cores(casimir_t *self, int cores)
  * default to QR_FLOAT80.
  *
  * detalg may be: LU_FLOAT80, QR_FLOAT80, QR_LOG80 and (if supported)
- * QR_FLOAT128, QR_FLOATDD
+ * QR_FLOAT128.
  *
  * This function is not thread-safe.
  *
@@ -821,11 +712,52 @@ void casimir_free(casimir_t *self)
  */
 /*@{*/
 
+/**
+ * @brief Return logarithm of prefactors \f$a_{\ell,0}^\mathrm{perf}\f$, \f$b_{\ell,0}^\mathrm{perf}\f$ and their signs
+ *
+ * For small frequencies \f$\chi = \frac{\xi R}{c} \ll 1\f$ the Mie
+ * coeffiecients scale like
+ * \f[
+ * a_{\ell}^\mathrm{perf} = a_{\ell,0}^\mathrm{perf} \left(\frac{\chi}{2}\right)^{2\ell+1} \\
+ * \f]
+ * \f[
+ * b_{\ell}^\mathrm{perf} = b_{\ell,0}^\mathrm{perf} \left(\frac{\chi}{2}\right)^{2\ell+1}
+ * \f]
+ * This function returns the logarithm of the prefactors
+ * \f$a_{\ell,0}^\mathrm{perf}\f$, \f$b_{\ell,0}^\mathrm{perf}\f$ and their
+ * signs.
+ *
+ * The Mie coefficients are evaluated at \f$\chi = nTR/(R+L)\f$.
+ *
+ * The pointers a0, sign_a0, b0 and sign_b0 must not be NULL.
+ *
+ * This function is thread-safe.
+ *
+ * @param [in] l \f$\ell\f$
+ * @param [out] a0 coefficient \f$a_{\ell,0}^\mathrm{perf}\f$
+ * @param [out] sign_a0 sign of \f$a_{\ell,0}^\mathrm{perf}\f$
+ * @param [out] b0 coefficient \f$b_{\ell,0}^\mathrm{perf}\f$
+ * @param [out] sign_b0 sign of \f$b_{\ell,0}^\mathrm{perf}\f$
+ */
+void casimir_lnab0(int l, float80 *a0, sign_t *sign_a0, float80 *b0, sign_t *sign_b0)
+{
+    *sign_a0 = MPOW(l);
+    *sign_b0 = MPOW(l+1);
+    *b0 = LOGPI-lngamma80(l+0.5)-lngamma80(l+1.5);
+    *a0 = *b0+log1p80(1.0L/l);
+}
 
 /**
- * @brief Return logarithm of Mie coefficient \f$a_\ell\f$ for perfect reflectors and its sign
+ * @brief Calculate Mie coefficients for perfect reflectors
+ *
+ * This function calculates the logarithms of the Mie coefficients
+ * \f$a_\ell(i\chi)\f$ and \f$b_\ell(i\chi)\f$ for perfect reflectors and their
+ * signs. The Mie coefficients are evaluated at the argument
+ * \f$\chi=nTR/(R+L)\f$.
  *
  * The frequency will be determined by n: \f$\xi = nT\f$
+ *
+ * lna, lnb, sign_a and sign_b must be valid pointers and must not be NULL.
  *
  * Restrictions: \f$\ell \ge 1\f$, \f$\ell \ge 0\f$
  *
@@ -838,7 +770,7 @@ void casimir_free(casimir_t *self)
  * @param [out] sign sign of \f$a_\ell\f$
  * @retval logarithm of Mie coefficient \f$a_\ell\f$
  */
-double casimir_lna_perf(casimir_t *self, const int l, const int n, sign_t *sign)
+void casimir_lnab_perf(casimir_t *self, int n, int l, float80 *lna, float80 *lnb, sign_t *sign_a, sign_t *sign_b)
 {
     float80 lnKlp,lnKlm,lnIlm,lnIlp;
     const float80 chi = n*self->T*self->RbyScriptL;
@@ -849,50 +781,29 @@ double casimir_lna_perf(casimir_t *self, const int l, const int n, sign_t *sign)
     bessel_lnInuKnu(l-1, chi, &lnIlm, &lnKlm);
     bessel_lnInuKnu(l,   chi, &lnIlp, &lnKlp);
 
+    /* Calculate b_l(chi), i.e. lnb and sign_b */
+    *lnb    = LOGPI-LOG2+lnIlp-lnKlp;
+    *sign_b = MPOW(l+1);
+
     /* We want to calculate
-     * a(chi) = (-1)^(l+1)*pi/2 * ( l*Ip-chi*Im )/( l*Kp+chi*Km )
-     *        = (-1)^(l+1)*pi/2*Ip/Kp * ( l-chi*Im/Ip )/( l+chi*Km/Kp )
-     *          \--------/ \--------/   \-------------/ \-------------/
-     *             sign     prefactor      numerator      denominator
+     * a_l(chi) = (-1)^(l+1)*pi/2 * ( l*Ip-chi*Im )/( l*Kp+chi*Km )
+     *          = (-1)^(l+1)*pi/2*Ip/Kp * ( l-chi*Im/Ip )/( l+chi*Km/Kp )
+     *            \--------/ \--------/   \-------------/ \-------------/
+     *               sign    |b_l(chi)|      numerator      denominator
+     *
+     *          = b_l(chi) * numerator/denominator
+     *
+     * Note that chi,Km,Kp>0 and thus denominator >= 1 (and it has positive
+     * sign).
      */
 
-    const float80 prefactor = LOGPI-LOG2+lnIlp-lnKlp;
+    /* numerator and denominator to calculate al */
+    sign_t sign_numerator;
+    float80 numerator   = logadd_s(log80(l), +1, log80(chi)+lnIlm-lnIlp, -1, &sign_numerator);
+    float80 denominator = logadd(log80(l), log80(chi)+lnKlm-lnKlp);
 
-    /* numerator */
-    const float80 numerator = logadd_s(log80(l), +1, log80(chi)+lnIlm-lnIlp, -1, sign);
-    /* denominator */
-    const float80 denominator = logadd(log80(l), log80(chi)+lnKlm-lnKlp);
-
-    *sign *= MPOW(l+1);
-    return prefactor+numerator-denominator;
-}
-
-
-/**
- * @brief Return logarithm of Mie coefficient \f$b_\ell\f$ for perfect reflectors and its sign
- *
- * The frequency will be determined by n: \f$\xi = nT\f$
- *
- * Restrictions: \f$\ell \ge 1\f$, \f$\ell \ge 0\f$
- *
- * This function is thread safe - as long you don't change temperature and
- * aspect ratio.
- *
- * @param [in,out] self Casimir object
- * @param [in] l \f$\ell\f$
- * @param [in] n Matsubara term, \f$\xi = nT\f$
- * @param [out] sign sign of \f$b_\ell\f$
- * @retval logarithm of Mie coefficient \f$b_\ell\f$
- */
-double casimir_lnb_perf(casimir_t *self, const int l, const int n, sign_t *sign)
-{
-    const float80 chi = n*self->T*self->RbyScriptL;
-    float80 lnInu, lnKnu;
-
-    bessel_lnInuKnu(l, chi, &lnInu, &lnKnu);
-    *sign = MPOW(l+1);
-
-    return LOGPI-LOG2+lnInu-lnKnu;
+    *lna    = *lnb+numerator-denominator;
+    *sign_a = *sign_b*sign_numerator;
 }
 
 
@@ -900,9 +811,9 @@ double casimir_lnb_perf(casimir_t *self, const int l, const int n, sign_t *sign)
  * @brief Return logarithm of Mie coefficients \f$a_\ell\f$, \f$b_\ell\f$ for Drude model
  *
  * For \f$\omega_\mathrm{P} = \infty\f$ the Mie coefficient for perfect
- * reflectors are returned (see casimir_lna_perf and casimir_lnb_perf).
+ * reflectors are returned (see \ref casimir_lnab_perf).
  *
- * sign_a and sign_b must be valid pointers and must not be NULL.
+ * lna, lnb, sign_a and sign_b must be valid pointers and must not be NULL.
  *
  * For Drude metals we calculate the Mie coefficients al(iξ) und bl(iξ) using
  * the expressions taken from [1]. Ref. [1] is the erratum to [2]. Please note
@@ -931,13 +842,12 @@ double casimir_lnb_perf(casimir_t *self, const int l, const int n, sign_t *sign)
  * @param [out] sign_a sign of Mie coefficient \f$a_\ell\f$
  * @param [out] sign_b sign of Mie coefficient \f$b_\ell\f$
  */
-void casimir_lnab(casimir_t *self, const int n_mat, const int l, double *lna, double *lnb, sign_t *sign_a, sign_t *sign_b)
+void casimir_lnab(casimir_t *self, int n_mat, int l, float80 *lna, float80 *lnb, sign_t *sign_a, sign_t *sign_b)
 {
     if(isinf(self->omegap_sphere))
     {
         /* Mie coefficients for perfect reflectors */
-        *lna = casimir_lna_perf(self, l, n_mat, sign_a);
-        *lnb = casimir_lnb_perf(self, l, n_mat, sign_b);
+        casimir_lnab_perf(self, n_mat, l, lna, lnb, sign_a, sign_b);
         return;
     }
 
@@ -947,16 +857,16 @@ void casimir_lnab(casimir_t *self, const int n_mat, const int l, double *lna, do
     const float80 xi = n_mat*self->T;
 
     /* χ = ξ*R/(R+L) = ξ/(1+L/R) */
-    const float80 chi    = xi/(1+self->LbyR);
+    const float80 chi    = xi/(1.L+self->LbyR);
     const float80 ln_chi = log80(xi)-log1p80(self->LbyR);
     const float80 ln_l   = log80(l);
 
     /**
      * Note: n is the refraction index, n_mat the Matsubara index
      * n    = sqrt(ε(ξ,ω_p,γ))
-     * ln_n = ln(sqrt(ε(ξ,ω_p,γ)))
+     * ln_n = ln(sqrt(ε)) = ln(ε)/2 = ln(1+(ε-1))/2 = log1p(ε-1)/2
      */
-    const float80 ln_n = casimir_lnepsilon(xi, self->omegap_sphere, self->gamma_sphere)/2;
+    const float80 ln_n = log1p80(casimir_epsilonm1(xi, self->omegap_sphere, self->gamma_sphere))/2;
     const float80 n    = exp80(ln_n);
 
     float80 lnIlp, lnKlp, lnIlm, lnKlm, lnIlp_nchi, lnKlp_nchi, lnIlm_nchi, lnKlm_nchi;
@@ -1062,8 +972,8 @@ void casimir_mie_cache_alloc(casimir_t *self, int n)
         cache->entries[n] = xmalloc(sizeof(casimir_mie_cache_entry_t));
         casimir_mie_cache_entry_t *entry = cache->entries[n];
 
-        entry->ln_al   = xmalloc((lmax+1)*sizeof(double));
-        entry->ln_bl   = xmalloc((lmax+1)*sizeof(double));
+        entry->ln_al   = xmalloc((lmax+1)*sizeof(float80));
+        entry->ln_bl   = xmalloc((lmax+1)*sizeof(float80));
         entry->sign_al = xmalloc((lmax+1)*sizeof(sign_t));
         entry->sign_bl = xmalloc((lmax+1)*sizeof(sign_t));
 
@@ -1111,7 +1021,7 @@ void casimir_mie_cache_clean(casimir_t *self)
  * @param [out] ln_b logarithm of \f$b_\ell\f$
  * @param [out] sign_b sign of \f$b_\ell\f$
  */
-void casimir_mie_cache_get(casimir_t *self, int l, int n, double *ln_a, sign_t *sign_a, double *ln_b, sign_t *sign_b)
+void casimir_mie_cache_get(casimir_t *self, int l, int n, float80 *ln_a, sign_t *sign_a, float80 *ln_b, sign_t *sign_b)
 {
     /* this mutex is important to prevent memory corruption */
     pthread_mutex_lock(&self->mie_cache->mutex);
@@ -1134,7 +1044,7 @@ void casimir_mie_cache_get(casimir_t *self, int l, int n, double *ln_a, sign_t *
      */
     casimir_mie_cache_entry_t *entry = self->mie_cache->entries[n];
 
-    /* at this point it is finally is safe to release the mutex */
+    /* at this point it is finally safe to release the mutex */
     pthread_mutex_unlock(&self->mie_cache->mutex);
 
     *ln_a   = entry->ln_al[l];
@@ -1195,9 +1105,9 @@ void casimir_mie_cache_free(casimir_t *self)
    The idea is: To avoid a loss of significance, we sum beginning with smallest
    number and add up in increasing order
 */
-static double _sum(double values[], int len)
+static float80 _sum(double values[], int len)
 {
-    double sum = 0;
+    float80 sum = 0;
 
     for(int i = len-1; i > 0; i--)
         sum += values[i];
@@ -1494,6 +1404,8 @@ void casimir_logdetD0(casimir_t *self, int m, double *logdet_EE, double *logdet_
  * This function is thread-safe - as long you don't change lmax, temperature,
  * aspect ratio, dielectric properties of sphere and plane, and integration.
  *
+ * Does not work for n = 0.
+ *
  * @param [in,out] self Casimir object
  * @param [in] n Matsubara term
  * @param [in] m
@@ -1508,11 +1420,14 @@ double casimir_trM(casimir_t *self, int n, int m, void *obj)
     integration_drude_t *int_drude = obj;
     float80 trM = 0;
 
+    /* XXX fix this XXX */
+    TERMINATE(n == 0, "This function does not work for n=0");
+
     for(int l = min; l <= max; l++)
     {
         float80 sum;
         casimir_integrals_t cint;
-        double ln_al, ln_bl;
+        float80 ln_al, ln_bl;
         sign_t sign, sign_al, sign_bl;
 
         casimir_mie_cache_get(self, l, n, &ln_al, &sign_al, &ln_bl, &sign_bl);
@@ -1557,7 +1472,7 @@ double casimir_logdetD(casimir_t *self, int n, int m)
     const double nT = n*self->T;
     double logdet = 0;
     integration_perf_t int_perf;
-    
+
     integration_drude_t int_drude = {
         .plm_cache = NULL,
         .m         = m,
@@ -1633,14 +1548,14 @@ double casimir_logdetD(casimir_t *self, int n, int m)
         const int i = l1-min;
 
         sign_t sign_al1, sign_bl1;
-        double ln_al1, ln_bl1;
+        float80 ln_al1, ln_bl1;
         casimir_mie_cache_get(self, l1, n, &ln_al1, &sign_al1, &ln_bl1, &sign_bl1);
 
         for(int l2 = min; l2 <= l1; l2++)
         {
             const int j = l2-min;
             sign_t sign_al2, sign_bl2;
-            double ln_al2, ln_bl2;
+            float80 ln_al2, ln_bl2;
 
             casimir_mie_cache_get(self, l2, n, &ln_al2, &sign_al2, &ln_bl2, &sign_bl2);
 

@@ -360,8 +360,8 @@ int master(int argc, char *argv[], int cores)
     F0 = integral/alpha/M_PI;
 
     printf("#\n");
-    printf("# L/R, lmax, order, alpha, F(T=0)\n");
-    printf("%.15g, %d, %d, %.15g, %.15Lg\n", LbyR, lmax, order, alpha, F0);
+    printf("# L/R, lmax, order, alpha, F(T=0)*(L+R)/(ħc)\n");
+    printf("%g, %d, %d, %.15g, %.12Lg\n", LbyR, lmax, order, alpha, F0);
 
     /* free memory */
     for(int i = 0; i < order; i++)
@@ -412,13 +412,13 @@ int slave(MPI_Comm master_comm, int rank)
 void usage(FILE *stream)
 {
     fprintf(stderr,
-"Usage: casimir_T0 [OPTIONS]\n"
+"Usage: casimir_T0 [OPTIONS]\n\n"
 "This program will calculate the free Casimir energy F(T=0,L/R) for the\n"
-"plane-sphere geometry for given L/R and temperature T. The output is in scaled\n"
-"units.\n"
+"plane-sphere geometry for given L/R and temperature T. The output is in\n"
+"units of ħc/(L+R).\n"
 "\n"
-"This program uses MPI for parallization. The program needs at least two cores\n"
-"to run.\n"
+"This program uses MPI for parallization. The program needs at least two\n"
+"cores to run.\n"
 "\n"
 "The free eenergy at T=0 is calculated using integration:\n"
 "   F(L/R) = \\int_0^\\infty dξ logdet D(ξ)\n"
