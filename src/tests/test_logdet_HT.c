@@ -3,7 +3,7 @@
 
 #include "test_logdet_HT.h"
 
-double data[][5] =
+static double data[][5] =
 {
     /* L/R, m, lmax, EE, MM */
     { 1, 0, 30, -0.039359509611808, -0.020914358073834 },
