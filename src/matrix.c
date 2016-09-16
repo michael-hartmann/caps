@@ -133,17 +133,17 @@ void matrix_float80_pivot(matrix_float80 *M)
 double matrix_float128_logdet_qr(matrix_float128 *M)
 {
     const int dim = M->size;
-    float128 *m = M->M;
+    float128 const *m = M->M;
 
     for(int j = 0; j < dim-1; j++)
         for(int i = j+1; i < dim; i++)
         {
-            float128 c,s, Mij = m[i*dim+j];
+            float128 c,s;
+            const float128 b = m[i*dim+j];
 
-            if(Mij != 0)
+            if(b != 0)
             {
                 const float128 a = m[j*dim+j];
-                const float128 b = Mij;
 
                 if(a == 0)
                 {
@@ -178,11 +178,11 @@ double matrix_float128_logdet_qr(matrix_float128 *M)
             }
         }
 
-    float128 det = 0;
+    float128 logdet = 0;
     for(int i = 0; i < dim; i++)
-        det += log128(fabs128(m[i*dim+i]));
+        logdet += log128(fabs128(m[i*dim+i]));
 
-    return det;
+    return logdet;
 }
 #endif
 
