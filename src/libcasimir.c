@@ -1528,12 +1528,18 @@ void casimir_logdetD0(casimir_t *self, int m, double *logdet_EE, double *logdet_
     /* calculate the logarithm of the matrix elements of M. */
     for(int l1 = min; l1 <= max; l1++)
     {
+        /* The matrix M is symmetric. */
         for(int l2 = l1; l2 <= max; l2++)
         {
             /* i: row of matrix, j: column of matrix */
             const int i = l1-min, j = l2-min;
+
+            /* See thesis of Antoine, section 6.7:
+             * x = R/(R+L)
+             * M_EE_{l1,l2} = (x/2)^(l1+l2) * (l1+l2)! / sqrt( (l1+m)!*(l1-m)! * (l2+m)!*(l2-m)! )
+             * M_MM_{l1,l2} = M_EE_{l1,l2} * sqrt( l1/(l1+1) * l2/(l2+1) )
+             */
             const float80 elem_EE = (l1+l2+1)*y + lngamma80(1+l1+l2) - 0.5*( lngamma80(1+l1+m)+lngamma80(1+l1-m) + lngamma80(1+l2+m)+lngamma80(1+l2-m) );
-            const float80 elem_MM = elem_EE+0.5*(log(l1)+log(l2)-log(1+l1)-log(1+l2));
 
             if(EE != NULL)
             {
@@ -1542,6 +1548,7 @@ void casimir_logdetD0(casimir_t *self, int m, double *logdet_EE, double *logdet_
             }
             if(MM != NULL)
             {
+                const float80 elem_MM = elem_EE+0.5*(log80(l1)+log80(l2)-log80(1+l1)-log80(1+l2));
                 matrix_set(MM, i,j, elem_MM);
                 matrix_set(MM, j,i, elem_MM);
             }
