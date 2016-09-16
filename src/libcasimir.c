@@ -260,7 +260,7 @@ void casimir_rp(casimir_t *self, float80 nT, float80 k, float80 *r_TE, float80 *
     else
     {
         /* Drude metals
-        *
+         *
          * In scaled units
          *     β = sqrt( 1 + ξ²/(ξ²+k²)*(ε-1) ) = sqrt(1+x),
          * where
