@@ -35,7 +35,7 @@ g = graph.graphxy(
     width = 8,
     key   = graph.key.key(pos="tl"),
     x     = graph.axis.log(title=r"$\chi = \frac{\xi R}{\mathrm{c}}$"),
-    y     = graph.axis.log(title=r"$a_3(i \chi)$"),
+    y     = graph.axis.log(title=r"-$a_3(i \chi)$"),
 )
 
 g.plot([
