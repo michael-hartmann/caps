@@ -795,7 +795,8 @@ void casimir_lnab_perf(casimir_t *self, int n, int l, float80 *lna, float80 *lnb
      *          = b_l(chi) * numerator/denominator
      *
      * Note that chi,Km,Kp>0 and thus denominator >= 1 (and it has positive
-     * sign).
+     * sign). Also, sign_numerator is always -1 and thus the sign of al and bl
+     * are always different.
      */
 
     /* numerator and denominator to calculate al */
