@@ -1571,8 +1571,8 @@ double casimir_logdetD(casimir_t *self, int n, int m)
                 /* A_TE + B_TM */
                 float80 sum = logadd_s(cint.lnA_TE, cint.signA_TE, cint.lnB_TM, cint.signB_TM, &sign);
 
-                matrix_set(M, i,j, ln_al1+sum);
-                matrix_set(M, j,i, ln_al2+sum);
+                matrix_set(M, i,j, (ln_al1+ln_al2)/2+sum);
+                matrix_set(M, j,i, (ln_al1+ln_al2)/2+sum);
 
                 matrix_set(M_sign, i,j,             sign_al1*sign);
                 matrix_set(M_sign, j,i, MPOW(l1+l2)*sign_al2*sign);
@@ -1584,8 +1584,8 @@ double casimir_logdetD(casimir_t *self, int n, int m)
                 /* A_TM + B_TE */
                 float80 sum = logadd_s(cint.lnA_TM, cint.signA_TM, cint.lnB_TE, cint.signB_TE, &sign);
 
-                matrix_set(M, i+dim,j+dim, ln_bl1+sum);
-                matrix_set(M, j+dim,i+dim, ln_bl2+sum);
+                matrix_set(M, i+dim,j+dim, (ln_bl1+ln_bl2)/2+sum);
+                matrix_set(M, j+dim,i+dim, (ln_bl1+ln_bl2)/2+sum);
 
                 matrix_set(M_sign, i+dim,j+dim,             sign_bl1*sign);
                 matrix_set(M_sign, j+dim,i+dim, MPOW(l1+l2)*sign_bl2*sign);
@@ -1604,8 +1604,8 @@ double casimir_logdetD(casimir_t *self, int n, int m)
 
                 /* M_EM */
                 {
-                    matrix_set(M, i,dim+j, ln_al1+sum1);
-                    matrix_set(M, j,dim+i, ln_al2+sum2);
+                    matrix_set(M, i,dim+j, (ln_al1+ln_bl2)/2+sum1);
+                    matrix_set(M, j,dim+i, (ln_bl1+ln_al2)/2+sum2);
 
                     matrix_set(M_sign, i,dim+j,               sign_al1*sign1);
                     matrix_set(M_sign, j,dim+i, MPOW(l1+l2+1)*sign_al2*sign2);
@@ -1613,8 +1613,8 @@ double casimir_logdetD(casimir_t *self, int n, int m)
 
                 /* M_ME */
                 {
-                    matrix_set(M, dim+i,j, ln_bl1+sum2);
-                    matrix_set(M, dim+j,i, ln_bl2+sum1);
+                    matrix_set(M, dim+i,j, (ln_bl1+ln_al2)/2+sum2);
+                    matrix_set(M, dim+j,i, (ln_al1+ln_bl2)/2+sum1);
 
                     matrix_set(M_sign, dim+i,j,               sign_bl1*sign2);
                     matrix_set(M_sign, dim+j,i, MPOW(l1+l2+1)*sign_bl2*sign1);
