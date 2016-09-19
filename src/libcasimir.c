@@ -14,6 +14,7 @@
 #include <pthread.h>
 #include <stdarg.h>
 #include <stdbool.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <string.h>
 #include <time.h>
@@ -1657,14 +1658,38 @@ double casimir_logdetD(casimir_t *self, int n, int m)
     }
 
 #if 0
-    /* Dump matrix */
-    int ret;
+{
+    /* dump matrix */
+	FILE *stream = NULL;
+    char d_str[512] = { 0 };
+    uint16_t len = 0;
+    const int rows = 2*dim, cols = 2*dim;
 
-    ret = matrix_float80_save(M, "M.out");
-    WARN(ret, "Couldn't dump matrix M.out");
+    stream = fopen("M.npy", "w");
+    TERMINATE(stream == NULL, "Can't open M.npy for writing");
 
-    ret = matrix_sign_save(M_sign, "M_sign.out");
-    WARN(ret, "Couldn't dump matrix M_sign.out");
+    /* write magic string, major number and minor number */
+    fwrite("\x93NUMPY\x01\x00", sizeof(char), 8, stream);
+
+    /* write length of header and header */
+    snprintf(d_str, sizeof(d_str)/sizeof(d_str[0]), "{'descr': '<f8', 'fortran_order': True, 'shape': (%d, %d), }", rows, cols);
+
+    len = strlen(d_str);
+
+    fwrite(&len,  sizeof(len),  1,   stream);
+    fwrite(d_str, sizeof(char), len, stream);
+
+    /* write matrix */
+    for(int i = 0; i < rows*cols; i++)
+    {
+        const double elem = M_sign->M[i]*exp(M->M[i]);
+        fwrite(&elem, sizeof(double), 1, stream);
+    }
+
+    fclose(stream);
+
+    casimir_debug(self, "# matrix dumped to M.npy\n");
+}
 #endif
 
     /* We have calculated -M here. We now call matrix_logdetIdpM that will
