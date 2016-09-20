@@ -184,13 +184,13 @@ float64 matrix_logdet(matrix_t *A, float64 z, const char *detalg)
     }
 
     logdetD = matrix_logdet_lu(A);
-    //logdetD = matrix_logdet_lapack(A);
+    //logdetD = matrix_logdet_lu_lapack(A);
     //logdetD = matrix_logdet_qr(A);
 
     return logdetD;
 }
 
-float64 matrix_logdet_lapack(matrix_t *A)
+float64 matrix_logdet_lu_lapack(matrix_t *A)
 {
     int info = 0;
     int dim = (int)A->dim;
