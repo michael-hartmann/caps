@@ -44,7 +44,7 @@ CFLAGS += -I .
 CFLAGS += -Wall -Werror -Wextra -Wmissing-prototypes -Wstrict-prototypes -Wshadow -Wpointer-arith -Wcast-qual -Wwrite-strings -Wno-unused-parameter
 
 # ldflags
-LDFLAGS += -lm -pthread
+LDFLAGS += -lm -pthread -llapack -lblas     -lgfortran
 
 # clang supports various runtime checks. This will slow down the program, but
 # it's a good and easy way to find bugs.
