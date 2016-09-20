@@ -62,7 +62,7 @@ void matrix_setall(matrix_t *A, float64 z)
 float64 matrix_logdet_lu(matrix_t *A)
 {
     const size_t dim = A->dim;
-    float64 sum, det = 0; \
+    float64 sum, det = 0;
     float64 *a = A->M;
 
     for(size_t j = 0; j < dim; j++)
@@ -100,7 +100,6 @@ float64 matrix_logdet_lu(matrix_t *A)
  */
 float64 matrix_logdet_qr(matrix_t *M)
 {
-    float64 logdet = 0;
     const size_t dim = M->dim;
     float64 *m = M->M;
 
@@ -147,6 +146,7 @@ float64 matrix_logdet_qr(matrix_t *M)
             }
         }
 
+    float64 logdet = 0;
     for(size_t i = 0; i < dim; i++)
         logdet += log64(fabs64(m[i*dim+i]));
 
