@@ -211,7 +211,7 @@ float80 casimir_lnLambda(int l1, int l2, int m, sign_t *sign)
 {
     if(sign != NULL)
         *sign = -1;
-    return (log80(2*l1+1)+log80(2*l2+1)-log80(l1)-log80(l1+1)-log80(l2)-log80(l2+1)+lnfac80(l1-m)+lnfac80(l2-m)-lnfac80(l1+m)-lnfac80(l2+m))/2.0L;
+    return (log80(2*l1+1)+log80(2*l2+1)-log80(l1)-log80(l1+1)-log80(l2)-log80(l2+1)+lgamma80(1+l1-m)+lgamma80(1+l2-m)-lgamma80(1+l1+m)-lgamma80(1+l2+m))/2.0L;
 }
 
 
@@ -744,7 +744,7 @@ void casimir_lnab0(int l, float80 *a0, sign_t *sign_a0, float80 *b0, sign_t *sig
 {
     *sign_a0 = MPOW(l);
     *sign_b0 = MPOW(l+1);
-    *b0 = LOGPI-lngamma80(l+0.5)-lngamma80(l+1.5);
+    *b0 = M_LOGPI-lgamma80(l+0.5)-lgamma80(l+1.5);
     *a0 = *b0+log1p80(1.0L/l);
 }
 
@@ -783,7 +783,7 @@ void casimir_lnab_perf(casimir_t *self, int n, int l, float80 *lna, float80 *lnb
     bessel_lnInuKnu(l,   chi, &lnIlp, &lnKlp);
 
     /* Calculate b_l(chi), i.e. lnb and sign_b */
-    *lnb    = LOGPI-LOG2+lnIlp-lnKlp;
+    *lnb    = M_LOGPI-M_LOG2+lnIlp-lnKlp;
     *sign_b = MPOW(l+1);
 
     /* We want to calculate
@@ -900,8 +900,8 @@ void casimir_lnab(casimir_t *self, int n_mat, int l, float80 *lna, float80 *lnb,
     */
 
     sign_t sign_a_num, sign_a_denom, sign_b_num, sign_b_denom;
-    *lna = LOGPI - LOG2 + logadd_s(2*ln_n+ln_sla, +sign_sla, ln_slb, -sign_slb, &sign_a_num) - logadd_s(2*ln_n+ln_slc, +sign_slc, ln_sld, -sign_sld, &sign_a_denom);
-    *lnb = LOGPI - LOG2 + logadd_s(       ln_sla, +sign_sla, ln_slb, -sign_slb, &sign_b_num) - logadd_s(       ln_slc, +sign_slc, ln_sld, -sign_sld, &sign_b_denom);
+    *lna = M_LOGPI - M_LOG2 + logadd_s(2*ln_n+ln_sla, +sign_sla, ln_slb, -sign_slb, &sign_a_num) - logadd_s(2*ln_n+ln_slc, +sign_slc, ln_sld, -sign_sld, &sign_a_denom);
+    *lnb = M_LOGPI - M_LOG2 + logadd_s(       ln_sla, +sign_sla, ln_slb, -sign_slb, &sign_b_num) - logadd_s(       ln_slc, +sign_slc, ln_sld, -sign_sld, &sign_b_denom);
 
     *sign_a = MPOW(l+1)*sign_a_num*sign_a_denom;
     *sign_b = MPOW(l+1)*sign_b_num*sign_b_denom;
@@ -1315,7 +1315,7 @@ double casimir_F(casimir_t *self, int *nmax)
                 if(values != NULL)
                     xfree(values);
 
-                return self->T/PI*sum_n;
+                return self->T/M_PI*sum_n;
             }
         }
     }
@@ -1338,47 +1338,47 @@ double casimir_F(casimir_t *self, int *nmax)
 void casimir_logdetD0(casimir_t *self, int m, double *logdet_EE, double *logdet_MM)
 {
     /* y = log(R/(R+L)/2) */
-    const float80 y = log80(self->RbyScriptL/2);
-    matrix_float80 *EE = NULL, *MM = NULL;
+    const float64 y = log64(self->RbyScriptL/2);
+    matrix_t *EE = NULL, *MM = NULL;
 
-    const int min = MAX(m,1);
-    const int max = self->lmax;
-    const int dim = max-min+1;
+    const size_t min = MAX(m,1);
+    const size_t max = self->lmax;
+    const size_t dim = max-min+1;
 
     if(logdet_EE != NULL)
-        EE = matrix_float80_alloc(dim);
+        EE = matrix_alloc(dim);
     if(logdet_MM != NULL)
-        MM = matrix_float80_alloc(dim);
+        MM = matrix_alloc(dim);
 
     /* calculate the logarithm of the matrix elements of M. */
-    for(int l1 = min; l1 <= max; l1++)
+    for(size_t l1 = min; l1 <= max; l1++)
     {
         /* c = (l1+m)!*(l1-m)! */
-        const float80 c = lngamma80(1+l1+m)+lngamma80(1+l1-m);
+        const float64 c = lgamma64(1+l1+m)+lgamma64(1+l1-m);
 
         /* The matrix M is symmetric. */
-        for(int l2 = l1; l2 <= max; l2++)
+        for(size_t l2 = l1; l2 <= max; l2++)
         {
             /* i: row of matrix, j: column of matrix */
-            const int i = l1-min, j = l2-min;
+            const size_t i = l1-min, j = l2-min;
 
             /* See thesis of Antoine, section 6.7:
              * x = R/(R+L)
              * M_EE_{l1,l2} = (x/2)^(l1+l2) * (l1+l2)! / sqrt( (l1+m)!*(l1-m)! * (l2+m)!*(l2-m)! )
              * M_MM_{l1,l2} = M_EE_{l1,l2} * sqrt( l1/(l1+1) * l2/(l2+1) )
              */
-            const float80 elem_EE = (l1+l2+1)*y + lngamma80(1+l1+l2) - 0.5*( c + lngamma80(1+l2+m)+lngamma80(1+l2-m) );
+            const float64 EE_ij = exp64( (l1+l2+1)*y + lgamma64(1+l1+l2) - 0.5*(c + lgamma64(1+l2+m)+lgamma64(1+l2-m)) );
 
             if(EE != NULL)
             {
-                matrix_set(EE, i,j, elem_EE);
-                matrix_set(EE, j,i, elem_EE);
+                matrix_set(EE, i,j, EE_ij);
+                matrix_set(EE, j,i, EE_ij);
             }
             if(MM != NULL)
             {
-                const float80 elem_MM = elem_EE+0.5L*(log1p80(-1.L/(l1+1))+log1p80(-1.L/(l2+1)));
-                matrix_set(MM, i,j, elem_MM);
-                matrix_set(MM, j,i, elem_MM);
+                const float80 MM_ij = EE_ij*sqrt64(((float64)l1*(float64)l2)/((l1+1.)*(l2+1.)));
+                matrix_set(MM, i,j, MM_ij);
+                matrix_set(MM, j,i, MM_ij);
             }
         }
     }
@@ -1386,13 +1386,13 @@ void casimir_logdetD0(casimir_t *self, int m, double *logdet_EE, double *logdet_
     /* Calculate logdet=log(det(Id-M)) and free space. */
     if(EE != NULL)
     {
-        *logdet_EE = matrix_logdet(self, EE, NULL, -1);
-        matrix_float80_free(EE);
+        *logdet_EE = matrix_logdet(EE, -1, self->detalg);
+        matrix_free(EE);
     }
     if(MM != NULL)
     {
-        *logdet_MM = matrix_logdet(self, MM, NULL, -1);
-        matrix_float80_free(MM);
+        *logdet_MM = matrix_logdet(MM, -1, self->detalg);
+        matrix_free(MM);
     }
 }
 
@@ -1454,25 +1454,9 @@ double casimir_trM(casimir_t *self, int n, int m, void *obj)
 }
 
 
-/**
- * @brief Calculate \f$\log\det \mathcal{D}^{(m)}(\xi=nT)\f$
- *
- * This function calculates the logarithm of the determinant of the scattering
- * operator D for the Matsubara term \f$n\f$.
- *
- * This function is thread-safe - as long you don't change lmax, temperature,
- * aspect ratio, dielectric properties of sphere and plane, and integration.
- *
- * @param [in,out] self Casimir object
- * @param [in] n Matsubara term
- * @param [in] m
- * @retval logdetD \f$\log \det \mathcal{D}^{(m)}(\xi=nT)\f$
- */
-double casimir_logdetD(casimir_t *self, int n, int m)
+matrix_t *casimir_D(casimir_t *self, int n, int m)
 {
-    const double start = now();
     const double nT = n*self->T;
-    double logdet = 0;
     integration_perf_t int_perf;
 
     integration_drude_t int_drude = {
@@ -1485,20 +1469,6 @@ double casimir_logdetD(casimir_t *self, int n, int m)
     const int max = self->lmax;
     const int dim = (max-min+1);
 
-    if(n == 0)
-    {
-        double logdet_EE = 0, logdet_MM = 0;
-
-        if(isinf(self->omegap_plane))
-            /* perfect reflector */
-            casimir_logdetD0(self, m, &logdet_EE, &logdet_MM);
-        else
-            /* drude mirror */
-            casimir_logdetD0(self, m, &logdet_EE, NULL);
-
-        return logdet_EE + logdet_MM;
-    }
-
     if(isinf(self->omegap_plane))
         /* perfect reflector */
         casimir_integrate_perf_init(&int_perf, nT, m, self->lmax);
@@ -1506,13 +1476,12 @@ double casimir_logdetD(casimir_t *self, int n, int m)
         /* drude mirror */
         casimir_integrate_drude_init(self, &int_drude, nT, m, self->lmax);
 
-    matrix_float80 *M     = matrix_float80_alloc(2*dim);
-    matrix_sign_t *M_sign = matrix_sign_alloc   (2*dim);
+    /* allocate space for matrix M */
+    matrix_t *M = matrix_alloc(2*dim);
 
     /* set matrix elements to NAN */
     if(self->check_elems)
-        for(size_t i = 0; i < pow_2(M->dim); i++)
-            M->M[i] = NAN;
+        matrix_setall(M, NAN);
 
     /* M_EE, -M_EM
        M_ME,  M_MM */
@@ -1542,26 +1511,20 @@ double casimir_logdetD(casimir_t *self, int n, int m)
             {
                 sign_t sign;
                 /* A_TE + B_TM */
-                float80 sum = logadd_s(cint.lnA_TE, cint.signA_TE, cint.lnB_TM, cint.signB_TM, &sign);
+                float64 elem = exp64((ln_al1+ln_al2)/2+logadd_s(cint.lnA_TE, cint.signA_TE, cint.lnB_TM, cint.signB_TM, &sign));
 
-                matrix_set(M, i,j, (ln_al1+ln_al2)/2+sum);
-                matrix_set(M, j,i, (ln_al1+ln_al2)/2+sum);
-
-                matrix_set(M_sign, i,j,             sign_al1*sign);
-                matrix_set(M_sign, j,i, MPOW(l1+l2)*sign_al2*sign);
+                matrix_set(M, i,j,             sign_al1*sign*elem);
+                matrix_set(M, j,i, MPOW(l1+l2)*sign_al2*sign*elem);
             }
 
             /* MM */
             {
                 sign_t sign;
                 /* A_TM + B_TE */
-                float80 sum = logadd_s(cint.lnA_TM, cint.signA_TM, cint.lnB_TE, cint.signB_TE, &sign);
+                float64 elem = exp64((ln_bl1+ln_bl2)/2+logadd_s(cint.lnA_TM, cint.signA_TM, cint.lnB_TE, cint.signB_TE, &sign));
 
-                matrix_set(M, i+dim,j+dim, (ln_bl1+ln_bl2)/2+sum);
-                matrix_set(M, j+dim,i+dim, (ln_bl1+ln_bl2)/2+sum);
-
-                matrix_set(M_sign, i+dim,j+dim,             sign_bl1*sign);
-                matrix_set(M_sign, j+dim,i+dim, MPOW(l1+l2)*sign_bl2*sign);
+                matrix_set(M, i+dim,j+dim,             sign_bl1*sign*elem);
+                matrix_set(M, j+dim,i+dim, MPOW(l1+l2)*sign_bl2*elem);
             }
 
 
@@ -1570,28 +1533,18 @@ double casimir_logdetD(casimir_t *self, int n, int m)
                 sign_t sign1, sign2;
 
                 /* C_TE + D_TM */
-                float80 sum1 = logadd_s(cint.lnC_TE, cint.signC_TE, cint.lnD_TM, cint.signD_TM, &sign1);
+                float64 elem1 = exp64((ln_al1+ln_bl2)/2+logadd_s(cint.lnC_TE, cint.signC_TE, cint.lnD_TM, cint.signD_TM, &sign1));
 
                 /* C_TM + D_TE */
-                float80 sum2 = logadd_s(cint.lnC_TM, cint.signC_TM, cint.lnD_TE, cint.signD_TE, &sign2);
+                float64 elem2 = exp64((ln_bl1+ln_al2)/2+logadd_s(cint.lnC_TM, cint.signC_TM, cint.lnD_TE, cint.signD_TE, &sign2));
 
                 /* M_EM */
-                {
-                    matrix_set(M, i,dim+j, (ln_al1+ln_bl2)/2+sum1);
-                    matrix_set(M, j,dim+i, (ln_bl1+ln_al2)/2+sum2);
-
-                    matrix_set(M_sign, i,dim+j,               sign_al1*sign1);
-                    matrix_set(M_sign, j,dim+i, MPOW(l1+l2+1)*sign_al2*sign2);
-                }
+                matrix_set(M, i,dim+j,               sign_al1*sign1*elem1);
+                matrix_set(M, j,dim+i, MPOW(l1+l2+1)*sign_al2*sign2*elem2);
 
                 /* M_ME */
-                {
-                    matrix_set(M, dim+i,j, (ln_bl1+ln_al2)/2+sum2);
-                    matrix_set(M, dim+j,i, (ln_al1+ln_bl2)/2+sum1);
-
-                    matrix_set(M_sign, dim+i,j,               sign_bl1*sign2);
-                    matrix_set(M_sign, dim+j,i, MPOW(l1+l2+1)*sign_bl2*sign1);
-                }
+                matrix_set(M, dim+i,j,               sign_bl1*sign2*elem2);
+                matrix_set(M, dim+j,i, MPOW(l1+l2+1)*sign_bl2*sign1*elem1);
             }
         }
     }
@@ -1601,7 +1554,6 @@ double casimir_logdetD(casimir_t *self, int n, int m)
     else
         casimir_integrate_drude_free(&int_drude);
 
-    casimir_debug(self, "# calculating %dx%d matrix elements (trace approximation): %gs\n", 2*dim, 2*dim, now()-start);
 
     /* check if matrix elements are finite */
     if(self->check_elems)
@@ -1611,23 +1563,63 @@ double casimir_logdetD(casimir_t *self, int n, int m)
             {
                 const int i = l1-min;
                 const int j = l2-min;
-                const float80 elem_EE = matrix_get(M, i,j);
-                const float80 elem_MM = matrix_get(M, i+dim,j+dim);
+                const float64 elem_EE = matrix_get(M, i,j);
+                const float64 elem_MM = matrix_get(M, i+dim,j+dim);
 
-                TERMINATE(!isfinite(elem_EE), "matrix element not finite: P=EE, l1=%d, l2=%d, elem=%Lg", l1,l2, elem_EE);
-                TERMINATE(!isfinite(elem_MM), "matrix element not finite: P=MM, l1=%d, l2=%d, elem=%Lg", l1,l2, elem_MM);
+                TERMINATE(!isfinite(elem_EE), "matrix element not finite: P=EE, l1=%d, l2=%d, elem=%g", l1,l2, elem_EE);
+                TERMINATE(!isfinite(elem_MM), "matrix element not finite: P=MM, l1=%d, l2=%d, elem=%g", l1,l2, elem_MM);
 
                 if(m != 0)
                 {
-                    const float80 elem_EM = matrix_get(M, i+dim,j);
-                    const float80 elem_ME = matrix_get(M, i,j+dim);
+                    const float64 elem_EM = matrix_get(M, i+dim,j);
+                    const float64 elem_ME = matrix_get(M, i,j+dim);
 
-                    TERMINATE(!isfinite(elem_EM), "matrix element not finite: P=EM, l1=%d, l2=%d, elem=%Lg", l1,l2, elem_EM);
-                    TERMINATE(!isfinite(elem_ME), "matrix element not finite: P=EM, l1=%d, l2=%d, elem=%Lg", l1,l2, elem_EM);
+                    TERMINATE(!isfinite(elem_EM), "matrix element not finite: P=EM, l1=%d, l2=%d, elem=%g", l1,l2, elem_EM);
+                    TERMINATE(!isfinite(elem_ME), "matrix element not finite: P=EM, l1=%d, l2=%d, elem=%g", l1,l2, elem_EM);
                 }
 
             }
     }
+
+    return M;
+}
+
+/**
+ * @brief Calculate \f$\log\det \mathcal{D}^{(m)}(\xi=nT)\f$
+ *
+ * This function calculates the logarithm of the determinant of the scattering
+ * operator D for the Matsubara term \f$n\f$.
+ *
+ * This function is thread-safe - as long you don't change lmax, temperature,
+ * aspect ratio, dielectric properties of sphere and plane, and integration.
+ *
+ * @param [in,out] self Casimir object
+ * @param [in] n Matsubara term
+ * @param [in] m
+ * @retval logdetD \f$\log \det \mathcal{D}^{(m)}(\xi=nT)\f$
+ */
+double casimir_logdetD(casimir_t *self, int n, int m)
+{
+    double logdet = 0;
+    matrix_t *M;
+
+    if(n == 0)
+    {
+        double logdet_EE = 0, logdet_MM = 0;
+
+        if(isinf(self->omegap_plane))
+            /* perfect reflector */
+            casimir_logdetD0(self, m, &logdet_EE, &logdet_MM);
+        else
+            /* drude mirror */
+            casimir_logdetD0(self, m, &logdet_EE, NULL);
+
+        return logdet_EE + logdet_MM;
+    }
+
+    const double start = now();
+    M = casimir_D(self, n, m);
+    casimir_debug(self, "# calculating %dx%d matrix elements: %gs\n", 2*M->dim, 2*M->dim, now()-start);
 
 #if 0
 {
@@ -1652,6 +1644,7 @@ double casimir_logdetD(casimir_t *self, int n, int m)
     fwrite(d_str, sizeof(char), len, stream);
 
     /* write matrix */
+    XXX
     for(int i = 0; i < rows*cols; i++)
     {
         const double elem = M_sign->M[i]*exp(M->M[i]);
@@ -1664,46 +1657,34 @@ double casimir_logdetD(casimir_t *self, int n, int m)
 }
 #endif
 
-    /* We have calculated -M here. We now call matrix_logdetIdpM that will
-     * calculate log(det(1-M)) = log(det(D)) */
-
     if(m == 0)
     {
-        /* The memory footprint can be improved here */
-        matrix_float80 *EE = matrix_float80_alloc(dim);
-        matrix_float80 *MM = matrix_float80_alloc(dim);
+        const int dim = M->dim;
 
-        matrix_sign_t *EE_sign = matrix_sign_alloc(dim);
-        matrix_sign_t *MM_sign = matrix_sign_alloc(dim);
+        /* The memory footprint can be improved here */
+        matrix_t *EE = matrix_alloc(dim);
+        matrix_t *MM = matrix_alloc(dim);
 
         for(int i = 0; i < dim; i++)
             for(int j = 0; j < dim; j++)
             {
                 matrix_set(EE, i,j, matrix_get(M, i,j));
-                matrix_set(EE_sign, i,j, matrix_get(M_sign, i,j));
-
                 matrix_set(MM, i,j, matrix_get(M, dim+i,dim+j));
-                matrix_set(MM_sign, i,j, matrix_get(M_sign, i+dim,j+dim));
             }
 
-        matrix_float80_free(M);
-        matrix_sign_free(M_sign);
+        matrix_free(M);
 
-        logdet  = matrix_logdet(self, EE, EE_sign, -1);
-        logdet += matrix_logdet(self, MM, MM_sign, -1);
+        logdet  = matrix_logdet(EE, -1, self->detalg);
+        logdet += matrix_logdet(MM, -1, self->detalg);
 
-        matrix_sign_free(EE_sign);
-        matrix_sign_free(MM_sign);
-
-        matrix_float80_free(EE);
-        matrix_float80_free(MM);
+        matrix_free(EE);
+        matrix_free(MM);
     }
     else
     {
-        logdet = matrix_logdet(self, M, M_sign, -1);
+        logdet = matrix_logdet(M, -1, self->detalg);
 
-        matrix_float80_free(M);
-        matrix_sign_free(M_sign);
+        matrix_free(M);
     }
 
     return logdet;

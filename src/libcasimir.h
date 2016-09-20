@@ -1,15 +1,18 @@
 #ifndef __LIBCASIMIR_H
 #define __LIBCASIMIR_H
 
+/**
+ * define sign_t as a signed char, because "char can be either signed or
+ * unsigned depending on the implementation"
+ */
+typedef signed char sign_t;
+
 #include <pthread.h>
 #include <stdarg.h>
 #include <stdbool.h>
 #include <stdio.h>
 
 #include "floattypes.h"
-
-#define HBARC 3.161526510740123e-26 /**< \f$\hbar \mathrm{c}\f$ */
-#define KB    1.3806488e-23         /**< \f$k_\mathrm{B}\f$ */
 
 /* default values */
 #define CASIMIR_PRECISION 1e-12      /**< default precision */
@@ -19,14 +22,8 @@
 #define CASIMIR_TRACE_THRESHOLD 1e-8 /**< threshold to use trace */
 
 #ifndef CASIMIR_DETALG
-#define CASIMIR_DETALG "QR_FLOAT80" /**< default algorithm for matrix decomposition */
+#define CASIMIR_DETALG "QR_FLOAT64" /**< default algorithm for matrix decomposition */
 #endif
-
-/**
- * define sign_t as a signed char, because "char can be either signed or
- * unsigned depending on the implementation"
- */
-typedef signed char sign_t;
 
 
 /**
@@ -134,6 +131,7 @@ typedef struct
     sign_t signD_TM; /**< sign of lnD_TM */
 } casimir_integrals_t;
 
+#include <matrix.h>
 
 /* prototypes */
 int  casimir_compile_info(char *str, size_t size);
@@ -189,6 +187,7 @@ void casimir_mie_cache_get(casimir_t *self, int l, int n, float80 *ln_a, sign_t 
 void casimir_mie_cache_free(casimir_t *self);
 
 void casimir_logdetD0(casimir_t *self, int m, double *EE, double *MM);
+matrix_t *casimir_D(casimir_t *self, int n, int m);
 double casimir_logdetD(casimir_t *self, int n, int m);
 double casimir_trM(casimir_t *self, int n, int m, void *int_perf);
 
