@@ -15,7 +15,7 @@
 #define pow_7(x) ((x)*(x)*(x)*(x)*(x)*(x)*(x))
 
 /* calculate pow(-1,a) = -1**a */
-#define MPOW(a) (1-2*((a) & 1))
+#define MPOW(a) (1-2*((signed char)(a) & 1))
 
 #ifndef MIN
 #define MIN(a,b) (((a)<(b))?(a):(b))
