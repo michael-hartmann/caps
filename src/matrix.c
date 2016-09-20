@@ -15,6 +15,9 @@
 
 #include "utils.h"
 
+#include "clapack.h"
+
+
 
 matrix_t *matrix_alloc(const size_t dim)
 {
@@ -182,8 +185,35 @@ float64 matrix_logdet(matrix_t *A, float64 z, const char *detalg)
 
     if(strcasecmp(detalg, "LU_FLOAT64") == 0)
         logdetD = matrix_logdet_lu(A);
+    else if(strcasecmp(detalg, "LAPACK") == 0)
+        logdetD = matrix_logdet_lapack(A);
     else
         logdetD = matrix_logdet_qr(A);
 
     return logdetD;
+}
+
+float64 matrix_logdet_lapack(matrix_t *A)
+{
+    int info = 0;
+    int dim = (int)A->dim;
+    int rows = dim;
+    int cols = dim;
+    int ipiv[dim];
+    double *a = A->M;
+
+    dgetrf_(
+        &rows, /* M number of rows of A */
+        &cols, /* N number of columns of A */
+        a,     /* matrix A to be factored */
+        &dim,  /* LDA: leading dimension of A */
+        ipiv,  /* pivot indices of dimension min(rows,cols) */
+        &info
+    );
+
+    float64 logdet = 0;
+    for(int i = 0; i < dim; i++)
+        logdet += log64(fabs64(matrix_get(A, i, i)));
+
+    return logdet;
 }
