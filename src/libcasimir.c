@@ -1453,7 +1453,7 @@ double casimir_trM(casimir_t *self, int n, int m, void *obj)
 }
 
 
-matrix_t *casimir_D(casimir_t *self, int n, int m)
+matrix_t *casimir_M(casimir_t *self, int n, int m)
 {
     const double nT = n*self->T;
     integration_perf_t int_perf;
@@ -1617,7 +1617,7 @@ double casimir_logdetD(casimir_t *self, int n, int m)
     }
 
     const double start = now();
-    M = casimir_D(self, n, m);
+    M = casimir_M(self, n, m);
     casimir_debug(self, "# calculating %dx%d matrix elements: %gs\n", 2*M->dim, 2*M->dim, now()-start);
 
 #if 0

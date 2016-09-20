@@ -187,7 +187,7 @@ void casimir_mie_cache_get(casimir_t *self, int l, int n, float80 *ln_a, sign_t 
 void casimir_mie_cache_free(casimir_t *self);
 
 void casimir_logdetD0(casimir_t *self, int m, double *EE, double *MM);
-matrix_t *casimir_D(casimir_t *self, int n, int m);
+matrix_t *casimir_M(casimir_t *self, int n, int m);
 double casimir_logdetD(casimir_t *self, int n, int m);
 double casimir_trM(casimir_t *self, int n, int m, void *int_perf);
 
