@@ -1511,7 +1511,7 @@ double casimir_logdetD(casimir_t *self, int n, int m)
 
     /* set matrix elements to NAN */
     if(self->check_elems)
-        for(int i = 0; i < pow_2(M->dim); i++)
+        for(size_t i = 0; i < pow_2(M->dim); i++)
             M->M[i] = NAN;
 
     /* M_EE, -M_EM
