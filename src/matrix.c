@@ -50,6 +50,15 @@ void matrix_free(matrix_t *A)
     }
 }
 
+void matrix_setall(matrix_t *A, float64 z)
+{
+    const size_t dim2 = A->dim2;
+    float64 *a = A->M;
+
+    for(size_t i = 0; i < dim2; i++)
+        a[i] = z;
+}
+
 float64 matrix_logdet_lu(matrix_t *A)
 {
     const size_t dim = A->dim;

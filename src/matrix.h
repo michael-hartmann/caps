@@ -25,6 +25,7 @@ typedef struct {
 /* prototypes */
 matrix_t *matrix_alloc(const size_t dim);
 void matrix_free(matrix_t *A);
+void matrix_setall(matrix_t *A, float64 z);
 
 float64 matrix_logdet_lu(matrix_t *A);
 float64 matrix_logdet_qr(matrix_t *M);
