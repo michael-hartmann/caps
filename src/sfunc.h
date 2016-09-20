@@ -7,15 +7,6 @@
 #include "floattypes.h"
 #include "libcasimir.h"
 
-#define PI     3.141592653589793238462643383279502884197169L
-#define LOG2   0.6931471805599453094172321214581765680755007L
-#define LOGPI  1.14472988584940017414342735135305871164729L
-#define LOG4   1.386294361119890618834464242916353136151001L
-
-/* abbrevations for functions */
-#define lngamma80(x) (lgamma80(x))
-#define lnfac80(x)  (lgamma80(1+(x)))
-
 #define pow_2(x) ((x)*(x))
 #define pow_3(x) ((x)*(x)*(x))
 #define pow_4(x) ((x)*(x)*(x)*(x))
@@ -46,8 +37,6 @@ typedef struct {
     float80 lndPl1mdPl2m;
     int sign_dPl1mdPl2m;
 } plm_combination_t;
-
-float80 kahan_sum(float80 input[], size_t len);
 
 inline float80 logadd(const float80 a, const float80 b);
 inline float80 logadd_s(const float80 a, const sign_t sign_a, const float80 b, const sign_t sign_b, sign_t *sign);
