@@ -119,8 +119,8 @@ float64 matrix_logdet_qr(matrix_t *M)
                 }
                 else
                 {
-                    const float80 t = b/a;
-                    const float80 u = copysign64(sqrt64(1+t*t),a);
+                    const float64 t = b/a;
+                    const float64 u = copysign64(sqrt64(1+t*t),a);
                     c = 1/u;
                     s = -c*t;
                 }
@@ -171,7 +171,7 @@ float64 matrix_logdet(matrix_t *A, float64 z, const char *detalg)
             a[i*dim+i] += 1;
     }
 
-    if(strcasecmp(detalg, "LU_FLOAT80") == 0)
+    if(strcasecmp(detalg, "LU_FLOAT64") == 0)
         logdetD = matrix_logdet_lu(A);
     else
         logdetD = matrix_logdet_qr(A);
