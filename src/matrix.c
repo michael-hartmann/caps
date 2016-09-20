@@ -183,12 +183,9 @@ float64 matrix_logdet(matrix_t *A, float64 z, const char *detalg)
             a[i*dim+i] += 1;
     }
 
-    if(strcasecmp(detalg, "LU_FLOAT64") == 0)
-        logdetD = matrix_logdet_lu(A);
-    else if(strcasecmp(detalg, "LAPACK") == 0)
-        logdetD = matrix_logdet_lapack(A);
-    else
-        logdetD = matrix_logdet_qr(A);
+    logdetD = matrix_logdet_lu(A);
+    //logdetD = matrix_logdet_lapack(A);
+    //logdetD = matrix_logdet_qr(A);
 
     return logdetD;
 }
