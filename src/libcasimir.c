@@ -1619,41 +1619,11 @@ double casimir_logdetD(casimir_t *self, int n, int m)
     M = casimir_M(self, n, m);
     casimir_debug(self, "# calculating %dx%d matrix elements: %gs\n", 2*M->dim, 2*M->dim, now()-start);
 
-#if 0
-{
+    #if 0
     /* dump matrix */
-	FILE *stream = NULL;
-    char d_str[512] = { 0 };
-    uint16_t len = 0;
-    const int rows = 2*dim, cols = 2*dim;
-
-    stream = fopen("M.npy", "w");
-    TERMINATE(stream == NULL, "Can't open M.npy for writing");
-
-    /* write magic string, major number and minor number */
-    fwrite("\x93NUMPY\x01\x00", sizeof(char), 8, stream);
-
-    /* write length of header and header */
-    snprintf(d_str, sizeof(d_str)/sizeof(d_str[0]), "{'descr': '<f8', 'fortran_order': True, 'shape': (%d, %d), }", rows, cols);
-
-    len = strlen(d_str);
-
-    fwrite(&len,  sizeof(len),  1,   stream);
-    fwrite(d_str, sizeof(char), len, stream);
-
-    /* write matrix */
-    XXX
-    for(int i = 0; i < rows*cols; i++)
-    {
-        const double elem = M_sign->M[i]*exp(M->M[i]);
-        fwrite(&elem, sizeof(double), 1, stream);
-    }
-
-    fclose(stream);
-
-    casimir_debug(self, "# matrix dumped to M.npy\n");
-}
-#endif
+    matrix_save_to_file(M, "M.npy");
+    casimir_debug(self, "# dumped round-trip matrix M\n");
+    #endif
 
     if(m == 0)
     {
