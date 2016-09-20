@@ -1499,49 +1499,20 @@ double casimir_logdetD(casimir_t *self, int n, int m)
         return logdet_EE + logdet_MM;
     }
 
-    double trace;
     if(isinf(self->omegap_plane))
-    {
         /* perfect reflector */
         casimir_integrate_perf_init(&int_perf, nT, m, self->lmax);
-        trace = casimir_trM(self, n, m, &int_perf);
-    }
     else
-    {
         /* drude mirror */
         casimir_integrate_drude_init(self, &int_drude, nT, m, self->lmax);
-        trace = casimir_trM(self, n, m, &int_drude);
-    }
-
-    /* If |tr M| is smaller than trace_threshold, we use the approximation
-     *      log det D = log det(Id-M) ≈ -tr M
-     * instead of calculating all matrix elements of M and computing the
-     * determinant. So, if the trace of the round trip matrix M is small, we
-     * don't have to compute O(lmax²), but only O(lmax) matrix elements. This
-     * will drastically speed up the calculation!
-     */
-    if(fabs(trace) < self->trace_threshold)
-    {
-        /* free integration object */
-        if(isinf(self->omegap_plane))
-            casimir_integrate_perf_free(&int_perf);
-        else
-            casimir_integrate_drude_free(&int_drude);
-
-        casimir_debug(self, "# calculated %dx%d matrix elements (trace approximation): %gs\n", 2*dim, 2*dim, now()-start);
-
-        return -trace;
-    }
 
     matrix_float80 *M     = matrix_float80_alloc(2*dim);
     matrix_sign_t *M_sign = matrix_sign_alloc   (2*dim);
 
     /* set matrix elements to NAN */
     if(self->check_elems)
-    {
         for(int i = 0; i < pow_2(M->dim); i++)
             M->M[i] = NAN;
-    }
 
     /* M_EE, -M_EM
        M_ME,  M_MM */
