@@ -27,6 +27,9 @@ matrix_t *matrix_alloc(const size_t dim);
 void matrix_free(matrix_t *A);
 void matrix_setall(matrix_t *A, float64 z);
 
+int matrix_save_to_stream(matrix_t *A, FILE *stream);
+int matrix_save_to_file(matrix_t *A, const char *filename);
+
 float64 matrix_logdet_lu(matrix_t *A);
 float64 matrix_logdet_qr(matrix_t *M);
 float64 matrix_logdet(matrix_t *A, float64 z, const char *detalg);

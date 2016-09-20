@@ -6,6 +6,7 @@
  */
 
 #include <stdbool.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <string.h>
 #include <strings.h>
@@ -16,8 +17,6 @@
 #include "utils.h"
 
 #include "clapack.h"
-
-
 
 matrix_t *matrix_alloc(const size_t dim)
 {
@@ -51,6 +50,45 @@ void matrix_free(matrix_t *A)
         A->M = NULL;
         xfree(A);
     }
+}
+
+int matrix_save_to_stream(matrix_t *A, FILE *stream)
+{
+    /* dump matrix */
+    char d_str[512] = { 0 };
+    uint16_t len = 0;
+    const size_t dim = A->dim;
+
+    /* write magic string, major number and minor number */
+    fwrite("\x93NUMPY\x01\x00", sizeof(char), 8, stream);
+
+    /* write length of header and header */
+    snprintf(d_str, sizeof(d_str)/sizeof(d_str[0]), "{'descr': '<f8', 'fortran_order': True, 'shape': (%zu, %zu), }", dim, dim);
+
+    len = strlen(d_str);
+
+    fwrite(&len,  sizeof(len),  1,   stream);
+    fwrite(d_str, sizeof(char), len, stream);
+
+    /* write matrix */
+    fwrite(A->M, sizeof(double), A->dim2, stream);
+
+    fclose(stream);
+
+    return 0;
+}
+
+int matrix_save_to_file(matrix_t *A, const char *filename)
+{
+    FILE *f = fopen(filename, "w");
+    if(f == NULL)
+        return 1;
+
+    int ret = matrix_save_to_stream(A, f);
+
+    fclose(f);
+
+    return ret;
 }
 
 void matrix_setall(matrix_t *A, float64 z)
