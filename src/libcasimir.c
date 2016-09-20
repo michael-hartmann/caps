@@ -1464,9 +1464,9 @@ matrix_t *casimir_M(casimir_t *self, int n, int m)
         .nT        = n * self->T
     };
 
-    const int min = MAX(m,1);
-    const int max = self->lmax;
-    const int dim = (max-min+1);
+    const size_t min = MAX(m,1);
+    const size_t max = self->lmax;
+    const size_t dim = (max-min+1);
 
     if(isinf(self->omegap_plane))
         /* perfect reflector */
@@ -1484,17 +1484,17 @@ matrix_t *casimir_M(casimir_t *self, int n, int m)
 
     /* M_EE, -M_EM
        M_ME,  M_MM */
-    for(int l1 = min; l1 <= max; l1++)
+    for(size_t l1 = min; l1 <= max; l1++)
     {
-        const int i = l1-min;
+        const size_t i = l1-min;
 
         sign_t sign_al1, sign_bl1;
         float80 ln_al1, ln_bl1;
         casimir_mie_cache_get(self, l1, n, &ln_al1, &sign_al1, &ln_bl1, &sign_bl1);
 
-        for(int l2 = min; l2 <= l1; l2++)
+        for(size_t l2 = min; l2 <= l1; l2++)
         {
-            const int j = l2-min;
+            const size_t j = l2-min;
             sign_t sign_al2, sign_bl2;
             float80 ln_al2, ln_bl2;
 
@@ -1523,7 +1523,7 @@ matrix_t *casimir_M(casimir_t *self, int n, int m)
                 float64 elem = exp64((ln_bl1+ln_bl2)/2+logadd_s(cint.lnA_TM, cint.signA_TM, cint.lnB_TE, cint.signB_TE, &sign));
 
                 matrix_set(M, i+dim,j+dim,             sign_bl1*sign*elem);
-                matrix_set(M, j+dim,i+dim, MPOW(l1+l2)*sign_bl2*elem);
+                matrix_set(M, j+dim,i+dim, MPOW(l1+l2)*sign_bl2*sign*elem);
             }
 
 
@@ -1557,26 +1557,25 @@ matrix_t *casimir_M(casimir_t *self, int n, int m)
     /* check if matrix elements are finite */
     if(self->check_elems)
     {
-        for(int l1 = min; l1 <= max; l1++)
-            for(int l2 = min; l2 <= max; l2++)
+        for(size_t l1 = min; l1 <= max; l1++)
+            for(size_t l2 = min; l2 <= max; l2++)
             {
-                const int i = l1-min;
-                const int j = l2-min;
+                const size_t i = l1-min;
+                const size_t j = l2-min;
                 const float64 elem_EE = matrix_get(M, i,j);
                 const float64 elem_MM = matrix_get(M, i+dim,j+dim);
 
-                TERMINATE(!isfinite(elem_EE), "matrix element not finite: P=EE, l1=%d, l2=%d, elem=%g", l1,l2, elem_EE);
-                TERMINATE(!isfinite(elem_MM), "matrix element not finite: P=MM, l1=%d, l2=%d, elem=%g", l1,l2, elem_MM);
+                TERMINATE(!isfinite(elem_EE), "matrix element not finite: P=EE, l1=%zu, l2=%zu, elem=%g", l1,l2, elem_EE);
+                TERMINATE(!isfinite(elem_MM), "matrix element not finite: P=MM, l1=%zu, l2=%zu, elem=%g", l1,l2, elem_MM);
 
                 if(m != 0)
                 {
                     const float64 elem_EM = matrix_get(M, i+dim,j);
                     const float64 elem_ME = matrix_get(M, i,j+dim);
 
-                    TERMINATE(!isfinite(elem_EM), "matrix element not finite: P=EM, l1=%d, l2=%d, elem=%g", l1,l2, elem_EM);
-                    TERMINATE(!isfinite(elem_ME), "matrix element not finite: P=EM, l1=%d, l2=%d, elem=%g", l1,l2, elem_EM);
+                    TERMINATE(!isfinite(elem_EM), "matrix element not finite: P=EM, l1=%zu, l2=%zu, elem=%g", l1,l2, elem_EM);
+                    TERMINATE(!isfinite(elem_ME), "matrix element not finite: P=EM, l1=%zu, l2=%zu, elem=%g", l1,l2, elem_EM);
                 }
-
             }
     }
 
@@ -1658,14 +1657,14 @@ double casimir_logdetD(casimir_t *self, int n, int m)
 
     if(m == 0)
     {
-        const int dim = M->dim;
+        const size_t dim = M->dim/2;
 
         /* The memory footprint can be improved here */
         matrix_t *EE = matrix_alloc(dim);
         matrix_t *MM = matrix_alloc(dim);
 
-        for(int i = 0; i < dim; i++)
-            for(int j = 0; j < dim; j++)
+        for(size_t i = 0; i < dim; i++)
+            for(size_t j = 0; j < dim; j++)
             {
                 matrix_set(EE, i,j, matrix_get(M, i,j));
                 matrix_set(MM, i,j, matrix_get(M, dim+i,dim+j));
