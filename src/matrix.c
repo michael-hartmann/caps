@@ -171,6 +171,7 @@ float64 matrix_logdet(matrix_t *A, float64 z, const char *detalg)
     float64 logdetD = 0;
 
     /* M = Id+z*M */
+    /* XXX use BLAS routine XXX */
     {
         const size_t dim  = A->dim;
         const size_t dim2 = A->dim2;
@@ -211,6 +212,50 @@ float64 matrix_logdet_lu_lapack(matrix_t *A)
     float64 logdet = 0;
     for(int i = 0; i < dim; i++)
         logdet += log64(fabs64(matrix_get(A, i, i)));
+
+    return logdet;
+}
+
+float64 matrix_logdetIdmM_eig_lapack(matrix_t *A, double z)
+{
+    int dim = A->dim;
+    char jobvl = 'N'; /* don't compute left eigenvectors */
+    char jobvr = 'N'; /* don't compute right eigenvectors */
+    double wr[dim]; /* real parts of eigenvalues */
+    double wi[dim]; /* imaginary parts of eigenvalues */
+    int lwork = 100*dim;
+    double *work = xmalloc(lwork*sizeof(double));
+    int info = 0;
+
+    dgeev_(
+        &jobvl, /* JOBVL */
+        &jobvr, /* JOBVR */
+        &dim,   /* N */
+        A->M,   /* A */
+        &dim,   /* LDA */
+        wr,     /* WR */
+        wi,     /* WI */
+        NULL,   /* VL */
+        &dim,   /* LDVL */
+        NULL,   /* VR */
+        &dim,   /* LDVR */
+        work,   /* WORK */
+        &lwork, /* LWORK */
+        &info   /* INFO */
+    );
+
+    xfree(work);
+
+    double logdet = 0;
+    for(int i = 0; i < dim; i++)
+    {
+        double lambda = wr[i];
+
+        if(lambda < -z)
+            logdet += log1p64(+z*lambda);
+        else
+            logdet += log64(fabs64(1-z*lambda));
+    }
 
     return logdet;
 }

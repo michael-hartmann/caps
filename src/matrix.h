@@ -31,5 +31,6 @@ float64 matrix_logdet_lu(matrix_t *A);
 float64 matrix_logdet_qr(matrix_t *M);
 float64 matrix_logdet(matrix_t *A, float64 z, const char *detalg);
 float64 matrix_logdet_lu_lapack(matrix_t *A);
+float64 matrix_logdetIdmM_eig_lapack(matrix_t *A, double z);
 
 #endif
