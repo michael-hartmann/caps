@@ -117,10 +117,10 @@ float80 casimir_integrate_perf_I(integration_perf_t *self, int nu)
          * logarithms of the coefficients. */
 
         for(int k = 0; k <= m-1; k++)
-            p1[k] = lgamma80(m)-lgamma80(k+1)-lgamma80(m-k)+(m-1-k)*LOG2;
+            p1[k] = lgamma80(m)-lgamma80(k+1)-lgamma80(m-k)+(m-1-k)*M_LOG2;
 
         for(int k = 2*m; k <= nu; k++)
-            p2[k-2*m] = lgamma80(k+nu+1)-lgamma80(k+1)-lgamma80(k-2*m+1)-lgamma80(-k+nu+1)-k*LOG2;
+            p2[k-2*m] = lgamma80(k+nu+1)-lgamma80(k+1)-lgamma80(k-2*m+1)-lgamma80(-k+nu+1)-k*M_LOG2;
 
         log_polymult(p1, m, p2, nu+1-2*m, p); /* len: nu-m */
 
