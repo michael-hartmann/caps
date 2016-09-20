@@ -46,10 +46,6 @@ CFLAGS += -Wall -Werror -Wextra -Wmissing-prototypes -Wstrict-prototypes -Wshado
 # ldflags
 LDFLAGS += -lm -pthread
 
-# support float128
-#CFLAGS += -DFLOAT128
-#LDFLAGS += -lquadmath
-
 # clang supports various runtime checks. This will slow down the program, but
 # it's a good and easy way to find bugs.
 #CFLAGS += -fsanitize=undefined,memory
