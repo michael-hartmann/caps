@@ -42,7 +42,7 @@ float64 kahan_sum(float64 input[], size_t len);
 
 inline float64 logadd(const float64 a, const float64 b);
 inline float64 logadd_s(const float64 a, const sign_t sign_a, const float64 b, const sign_t sign_b, sign_t *sign);
-inline float80 logadd_m(const float80 list[], const int len);
+inline float64 logadd_m(const float64 list[], const int len);
 inline float80 logadd_ms(const float80 list[], const sign_t signs[], const int len, sign_t *sign);
 
 float64 bessel_lnInu(const int n, const float64 x);
