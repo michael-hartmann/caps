@@ -1,7 +1,7 @@
 /**
  * @file   integration_perf.c
  * @author Michael Hartmann <michael.hartmann@physik.uni-augsburg.de>
- * @date   November, 2015
+ * @date   September, 2016
  * @brief  Perform integration for perfect reflectors
  */
 
