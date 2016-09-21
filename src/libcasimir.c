@@ -322,8 +322,6 @@ void casimir_rp(casimir_t *self, float64 nT, float64 k, float64 *r_TE, float64 *
  */
 int casimir_init(casimir_t *self, double LbyR, double T)
 {
-    TERMINATE(LDBL_MANT_DIG < 64, "No support for 80-bit extended precision, long double has %d bits.", LDBL_MANT_DIG);
-
     if(LbyR <= 0)
         return -1;
     if(T <= 0)
