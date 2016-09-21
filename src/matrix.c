@@ -12,7 +12,6 @@
 #include <strings.h>
 
 #include "matrix.h"
-#include "floattypes.h"
 
 #include "utils.h"
 

@@ -1,7 +1,6 @@
 #ifndef INTEGRATION_PERF_H
 #define INTEGRATION_PERF_H
 
-#include "floattypes.h"
 #include "libcasimir.h"
 
 #define TE 1

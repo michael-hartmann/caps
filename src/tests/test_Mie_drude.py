@@ -58,7 +58,6 @@ if __name__ == "__main__":
     print("/* This code was created by test_Mie_drude.py */")
     print("#include \"sfunc.h\"")
     print("#include \"libcasimir.h\"")
-    print("#include \"floattypes.h\"")
     print("#include \"unittest.h\"")
     print()
     print("#include \"test_mie_drude.h\"")

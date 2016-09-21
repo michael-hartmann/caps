@@ -4,7 +4,6 @@
 #include <stdlib.h>
 #include <math.h>
 
-#include "floattypes.h"
 #include "libcasimir.h"
 
 #define pow_2(x) ((x)*(x))

@@ -20,7 +20,6 @@
 #include <time.h>
 #include <unistd.h>
 
-#include "floattypes.h"
 #include "integration_drude.h"
 #include "integration_perf.h"
 #include "libcasimir.h"

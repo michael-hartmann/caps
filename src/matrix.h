@@ -4,7 +4,6 @@
 #include <stdio.h>
 #include <math.h>
 
-#include "floattypes.h"
 #include "utils.h"
 
 

@@ -10,7 +10,6 @@
 #include <string.h>
 #include <float.h>
 
-#include "floattypes.h"
 #include "utils.h"
 #include "sfunc.h"
 #include "libcasimir.h"

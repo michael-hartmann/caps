@@ -1,4 +1,3 @@
-#include "floattypes.h"
 #include "gausslaguerre.h"
 
 static double xk10[] = {

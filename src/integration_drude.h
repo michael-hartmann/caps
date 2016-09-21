@@ -2,8 +2,6 @@
 #define __INTEGRATION_DRUDE_H
 
 #include "libcasimir.h"
-#include "floattypes.h"
-
 
 /*
  * The accuracy of the Drude-Integration
