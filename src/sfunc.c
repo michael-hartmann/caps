@@ -13,6 +13,24 @@
 #include "sfunc.h"
 #include "utils.h"
 
+
+/* taken from Wikipedia, https://en.wikipedia.org/wiki/Kahan_summation_algorithm */
+float64 kahan_sum(float64 input[], size_t len)
+{
+    float64 sum = 0;
+    float64 c = 0; /* running compensation for lost low-order bits */
+
+	for(size_t i = 0; i < len; i++)
+    {
+        float64 y = input[i] - c;
+        float64 t = sum + y;
+        c = (t - sum) - y;
+        sum = t;
+    }
+
+    return sum;
+}
+
 /**
 * @name Add numbers given as logarithms
 */
