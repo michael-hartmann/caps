@@ -1316,7 +1316,7 @@ void casimir_logdetD0(casimir_t *self, int m, double *logdet_EE, double *logdet_
             }
             if(MM != NULL)
             {
-                const double MM_ij = EE_ij*sqrt(((double)l1*(double)l2)/((l1+1.)*(l2+1.)));
+                const double MM_ij = EE_ij*sqrt((l1*l2)/((l1+1.)*(l2+1.)));
                 matrix_set(MM, i,j, MM_ij);
                 matrix_set(MM, j,i, MM_ij);
             }
