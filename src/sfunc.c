@@ -460,9 +460,9 @@ inline int gaunt_qmax(const int n, const int nu, const int m)
  * @param [in]  m  \f$m=\mu\f$
  * @return a0 \f$\log a_0\f$
  */
-inline float80 gaunt_log_a0(int n, int nu, int m)
+inline float64 gaunt_log_a0(int n, int nu, int m)
 {
-    return lgamma80(2*n+1)-lgamma80(n+1)+lgamma80(2*nu+1)-lgamma80(1+nu)+lgamma80(n+nu+1)-lgamma80(2*n+2*nu+1)+lgamma80(1+n+nu-2*m)-lgamma80(1+n-m)-lgamma80(1+nu-m);
+    return lgamma64(2*n+1)-lgamma64(n+1)+lgamma64(2*nu+1)-lgamma64(1+nu)+lgamma64(n+nu+1)-lgamma64(2*n+2*nu+1)+lgamma64(1+n+nu-2*m)-lgamma64(1+n-m)-lgamma64(1+nu-m);
 }
 
 /**
@@ -475,9 +475,9 @@ inline float80 gaunt_log_a0(int n, int nu, int m)
  * @param [in]  m  \f$m=\mu\f$
  * @return a0 \f$a_0\f$
  */
-inline float80 gaunt_a0(int n, int nu, int m)
+inline float64 gaunt_a0(int n, int nu, int m)
 {
-    return exp80(gaunt_log_a0(n,nu,m));
+    return exp64(gaunt_log_a0(n,nu,m));
 }
 
 /* eq. (3) */
