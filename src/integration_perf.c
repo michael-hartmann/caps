@@ -9,7 +9,6 @@
 #include <stdlib.h>
 #include <math.h>
 
-#include "floattypes.h"
 #include "sfunc.h"
 #include "libcasimir.h"
 #include "integration_perf.h"

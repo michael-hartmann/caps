@@ -1,7 +1,6 @@
 /* This code was created by test_Mie_drude.py */
 #include "sfunc.h"
 #include "libcasimir.h"
-#include "floattypes.h"
 #include "unittest.h"
 
 #include "test_mie_drude.h"

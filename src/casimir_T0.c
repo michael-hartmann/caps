@@ -13,7 +13,6 @@
 #include "gausslaguerre.h"
 #include "libcasimir.h"
 #include "sfunc.h"
-#include "floattypes.h"
 #include "utils.h"
 
 #define PRECISION 1e-12

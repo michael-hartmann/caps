@@ -12,7 +12,12 @@ typedef signed char sign_t;
 #include <stdbool.h>
 #include <stdio.h>
 
-#include "floattypes.h"
+#ifndef M_PI
+#define M_PI 3.14159265358979323846
+#endif
+
+#define M_LOG2 0.6931471805599453
+#define M_LOGPI 1.1447298858494002
 
 /* default values */
 #define CASIMIR_PRECISION 1e-12      /**< default precision */

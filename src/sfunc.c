@@ -9,7 +9,6 @@
 #include <stdio.h>
 #include <math.h>
 
-#include "floattypes.h"
 #include "sfunc.h"
 #include "utils.h"
 
