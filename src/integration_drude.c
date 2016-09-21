@@ -123,7 +123,7 @@ void integrate_gauss_laguerre(casimir_t *self, casimir_integrals_t *cint, int l1
     const float80 ln_tau = log80(tau);
     const float80 ln_Lambda = casimir_lnLambda(l1, l2, m, NULL); /* sign: -1 */
     float80 prefactor;
-    float80 *xk, *ln_wk;
+    float64 *xk, *ln_wk;
     /* XXX use order 50 at the moment XXX */
     const int N = gausslaguerre_nodes_weights(50, &xk, &ln_wk);
 
