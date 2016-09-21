@@ -129,7 +129,7 @@ inline float80 logadd_ms(const float80 list[], const sign_t signs[], const int l
 */
 /*@{*/
 
-void bessel_lnInuKnu(int nu, const float64 x, float80 *lnInu_p, float80 *lnKnu_p)
+void bessel_lnInuKnu(int nu, const float64 x, float64 *lnInu_p, float64 *lnKnu_p)
 {
     const float64 logx = log64(x);
     float64 lnKnu = 0, lnKnup = log1p64(1./x);
@@ -183,23 +183,23 @@ void bessel_lnInuKnu(int nu, const float64 x, float80 *lnInu_p, float80 *lnKnu_p
             ratio_last = ratio;
         }
 
-        *lnInu_p = -logx-lnKnu-logadd(lnKnup-lnKnu, -log80(ratio));
+        *lnInu_p = -logx-lnKnu-logadd(lnKnup-lnKnu, -log64(ratio));
         #undef an
     }
 }
 
 
-float80 bessel_lnKnu(const int nu, const float64 x)
+float64 bessel_lnKnu(const int nu, const float64 x)
 {
-    float80 Knu;
+    float64 Knu;
     bessel_lnInuKnu(nu, x, NULL, &Knu);
     return Knu;
 }
 
 
-float80 bessel_lnInu(const int nu, const float64 x)
+float64 bessel_lnInu(const int nu, const float64 x)
 {
-    float80 Inu;
+    float64 Inu;
     bessel_lnInuKnu(nu, x, &Inu, NULL);
     return Inu;
 }
