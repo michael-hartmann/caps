@@ -205,7 +205,8 @@ double matrix_logdet_qr(matrix_t *M)
  */
 double matrix_logdet(matrix_t *A, double z, const char *detalg)
 {
-    double logdetD = 0;
+    if(strcmp(detalg, "EIG_LAPACK") == 0)
+        return matrix_logdetIdmM_eig_lapack(A, z);
 
     /* M = Id+z*M */
     /* XXX use BLAS routine XXX */
@@ -214,35 +215,36 @@ double matrix_logdet(matrix_t *A, double z, const char *detalg)
         const size_t dim2 = A->dim2;
         double *a = A->M;
 
+        /* multiply by z */
         for(size_t i = 0; i < dim2; i++)
             a[i] *= z;
 
+        /* add identity matrix */
         for(size_t i = 0; i < dim; i++)
             a[i*dim+i] += 1;
     }
 
-    logdetD = matrix_logdet_lu(A);
-    //logdetD = matrix_logdet_lu_lapack(A);
-    //logdetD = matrix_logdet_qr(A);
-
-    return logdetD;
+    if(strcmp(detalg, "LU_LAPACK") == 0)
+        return matrix_logdet_lu_lapack(A);
+    if(strcmp(detalg, "QR") == 0)
+        return matrix_logdet_qr(A);
+    else
+        return matrix_logdet_lu(A);
 }
 
 double matrix_logdet_lu_lapack(matrix_t *A)
 {
     int info = 0;
     int dim = (int)A->dim;
-    int rows = dim;
-    int cols = dim;
     int ipiv[dim];
     double *a = A->M;
 
     dgetrf_(
-        &rows, /* M number of rows of A */
-        &cols, /* N number of columns of A */
-        a,     /* matrix A to be factored */
-        &dim,  /* LDA: leading dimension of A */
-        ipiv,  /* pivot indices of dimension min(rows,cols) */
+        &dim, /* M number of rows of A */
+        &dim, /* N number of columns of A */
+        a,    /* matrix A to be factored */
+        &dim, /* LDA: leading dimension of A */
+        ipiv, /* pivot indices of dimension min(rows,cols) */
         &info
     );
 
