@@ -719,7 +719,7 @@ void casimir_lnab0(int l, float64 *a0, sign_t *sign_a0, float64 *b0, sign_t *sig
  * @param [out] sign sign of \f$a_\ell\f$
  * @retval logarithm of Mie coefficient \f$a_\ell\f$
  */
-void casimir_lnab_perf(casimir_t *self, int n, int l, float80 *lna, float80 *lnb, sign_t *sign_a, sign_t *sign_b)
+void casimir_lnab_perf(casimir_t *self, int n, int l, float64 *lna, float64 *lnb, sign_t *sign_a, sign_t *sign_b)
 {
     float64 lnKlp,lnKlm,lnIlm,lnIlp;
     const float64 chi = n*self->T*self->RbyScriptL;
@@ -792,7 +792,7 @@ void casimir_lnab_perf(casimir_t *self, int n, int l, float80 *lna, float80 *lnb
  * @param [out] sign_a sign of Mie coefficient \f$a_\ell\f$
  * @param [out] sign_b sign of Mie coefficient \f$b_\ell\f$
  */
-void casimir_lnab(casimir_t *self, int n_mat, int l, float80 *lna, float80 *lnb, sign_t *sign_a, sign_t *sign_b)
+void casimir_lnab(casimir_t *self, int n_mat, int l, float64 *lna, float64 *lnb, sign_t *sign_a, sign_t *sign_b)
 {
     if(isinf(self->omegap_sphere))
     {
@@ -804,20 +804,20 @@ void casimir_lnab(casimir_t *self, int n_mat, int l, float80 *lna, float80 *lnb,
     /* Mie coefficients for Drude metals */
 
     /* ξ = nT */
-    const float80 xi = n_mat*self->T;
+    const float64 xi = n_mat*self->T;
 
     /* χ = ξ*R/(R+L) = ξ/(1+L/R) */
-    const float80 chi    = xi/(1.L+self->LbyR);
-    const float80 ln_chi = log80(xi)-log1p80(self->LbyR);
-    const float80 ln_l   = log80(l);
+    const float64 chi    = xi/(1.+self->LbyR);
+    const float64 ln_chi = log64(xi)-log1p64(self->LbyR);
+    const float64 ln_l   = log64(l);
 
     /**
      * Note: n is the refraction index, n_mat the Matsubara index
      * n    = sqrt(ε(ξ,ω_p,γ))
      * ln_n = ln(sqrt(ε)) = ln(ε)/2 = ln(1+(ε-1))/2 = log1p(ε-1)/2
      */
-    const float80 ln_n = log1p80(casimir_epsilonm1(xi, self->omegap_sphere, self->gamma_sphere))/2;
-    const float80 n    = exp80(ln_n);
+    const float64 ln_n = log1p64(casimir_epsilonm1(xi, self->omegap_sphere, self->gamma_sphere))/2;
+    const float64 n    = exp64(ln_n);
 
     float64 lnIlp, lnKlp, lnIlm, lnKlm, lnIlp_nchi, lnKlp_nchi, lnIlm_nchi, lnKlm_nchi;
 
@@ -828,23 +828,23 @@ void casimir_lnab(casimir_t *self, int n_mat, int l, float80 *lna, float80 *lnb,
     bessel_lnInuKnu(l-1, n*chi, &lnIlm_nchi, &lnKlm_nchi); /* K_{l-0.5}(nχ), K_{l-0.5}(nχ) */
 
     sign_t sign_sla, sign_slb, sign_slc, sign_sld;
-    const float80 ln_sla = lnIlp_nchi + logadd_s(ln_l+lnIlp,      +1,      ln_chi+lnIlm,      -1, &sign_sla);
-    const float80 ln_slb = lnIlp      + logadd_s(ln_l+lnIlp_nchi, +1, ln_n+ln_chi+lnIlm_nchi, -1, &sign_slb);
-    const float80 ln_slc = lnIlp_nchi + logadd_s(ln_l+lnKlp,      +1,      ln_chi+lnKlm,      +1, &sign_slc);
-    const float80 ln_sld = lnKlp      + logadd_s(ln_l+lnIlp_nchi, +1, ln_n+ln_chi+lnIlm_nchi, -1, &sign_sld);
+    const float64 ln_sla = lnIlp_nchi + logadd_s(ln_l+lnIlp,      +1,      ln_chi+lnIlm,      -1, &sign_sla);
+    const float64 ln_slb = lnIlp      + logadd_s(ln_l+lnIlp_nchi, +1, ln_n+ln_chi+lnIlm_nchi, -1, &sign_slb);
+    const float64 ln_slc = lnIlp_nchi + logadd_s(ln_l+lnKlp,      +1,      ln_chi+lnKlm,      +1, &sign_slc);
+    const float64 ln_sld = lnKlp      + logadd_s(ln_l+lnIlp_nchi, +1, ln_n+ln_chi+lnIlm_nchi, -1, &sign_sld);
 
     /**
      */
     /*
-    printf("n =%.18Lg\n",     exp80(ln_n));
-    printf("n2=%.18Lg\n",     exp80(2*ln_n));
-    printf("lnIl = %.18Lg\n", exp80(lnIl));
-    printf("chi=%.18Lg\n",    chi);
+    printf("n =%.18g\n",     exp64(ln_n));
+    printf("n2=%.18g\n",     exp64(2*ln_n));
+    printf("lnIl = %.18Lg\n", exp64(lnIl));
+    printf("chi=%.18g\n",    chi);
 
-    printf("sla=%.18Lg\n", sign_sla*exp80(ln_sla));
-    printf("slb=%.18Lg\n", sign_slb*exp80(ln_slb));
-    printf("slc=%.18Lg\n", sign_slc*exp80(ln_slc));
-    printf("sld=%.18Lg\n", sign_sld*exp80(ln_sld));
+    printf("sla=%.18g\n", sign_sla*exp80(ln_sla));
+    printf("slb=%.18g\n", sign_slb*exp80(ln_slb));
+    printf("slc=%.18g\n", sign_slc*exp80(ln_slc));
+    printf("sld=%.18g\n", sign_sld*exp80(ln_sld));
     */
 
     sign_t sign_a_num, sign_a_denom, sign_b_num, sign_b_denom;
@@ -922,8 +922,8 @@ void casimir_mie_cache_alloc(casimir_t *self, int n)
         cache->entries[n] = xmalloc(sizeof(casimir_mie_cache_entry_t));
         casimir_mie_cache_entry_t *entry = cache->entries[n];
 
-        entry->ln_al   = xmalloc((lmax+1)*sizeof(float80));
-        entry->ln_bl   = xmalloc((lmax+1)*sizeof(float80));
+        entry->ln_al   = xmalloc((lmax+1)*sizeof(float64));
+        entry->ln_bl   = xmalloc((lmax+1)*sizeof(float64));
         entry->sign_al = xmalloc((lmax+1)*sizeof(sign_t));
         entry->sign_bl = xmalloc((lmax+1)*sizeof(sign_t));
 
@@ -971,7 +971,7 @@ void casimir_mie_cache_clean(casimir_t *self)
  * @param [out] ln_b logarithm of \f$b_\ell\f$
  * @param [out] sign_b sign of \f$b_\ell\f$
  */
-void casimir_mie_cache_get(casimir_t *self, int l, int n, float80 *ln_a, sign_t *sign_a, float80 *ln_b, sign_t *sign_b)
+void casimir_mie_cache_get(casimir_t *self, int l, int n, float64 *ln_a, sign_t *sign_a, float64 *ln_b, sign_t *sign_b)
 {
     /* this mutex is important to prevent memory corruption */
     pthread_mutex_lock(&self->mie_cache->mutex);
@@ -1381,14 +1381,14 @@ matrix_t *casimir_M(casimir_t *self, int n, int m)
         const size_t i = l1-min;
 
         sign_t sign_al1, sign_bl1;
-        float80 ln_al1, ln_bl1;
+        float64 ln_al1, ln_bl1;
         casimir_mie_cache_get(self, l1, n, &ln_al1, &sign_al1, &ln_bl1, &sign_bl1);
 
         for(size_t l2 = min; l2 <= l1; l2++)
         {
             const size_t j = l2-min;
             sign_t sign_al2, sign_bl2;
-            float80 ln_al2, ln_bl2;
+            float64 ln_al2, ln_bl2;
 
             casimir_mie_cache_get(self, l2, n, &ln_al2, &sign_al2, &ln_bl2, &sign_bl2);
 
