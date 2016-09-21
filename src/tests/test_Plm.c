@@ -74,12 +74,8 @@ int test_Plm()
 
     AssertAlmostEqual(&test, plm_lnPlm(1,1,1000, &sign), 6.907754778981887);
     AssertEqual(&test, sign, -1);
-    AssertAlmostEqual(&test, plm_lndPlm(1,1,1000, &sign), 5.000002500001666e-07);
-    AssertEqual(&test, sign, -1);
 
     AssertAlmostEqual(&test, plm_lnPlm(1,1,1e+06, &sign), 13.815510557963773);
-    AssertEqual(&test, sign, -1);
-    AssertAlmostEqual(&test, plm_lndPlm(1,1,1e+06, &sign), 5.000000000002499e-13);
     AssertEqual(&test, sign, -1);
 
     AssertAlmostEqual(&test, plm_lnPlm(5,0,1.1, &sign), 1.1310847224188405);
