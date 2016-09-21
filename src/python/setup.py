@@ -25,7 +25,9 @@ CFLAGS = [
     "-pthread",
 ]
 
-extensions = [Extension("libcasimir", sources, extra_compile_args=CFLAGS)]
+LIBRARIES = [ "m", "lapack", "blas", "gfortran" ]
+
+extensions = [Extension("libcasimir", sources, extra_compile_args=CFLAGS, libraries=LIBRARIES)]
 
 setup(
     ext_modules = cythonize(extensions)
