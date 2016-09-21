@@ -129,7 +129,7 @@ inline float80 logadd_ms(const float80 list[], const sign_t signs[], const int l
 */
 /*@{*/
 
-void bessel_lnInuKnu(int nu, const float80 x, float80 *lnInu_p, float80 *lnKnu_p)
+void bessel_lnInuKnu(int nu, const float64 x, float80 *lnInu_p, float80 *lnKnu_p)
 {
     const float64 logx = log64(x);
     float64 lnKnu = 0, lnKnup = log1p64(1./x);
@@ -156,7 +156,7 @@ void bessel_lnInuKnu(int nu, const float80 x, float80 *lnInu_p, float80 *lnKnu_p
             lnKnu  = prefactor+lnKnu;
         }
 
-        TERMINATE(!isfinite(lnKnup), "Couldn't calculate Bessel functions, nu=%d, x=%Lg\n", nu, x);
+        TERMINATE(!isfinite(lnKnup), "Couldn't calculate Bessel functions, nu=%d, x=%g\n", nu, x);
 
         if(lnKnu_p != NULL)
             *lnKnu_p = lnKnu;
@@ -189,7 +189,7 @@ void bessel_lnInuKnu(int nu, const float80 x, float80 *lnInu_p, float80 *lnKnu_p
 }
 
 
-float80 bessel_lnKnu(const int nu, const float80 x)
+float80 bessel_lnKnu(const int nu, const float64 x)
 {
     float80 Knu;
     bessel_lnInuKnu(nu, x, NULL, &Knu);
@@ -197,7 +197,7 @@ float80 bessel_lnKnu(const int nu, const float80 x)
 }
 
 
-float80 bessel_lnInu(const int nu, const float80 x)
+float80 bessel_lnInu(const int nu, const float64 x)
 {
     float80 Inu;
     bessel_lnInuKnu(nu, x, &Inu, NULL);
