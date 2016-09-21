@@ -33,13 +33,13 @@ static void casimir_integrate_perf_m0(integration_perf_t *self, int l1, int l2, 
  * @param [in] tau parameter
  * @retval logarithm of value of integral
  */
-static float80 polyintegrate(float80 p[], const int len_p, const int offset, const float80 tau)
+static float64 polyintegrate(float64 p[], const int len_p, const int offset, const float64 tau)
 {
-    const float80 log_tau = log80(tau);
-    float80 list[len_p];
+    const float64 log_tau = log64(tau);
+    float64 list[len_p];
 
     for(int k = offset; k < len_p+offset; k++)
-        list[k-offset] = lgamma80(k+1)-(k+1)*log_tau+p[k-offset];
+        list[k-offset] = lgamma64(k+1)-(k+1)*log_tau+p[k-offset];
 
     return logadd_m(list, len_p);
 }
@@ -56,10 +56,10 @@ static float80 polyintegrate(float80 p[], const int len_p, const int offset, con
  * @param [in]  len_p2 number of coefficients of polynomial p2
  * @param [out] p polynomial p1*p2
  */
-static void log_polymult(float80 p1[], const int len_p1, float80 p2[], const int len_p2, float80 p[])
+static void log_polymult(float64 p1[], const int len_p1, float64 p2[], const int len_p2, float64 p[])
 {
     int len = len_p1+len_p2-1;
-    float80 temp[len];
+    float64 temp[len];
 
     for(int k = 0; k < len; k++)
     {
@@ -107,11 +107,11 @@ float80 casimir_integrate_perf_I(integration_perf_t *self, int nu)
         const int m = (self->m != 0) ? self->m : 2;
 
         /* polynom (z+2)^(m-1) */
-        float80 *p1 = xmalloc(m*sizeof(float80));
+        float64 *p1 = xmalloc(m*sizeof(float64));
         /* polynom d^(2m)/dz^(2m) P_(nu)(1+z) */
-        float80 *p2 = xmalloc((nu+1-2*m)*sizeof(float80));
+        float64 *p2 = xmalloc((nu+1-2*m)*sizeof(float64));
         /* polynom p1*p2 */
-        float80 *p = xmalloc((nu-m)*sizeof(float80));
+        float64 *p = xmalloc((nu-m)*sizeof(float64));
 
         /* Every monom of both polynoms is positive. So we can save the
          * logarithms of the coefficients. */
@@ -210,14 +210,14 @@ void casimir_integrate_perf_init(integration_perf_t *self, double nT, int m, int
 
     /* allocate memory and initialize chache for I */
     const int elems_I = 2*(lmax+2);
-    self->cache_I = xmalloc(elems_I*sizeof(float80));
+    self->cache_I = xmalloc(elems_I*sizeof(float64));
     for(int i = 0; i < elems_I; i++)
         self->cache_I[i] = NAN;
 
     /* allocate memory and initialize chache for K */
     const int elems_K = pow_2(lmax+2);
     self->cache_K_signs = xmalloc(elems_K*sizeof(sign_t));
-    self->cache_K = xmalloc(elems_K*sizeof(float80));
+    self->cache_K = xmalloc(elems_K*sizeof(float64));
     for(int i = 0; i < elems_K; i++)
         self->cache_K[i] = NAN;
 }

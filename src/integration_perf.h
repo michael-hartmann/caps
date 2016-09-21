@@ -24,8 +24,8 @@
 
 
 typedef struct {
-    float80 *cache_I;
-    float80 *cache_K;
+    float64 *cache_I;
+    float64 *cache_K;
     sign_t *cache_K_signs;
     int dim_K;
     int m,lmax;
