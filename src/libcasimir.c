@@ -226,10 +226,10 @@ float64 casimir_lnLambda(int l1, int l2, int m, sign_t *sign)
  * @param [in]  gamma_ \f$\gamma\f$ relaxation frequency
  * @retval epsilon \f$\epsilon(\xi, \omega_\mathrm{P}, \gamma)-1\f$
  */
-float80 casimir_epsilonm1(float80 xi, double omegap, double gamma_)
+float64 casimir_epsilonm1(float64 xi, float64 omegap, float64 gamma_)
 {
     /* cast omegap and gamma_ to float80 for more accurancy */
-    return pow_2((float80)omegap)/(xi*(xi+(float80)gamma_));
+    return pow_2(omegap)/(xi*(xi+gamma_));
 }
 
 
