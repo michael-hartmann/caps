@@ -77,13 +77,6 @@ void usage(FILE *stream)
 "        the Matsubara frequencies and the sum over m is truncated. The sum is\n"
 "        truncated when |F_n(m)/F_n(0)| < precision. (default: %g)\n"
 "\n"
-"   -t, --trace-threshold\n"
-"        Set threshold for trace approximation. If trace of M is smaller\n"
-"        than the threshold, the trace will be used as an approximation:\n"
-"           log det (Id-M) ≈ -Tr M\n"
-"        If trace-threshold is 0, this approximation will never be used.\n"
-"        (default: %g)\n"
-"\n"
 "    --buffering\n"
 "        Enable buffering. By default buffering for stderr and stdout is\n"
 "        disabled.\n"
@@ -98,7 +91,7 @@ void usage(FILE *stream)
 "        Show this help\n"
 "\n"
 "\n"
-"%s\n", MIN_LMAX, DEFAULT_LFAC, DEFAULT_PRECISION, CASIMIR_TRACE_THRESHOLD, msg);
+"%s\n", MIN_LMAX, DEFAULT_LFAC, DEFAULT_PRECISION, msg);
 }
 
 /* parse a range given for LbyR or T from the command line.
@@ -182,7 +175,6 @@ static double logspace(double start, double stop, int N, int i)
 int main(int argc, char *argv[])
 {
     double gamma_ = 0, omegap = INFINITY;
-    double trace_threshold = -1;
     double precision = DEFAULT_PRECISION;
     double lfac      = DEFAULT_LFAC;
     double lT[4]     = { 0,0,0,SCALE_LIN }; /* start, stop, N, lin/log */
@@ -207,14 +199,13 @@ int main(int argc, char *argv[])
             { "precision", required_argument, 0, 'p' },
             { "gamma",     required_argument, 0, 'g' },
             { "omegap",    required_argument, 0, 'w' },
-            { "trace-threshold", required_argument, 0, 't' },
             { 0, 0, 0, 0 }
         };
 
         /* getopt_long stores the option index here. */
         int option_index = 0;
 
-        int c = getopt_long (argc, argv, "x:T:c:l:L:t:p:g:w:qh", long_options, &option_index);
+        int c = getopt_long (argc, argv, "x:T:c:l:L:p:g:w:qh", long_options, &option_index);
 
         /* Detect the end of the options. */
         if(c == -1)
@@ -252,9 +243,6 @@ int main(int argc, char *argv[])
                 break;
             case 'w':
                 omegap = atof(optarg);
-                break;
-            case 't':
-                trace_threshold = atof(optarg);
                 break;
             case 'h':
                 usage(stdout);
@@ -331,9 +319,6 @@ int main(int argc, char *argv[])
                 T = logspace(lT[0], lT[1], lT[2], iT);
 
             casimir_init(&casimir, LbyR, T);
-
-            if(trace_threshold >= 0)
-                casimir_set_trace_threshold(&casimir, trace_threshold);
 
             casimir_set_verbose(&casimir, verbose_flag);
             casimir_set_cores(&casimir, cores);
