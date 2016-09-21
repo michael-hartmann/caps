@@ -38,6 +38,8 @@ typedef struct {
     int sign_dPl1mdPl2m;
 } plm_combination_t;
 
+float64 kahan_sum(float64 input[], size_t len);
+
 inline float80 logadd(const float80 a, const float80 b);
 inline float80 logadd_s(const float80 a, const sign_t sign_a, const float80 b, const sign_t sign_b, sign_t *sign);
 inline float80 logadd_m(const float80 list[], const int len);
