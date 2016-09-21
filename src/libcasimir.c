@@ -1491,7 +1491,6 @@ matrix_t *casimir_M(casimir_t *self, int n, int m)
 double casimir_logdetD(casimir_t *self, int n, int m)
 {
     double logdet = 0;
-    matrix_t *M;
 
     if(n == 0)
     {
@@ -1508,7 +1507,7 @@ double casimir_logdetD(casimir_t *self, int n, int m)
     }
 
     const double start = now();
-    M = casimir_M(self, n, m);
+    matrix_t *M = casimir_M(self, n, m);
     casimir_debug(self, "# calculating %dx%d matrix elements: %gs\n", 2*M->dim, 2*M->dim, now()-start);
 
     #if 0
