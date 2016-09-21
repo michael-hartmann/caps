@@ -512,7 +512,7 @@ int casimir_set_cores(casimir_t *self, int cores)
  *
  * The algorithm is given by detalg. Make sure that detalg contains a valid
  * algorithm, otherwise the computation will print a warning on runtime and
- * default to QR_FLOAT80.
+ * default to XXX.
  *
  * detalg may be: XXX
  *
