@@ -25,16 +25,16 @@
 #endif
 
 typedef struct {
-    float80 lnPl1mPl2m;
+    float64 lnPl1mPl2m;
     int sign_Pl1mPl2m;
 
-    float80 lndPl1mPl2m;
+    float64 lndPl1mPl2m;
     int sign_dPl1mPl2m;
 
-    float80 lnPl1mdPl2m;
+    float64 lnPl1mdPl2m;
     int sign_Pl1mdPl2m;
 
-    float80 lndPl1mdPl2m;
+    float64 lndPl1mdPl2m;
     int sign_dPl1mdPl2m;
 } plm_combination_t;
 
@@ -43,7 +43,7 @@ float64 kahan_sum(float64 input[], size_t len);
 inline float64 logadd(const float64 a, const float64 b);
 inline float64 logadd_s(const float64 a, const sign_t sign_a, const float64 b, const sign_t sign_b, sign_t *sign);
 inline float64 logadd_m(const float64 list[], const int len);
-inline float80 logadd_ms(const float80 list[], const sign_t signs[], const int len, sign_t *sign);
+inline float64 logadd_ms(const float64 list[], const sign_t signs[], const int len, sign_t *sign);
 
 float64 bessel_lnInu(const int n, const float64 x);
 float64 bessel_lnKnu(const int n, const float64 x);
@@ -61,7 +61,7 @@ void plm_PlmPlm(int l1, int l2, int m, float64 x, plm_combination_t *res);
 
 inline float64 gaunt_log_a0(int n, int nu, int m);
 inline float64 gaunt_a0(int n,int nu,int m);
-void gaunt(const int n, const int nu, const int m, float80 a_tilde[]);
+void gaunt(const int n, const int nu, const int m, float64 a_tilde[]);
 
 inline int gaunt_qmax(const int n, const int nu, const int m);
 

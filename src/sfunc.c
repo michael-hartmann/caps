@@ -121,21 +121,21 @@ inline float64 logadd_m(const float64 list[], const int len)
 }
 
 
-inline float80 logadd_ms(const float80 list[], const sign_t signs[], const int len, sign_t *sign)
+inline float64 logadd_ms(const float64 list[], const sign_t signs[], const int len, sign_t *sign)
 {
-    float80 sum;
-    float80 max = list[0];
+    float64 sum;
+    float64 max = list[0];
 
     for(int i = 1; i < len; i++)
         if(list[i] > max)
             max = list[i];
 
-    sum = signs[0]*exp80(list[0]-max);
+    sum = signs[0]*exp64(list[0]-max);
     for(int i = 1; i < len; i++)
-        sum += signs[i]*exp80(list[i]-max);
+        sum += signs[i]*exp64(list[i]-max);
 
-    *sign = copysign80(1, sum);
-    return max + log80(fabs80(sum));
+    *sign = copysign64(1, sum);
+    return max + log64(fabs64(sum));
 }
 
 /*@}*/
@@ -525,7 +525,7 @@ inline float64 gaunt_a0(int n, int nu, int m)
  * @param [in]  m  \f$m=\mu\f$
  * @param [out] a_tilde \f$\tilde a_q\f$ list of normalized Gaunt coefficients
  */
-void gaunt(const int n_, const int nu_, const int m_, float80 a_tilde[])
+void gaunt(const int n_, const int nu_, const int m_, float64 a_tilde[])
 {
     const float64 n  = n_;
     const float64 nu = nu_;
