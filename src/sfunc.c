@@ -481,7 +481,7 @@ inline float64 gaunt_a0(int n, int nu, int m)
 }
 
 /* eq. (3) */
-#define alpha(p, n, nu) (((float80)(pow_2(p)-pow_2(n+nu+1))*(pow_2(p)-pow_2(n-nu)))/(4*pow_2(p)-1))
+#define alpha(p, n, nu) (((pow_2(p)-pow_2(n+nu+1))*(pow_2(p)-pow_2(n-nu)))/(4*pow_2(p)-1))
 
 
 /**
@@ -510,16 +510,16 @@ inline float64 gaunt_a0(int n, int nu, int m)
  */
 void gaunt(const int n_, const int nu_, const int m_, float80 a_tilde[])
 {
-    const float80 n  = n_;
-    const float80 nu = nu_;
-    const float80 m  = m_;
-    const float80 n4 = n+nu-2*m;
+    const float64 n  = n_;
+    const float64 nu = nu_;
+    const float64 m  = m_;
+    const float64 n4 = n+nu-2*m;
 
     /* eq. (24) */
     const int qmax = gaunt_qmax(n,nu,m);
 
     /* eq. (28) */
-    const float80 Ap = -2*m*(n-nu)*(n+nu+1);
+    const float64 Ap = -2*m*(n-nu)*(n+nu+1);
 
     if(qmax < 0)
         return;
@@ -542,10 +542,10 @@ void gaunt(const int n_, const int nu_, const int m_, float80 a_tilde[])
 
     for(int q = 3; q <= qmax; q++)
     {
-        float80 c0,c1,c2;
-        const float80 p = n+nu-2*q;
-        const float80 p1 = p-2*m;
-        const float80 p2 = p+2*m;
+        float64 c0,c1,c2;
+        const float64 p = n+nu-2*q;
+        const float64 p1 = p-2*m;
+        const float64 p2 = p+2*m;
 
         if(Ap != 0)
         {
