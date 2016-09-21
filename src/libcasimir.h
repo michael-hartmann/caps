@@ -140,7 +140,7 @@ int casimir_verbose(casimir_t *self, const char *format, ...);
 
 float80 casimir_epsilonm1(float80 xi, double omegap, double gamma_);
 
-float80 casimir_lnLambda(int l1, int l2, int m, sign_t *sign);
+float64 casimir_lnLambda(int l1, int l2, int m, sign_t *sign);
 
 int casimir_init(casimir_t *self, double LbyR, double T);
 void casimir_free(casimir_t *self);

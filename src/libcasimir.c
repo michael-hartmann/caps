@@ -204,11 +204,11 @@ int casimir_verbose(casimir_t *self, const char *format, ...)
  * @param [out] sign set to -1 if sign != NULL
  * @retval lnLambda \f$\log{\Lambda_{\ell_1,\ell_2}^{(m)}}\f$
  */
-float80 casimir_lnLambda(int l1, int l2, int m, sign_t *sign)
+float64 casimir_lnLambda(int l1, int l2, int m, sign_t *sign)
 {
     if(sign != NULL)
         *sign = -1;
-    return (log80(2*l1+1)+log80(2*l2+1)-log80(l1)-log80(l1+1)-log80(l2)-log80(l2+1)+lgamma80(1+l1-m)+lgamma80(1+l2-m)-lgamma80(1+l1+m)-lgamma80(1+l2+m))/2.0L;
+    return (log64(2*l1+1)+log64(2*l2+1)-log64(l1)-log64(l1+1)-log64(l2)-log64(l2+1)+lgamma64(1+l1-m)+lgamma64(1+l2-m)-lgamma64(1+l1+m)-lgamma64(1+l2+m))/2.0;
 }
 
 
