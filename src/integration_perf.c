@@ -161,7 +161,7 @@ float80 casimir_integrate_K(integration_perf_t *self, const int l1, const int l2
     {
         const int m = (self->m != 0) ? self->m : 2;
         const int qmax       = gaunt_qmax(l1,l2,m);
-        const float80 log_a0 = gaunt_log_a0(l1,l2,m);
+        const float64 log_a0 = gaunt_log_a0(l1,l2,m);
         const int elems = MAX(0,1+qmax);
 
         float80 *a    = xmalloc(elems*sizeof(float80));
