@@ -40,8 +40,8 @@ typedef struct {
 
 float64 kahan_sum(float64 input[], size_t len);
 
-inline float80 logadd(const float80 a, const float80 b);
-inline float80 logadd_s(const float80 a, const sign_t sign_a, const float80 b, const sign_t sign_b, sign_t *sign);
+inline float64 logadd(const float64 a, const float64 b);
+inline float64 logadd_s(const float64 a, const sign_t sign_a, const float64 b, const sign_t sign_b, sign_t *sign);
 inline float80 logadd_m(const float80 list[], const int len);
 inline float80 logadd_ms(const float80 list[], const sign_t signs[], const int len, sign_t *sign);
 
@@ -51,13 +51,13 @@ void bessel_lnInuKnu(int nu, const float64 x, float64 *lnInu_p, float64 *lnKnu_p
 
 float64 ln_doublefact(int n);
 
-void plm_lnPlm_array(int lmax, int m, float80 x, float80 lnplm[], sign_t sign[]);
-float80 plm_lnPlm (int l, int m, float80 x, sign_t *sign);
-float80 plm_Plm   (int l, int m, float80 x);
-float80 plm_lndPlm(int l, int m, float80 x, sign_t *sign);
-float80 plm_dPlm  (int l, int m, float80 x);
+void plm_lnPlm_array(int lmax, int m, float64 x, float64 lnplm[], sign_t sign[]);
+float64 plm_lnPlm (int l, int m, float64 x, sign_t *sign);
+float64 plm_Plm   (int l, int m, float64 x);
+float64 plm_lndPlm(int l, int m, float64 x, sign_t *sign);
+float64 plm_dPlm  (int l, int m, float64 x);
 
-void plm_PlmPlm(int l1, int l2, int m, float80 x, plm_combination_t *res);
+void plm_PlmPlm(int l1, int l2, int m, float64 x, plm_combination_t *res);
 
 inline float64 gaunt_log_a0(int n, int nu, int m);
 inline float64 gaunt_a0(int n,int nu,int m);
