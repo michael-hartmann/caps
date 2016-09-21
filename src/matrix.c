@@ -72,8 +72,6 @@ int matrix_save_to_stream(matrix_t *A, FILE *stream)
     /* write matrix */
     fwrite(A->M, sizeof(double), A->dim2, stream);
 
-    fclose(stream);
-
     return 0;
 }
 
