@@ -8,7 +8,7 @@
 
 int test_mie_drude(void)
 {
-    float64 lna, lnb;
+    double lna, lnb;
     double omegap, gamma_;
     sign_t sign_a, sign_b;
     casimir_t casimir;

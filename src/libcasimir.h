@@ -30,9 +30,9 @@ typedef signed char sign_t;
  */
 typedef struct
 {
-    float64 *ln_al;  /**< list of Mie coefficients \f$a_\ell\f$ (logarithms) */
+    double *ln_al;  /**< list of Mie coefficients \f$a_\ell\f$ (logarithms) */
     sign_t *sign_al; /**< list of signs of Mie coefficients \f$a_\ell\f$ */
-    float64 *ln_bl;  /**< list of Mie coefficients \f$b_\ell\f$ (logarithms) */
+    double *ln_bl;  /**< list of Mie coefficients \f$b_\ell\f$ (logarithms) */
     sign_t *sign_bl; /**< list of signs of Mie coefficients \f$b_\ell\f$ */
 } casimir_mie_cache_entry_t;
 
@@ -108,14 +108,14 @@ typedef struct
 
 typedef struct
 {
-    float64 lnA_TE;  /**< logarithm of integral A_TE */
-    float64 lnA_TM;  /**< logarithm of integral A_TM */
-    float64 lnB_TE;  /**< logarithm of integral B_TE */
-    float64 lnB_TM;  /**< logarithm of integral B_TM */
-    float64 lnC_TE;  /**< logarithm of integral C_TE */
-    float64 lnC_TM;  /**< logarithm of integral C_TM */
-    float64 lnD_TE;  /**< logarithm of integral D_TE */
-    float64 lnD_TM;  /**< logarithm of integral D_TM */
+    double lnA_TE;  /**< logarithm of integral A_TE */
+    double lnA_TM;  /**< logarithm of integral A_TM */
+    double lnB_TE;  /**< logarithm of integral B_TE */
+    double lnB_TM;  /**< logarithm of integral B_TM */
+    double lnC_TE;  /**< logarithm of integral C_TE */
+    double lnC_TM;  /**< logarithm of integral C_TM */
+    double lnD_TE;  /**< logarithm of integral D_TE */
+    double lnD_TM;  /**< logarithm of integral D_TM */
     sign_t signA_TE; /**< sign of lnA_TE */
     sign_t signA_TM; /**< sign of lnA_TM */
     sign_t signB_TE; /**< sign of lnB_TE */
@@ -136,9 +136,9 @@ int casimir_vfprintf(casimir_t *self, FILE *stream, const char *format, va_list 
 int casimir_debug(casimir_t *self, const char *format, ...);
 int casimir_verbose(casimir_t *self, const char *format, ...);
 
-float64 casimir_epsilonm1(float64 xi, float64 omegap, float64 gamma_);
+double casimir_epsilonm1(double xi, double omegap, double gamma_);
 
-float64 casimir_lnLambda(int l1, int l2, int m, sign_t *sign);
+double casimir_lnLambda(int l1, int l2, int m, sign_t *sign);
 
 int casimir_init(casimir_t *self, double LbyR, double T);
 void casimir_free(casimir_t *self);
@@ -165,9 +165,9 @@ double casimir_get_precision(casimir_t *self);
 int    casimir_set_precision(casimir_t *self, double precision);
 
 
-void casimir_lnab0(int l, float64 *a0, sign_t *sign_a0, float64 *b0, sign_t *sign_b0);
-void casimir_lnab(casimir_t *self, int n, int l, float64 *lna, float64 *lnb, sign_t *sign_a, sign_t *sign_b);
-void casimir_lnab_perf(casimir_t *self, int n, int l, float64 *lna, float64 *lnb, sign_t *sign_a, sign_t *sign_b);
+void casimir_lnab0(int l, double *a0, sign_t *sign_a0, double *b0, sign_t *sign_b0);
+void casimir_lnab(casimir_t *self, int n, int l, double *lna, double *lnb, sign_t *sign_a, sign_t *sign_b);
+void casimir_lnab_perf(casimir_t *self, int n, int l, double *lna, double *lnb, sign_t *sign_a, sign_t *sign_b);
 
 double casimir_F_n(casimir_t *self, const int n, int *mmax);
 double casimir_F(casimir_t *self, int *nmax);
@@ -175,13 +175,13 @@ double casimir_F(casimir_t *self, int *nmax);
 void casimir_mie_cache_init(casimir_t *self);
 void casimir_mie_cache_alloc(casimir_t *self, int n);
 void casimir_mie_cache_clean(casimir_t *self);
-void casimir_mie_cache_get(casimir_t *self, int l, int n, float64 *ln_a, sign_t *sign_a, float64 *ln_b, sign_t *sign_b);
+void casimir_mie_cache_get(casimir_t *self, int l, int n, double *ln_a, sign_t *sign_a, double *ln_b, sign_t *sign_b);
 void casimir_mie_cache_free(casimir_t *self);
 
 void casimir_logdetD0(casimir_t *self, int m, double *EE, double *MM);
 matrix_t *casimir_M(casimir_t *self, int n, int m);
 double casimir_logdetD(casimir_t *self, int n, int m);
 
-void casimir_rp(casimir_t *self, float64 nT, float64 k, float64 *r_TE, float64 *r_TM);
+void casimir_rp(casimir_t *self, double nT, double k, double *r_TE, double *r_TM);
 
 #endif

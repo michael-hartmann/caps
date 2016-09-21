@@ -12,11 +12,11 @@ static void _integrals(int l1, int l2, int m, double nT, casimir_integrals_t *ci
 static double A(int l1, int l2, int m, double nT, sign_t *sign);
 static double B(int l1, int l2, int m, double nT, sign_t *sign);
 static double C(int l1, int l2, int m, double nT, sign_t *sign);
-static float80 _I(int nu, int m2, double tau);
+static double _I(int nu, int m2, double tau);
 
-static float80 _I(int nu, int m2, double tau)
+static double _I(int nu, int m2, double tau)
 {
-    float80 v;
+    double v;
     const double nT = tau/2.0;
     integration_perf_t int_perf;
 

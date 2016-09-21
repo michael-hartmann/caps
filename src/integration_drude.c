@@ -21,7 +21,7 @@ void integrate_gauss_laguerre(casimir_t *self,
                               casimir_integrals_t *cint,
                               int l1, int l2, int m, double nT);
 
-void integrands_drude(float64 x, integrands_drude_t *integrands,
+void integrands_drude(double x, integrands_drude_t *integrands,
                       struct integ_context* context,
                       unsigned int index,
                       unsigned int iteration);
@@ -63,37 +63,37 @@ void casimir_integrate_drude_free(integration_drude_t* int_drude)
 /*
  * ******************** Gauss-Laguerre Integration ********************
  */
-static void integrands_drude_laguerre(float64 x, integrands_drude_t *integrands,
+static void integrands_drude_laguerre(double x, integrands_drude_t *integrands,
                                       casimir_t *self, double nT, int l1, int l2, int m)
 {
     plm_combination_t comb;
-    const float64 tau        = 2*nT;
-    const float64 k          = sqrt64(pow_2(x)/4 + nT*x);
-    const float64 log_factor = log64(pow_2(x)+2*tau*x);
-    float64 r_TE, r_TM;
+    const double tau        = 2*nT;
+    const double k          = sqrt(pow_2(x)/4 + nT*x);
+    const double log_factor = log(pow_2(x)+2*tau*x);
+    double r_TE, r_TM;
 
     casimir_rp(self, nT, k, &r_TE, &r_TM);
-    const float64 lnr_TE = log64(-r_TE);
-    const float64 lnr_TM = log64(r_TM);
+    const double lnr_TE = log(-r_TE);
+    const double lnr_TM = log(r_TM);
 
     plm_PlmPlm(l1, l2, m, 1+x/tau, &comb);
 
-    const float64 A = comb.lnPl1mPl2m - log_factor;
+    const double A = comb.lnPl1mPl2m - log_factor;
     integrands->lnA_TE = lnr_TE + A;
     integrands->lnA_TM = lnr_TM + A;
     integrands->sign_A = comb.sign_Pl1mPl2m;
 
-    const float64 B = comb.lndPl1mdPl2m + log_factor;
+    const double B = comb.lndPl1mdPl2m + log_factor;
     integrands->lnB_TE = lnr_TE + B;
     integrands->lnB_TM = lnr_TM + B;
     integrands->sign_B = comb.sign_dPl1mdPl2m;
 
-    const float64 C = comb.lnPl1mdPl2m;
+    const double C = comb.lnPl1mdPl2m;
     integrands->lnC_TE = lnr_TE + C;
     integrands->lnC_TM = lnr_TM + C;
     integrands->sign_C = comb.sign_Pl1mdPl2m;
 
-    const float64 D = comb.lndPl1mPl2m;
+    const double D = comb.lndPl1mPl2m;
     integrands->lnD_TE = lnr_TE + D;
     integrands->lnD_TM = lnr_TM + D;
     integrands->sign_D = comb.sign_dPl1mPl2m;
@@ -119,11 +119,11 @@ static void integrands_drude_laguerre(float64 x, integrands_drude_t *integrands,
 void integrate_gauss_laguerre(casimir_t *self, casimir_integrals_t *cint, int l1, int l2, int m, double nT)
 {
     integrands_drude_t integrand;
-    const float64 tau = 2*nT;
-    const float64 ln_tau = log64(tau);
-    const float64 ln_Lambda = casimir_lnLambda(l1, l2, m, NULL); /* sign: -1 */
-    float64 prefactor;
-    float64 *xk, *ln_wk;
+    const double tau = 2*nT;
+    const double ln_tau = log(tau);
+    const double ln_Lambda = casimir_lnLambda(l1, l2, m, NULL); /* sign: -1 */
+    double prefactor;
+    double *xk, *ln_wk;
     /* XXX use order 50 at the moment XXX */
     const int N = gausslaguerre_nodes_weights(50, &xk, &ln_wk);
 
@@ -136,15 +136,15 @@ void integrate_gauss_laguerre(casimir_t *self, casimir_integrals_t *cint, int l1
 
     /* allocate space for lnA_TE, lnA_TM, lnB_TE, lnB_TM, lnC_TE, lnC_TM,
      * lnD_TE, lnD_TM */
-    float64 *ln_ABCD = xmalloc(4*2*N*sizeof(integrands_drude_t));
-    float64 *lnA_TE  = ln_ABCD;
-    float64 *lnA_TM  = ln_ABCD + 1*N;
-    float64 *lnB_TE  = ln_ABCD + 2*N;
-    float64 *lnB_TM  = ln_ABCD + 3*N;
-    float64 *lnC_TE  = ln_ABCD + 4*N;
-    float64 *lnC_TM  = ln_ABCD + 5*N;
-    float64 *lnD_TE  = ln_ABCD + 6*N;
-    float64 *lnD_TM  = ln_ABCD + 7*N;
+    double *ln_ABCD = xmalloc(4*2*N*sizeof(integrands_drude_t));
+    double *lnA_TE  = ln_ABCD;
+    double *lnA_TM  = ln_ABCD + 1*N;
+    double *lnB_TE  = ln_ABCD + 2*N;
+    double *lnB_TM  = ln_ABCD + 3*N;
+    double *lnC_TE  = ln_ABCD + 4*N;
+    double *lnC_TM  = ln_ABCD + 5*N;
+    double *lnD_TE  = ln_ABCD + 6*N;
+    double *lnD_TM  = ln_ABCD + 7*N;
 
     for(int i = 0; i < N; i++)
     {
@@ -179,7 +179,7 @@ void integrate_gauss_laguerre(casimir_t *self, casimir_integrals_t *cint, int l1
 
     if(m > 0)
     {
-        const float64 log_m = log(m);
+        const double log_m = log(m);
 
         /* A */
         prefactor = ln_Lambda + 2*log_m+ln_tau-tau; /* m²*tau*exp(-tau) */

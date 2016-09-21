@@ -4,9 +4,9 @@
 
 #include "test_mie.h"
 
-static float64 _mie_lna_perf(int l, double arg, sign_t *sign_a)
+static double _mie_lna_perf(int l, double arg, sign_t *sign_a)
 {
-    float64 lna, lnb;
+    double lna, lnb;
     sign_t dummy;
 
     casimir_t self;
@@ -17,9 +17,9 @@ static float64 _mie_lna_perf(int l, double arg, sign_t *sign_a)
     return lna;
 }
 
-static float64 _mie_lnb_perf(int l, double arg, sign_t *sign_b)
+static double _mie_lnb_perf(int l, double arg, sign_t *sign_b)
 {
-    float64 lna, lnb;
+    double lna, lnb;
     sign_t dummy;
 
     casimir_t self;
