@@ -108,14 +108,14 @@ typedef struct
 
 typedef struct
 {
-    float80 lnA_TE;  /**< logarithm of integral A_TE */
-    float80 lnA_TM;  /**< logarithm of integral A_TM */
-    float80 lnB_TE;  /**< logarithm of integral B_TE */
-    float80 lnB_TM;  /**< logarithm of integral B_TM */
-    float80 lnC_TE;  /**< logarithm of integral C_TE */
-    float80 lnC_TM;  /**< logarithm of integral C_TM */
-    float80 lnD_TE;  /**< logarithm of integral D_TE */
-    float80 lnD_TM;  /**< logarithm of integral D_TM */
+    float64 lnA_TE;  /**< logarithm of integral A_TE */
+    float64 lnA_TM;  /**< logarithm of integral A_TM */
+    float64 lnB_TE;  /**< logarithm of integral B_TE */
+    float64 lnB_TM;  /**< logarithm of integral B_TM */
+    float64 lnC_TE;  /**< logarithm of integral C_TE */
+    float64 lnC_TM;  /**< logarithm of integral C_TM */
+    float64 lnD_TE;  /**< logarithm of integral D_TE */
+    float64 lnD_TM;  /**< logarithm of integral D_TM */
     sign_t signA_TE; /**< sign of lnA_TE */
     sign_t signA_TM; /**< sign of lnA_TM */
     sign_t signB_TE; /**< sign of lnB_TE */
