@@ -749,8 +749,8 @@ void casimir_lnab_perf(casimir_t *self, int n, int l, float64 *lna, float64 *lnb
 
     /* numerator and denominator to calculate al */
     sign_t sign_numerator;
-    float80 numerator   = logadd_s(log80(l), +1, log80(chi)+lnIlm-lnIlp, -1, &sign_numerator);
-    float80 denominator = logadd(log80(l), log80(chi)+lnKlm-lnKlp);
+    float64 numerator   = logadd_s(log64(l), +1, log64(chi)+lnIlm-lnIlp, -1, &sign_numerator);
+    float64 denominator = logadd(log64(l), log64(chi)+lnKlm-lnKlp);
 
     *lna    = *lnb+numerator-denominator;
     *sign_a = *sign_b*sign_numerator;
@@ -838,13 +838,13 @@ void casimir_lnab(casimir_t *self, int n_mat, int l, float64 *lna, float64 *lnb,
     /*
     printf("n =%.18g\n",     exp64(ln_n));
     printf("n2=%.18g\n",     exp64(2*ln_n));
-    printf("lnIl = %.18Lg\n", exp64(lnIl));
+    printf("lnIl = %.18g\n", exp64(lnIl));
     printf("chi=%.18g\n",    chi);
 
-    printf("sla=%.18g\n", sign_sla*exp80(ln_sla));
-    printf("slb=%.18g\n", sign_slb*exp80(ln_slb));
-    printf("slc=%.18g\n", sign_slc*exp80(ln_slc));
-    printf("sld=%.18g\n", sign_sld*exp80(ln_sld));
+    printf("sla=%.18g\n", sign_sla*exp64(ln_sla));
+    printf("slb=%.18g\n", sign_slb*exp64(ln_slb));
+    printf("slc=%.18g\n", sign_slc*exp64(ln_slc));
+    printf("sld=%.18g\n", sign_sld*exp64(ln_sld));
     */
 
     sign_t sign_a_num, sign_a_denom, sign_b_num, sign_b_denom;
