@@ -43,9 +43,9 @@ inline float80 logadd_s(const float80 a, const sign_t sign_a, const float80 b, c
 inline float80 logadd_m(const float80 list[], const int len);
 inline float80 logadd_ms(const float80 list[], const sign_t signs[], const int len, sign_t *sign);
 
-float80 bessel_lnInu(const int n, const float64 x);
-float80 bessel_lnKnu(const int n, const float64 x);
-void bessel_lnInuKnu(int nu, const float64 x, float80 *lnInu_p, float80 *lnKnu_p);
+float64 bessel_lnInu(const int n, const float64 x);
+float64 bessel_lnKnu(const int n, const float64 x);
+void bessel_lnInuKnu(int nu, const float64 x, float64 *lnInu_p, float64 *lnKnu_p);
 
 float64 ln_doublefact(int n);
 
