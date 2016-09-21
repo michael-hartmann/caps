@@ -9,7 +9,6 @@
 /* for usleep and pthread_tryjoin_np */
 #define _GNU_SOURCE
 
-#include <float.h>
 #include <math.h>
 #include <pthread.h>
 #include <stdarg.h>
