@@ -88,7 +88,6 @@ void casimir_info(casimir_t *self, FILE *stream, const char *prefix)
     fprintf(stream, "%slmax            = %d\n", prefix, self->lmax);
     fprintf(stream, "%scores           = %d\n", prefix, self->cores);
     fprintf(stream, "%sprecision       = %g\n", prefix, self->precision);
-    fprintf(stream, "%strace_threshold = %g\n", prefix, self->trace_threshold);
     fprintf(stream, "%sdetalg          = %s\n", prefix, self->detalg);
     fprintf(stream, "%scheck_elems     = %s\n", prefix, self->check_elems  ? "true" : "false");
 }
@@ -337,7 +336,6 @@ int casimir_init(casimir_t *self, double LbyR, double T)
     self->RbyScriptL      = 1./(1.+LbyR);
     self->LbyR            = LbyR;
     self->precision       = CASIMIR_PRECISION;
-    self->trace_threshold = CASIMIR_TRACE_THRESHOLD;
     self->cores           = 1;
     self->threads         = xmalloc(self->cores*sizeof(pthread_t));
 
@@ -634,42 +632,6 @@ int casimir_set_precision(casimir_t *self, double precision)
     return 1;
 }
 
-
-/**
- * @brief Set threshold for trace
- *
- * The threshold determines when Tr M is used as an approximation for
- * log(det(1-M)). If trace < threshold, then the value of the trace will be
- * used. Otherwise the determinant is caclulated.
- *
- * This function is not thread-safe.
- *
- * @param [in,out] self Casimir object
- * @param [in] threshold threshold
- * @retval 1 if successful
- * @retval 0 if threshold < 0
- */
-int casimir_set_trace_threshold(casimir_t *self, double threshold)
-{
-    if(threshold < 0)
-        return 0;
-
-    self->trace_threshold = threshold;
-    return 1;
-}
-
-/**
- * @brief Get threshold for trace
- *
- * This function is not thread-safe.
- *
- * @param [in] self Casimir object
- * @retval threshold
- */
-double casimir_get_trace_threshold(casimir_t *self)
-{
-    return self->trace_threshold;
-}
 
 /**
  * @brief Free memory for Casimir object

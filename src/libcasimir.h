@@ -19,7 +19,6 @@ typedef signed char sign_t;
 #define CASIMIR_IDLE 1000            /**< idle time in µs */
 #define CASIMIR_MINIMUM_LMAX 20      /**< minimum value for lmax */
 #define CASIMIR_FACTOR_LMAX 5        /**< by default: lmax=ceil(5/LbyR) */
-#define CASIMIR_TRACE_THRESHOLD 1e-8 /**< threshold to use trace */
 
 #ifndef CASIMIR_DETALG
 #define CASIMIR_DETALG "QR_FLOAT64" /**< default algorithm for matrix decomposition */
@@ -78,7 +77,6 @@ typedef struct
     int lmax;               /**< truncation value for vector space \f$\ell_\mathrm{max}\f$ */
     int cores;              /**< number of thread that should be used */
     double precision;       /**< precision \f$\epsilon_p\f$ */
-    double trace_threshold; /**< threshold when Tr M is used as an approximation for log(det(1-M)) */
     pthread_t **threads;    /**< list of pthread objects */
 
     char detalg[128];       /**< algorithm to calculate determinant */
@@ -166,9 +164,6 @@ int casimir_set_cores(casimir_t *self, int cores);
 double casimir_get_precision(casimir_t *self);
 int    casimir_set_precision(casimir_t *self, double precision);
 
-
-double casimir_get_trace_threshold(casimir_t *self);
-int    casimir_set_trace_threshold(casimir_t *self, double threshold);
 
 void casimir_lnab0(int l, float80 *a0, sign_t *sign_a0, float80 *b0, sign_t *sign_b0);
 void casimir_lnab(casimir_t *self, int n, int l, float80 *lna, float80 *lnb, sign_t *sign_a, sign_t *sign_b);

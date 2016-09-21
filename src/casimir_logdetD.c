@@ -41,9 +41,6 @@ static void usage(FILE *stream)
 "        Enable buffering. By default buffering for stderr and stdout is\n"
 "        disabled.\n"
 "\n"
-"    --trace THRESHOLD\n"
-"        Try to calculate log det D(xi) using -Tr D(xi) if |trace|<THRESHOLD.\n"
-"\n"
 "    --detalg DETALG\n"
 "        Use DETALG to calculate determinant.\n"
 "\n"
@@ -69,7 +66,6 @@ int main(int argc, char *argv[])
 
     /* numerical parameters */
     int lmax = 0;
-    double trace_threshold = -1;
     char detalg[64] = { 0 };
 
     /* flags */
@@ -87,7 +83,6 @@ int main(int argc, char *argv[])
             { "detalg",    required_argument, 0, 'd' },
             { "lmax",      required_argument, 0, 'L' },
             { "lscale",    required_argument, 0, 'l' },
-            { "trace",     required_argument, 0, 't' },
             { "omegap",    required_argument, 0, 'w' },
             { "gamma",     required_argument, 0, 'g' },
 
@@ -125,9 +120,6 @@ int main(int argc, char *argv[])
                 break;
             case 'm':
                 m = atoi(optarg);
-                break;
-            case 't':
-                trace_threshold = atof(optarg);
                 break;
             case 'd':
                 strncpy(detalg, optarg, sizeof(detalg)/sizeof(char)-1);
@@ -201,9 +193,6 @@ int main(int argc, char *argv[])
 
     if(strlen(detalg))
         casimir_set_detalg(&casimir, detalg);
-
-    if(trace_threshold >= 0)
-        casimir_set_trace_threshold(&casimir, trace_threshold);
 
     casimir_info(&casimir, stdout, "# ");
     printf("#\n");
