@@ -97,9 +97,9 @@ static void log_polymult(float64 p1[], const int len_p1, float64 p2[], const int
  * @param [in] nu
  * @retval logarithm of value of integral
  */
-float80 casimir_integrate_perf_I(integration_perf_t *self, int nu)
+float64 casimir_integrate_perf_I(integration_perf_t *self, int nu)
 {
-    float80 v = self->cache_I[nu];
+    float64 v = self->cache_I[nu];
 
     if(isnan(v))
     {
@@ -117,15 +117,15 @@ float80 casimir_integrate_perf_I(integration_perf_t *self, int nu)
          * logarithms of the coefficients. */
 
         for(int k = 0; k <= m-1; k++)
-            p1[k] = lgamma80(m)-lgamma80(k+1)-lgamma80(m-k)+(m-1-k)*M_LOG2;
+            p1[k] = lgamma64(m)-lgamma64(k+1)-lgamma64(m-k)+(m-1-k)*M_LOG2;
 
         for(int k = 2*m; k <= nu; k++)
-            p2[k-2*m] = lgamma80(k+nu+1)-lgamma80(k+1)-lgamma80(k-2*m+1)-lgamma80(-k+nu+1)-k*M_LOG2;
+            p2[k-2*m] = lgamma64(k+nu+1)-lgamma64(k+1)-lgamma64(k-2*m+1)-lgamma64(-k+nu+1)-k*M_LOG2;
 
         log_polymult(p1, m, p2, nu+1-2*m, p); /* len: nu-m */
 
         v = self->cache_I[nu] = polyintegrate(p, -m+nu, m-1, tau);
-        TERMINATE(!isfinite(v), "I=%Lg, nu=%d, m=%d\n", v, nu, m);
+        TERMINATE(!isfinite(v), "I=%g, nu=%d, m=%d\n", v, nu, m);
 
         xfree(p1);
         xfree(p2);
@@ -152,10 +152,10 @@ float80 casimir_integrate_perf_I(integration_perf_t *self, int nu)
 
  * @retval logarithm of value of integral
  */
-float80 casimir_integrate_K(integration_perf_t *self, const int l1, const int l2, sign_t *sign)
+float64 casimir_integrate_K(integration_perf_t *self, const int l1, const int l2, sign_t *sign)
 {
     const int index = l1*(self->lmax+2)+l2;
-    float80 v = self->cache_K[index];
+    float64 v = self->cache_K[index];
 
     if(isnan(v))
     {
@@ -164,15 +164,15 @@ float80 casimir_integrate_K(integration_perf_t *self, const int l1, const int l2
         const float64 log_a0 = gaunt_log_a0(l1,l2,m);
         const int elems = MAX(0,1+qmax);
 
-        float80 *a    = xmalloc(elems*sizeof(float80));
+        float64 *a    = xmalloc(elems*sizeof(float64));
         sign_t *signs = xmalloc(elems*sizeof(sign_t));
 
         gaunt(l1, l2, m, a);
 
         for(int q = 0; q <= qmax; q++)
         {
-            signs[q] = copysign80(1, a[q]);
-            a[q] = log80(fabs80(a[q])) + casimir_integrate_perf_I(self, l1+l2-2*q);
+            signs[q] = copysign64(1, a[q]);
+            a[q] = log64(fabs64(a[q])) + casimir_integrate_perf_I(self, l1+l2-2*q);
         }
 
         v = self->cache_K[index] = log_a0+logadd_ms(a, signs, elems, sign);
@@ -181,7 +181,7 @@ float80 casimir_integrate_K(integration_perf_t *self, const int l1, const int l2
         xfree(a);
         xfree(signs);
 
-        TERMINATE(isnan(v), "casimir_integrate_K l1=%d, l2=%d, m=%d, %Lg\n", l1, l2, m, v);
+        TERMINATE(isnan(v), "casimir_integrate_K l1=%d, l2=%d, m=%d, %g\n", l1, l2, m, v);
 
         return v;
     }
@@ -243,12 +243,12 @@ void casimir_integrate_perf_free(integration_perf_t *self)
 /* integrate for m=0 */
 static void casimir_integrate_perf_m0(integration_perf_t *self, int l1, int l2, casimir_integrals_t *cint)
 {
-    float80 log_B;
+    float64 log_B;
     sign_t sign_B;
-    const float80 lnLambda = casimir_lnLambda(l1, l2, 0, NULL);
+    const float64 lnLambda = casimir_lnLambda(l1, l2, 0, NULL);
 
     sign_t signs_B[4] = {1,1,1,1};
-    float80 log_Bn[4] = { -INFINITY, -INFINITY, -INFINITY, -INFINITY };
+    float64 log_Bn[4] = { -INFINITY, -INFINITY, -INFINITY, -INFINITY };
 
     if((l1-1) >= 2 && (l2-1) >= 2)
         log_Bn[0] = casimir_integrate_K(self, l1-1, l2-1, &signs_B[0]);
@@ -267,7 +267,7 @@ static void casimir_integrate_perf_m0(integration_perf_t *self, int l1, int l2, 
 
     log_Bn[3] = casimir_integrate_K(self, l1+1, l2+1, &signs_B[3]);
 
-    log_B = logadd_ms(log_Bn, signs_B, 4, &sign_B) - log80(2*l1+1) - log80(2*l2+1);
+    log_B = logadd_ms(log_Bn, signs_B, 4, &sign_B) - log64(2*l1+1) - log64(2*l2+1);
 
     cint->lnB_TM = cint->lnB_TE = lnLambda+log_B0(m,self->nT)+log_B;
     cint->signB_TM = sign_B*sign_B0(l2,m,TM);
@@ -298,15 +298,15 @@ static void casimir_integrate_perf_m0(integration_perf_t *self, int l1, int l2, 
 void casimir_integrate_perf(integration_perf_t *self, int l1, int l2, casimir_integrals_t *cint)
 {
     const int m  = self->m;
-    const float80 nT = self->nT;
-    const float80 lnLambda = casimir_lnLambda(l1, l2, m, NULL);
-    float80 value, v[4];
+    const float64 nT = self->nT;
+    const float64 lnLambda = casimir_lnLambda(l1, l2, m, NULL);
+    float64 value, v[4];
     sign_t sign, signs[4];
 
     if(m == 0)
     {
         casimir_integrate_perf_m0(self, l1, l2, cint);
-        TERMINATE(!isfinite(cint->lnB_TM), "lnB=%Lg, l1=%d,l2=%d,m=%d,nT=%Lg", cint->lnB_TM,l1,l2,m,nT);
+        TERMINATE(!isfinite(cint->lnB_TM), "lnB=%g, l1=%d,l2=%d,m=%d,nT=%g", cint->lnB_TM,l1,l2,m,nT);
 
         return;
     }
@@ -328,26 +328,26 @@ void casimir_integrate_perf(integration_perf_t *self, int l1, int l2, casimir_in
         signs[0] = signs[1] = signs[2] = signs[3] = 1;
 
         if((l1-1) >= m && (l2-1) >= m)
-            v[0] = log80(l1+1)+log80(l1+m)+log80(l2+1)+log80(l2+m) + casimir_integrate_K(self, l1-1, l2-1, &signs[0]);
+            v[0] = log64(l1+1)+log64(l1+m)+log64(l2+1)+log64(l2+m) + casimir_integrate_K(self, l1-1, l2-1, &signs[0]);
 
         if((l1-1) >= m)
         {
-            v[1] = log80(l1+1)+log80(l1+m)+log80(l2)+log80(l2-m+1) + casimir_integrate_K(self, l1-1, l2+1, &signs[1]);
+            v[1] = log64(l1+1)+log64(l1+m)+log64(l2)+log64(l2-m+1) + casimir_integrate_K(self, l1-1, l2+1, &signs[1]);
             signs[1] *= -1;
         }
 
         if((l2-1) >= m)
         {
-            v[2] = log80(l1)+log80(l1-m+1)+log80(l2+1)+log80(l2+m) + casimir_integrate_K(self, l1+1, l2-1, &signs[2]);
+            v[2] = log64(l1)+log64(l1-m+1)+log64(l2+1)+log64(l2+m) + casimir_integrate_K(self, l1+1, l2-1, &signs[2]);
             signs[2] *= -1;
         }
 
-        v[3] = log80(l1)+log80(l1-m+1)+log80(l2)+log80(l2-m+1) + casimir_integrate_K(self, l1+1, l2+1, &signs[3]);
+        v[3] = log64(l1)+log64(l1-m+1)+log64(l2)+log64(l2-m+1) + casimir_integrate_K(self, l1+1, l2+1, &signs[3]);
 
         /* add */
         value = logadd_ms(v, signs, 4, &sign);
 
-        cint->lnB_TM = cint->lnB_TE = lnLambda+log_B0(m,nT)-log80(2*l1+1)-log80(2*l2+1)+value;
+        cint->lnB_TM = cint->lnB_TE = lnLambda+log_B0(m,nT)-log64(2*l1+1)-log64(2*l2+1)+value;
         cint->signB_TM = sign*sign_B0(l2,m,TM);
         cint->signB_TE = sign*sign_B0(l2,m,TE);
     }
@@ -358,15 +358,15 @@ void casimir_integrate_perf(integration_perf_t *self, int l1, int l2, casimir_in
         signs[0] = signs[1] = 1;
 
         if((l2-1) >= m)
-            v[0] = log80(l2+1)+log80(l2+m) + casimir_integrate_K(self, l1, l2-1, &signs[0]);
+            v[0] = log64(l2+1)+log64(l2+m) + casimir_integrate_K(self, l1, l2-1, &signs[0]);
 
-        v[1] = log80(l2)+log80(l2-m+1) + casimir_integrate_K(self, l1, l2+1, &signs[1]);
+        v[1] = log64(l2)+log64(l2-m+1) + casimir_integrate_K(self, l1, l2+1, &signs[1]);
         signs[1] *= -1;
 
         /* add */
         value = logadd_ms(v, signs, 2, &sign);
 
-        cint->lnC_TM = cint->lnC_TE = lnLambda+log_C0(m,nT)-log80(2*l2+1) + value;
+        cint->lnC_TM = cint->lnC_TE = lnLambda+log_C0(m,nT)-log64(2*l2+1) + value;
         cint->signC_TM = sign*sign_C0(l2,m,TM);
         cint->signC_TE = sign*sign_C0(l2,m,TE);
     }
@@ -377,21 +377,21 @@ void casimir_integrate_perf(integration_perf_t *self, int l1, int l2, casimir_in
         signs[0] = signs[1] = 1;
 
         if((l1-1) >= m)
-            v[0] = log80(l1+1)+log80(l1+m) + casimir_integrate_K(self, l1-1, l2, &signs[0]);
+            v[0] = log64(l1+1)+log64(l1+m) + casimir_integrate_K(self, l1-1, l2, &signs[0]);
 
-        v[1] = log80(l1)+log80(l1-m+1) + casimir_integrate_K(self, l1+1, l2, &signs[1]);
+        v[1] = log64(l1)+log64(l1-m+1) + casimir_integrate_K(self, l1+1, l2, &signs[1]);
         signs[1] *= -1;
 
         /* add */
         value = logadd_ms(v, signs, 2, &sign);
 
-        cint->lnD_TM = cint->lnD_TE = lnLambda+log_D0(m,nT)-log80(2*l1+1) + value;
+        cint->lnD_TM = cint->lnD_TE = lnLambda+log_D0(m,nT)-log64(2*l1+1) + value;
         cint->signD_TM = sign*sign_D0(l2,m,TM);
         cint->signD_TE = sign*sign_D0(l2,m,TE);
     }
 
-    TERMINATE(!isfinite(cint->lnA_TM), "lnA=%Lg, l1=%d,l2=%d,m=%d,nT=%Lg", cint->lnA_TM,l1,l2,m,nT);
-    TERMINATE(!isfinite(cint->lnB_TM), "lnB=%Lg, l1=%d,l2=%d,m=%d,nT=%Lg", cint->lnB_TM,l1,l2,m,nT);
-    TERMINATE(!isfinite(cint->lnC_TM), "lnC=%Lg, l1=%d,l2=%d,m=%d,nT=%Lg", cint->lnC_TM,l1,l2,m,nT);
-    TERMINATE(!isfinite(cint->lnD_TM), "lnD=%Lg, l1=%d,l2=%d,m=%d,nT=%Lg", cint->lnD_TM,l1,l2,m,nT);
+    TERMINATE(!isfinite(cint->lnA_TM), "lnA=%g, l1=%d,l2=%d,m=%d,nT=%g", cint->lnA_TM,l1,l2,m,nT);
+    TERMINATE(!isfinite(cint->lnB_TM), "lnB=%g, l1=%d,l2=%d,m=%d,nT=%g", cint->lnB_TM,l1,l2,m,nT);
+    TERMINATE(!isfinite(cint->lnC_TM), "lnC=%g, l1=%d,l2=%d,m=%d,nT=%g", cint->lnC_TM,l1,l2,m,nT);
+    TERMINATE(!isfinite(cint->lnD_TM), "lnD=%g, l1=%d,l2=%d,m=%d,nT=%g", cint->lnD_TM,l1,l2,m,nT);
 }
