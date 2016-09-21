@@ -1051,21 +1051,6 @@ void casimir_mie_cache_free(casimir_t *self)
 
 /*@}*/
 
-/* Sum len numbers in value.
-   The idea is: To avoid a loss of significance, we sum beginning with smallest
-   number and add up in increasing order
-*/
-static float80 _sum(double values[], int len)
-{
-    float80 sum = 0;
-
-    for(int i = len-1; i > 0; i--)
-        sum += values[i];
-
-    sum += values[0]/2;
-
-    return sum;
-}
 
 /* This is the function the thread executes */
 static void *_thread_f(void *p)
@@ -1116,7 +1101,11 @@ static int _join_threads(casimir_t *self, double values[], int *ncalc)
                 if(r->n > *ncalc)
                     *ncalc = r->n;
 
-                values[r->n] = r->value;
+                if(r->n == 0)
+                    values[r->n] = r->value/2;
+                else
+                    values[r->n] = r->value;
+
                 xfree(r);
                 xfree(threads[i]);
                 threads[i] = NULL;
@@ -1152,34 +1141,39 @@ static int _join_threads(casimir_t *self, double values[], int *ncalc)
  */
 double casimir_F_n(casimir_t *self, const int n, int *mmax)
 {
-    int m;
     const double precision = self->precision;
     const int lmax = self->lmax;
-    double sum_n = 0;
-    double values[lmax+1];
+    float64 values[lmax+1];
 
     /* initialize to 0 */
-    for(m = 0; m <= lmax; m++)
+    for(int m = 0; m <= lmax; m++)
         values[m] = 0;
 
-    for(m = 0; m <= self->lmax; m++)
+    for(int m = 0; m <= lmax; m++)
     {
         values[m] = casimir_logdetD(self,n,m);
         casimir_verbose(self, "# n=%d, m=%d, logdetD=%.15g\n", n, m, values[m]);
+        if(m == 0)
+            values[0] /= 2.;
 
         /* The stop criterion is as follows: If
          * logdetD(n,m)/(\sum_i^m logdetD(n,i)) < precision
          * we can skip the summation.
          */
-        sum_n = _sum(values, lmax+1);
+        float64 sum_n = kahan_sum(values, lmax+1);
         if(values[0] != 0 && fabs(values[m]/sum_n) < precision)
-            break;
+        {
+            if(mmax != NULL)
+                *mmax = m;
+
+            return sum_n;
+        }
     }
 
     if(mmax != NULL)
-        *mmax = m;
+        *mmax = lmax;
 
-    return sum_n;
+    return kahan_sum(values, lmax+1);
 }
 
 
@@ -1241,6 +1235,8 @@ double casimir_F(casimir_t *self, int *nmax)
         else
         {
             values[n] = casimir_F_n(self, n, NULL);
+            if(n == 0)
+                values[0] /= 2;
 
             ncalc = n;
             n++;
@@ -1254,7 +1250,7 @@ double casimir_F(casimir_t *self, int *nmax)
                     while(_join_threads(self, values, &ncalc) != -1)
                         usleep(CASIMIR_IDLE);
 
-                sum_n = _sum(values, n);
+                sum_n = kahan_sum(values, n);
 
                 /* get out of here */
                 if(nmax != NULL)
