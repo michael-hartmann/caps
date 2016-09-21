@@ -5,10 +5,9 @@
 
 int test_fresnel()
 {
-    float80 r_TE, r_TM;
     unittest_t test;
-    double omegap, gamma_;
     casimir_t casimir;
+    float64 r_TE, r_TM, omegap, gamma_;
 
     unittest_init(&test, "Fresnel", "Test Fresnel coefficients");
 

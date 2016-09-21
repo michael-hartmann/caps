@@ -183,6 +183,6 @@ matrix_t *casimir_M(casimir_t *self, int n, int m);
 double casimir_logdetD(casimir_t *self, int n, int m);
 double casimir_trM(casimir_t *self, int n, int m, void *int_perf);
 
-void casimir_rp(casimir_t *self, float80 nT, float80 k, float80 *r_TE, float80 *r_TM);
+void casimir_rp(casimir_t *self, float64 nT, float64 k, float64 *r_TE, float64 *r_TM);
 
 #endif

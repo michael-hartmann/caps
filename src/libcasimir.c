@@ -246,7 +246,7 @@ float64 casimir_epsilonm1(float64 xi, float64 omegap, float64 gamma_)
  * @param [in,out]  r_TE    Fresnel coefficient for TE mode
  * @param [in,out]  r_TM    Fresnel coefficient for TM mode
  */
-void casimir_rp(casimir_t *self, float80 nT, float80 k, float80 *r_TE, float80 *r_TM)
+void casimir_rp(casimir_t *self, float64 nT, float64 k, float64 *r_TE, float64 *r_TM)
 {
     if(isinf(self->omegap_plane))
     {
@@ -273,20 +273,20 @@ void casimir_rp(casimir_t *self, float80 nT, float80 k, float80 *r_TE, float80 *
          * Note: ξ=nT
          */
 
-        const float80 epsilonm1 = casimir_epsilonm1(nT, self->omegap_plane, self->gamma_plane);
-        const float80 x         = pow_2(nT)/(pow_2(nT)+pow_2(k))*epsilonm1;
+        const float64 epsilonm1 = casimir_epsilonm1(nT, self->omegap_plane, self->gamma_plane);
+        const float64 x         = pow_2(nT)/(pow_2(nT)+pow_2(k))*epsilonm1;
 
-        if(fabs80(x) < 1e-6)
+        if(fabs64(x) < 1e-5)
         {
             /* β-1 = sqrt(1+x)-1 = x/2 - x²/8 + x³/16 + O(x^4) */
-            const float80 betam1 = x/2 - pow_2(x)/8 - pow_3(x)/16;
+            const float64 betam1 = x/2 - pow_2(x)/8 - pow_3(x)/16;
 
             *r_TE = -betam1/(2+betam1);
             *r_TM = (epsilonm1-betam1)/(epsilonm1+2+betam1);
         }
         else
         {
-            const float80 beta = sqrt80(1+x);
+            const float64 beta = sqrt64(1+x);
 
             *r_TE = (1-beta)/(1+beta);
             *r_TM = (epsilonm1+1-beta)/(epsilonm1+1+beta);
