@@ -57,8 +57,8 @@ float80 plm_dPlm  (int l, int m, float80 x);
 
 void plm_PlmPlm(int l1, int l2, int m, float80 x, plm_combination_t *res);
 
-inline float80 gaunt_log_a0(int n, int nu, int m);
-inline float80 gaunt_a0(int n,int nu,int m);
+inline float64 gaunt_log_a0(int n, int nu, int m);
+inline float64 gaunt_a0(int n,int nu,int m);
 void gaunt(const int n, const int nu, const int m, float80 a_tilde[]);
 
 inline int gaunt_qmax(const int n, const int nu, const int m);
