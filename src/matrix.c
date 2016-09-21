@@ -12,7 +12,7 @@
 #include <strings.h>
 
 #include "matrix.h"
-
+#include "sfunc.h"
 #include "utils.h"
 
 #include "clapack.h"
@@ -102,21 +102,21 @@ void matrix_setall(matrix_t *A, double z)
 double matrix_logdet_lu(matrix_t *A)
 {
     const size_t dim = A->dim;
-    double sum, det = 0;
+    double logdet[dim];
     double *a = A->M;
 
     for(size_t j = 0; j < dim; j++)
     {
         for(size_t i = 0; i < j+1; i++)
         {
-            sum = 0;
+            double sum = 0;
             for(size_t k = 0; k < i; k++)
                 sum += a[i*dim+k]*a[k*dim+j];
             a[i*dim+j] -= sum;
         }
         for(size_t i = j+1; i < dim; i++)
         {
-            sum = 0;
+            double sum = 0;
             for(size_t k = 0; k < j; k++)
                 sum += a[i*dim+k]*a[k*dim+j];
             a[i*dim+j] = (a[i*dim+j]-sum)/a[j*dim+j];
@@ -124,9 +124,9 @@ double matrix_logdet_lu(matrix_t *A)
     }
 
     for(size_t i = 0; i < dim; i++)
-        det += log(fabs(a[i*dim+i]));
+        logdet[i] = log(fabs(a[i*dim+i]));
 
-    return det;
+    return kahan_sum(logdet, dim);
 }
 
 
@@ -142,6 +142,7 @@ double matrix_logdet_qr(matrix_t *M)
 {
     const size_t dim = M->dim;
     double *m = M->M;
+    double logdet[dim];
 
     for(size_t j = 0; j < dim-1; j++)
         for(size_t i = j+1; i < dim; i++)
@@ -186,11 +187,10 @@ double matrix_logdet_qr(matrix_t *M)
             }
         }
 
-    double logdet = 0;
     for(size_t i = 0; i < dim; i++)
-        logdet += log(fabs(m[i*dim+i]));
+        logdet[i] = log(fabs(m[i*dim+i]));
 
-    return logdet;
+    return kahan_sum(logdet, dim);
 }
 
 
@@ -237,6 +237,7 @@ double matrix_logdet_lu_lapack(matrix_t *A)
     int info = 0;
     int dim = (int)A->dim;
     int ipiv[dim];
+    double logdet[dim];
     double *a = A->M;
 
     dgetrf_(
@@ -248,11 +249,10 @@ double matrix_logdet_lu_lapack(matrix_t *A)
         &info
     );
 
-    double logdet = 0;
     for(int i = 0; i < dim; i++)
-        logdet += log(fabs(matrix_get(A, i, i)));
+        logdet[i] = log(fabs(matrix_get(A, i, i)));
 
-    return logdet;
+    return kahan_sum(logdet, dim);
 }
 
 double matrix_logdetIdmM_eig_lapack(matrix_t *A, double z)
@@ -263,6 +263,7 @@ double matrix_logdetIdmM_eig_lapack(matrix_t *A, double z)
     double wr[dim]; /* real parts of eigenvalues */
     double wi[dim]; /* imaginary parts of eigenvalues */
     int lwork = 100*dim;
+    double logdet[dim];
     double *work = xmalloc(lwork*sizeof(double));
     int info = 0;
 
@@ -285,16 +286,15 @@ double matrix_logdetIdmM_eig_lapack(matrix_t *A, double z)
 
     xfree(work);
 
-    double logdet = 0;
     for(int i = 0; i < dim; i++)
     {
         double lambda = wr[i];
 
         if(lambda < -z)
-            logdet += log1p(+z*lambda);
+            logdet[i] = log1p(+z*lambda);
         else
-            logdet += log(fabs(1-z*lambda));
+            logdet[i] = log(fabs(1-z*lambda));
     }
 
-    return logdet;
+    return kahan_sum(logdet, dim);
 }
