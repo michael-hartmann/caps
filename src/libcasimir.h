@@ -90,9 +90,6 @@ typedef struct
     /* parameters that you usually do not want to change */
     bool check_elems;  /**< check if matrix elements of M are finite */
     bool debug;        /**< debug flag for more information */
-    bool balance;      /**< balance matrix before QR decomposition */
-    bool pivot;        /**< pivot matrix before QR decomposition */
-    bool precondition; /**< use preconditioner */
 
     pthread_mutex_t mutex; /**< mutex for printing */
     /*@}*/
