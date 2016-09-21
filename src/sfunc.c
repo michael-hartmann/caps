@@ -105,20 +105,19 @@ float64 logadd_s(const float64 log_a, const sign_t sign_a, const float64 log_b, 
  * @param [in]  len length of list
  * @return log_sum \f$\log{\sum_{i=1}^\mathrm{len} \mathrm{sign\_i}\cdot\exp{(\mathrm{log\_i})}}\f$
  */
-inline float80 logadd_m(const float80 list[], const int len)
+inline float64 logadd_m(const float64 list[], const int len)
 {
-    float80 sum;
-    float80 max = list[0];
+    float64 max = list[0];
 
     for(int i = 1; i < len; i++)
         if(list[i] > max)
             max = list[i];
 
-    sum = exp80(list[0]-max);
+    float64 sum = exp64(list[0]-max);
     for(int i = 1; i < len; i++)
-        sum += exp80(list[i]-max);
+        sum += exp64(list[i]-max);
 
-    return max + log80(sum);
+    return max + log64(sum);
 }
 
 
