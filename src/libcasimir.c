@@ -279,7 +279,7 @@ void casimir_rp(casimir_t *self, float64 nT, float64 k, float64 *r_TE, float64 *
         if(fabs64(x) < 1e-5)
         {
             /* β-1 = sqrt(1+x)-1 = x/2 - x²/8 + x³/16 + O(x^4) */
-            const float64 betam1 = x/2 - pow_2(x)/8 - pow_3(x)/16;
+            const float64 betam1 = x/2 - pow_2(x)/8 + pow_3(x)/16;
 
             *r_TE = -betam1/(2+betam1);
             *r_TM = (epsilonm1-betam1)/(epsilonm1+2+betam1);
