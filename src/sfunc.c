@@ -212,7 +212,7 @@ float80 bessel_lnInu(const int nu, const float80 x)
  * @param n non-negative integer
  * @return doublefactorial \f$n!!\f$
  */
-float80 ln_doublefact(int n)
+float64 ln_doublefact(int n)
 {
     /* see e.g. http://en.wikipedia.org/wiki/Double_factorial */
     if(n == 0 || n == 1) /* 0!! = 1!! = 0 */
@@ -221,12 +221,12 @@ float80 ln_doublefact(int n)
     if(n % 2 == 0) /* even */
     {
         int k = n/2;
-        return k*M_LOG2 + lgamma80(1+k);
+        return k*M_LOG2 + lgamma64(1+k);
     }
     else /* odd */
     {
         int k = (n+1)/2;
-        return lgamma80(1+2*k) - k*M_LOG2 - lgamma80(1+k);
+        return lgamma64(1+2*k) - k*M_LOG2 - lgamma64(1+k);
     }
 }
 
