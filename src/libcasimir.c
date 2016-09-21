@@ -1345,63 +1345,6 @@ void casimir_logdetD0(casimir_t *self, int m, double *logdet_EE, double *logdet_
 }
 
 
-/**
- * @brief Calculate \f$\mathrm{tr} \mathcal{D}^{(m)}(\xi=nT)\f$
- *
- * This function calculates the trace of the scattering operator D for the
- * Matsubara term \f$n\f$.
- *
- * This function is thread-safe - as long you don't change lmax, temperature,
- * aspect ratio, dielectric properties of sphere and plane, and integration.
- *
- * Does not work for n = 0.
- *
- * @param [in,out] self Casimir object
- * @param [in] n Matsubara term
- * @param [in] m
- * @param [in,out] integration_obj may be NULL
- * @retval trM \f$\mathrm{tr} \mathcal{D}^{(m)}(\xi=nT)\f$
- */
-double casimir_trM(casimir_t *self, int n, int m, void *obj)
-{
-    const int min = MAX(m,1);
-    const int max = self->lmax;
-    integration_perf_t  *int_perf  = obj;
-    integration_drude_t *int_drude = obj;
-    float80 trM = 0;
-
-    /* XXX fix this XXX */
-    TERMINATE(n == 0, "This function does not work for n=0");
-
-    for(int l = min; l <= max; l++)
-    {
-        float80 sum;
-        casimir_integrals_t cint;
-        float80 ln_al, ln_bl;
-        sign_t sign, sign_al, sign_bl;
-
-        casimir_mie_cache_get(self, l, n, &ln_al, &sign_al, &ln_bl, &sign_bl);
-
-        if(isinf(self->omegap_plane))
-            casimir_integrate_perf(int_perf, l, l, &cint);
-        else
-            casimir_integrate_drude(int_drude, l, l, &cint);
-
-        /* EE */
-        /* A_TE + B_TM */
-        sum = logadd_s(cint.lnA_TE, cint.signA_TE, cint.lnB_TM, cint.signB_TM, &sign);
-        trM += sign*sign_al*exp80(ln_al+sum);
-
-        /* MM */
-        /* A_TM + B_TE */
-        sum = logadd_s(cint.lnA_TM, cint.signA_TM, cint.lnB_TE, cint.signB_TE, &sign);
-        trM += sign*sign_bl*exp80(ln_bl+sum);
-    }
-
-    return trM;
-}
-
-
 matrix_t *casimir_M(casimir_t *self, int n, int m)
 {
     const double nT = n*self->T;
