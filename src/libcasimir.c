@@ -721,8 +721,8 @@ void casimir_lnab0(int l, float64 *a0, sign_t *sign_a0, float64 *b0, sign_t *sig
  */
 void casimir_lnab_perf(casimir_t *self, int n, int l, float80 *lna, float80 *lnb, sign_t *sign_a, sign_t *sign_b)
 {
-    float80 lnKlp,lnKlm,lnIlm,lnIlp;
-    const float80 chi = n*self->T*self->RbyScriptL;
+    float64 lnKlp,lnKlm,lnIlm,lnIlp;
+    const float64 chi = n*self->T*self->RbyScriptL;
 
     /* we could do both calculations together. but it doesn't cost much time -
      * so why bother?
@@ -819,7 +819,7 @@ void casimir_lnab(casimir_t *self, int n_mat, int l, float80 *lna, float80 *lnb,
     const float80 ln_n = log1p80(casimir_epsilonm1(xi, self->omegap_sphere, self->gamma_sphere))/2;
     const float80 n    = exp80(ln_n);
 
-    float80 lnIlp, lnKlp, lnIlm, lnKlm, lnIlp_nchi, lnKlp_nchi, lnIlm_nchi, lnKlm_nchi;
+    float64 lnIlp, lnKlp, lnIlm, lnKlm, lnIlp_nchi, lnKlp_nchi, lnIlm_nchi, lnKlm_nchi;
 
     bessel_lnInuKnu(l,   chi, &lnIlp, &lnKlp); /* I_{l+0.5}(χ), K_{l+0.5}(χ) */
     bessel_lnInuKnu(l-1, chi, &lnIlm, &lnKlm); /* K_{l-0.5}(χ), K_{l-0.5}(χ) */
