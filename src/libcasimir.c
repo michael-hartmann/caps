@@ -256,7 +256,7 @@ void casimir_rp(casimir_t *self, float64 nT, float64 k, float64 *r_TE, float64 *
     }
     else
     {
-        /* Drude metals
+        /* Arbitrary metals
          *
          * In scaled units
          *     β = sqrt( 1 + ξ²/(ξ²+k²)*(ε-1) ) = sqrt(1+x),
@@ -267,7 +267,7 @@ void casimir_rp(casimir_t *self, float64 nT, float64 k, float64 *r_TE, float64 *
          * occures when calculating 1-β.
          *
          * For this reason we use the Taylor series
-         *     sqrt(1+x) ≈ 1 + x/2 - x²/8 + x³/16
+         *     sqrt(1+x) ≈ 1 + x/2 - x²/8 + x³/16 - 5*x^4/128 + ...
          * to avoid a loss of significance if x is small.
          *
          * Note: ξ=nT
@@ -278,8 +278,8 @@ void casimir_rp(casimir_t *self, float64 nT, float64 k, float64 *r_TE, float64 *
 
         if(fabs64(x) < 1e-5)
         {
-            /* β-1 = sqrt(1+x)-1 = x/2 - x²/8 + x³/16 + O(x^4) */
-            const float64 betam1 = x/2 - pow_2(x)/8 + pow_3(x)/16;
+            /* β-1 = sqrt(1+x)-1 = x/2 - x²/8 + x³/16 - x^4/128 + O(x^5) */
+            const float64 betam1 = x/2 - pow_2(x)/8 + pow_3(x)/16 - 5*pow_4(x)/128;
 
             *r_TE = -betam1/(2+betam1);
             *r_TM = (epsilonm1-betam1)/(epsilonm1+2+betam1);
