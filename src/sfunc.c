@@ -269,7 +269,7 @@ float64 ln_doublefact(int n)
  * @param [out] lnplm array of logarithms of values
  * @param [out] sign corressponding signs
  */
-inline void plm_lnPlm_array(int lmax, int m, float80 x, float80 lnplm[], sign_t sign[])
+void plm_lnPlm_array(int lmax, int m, float80 x, float80 lnplm[], sign_t sign[])
 {
     float80 logx = log80(x);
 
