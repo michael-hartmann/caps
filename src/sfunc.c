@@ -363,13 +363,18 @@ double plm_Plm(int l, int m, double x)
  */
 double plm_lndPlm(int l, int m, double x, sign_t *sign)
 {
-    const int lmax = l+1;
-    double plm[lmax-m+1];
-    sign_t signs[lmax-m+1];
+    if(m == 0 && l == 1)
+        return 0;
+    else
+    {
+        const int lmax = l+1;
+        double plm[lmax-m+1];
+        sign_t signs[lmax-m+1];
 
-    plm_lnPlm_array(lmax, m, x, plm, signs);
+        plm_lnPlm_array(lmax, m, x, plm, signs);
 
-    return logadd_s(log(l-m+1)+plm[l+1-m], signs[l+1-m], log(l+1)+log(x)+plm[l-m], -signs[l+1-m], sign) - log(pow_2(x)-1);
+        return logadd_s(log(l-m+1)+plm[l+1-m], signs[l+1-m], log(l+1)+log(x)+plm[l-m], -signs[l+1-m], sign) - log(pow_2(x)-1);
+    }
 }
 
 
@@ -424,8 +429,21 @@ void plm_PlmPlm(int l1, int l2, int m, double x, plm_combination_t *res)
     lnPl2m    = lnPlm[l2-m];
     sign_Pl2m = signs[l2-m];
 
-    lndPl1m = logadd_s(log(l1-m+1)+lnPlm[l1+1-m], signs[l1+1-m], log(l1+1)+logx+lnPlm[l1-m], -signs[l1+1-m], &sign_dPl1m) - logx2m1;
-    lndPl2m = logadd_s(log(l2-m+1)+lnPlm[l2+1-m], signs[l2+1-m], log(l2+1)+logx+lnPlm[l2-m], -signs[l2+1-m], &sign_dPl2m) - logx2m1;
+    /* Plm(l=1,m=0,x) = x */
+    if(m == 0 && l1 == 1)
+    {
+        sign_dPl1m = +1;
+        lndPl1m = 0;
+    }
+    else
+        lndPl1m = logadd_s(log(l1-m+1)+lnPlm[l1+1-m], signs[l1+1-m], log(l1+1)+logx+lnPlm[l1-m], -signs[l1+1-m], &sign_dPl1m) - logx2m1;
+    if(m == 0 && l2 == 1)
+    {
+        sign_dPl2m = +1;
+        lndPl2m = 0;
+    }
+    else
+        lndPl2m = logadd_s(log(l2-m+1)+lnPlm[l2+1-m], signs[l2+1-m], log(l2+1)+logx+lnPlm[l2-m], -signs[l2+1-m], &sign_dPl2m) - logx2m1;
 
     /* Pl1m*Pl2m */
     res->lnPl1mPl2m    = lnPl1m + lnPl2m;
