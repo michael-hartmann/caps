@@ -24,7 +24,7 @@ if __name__ == "__main__":
     print()
     print("int test_fresnel()")
     print("{")
-    print("    float80 r_TE, r_TM;")
+    print("    float64 r_TE, r_TM;")
     print("    unittest_t test;")
     print("    double omegap, gamma_;")
     print("    casimir_t casimir;")
