@@ -15,15 +15,15 @@
 
 
 /* taken from Wikipedia, https://en.wikipedia.org/wiki/Kahan_summation_algorithm */
-float64 kahan_sum(float64 input[], size_t len)
+double kahan_sum(double input[], size_t len)
 {
-    float64 sum = 0;
-    float64 c = 0; /* running compensation for lost low-order bits */
+    double sum = 0;
+    double c = 0; /* running compensation for lost low-order bits */
 
 	for(size_t i = 0; i < len; i++)
     {
-        float64 y = input[i] - c;
-        float64 t = sum + y;
+        double y = input[i] - c;
+        double t = sum + y;
         c = (t - sum) - y;
         sum = t;
     }
@@ -46,7 +46,7 @@ float64 kahan_sum(float64 input[], size_t len)
  * @param [in] log_b number
  * @return log_sum \f$\log{\left[\exp{(\mathrm{log\_a})}+\exp{(log\_b)}\right]}\f$
  */
-inline float64 logadd(const float64 log_a, const float64 log_b)
+inline double logadd(const double log_a, const double log_b)
 {
     if(isinf(log_a) && log_a < 0)
         return log_b;
@@ -54,9 +54,9 @@ inline float64 logadd(const float64 log_a, const float64 log_b)
         return log_a;
 
     if(log_a > log_b)
-        return log_a + log1p64(exp64(log_b-log_a));
+        return log_a + log1p(exp(log_b-log_a));
     else
-        return log_b + log1p64(exp64(log_a-log_b));
+        return log_b + log1p(exp(log_a-log_b));
 }
 
 
@@ -70,7 +70,7 @@ inline float64 logadd(const float64 log_a, const float64 log_b)
  * @param [out] sign sign of result
  * @return log_sum \f$\log{\left( \mathrm{sign\_a}\cdot\exp{(\mathrm{log\_a})}+\mathrm{sign\_b} \cdot \exp{(log\_b)} \right)}\f$
  */
-float64 logadd_s(const float64 log_a, const sign_t sign_a, const float64 log_b, const sign_t sign_b, sign_t *sign)
+double logadd_s(const double log_a, const sign_t sign_a, const double log_b, const sign_t sign_b, sign_t *sign)
 {
     if(isinf(log_a) && log_a < 0)
     {
@@ -86,12 +86,12 @@ float64 logadd_s(const float64 log_a, const sign_t sign_a, const float64 log_b, 
     if(log_a > log_b)
     {
         *sign = sign_a;
-        return log_a + log1p64(sign_a*sign_b*exp64(log_b-log_a));
+        return log_a + log1p(sign_a*sign_b*exp(log_b-log_a));
     }
     else
     {
         *sign = sign_b;
-        return log_b + log1p64(sign_a*sign_b*exp64(log_a-log_b));
+        return log_b + log1p(sign_a*sign_b*exp(log_a-log_b));
     }
 }
 
@@ -105,37 +105,37 @@ float64 logadd_s(const float64 log_a, const sign_t sign_a, const float64 log_b, 
  * @param [in]  len length of list
  * @return log_sum \f$\log{\sum_{i=1}^\mathrm{len} \mathrm{sign\_i}\cdot\exp{(\mathrm{log\_i})}}\f$
  */
-inline float64 logadd_m(const float64 list[], const int len)
+inline double logadd_m(const double list[], const int len)
 {
-    float64 max = list[0];
+    double max = list[0];
 
     for(int i = 1; i < len; i++)
         if(list[i] > max)
             max = list[i];
 
-    float64 sum = exp64(list[0]-max);
+    double sum = exp(list[0]-max);
     for(int i = 1; i < len; i++)
-        sum += exp64(list[i]-max);
+        sum += exp(list[i]-max);
 
-    return max + log64(sum);
+    return max + log(sum);
 }
 
 
-inline float64 logadd_ms(const float64 list[], const sign_t signs[], const int len, sign_t *sign)
+inline double logadd_ms(const double list[], const sign_t signs[], const int len, sign_t *sign)
 {
-    float64 sum;
-    float64 max = list[0];
+    double sum;
+    double max = list[0];
 
     for(int i = 1; i < len; i++)
         if(list[i] > max)
             max = list[i];
 
-    sum = signs[0]*exp64(list[0]-max);
+    sum = signs[0]*exp(list[0]-max);
     for(int i = 1; i < len; i++)
-        sum += signs[i]*exp64(list[i]-max);
+        sum += signs[i]*exp(list[i]-max);
 
-    *sign = copysign64(1, sum);
-    return max + log64(fabs64(sum));
+    *sign = copysign(1, sum);
+    return max + log(fabs(sum));
 }
 
 /*@}*/
@@ -146,14 +146,14 @@ inline float64 logadd_ms(const float64 list[], const sign_t signs[], const int l
 */
 /*@{*/
 
-void bessel_lnInuKnu(int nu, const float64 x, float64 *lnInu_p, float64 *lnKnu_p)
+void bessel_lnInuKnu(int nu, const double x, double *lnInu_p, double *lnKnu_p)
 {
-    const float64 logx = log64(x);
-    float64 lnKnu = 0, lnKnup = log1p64(1./x);
+    const double logx = log(x);
+    double lnKnu = 0, lnKnup = log1p(1./x);
 
     /* calculate Knu, Knup */
     {
-        const float64 prefactor = -x+0.5*(M_LOGPI-M_LOG2-logx);
+        const double prefactor = -x+0.5*(M_LOGPI-M_LOG2-logx);
 
         if(nu == 0)
         {
@@ -164,7 +164,7 @@ void bessel_lnInuKnu(int nu, const float64 x, float64 *lnInu_p, float64 *lnKnu_p
         {
             for(int l = 2; l <= nu+1; l++)
             {
-                float64 lnKn_new = logadd(log64(2*l-1)+lnKnup-logx, lnKnu);
+                double lnKn_new = logadd(log(2*l-1)+lnKnup-logx, lnKnu);
                 lnKnu  = lnKnup;
                 lnKnup = lnKn_new;
             }
@@ -183,10 +183,10 @@ void bessel_lnInuKnu(int nu, const float64 x, float64 *lnInu_p, float64 *lnKnu_p
     {
         #define an(n,nu,x) (2*((nu)+0.5+(n))/(x))
 
-        float64 num   = an(2,nu,x)+1/an(1,nu,x);
-        float64 denom = an(2,nu,x);
-        float64 ratio = (an(1,nu,x)*num)/denom;
-        float64 ratio_last = 0;
+        double num   = an(2,nu,x)+1/an(1,nu,x);
+        double denom = an(2,nu,x);
+        double ratio = (an(1,nu,x)*num)/denom;
+        double ratio_last = 0;
 
         for(int l = 3; 1; l++)
         {
@@ -194,29 +194,29 @@ void bessel_lnInuKnu(int nu, const float64 x, float64 *lnInu_p, float64 *lnKnu_p
             denom = an(l,nu,x)+1/denom;
             ratio *= num/denom;
 
-            if(ratio_last != 0 && fabs64(1.-ratio/ratio_last) < 1e-20)
+            if(ratio_last != 0 && fabs(1.-ratio/ratio_last) < 1e-20)
                 break;
 
             ratio_last = ratio;
         }
 
-        *lnInu_p = -logx-lnKnu-logadd(lnKnup-lnKnu, -log64(ratio));
+        *lnInu_p = -logx-lnKnu-logadd(lnKnup-lnKnu, -log(ratio));
         #undef an
     }
 }
 
 
-float64 bessel_lnKnu(const int nu, const float64 x)
+double bessel_lnKnu(const int nu, const double x)
 {
-    float64 Knu;
+    double Knu;
     bessel_lnInuKnu(nu, x, NULL, &Knu);
     return Knu;
 }
 
 
-float64 bessel_lnInu(const int nu, const float64 x)
+double bessel_lnInu(const int nu, const double x)
 {
-    float64 Inu;
+    double Inu;
     bessel_lnInuKnu(nu, x, &Inu, NULL);
     return Inu;
 }
@@ -229,7 +229,7 @@ float64 bessel_lnInu(const int nu, const float64 x)
  * @param n non-negative integer
  * @return doublefactorial \f$n!!\f$
  */
-float64 ln_doublefact(int n)
+double ln_doublefact(int n)
 {
     /* see e.g. http://en.wikipedia.org/wiki/Double_factorial */
     if(n == 0 || n == 1) /* 0!! = 1!! = 0 */
@@ -238,12 +238,12 @@ float64 ln_doublefact(int n)
     if(n % 2 == 0) /* even */
     {
         int k = n/2;
-        return k*M_LOG2 + lgamma64(1+k);
+        return k*M_LOG2 + lgamma(1+k);
     }
     else /* odd */
     {
         int k = (n+1)/2;
-        return lgamma64(1+2*k) - k*M_LOG2 - lgamma64(1+k);
+        return lgamma(1+2*k) - k*M_LOG2 - lgamma(1+k);
     }
 }
 
@@ -286,9 +286,9 @@ float64 ln_doublefact(int n)
  * @param [out] lnplm array of logarithms of values
  * @param [out] sign corressponding signs
  */
-void plm_lnPlm_array(int lmax, int m, float64 x, float64 lnplm[], sign_t sign[])
+void plm_lnPlm_array(int lmax, int m, double x, double lnplm[], sign_t sign[])
 {
-    float64 logx = log64(x);
+    double logx = log(x);
 
     if(m == 0)
     {
@@ -298,18 +298,18 @@ void plm_lnPlm_array(int lmax, int m, float64 x, float64 lnplm[], sign_t sign[])
     else
     {
         sign[0]  = MPOW((int)(m/2) + m%2);
-        lnplm[0] = ln_doublefact(2*m-1) + m*0.5*log64(pow_2(x)-1); // l=m,m=m
+        lnplm[0] = ln_doublefact(2*m-1) + m*0.5*log(pow_2(x)-1); // l=m,m=m
     }
 
     if(lmax == m)
         return;
 
     sign[1]  = sign[0];
-    lnplm[1] = lnplm[0]+logx+log64(2*m+1); // l=m+1, m=m
+    lnplm[1] = lnplm[0]+logx+log(2*m+1); // l=m+1, m=m
 
     /* (l-m)*P_l^m(x) = x*(2l-1)*P_(l-1)^m(x) - (l+m-1)*P_(l-2)^m(x) */
     for(int l = m+2; l <= lmax; l++)
-        lnplm[l-m] = logadd_s(log64(2*l-1)+logx+lnplm[l-m-1], sign[l-m-1], log64(l+m-1)+lnplm[l-m-2], -sign[l-m-2], &sign[l-m]) - log64(l-m);
+        lnplm[l-m] = logadd_s(log(2*l-1)+logx+lnplm[l-m-1], sign[l-m-1], log(l+m-1)+lnplm[l-m-2], -sign[l-m-2], &sign[l-m]) - log(l-m);
 }
 
 /**
@@ -323,9 +323,9 @@ void plm_lnPlm_array(int lmax, int m, float64 x, float64 lnplm[], sign_t sign[])
  * @param sign sign of result
  * @return lnPlm \f$\log\left|P_\ell^m(x)\right|\f$
  */
-float64 plm_lnPlm(int l, int m, float64 x, sign_t *sign)
+double plm_lnPlm(int l, int m, double x, sign_t *sign)
 {
-    float64 plm[l-m+1];
+    double plm[l-m+1];
     sign_t  signs[l-m+1];
 
     plm_lnPlm_array(l, m, x, plm, signs);
@@ -344,11 +344,11 @@ float64 plm_lnPlm(int l, int m, float64 x, sign_t *sign)
  * @param x position
  * @return Plm \f$P_\ell^m(x)\f$
  */
-float64 plm_Plm(int l, int m, float64 x)
+double plm_Plm(int l, int m, double x)
 {
     sign_t sign;
-    float64 value = plm_lnPlm(l, m, x, &sign);
-    return sign*exp64(value);
+    double value = plm_lnPlm(l, m, x, &sign);
+    return sign*exp(value);
 }
 
 /**
@@ -362,15 +362,15 @@ float64 plm_Plm(int l, int m, float64 x)
  * @param sign sign of result
  * @return lndPlm \f$\log\left|{P_\ell^m}^\prime(x)\right|\f$
  */
-float64 plm_lndPlm(int l, int m, float64 x, sign_t *sign)
+double plm_lndPlm(int l, int m, double x, sign_t *sign)
 {
     const int lmax = l+1;
-    float64 plm[lmax-m+1];
+    double plm[lmax-m+1];
     sign_t signs[lmax-m+1];
 
     plm_lnPlm_array(lmax, m, x, plm, signs);
 
-    return logadd_s(log64(l-m+1)+plm[l+1-m], signs[l+1-m], log64(l+1)+log64(x)+plm[l-m], -signs[l+1-m], sign) - log64(pow_2(x)-1);
+    return logadd_s(log(l-m+1)+plm[l+1-m], signs[l+1-m], log(l+1)+log(x)+plm[l-m], -signs[l+1-m], sign) - log(pow_2(x)-1);
 }
 
 
@@ -384,11 +384,11 @@ float64 plm_lndPlm(int l, int m, float64 x, sign_t *sign)
  * @param x position
  * @return dPlm \f${P_\ell^m}^\prime(x)\f$
  */
-float64 plm_dPlm(int l, int m, float64 x)
+double plm_dPlm(int l, int m, double x)
 {
     sign_t sign;
-    float64 value = plm_lndPlm(l, m, x, &sign);
-    return sign*exp64(value);
+    double value = plm_lndPlm(l, m, x, &sign);
+    return sign*exp(value);
 }
 
 /**
@@ -407,14 +407,14 @@ float64 plm_dPlm(int l, int m, float64 x)
  * @param [in]  x \f$x\f$
  * @param [out] res save results in this struct
  */
-void plm_PlmPlm(int l1, int l2, int m, float64 x, plm_combination_t *res)
+void plm_PlmPlm(int l1, int l2, int m, double x, plm_combination_t *res)
 {
     const int lmax = MAX(l1,l2)+1;
-    float64 lnPlm[lmax-m+1];
+    double lnPlm[lmax-m+1];
     sign_t signs[lmax-m+1];
-    float64 logx = log64(x);
-    float64 logx2m1 = log64(pow_2(x)-1);
-    float64 lnPl1m, lnPl2m, lndPl1m, lndPl2m;
+    double logx = log(x);
+    double logx2m1 = log(pow_2(x)-1);
+    double lnPl1m, lnPl2m, lndPl1m, lndPl2m;
     sign_t sign_Pl1m, sign_Pl2m, sign_dPl1m, sign_dPl2m;
     sign_t common_sign = MPOW(m%2);
 
@@ -425,8 +425,8 @@ void plm_PlmPlm(int l1, int l2, int m, float64 x, plm_combination_t *res)
     lnPl2m    = lnPlm[l2-m];
     sign_Pl2m = signs[l2-m];
 
-    lndPl1m = logadd_s(log64(l1-m+1)+lnPlm[l1+1-m], signs[l1+1-m], log64(l1+1)+logx+lnPlm[l1-m], -signs[l1+1-m], &sign_dPl1m) - logx2m1;
-    lndPl2m = logadd_s(log64(l2-m+1)+lnPlm[l2+1-m], signs[l2+1-m], log64(l2+1)+logx+lnPlm[l2-m], -signs[l2+1-m], &sign_dPl2m) - logx2m1;
+    lndPl1m = logadd_s(log(l1-m+1)+lnPlm[l1+1-m], signs[l1+1-m], log(l1+1)+logx+lnPlm[l1-m], -signs[l1+1-m], &sign_dPl1m) - logx2m1;
+    lndPl2m = logadd_s(log(l2-m+1)+lnPlm[l2+1-m], signs[l2+1-m], log(l2+1)+logx+lnPlm[l2-m], -signs[l2+1-m], &sign_dPl2m) - logx2m1;
 
     /* Pl1m*Pl2m */
     res->lnPl1mPl2m    = lnPl1m + lnPl2m;
@@ -477,9 +477,9 @@ inline int gaunt_qmax(const int n, const int nu, const int m)
  * @param [in]  m  \f$m=\mu\f$
  * @return a0 \f$\log a_0\f$
  */
-inline float64 gaunt_log_a0(int n, int nu, int m)
+inline double gaunt_log_a0(int n, int nu, int m)
 {
-    return lgamma64(2*n+1)-lgamma64(n+1)+lgamma64(2*nu+1)-lgamma64(1+nu)+lgamma64(n+nu+1)-lgamma64(2*n+2*nu+1)+lgamma64(1+n+nu-2*m)-lgamma64(1+n-m)-lgamma64(1+nu-m);
+    return lgamma(2*n+1)-lgamma(n+1)+lgamma(2*nu+1)-lgamma(1+nu)+lgamma(n+nu+1)-lgamma(2*n+2*nu+1)+lgamma(1+n+nu-2*m)-lgamma(1+n-m)-lgamma(1+nu-m);
 }
 
 /**
@@ -492,9 +492,9 @@ inline float64 gaunt_log_a0(int n, int nu, int m)
  * @param [in]  m  \f$m=\mu\f$
  * @return a0 \f$a_0\f$
  */
-inline float64 gaunt_a0(int n, int nu, int m)
+inline double gaunt_a0(int n, int nu, int m)
 {
-    return exp64(gaunt_log_a0(n,nu,m));
+    return exp(gaunt_log_a0(n,nu,m));
 }
 
 /* eq. (3) */
@@ -525,18 +525,18 @@ inline float64 gaunt_a0(int n, int nu, int m)
  * @param [in]  m  \f$m=\mu\f$
  * @param [out] a_tilde \f$\tilde a_q\f$ list of normalized Gaunt coefficients
  */
-void gaunt(const int n_, const int nu_, const int m_, float64 a_tilde[])
+void gaunt(const int n_, const int nu_, const int m_, double a_tilde[])
 {
-    const float64 n  = n_;
-    const float64 nu = nu_;
-    const float64 m  = m_;
-    const float64 n4 = n+nu-2*m;
+    const double n  = n_;
+    const double nu = nu_;
+    const double m  = m_;
+    const double n4 = n+nu-2*m;
 
     /* eq. (24) */
     const int qmax = gaunt_qmax(n,nu,m);
 
     /* eq. (28) */
-    const float64 Ap = -2*m*(n-nu)*(n+nu+1);
+    const double Ap = -2*m*(n-nu)*(n+nu+1);
 
     if(qmax < 0)
         return;
@@ -559,10 +559,10 @@ void gaunt(const int n_, const int nu_, const int m_, float64 a_tilde[])
 
     for(int q = 3; q <= qmax; q++)
     {
-        float64 c0,c1,c2;
-        const float64 p = n+nu-2*q;
-        const float64 p1 = p-2*m;
-        const float64 p2 = p+2*m;
+        double c0,c1,c2;
+        const double p = n+nu-2*q;
+        const double p1 = p-2*m;
+        const double p2 = p+2*m;
 
         if(Ap != 0)
         {

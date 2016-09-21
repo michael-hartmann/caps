@@ -25,43 +25,43 @@
 #endif
 
 typedef struct {
-    float64 lnPl1mPl2m;
+    double lnPl1mPl2m;
     int sign_Pl1mPl2m;
 
-    float64 lndPl1mPl2m;
+    double lndPl1mPl2m;
     int sign_dPl1mPl2m;
 
-    float64 lnPl1mdPl2m;
+    double lnPl1mdPl2m;
     int sign_Pl1mdPl2m;
 
-    float64 lndPl1mdPl2m;
+    double lndPl1mdPl2m;
     int sign_dPl1mdPl2m;
 } plm_combination_t;
 
-float64 kahan_sum(float64 input[], size_t len);
+double kahan_sum(double input[], size_t len);
 
-inline float64 logadd(const float64 a, const float64 b);
-inline float64 logadd_s(const float64 a, const sign_t sign_a, const float64 b, const sign_t sign_b, sign_t *sign);
-inline float64 logadd_m(const float64 list[], const int len);
-inline float64 logadd_ms(const float64 list[], const sign_t signs[], const int len, sign_t *sign);
+inline double logadd(const double a, const double b);
+inline double logadd_s(const double a, const sign_t sign_a, const double b, const sign_t sign_b, sign_t *sign);
+inline double logadd_m(const double list[], const int len);
+inline double logadd_ms(const double list[], const sign_t signs[], const int len, sign_t *sign);
 
-float64 bessel_lnInu(const int n, const float64 x);
-float64 bessel_lnKnu(const int n, const float64 x);
-void bessel_lnInuKnu(int nu, const float64 x, float64 *lnInu_p, float64 *lnKnu_p);
+double bessel_lnInu(const int n, const double x);
+double bessel_lnKnu(const int n, const double x);
+void bessel_lnInuKnu(int nu, const double x, double *lnInu_p, double *lnKnu_p);
 
-float64 ln_doublefact(int n);
+double ln_doublefact(int n);
 
-void plm_lnPlm_array(int lmax, int m, float64 x, float64 lnplm[], sign_t sign[]);
-float64 plm_lnPlm (int l, int m, float64 x, sign_t *sign);
-float64 plm_Plm   (int l, int m, float64 x);
-float64 plm_lndPlm(int l, int m, float64 x, sign_t *sign);
-float64 plm_dPlm  (int l, int m, float64 x);
+void plm_lnPlm_array(int lmax, int m, double x, double lnplm[], sign_t sign[]);
+double plm_lnPlm (int l, int m, double x, sign_t *sign);
+double plm_Plm   (int l, int m, double x);
+double plm_lndPlm(int l, int m, double x, sign_t *sign);
+double plm_dPlm  (int l, int m, double x);
 
-void plm_PlmPlm(int l1, int l2, int m, float64 x, plm_combination_t *res);
+void plm_PlmPlm(int l1, int l2, int m, double x, plm_combination_t *res);
 
-inline float64 gaunt_log_a0(int n, int nu, int m);
-inline float64 gaunt_a0(int n,int nu,int m);
-void gaunt(const int n, const int nu, const int m, float64 a_tilde[]);
+inline double gaunt_log_a0(int n, int nu, int m);
+inline double gaunt_a0(int n,int nu,int m);
+void gaunt(const int n, const int nu, const int m, double a_tilde[]);
 
 inline int gaunt_qmax(const int n, const int nu, const int m);
 

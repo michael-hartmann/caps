@@ -12,20 +12,20 @@
 
 typedef struct {
     sign_t sign_A;
-    float64 lnA_TE;
-    float64 lnA_TM;
+    double lnA_TE;
+    double lnA_TM;
 
     sign_t sign_B;
-    float64 lnB_TE;
-    float64 lnB_TM;
+    double lnB_TE;
+    double lnB_TM;
     
     sign_t sign_C;
-    float64 lnC_TE;
-    float64 lnC_TM;
+    double lnC_TE;
+    double lnC_TM;
     
     sign_t sign_D;
-    float64 lnD_TE;
-    float64 lnD_TM;
+    double lnD_TE;
+    double lnD_TM;
 } integrands_drude_t;
 
 
@@ -48,7 +48,7 @@ struct integ_context {
     
     double         nT;
     int            l1, l2, m;
-    float64        c0, c_max;
+    double        c0, c_max;
 };
 
 
@@ -59,8 +59,8 @@ void casimir_integrate_drude_free(integration_drude_t* int_drude);
 
 void casimir_integrate_drude(integration_drude_t* int_drude, int l1, int l2, casimir_integrals_t* cint);
 
-//void integrands_drude(float64 x, integrands_drude_t *integrands, casimir_t *self, double nT, int l1, int l2, int m);
+//void integrands_drude(double x, integrands_drude_t *integrands, casimir_t *self, double nT, int l1, int l2, int m);
 
-double log_polyintegrate(float64 p[], size_t len, int l1, int l2, int m, double tau, sign_t *sign);
+double log_polyintegrate(double p[], size_t len, int l1, int l2, int m, double tau, sign_t *sign);
 
 #endif

@@ -32,7 +32,7 @@ matrix_t *matrix_alloc(const size_t dim)
     A->dim  = dim;
     A->dim2 = dim*dim;
 
-    A->M = xmalloc(dim2*sizeof(float64));
+    A->M = xmalloc(dim2*sizeof(double));
     if(A->M == NULL)
     {
         matrix_free(A);
@@ -91,20 +91,20 @@ int matrix_save_to_file(matrix_t *A, const char *filename)
     return ret;
 }
 
-void matrix_setall(matrix_t *A, float64 z)
+void matrix_setall(matrix_t *A, double z)
 {
     const size_t dim2 = A->dim2;
-    float64 *a = A->M;
+    double *a = A->M;
 
     for(size_t i = 0; i < dim2; i++)
         a[i] = z;
 }
 
-float64 matrix_logdet_lu(matrix_t *A)
+double matrix_logdet_lu(matrix_t *A)
 {
     const size_t dim = A->dim;
-    float64 sum, det = 0;
-    float64 *a = A->M;
+    double sum, det = 0;
+    double *a = A->M;
 
     for(size_t j = 0; j < dim; j++)
     {
@@ -125,7 +125,7 @@ float64 matrix_logdet_lu(matrix_t *A)
     }
 
     for(size_t i = 0; i < dim; i++)
-        det += log64(fabs64(a[i*dim+i]));
+        det += log(fabs(a[i*dim+i]));
 
     return det;
 }
@@ -139,45 +139,45 @@ float64 matrix_logdet_lu(matrix_t *A)
  * @param [in,out] M matrix
  * @retval logdet \f$\log|\det M|\f$
  */
-float64 matrix_logdet_qr(matrix_t *M)
+double matrix_logdet_qr(matrix_t *M)
 {
     const size_t dim = M->dim;
-    float64 *m = M->M;
+    double *m = M->M;
 
     for(size_t j = 0; j < dim-1; j++)
         for(size_t i = j+1; i < dim; i++)
         {
-            float64 c,s, Mij = m[i*dim+j];
+            double c,s, Mij = m[i*dim+j];
 
             if(Mij != 0)
             {
-                const float64 a = m[j*dim+j];
-                const float64 b = Mij; /* b != 0 */
+                const double a = m[j*dim+j];
+                const double b = Mij; /* b != 0 */
 
                 if(a == 0)
                 {
                     c = 0;
-                    s = -copysign64(1, b);
+                    s = -copysign(1, b);
                 }
-                else if(fabs64(b) > fabs64(a))
+                else if(fabs(b) > fabs(a))
                 {
-                    const float64 t = a/b;
-                    const float64 u = copysign64(sqrt64(1+t*t),b);
+                    const double t = a/b;
+                    const double u = copysign(sqrt(1+t*t),b);
                     s = -1/u;
                     c = -s*t;
                 }
                 else
                 {
-                    const float64 t = b/a;
-                    const float64 u = copysign64(sqrt64(1+t*t),a);
+                    const double t = b/a;
+                    const double u = copysign(sqrt(1+t*t),a);
                     c = 1/u;
                     s = -c*t;
                 }
 
                 for(size_t n = j; n < dim; n++)
                 {
-                    const float64 Min = m[i*dim+n];
-                    const float64 Mjn = m[j*dim+n];
+                    const double Min = m[i*dim+n];
+                    const double Mjn = m[j*dim+n];
 
                     m[i*dim+n] = c*Min + s*Mjn;
                     m[j*dim+n] = c*Mjn - s*Min;
@@ -187,9 +187,9 @@ float64 matrix_logdet_qr(matrix_t *M)
             }
         }
 
-    float64 logdet = 0;
+    double logdet = 0;
     for(size_t i = 0; i < dim; i++)
-        logdet += log64(fabs64(m[i*dim+i]));
+        logdet += log(fabs(m[i*dim+i]));
 
     return logdet;
 }
@@ -204,16 +204,16 @@ float64 matrix_logdet_qr(matrix_t *M)
  * @param [in]     z factor z in log(det(Id+z*M))
  * @retval logdet  \f$\log\det(\mathrm{Id}+z*M)\f$
  */
-float64 matrix_logdet(matrix_t *A, float64 z, const char *detalg)
+double matrix_logdet(matrix_t *A, double z, const char *detalg)
 {
-    float64 logdetD = 0;
+    double logdetD = 0;
 
     /* M = Id+z*M */
     /* XXX use BLAS routine XXX */
     {
         const size_t dim  = A->dim;
         const size_t dim2 = A->dim2;
-        float64 *a = A->M;
+        double *a = A->M;
 
         for(size_t i = 0; i < dim2; i++)
             a[i] *= z;
@@ -229,7 +229,7 @@ float64 matrix_logdet(matrix_t *A, float64 z, const char *detalg)
     return logdetD;
 }
 
-float64 matrix_logdet_lu_lapack(matrix_t *A)
+double matrix_logdet_lu_lapack(matrix_t *A)
 {
     int info = 0;
     int dim = (int)A->dim;
@@ -247,14 +247,14 @@ float64 matrix_logdet_lu_lapack(matrix_t *A)
         &info
     );
 
-    float64 logdet = 0;
+    double logdet = 0;
     for(int i = 0; i < dim; i++)
-        logdet += log64(fabs64(matrix_get(A, i, i)));
+        logdet += log(fabs(matrix_get(A, i, i)));
 
     return logdet;
 }
 
-float64 matrix_logdetIdmM_eig_lapack(matrix_t *A, double z)
+double matrix_logdetIdmM_eig_lapack(matrix_t *A, double z)
 {
     int dim = A->dim;
     char jobvl = 'N'; /* don't compute left eigenvectors */
@@ -290,9 +290,9 @@ float64 matrix_logdetIdmM_eig_lapack(matrix_t *A, double z)
         double lambda = wr[i];
 
         if(lambda < -z)
-            logdet += log1p64(+z*lambda);
+            logdet += log1p(+z*lambda);
         else
-            logdet += log64(fabs64(1-z*lambda));
+            logdet += log(fabs(1-z*lambda));
     }
 
     return logdet;

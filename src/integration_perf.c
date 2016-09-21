@@ -33,13 +33,13 @@ static void casimir_integrate_perf_m0(integration_perf_t *self, int l1, int l2, 
  * @param [in] tau parameter
  * @retval logarithm of value of integral
  */
-static float64 polyintegrate(float64 p[], const int len_p, const int offset, const float64 tau)
+static double polyintegrate(double p[], const int len_p, const int offset, const double tau)
 {
-    const float64 log_tau = log64(tau);
-    float64 list[len_p];
+    const double log_tau = log(tau);
+    double list[len_p];
 
     for(int k = offset; k < len_p+offset; k++)
-        list[k-offset] = lgamma64(k+1)-(k+1)*log_tau+p[k-offset];
+        list[k-offset] = lgamma(k+1)-(k+1)*log_tau+p[k-offset];
 
     return logadd_m(list, len_p);
 }
@@ -56,10 +56,10 @@ static float64 polyintegrate(float64 p[], const int len_p, const int offset, con
  * @param [in]  len_p2 number of coefficients of polynomial p2
  * @param [out] p polynomial p1*p2
  */
-static void log_polymult(float64 p1[], const int len_p1, float64 p2[], const int len_p2, float64 p[])
+static void log_polymult(double p1[], const int len_p1, double p2[], const int len_p2, double p[])
 {
     int len = len_p1+len_p2-1;
-    float64 temp[len];
+    double temp[len];
 
     for(int k = 0; k < len; k++)
     {
@@ -97,9 +97,9 @@ static void log_polymult(float64 p1[], const int len_p1, float64 p2[], const int
  * @param [in] nu
  * @retval logarithm of value of integral
  */
-float64 casimir_integrate_perf_I(integration_perf_t *self, int nu)
+double casimir_integrate_perf_I(integration_perf_t *self, int nu)
 {
-    float64 v = self->cache_I[nu];
+    double v = self->cache_I[nu];
 
     if(isnan(v))
     {
@@ -107,20 +107,20 @@ float64 casimir_integrate_perf_I(integration_perf_t *self, int nu)
         const int m = (self->m != 0) ? self->m : 2;
 
         /* polynom (z+2)^(m-1) */
-        float64 *p1 = xmalloc(m*sizeof(float64));
+        double *p1 = xmalloc(m*sizeof(double));
         /* polynom d^(2m)/dz^(2m) P_(nu)(1+z) */
-        float64 *p2 = xmalloc((nu+1-2*m)*sizeof(float64));
+        double *p2 = xmalloc((nu+1-2*m)*sizeof(double));
         /* polynom p1*p2 */
-        float64 *p = xmalloc((nu-m)*sizeof(float64));
+        double *p = xmalloc((nu-m)*sizeof(double));
 
         /* Every monom of both polynoms is positive. So we can save the
          * logarithms of the coefficients. */
 
         for(int k = 0; k <= m-1; k++)
-            p1[k] = lgamma64(m)-lgamma64(k+1)-lgamma64(m-k)+(m-1-k)*M_LOG2;
+            p1[k] = lgamma(m)-lgamma(k+1)-lgamma(m-k)+(m-1-k)*M_LOG2;
 
         for(int k = 2*m; k <= nu; k++)
-            p2[k-2*m] = lgamma64(k+nu+1)-lgamma64(k+1)-lgamma64(k-2*m+1)-lgamma64(-k+nu+1)-k*M_LOG2;
+            p2[k-2*m] = lgamma(k+nu+1)-lgamma(k+1)-lgamma(k-2*m+1)-lgamma(-k+nu+1)-k*M_LOG2;
 
         log_polymult(p1, m, p2, nu+1-2*m, p); /* len: nu-m */
 
@@ -152,27 +152,27 @@ float64 casimir_integrate_perf_I(integration_perf_t *self, int nu)
 
  * @retval logarithm of value of integral
  */
-float64 casimir_integrate_K(integration_perf_t *self, const int l1, const int l2, sign_t *sign)
+double casimir_integrate_K(integration_perf_t *self, const int l1, const int l2, sign_t *sign)
 {
     const int index = l1*(self->lmax+2)+l2;
-    float64 v = self->cache_K[index];
+    double v = self->cache_K[index];
 
     if(isnan(v))
     {
         const int m = (self->m != 0) ? self->m : 2;
         const int qmax       = gaunt_qmax(l1,l2,m);
-        const float64 log_a0 = gaunt_log_a0(l1,l2,m);
+        const double log_a0 = gaunt_log_a0(l1,l2,m);
         const int elems = MAX(0,1+qmax);
 
-        float64 *a    = xmalloc(elems*sizeof(float64));
+        double *a    = xmalloc(elems*sizeof(double));
         sign_t *signs = xmalloc(elems*sizeof(sign_t));
 
         gaunt(l1, l2, m, a);
 
         for(int q = 0; q <= qmax; q++)
         {
-            signs[q] = copysign64(1, a[q]);
-            a[q] = log64(fabs64(a[q])) + casimir_integrate_perf_I(self, l1+l2-2*q);
+            signs[q] = copysign(1, a[q]);
+            a[q] = log(fabs(a[q])) + casimir_integrate_perf_I(self, l1+l2-2*q);
         }
 
         v = self->cache_K[index] = log_a0+logadd_ms(a, signs, elems, sign);
@@ -210,14 +210,14 @@ void casimir_integrate_perf_init(integration_perf_t *self, double nT, int m, int
 
     /* allocate memory and initialize chache for I */
     const int elems_I = 2*(lmax+2);
-    self->cache_I = xmalloc(elems_I*sizeof(float64));
+    self->cache_I = xmalloc(elems_I*sizeof(double));
     for(int i = 0; i < elems_I; i++)
         self->cache_I[i] = NAN;
 
     /* allocate memory and initialize chache for K */
     const int elems_K = pow_2(lmax+2);
     self->cache_K_signs = xmalloc(elems_K*sizeof(sign_t));
-    self->cache_K = xmalloc(elems_K*sizeof(float64));
+    self->cache_K = xmalloc(elems_K*sizeof(double));
     for(int i = 0; i < elems_K; i++)
         self->cache_K[i] = NAN;
 }
@@ -243,12 +243,12 @@ void casimir_integrate_perf_free(integration_perf_t *self)
 /* integrate for m=0 */
 static void casimir_integrate_perf_m0(integration_perf_t *self, int l1, int l2, casimir_integrals_t *cint)
 {
-    float64 log_B;
+    double log_B;
     sign_t sign_B;
-    const float64 lnLambda = casimir_lnLambda(l1, l2, 0, NULL);
+    const double lnLambda = casimir_lnLambda(l1, l2, 0, NULL);
 
     sign_t signs_B[4] = {1,1,1,1};
-    float64 log_Bn[4] = { -INFINITY, -INFINITY, -INFINITY, -INFINITY };
+    double log_Bn[4] = { -INFINITY, -INFINITY, -INFINITY, -INFINITY };
 
     if((l1-1) >= 2 && (l2-1) >= 2)
         log_Bn[0] = casimir_integrate_K(self, l1-1, l2-1, &signs_B[0]);
@@ -267,7 +267,7 @@ static void casimir_integrate_perf_m0(integration_perf_t *self, int l1, int l2, 
 
     log_Bn[3] = casimir_integrate_K(self, l1+1, l2+1, &signs_B[3]);
 
-    log_B = logadd_ms(log_Bn, signs_B, 4, &sign_B) - log64(2*l1+1) - log64(2*l2+1);
+    log_B = logadd_ms(log_Bn, signs_B, 4, &sign_B) - log(2*l1+1) - log(2*l2+1);
 
     cint->lnB_TM = cint->lnB_TE = lnLambda+log_B0(m,self->nT)+log_B;
     cint->signB_TM = sign_B*sign_B0(l2,m,TM);
@@ -298,9 +298,9 @@ static void casimir_integrate_perf_m0(integration_perf_t *self, int l1, int l2, 
 void casimir_integrate_perf(integration_perf_t *self, int l1, int l2, casimir_integrals_t *cint)
 {
     const int m  = self->m;
-    const float64 nT = self->nT;
-    const float64 lnLambda = casimir_lnLambda(l1, l2, m, NULL);
-    float64 value, v[4];
+    const double nT = self->nT;
+    const double lnLambda = casimir_lnLambda(l1, l2, m, NULL);
+    double value, v[4];
     sign_t sign, signs[4];
 
     if(m == 0)
@@ -328,26 +328,26 @@ void casimir_integrate_perf(integration_perf_t *self, int l1, int l2, casimir_in
         signs[0] = signs[1] = signs[2] = signs[3] = 1;
 
         if((l1-1) >= m && (l2-1) >= m)
-            v[0] = log64(l1+1)+log64(l1+m)+log64(l2+1)+log64(l2+m) + casimir_integrate_K(self, l1-1, l2-1, &signs[0]);
+            v[0] = log(l1+1)+log(l1+m)+log(l2+1)+log(l2+m) + casimir_integrate_K(self, l1-1, l2-1, &signs[0]);
 
         if((l1-1) >= m)
         {
-            v[1] = log64(l1+1)+log64(l1+m)+log64(l2)+log64(l2-m+1) + casimir_integrate_K(self, l1-1, l2+1, &signs[1]);
+            v[1] = log(l1+1)+log(l1+m)+log(l2)+log(l2-m+1) + casimir_integrate_K(self, l1-1, l2+1, &signs[1]);
             signs[1] *= -1;
         }
 
         if((l2-1) >= m)
         {
-            v[2] = log64(l1)+log64(l1-m+1)+log64(l2+1)+log64(l2+m) + casimir_integrate_K(self, l1+1, l2-1, &signs[2]);
+            v[2] = log(l1)+log(l1-m+1)+log(l2+1)+log(l2+m) + casimir_integrate_K(self, l1+1, l2-1, &signs[2]);
             signs[2] *= -1;
         }
 
-        v[3] = log64(l1)+log64(l1-m+1)+log64(l2)+log64(l2-m+1) + casimir_integrate_K(self, l1+1, l2+1, &signs[3]);
+        v[3] = log(l1)+log(l1-m+1)+log(l2)+log(l2-m+1) + casimir_integrate_K(self, l1+1, l2+1, &signs[3]);
 
         /* add */
         value = logadd_ms(v, signs, 4, &sign);
 
-        cint->lnB_TM = cint->lnB_TE = lnLambda+log_B0(m,nT)-log64(2*l1+1)-log64(2*l2+1)+value;
+        cint->lnB_TM = cint->lnB_TE = lnLambda+log_B0(m,nT)-log(2*l1+1)-log(2*l2+1)+value;
         cint->signB_TM = sign*sign_B0(l2,m,TM);
         cint->signB_TE = sign*sign_B0(l2,m,TE);
     }
@@ -358,15 +358,15 @@ void casimir_integrate_perf(integration_perf_t *self, int l1, int l2, casimir_in
         signs[0] = signs[1] = 1;
 
         if((l2-1) >= m)
-            v[0] = log64(l2+1)+log64(l2+m) + casimir_integrate_K(self, l1, l2-1, &signs[0]);
+            v[0] = log(l2+1)+log(l2+m) + casimir_integrate_K(self, l1, l2-1, &signs[0]);
 
-        v[1] = log64(l2)+log64(l2-m+1) + casimir_integrate_K(self, l1, l2+1, &signs[1]);
+        v[1] = log(l2)+log(l2-m+1) + casimir_integrate_K(self, l1, l2+1, &signs[1]);
         signs[1] *= -1;
 
         /* add */
         value = logadd_ms(v, signs, 2, &sign);
 
-        cint->lnC_TM = cint->lnC_TE = lnLambda+log_C0(m,nT)-log64(2*l2+1) + value;
+        cint->lnC_TM = cint->lnC_TE = lnLambda+log_C0(m,nT)-log(2*l2+1) + value;
         cint->signC_TM = sign*sign_C0(l2,m,TM);
         cint->signC_TE = sign*sign_C0(l2,m,TE);
     }
@@ -377,15 +377,15 @@ void casimir_integrate_perf(integration_perf_t *self, int l1, int l2, casimir_in
         signs[0] = signs[1] = 1;
 
         if((l1-1) >= m)
-            v[0] = log64(l1+1)+log64(l1+m) + casimir_integrate_K(self, l1-1, l2, &signs[0]);
+            v[0] = log(l1+1)+log(l1+m) + casimir_integrate_K(self, l1-1, l2, &signs[0]);
 
-        v[1] = log64(l1)+log64(l1-m+1) + casimir_integrate_K(self, l1+1, l2, &signs[1]);
+        v[1] = log(l1)+log(l1-m+1) + casimir_integrate_K(self, l1+1, l2, &signs[1]);
         signs[1] *= -1;
 
         /* add */
         value = logadd_ms(v, signs, 2, &sign);
 
-        cint->lnD_TM = cint->lnD_TE = lnLambda+log_D0(m,nT)-log64(2*l1+1) + value;
+        cint->lnD_TM = cint->lnD_TE = lnLambda+log_D0(m,nT)-log(2*l1+1) + value;
         cint->signD_TM = sign*sign_D0(l2,m,TM);
         cint->signD_TE = sign*sign_D0(l2,m,TE);
     }

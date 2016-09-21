@@ -154,9 +154,9 @@ int main(int argc, char *argv[])
 int master(int argc, char *argv[], int cores)
 {
     int order = ORDER, lmax = 0, ret = 0;
-    float64 F0;
+    double F0;
     double alpha, LbyR = -1, lfac = LFAC, precision = PRECISION;
-    float64 integral = 0, *xk, *ln_wk;
+    double integral = 0, *xk, *ln_wk;
     double **values = NULL;
     casimir_mpi_t casimir_mpi;
 
@@ -341,7 +341,7 @@ int master(int argc, char *argv[], int cores)
     /* do Gauss-Legendre quadrature */
     for(int i = 0; i < order; i++)
     {
-        float64 value = 0;
+        double value = 0;
         for(int m = 0; m < lmax; m++)
         {
             if(isnan(values[i][m]))
@@ -353,7 +353,7 @@ int master(int argc, char *argv[], int cores)
                 value += values[i][m];
         }
         printf("# k=%d, x=%.10Lg, logdetD(xi = x/alpha)=%.16Lg\n", i, xk[i], value);
-        integral += exp64(ln_wk[i]+xk[i])*value;
+        integral += exp(ln_wk[i]+xk[i])*value;
     }
 
     /* free energy for T=0 */

@@ -11,7 +11,7 @@
 /** define matrix type */
 typedef struct {
     size_t dim,dim2;
-    float64 *M;
+    double *M;
 } matrix_t;
 
 
@@ -25,15 +25,15 @@ typedef struct {
 /* prototypes */
 matrix_t *matrix_alloc(const size_t dim);
 void matrix_free(matrix_t *A);
-void matrix_setall(matrix_t *A, float64 z);
+void matrix_setall(matrix_t *A, double z);
 
 int matrix_save_to_stream(matrix_t *A, FILE *stream);
 int matrix_save_to_file(matrix_t *A, const char *filename);
 
-float64 matrix_logdet_lu(matrix_t *A);
-float64 matrix_logdet_qr(matrix_t *M);
-float64 matrix_logdet(matrix_t *A, float64 z, const char *detalg);
-float64 matrix_logdet_lu_lapack(matrix_t *A);
-float64 matrix_logdetIdmM_eig_lapack(matrix_t *A, double z);
+double matrix_logdet_lu(matrix_t *A);
+double matrix_logdet_qr(matrix_t *M);
+double matrix_logdet(matrix_t *A, double z, const char *detalg);
+double matrix_logdet_lu_lapack(matrix_t *A);
+double matrix_logdetIdmM_eig_lapack(matrix_t *A, double z);
 
 #endif

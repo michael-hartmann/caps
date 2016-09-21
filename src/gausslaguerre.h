@@ -3,6 +3,6 @@
 
 #include "floattypes.h"
 
-int gausslaguerre_nodes_weights(int order, float64 **xk, float64 **ln_wk);
+int gausslaguerre_nodes_weights(int order, double **xk, double **ln_wk);
 
 #endif
