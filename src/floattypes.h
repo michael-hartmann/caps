@@ -24,19 +24,4 @@ typedef double     float64;
 #define fmin64     fmin
 #define pow64      pow
 
-typedef long double float80;
-#define log80      logl
-#define exp80      expl
-#define sqrt80     sqrtl
-#define log1p80    log1pl
-#define fabs80     fabsl
-#define sin80      sinl
-#define cos80      cosl
-#define gamma80    gammal
-#define lgamma80   lgammal
-#define copysign80 copysignl
-#define fmax80     fmaxl
-#define fmin80     fminl
-#define pow80      powl
-
 #endif
