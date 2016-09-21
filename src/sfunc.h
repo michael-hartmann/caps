@@ -47,7 +47,7 @@ float80 bessel_lnInu(const int n, const float80 x);
 float80 bessel_lnKnu(const int n, const float80 x);
 void bessel_lnInuKnu(int nu, const float80 x, float80 *lnInu_p, float80 *lnKnu_p);
 
-float80 ln_doublefact(int n);
+float64 ln_doublefact(int n);
 
 inline void plm_lnPlm_array(int lmax, int m, float80 x, float80 lnplm[], sign_t sign[]);
 float80 plm_lnPlm (int l, int m, float80 x, sign_t *sign);
