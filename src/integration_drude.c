@@ -70,7 +70,7 @@ static void integrands_drude_laguerre(float80 x, integrands_drude_t *integrands,
     const float80 tau        = 2*nT;
     const float80 k          = sqrt80(pow_2(x)/4 + nT*x);
     const float80 log_factor = log80(pow_2(x)+2*tau*x);
-    float80 r_TE, r_TM;
+    float64 r_TE, r_TM;
 
     casimir_rp(self, nT, k, &r_TE, &r_TM);
     const float80 lnr_TE = log80(-r_TE);
