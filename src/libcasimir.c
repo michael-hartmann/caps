@@ -228,7 +228,6 @@ float64 casimir_lnLambda(int l1, int l2, int m, sign_t *sign)
  */
 float64 casimir_epsilonm1(float64 xi, float64 omegap, float64 gamma_)
 {
-    /* cast omegap and gamma_ to float80 for more accurancy */
     return pow_2(omegap)/(xi*(xi+gamma_));
 }
 
