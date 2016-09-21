@@ -131,12 +131,12 @@ inline float80 logadd_ms(const float80 list[], const sign_t signs[], const int l
 
 void bessel_lnInuKnu(int nu, const float80 x, float80 *lnInu_p, float80 *lnKnu_p)
 {
-    const float80 logx = log80(x);
-    float80 lnKnu = 0, lnKnup = log1p80(1./x);
+    const float64 logx = log64(x);
+    float64 lnKnu = 0, lnKnup = log1p64(1./x);
 
     /* calculate Knu, Knup */
     {
-        const float80 prefactor = -x+0.5*(M_LOGPI-M_LOG2-logx);
+        const float64 prefactor = -x+0.5*(M_LOGPI-M_LOG2-logx);
 
         if(nu == 0)
         {
@@ -147,7 +147,7 @@ void bessel_lnInuKnu(int nu, const float80 x, float80 *lnInu_p, float80 *lnKnu_p
         {
             for(int l = 2; l <= nu+1; l++)
             {
-                float80 lnKn_new = logadd(log80(2*l-1)+lnKnup-logx, lnKnu);
+                float64 lnKn_new = logadd(log64(2*l-1)+lnKnup-logx, lnKnu);
                 lnKnu  = lnKnup;
                 lnKnup = lnKn_new;
             }
@@ -166,10 +166,10 @@ void bessel_lnInuKnu(int nu, const float80 x, float80 *lnInu_p, float80 *lnKnu_p
     {
         #define an(n,nu,x) (2*((nu)+0.5+(n))/(x))
 
-        float80 num   = an(2,nu,x)+1/an(1,nu,x);
-        float80 denom = an(2,nu,x);
-        float80 ratio = (an(1,nu,x)*num)/denom;
-        float80 ratio_last = 0;
+        float64 num   = an(2,nu,x)+1/an(1,nu,x);
+        float64 denom = an(2,nu,x);
+        float64 ratio = (an(1,nu,x)*num)/denom;
+        float64 ratio_last = 0;
 
         for(int l = 3; 1; l++)
         {
@@ -177,7 +177,7 @@ void bessel_lnInuKnu(int nu, const float80 x, float80 *lnInu_p, float80 *lnKnu_p
             denom = an(l,nu,x)+1/denom;
             ratio *= num/denom;
 
-            if(ratio_last != 0 && fabs80(1.L-ratio/ratio_last) < 1e-20L)
+            if(ratio_last != 0 && fabs64(1.-ratio/ratio_last) < 1e-20)
                 break;
 
             ratio_last = ratio;
