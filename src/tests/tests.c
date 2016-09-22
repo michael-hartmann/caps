@@ -20,8 +20,8 @@ int main(int argc, char *argv[])
 {
     test_Lambda();
 
-    test_fresnel();
-    test_Plm();
+    //test_fresnel();
+    //test_Plm();
     test_doublefact();
 
     test_besselI();

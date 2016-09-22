@@ -21,20 +21,20 @@ OBJS = \
 TESTS = \
     tests/test_bessels.o \
     tests/test_doublefact.o \
-    tests/test_fresnel.o \
     tests/test_integration_perf.o \
     tests/test_mie.o \
     tests/test_Plm.o \
-    tests/test_integration_drude.o \
     tests/test_Lambda.o \
     tests/test_logdet.o \
     tests/test_logdet_HT.o \
-    tests/test_mie_drude.o \
     tests/tests.o \
     tests/unittest.o
+# tests/test_mie_drude.o
+# tests/test_fresnel.o
+# tests/test_integration_drude.o
 
 # use C99 standard
-CFLAGS  = -std=c99
+CFLAGS = -std=c99
 
 # use traditional GNU semantics for inline
 CFLAGS += -fgnu89-inline
