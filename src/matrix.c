@@ -97,10 +97,20 @@ void matrix_setall(matrix_t *A, double z)
         a[i] = z;
 }
 
+static double _logdet_tridiag(matrix_t *A)
+{
+    size_t dim = A->dim;
+    double logdet[dim];
+
+    for(size_t i = 0; i < dim; i++)
+        logdet[i] = log(fabs(matrix_get(A, i, i)));
+
+    return kahan_sum(logdet, dim);
+}
+
 double matrix_logdet_lu(matrix_t *A)
 {
     const size_t dim = A->dim;
-    double logdet[dim];
     double *a = A->M;
 
     for(size_t j = 0; j < dim; j++)
@@ -121,10 +131,7 @@ double matrix_logdet_lu(matrix_t *A)
         }
     }
 
-    for(size_t i = 0; i < dim; i++)
-        logdet[i] = log(fabs(a[i*dim+i]));
-
-    return kahan_sum(logdet, dim);
+    return _logdet_tridiag(A);
 }
 
 
@@ -136,11 +143,10 @@ double matrix_logdet_lu(matrix_t *A)
  * @param [in,out] M matrix
  * @retval logdet \f$\log|\det M|\f$
  */
-double matrix_logdet_qr(matrix_t *M)
+double matrix_logdet_qr(matrix_t *A)
 {
-    const size_t dim = M->dim;
-    double *m = M->M;
-    double logdet[dim];
+    const size_t dim = A->dim;
+    double *m = A->M;
 
     for(size_t j = 0; j < dim-1; j++)
         for(size_t i = j+1; i < dim; i++)
@@ -185,10 +191,7 @@ double matrix_logdet_qr(matrix_t *M)
             }
         }
 
-    for(size_t i = 0; i < dim; i++)
-        logdet[i] = log(fabs(m[i*dim+i]));
-
-    return kahan_sum(logdet, dim);
+    return _logdet_tridiag(A);
 }
 
 
@@ -196,9 +199,9 @@ double matrix_logdet_qr(matrix_t *M)
  * @brief Calculate \f$\log\det(\mathrm{Id}+z*M)\f$ for matrix M
  *
  * Detalg may be:
- *  - LU (default)
+ *  - LU_LAPACK (default)
+ *  - LU
  *  - EIG_LAPACK
- *  - LU_LAPACK
  *  - QR_GIVENS
  *
  * @param [in,out] M round trip matrix M; M will be overwritten.
@@ -227,12 +230,12 @@ double matrix_logdet(matrix_t *A, double z, const char *detalg)
             a[i*dim+i] += 1;
     }
 
-    if(strcmp(detalg, "LU_LAPACK") == 0)
-        return matrix_logdet_lu_lapack(A);
+    if(strcmp(detalg, "LU") == 0)
+        return matrix_logdet_lu(A);
     if(strcmp(detalg, "QR_GIVENS") == 0)
         return matrix_logdet_qr(A);
     else
-        return matrix_logdet_lu(A);
+        return matrix_logdet_lu_lapack(A);
 }
 
 double matrix_logdet_lu_lapack(matrix_t *A)
@@ -240,7 +243,6 @@ double matrix_logdet_lu_lapack(matrix_t *A)
     int info = 0;
     int dim = (int)A->dim;
     int ipiv[dim];
-    double logdet[dim];
     double *a = A->M;
 
     dgetrf_(
@@ -254,10 +256,7 @@ double matrix_logdet_lu_lapack(matrix_t *A)
 
     WARN(info != 0, "dgetrf returned %d", info);
 
-    for(int i = 0; i < dim; i++)
-        logdet[i] = log(fabs(matrix_get(A, i, i)));
-
-    return kahan_sum(logdet, dim);
+    return _logdet_tridiag(A);
 }
 
 double matrix_logdetIdmM_eig_lapack(matrix_t *A, double z)
