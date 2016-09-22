@@ -76,11 +76,6 @@ void casimir_info(casimir_t *self, FILE *stream, const char *prefix)
     fprintf(stream, "%sL/R = %.8g\n", prefix, self->LbyR);
     fprintf(stream, "%sT   = %.8g\n", prefix, self->T);
 
-    fprintf(stream, "%somegap_sphere = %g\n", prefix, self->omegap_sphere);
-    fprintf(stream, "%sgamma_sphere  = %g\n", prefix, self->gamma_sphere);
-    fprintf(stream, "%somegap_plane  = %g\n", prefix, self->omegap_plane);
-    fprintf(stream, "%sgamma_plane   = %g\n", prefix, self->gamma_plane);
-
     fprintf(stream, "%slmax      = %d\n", prefix, self->lmax);
     fprintf(stream, "%scores     = %d\n", prefix, self->cores);
     fprintf(stream, "%sprecision = %g\n", prefix, self->precision);
@@ -207,6 +202,7 @@ double casimir_lnLambda(int l1, int l2, int m, sign_t *sign)
 }
 
 
+/* deprecated */
 /**
  * @brief Calculate \f$\epsilon(i\xi)\f$ for Drude model
  *
@@ -243,6 +239,8 @@ double casimir_epsilonm1(double xi, double omegap, double gamma_)
  */
 void casimir_rp(casimir_t *self, double nT, double k, double *r_TE, double *r_TM)
 {
+    /* if(self->epsilonm1 == NULL) */
+    /* deprecated */
     if(isinf(self->omegap_plane))
     {
         /* perfect reflectors */
@@ -268,6 +266,8 @@ void casimir_rp(casimir_t *self, double nT, double k, double *r_TE, double *r_TM
          * Note: ξ=nT
          */
 
+        /* const double epsilonm1 = self->epsilonm1(nT, self->userdata); */
+        /* deprecated */
         const double epsilonm1 = casimir_epsilonm1(nT, self->omegap_plane, self->gamma_plane);
         const double x         = pow_2(nT)/(pow_2(nT)+pow_2(k))*epsilonm1;
 
@@ -336,6 +336,10 @@ int casimir_init(casimir_t *self, double LbyR, double T)
     casimir_mie_cache_init(self);
 
     /* perfect reflectors */
+    self->epsilonm1 = NULL;
+    self->userdata  = NULL;
+
+    /* deprecated, to be removed soon */
     self->omegap_sphere = INFINITY;
     self->gamma_sphere  = 0;
     self->omegap_plane  = INFINITY;
@@ -394,6 +398,7 @@ bool casimir_get_verbose(casimir_t *self)
     return self->verbose;
 }
 
+/* deprecated */
 /**
  * @brief Set material parameters for Drude metals
  *
@@ -423,6 +428,7 @@ int casimir_set_drude(casimir_t *self, double omegap_plane, double gamma_plane, 
     return 0;
 }
 
+/* deprecated */
 /**
  * @brief Get material parameters for Drude metals
  *
@@ -788,6 +794,8 @@ void casimir_lnab_perf(casimir_t *self, int n, int l, double *lna, double *lnb, 
  */
 void casimir_lnab(casimir_t *self, int n_mat, int l, double *lna, double *lnb, sign_t *sign_a, sign_t *sign_b)
 {
+    /* if(self->epsilonm1 == NULL) */
+    /* deprecated */
     if(isinf(self->omegap_sphere))
     {
         /* Mie coefficients for perfect reflectors */
@@ -810,6 +818,8 @@ void casimir_lnab(casimir_t *self, int n_mat, int l, double *lna, double *lnb, s
      * n    = sqrt(ε(ξ,ω_p,γ))
      * ln_n = ln(sqrt(ε)) = ln(ε)/2 = ln(1+(ε-1))/2 = log1p(ε-1)/2
      */
+    /* const double ln_n = log1p(self->casimir_epsilonm1(xi, self->userdata))/2; */
+    /* deprecated */
     const double ln_n = log1p(casimir_epsilonm1(xi, self->omegap_sphere, self->gamma_sphere))/2;
     const double n    = exp(ln_n);
 
@@ -1375,6 +1385,8 @@ matrix_t *casimir_M(casimir_t *self, int n, int m)
     const size_t max = self->lmax;
     const size_t dim = (max-min+1);
 
+    /* if(self->epsilonm1 == NULL) */
+    /* deprecated */
     if(isinf(self->omegap_plane))
         /* perfect reflector */
         casimir_integrate_perf_init(&int_perf, nT, m, self->lmax);
@@ -1413,6 +1425,8 @@ matrix_t *casimir_M(casimir_t *self, int n, int m)
             casimir_mie_cache_get(self, l2, n, &ln_al2, &sign_al2, &ln_bl2, &sign_bl2);
 
             casimir_integrals_t cint;
+            /* if(self->epsilonm1 == NULL) */
+            /* deprecated */
             if(isinf(self->omegap_plane))
                 casimir_integrate_perf(&int_perf, l1, l2, &cint);
             else
@@ -1469,6 +1483,8 @@ matrix_t *casimir_M(casimir_t *self, int n, int m)
                 break;
     }
 
+    /* if(self->epsilonm1 == NULL) */
+    /* deprecated */
     if(isinf(self->omegap_plane))
         casimir_integrate_perf_free(&int_perf);
     else
@@ -1500,6 +1516,8 @@ double casimir_logdetD(casimir_t *self, int n, int m)
     {
         double logdet_EE = 0, logdet_MM = 0;
 
+        /* if(self->epsilonm1 == NULL) */
+        /* deprecated */
         if(isinf(self->omegap_plane))
             /* perfect reflector */
             casimir_logdetD0(self, m, &logdet_EE, &logdet_MM);
