@@ -186,8 +186,10 @@ int main(int argc, char *argv[])
     if(lmax)
         casimir_set_lmax(&casimir, lmax);
 
+    /* XXX
     if(gamma_ >= 0 && isfinite(omegap))
         casimir_set_drude(&casimir, omegap, gamma_, omegap, gamma_);
+    */
 
     casimir_set_debug(&casimir, debug);
 
