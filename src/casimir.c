@@ -323,8 +323,10 @@ int main(int argc, char *argv[])
             casimir_set_cores(&casimir, cores);
             casimir_set_precision(&casimir, precision);
 
+            /* XXX
             if(isfinite(omegap))
                 casimir_set_drude(&casimir, omegap, gamma_, omegap, gamma_);
+            */
 
             if(lmax > 0)
                 casimir_set_lmax(&casimir, lmax);
