@@ -1286,28 +1286,40 @@ void casimir_logdetD0(casimir_t *self, int m, double *logdet_EE, double *logdet_
     const size_t dim = max-min+1;
 
     if(logdet_EE != NULL)
-        EE = matrix_alloc(dim);
-    if(logdet_MM != NULL)
-        MM = matrix_alloc(dim);
-
-    /* calculate the logarithm of the matrix elements of M. */
-    for(size_t l1 = min; l1 <= max; l1++)
     {
-        /* c = (l1+m)!*(l1-m)! */
-        const double c = lgamma(1+l1+m)+lgamma(1+l1-m);
+        EE = matrix_alloc(dim);
+        matrix_setall(EE,0);
+    }
+    if(logdet_MM != NULL)
+    {
+        MM = matrix_alloc(dim);
+        matrix_setall(MM,0);
+    }
+
+    double max_elem_diag = 0; /* largest matrix element on diagonal */
+
+    /* calculate the matrix elements of M */
+    for(size_t n = 0; n < dim; n++)
+    {
+        double max_elem = 0;
 
         /* The matrix M is symmetric. */
-        for(size_t l2 = l1; l2 <= max; l2++)
+        for(size_t d = 0; d < dim-n; d++)
         {
+            const int l1 = d+min;
+            const int l2 = d+n+min;
+
             /* i: row of matrix, j: column of matrix */
-            const size_t i = l1-min, j = l2-min;
+            const size_t i = d, j = d+n;
 
             /* See thesis of Antoine, section 6.7:
              * x = R/(R+L)
              * M_EE_{l1,l2} = (x/2)^(l1+l2) * (l1+l2)! / sqrt( (l1+m)!*(l1-m)! * (l2+m)!*(l2-m)! )
              * M_MM_{l1,l2} = M_EE_{l1,l2} * sqrt( l1/(l1+1) * l2/(l2+1) )
              */
-            const double EE_ij = exp( (l1+l2+1)*y + lgamma(1+l1+l2) - 0.5*(c + lgamma(1+l2+m)+lgamma(1+l2-m)) );
+            const double EE_ij = exp( (l1+l2+1)*y + lgamma(1+l1+l2) - 0.5*(lgamma(1+l1+m)+lgamma(1+l1-m) + lgamma(1+l2+m)+lgamma(1+l2-m)) );
+
+            max_elem = MAX(fabs(EE_ij), max_elem);
 
             if(EE != NULL)
             {
@@ -1321,6 +1333,12 @@ void casimir_logdetD0(casimir_t *self, int m, double *logdet_EE, double *logdet_
                 matrix_set(MM, j,i, MM_ij);
             }
         }
+
+        if(n == 0)
+            max_elem_diag = max_elem;
+
+        if(max_elem/max_elem_diag < 1e-16)
+            break;
     }
 
     /* Calculate logdet=log(det(Id-M)) and free space. */
