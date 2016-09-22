@@ -1391,20 +1391,22 @@ matrix_t *casimir_M(casimir_t *self, int n, int m)
 
     /* M_EE, -M_EM
        M_ME,  M_MM */
-    for(size_t l1 = min; l1 <= max; l1++)
+
+    /* n-th minor diagonal */
+    for(size_t md = 0; md < dim; md++)
     {
-        const size_t i = l1-min;
-
-        sign_t sign_al1, sign_bl1;
-        double ln_al1, ln_bl1;
-        casimir_mie_cache_get(self, l1, n, &ln_al1, &sign_al1, &ln_bl1, &sign_bl1);
-
-        for(size_t l2 = min; l2 <= l1; l2++)
+        for(size_t k = 0; k < dim-md; k++)
         {
-            const size_t j = l2-min;
-            sign_t sign_al2, sign_bl2;
-            double ln_al2, ln_bl2;
+            const int l1 = md+min;
+            const int l2 = md+k+min;
 
+            /* i: row of matrix, j: column of matrix */
+            const size_t i = l1-min, j = l2-min;
+
+            sign_t sign_al1, sign_bl1, sign_al2, sign_bl2;
+            double ln_al1, ln_bl1, ln_al2, ln_bl2;
+
+            casimir_mie_cache_get(self, l1, n, &ln_al1, &sign_al1, &ln_bl1, &sign_bl1);
             casimir_mie_cache_get(self, l2, n, &ln_al2, &sign_al2, &ln_bl2, &sign_bl2);
 
             casimir_integrals_t cint;
