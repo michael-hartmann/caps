@@ -82,6 +82,7 @@ typedef struct
     int lmax;               /**< truncation value for vector space \f$\ell_\mathrm{max}\f$ */
     int cores;              /**< number of thread that should be used */
     double precision;       /**< precision \f$\epsilon_p\f$ */
+    double threshold;       /**< XXX TBD */
     pthread_t **threads;    /**< list of pthread objects */
 
     char detalg[128];       /**< algorithm to calculate determinant */
