@@ -73,20 +73,19 @@ void casimir_info(casimir_t *self, FILE *stream, const char *prefix)
     if(prefix == NULL)
         prefix = "";
 
-    fprintf(stream, "%sR/(R+L) = %g\n", prefix, self->RbyScriptL);
-    fprintf(stream, "%sL/R     = %g\n", prefix, self->LbyR);
-    fprintf(stream, "%sR/L     = %g\n", prefix, 1/self->LbyR);
-    fprintf(stream, "%sT       = %g\n", prefix, self->T);
+    fprintf(stream, "%sL/R = %.8g\n", prefix, self->LbyR);
+    fprintf(stream, "%sT   = %.8g\n", prefix, self->T);
 
     fprintf(stream, "%somegap_sphere = %g\n", prefix, self->omegap_sphere);
     fprintf(stream, "%sgamma_sphere  = %g\n", prefix, self->gamma_sphere);
     fprintf(stream, "%somegap_plane  = %g\n", prefix, self->omegap_plane);
     fprintf(stream, "%sgamma_plane   = %g\n", prefix, self->gamma_plane);
 
-    fprintf(stream, "%slmax            = %d\n", prefix, self->lmax);
-    fprintf(stream, "%scores           = %d\n", prefix, self->cores);
-    fprintf(stream, "%sprecision       = %g\n", prefix, self->precision);
-    fprintf(stream, "%sdetalg          = %s\n", prefix, self->detalg);
+    fprintf(stream, "%slmax      = %d\n", prefix, self->lmax);
+    fprintf(stream, "%scores     = %d\n", prefix, self->cores);
+    fprintf(stream, "%sprecision = %g\n", prefix, self->precision);
+    fprintf(stream, "%sthreshold = %g\n", prefix, self->threshold);
+    fprintf(stream, "%sdetalg    = %s\n", prefix, self->detalg);
 }
 
 
@@ -343,7 +342,7 @@ int casimir_init(casimir_t *self, double LbyR, double T)
     self->gamma_plane   = 0;
 
     /* XXX */
-    self->threshold = 1e-20;
+    self->threshold = 1e-16;
 
     /* set verbose flag */
     self->verbose = false;
@@ -1342,7 +1341,7 @@ void casimir_logdetD0(casimir_t *self, int m, double *logdet_EE, double *logdet_
         }
 
         if(n == 0)
-            trace_diag = trace;
+            trace_diag = dim-trace;
         else if(trace/trace_diag <= self->threshold)
             break;
     }
@@ -1392,13 +1391,17 @@ matrix_t *casimir_M(casimir_t *self, int n, int m)
     /* M_EE, -M_EM
        M_ME,  M_MM */
 
+    double trace_diag = 0;
+
     /* n-th minor diagonal */
     for(size_t md = 0; md < dim; md++)
     {
+        double trace = 0;
+
         for(size_t k = 0; k < dim-md; k++)
         {
-            const int l1 = md+min;
-            const int l2 = md+k+min;
+            const int l1 = k+min;
+            const int l2 = k+md+min;
 
             /* i: row of matrix, j: column of matrix */
             const size_t i = l1-min, j = l2-min;
@@ -1421,6 +1424,8 @@ matrix_t *casimir_M(casimir_t *self, int n, int m)
                 /* A_TE + B_TM */
                 double elem = exp((ln_al1+ln_al2)/2+logadd_s(cint.lnA_TE, cint.signA_TE, cint.lnB_TM, cint.signB_TM, &sign));
 
+                trace += elem; /* elem is positive */
+
                 matrix_set(M, i,j,             sign_al1*sign*elem);
                 matrix_set(M, j,i, MPOW(l1+l2)*sign_al2*sign*elem);
             }
@@ -1430,6 +1435,8 @@ matrix_t *casimir_M(casimir_t *self, int n, int m)
                 sign_t sign;
                 /* A_TM + B_TE */
                 double elem = exp((ln_bl1+ln_bl2)/2+logadd_s(cint.lnA_TM, cint.signA_TM, cint.lnB_TE, cint.signB_TE, &sign));
+
+                trace += elem; /* elem is positive */
 
                 matrix_set(M, i+dim,j+dim,             sign_bl1*sign*elem);
                 matrix_set(M, j+dim,i+dim, MPOW(l1+l2)*sign_bl2*sign*elem);
@@ -1455,6 +1462,11 @@ matrix_t *casimir_M(casimir_t *self, int n, int m)
                 matrix_set(M, dim+j,i, MPOW(l1+l2+1)*sign_bl2*sign1*elem1);
             }
         }
+
+        if(md == 0)
+            trace_diag = 2*dim - trace;
+        else if(trace/trace_diag <= self->threshold)
+                break;
     }
 
     if(isinf(self->omegap_plane))
@@ -1481,6 +1493,7 @@ matrix_t *casimir_M(casimir_t *self, int n, int m)
  */
 double casimir_logdetD(casimir_t *self, int n, int m)
 {
+    double t0;
     double logdet = 0;
 
     if(n == 0)
@@ -1497,14 +1510,15 @@ double casimir_logdetD(casimir_t *self, int n, int m)
         return logdet_EE + logdet_MM;
     }
 
-    const double start = now();
+    t0 = now();
     matrix_t *M = casimir_M(self, n, m);
-    casimir_debug(self, "# calculating %dx%d matrix elements: %gs\n", 2*M->dim, 2*M->dim, now()-start);
+    casimir_debug(self, "# timing: matrix elements: %gs\n", now()-t0);
 
     #if 0
     /* dump matrix */
+    t0 = now();
     matrix_save_to_file(M, "M.npy");
-    casimir_debug(self, "# dumped round-trip matrix M\n");
+    casimir_debug(self, "# dumped round-trip matrix M %g\n", now()-t0);
     #endif
 
     if(m == 0)
@@ -1524,15 +1538,23 @@ double casimir_logdetD(casimir_t *self, int n, int m)
 
         matrix_free(M);
 
+        t0 = now();
+
         logdet  = matrix_logdet(EE, -1, self->detalg);
         logdet += matrix_logdet(MM, -1, self->detalg);
+
+        casimir_debug(self, "# timing: log(det(Id-EE)), log(det(Id-MM)): %gs\n", now()-t0);
 
         matrix_free(EE);
         matrix_free(MM);
     }
     else
     {
+        t0 = now();
+
         logdet = matrix_logdet(M, -1, self->detalg);
+
+        casimir_debug(self, "# timing: log(det(Id-M)): %gs\n", now()-t0);
 
         matrix_free(M);
     }
