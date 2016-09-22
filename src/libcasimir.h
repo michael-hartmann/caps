@@ -69,10 +69,8 @@ typedef struct
      * @name reflection properties of the mirrors
      */
      /*@{*/
-    double omegap_sphere; /**< plasma frequency \f$\omega_\mathrm{P}\f$ of sphere */
-    double omegap_plane;  /**< plasma frequency \f$\omega_\mathrm{P}\f$ of plane */
-    double gamma_sphere;  /**< relaxation frequency \f$\gamma\f$ of sphere */
-    double gamma_plane;   /**< relaxation frequency \f$\gamma\f$ of plane */
+    double (*epsilonm1)(double xi, void *userdata);
+    void *userdata;
     /*@}*/
 
     /**
@@ -141,8 +139,6 @@ int casimir_vfprintf(casimir_t *self, FILE *stream, const char *format, va_list 
 int casimir_debug(casimir_t *self, const char *format, ...);
 int casimir_verbose(casimir_t *self, const char *format, ...);
 
-double casimir_epsilonm1(double xi, double omegap, double gamma_);
-
 double casimir_lnLambda(int l1, int l2, int m, sign_t *sign);
 
 int casimir_init(casimir_t *self, double LbyR, double T);
@@ -154,8 +150,7 @@ bool casimir_get_debug(casimir_t *self);
 void casimir_set_verbose(casimir_t *self, bool verbose);
 bool casimir_get_verbose(casimir_t *self);
 
-int casimir_set_drude(casimir_t *self, double omegap_plane, double gamma_plane, double omegap_sphere, double gamma_sphere);
-int casimir_get_drude(casimir_t *self, double *omegap_plane, double *gamma_plane, double *omegap_sphere, double *gamma_sphere);
+int casimir_set_epsilonm1(casimir_t *self, double (*epsilonm1)(double xi, void *userdata), void *userdata);
 
 int casimir_get_lmax(casimir_t *self);
 int casimir_set_lmax(casimir_t *self, int lmax);

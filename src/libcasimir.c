@@ -202,30 +202,8 @@ double casimir_lnLambda(int l1, int l2, int m, sign_t *sign)
 }
 
 
-/* deprecated */
 /**
- * @brief Calculate \f$\epsilon(i\xi)\f$ for Drude model
- *
- * This function returns the dielectric minus one
- * \f[
- *      \epsilon(i\xi)-1 = \frac{\omega_\mathrm{P}^2}{\xi(\xi+\gamma)}
- * \f]
- *
- * This function is thread-safe.
- *
- * @param [in]  xi     \f$\xi\f$ imaginary frequency (in scaled units: \f$\xi=nT\f$)
- * @param [in]  omegap \f$\omega_\mathrm{P}\f$ Plasma frequency
- * @param [in]  gamma_ \f$\gamma\f$ relaxation frequency
- * @retval epsilon \f$\epsilon(\xi, \omega_\mathrm{P}, \gamma)-1\f$
- */
-double casimir_epsilonm1(double xi, double omegap, double gamma_)
-{
-    return pow_2(omegap)/(xi*(xi+gamma_));
-}
-
-
-/**
- * @brief Calculate Fresnel coefficients \f$r_{TE}\f$ and \f$r_{TM}\f$ for Drude model
+ * @brief Calculate Fresnel coefficients \f$r_{TE}\f$ and \f$r_{TM}\f$ for arbitrary metals
  *
  * This function calculates the Fresnel coefficients for TE and TM mode
  *
@@ -239,9 +217,7 @@ double casimir_epsilonm1(double xi, double omegap, double gamma_)
  */
 void casimir_rp(casimir_t *self, double nT, double k, double *r_TE, double *r_TM)
 {
-    /* if(self->epsilonm1 == NULL) */
-    /* deprecated */
-    if(isinf(self->omegap_plane))
+    if(self->epsilonm1 == NULL)
     {
         /* perfect reflectors */
         *r_TM = 1.0;
@@ -266,9 +242,7 @@ void casimir_rp(casimir_t *self, double nT, double k, double *r_TE, double *r_TM
          * Note: ξ=nT
          */
 
-        /* const double epsilonm1 = self->epsilonm1(nT, self->userdata); */
-        /* deprecated */
-        const double epsilonm1 = casimir_epsilonm1(nT, self->omegap_plane, self->gamma_plane);
+        const double epsilonm1 = self->epsilonm1(nT, self->userdata);
         const double x         = pow_2(nT)/(pow_2(nT)+pow_2(k))*epsilonm1;
 
         if(fabs(x) < 1e-5)
@@ -339,12 +313,6 @@ int casimir_init(casimir_t *self, double LbyR, double T)
     self->epsilonm1 = NULL;
     self->userdata  = NULL;
 
-    /* deprecated, to be removed soon */
-    self->omegap_sphere = INFINITY;
-    self->gamma_sphere  = 0;
-    self->omegap_plane  = INFINITY;
-    self->gamma_plane   = 0;
-
     /* XXX */
     self->threshold = 1e-16;
 
@@ -398,65 +366,24 @@ bool casimir_get_verbose(casimir_t *self)
     return self->verbose;
 }
 
-/* deprecated */
 /**
- * @brief Set material parameters for Drude metals
+ * @brief Set material parameters for generic metals
  *
- * Set material parameters of plane and sphere for Drude metals.
+ * Set dielectric function of material.
  *
- * This function is not thread-safe.
+ * If epsilonm1 is NULL, assume perfect reflectors.
  *
  * @param [in,out] self Casimir object
- * @param [in] omegap_plane  \f$\omega_\mathrm{P}\f$ plasma frequency for plane in units of \f$c/(L+R)\f$
- * @param [in] gamma_plane   \f$\gamma\f$            relaxation frequency for plane in units of \f$c/(L+R)\f$
- * @param [in] omegap_sphere \f$\omega_\mathrm{P}\f$ plasma frequency for sphere in units of \f$c/(L+R)\f$
- * @param [in] gamma_sphere  \f$\gamma\f$            relaxation frequency for sphere in units of \f$c/(L+R)\f$
- * @retval 1 if successful
- * @retval 0 if \f$\omega_\mathrm{P} <= 0\f$ or \f$\gamma < 0\f$ (for plane or sphere)
+ * @param [in] epsilonm1  callback to the function that calculates epsilon(i*xi)-1
+ * @param [in] userdata   arbitrary pointer to data that is passwd to epsilonm1 whenever the function is called
+ * @retval 1
  */
-int casimir_set_drude(casimir_t *self, double omegap_plane, double gamma_plane, double omegap_sphere, double gamma_sphere)
+int casimir_set_epsilonm1(casimir_t *self, double (*epsilonm1)(double xi, void *userdata), void *userdata)
 {
-    if(omegap_plane > 0 && gamma_plane >= 0 && omegap_sphere > 0 && gamma_sphere >= 0)
-    {
-        self->omegap_sphere = omegap_sphere;
-        self->gamma_sphere  = gamma_sphere;
-        self->omegap_plane  = omegap_plane;
-        self->gamma_plane   = gamma_plane;
+    self->epsilonm1 = epsilonm1;
+    self->userdata  = userdata;
 
-        return 1;
-    }
-    return 0;
-}
-
-/* deprecated */
-/**
- * @brief Get material parameters for Drude metals
- *
- * Get material parameters of plane and sphere for Drude metals. The values are
- * written to the memory pointed to by omegap_plane, gamma_plane, omegap_sphere
- * and gamma_sphere. If one pointer is NULL, no value is written.
- *
- * This function is not thread-safe.
- *
- * @param [in,out] self Casimir object
- * @param [out] omegap_plane  \f$\omega_\mathrm{P}\f$ plasma frequency for plane in units of \f$c/(L+R)\f$
- * @param [out] gamma_plane   \f$\gamma\f$            relaxation frequency for plane in units of \f$c/(L+R)\f$
- * @param [out] omegap_sphere \f$\omega_\mathrm{P}\f$ plasma frequency for sphere in units of \f$c/(L+R)\f$
- * @param [out] gamma_sphere  \f$\gamma\f$            relaxation frequency for sphere in units of \f$c/(L+R)\f$
- * @return 0
- */
-int casimir_get_drude(casimir_t *self, double *omegap_plane, double *gamma_plane, double *omegap_sphere, double *gamma_sphere)
-{
-    if(omegap_plane != NULL)
-        *omegap_plane = self->omegap_plane;
-    if(gamma_plane != NULL)
-        *gamma_plane = self->gamma_plane;
-    if(omegap_sphere != NULL)
-        *omegap_sphere = self->omegap_sphere;
-    if(gamma_sphere != NULL)
-        *gamma_sphere = self->gamma_sphere;
-
-    return 0;
+    return 1;
 }
 
 
@@ -758,14 +685,14 @@ void casimir_lnab_perf(casimir_t *self, int n, int l, double *lna, double *lnb, 
 
 
 /**
- * @brief Return logarithm of Mie coefficients \f$a_\ell\f$, \f$b_\ell\f$ for Drude model
+ * @brief Return logarithm of Mie coefficients \f$a_\ell\f$, \f$b_\ell\f$ for arbitrary metals
  *
  * For \f$\omega_\mathrm{P} = \infty\f$ the Mie coefficient for perfect
  * reflectors are returned (see \ref casimir_lnab_perf).
  *
  * lna, lnb, sign_a and sign_b must be valid pointers and must not be NULL.
  *
- * For Drude metals we calculate the Mie coefficients al(iξ) und bl(iξ) using
+ * For generic metals we calculate the Mie coefficients al(iξ) und bl(iξ) using
  * the expressions taken from [1]. Ref. [1] is the erratum to [2]. Please note
  * that the equations (3.30) and (3.31) in [3] are wrong.
  *
@@ -794,16 +721,14 @@ void casimir_lnab_perf(casimir_t *self, int n, int l, double *lna, double *lnb, 
  */
 void casimir_lnab(casimir_t *self, int n_mat, int l, double *lna, double *lnb, sign_t *sign_a, sign_t *sign_b)
 {
-    /* if(self->epsilonm1 == NULL) */
-    /* deprecated */
-    if(isinf(self->omegap_sphere))
+    if(self->epsilonm1 == NULL)
     {
         /* Mie coefficients for perfect reflectors */
         casimir_lnab_perf(self, n_mat, l, lna, lnb, sign_a, sign_b);
         return;
     }
 
-    /* Mie coefficients for Drude metals */
+    /* Mie coefficients for arbitrary metals */
 
     /* ξ = nT */
     const double xi = n_mat*self->T;
@@ -818,9 +743,7 @@ void casimir_lnab(casimir_t *self, int n_mat, int l, double *lna, double *lnb, s
      * n    = sqrt(ε(ξ,ω_p,γ))
      * ln_n = ln(sqrt(ε)) = ln(ε)/2 = ln(1+(ε-1))/2 = log1p(ε-1)/2
      */
-    /* const double ln_n = log1p(self->casimir_epsilonm1(xi, self->userdata))/2; */
-    /* deprecated */
-    const double ln_n = log1p(casimir_epsilonm1(xi, self->omegap_sphere, self->gamma_sphere))/2;
+    const double ln_n = log1p(self->epsilonm1(xi, self->userdata))/2;
     const double n    = exp(ln_n);
 
     double lnIlp, lnKlp, lnIlm, lnKlm, lnIlp_nchi, lnKlp_nchi, lnIlm_nchi, lnKlm_nchi;
@@ -1385,9 +1308,7 @@ matrix_t *casimir_M(casimir_t *self, int n, int m)
     const size_t max = self->lmax;
     const size_t dim = (max-min+1);
 
-    /* if(self->epsilonm1 == NULL) */
-    /* deprecated */
-    if(isinf(self->omegap_plane))
+    if(self->epsilonm1 == NULL)
         /* perfect reflector */
         casimir_integrate_perf_init(&int_perf, nT, m, self->lmax);
     else
@@ -1425,9 +1346,7 @@ matrix_t *casimir_M(casimir_t *self, int n, int m)
             casimir_mie_cache_get(self, l2, n, &ln_al2, &sign_al2, &ln_bl2, &sign_bl2);
 
             casimir_integrals_t cint;
-            /* if(self->epsilonm1 == NULL) */
-            /* deprecated */
-            if(isinf(self->omegap_plane))
+            if(self->epsilonm1 == NULL)
                 casimir_integrate_perf(&int_perf, l1, l2, &cint);
             else
                 casimir_integrate_drude(&int_drude, l1, l2, &cint);
@@ -1483,9 +1402,7 @@ matrix_t *casimir_M(casimir_t *self, int n, int m)
                 break;
     }
 
-    /* if(self->epsilonm1 == NULL) */
-    /* deprecated */
-    if(isinf(self->omegap_plane))
+    if(self->epsilonm1 == NULL)
         casimir_integrate_perf_free(&int_perf);
     else
         casimir_integrate_drude_free(&int_drude);
@@ -1516,9 +1433,7 @@ double casimir_logdetD(casimir_t *self, int n, int m)
     {
         double logdet_EE = 0, logdet_MM = 0;
 
-        /* if(self->epsilonm1 == NULL) */
-        /* deprecated */
-        if(isinf(self->omegap_plane))
+        if(self->epsilonm1 == NULL)
             /* perfect reflector */
             casimir_logdetD0(self, m, &logdet_EE, &logdet_MM);
         else
