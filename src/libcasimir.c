@@ -87,7 +87,6 @@ void casimir_info(casimir_t *self, FILE *stream, const char *prefix)
     fprintf(stream, "%scores           = %d\n", prefix, self->cores);
     fprintf(stream, "%sprecision       = %g\n", prefix, self->precision);
     fprintf(stream, "%sdetalg          = %s\n", prefix, self->detalg);
-    fprintf(stream, "%scheck_elems     = %s\n", prefix, self->check_elems  ? "true" : "false");
 }
 
 
@@ -355,9 +354,6 @@ int casimir_init(casimir_t *self, double LbyR, double T)
     /**
      * parameters that users usually don't change
      */
-
-    /* check matrix elements */
-    self->check_elems = true;
 
     /* set debug flag */
     self->debug = false;
@@ -1390,9 +1386,8 @@ matrix_t *casimir_M(casimir_t *self, int n, int m)
     /* allocate space for matrix M */
     matrix_t *M = matrix_alloc(2*dim);
 
-    /* set matrix elements to NAN */
-    if(self->check_elems)
-        matrix_setall(M, NAN);
+    /* set matrix elements to 0 */
+    matrix_setall(M, 0);
 
     /* M_EE, -M_EM
        M_ME,  M_MM */
@@ -1464,32 +1459,6 @@ matrix_t *casimir_M(casimir_t *self, int n, int m)
         casimir_integrate_perf_free(&int_perf);
     else
         casimir_integrate_drude_free(&int_drude);
-
-
-    /* check if matrix elements are finite */
-    if(self->check_elems)
-    {
-        for(size_t l1 = min; l1 <= max; l1++)
-            for(size_t l2 = min; l2 <= max; l2++)
-            {
-                const size_t i = l1-min;
-                const size_t j = l2-min;
-                const double elem_EE = matrix_get(M, i,j);
-                const double elem_MM = matrix_get(M, i+dim,j+dim);
-
-                TERMINATE(!isfinite(elem_EE), "matrix element not finite: P=EE, l1=%zu, l2=%zu, elem=%g", l1,l2, elem_EE);
-                TERMINATE(!isfinite(elem_MM), "matrix element not finite: P=MM, l1=%zu, l2=%zu, elem=%g", l1,l2, elem_MM);
-
-                if(m != 0)
-                {
-                    const double elem_EM = matrix_get(M, i+dim,j);
-                    const double elem_ME = matrix_get(M, i,j+dim);
-
-                    TERMINATE(!isfinite(elem_EM), "matrix element not finite: P=EM, l1=%zu, l2=%zu, elem=%g", l1,l2, elem_EM);
-                    TERMINATE(!isfinite(elem_ME), "matrix element not finite: P=EM, l1=%zu, l2=%zu, elem=%g", l1,l2, elem_EM);
-                }
-            }
-    }
 
     return M;
 }
