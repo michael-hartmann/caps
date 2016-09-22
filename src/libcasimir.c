@@ -343,6 +343,9 @@ int casimir_init(casimir_t *self, double LbyR, double T)
     self->omegap_plane  = INFINITY;
     self->gamma_plane   = 0;
 
+    /* XXX */
+    self->threshold = 1e-20;
+
     /* set verbose flag */
     self->verbose = false;
 
@@ -1285,6 +1288,10 @@ void casimir_logdetD0(casimir_t *self, int m, double *logdet_EE, double *logdet_
     const size_t max = self->lmax;
     const size_t dim = max-min+1;
 
+    /* nothing to do... */
+    if(logdet_EE == NULL && logdet_MM == NULL)
+        return;
+
     if(logdet_EE != NULL)
     {
         EE = matrix_alloc(dim);
@@ -1296,14 +1303,16 @@ void casimir_logdetD0(casimir_t *self, int m, double *logdet_EE, double *logdet_
         matrix_setall(MM,0);
     }
 
-    double max_elem_diag = 0; /* largest matrix element on diagonal */
+    double trace_diag = 0; /* sum of modulus of matrix elements of diagonal */
 
-    /* calculate the matrix elements of M */
+    /* calculate matrix elements of M */
+
+    /* n-th minor diagonal */
     for(size_t n = 0; n < dim; n++)
     {
-        double max_elem = 0;
+        /* sum of modulus of matrix elements of n-th minor diagonal */
+        double trace = 0;
 
-        /* The matrix M is symmetric. */
         for(size_t d = 0; d < dim-n; d++)
         {
             const int l1 = d+min;
@@ -1319,8 +1328,10 @@ void casimir_logdetD0(casimir_t *self, int m, double *logdet_EE, double *logdet_
              */
             const double EE_ij = exp( (l1+l2+1)*y + lgamma(1+l1+l2) - 0.5*(lgamma(1+l1+m)+lgamma(1+l1-m) + lgamma(1+l2+m)+lgamma(1+l2-m)) );
 
-            max_elem = MAX(fabs(EE_ij), max_elem);
+            /* calculate trace of n-th minor diagonal */
+            trace += fabs(EE_ij);
 
+            /* The matrix M is symmetric. */
             if(EE != NULL)
             {
                 matrix_set(EE, i,j, EE_ij);
@@ -1335,9 +1346,8 @@ void casimir_logdetD0(casimir_t *self, int m, double *logdet_EE, double *logdet_
         }
 
         if(n == 0)
-            max_elem_diag = max_elem;
-
-        if(max_elem/max_elem_diag < 1e-16)
+            trace_diag = trace;
+        else if(trace/trace_diag <= self->threshold)
             break;
     }
 
