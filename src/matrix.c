@@ -195,10 +195,15 @@ double matrix_logdet_qr(matrix_t *M)
 /**
  * @brief Calculate \f$\log\det(\mathrm{Id}+z*M)\f$ for matrix M
  *
- * @param [in]     casimir casimir object
- * @param [in,out] M round trip matrix M (matrix elements given as logarithms); M will be overwritten.
- * @param [in]     M_sign signs of matrix elements M
+ * Detalg may be:
+ *  - LU (default)
+ *  - EIG_LAPACK
+ *  - LU_LAPACK
+ *  - QR_GIVENS
+ *
+ * @param [in,out] M round trip matrix M; M will be overwritten.
  * @param [in]     z factor z in log(det(Id+z*M))
+ * @param [in]     detalg algorithm to be used
  * @retval logdet  \f$\log\det(\mathrm{Id}+z*M)\f$
  */
 double matrix_logdet(matrix_t *A, double z, const char *detalg)
@@ -224,7 +229,7 @@ double matrix_logdet(matrix_t *A, double z, const char *detalg)
 
     if(strcmp(detalg, "LU_LAPACK") == 0)
         return matrix_logdet_lu_lapack(A);
-    if(strcmp(detalg, "QR") == 0)
+    if(strcmp(detalg, "QR_GIVENS") == 0)
         return matrix_logdet_qr(A);
     else
         return matrix_logdet_lu(A);
@@ -246,6 +251,8 @@ double matrix_logdet_lu_lapack(matrix_t *A)
         ipiv, /* pivot indices of dimension min(rows,cols) */
         &info
     );
+
+    WARN(info != 0, "dgetrf returned %d", info);
 
     for(int i = 0; i < dim; i++)
         logdet[i] = log(fabs(matrix_get(A, i, i)));
@@ -283,6 +290,8 @@ double matrix_logdetIdmM_eig_lapack(matrix_t *A, double z)
     );
 
     xfree(work);
+
+    WARN(info != 0, "dgetrf returned %d", info);
 
     for(int i = 0; i < dim; i++)
     {
