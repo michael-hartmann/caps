@@ -33,6 +33,7 @@ double matrix_logdet_lu(matrix_t *A);
 double matrix_logdet_qr(matrix_t *M);
 double matrix_logdet(matrix_t *A, double z, const char *detalg);
 double matrix_logdet_lu_lapack(matrix_t *A);
+double matrix_logdet_qr_lapack(matrix_t *A);
 double matrix_logdetIdmM_eig_lapack(matrix_t *A, double z);
 
 #endif
