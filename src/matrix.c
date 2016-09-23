@@ -97,7 +97,7 @@ void matrix_setall(matrix_t *A, double z)
         a[i] = z;
 }
 
-static double _logdet_tridiag(matrix_t *A)
+double matrix_logdet_triangular(matrix_t *A)
 {
     size_t dim = A->dim;
     double logdet[dim];
@@ -131,7 +131,7 @@ double matrix_logdet_lu(matrix_t *A)
         }
     }
 
-    return _logdet_tridiag(A);
+    return matrix_logdet_triangular(A);
 }
 
 
@@ -191,7 +191,7 @@ double matrix_logdet_qr(matrix_t *A)
             }
         }
 
-    return _logdet_tridiag(A);
+    return matrix_logdet_triangular(A);
 }
 
 
@@ -259,7 +259,7 @@ double matrix_logdet_lu_lapack(matrix_t *A)
 
     WARN(info != 0, "dgetrf returned %d", info);
 
-    return _logdet_tridiag(A);
+    return matrix_logdet_triangular(A);
 }
 
 double matrix_logdet_qr_lapack(matrix_t *A)
@@ -303,7 +303,7 @@ double matrix_logdet_qr_lapack(matrix_t *A)
 
     WARN(info != 0, "dgeqrf returned %d", info);
 
-    return _logdet_tridiag(A);
+    return matrix_logdet_triangular(A);
 }
 
 double matrix_logdetIdmM_eig_lapack(matrix_t *A, double z)
