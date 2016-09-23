@@ -23,11 +23,11 @@ matrix_t *matrix_alloc(const size_t dim)
 
     if(dim == 0)
         return NULL;
-    
+
     matrix_t *A = xmalloc(sizeof(matrix_t));
     if(A == NULL)
         return NULL;
-    
+
     A->dim  = dim;
     A->dim2 = dim*dim;
 
@@ -37,7 +37,7 @@ matrix_t *matrix_alloc(const size_t dim)
         matrix_free(A);
         return NULL;
     }
-    
+
     return A;
 }
 
@@ -200,9 +200,10 @@ double matrix_logdet_qr(matrix_t *A)
  *
  * Detalg may be:
  *  - LU_LAPACK (default)
+ *  - QR_LAPACK
  *  - LU
- *  - EIG_LAPACK
  *  - QR_GIVENS
+ *  - EIG_LAPACK
  *
  * @param [in,out] M round trip matrix M; M will be overwritten.
  * @param [in]     z factor z in log(det(Id+z*M))
@@ -234,6 +235,8 @@ double matrix_logdet(matrix_t *A, double z, const char *detalg)
         return matrix_logdet_lu(A);
     if(strcmp(detalg, "QR_GIVENS") == 0)
         return matrix_logdet_qr(A);
+    if(strcmp(detalg, "QR_LAPACK") == 0)
+        return matrix_logdet_qr_lapack(A);
     else
         return matrix_logdet_lu_lapack(A);
 }
@@ -255,6 +258,50 @@ double matrix_logdet_lu_lapack(matrix_t *A)
     );
 
     WARN(info != 0, "dgetrf returned %d", info);
+
+    return _logdet_tridiag(A);
+}
+
+double matrix_logdet_qr_lapack(matrix_t *A)
+{
+    int dim = (int)A->dim;
+    double tau[dim];
+    int info = 0;
+    int lwork = -1;
+    double opt_lwork = 0;
+    double *work = NULL;
+
+    /* determine optimal value for workspace */
+    dgeqrf_(
+        &dim,   /* number of rows of the matrix A */
+        &dim,   /* number of columns of the matrix A */
+        A->M,   /* matrix A */
+        &dim,   /* leading dimension of the array A */
+        tau,   /* scalar factors of the elementary reflectors */
+        &opt_lwork,/* workspace */
+        &lwork, /* dimension of the array WORK */
+        &info
+    );
+
+    /* allocate memory for workspace */
+    lwork = opt_lwork;
+    work = xmalloc(lwork*sizeof(double));
+
+    /* perform QR decomposition */
+    dgeqrf_(
+        &dim,   /* number of rows of the matrix A */
+        &dim,   /* number of columns of the matrix A */
+        A->M,   /* matrix A */
+        &dim,   /* leading dimension of the array A */
+        tau,    /* scalar factors of the elementary reflectors */
+        work,   /* workspace */
+        &lwork, /* dimension of the array WORK */
+        &info
+    );
+
+    xfree(work);
+
+    WARN(info != 0, "dgeqrf returned %d", info);
 
     return _logdet_tridiag(A);
 }
