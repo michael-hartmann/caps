@@ -29,6 +29,7 @@ void matrix_setall(matrix_t *A, double z);
 int matrix_save_to_stream(matrix_t *A, FILE *stream);
 int matrix_save_to_file(matrix_t *A, const char *filename);
 
+double matrix_logdet_triangular(matrix_t *A);
 double matrix_logdet_lu(matrix_t *A);
 double matrix_logdet_qr(matrix_t *M);
 double matrix_logdet(matrix_t *A, double z, const char *detalg);
