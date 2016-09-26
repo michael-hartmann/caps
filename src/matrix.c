@@ -151,12 +151,12 @@ double matrix_logdet_qr(matrix_t *A)
     for(size_t j = 0; j < dim-1; j++)
         for(size_t i = j+1; i < dim; i++)
         {
-            double c,s, Mij = m[i*dim+j];
+            double c,s;
+            const double b = m[i*dim+j];
 
-            if(Mij != 0)
+            if(b != 0)
             {
                 const double a = m[j*dim+j];
-                const double b = Mij; /* b != 0 */
 
                 if(a == 0)
                 {
@@ -231,14 +231,17 @@ double matrix_logdet(matrix_t *A, double z, const char *detalg)
             a[i*dim+i] += 1;
     }
 
+    if(strcmp(detalg, "LU_LAPACK") == 0)
+        return matrix_logdet_lu_lapack(A);
     if(strcmp(detalg, "LU") == 0)
         return matrix_logdet_lu(A);
     if(strcmp(detalg, "QR_GIVENS") == 0)
         return matrix_logdet_qr(A);
     if(strcmp(detalg, "QR_LAPACK") == 0)
         return matrix_logdet_qr_lapack(A);
-    else
-        return matrix_logdet_lu_lapack(A);
+
+    WARN(1, "Unknown algorithm %s, defaulting to LU_LAPACK", detalg);
+    return matrix_logdet_lu_lapack(A);
 }
 
 double matrix_logdet_lu_lapack(matrix_t *A)
