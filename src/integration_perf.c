@@ -159,12 +159,11 @@ double casimir_integrate_K(integration_perf_t *self, const int l1, const int l2,
     if(isnan(v))
     {
         const int m = (self->m != 0) ? self->m : 2;
-        const int qmax       = gaunt_qmax(l1,l2,m);
+        const int qmax = gaunt_qmax(l1,l2,m);
         const double log_a0 = gaunt_log_a0(l1,l2,m);
         const int elems = MAX(0,1+qmax);
-
-        double *a    = xmalloc(elems*sizeof(double));
-        sign_t *signs = xmalloc(elems*sizeof(sign_t));
+        double a[elems];
+        sign_t signs[elems];
 
         gaunt(l1, l2, m, a);
 
@@ -176,9 +175,6 @@ double casimir_integrate_K(integration_perf_t *self, const int l1, const int l2,
 
         v = self->cache_K[index] = log_a0+logadd_ms(a, signs, elems, sign);
         self->cache_K_signs[index] = *sign;
-
-        xfree(a);
-        xfree(signs);
 
         TERMINATE(isnan(v), "casimir_integrate_K l1=%d, l2=%d, m=%d, %g\n", l1, l2, m, v);
 
