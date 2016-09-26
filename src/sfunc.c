@@ -390,7 +390,7 @@ double plm_lndPlm(int l, int m, double x, sign_t *sign)
  */
 double plm_dPlm(int l, int m, double x)
 {
-    sign_t sign;
+    sign_t sign = 0;
     double value = plm_lndPlm(l, m, x, &sign);
     return sign*exp(value);
 }
