@@ -12,6 +12,8 @@ typedef signed char sign_t;
 #include <stdbool.h>
 #include <stdio.h>
 
+#include "matrix.h"
+
 #ifndef M_PI
 #define M_PI 3.14159265358979323846
 #endif
@@ -129,7 +131,6 @@ typedef struct
     sign_t signD_TM; /**< sign of lnD_TM */
 } casimir_integrals_t;
 
-#include <matrix.h>
 
 /* prototypes */
 int  casimir_compile_info(char *str, size_t size);
