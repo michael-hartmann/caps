@@ -156,8 +156,8 @@ int main(int argc, char *argv[])
     do {
         if(LbyR <= 0)
             fprintf(stderr, "-x must be positive.");
-        else if(nT <= 0)
-            fprintf(stderr, "--nT must be positive value.");
+        else if(nT < 0)
+            fprintf(stderr, "--nT must be non-negative value.");
         else if(m < 0)
             fprintf(stderr, "m >= 0\n\n");
         else if(omegap < 0)
@@ -181,7 +181,10 @@ int main(int argc, char *argv[])
     printf("\n");
 
     casimir_t casimir;
-    casimir_init(&casimir, LbyR, nT);
+    if(nT > 0)
+        casimir_init(&casimir, LbyR, nT);
+    else
+        casimir_init(&casimir, LbyR, 1);
 
     if(lmax)
         casimir_set_lmax(&casimir, lmax);
@@ -199,7 +202,11 @@ int main(int argc, char *argv[])
     casimir_info(&casimir, stdout, "# ");
     printf("#\n");
 
-    double logdet = casimir_logdetD(&casimir, 1, m);
+    double logdet = 0;
+    if(nT == 0)
+        logdet = casimir_logdetD(&casimir, 0, m);
+    else
+        logdet = casimir_logdetD(&casimir, 1, m);
 
     printf("# L/R, ξ*(L+R)/c, ωp*(L+R)/c, γ*(L+R)/c, m, logdetD, lmax, time\n");
     printf("%g, %g, %g, %g, %d, %.16g, %d, %g\n", LbyR, nT, omegap, gamma_, m, logdet, casimir.lmax, now()-start_time);
