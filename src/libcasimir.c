@@ -299,12 +299,12 @@ int casimir_init(casimir_t *self, double LbyR, double T)
 
     self->lmax = ceil(MAX(CASIMIR_MINIMUM_LMAX, CASIMIR_FACTOR_LMAX/LbyR));
 
-    self->T               = T;
-    self->RbyScriptL      = 1./(1.+LbyR);
-    self->LbyR            = LbyR;
-    self->precision       = CASIMIR_PRECISION;
-    self->cores           = 1;
-    self->threads         = xmalloc(self->cores*sizeof(pthread_t));
+    self->T          = T;
+    self->RbyScriptL = 1./(1.+LbyR);
+    self->LbyR       = LbyR;
+    self->precision  = CASIMIR_PRECISION;
+    self->cores      = 1;
+    self->threads    = xmalloc(self->cores*sizeof(pthread_t));
 
     /* initialize mie cache */
     casimir_mie_cache_init(self);
