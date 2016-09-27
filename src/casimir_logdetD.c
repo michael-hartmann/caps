@@ -202,14 +202,21 @@ int main(int argc, char *argv[])
     casimir_info(&casimir, stdout, "# ");
     printf("#\n");
 
-    double logdet = 0;
-    if(nT == 0)
-        logdet = casimir_logdetD(&casimir, 0, m);
-    else
-        logdet = casimir_logdetD(&casimir, 1, m);
+    if(nT > 0)
+    {
+        double logdet = casimir_logdetD(&casimir, 1, m);
 
-    printf("# L/R, ξ*(L+R)/c, ωp*(L+R)/c, γ*(L+R)/c, m, logdetD, lmax, time\n");
-    printf("%g, %g, %g, %g, %d, %.16g, %d, %g\n", LbyR, nT, omegap, gamma_, m, logdet, casimir.lmax, now()-start_time);
+        printf("# L/R, ξ*(L+R)/c, ωp*(L+R)/c, γ*(L+R)/c, m, logdetD, lmax, time\n");
+        printf("%g, %g, %g, %g, %d, %.16g, %d, %g\n", LbyR, nT, omegap, gamma_, m, logdet, casimir.lmax, now()-start_time);
+    }
+    else /* nT == 0 */
+    {
+        double logdet_EE = 0, logdet_MM = 0;
+        casimir_logdetD0(&casimir, m, &logdet_EE, &logdet_MM);
+
+        printf("# L/R, ξ*(L+R)/c, m, logdetD (EE), logdetD (MM), lmax, time\n");
+        printf("%g, 0, %d, %.16g, %.16g, %d, %g\n", LbyR, m, logdet_EE, logdet_MM, casimir.lmax, now()-start_time);
+    }
 
     casimir_free(&casimir);
 
