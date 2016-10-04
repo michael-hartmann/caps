@@ -6,8 +6,6 @@
  */
 
 #include <math.h>
-#include <stdio.h>
-#include <string.h>
 
 #include "utils.h"
 #include "sfunc.h"
@@ -15,210 +13,210 @@
 #include "integration.h"
 #include "gausslaguerre.h"
 
-void integrate_gauss_laguerre(casimir_t *self,
-                              casimir_integrals_t *cint,
-                              int l1, int l2, int m, double nT);
-
-void integrands_drude(double x, integrands_drude_t *integrands,
-                      struct integ_context* context,
-                      unsigned int index,
-                      unsigned int iteration);
-
-/** @brief Calculate integrals A,B,C,D including prefactor Lambda vor Drude metals
- *
- * This function calculates
- *    Lambda(l1,l2,m)*A_(l1,l2)^(m),
- *    Lambda(l1,l2,m)*B_(l1,l2)^(m),
- *    Lambda(l1,l2,m)*C_(l1,l2)^(m),
- *    Lambda(l1,l2,m)*D_(l1,l2)^(m)
- * for Drude metals.
- *
- * @param [in]  Drude integration object
- * @param [in]  l1   \f$\ell_1\f$
- * @param [in]  l2   \f$\ell_2\f$
- * @param [out] cint logarithms of values and signs of integrals
- */
-void casimir_integrate_drude(integration_drude_t* int_drude, int l1, int l2, casimir_integrals_t* cint)
+/* nodes and weights vor Gauss-Kronrod */
+static double gausskronrod[15][3] =
 {
-    integrate_gauss_laguerre(int_drude->casimir, cint, l1, l2, int_drude->m, int_drude->nT);
-}
+    /* node               weight Gauss       weight Kronrod */
+    { +0.949107912342759, 0.129484966168870, 0.063092092629979 },
+    { -0.949107912342759, 0.129484966168870, 0.063092092629979 },
+    { +0.741531185599394, 0.279705391489277, 0.140653259715525 },
+    { -0.741531185599394, 0.279705391489277, 0.140653259715525 },
+    { +0.405845151377397, 0.381830050505119, 0.190350578064785 },
+    { -0.405845151377397, 0.381830050505119, 0.190350578064785 },
+    {  0.000000000000000, 0.417959183673469, 0.209482141084728 },
 
-
-void casimir_integrate_drude_init(casimir_t* self, integration_drude_t* int_drude, double nT, int m, int lmax)
-{
-    int_drude->casimir = self;
-    int_drude->nT      = nT;
-    int_drude->m       = m;
-    int_drude->lmax    = lmax;
-}
-
-
-void casimir_integrate_drude_free(integration_drude_t* int_drude)
-{
-}
-
+    { +0.991455371120813, 0.000000000000000, 0.022935322010529 },
+    { -0.991455371120813, 0.000000000000000, 0.022935322010529 },
+    { +0.864864423359769, 0.000000000000000, 0.104790010322250 },
+    { -0.864864423359769, 0.000000000000000, 0.104790010322250 },
+    { +0.586087235467691, 0.000000000000000, 0.169004726639267 },
+    { -0.586087235467691, 0.000000000000000, 0.169004726639267 },
+    { +0.207784955007898, 0.000000000000000, 0.204432940075298 },
+    { -0.207784955007898, 0.000000000000000, 0.204432940075298 }
+};
 
 /*
- * ******************** Gauss-Laguerre Integration ********************
+ * A = A_0 * \int_0^\infty dz r_p e^{-(\tau+1)z} P_{\ell_1}^m(1+z) P_{\ell_2}^m(1+z) \frac{1}{z^2+2z}
+ * B = B_0 * \int_0^\infty dz r_p e^{-(\tau+1)z} {P_{\ell_1}^m}^\prime(1+z) {P_{\ell_2}^m(1+z)}^\prime (z^2+2z)
+ * C = C_0 * \int_0^\infty dz r_p e^{-(\tau+1)z} P_{\ell_1}^m(1+z) {P_{\ell_2}^m(1+z)}^\prime
+ * D = D_0 * \int_0^\infty dz r_p e^{-(\tau+1)z} {P_{\ell_1}^m(1+z)}^\prime P_{\ell_2}^m(1+z)
+ *
+ * A_0 = (-1)^{\ell_2+m} m^2
+ * B_0 = (-1)^{\ell_2+m+1}
+ * C_0 = (-1)^{\ell_2+m} m
+ * D_0 = (-1)^{\ell_1+\ell_2} C^m_{\ell_2\ell_1,p}
  */
-static void integrands_drude_laguerre(double x, integrands_drude_t *integrands,
-                                      casimir_t *self, double nT, int l1, int l2, int m)
+static void calculate_integrands(integration_t *int_obj, double z, int l1, int l2, double v[8], sign_t s[8]);
+
+static void calculate_integrands(integration_t *int_obj, double z, int l1, int l2, double v[8], sign_t s[8])
 {
     plm_combination_t comb;
-    const double tau        = 2*nT;
-    const double k          = sqrt(pow_2(x)/4 + nT*x);
-    const double log_factor = log(pow_2(x)+2*tau*x);
-    double r_TE, r_TM;
+    const int m = int_obj->m;
+    const double nT = int_obj->nT;
+    const double tau = 2*nT;
+    double log_z22z = log(pow_2(z)+2*z);
 
-    casimir_rp(self, nT, k, &r_TE, &r_TM);
-    const double lnr_TE = log(-r_TE);
-    const double lnr_TM = log(r_TM);
+    /* Fresnel coefficients */
+    double log_rTE, log_rTM;
+    {
+        double rTE,rTM;
+        double k = tau/2*sqrt(pow_2(z)+2*z);
+        casimir_rp(int_obj->casimir, nT, k, &rTE, &rTM);
+        log_rTE = log(-rTE);
+        log_rTM = log(+rTM);
+    }
 
-    plm_PlmPlm(l1, l2, m, 1+x/tau, &comb);
+    plm_PlmPlm(l1, l2, m, 1+z, &comb);
 
-    const double A = comb.lnPl1mPl2m - log_factor;
-    integrands->lnA_TE = lnr_TE + A;
-    integrands->lnA_TM = lnr_TM + A;
-    integrands->sign_A = comb.sign_Pl1mPl2m;
+    const double A = -(tau+1)*z -log_z22z +comb.lnPl1mPl2m;
+    v[0] = log_rTE + A; /* A, TE */
+    v[1] = log_rTM + A; /* A, TM */
+    s[0] = -comb.sign_Pl1mPl2m;
+    s[1] = +comb.sign_Pl1mPl2m;
 
-    const double B = comb.lndPl1mdPl2m + log_factor;
-    integrands->lnB_TE = lnr_TE + B;
-    integrands->lnB_TM = lnr_TM + B;
-    integrands->sign_B = comb.sign_dPl1mdPl2m;
+    const double B = -(tau+1)*z +log_z22z +comb.lndPl1mdPl2m;
+    v[2] = log_rTE + B; /* B, TE */
+    v[3] = log_rTM + B; /* B, TM */
+    s[2] = -comb.sign_dPl1mdPl2m;
+    s[3] = +comb.sign_dPl1mdPl2m;
 
-    const double C = comb.lnPl1mdPl2m;
-    integrands->lnC_TE = lnr_TE + C;
-    integrands->lnC_TM = lnr_TM + C;
-    integrands->sign_C = comb.sign_Pl1mdPl2m;
+    const double C = -(tau+1)*z +comb.lnPl1mdPl2m;
+    v[4] = log_rTE + C; /* C, TE */
+    v[5] = log_rTM + C; /* C, TM */
+    s[4] = -comb.sign_Pl1mdPl2m;
+    s[5] = +comb.sign_Pl1mdPl2m;
 
-    const double D = comb.lndPl1mPl2m;
-    integrands->lnD_TE = lnr_TE + D;
-    integrands->lnD_TM = lnr_TM + D;
-    integrands->sign_D = comb.sign_dPl1mPl2m;
+    const double D = -(tau+1)*z +comb.lndPl1mPl2m;
+    v[6] = log_rTE + D; /* D, TE */
+    v[7] = log_rTM + D; /* D, TM */
+    s[6] = -comb.sign_dPl1mPl2m;
+    s[7] = +comb.sign_dPl1mPl2m;
 }
 
 
-/** @brief Calculate integrals A,B,C,D including prefactor Lambda vor Drude metals
- *
- * This function calculates
- *    Lambda(l1,l2,m)*A_(l1,l2)^(m),
- *    Lambda(l1,l2,m)*B_(l1,l2)^(m),
- *    Lambda(l1,l2,m)*C_(l1,l2)^(m),
- *    Lambda(l1,l2,m)*D_(l1,l2)^(m)
- * for Drude metals.
- *
- * @param [in]  self Casimir object
- * @param [out] cint logarithms of values and signs of integrals
- * @param [in]  l1   \f$\ell_1\f$
- * @param [in]  l2   \f$\ell_2\f$
- * @param [in]  m    \f$m\f$
- * @param [in]  nT   \f$nT\f$
+static void integrate_gauss_kronrod(integration_t *int_obj, int l1, int l2, double a, double b, interval_t *interval);
+
+/* a: left border of integration
+ * b: right border of integration
  */
-void integrate_gauss_laguerre(casimir_t *self, casimir_integrals_t *cint, int l1, int l2, int m, double nT)
+static void integrate_gauss_kronrod(integration_t *int_obj, int l1, int l2, double a, double b, interval_t *interval)
 {
-    integrands_drude_t integrand;
-    const double tau = 2*nT;
-    const double ln_tau = log(tau);
-    const double ln_Lambda = casimir_lnLambda(l1, l2, m, NULL); /* sign: -1 */
-    double prefactor;
-    double *xk, *ln_wk;
-    /* XXX use order 50 at the moment XXX */
-    const int N = gausslaguerre_nodes_weights(50, &xk, &ln_wk);
+    const double dx = (b-a)/2;
+    const double log_dx = log(dx);
+    double points_G7[8][7];
+    double points_K15[8][15];
+    sign_t signs[8][15];
 
-    /* allocate space for signs_A, signs_B, signs_C, signs_D */
-    sign_t *signs_ABCD = xmalloc(4*N*sizeof(sign_t));
-    sign_t *signs_A = signs_ABCD;
-    sign_t *signs_B = signs_A+1*N;
-    sign_t *signs_C = signs_A+2*N;
-    sign_t *signs_D = signs_A+3*N;
+    interval->a = a;
+    interval->b = b;
 
-    /* allocate space for lnA_TE, lnA_TM, lnB_TE, lnB_TM, lnC_TE, lnC_TM,
-     * lnD_TE, lnD_TM */
-    double *ln_ABCD = xmalloc(4*2*N*sizeof(integrands_drude_t));
-    double *lnA_TE  = ln_ABCD;
-    double *lnA_TM  = ln_ABCD + 1*N;
-    double *lnB_TE  = ln_ABCD + 2*N;
-    double *lnB_TM  = ln_ABCD + 3*N;
-    double *lnC_TE  = ln_ABCD + 4*N;
-    double *lnC_TM  = ln_ABCD + 5*N;
-    double *lnD_TE  = ln_ABCD + 6*N;
-    double *lnD_TM  = ln_ABCD + 7*N;
+    for(int i = 0; i < 15; i++)
+    {
+        double v[8];
+        sign_t s[8];
+        const double xi  = gausskronrod[i][0]; /* node Kronrod */
+        const double wiG = gausskronrod[i][1]; /* weight Gauss */
+        const double wiK = gausskronrod[i][2]; /* weight Kronrod */
+        const double zi  = (xi+1)*dx+a; /* corresponding node in interval [a,b] */
+
+        /* calculate integrands A_TE, A_TM, ..., D_TE, D_TM at node zi */
+        calculate_integrands(int_obj, zi, l1, l2, v, s);
+
+        if(wiG > 0)
+        {
+            for(int j = 0; j < 8; j++)
+                points_G7[j][i] = log_dx+wiG+v[j];
+        }
+
+        for(int j = 0; j < 8; j++)
+        {
+            points_K15[j][i] = log_dx+wiK+v[j];
+            signs[j][i] = s[j];
+        }
+    }
+
+    for(int i = 0; i < 8; i++)
+    {
+        double G7, K15, err;
+        sign_t sign_G7, sign_K15;
+
+        G7  = logadd_ms(points_G7[i],  signs[i], 7,  &sign_G7);
+        K15 = logadd_ms(points_K15[i], signs[i], 15, &sign_K15);
+
+        err = exp(K15/2) * pow(200*fabs(1-exp(G7-K15)),1.5);
+
+        interval->K15[i] = K15;
+        interval->err[i] = err;
+    }
+
+    double maxerr = interval->err[0];
+    for(int i = 1; i < 8; i++)
+        maxerr = MAX(maxerr, interval->err[i]);
+    interval->maxerr = maxerr;
+}
+
+int casimir_integrate_init(casimir_t *self, integration_t *int_obj, double nT, int m)
+{
+    int_obj->casimir = self;
+    int_obj->m    = m;
+    int_obj->nT   = nT;
+    int_obj->lmax = self->lmax;
+
+    return 0;
+}
+
+int casimir_integrate_free(integration_t *self)
+{
+    /* NOP at the moment */
+    return 0;
+}
+
+int casimir_integrate(integration_t *int_drude, int l1, int l2, casimir_integrals_t *cint)
+{
+    #if 0
+    const int N = 50; /* intervals */
 
     for(int i = 0; i < N; i++)
     {
-        integrands_drude_laguerre(xk[i], &integrand, self, nT, l1, l2, m);
+        G7
 
-        lnA_TE[i]  = ln_wk[i] + integrand.lnA_TE;
-        lnA_TM[i]  = ln_wk[i] + integrand.lnA_TM;
-        signs_A[i] = integrand.sign_A;
 
-        lnB_TE[i]  = ln_wk[i] + integrand.lnB_TE;
-        lnB_TM[i]  = ln_wk[i] + integrand.lnB_TM;
-        signs_B[i] = integrand.sign_B;
+        double a = ((double)i+0)/N; /* left */
+        double b = ((double)i+1)/N; /* right */
 
-        lnC_TE[i]  = ln_wk[i] + integrand.lnC_TE;
-        lnC_TM[i]  = ln_wk[i] + integrand.lnC_TM;
-        signs_C[i] = integrand.sign_C;
+        for(int j = 0; j < 15; j++)
+        {
+            double xi  = gausskronrod[i][0];
+            double wiG = gausskronrod[i][1];
+            double wiK = gausskronrod[i][2];
 
-        lnD_TE[i]  = ln_wk[i] + integrand.lnD_TE;
-        lnD_TM[i]  = ln_wk[i] + integrand.lnD_TM;
-        signs_D[i] = integrand.sign_D;
+            const double zi  = (xi+1)*dx+a;
+            const double fzi = f(zi, args);
+
+            integral_G7  += wiG*fzi;
+            integral_K15 += wiK*fzi;
+        }
+
     }
+    #endif
 
+    /* XXX NOT IMPLEMENTED YET XXX */
+    cint->lnA_TE = 0;
+    cint->lnA_TM = 0;
+    cint->lnB_TE = 0;
+    cint->lnB_TM = 0;
+    cint->lnC_TE = 0;
+    cint->lnC_TM = 0;
+    cint->lnD_TE = 0;
+    cint->lnD_TM = 0;
+    cint->signA_TE = 1;
+    cint->signA_TM = 1;
+    cint->signB_TE = 1;
+    cint->signB_TM = 1;
+    cint->signC_TE = 1;
+    cint->signC_TM = 1;
+    cint->signD_TE = 1;
+    cint->signD_TM = 1;
 
-    /* B */
-    prefactor = ln_Lambda -tau-3*ln_tau; /* exp(-tau)/tau³ */
-    cint->lnB_TE = prefactor + logadd_ms(lnB_TE, signs_B, N, &cint->signB_TE);
-    cint->lnB_TM = prefactor + logadd_ms(lnB_TM, signs_B, N, &cint->signB_TM);
-
-    cint->signB_TM = -MPOW(l2+m+1) * cint->signB_TM;
-    cint->signB_TE = +MPOW(l2+m+1) * cint->signB_TE;
-
-
-    if(m > 0)
-    {
-        const double log_m = log(m);
-
-        /* A */
-        prefactor = ln_Lambda + 2*log_m+ln_tau-tau; /* m²*tau*exp(-tau) */
-        cint->lnA_TE = prefactor + logadd_ms(lnA_TE, signs_A, N, &cint->signA_TE);
-        cint->lnA_TM = prefactor + logadd_ms(lnA_TM, signs_A, N, &cint->signA_TM);
-
-        /* r_TE is negative, r_TM is positive and Lambda(l1,l2,m) is negative.
-           => TM negative sign, TE positive sign */
-        cint->signA_TM = -MPOW(l2+m) * cint->signA_TM;
-        cint->signA_TE = +MPOW(l2+m) * cint->signA_TE;
-
-
-        /* C */
-        prefactor = ln_Lambda + log_m-tau-ln_tau; /* m*exp(-tau)/tau */
-        cint->lnC_TE = prefactor + logadd_ms(lnC_TE, signs_C, N, &cint->signC_TE);
-        cint->lnC_TM = prefactor + logadd_ms(lnC_TM, signs_C, N, &cint->signC_TM);
-
-        cint->signC_TM = -MPOW(l2+m) * cint->signC_TM;
-        cint->signC_TE = +MPOW(l2+m) * cint->signC_TE;
-
-
-        /* D */
-        /* prefactor is identical to C */
-        cint->lnD_TE = prefactor + logadd_ms(lnD_TE, signs_D, N, &cint->signD_TE);
-        cint->lnD_TM = prefactor + logadd_ms(lnD_TM, signs_D, N, &cint->signD_TM);
-
-        cint->signD_TM = -MPOW(l2+m+1) * cint->signD_TM;
-        cint->signD_TE = +MPOW(l2+m+1) * cint->signD_TE;
-    }
-    else
-    {
-        cint->lnA_TM = cint->lnA_TE = -INFINITY;
-        cint->signA_TM = cint->signA_TE = +1;
-
-        cint->lnC_TM = cint->lnC_TE = -INFINITY;
-        cint->signC_TM = cint->signC_TE = +1;
-
-        cint->lnD_TM = cint->lnD_TE = -INFINITY;
-        cint->signD_TM = cint->signD_TE = +1;
-    }
-
-    xfree(ln_ABCD);
-    xfree(signs_ABCD);
+    return 0;
 }
