@@ -155,12 +155,12 @@ static void integrate_gauss_kronrod(integration_t *int_obj, int l1, int l2, doub
     interval->maxerr = maxerr;
 }
 
-int casimir_integrate_init(casimir_t *self, integration_t *int_obj, double nT, int m)
+int casimir_integrate_init(casimir_t *casimir, integration_t *int_obj, double nT, int m)
 {
-    int_obj->casimir = self;
+    int_obj->casimir = casimir;
     int_obj->m    = m;
     int_obj->nT   = nT;
-    int_obj->lmax = self->lmax;
+    int_obj->lmax = casimir->lmax;
 
     return 0;
 }
@@ -171,52 +171,49 @@ int casimir_integrate_free(integration_t *self)
     return 0;
 }
 
-int casimir_integrate(integration_t *int_drude, int l1, int l2, casimir_integrals_t *cint)
+int casimir_integrate(integration_t *self, int l1, int l2, casimir_integrals_t *cint)
 {
-    #if 0
-    const int N = 50; /* intervals */
+    int m = self->m;
+    const int N = 100; /* XXX */
+    double lnLambda = casimir_lnLambda(l1, l2, m, NULL);
+    interval_t intervals[N];
+    double I[8][N];
+    sign_t s[8][N];
 
     for(int i = 0; i < N; i++)
     {
-        G7
+        double a = (double)i/N;
+        double b = (double)(i+1)/N;
 
+        integrate_gauss_kronrod(self, l1, l2, a, b, &intervals[i]);
 
-        double a = ((double)i+0)/N; /* left */
-        double b = ((double)i+1)/N; /* right */
-
-        for(int j = 0; j < 15; j++)
+        for(int j = 0; j < 8; j++)
         {
-            double xi  = gausskronrod[i][0];
-            double wiG = gausskronrod[i][1];
-            double wiK = gausskronrod[i][2];
-
-            const double zi  = (xi+1)*dx+a;
-            const double fzi = f(zi, args);
-
-            integral_G7  += wiG*fzi;
-            integral_K15 += wiK*fzi;
+            I[j][i] = intervals->K15[j];
+            s[j][i] = intervals->signs[j];
         }
-
     }
-    #endif
 
-    /* XXX NOT IMPLEMENTED YET XXX */
-    cint->lnA_TE = 0;
-    cint->lnA_TM = 0;
-    cint->lnB_TE = 0;
-    cint->lnB_TM = 0;
-    cint->lnC_TE = 0;
-    cint->lnC_TM = 0;
-    cint->lnD_TE = 0;
-    cint->lnD_TM = 0;
-    cint->signA_TE = 1;
-    cint->signA_TM = 1;
-    cint->signB_TE = 1;
-    cint->signB_TM = 1;
-    cint->signC_TE = 1;
-    cint->signC_TM = 1;
-    cint->signD_TE = 1;
-    cint->signD_TM = 1;
+    cint->lnA_TE = lnLambda + log(m*m) + logadd_ms(I[0], s[0], N, &cint->signA_TE);
+    cint->lnA_TM = lnLambda + log(m*m) + logadd_ms(I[1], s[1], N, &cint->signA_TM);
+
+    cint->lnB_TE = lnLambda + logadd_ms(I[2], s[2], N, &cint->signB_TE);
+    cint->lnB_TM = lnLambda + logadd_ms(I[3], s[3], N, &cint->signB_TM);
+
+    cint->lnC_TE = lnLambda + log(m) + logadd_ms(I[4], s[4], N, &cint->signC_TE);
+    cint->lnC_TM = lnLambda + log(m) + logadd_ms(I[5], s[5], N, &cint->signC_TM);
+
+    cint->lnD_TE = lnLambda + log(m) + logadd_ms(I[6], s[6], N, &cint->signD_TE);
+    cint->lnD_TM = lnLambda + log(m) + logadd_ms(I[7], s[7], N, &cint->signD_TM);
+
+    cint->signA_TE *= A0(l1,l2,m);
+    cint->signA_TM *= A0(l1,l2,m);
+    cint->signB_TE *= B0(l1,l2,m);
+    cint->signB_TM *= B0(l1,l2,m);
+    cint->signC_TE *= C0(l1,l2,m);
+    cint->signC_TM *= C0(l1,l2,m);
+    cint->signD_TE *= D0(l1,l2,m);
+    cint->signD_TM *= D0(l1,l2,m);
 
     return 0;
 }
