@@ -28,7 +28,7 @@ typedef signed char sign_t;
 #define CASIMIR_FACTOR_LMAX 5        /**< by default: lmax=ceil(5/LbyR) */
 
 #ifndef CASIMIR_DETALG
-#define CASIMIR_DETALG "LU" /**< default algorithm for matrix decomposition */
+#define CASIMIR_DETALG "LU_LAPACK" /**< default algorithm for matrix decomposition */
 #endif
 
 
