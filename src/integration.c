@@ -1,5 +1,5 @@
 /**
- * @file   integration_drude.c
+ * @file   integration.c
  * @author Michael Hartmann <michael.hartmann@physik.uni-augsburg.de>
  * @date   September, 2016
  * @brief  Perform integration for Drude planes
@@ -12,7 +12,7 @@
 #include "utils.h"
 #include "sfunc.h"
 #include "libcasimir.h"
-#include "integration_drude.h"
+#include "integration.h"
 #include "gausslaguerre.h"
 
 void integrate_gauss_laguerre(casimir_t *self,
