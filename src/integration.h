@@ -1,5 +1,5 @@
-#ifndef __INTEGRATION_DRUDE_H
-#define __INTEGRATION_DRUDE_H
+#ifndef __INTEGRATION_H
+#define __INTEGRATION_H
 
 #include "libcasimir.h"
 
