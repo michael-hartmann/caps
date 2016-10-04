@@ -47,16 +47,10 @@ F scaled = L+R ℏc F T scaled = 2π k (L+R) ℏc T
 Using this scaling the free energy only depends on the temperature T and the
 geometric ratio L/R .
 
-This code is part of my master thesis. This thesis is also a good reference for
-libcasimir. It costed much time and much work to write a stable and a fast
-implementation. So, if you find this piece of code useful and you use it for
-plots, please consider to cite libcasimir.
-
 Features
 --------
  - Calculate the free energy F(T,L/R) for different separations and temperatures
  - Calculate the free energy F(T→∞,L/R) in the high temperature limit
- - Support for 80-bit extended floating point precision and quadrupole precision
  - libcasimir is fast and reliable
  - ready to use programs: you don't have to modify the code
  - libcasimir is free software – you may use it or even modify it
@@ -70,9 +64,7 @@ $ sudo apt-get install gcc libc6-dev make
 $ cd src/
 $ make
 ```
-should install all dependencies and compile the code. If you want to change the
-floating point precision (80-bit extended precision or quadrupole precision) or
-the compiling option, have a look at the Makefile.
+should install all dependencies and compile the code.
 
 Usage
 -----
