@@ -1298,11 +1298,8 @@ matrix_t *casimir_M(casimir_t *self, int n, int m)
     const double nT = n*self->T;
     integration_perf_t int_perf;
 
-    integration_drude_t int_drude = {
-        .plm_cache = NULL,
-        .m         = m,
-        .nT        = n * self->T
-    };
+    /* XXX */
+    integration_t int_drude = { 0 };
 
     const size_t min = MAX(m,1);
     const size_t max = self->lmax;
@@ -1313,7 +1310,7 @@ matrix_t *casimir_M(casimir_t *self, int n, int m)
         casimir_integrate_perf_init(&int_perf, nT, m, self->lmax);
     else
         /* drude mirror */
-        casimir_integrate_drude_init(self, &int_drude, nT, m, self->lmax);
+        casimir_integrate_init(self, &int_drude, nT, m);
 
     /* allocate space for matrix M */
     matrix_t *M = matrix_alloc(2*dim);
@@ -1349,7 +1346,7 @@ matrix_t *casimir_M(casimir_t *self, int n, int m)
             if(self->epsilonm1 == NULL)
                 casimir_integrate_perf(&int_perf, l1, l2, &cint);
             else
-                casimir_integrate_drude(&int_drude, l1, l2, &cint);
+                casimir_integrate(&int_drude, l1, l2, &cint);
 
             /* EE */
             {
@@ -1405,7 +1402,7 @@ matrix_t *casimir_M(casimir_t *self, int n, int m)
     if(self->epsilonm1 == NULL)
         casimir_integrate_perf_free(&int_perf);
     else
-        casimir_integrate_drude_free(&int_drude);
+        casimir_integrate_free(&int_drude);
 
     return M;
 }
