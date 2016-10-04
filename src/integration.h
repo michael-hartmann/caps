@@ -3,9 +3,10 @@
 
 #include "libcasimir.h"
 
-#define A0(l1,l2,m) (MPOW((l2)+(m))*pow_2(m))
+#define A0(l1,l2,m) (MPOW((l2)+(m)))
 #define B0(l1,l2,m) (MPOW((l2)+(m)+1))
-#define C0(l1,l2,m) (MPOW((l2)+(m)))
+#define C0(l1,l2,m) (MPOW((l2)))
+#define D0(l1,l2,m) (MPOW((l2)))
 
 typedef struct {
     casimir_t *casimir;
