@@ -1,6 +1,8 @@
 #ifndef __UTILS_H
 #define __UTILS_H
 
+#include <stdlib.h>
+
 #if defined(__clang__)
     #define COMPILER "clang/llvm"
 #elif defined(__ICC) || defined(__INTEL_COMPILER)
