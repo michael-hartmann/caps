@@ -165,7 +165,6 @@ int casimir_set_cores(casimir_t *self, int cores);
 double casimir_get_precision(casimir_t *self);
 int    casimir_set_precision(casimir_t *self, double precision);
 
-
 void casimir_lnab0(int l, double *a0, sign_t *sign_a0, double *b0, sign_t *sign_b0);
 void casimir_lnab(casimir_t *self, int n, int l, double *lna, double *lnb, sign_t *sign_a, sign_t *sign_b);
 void casimir_lnab_perf(casimir_t *self, int n, int l, double *lna, double *lnb, sign_t *sign_a, sign_t *sign_b);
@@ -184,5 +183,8 @@ matrix_t *casimir_M(casimir_t *self, int n, int m);
 double casimir_logdetD(casimir_t *self, int n, int m);
 
 void casimir_rp(casimir_t *self, double nT, double k, double *r_TE, double *r_TM);
+
+double casimir_epsilonm1_perf(double xi, void *userdata);
+double casimir_epsilonm1_drude(double xi, void *userdata);
 
 #endif
