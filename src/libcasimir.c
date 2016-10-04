@@ -19,7 +19,7 @@
 #include <time.h>
 #include <unistd.h>
 
-#include "integration_drude.h"
+#include "integration.h"
 #include "integration_perf.h"
 #include "libcasimir.h"
 #include "matrix.h"
