@@ -206,14 +206,14 @@ int casimir_integrate(integration_t *self, int l1, int l2, casimir_integrals_t *
     cint->lnD_TE = lnLambda + log(m) + logadd_ms(I[6], s[6], N, &cint->signD_TE);
     cint->lnD_TM = lnLambda + log(m) + logadd_ms(I[7], s[7], N, &cint->signD_TM);
 
-    cint->signA_TE *= A0(l1,l2,m);
-    cint->signA_TM *= A0(l1,l2,m);
-    cint->signB_TE *= B0(l1,l2,m);
-    cint->signB_TM *= B0(l1,l2,m);
-    cint->signC_TE *= C0(l1,l2,m);
-    cint->signC_TM *= C0(l1,l2,m);
-    cint->signD_TE *= D0(l1,l2,m);
-    cint->signD_TM *= D0(l1,l2,m);
+    cint->signA_TE *= -A0(l1,l2,m);
+    cint->signA_TM *= -A0(l1,l2,m);
+    cint->signB_TE *= -B0(l1,l2,m);
+    cint->signB_TM *= -B0(l1,l2,m);
+    cint->signC_TE *= -C0(l1,l2,m);
+    cint->signC_TM *= -C0(l1,l2,m);
+    cint->signD_TE *= -D0(l1,l2,m);
+    cint->signD_TM *= -D0(l1,l2,m);
 
     return 0;
 }
