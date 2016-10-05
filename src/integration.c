@@ -5,6 +5,7 @@
  * @brief  Perform integration for Drude planes
  */
 
+#include <assert.h>
 #include <math.h>
 
 #include "utils.h"
@@ -57,19 +58,6 @@ void casimir_integrate_integrands(integration_t *int_obj, double z, int l1, int 
     double log_tau = log(tau);
     double log_term = log(pow_2(z)+2*tau*z); /* z²+2τz */
 
-    /* set output vector to +0 */
-    v[A_TE] = v[A_TM] = -INFINITY;
-    s[A_TE] = s[A_TM] = 1;
-
-    v[B_TE] = v[B_TM] = -INFINITY;
-    s[B_TE] = s[B_TM] = 1;
-
-    v[C_TE] = v[C_TM] = -INFINITY;
-    s[C_TE] = s[C_TM] = 1;
-
-    v[D_TE] = v[D_TM] = -INFINITY;
-    s[D_TE] = s[D_TM] = 1;
-
     /* calculate Fresnel coefficients */
     double log_rTE, log_rTM;
     {
@@ -78,6 +66,9 @@ void casimir_integrate_integrands(integration_t *int_obj, double z, int l1, int 
         casimir_rp(int_obj->casimir, int_obj->nT, k, &rTE, &rTM);
         log_rTE = log(-rTE);
         log_rTM = log(+rTM);
+
+        assert(log_rTE == 0);
+        assert(log_rTM == 0);
     }
 
     plm_PlmPlm(l1, l2, m, 1+z/tau, &comb);
@@ -89,7 +80,18 @@ void casimir_integrate_integrands(integration_t *int_obj, double z, int l1, int 
     s[B_TE] = -comb.sign_dPl1mdPl2m;
     s[B_TM] = +comb.sign_dPl1mdPl2m;
 
-    if(m > 0)
+    if(m == 0)
+    {
+        v[A_TE] = v[A_TM] = -INFINITY;
+        s[A_TE] = s[A_TM] = 1;
+
+        v[C_TE] = v[C_TM] = -INFINITY;
+        s[C_TE] = s[C_TM] = 1;
+
+        v[D_TE] = v[D_TM] = -INFINITY;
+        s[D_TE] = s[D_TM] = 1;
+    }
+    else
     {
         double log_m = log(m);
 
@@ -169,6 +171,7 @@ static void integrate_gauss_kronrod(integration_t *int_obj, int l1, int l2, doub
         err = exp(K15/2) * pow(200*fabs(1-exp(G7-K15)),1.5);
 
         interval->K15[i] = K15;
+        interval->signs[i] = sign_K15;
         interval->err[i] = err;
     }
 
@@ -200,7 +203,7 @@ int casimir_integrate(integration_t *self, int l1, int l2, casimir_integrals_t *
     const int N = 100; /* XXX */
     double lnLambda = casimir_lnLambda(l1, l2, m, NULL);
     interval_t intervals[N];
-    double I[8][N];
+    double v[8][N];
     sign_t s[8][N];
 
     for(int i = 0; i < N; i++)
@@ -212,22 +215,23 @@ int casimir_integrate(integration_t *self, int l1, int l2, casimir_integrals_t *
 
         for(int j = 0; j < 8; j++)
         {
-            I[j][i] = intervals->K15[j];
+            v[j][i] = intervals->K15[j];
             s[j][i] = intervals->signs[j];
+            assert(s[j][i] == 1 || s[j][i] == -1);
         }
     }
 
-    cint->lnA_TE = lnLambda + logadd_ms(I[A_TE], s[A_TE], N, &cint->signA_TE);
-    cint->lnA_TM = lnLambda + logadd_ms(I[A_TM], s[A_TM], N, &cint->signA_TM);
+    cint->lnA_TE = lnLambda + logadd_ms(v[A_TE], s[A_TE], N, &cint->signA_TE);
+    cint->lnA_TM = lnLambda + logadd_ms(v[A_TM], s[A_TM], N, &cint->signA_TM);
 
-    cint->lnB_TE = lnLambda + logadd_ms(I[B_TE], s[B_TE], N, &cint->signB_TE);
-    cint->lnB_TM = lnLambda + logadd_ms(I[B_TM], s[B_TM], N, &cint->signB_TM);
+    cint->lnB_TE = lnLambda + logadd_ms(v[B_TE], s[B_TE], N, &cint->signB_TE);
+    cint->lnB_TM = lnLambda + logadd_ms(v[B_TM], s[B_TM], N, &cint->signB_TM);
 
-    cint->lnC_TE = lnLambda + logadd_ms(I[C_TE], s[C_TE], N, &cint->signC_TE);
-    cint->lnC_TM = lnLambda + logadd_ms(I[C_TM], s[C_TM], N, &cint->signC_TM);
+    cint->lnC_TE = lnLambda + logadd_ms(v[C_TE], s[C_TE], N, &cint->signC_TE);
+    cint->lnC_TM = lnLambda + logadd_ms(v[C_TM], s[C_TM], N, &cint->signC_TM);
 
-    cint->lnD_TE = lnLambda + logadd_ms(I[D_TE], s[D_TE], N, &cint->signD_TE);
-    cint->lnD_TM = lnLambda + logadd_ms(I[D_TM], s[D_TM], N, &cint->signD_TM);
+    cint->lnD_TE = lnLambda + logadd_ms(v[D_TE], s[D_TE], N, &cint->signD_TE);
+    cint->lnD_TM = lnLambda + logadd_ms(v[D_TM], s[D_TM], N, &cint->signD_TM);
 
     cint->signA_TE *= -A0(l1,l2,m);
     cint->signA_TM *= -A0(l1,l2,m);
