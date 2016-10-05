@@ -1,7 +1,7 @@
 #include <math.h>
 
 #include "libcasimir.h"
-#include "integration_perf.h"
+#include "integration.h"
 #include "unittest.h"
 #include "sfunc.h"
 #include "utils.h"
@@ -12,20 +12,6 @@ static void _integrals(int l1, int l2, int m, double nT, casimir_integrals_t *ci
 static double A(int l1, int l2, int m, double nT, sign_t *sign);
 static double B(int l1, int l2, int m, double nT, sign_t *sign);
 static double C(int l1, int l2, int m, double nT, sign_t *sign);
-static double _I(int nu, int m2, double tau);
-
-static double _I(int nu, int m2, double tau)
-{
-    double v;
-    const double nT = tau/2.0;
-    integration_perf_t int_perf;
-
-    casimir_integrate_perf_init(&int_perf, nT, m2/2, nu);
-    v = casimir_integrate_perf_I(&int_perf, nu);
-    casimir_integrate_perf_free(&int_perf);
-
-    return v;
-}
 
 /* return integral of A (including Lambda) for l1,l2,m small */
 static double A(int l1, int l2, int m, double nT, sign_t *sign)
@@ -316,16 +302,19 @@ static double C(int l1, int l2, int m, double nT, sign_t *sign)
 
 static void _integrals(int l1, int l2, int m, double nT, casimir_integrals_t *cint)
 {
-    integration_perf_t int_perf;
     int lmax = MAX(l1,l2);
-    casimir_integrate_perf_init(&int_perf, nT, m, lmax);
-    casimir_integrate_perf(&int_perf, l1, l2, cint);
-    casimir_integrate_perf_free(&int_perf);
+
+    integration_t int_obj;
+    casimir_t casimir;
+    casimir_init(&casimir, 1, 1);
+    casimir_set_lmax(&casimir, lmax);
+    casimir_integrate_init(&casimir, &int_obj, nT, m);
+    casimir_integrate(&int_obj, l1, l2, cint);
+    casimir_integrate_free(&int_obj);
 }
 
 int test_integration_perf(void)
 {
-    double v;
     double list_nT[] = { 1e-4, 1e-3, 1e-2, 1e-1, 0.5, 1e0, 1.006, 2, 1e1, 1e2, 1e3, 1e4 };
     casimir_integrals_t cint;
     unittest_t test;
@@ -373,49 +362,6 @@ int test_integration_perf(void)
                     AssertAlmostEqual(&test, cint.signD_TM, MPOW(l1+l2+1)*signD);
                 }
     }
-
-    /* test integral I */
-    v = _I(2,2,2);
-    AssertAlmostEqual(&test, v, 0.4054651081081643819780131163);
-
-    v = _I(5,2,2);
-    AssertAlmostEqual(&test, v, 5.813197260642067905077208633);
-
-    v = _I(10,2,2);
-    AssertAlmostEqual(&test, v, 15.95677753626913653914287233);
-
-    v = _I(20,2,2);
-    AssertAlmostEqual(&test, v, 42.90107196175527602778595691);
-
-    v = _I(50,2,2);
-    AssertAlmostEqual(&test, v, 148.6198399132092393065774679);
-
-    v = _I(100,2,2);
-    AssertAlmostEqual(&test, v, 363.5462729668148118110492452);
-
-    v = _I(200,2,2);
-    AssertAlmostEqual(&test, v, 862.6979732793756131251640376);
-
-    v = _I(300,2,2);
-    AssertAlmostEqual(&test, v, 1414.170985399411237979371551);
-
-    v = _I(500,2,2);
-    AssertAlmostEqual(&test, v, 2610.341684504699101672443343);
-
-    v = _I(700,2,2);
-    AssertAlmostEqual(&test, v, 3888.794466186317574388209390227783135);
-
-    v = _I(1000,2,2);
-    AssertAlmostEqual(&test, v, 5910.7939575865590314904753188706990739);
-
-    v = _I(1500,2,2);
-    AssertAlmostEqual(&test, v, 9472.8696066438596720790474385838167760);
-
-    v = _I(3000,2,2);
-    AssertAlmostEqual(&test, v, 21022.142076441619865987086582686107);
-
-    v = _I(4000,2,2);
-    AssertAlmostEqual(&test, v, 29179.23802073103788347465983473258110284);
 
     /* test for various combinations of l1,l2,m and nT */
     _integrals(1050,1050,1,1,&cint);
