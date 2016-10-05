@@ -30,6 +30,26 @@ double kahan_sum(double input[], size_t len)
     return sum;
 }
 
+double max(double input[], size_t len)
+{
+    double m = input[0];
+
+    for(size_t i = 1; i < len; i++)
+        m = MAX(m,input[i]);
+
+    return m;
+}
+
+double min(double input[], size_t len)
+{
+    double m = input[0];
+
+    for(size_t i = 1; i < len; i++)
+        m = MIN(m,input[i]);
+
+    return m;
+}
+
 /**
 * @name Add numbers given as logarithms
 */
