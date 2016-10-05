@@ -170,15 +170,13 @@ int casimir_verbose(casimir_t *self, const char *format, ...)
 /*@{*/
 
 /**
- * @brief Calculate logarithm and sign of prefactor \f$\Lambda_{\ell_1 \ell_2}^{(m)}\f$
+ * @brief Calculate logarithm \f$-\Lambda_{\ell_1 \ell_2}^{(m)}\f$
  *
- * This function returns the logarithm of the prefactor for given
+ * This function returns the logarithm of \f$-\Lambda_{\ell_1 \ell_2}^{(m)}\f$ for
  * \f$\ell_1,\ell_2,m\f$. This prefactor is defined by (cf Eq. (5.19))
  * \f[
  *      \Lambda_{\ell_1,\ell_2}^{(m)} = -\frac{2 N_{\ell_1,m} N_{\ell_2,m}}{\sqrt{\ell_1 (\ell_1+1) \ell_2 (\ell_2+1)}}
  * \f]
- *
- * If sign is not NULL, -1 will be stored in sign.
  *
  * The values are computed using the lgamma function to avoid overflows.
  *
@@ -191,13 +189,10 @@ int casimir_verbose(casimir_t *self, const char *format, ...)
  * @param [in]  l1 \f$\ell_1\f$
  * @param [in]  l2 \f$\ell_2\f$
  * @param [in]  m  \f$m\f$
- * @param [out] sign set to -1 if sign != NULL
  * @retval lnLambda \f$\log{\Lambda_{\ell_1,\ell_2}^{(m)}}\f$
  */
-double casimir_lnLambda(int l1, int l2, int m, sign_t *sign)
+double casimir_lnLambda(int l1, int l2, int m)
 {
-    if(sign != NULL)
-        *sign = -1;
     return (log(2*l1+1)+log(2*l2+1)-log(l1)-log(l1+1)-log(l2)-log(l2+1)+lgamma(1+l1-m)+lgamma(1+l2-m)-lgamma(1+l1+m)-lgamma(1+l2+m))/2.0;
 }
 
