@@ -36,61 +36,84 @@ static double gausskronrod[15][3] =
 };
 
 /*
- * A = A_0 * \int_0^\infty dz r_p e^{-(\tau+1)z} P_{\ell_1}^m(1+z) P_{\ell_2}^m(1+z) \frac{1}{z^2+2z}
- * B = B_0 * \int_0^\infty dz r_p e^{-(\tau+1)z} {P_{\ell_1}^m}^\prime(1+z) {P_{\ell_2}^m(1+z)}^\prime (z^2+2z)
- * C = C_0 * \int_0^\infty dz r_p e^{-(\tau+1)z} P_{\ell_1}^m(1+z) {P_{\ell_2}^m(1+z)}^\prime
- * D = D_0 * \int_0^\infty dz r_p e^{-(\tau+1)z} {P_{\ell_1}^m(1+z)}^\prime P_{\ell_2}^m(1+z)
+ * A = A_0 m² τ exp(-τ) ∫ dz r_p exp(-z) P_l1*P_l2 / (z²+2τz)
+ * B = B_0 exp(-τ)/τ³   ∫ dz r_p exp(-z) P'_l1*P'_l2 (z²+2τz)
+ * C = C_0 im exp(-τ)/τ ∫ dz r_p exp(-z) P_l1*P'_l2
+ * D = D_0 im exp(-τ)/τ ∫ dz r_p exp(-z) P'_l1*P_l2
+ *
+ * The integration is from 0 to infinity, the associated Legendre polynomials
+ * and their derivations are evaluated at the argument arg=1+x/τ.
  *
  * A_0 = (-1)^{\ell_2+m} m^2
  * B_0 = (-1)^{\ell_2+m+1}
  * C_0 = (-1)^{\ell_2+m} m
  * D_0 = (-1)^{\ell_1+\ell_2} C^m_{\ell_2\ell_1,p}
  */
-static void calculate_integrands(integration_t *int_obj, double z, int l1, int l2, double v[8], sign_t s[8]);
-
-static void calculate_integrands(integration_t *int_obj, double z, int l1, int l2, double v[8], sign_t s[8])
+void casimir_integrate_integrands(integration_t *int_obj, double z, int l1, int l2, double v[8], sign_t s[8])
 {
     plm_combination_t comb;
-    const int m = int_obj->m;
-    const double nT = int_obj->nT;
-    const double tau = 2*nT;
-    double log_z22z = log(pow_2(z)+2*z);
+    int m = int_obj->m;
+    double tau = int_obj->tau;
+    double log_tau = log(tau);
+    double log_term = log(pow_2(z)+2*tau*z); /* z²+2τz */
 
-    /* Fresnel coefficients */
+    /* set output vector to +0 */
+    v[A_TE] = v[A_TM] = -INFINITY;
+    s[A_TE] = s[A_TM] = 1;
+
+    v[B_TE] = v[B_TM] = -INFINITY;
+    s[B_TE] = s[B_TM] = 1;
+
+    v[C_TE] = v[C_TM] = -INFINITY;
+    s[C_TE] = s[C_TM] = 1;
+
+    v[D_TE] = v[D_TM] = -INFINITY;
+    s[D_TE] = s[D_TM] = 1;
+
+    /* calculate Fresnel coefficients */
     double log_rTE, log_rTM;
     {
         double rTE,rTM;
-        double k = tau/2*sqrt(pow_2(z)+2*z);
-        casimir_rp(int_obj->casimir, nT, k, &rTE, &rTM);
+        double k = sqrt(pow_2(z)+2*tau*z)/2;
+        casimir_rp(int_obj->casimir, int_obj->nT, k, &rTE, &rTM);
         log_rTE = log(-rTE);
         log_rTM = log(+rTM);
     }
 
-    plm_PlmPlm(l1, l2, m, 1+z, &comb);
+    plm_PlmPlm(l1, l2, m, 1+z/tau, &comb);
 
-    const double A = -(tau+1)*z -log_z22z +comb.lnPl1mPl2m;
-    v[0] = log_rTE + A; /* A, TE */
-    v[1] = log_rTM + A; /* A, TM */
-    s[0] = -comb.sign_Pl1mPl2m;
-    s[1] = +comb.sign_Pl1mPl2m;
+    /* exp(-τ)/τ³ r_p exp(-z) (z²+2τz) P'_l1*P'_l2 */
+    double B = -tau -3*log_tau -z + log_term + comb.lndPl1mdPl2m;
+    v[B_TE] = log_rTE + B; /* B, TE */
+    v[B_TM] = log_rTM + B; /* B, TM */
+    s[B_TE] = -comb.sign_dPl1mdPl2m;
+    s[B_TM] = +comb.sign_dPl1mdPl2m;
 
-    const double B = -(tau+1)*z +log_z22z +comb.lndPl1mdPl2m;
-    v[2] = log_rTE + B; /* B, TE */
-    v[3] = log_rTM + B; /* B, TM */
-    s[2] = -comb.sign_dPl1mdPl2m;
-    s[3] = +comb.sign_dPl1mdPl2m;
+    if(m > 0)
+    {
+        double log_m = log(m);
 
-    const double C = -(tau+1)*z +comb.lnPl1mdPl2m;
-    v[4] = log_rTE + C; /* C, TE */
-    v[5] = log_rTM + C; /* C, TM */
-    s[4] = -comb.sign_Pl1mdPl2m;
-    s[5] = +comb.sign_Pl1mdPl2m;
+        /* m² τ exp(-τ) ∫ dz r_p exp(-z) P_l1*P_l2 / (z²+2τz) */
+        double A = 2*log_m +log_tau -tau -z - log_term +comb.lnPl1mPl2m;
+        v[A_TE] = log_rTE + A; /* A, TE */
+        v[A_TM] = log_rTM + A; /* A, TM */
+        s[A_TE] = -comb.sign_Pl1mPl2m;
+        s[A_TM] = +comb.sign_Pl1mPl2m;
 
-    const double D = -(tau+1)*z +comb.lndPl1mPl2m;
-    v[6] = log_rTE + D; /* D, TE */
-    v[7] = log_rTM + D; /* D, TM */
-    s[6] = -comb.sign_dPl1mPl2m;
-    s[7] = +comb.sign_dPl1mPl2m;
+        /* m exp(-τ)/τ ∫ dz r_p exp(-z) P_l1*P'_l2 */
+        double C = log_m - tau - log_tau -z +comb.lnPl1mdPl2m;
+        v[C_TE] = log_rTE + C; /* C, TE */
+        v[C_TM] = log_rTM + C; /* C, TM */
+        s[C_TE] = -comb.sign_Pl1mdPl2m;
+        s[C_TM] = +comb.sign_Pl1mdPl2m;
+
+        /* m exp(-τ)/τ ∫ dz r_p exp(-z) P'_l1*P_l2 */
+        double D = log_m -tau -log_tau -z +comb.lndPl1mPl2m;
+        v[D_TE] = log_rTE + D; /* D, TE */
+        v[D_TM] = log_rTM + D; /* D, TM */
+        s[D_TE] = -comb.sign_dPl1mPl2m;
+        s[D_TM] = +comb.sign_dPl1mPl2m;
+    }
 }
 
 
@@ -120,7 +143,7 @@ static void integrate_gauss_kronrod(integration_t *int_obj, int l1, int l2, doub
         const double zi  = (xi+1)*dx+a; /* corresponding node in interval [a,b] */
 
         /* calculate integrands A_TE, A_TM, ..., D_TE, D_TM at node zi */
-        calculate_integrands(int_obj, zi, l1, l2, v, s);
+        casimir_integrate_integrands(int_obj, zi, l1, l2, v, s);
 
         if(wiG > 0)
         {
@@ -160,7 +183,7 @@ int casimir_integrate_init(casimir_t *casimir, integration_t *int_obj, double nT
     int_obj->casimir = casimir;
     int_obj->m    = m;
     int_obj->nT   = nT;
-    int_obj->lmax = casimir->lmax;
+    int_obj->tau  = 2*nT;
 
     return 0;
 }
@@ -194,17 +217,17 @@ int casimir_integrate(integration_t *self, int l1, int l2, casimir_integrals_t *
         }
     }
 
-    cint->lnA_TE = lnLambda + log(m*m) + logadd_ms(I[0], s[0], N, &cint->signA_TE);
-    cint->lnA_TM = lnLambda + log(m*m) + logadd_ms(I[1], s[1], N, &cint->signA_TM);
+    cint->lnA_TE = lnLambda + logadd_ms(I[A_TE], s[A_TE], N, &cint->signA_TE);
+    cint->lnA_TM = lnLambda + logadd_ms(I[A_TM], s[A_TM], N, &cint->signA_TM);
 
-    cint->lnB_TE = lnLambda + logadd_ms(I[2], s[2], N, &cint->signB_TE);
-    cint->lnB_TM = lnLambda + logadd_ms(I[3], s[3], N, &cint->signB_TM);
+    cint->lnB_TE = lnLambda + logadd_ms(I[B_TE], s[B_TE], N, &cint->signB_TE);
+    cint->lnB_TM = lnLambda + logadd_ms(I[B_TM], s[B_TM], N, &cint->signB_TM);
 
-    cint->lnC_TE = lnLambda + log(m) + logadd_ms(I[4], s[4], N, &cint->signC_TE);
-    cint->lnC_TM = lnLambda + log(m) + logadd_ms(I[5], s[5], N, &cint->signC_TM);
+    cint->lnC_TE = lnLambda + logadd_ms(I[C_TE], s[C_TE], N, &cint->signC_TE);
+    cint->lnC_TM = lnLambda + logadd_ms(I[C_TM], s[C_TM], N, &cint->signC_TM);
 
-    cint->lnD_TE = lnLambda + log(m) + logadd_ms(I[6], s[6], N, &cint->signD_TE);
-    cint->lnD_TM = lnLambda + log(m) + logadd_ms(I[7], s[7], N, &cint->signD_TM);
+    cint->lnD_TE = lnLambda + logadd_ms(I[D_TE], s[D_TE], N, &cint->signD_TE);
+    cint->lnD_TM = lnLambda + logadd_ms(I[D_TM], s[D_TM], N, &cint->signD_TM);
 
     cint->signA_TE *= -A0(l1,l2,m);
     cint->signA_TM *= -A0(l1,l2,m);
