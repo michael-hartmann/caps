@@ -13,10 +13,13 @@
 #define D_TM 7
 
 /* XXX check signs! XXX */
-#define A0(l1,l2,m) (MPOW((l2)+(m)))
-#define B0(l1,l2,m) (MPOW((l2)+(m)+1))
-#define C0(l1,l2,m) (MPOW((l2)+(m)))
-#define D0(l1,l2,m) (MPOW((l2)+(m)+1))
+/*  sign of Lambda --\
+ *                   |
+ *                   V */
+#define A0(l1,l2,m) (-MPOW((l2)+(m)))
+#define B0(l1,l2,m) (-MPOW((l2)+(m)+1))
+#define C0(l1,l2,m) (-MPOW((l2)+(m)))
+#define D0(l1,l2,m) (-MPOW((l2)+(m)+1))
 
 typedef struct {
     casimir_t *casimir;
