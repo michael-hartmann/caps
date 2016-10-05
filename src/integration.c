@@ -37,21 +37,36 @@ static double gausskronrod[15][3] =
 };
 
 /* We want to integrate:
- * A = A_0 m² τ exp(-τ) ∫ dz r_p exp(-z) P_l1  P_l2  / (z²+2τz)
- * B = B_0 exp(-τ)/τ³   ∫ dz r_p exp(-z) P'_l1 P'_l2   (z²+2τz)
- * C = C_0 im exp(-τ)/τ ∫ dz r_p exp(-z) P_l1  P'_l2
- * D = D_0 im exp(-τ)/τ ∫ dz r_p exp(-z) P'_l1 P_l2
+ * A = A_0 Λ(l1,l2,m) m² exp(-τ)*τ  ∫ dz r_p exp(-z) P_l1^m  P_l2^m  / (z²+2τz)
+ * B = B_0 Λ(l1,l2,m)    exp(-τ)/τ³ ∫ dz r_p exp(-z) P'_l1^m P'_l2^m   (z²+2τz)
+ * C = C_0 Λ(l1,l2,m) m  exp(-τ)/τ  ∫ dz r_p exp(-z) P_l1^m  P'_l2^m
+ * D = D_0 Λ(l1,l2,m) m  exp(-τ)/τ  ∫ dz r_p exp(-z) P'_l1^m P_l2^m
  *
  * The integration is from 0 to ∞, the associated Legendre polynomials and
  * their derivatives are evaluated at the argument arg=1+x/τ.
  *
- * Here, we make the substitution z=t/(1-t), dz = dt/(1-t)² and t=0...1.
+ * Here, we make the substitution z=t/(1-t), dz = dt/(1-t)². The range of
+ * integration is now t=0...1.
  *
- * The prefactors are given by:
- * A_0 = (-1)^{\ell_2+m}
- * B_0 = (-1)^{\ell_2+m+1}
- * C_0 = (-1)^{\ell_2+m}
- * D_0 = (-1)^{\ell_1+\ell_2} C^m_{\ell_2\ell_1,p}
+ * This function returns
+ *  v[A_TE] = log(| Λ m² exp(-τ)*τ  1/(1-t)² r_TE exp(-z) P_l1^m  P_l2^m  / (z²+2τz) |)
+ *  v[A_TM] = log(| Λ m² exp(-τ)*τ  1/(1-t)² r_TM exp(-z) P_l1^m  P_l2^m  / (z²+2τz) |)
+ *
+ *  v[B_TE] = log(| Λ    exp(-τ)/τ³ 1/(1-t)² r_TE exp(-z) P'_l1^m P'_l2^m   (z²+2τz) |)
+ *  v[B_TM] = log(| Λ    exp(-τ)/τ³ 1/(1-t)² r_TM exp(-z) P'_l1^m P'_l2^m   (z²+2τz) |)
+ *
+ *  v[C_TE] = log(| Λ m  exp(-τ)/τ  1/(1-t)² r_TE exp(-z) P_l1^m  P'_l2^m            |)
+ *  v[C_TM] = log(| Λ m  exp(-τ)/τ  1/(1-t)² r_TM exp(-z) P_l1^m  P'_l2^m            |)
+ *
+ *  v[D_TE] = log(| Λ m  exp(-τ)/τ  1/(1-t)² r_TE exp(-z) P'_l1^m P_l2^m             |)
+ *  v[D_TM] = log(| Λ m  exp(-τ)/τ  1/(1-t)² r_TM exp(-z) P'_l1^m P_l2^m             |)
+ * where
+ *      z = t/(1-t)
+ *      τ = 2nT
+ *      Λ = Λ(l1,l2,m): prefactor
+ *      r_p: Fresnel coefficient for p=TE,TM.
+ *
+ * The signs are stored in s[A_TE], s[A_TM], ..., s[D_TM].
  */
 void casimir_integrate_integrands(integration_t *int_obj, double t, int l1, int l2, double v[8], sign_t s[8])
 {
@@ -62,20 +77,18 @@ void casimir_integrate_integrands(integration_t *int_obj, double t, int l1, int 
     TERMINATE(t > 1, "invalid value for t: t=%g", t);
 
     /* l1 > 0, l2 > 0 */
-    TERMINATE(l1 <= 0, "l1 > 0, l1=%d\n", l1);
-    TERMINATE(l2 <= 0, "l1 > 0, l1=%d\n", l2);
+    TERMINATE(l1 <= 0 || l2 <= 0, "l1,l2 > 0, l1=%d, l2=%d\n", l1,l2);
+
+    /* initialize to +0 */
+    for(int i = 0; i < 8; i++)
+    {
+        v[i] = -INFINITY;
+        s[i] = +1;
+    }
 
     /* t=1 corresponds to z=∞; the integrands vanish for z→∞ */
     if(t == 1)
-    {
-        /* return +0 */
-        for(int i = 0; i < 8; i++)
-        {
-            v[i] = -INFINITY;
-            s[i] = +1;
-        }
         return;
-    }
 
     int m = int_obj->m;
     double tau = int_obj->tau;
@@ -97,43 +110,32 @@ void casimir_integrate_integrands(integration_t *int_obj, double t, int l1, int 
 
     plm_PlmPlm(l1, l2, m, 1+z/tau, &comb);
 
-    /* exp(-τ)/τ³ r_p exp(-z) (z²+2τz) P'_l1*P'_l2 */
+    /* Λ exp(-τ)/τ³ 1/(1-t)² r_p exp(-z) dPl1m dPl2m   (z²+2τz)*/
     double B_ = lnLambda -tau -3*log_tau -z + log_term + comb.lndPl1mdPl2m +log_dz;
     v[B_TE] = log_rTE + B_; /* B, TE */
     v[B_TM] = log_rTM + B_; /* B, TM */
     s[B_TE] = -comb.sign_dPl1mdPl2m;
     s[B_TM] = +comb.sign_dPl1mdPl2m;
 
-    if(m == 0)
-    {
-        v[A_TE] = v[A_TM] = -INFINITY;
-        s[A_TE] = s[A_TM] = 1;
-
-        v[C_TE] = v[C_TM] = -INFINITY;
-        s[C_TE] = s[C_TM] = 1;
-
-        v[D_TE] = v[D_TM] = -INFINITY;
-        s[D_TE] = s[D_TM] = 1;
-    }
-    else
+    if(m > 0)
     {
         double log_m = log(m);
 
-        /* m² τ exp(-τ) ∫ dz r_p exp(-z) P_l1*P_l2 / (z²+2τz) */
+        /* Λ m² exp(-τ)*τ 1/(1-t)² r_p exp(-z) Pl1m Pl2m / (z²+2τz) */
         double A_ = lnLambda +2*log_m +log_tau -tau -z - log_term +comb.lnPl1mPl2m +log_dz;
         v[A_TE] = log_rTE + A_; /* A, TE */
         v[A_TM] = log_rTM + A_; /* A, TM */
         s[A_TE] = -comb.sign_Pl1mPl2m;
         s[A_TM] = +comb.sign_Pl1mPl2m;
 
-        /* m exp(-τ)/τ ∫ dz r_p exp(-z) P_l1*P'_l2 */
+        /* Λ m exp(-τ)/τ 1/(1-t)² r_p exp(-z) Pl1m dPl2m */
         double C_ = lnLambda +log_m - tau - log_tau -z +comb.lnPl1mdPl2m +log_dz;
         v[C_TE] = log_rTE + C_; /* C, TE */
         v[C_TM] = log_rTM + C_; /* C, TM */
         s[C_TE] = -comb.sign_Pl1mdPl2m;
         s[C_TM] = +comb.sign_Pl1mdPl2m;
 
-        /* m exp(-τ)/τ ∫ dz r_p exp(-z) P'_l1*P_l2 */
+        /* Λ m exp(-τ)/τ 1/(1-t)² r_p exp(-z) dPl1m Pl2m */
         double D_ = lnLambda +log_m -tau -log_tau -z +comb.lndPl1mPl2m +log_dz;
         v[D_TE] = log_rTE + D_; /* D, TE */
         v[D_TM] = log_rTM + D_; /* D, TM */
@@ -209,6 +211,9 @@ static void integrate_gauss_kronrod(integration_t *int_obj, int l1, int l2, doub
 
 int casimir_integrate_init(casimir_t *casimir, integration_t *int_obj, double nT, int m)
 {
+    TERMINATE(m < 0, "m > 0, m=%d", m);
+    TERMINATE(nT <= 0, "nT > 0, nT=%g", nT);
+
     int_obj->casimir = casimir;
     int_obj->m   = m;
     int_obj->nT  = nT;
