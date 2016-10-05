@@ -73,7 +73,7 @@ void casimir_integrate_integrands(integration_t *int_obj, double t, int l1, int 
     plm_combination_t comb;
 
     /* 0 <= t <= 1 */
-    TERMINATE(t < 0 || t > 0, "0 <= t <= 1, invalid value for t: t=%g", t);
+    TERMINATE(t < 0 || t > 1, "0 <= t <= 1, invalid value for t: t=%g", t);
 
     /* l1 > 0, l2 > 0 */
     TERMINATE(l1 <= 0 || l2 <= 0, "l1,l2 > 0, l1=%d, l2=%d\n", l1,l2);
@@ -160,7 +160,8 @@ static void integrate_gauss_kronrod(integration_t *int_obj, int l1, int l2, doub
     interval->a = a;
     interval->b = b;
 
-    assert(b > a);
+    TERMINATE(l1 <= 0 || l2 <= 0, "l1,l2 > 0, l1=%d, l2=%d\n", l1,l2);
+    TERMINATE(b <= a, "b > a, b=%g, a=%g", b, a);
 
     for(int i = 0; i < 15; i++)
     {
@@ -202,10 +203,7 @@ static void integrate_gauss_kronrod(integration_t *int_obj, int l1, int l2, doub
         interval->err[i] = err;
     }
 
-    double maxerr = interval->err[0];
-    for(int i = 1; i < 8; i++)
-        maxerr = MAX(maxerr, interval->err[i]);
-    interval->maxerr = maxerr;
+    interval->maxerr = max(interval->err, 8);
 }
 
 int casimir_integrate_init(casimir_t *casimir, integration_t *int_obj, double nT, int m)
