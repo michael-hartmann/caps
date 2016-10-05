@@ -14,7 +14,6 @@
 #include "test_mie.h"
 #include "test_mie_drude.h"
 #include "test_Plm.h"
-#include "test_Xi.h"
 
 int main(int argc, char *argv[])
 {
