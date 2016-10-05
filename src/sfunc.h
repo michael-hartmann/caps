@@ -39,6 +39,9 @@ typedef struct {
 
 double kahan_sum(double input[], size_t len);
 
+double max(double input[], size_t len);
+double min(double input[], size_t len);
+
 inline double logadd(const double a, const double b);
 inline double logadd_s(const double a, const sign_t sign_a, const double b, const sign_t sign_b, sign_t *sign);
 inline double logadd_m(const double list[], const int len);
