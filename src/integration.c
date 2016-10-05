@@ -1,7 +1,7 @@
 /**
  * @file   integration.c
  * @author Michael Hartmann <michael.hartmann@physik.uni-augsburg.de>
- * @date   September, 2016
+ * @date   October, 2016
  * @brief  Perform integration for Drude planes
  */
 
@@ -73,8 +73,7 @@ void casimir_integrate_integrands(integration_t *int_obj, double t, int l1, int 
     plm_combination_t comb;
 
     /* 0 <= t <= 1 */
-    TERMINATE(t < 0, "invalid value for t: t=%g", t);
-    TERMINATE(t > 1, "invalid value for t: t=%g", t);
+    TERMINATE(t < 0 || t > 0, "0 <= t <= 1, invalid value for t: t=%g", t);
 
     /* l1 > 0, l2 > 0 */
     TERMINATE(l1 <= 0 || l2 <= 0, "l1,l2 > 0, l1=%d, l2=%d\n", l1,l2);
