@@ -240,7 +240,7 @@ static void casimir_integrate_perf_m0(integration_perf_t *self, int l1, int l2, 
 {
     double log_B;
     sign_t sign_B;
-    const double lnLambda = casimir_lnLambda(l1, l2, 0, NULL);
+    const double lnLambda = casimir_lnLambda(l1, l2, 0);
 
     sign_t signs_B[4] = {1,1,1,1};
     double log_Bn[4] = { -INFINITY, -INFINITY, -INFINITY, -INFINITY };
@@ -294,7 +294,7 @@ void casimir_integrate_perf(integration_perf_t *self, int l1, int l2, casimir_in
 {
     const int m  = self->m;
     const double nT = self->nT;
-    const double lnLambda = casimir_lnLambda(l1, l2, m, NULL);
+    const double lnLambda = casimir_lnLambda(l1, l2, m);
     double value, v[4];
     sign_t sign, signs[4];
 
