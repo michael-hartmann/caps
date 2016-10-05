@@ -226,7 +226,7 @@ int casimir_integrate_free(integration_t *self)
 int casimir_integrate(integration_t *self, int l1, int l2, casimir_integrals_t *cint)
 {
     int m = self->m;
-    const int N = 50; /* XXX */
+    const int N = 20; /* XXX */
     interval_t intervals[N];
     double v[8][N];
     sign_t s[8][N];
@@ -237,7 +237,6 @@ int casimir_integrate(integration_t *self, int l1, int l2, casimir_integrals_t *
         double b = (i+1.)/N;
 
         integrate_gauss_kronrod(self, l1, l2, a, b, &intervals[i]);
-        //printf("%g %g %g\n", a,b, intervals[i].signs[B_TM]*exp(intervals[i].K15[B_TM]));
 
         for(int j = 0; j < 8; j++)
         {
