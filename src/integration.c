@@ -157,20 +157,20 @@ static void integrate_gauss_kronrod(integration_t *int_obj, int l1, int l2, doub
     double points_K15[8][15];
     sign_t signs[8][15];
 
-    interval->a = a;
-    interval->b = b;
-
     TERMINATE(l1 <= 0 || l2 <= 0, "l1,l2 > 0, l1=%d, l2=%d\n", l1,l2);
     TERMINATE(b <= a, "b > a, b=%g, a=%g", b, a);
+
+    interval->a = a;
+    interval->b = b;
 
     for(int i = 0; i < 15; i++)
     {
         double v[8];
         sign_t s[8];
-        const double xi  = gausskronrod[i][0]; /* node Kronrod */
-        const double wiG = gausskronrod[i][1]; /* weight Gauss */
-        const double wiK = gausskronrod[i][2]; /* weight Kronrod */
-        const double zi  = (xi+1)*dx+a; /* corresponding node in interval [a,b] */
+        double xi  = gausskronrod[i][0]; /* node Kronrod */
+        double wiG = gausskronrod[i][1]; /* weight Gauss */
+        double wiK = gausskronrod[i][2]; /* weight Kronrod */
+        double zi  = (xi+1)*dx+a; /* corresponding node in interval [a,b] */
 
         /* calculate integrands A_TE, A_TM, ..., D_TE, D_TM at node zi */
         casimir_integrate_integrands(int_obj, zi, l1, l2, v, s);
@@ -190,13 +190,12 @@ static void integrate_gauss_kronrod(integration_t *int_obj, int l1, int l2, doub
 
     for(int i = 0; i < 8; i++)
     {
-        double G7, K15, err;
         sign_t sign_G7, sign_K15;
 
-        G7  = logadd_ms(points_G7[i],  signs[i], 7,  &sign_G7);
-        K15 = logadd_ms(points_K15[i], signs[i], 15, &sign_K15);
+        double G7  = logadd_ms(points_G7[i],  signs[i], 7,  &sign_G7);
+        double K15 = logadd_ms(points_K15[i], signs[i], 15, &sign_K15);
 
-        err = exp(K15/2) * pow(200*fabs(1-exp(G7-K15)),1.5);
+        double err = exp(K15/2) * pow(200*fabs(1-exp(G7-K15)),1.5);
 
         interval->K15[i] = K15;
         interval->signs[i] = sign_K15;
