@@ -11,7 +11,6 @@
 #include "sfunc.h"
 #include "libcasimir.h"
 #include "integration.h"
-#include "gausslaguerre.h"
 
 /* nodes and weights for Gauß-Kronrod (G7,K15) */
 static double log_gausskronrod[15][3] =
