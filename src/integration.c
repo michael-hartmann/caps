@@ -5,7 +5,6 @@
  * @brief  Perform integration for Drude planes
  */
 
-#include <assert.h>
 #include <math.h>
 
 #include "utils.h"
@@ -195,8 +194,8 @@ static void integrate_gauss_kronrod(integration_t *int_obj, int l1, int l2, doub
         double G7  = logadd_ms(points_G7[i],  signs[i], 7,  &sign_G7);
         double K15 = logadd_ms(points_K15[i], signs[i], 15, &sign_K15);
 
-        /* 200|G7-K15|^1.5 */
-        double err = log(200) + 1.5*logadd_s(G7, +1, K15, -1, &dummy);
+        /* 200|G7-K15| */
+        double err = log(200) + logadd_s(G7, +1, K15, -1, &dummy);
 
         interval->K15[i]   = K15;
         interval->signs[i] = sign_K15;
@@ -225,48 +224,132 @@ int casimir_integrate_free(integration_t *self)
     return 0;
 }
 
+
+static double estimate_error(interval_t intervals[], int N, double v[8], sign_t s[8], double relerror[8], int *index);
+
+static double estimate_error(interval_t intervals[], int N, double v[8], sign_t s[8], double relerror[8], int *index)
+{
+    double err2[8][N];
+    double K15[8][N];
+    sign_t signs[8][N];
+
+    for(int i = 0; i < N; i++)
+    {
+        interval_t *interval = &intervals[i];
+
+        for(int j = 0; j < 8; j++)
+        {
+            err2[j][i]  = 2*interval->err[j];
+            K15[j][i]   = interval->K15[j];
+            signs[j][i] = interval->signs[j];
+        }
+    }
+
+    for(int j = 0; j < 8; j++)
+    {
+        v[j] = logadd_ms(K15[j], signs[j], N, &s[j]);
+        if(v[j] == -INFINITY)
+            relerror[j] = -INFINITY;
+        else
+            relerror[j] = (logadd_m(err2[j], N) - log(N*(N-1.)))/2 - v[j];
+    }
+
+    int jmax = 0;
+    for(int j = 1; j < 8; j++)
+    {
+        if(relerror[j] > relerror[jmax])
+            jmax = j;
+    }
+
+    int imax = 0;
+    for(int i = 1; i < N; i++)
+    {
+        if(err2[jmax][i] > err2[jmax][imax])
+            imax = i;
+    }
+
+    *index = imax;
+
+    return max(relerror, 8);
+}
+
 int casimir_integrate(integration_t *self, int l1, int l2, casimir_integrals_t *cint)
 {
-    int m = self->m;
-    const int N = 20; /* XXX */
-    interval_t intervals[N];
-    double v[8][N];
-    sign_t s[8][N];
+    #define NMIN  10 /* minimum number of intervals */
+    #define NMAX 150 /* maximum number of intervals */
+    #define MAXERROR -22
 
+    int N = NMIN;
+    double v[8];
+    sign_t s[8];
+    double relerror[8];
+    int index;
+
+    /* Use fixed size arrays on stack instead dynamic allocation with malloc.
+     * If we need more than NMAX intervals, we have a serious problem and
+     * should terminate with an error. This also avoids possible infinity
+     * loops.
+     * Using the stack also makes execution faster and code simpler.
+     */
+    interval_t intervals[NMAX];
+
+    /* NMIN intervals */
     for(int i = 0; i < N; i++)
     {
         double a = (double)i/N;
         double b = (i+1.)/N;
 
         integrate_gauss_kronrod(self, l1, l2, a, b, &intervals[i]);
-
-        for(int j = 0; j < 8; j++)
-        {
-            v[j][i] = intervals[i].K15[j];
-            s[j][i] = intervals[i].signs[j];
-        }
     }
 
-    cint->lnA_TE = logadd_ms(v[A_TE], s[A_TE], N, &cint->signA_TE);
-    cint->lnA_TM = logadd_ms(v[A_TM], s[A_TM], N, &cint->signA_TM);
+    while(true)
+    {
+        double error = estimate_error(intervals, N, v, s, relerror, &index);
+        if(error < MAXERROR)
+        {
+            /* finished */
+            cint->lnA_TE = v[A_TE];
+            cint->lnA_TM = v[A_TM];
 
-    cint->lnB_TE = logadd_ms(v[B_TE], s[B_TE], N, &cint->signB_TE);
-    cint->lnB_TM = logadd_ms(v[B_TM], s[B_TM], N, &cint->signB_TM);
+            cint->lnB_TE = v[B_TE];
+            cint->lnB_TM = v[B_TM];
 
-    cint->lnC_TE = logadd_ms(v[C_TE], s[C_TE], N, &cint->signC_TE);
-    cint->lnC_TM = logadd_ms(v[C_TM], s[C_TM], N, &cint->signC_TM);
+            cint->lnC_TE = v[C_TE];
+            cint->lnC_TM = v[C_TM];
 
-    cint->lnD_TE = logadd_ms(v[D_TE], s[D_TE], N, &cint->signD_TE);
-    cint->lnD_TM = logadd_ms(v[D_TM], s[D_TM], N, &cint->signD_TM);
+            cint->lnD_TE = v[D_TE];
+            cint->lnD_TM = v[D_TM];
 
-    cint->signA_TE *= A0(l1,l2,m);
-    cint->signA_TM *= A0(l1,l2,m);
-    cint->signB_TE *= B0(l1,l2,m);
-    cint->signB_TM *= B0(l1,l2,m);
-    cint->signC_TE *= C0(l1,l2,m);
-    cint->signC_TM *= C0(l1,l2,m);
-    cint->signD_TE *= D0(l1,l2,m);
-    cint->signD_TM *= D0(l1,l2,m);
+            int m = self->m;
+            cint->signA_TE = A0(l1,l2,m) * s[A_TE];
+            cint->signA_TM = A0(l1,l2,m) * s[A_TM];
+            cint->signB_TE = B0(l1,l2,m) * s[B_TE];
+            cint->signB_TM = B0(l1,l2,m) * s[B_TM];
+            cint->signC_TE = C0(l1,l2,m) * s[C_TE];
+            cint->signC_TM = C0(l1,l2,m) * s[C_TM];
+            cint->signD_TE = D0(l1,l2,m) * s[D_TE];
+            cint->signD_TM = D0(l1,l2,m) * s[D_TM];
+
+            return 0;
+        }
+
+        if(N >= NMAX)
+        {
+            /* give up :( */
+            TERMINATE(1, "Integral did not converge. l1=%d, l2=%d, m=%d, nT=%g", l1,l2,self->m,self->nT);
+            return 1;
+        }
+
+        /* bisect interval with largest error */
+        double a = intervals[index].a;
+        double b = intervals[index].b;
+        double m = (a+b)/2;
+
+        integrate_gauss_kronrod(self, l1, l2, a, m, &intervals[index]);
+        integrate_gauss_kronrod(self, l1, l2, m, b, &intervals[N]);
+
+        N++;
+    }
 
     return 0;
 }
