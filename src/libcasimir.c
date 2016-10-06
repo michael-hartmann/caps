@@ -20,7 +20,6 @@
 #include <unistd.h>
 
 #include "integration.h"
-#include "integration_perf.h"
 #include "libcasimir.h"
 #include "matrix.h"
 #include "sfunc.h"
@@ -1306,7 +1305,7 @@ void casimir_logdetD0(casimir_t *self, int m, double *logdet_EE, double *logdet_
 matrix_t *casimir_M(casimir_t *self, int n, int m)
 {
     const double nT = n*self->T;
-    integration_perf_t int_perf;
+    integration_t int_obj;
 
     /* XXX */
     //integration_t int_drude = { 0 };
@@ -1315,12 +1314,7 @@ matrix_t *casimir_M(casimir_t *self, int n, int m)
     const size_t max = self->lmax;
     const size_t dim = (max-min+1);
 
-    //if(self->epsilonm1 == NULL)
-        /* perfect reflector */
-        casimir_integrate_perf_init(&int_perf, nT, m, self->lmax);
-    //else
-        /* generic mirrors */
-    //    casimir_integrate_init(self, &int_drude, nT, m);
+    casimir_integrate_init(self, &int_obj, nT, m);
 
     /* allocate space for matrix M */
     matrix_t *M = matrix_alloc(2*dim);
@@ -1353,10 +1347,7 @@ matrix_t *casimir_M(casimir_t *self, int n, int m)
             casimir_mie_cache_get(self, l2, n, &ln_al2, &sign_al2, &ln_bl2, &sign_bl2);
 
             casimir_integrals_t cint;
-            //if(self->epsilonm1 == NULL)
-                casimir_integrate_perf(&int_perf, l1, l2, &cint);
-            //else
-            //    casimir_integrate(&int_drude, l1, l2, &cint);
+            casimir_integrate(&int_obj, l1, l2, &cint);
 
             /* EE */
             {
@@ -1409,10 +1400,7 @@ matrix_t *casimir_M(casimir_t *self, int n, int m)
                 break;
     }
 
-    //if(self->epsilonm1 == NULL)
-        casimir_integrate_perf_free(&int_perf);
-    //else
-    //    casimir_integrate_free(&int_drude);
+    casimir_integrate_free(&int_obj);
 
     return M;
 }
