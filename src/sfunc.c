@@ -175,6 +175,13 @@ inline double logadd_ms(const double list[], const sign_t signs[], const int len
         if(list[i] > max)
             max = list[i];
 
+    /* return +0 */
+    if(max == -INFINITY)
+    {
+        *sign = +1;
+        return -INFINITY;
+    }
+
     sum = signs[0]*exp(list[0]-max);
     for(int i = 1; i < len; i++)
         sum += signs[i]*exp(list[i]-max);
