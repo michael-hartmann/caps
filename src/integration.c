@@ -190,16 +190,17 @@ static void integrate_gauss_kronrod(integration_t *int_obj, int l1, int l2, doub
 
     for(int i = 0; i < 8; i++)
     {
-        sign_t sign_G7, sign_K15;
+        sign_t sign_G7, sign_K15, dummy;
 
         double G7  = logadd_ms(points_G7[i],  signs[i], 7,  &sign_G7);
         double K15 = logadd_ms(points_K15[i], signs[i], 15, &sign_K15);
 
-        double err = exp(K15/2) * pow(200*fabs(1-exp(G7-K15)),1.5);
+        /* 200|G7-K15|^1.5 */
+        double err = log(200) + 1.5*logadd_s(G7, +1, K15, -1, &dummy);
 
-        interval->K15[i] = K15;
+        interval->K15[i]   = K15;
         interval->signs[i] = sign_K15;
-        interval->err[i] = err;
+        interval->err[i]   = err;
     }
 
     interval->maxerr = max(interval->err, 8);
