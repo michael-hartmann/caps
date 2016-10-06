@@ -10,7 +10,6 @@ MPICC = mpicc
 #MPICC = mpiicc
 
 OBJS = \
-    gausslaguerre.o \
     integration.o \
     libcasimir.o \
     matrix.o \
