@@ -13,13 +13,25 @@
 #include "utils.h"
 
 
-/* taken from Wikipedia, https://en.wikipedia.org/wiki/Kahan_summation_algorithm */
-double kahan_sum(double input[], size_t len)
+/**
+ * @brief Sum elements in array
+ *
+ * This function calculates the sum of the elements of the array input. This
+ * function uses the Kahan summation algorithm to reduce numerical error.
+ *
+ * The algorithm is taken from Wikipedia, see
+ * https://en.wikipedia.org/wiki/Kahan_summation_algorithm
+ *
+ * @param [in] input array
+ * @param [in] N length of array
+ * @return sum sum of array elements
+ */
+double kahan_sum(double input[], size_t N)
 {
     double sum = 0;
     double c = 0; /* running compensation for lost low-order bits */
 
-	for(size_t i = 0; i < len; i++)
+	for(size_t i = 0; i < N; i++)
     {
         double y = input[i] - c;
         double t = sum + y;
@@ -30,21 +42,35 @@ double kahan_sum(double input[], size_t len)
     return sum;
 }
 
-double max(double input[], size_t len)
+/**
+ * @brief Find maximum in double array
+ *
+ * @param [in] input array
+ * @param [in] N length of array (must be > 0)
+ * @return maximum maximum of array elements
+ */
+double max(double input[], size_t N)
 {
     double m = input[0];
 
-    for(size_t i = 1; i < len; i++)
+    for(size_t i = 1; i < N; i++)
         m = MAX(m,input[i]);
 
     return m;
 }
 
-double min(double input[], size_t len)
+/**
+ * @brief Find minimum in double array
+ *
+ * @param [in] input array
+ * @param [in] N length of array (must be > 0)
+ * @return minimum minimum of array elements
+ */
+double min(double input[], size_t N)
 {
     double m = input[0];
 
-    for(size_t i = 1; i < len; i++)
+    for(size_t i = 1; i < N; i++)
         m = MIN(m,input[i]);
 
     return m;
