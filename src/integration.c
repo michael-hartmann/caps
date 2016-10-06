@@ -16,7 +16,7 @@
 /* nodes and weights for Gauß-Kronrod (G7,K15) */
 static double log_gausskronrod[15][3] =
 {
-    /* nodes                                    weight Gauß                              weight Kronrod */
+    /* nodes                 weight Gauß           weight Kronrod */
     {  0.00000000000000000, -0.87237149793931956, -1.5631167886725021 },
     { +0.40584515137739717, -0.96277966333590204, -1.6588877593062039 },
     { -0.40584515137739717, -0.96277966333590204, -1.6588877593062039 },
@@ -96,7 +96,6 @@ void casimir_integrate_integrands(integration_t *int_obj, double t, int l1, int 
     double z = t/(1-t);
     double log_dz = -2*log1p(-t); /* 1/(1-t)² */
     double log_term = log(pow_2(z)+2*tau*z); /* z²+2τz */
-    double lnLambda = casimir_lnLambda(l1, l2, m);
 
     /* calculate Fresnel coefficients */
     double log_rTE, log_rTM;
@@ -108,9 +107,11 @@ void casimir_integrate_integrands(integration_t *int_obj, double t, int l1, int 
         log_rTM = log(+rTM);
     }
 
+    double lnLambda = casimir_lnLambda(l1, l2, m);
+
     plm_PlmPlm(l1, l2, m, 1+z/tau, &comb);
 
-    /* Λ exp(-τ)/τ³ 1/(1-t)² r_p exp(-z) dPl1m dPl2m   (z²+2τz)*/
+    /* Λ exp(-τ)/τ³ 1/(1-t)² r_p exp(-z) dPl1m dPl2m (z²+2τz)*/
     double B_ = lnLambda -tau -3*log_tau -z + log_term + comb.lndPl1mdPl2m +log_dz;
     v[B_TE] = log_rTE + B_; /* B, TE */
     v[B_TM] = log_rTM + B_; /* B, TM */
@@ -166,8 +167,6 @@ static void integrate_gauss_kronrod(integration_t *int_obj, int l1, int l2, doub
 
     for(int i = 0; i < 15; i++)
     {
-        double v[8];
-        sign_t s[8];
         double xi = log_gausskronrod[i][0]; /* node Kronrod */
         double zi = (xi+1)*dx+a; /* corresponding node in interval [a,b] */
 
@@ -175,6 +174,8 @@ static void integrate_gauss_kronrod(integration_t *int_obj, int l1, int l2, doub
         double log_wiK = log_gausskronrod[i][2]; /* weight Kronrod */
 
         /* calculate integrands A_TE, A_TM, ..., D_TE, D_TM at node zi */
+        double v[8];
+        sign_t s[8];
         casimir_integrate_integrands(int_obj, zi, l1, l2, v, s);
 
         if(i < 7)
@@ -198,7 +199,8 @@ static void integrate_gauss_kronrod(integration_t *int_obj, int l1, int l2, doub
         double K15 = logadd_ms(points_K15[i], signs[i], 15, &sign_K15);
 
         /* 200|G7-K15| */
-        double err = log(200) + logadd_s(G7, +1, K15, -1, &dummy);
+        const double log200 = 5.298317366548036; /* log(200) */
+        double err = log200 + logadd_s(G7, +1, K15, -1, &dummy);
 
         interval->K15[i]   = K15;
         interval->signs[i] = sign_K15;
