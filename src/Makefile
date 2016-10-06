@@ -12,7 +12,6 @@ MPICC = mpicc
 OBJS = \
     gausslaguerre.o \
     integration.o \
-    integration_perf.o \
     libcasimir.o \
     matrix.o \
     sfunc.o \
