@@ -23,17 +23,15 @@
 
 typedef struct {
     casimir_t *casimir;
-
     int m;
     double nT,tau;
 } integration_t;
 
 typedef struct {
-    sign_t signs[8];
     double a,b;
+    sign_t signs[8];
     double K15[8];
     double err[8];
-    double maxerr;
 } interval_t;
 
 void casimir_integrate_integrands(integration_t *int_obj, double z, int l1, int l2, double v[8], sign_t s[8]);
