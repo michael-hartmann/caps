@@ -216,13 +216,13 @@ double matrix_logdet(matrix_t *A, double z, const char *detalg)
         return matrix_logdetIdmM_eig_lapack(A, z);
 
     /* M = Id+z*M */
-    /* XXX use BLAS routine XXX */
     {
         const size_t dim  = A->dim;
         const size_t dim2 = A->dim2;
         double *a = A->M;
 
         /* multiply by z */
+        /* dscal_(&dim2, &z, a, &one); // BLAS 1 */
         for(size_t i = 0; i < dim2; i++)
             a[i] *= z;
 
