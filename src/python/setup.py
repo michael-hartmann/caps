@@ -4,9 +4,7 @@ from distutils.extension import Extension
 
 sources = [
     "libcasimir.pyx",
-    "../gausslaguerre.c",
-    "../integration_drude.c",
-    "../integration_perf.c",
+    "../integration.c",
     "../libcasimir.c",
     "../matrix.c",
     "../sfunc.c",

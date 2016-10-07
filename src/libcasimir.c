@@ -195,7 +195,7 @@ double casimir_lnLambda(int l1, int l2, int m)
     return (log(2*l1+1)+log(2*l2+1)-log(l1)-log(l1+1)-log(l2)-log(l2+1)+lgamma(1+l1-m)+lgamma(1+l2-m)-lgamma(1+l1+m)-lgamma(1+l2+m))/2.0;
 }
 
-double casimir_epsilonm1_perf(double xi, void *userdata)
+double casimir_epsilonm1_perf(__attribute__((unused)) double xi, __attribute__((unused)) void *userdata)
 {
     return INFINITY;
 }
