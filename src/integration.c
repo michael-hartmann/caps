@@ -271,7 +271,7 @@ int casimir_integrate_init(casimir_t *casimir, integration_t *int_obj, double nT
  * @param [in,out] self integration object
  * @retval 0
  */
-int casimir_integrate_free(integration_t *self)
+int casimir_integrate_free(__attribute__((unused)) integration_t *self)
 {
     /* NOP at the moment */
     return 0;
