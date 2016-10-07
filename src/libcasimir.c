@@ -1,7 +1,7 @@
 /**
  * @file   libcasimir.c
  * @author Michael Hartmann <michael.hartmann@physik.uni-augsburg.de>
- * @date   September, 2016
+ * @date   October, 2016
  * @brief  library to calculate the free Casimir energy in the plane-sphere geometry
  */
 
@@ -195,11 +195,32 @@ double casimir_lnLambda(int l1, int l2, int m)
     return (log(2*l1+1)+log(2*l2+1)-log(l1)-log(l1+1)-log(l2)-log(l2+1)+lgamma(1+l1-m)+lgamma(1+l2-m)-lgamma(1+l1+m)-lgamma(1+l2+m))/2.0;
 }
 
+/**
+ * @brief Dielectric function for perfect reflectors
+ *
+ * @param [in] xi ignored
+ * @param [in] userdata ignored
+ * @retval INFINITY epsilon(xi) = INFINITY
+ */
 double casimir_epsilonm1_perf(__attribute__((unused)) double xi, __attribute__((unused)) void *userdata)
 {
     return INFINITY;
 }
 
+/**
+ * @brief Dielectric function for Drude reflectors
+ *
+ * Dielectric function for Drude
+ *      epsilon(ξ) = ωp²/(ξ*(ξ+γ))
+ *
+ * The parameters ωp and γ must be provided by userdata:
+ *      omegap = userdata[0]
+ *      gamma_ = userdata[1]
+ *
+ * @param [in] xi dielectric function
+ * @param [in] userdata userdata
+ * @retval epsilon epsilon(xi)
+ */
 double casimir_epsilonm1_drude(double xi, void *userdata)
 {
     double *ptr = (double *)userdata;
@@ -769,8 +790,6 @@ void casimir_lnab(casimir_t *self, int n_mat, int l, double *lna, double *lnb, s
     const double ln_slc = lnIlp_nchi + logadd_s(ln_l+lnKlp,      +1,      ln_chi+lnKlm,      +1, &sign_slc);
     const double ln_sld = lnKlp      + logadd_s(ln_l+lnIlp_nchi, +1, ln_n+ln_chi+lnIlm_nchi, -1, &sign_sld);
 
-    /**
-     */
     /*
     printf("n =%.18g\n",     exp(ln_n));
     printf("n2=%.18g\n",     exp(2*ln_n));
@@ -1307,9 +1326,6 @@ matrix_t *casimir_M(casimir_t *self, int n, int m)
     const double nT = n*self->T;
     integration_t int_obj;
 
-    /* XXX */
-    //integration_t int_drude = { 0 };
-
     const size_t min = MAX(m,1);
     const size_t max = self->lmax;
     const size_t dim = (max-min+1);
@@ -1428,6 +1444,7 @@ double casimir_logdetD(casimir_t *self, int n, int m)
     {
         double logdet_EE = 0, logdet_MM = 0;
 
+        /* XXX what happens for xi=0 XXX */
         //if(self->epsilonm1 == NULL)
             /* perfect reflector */
             casimir_logdetD0(self, m, &logdet_EE, &logdet_MM);
