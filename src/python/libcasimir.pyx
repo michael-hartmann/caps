@@ -150,6 +150,21 @@ cdef class Casimir:
     cdef casimir_t casimir
 
     def __init__(self, LbyR=1, T=1, verbose=False, debug=False, lmax=None, cores=None, precision=None, detalg=None):
+        """Initialize Casimir object
+
+        Required arguments:
+            LbyR: aspect ration L/R, LbyR > 0
+            T:    temperature in units of ħc/(2π*kB*(L+R)), T > 0
+
+        Optional arguments:
+            lmax:      truncation of vector space
+            cores:     number of cores to use (only used for F)
+            precision  XXX
+            detalg:    LU, LU_LAPACK, QR_GIVENS or QR_LAPACK
+            threshold: XXX
+            debug:     flag, print debugging information
+            verbose:   flag, print some addition information
+        """
         cdef char c_detalg[128]
 
         if LbyR <= 0:
@@ -220,21 +235,29 @@ cdef class Casimir:
         
 
     def lnLambda(Casimir self, int l1, int l2, int m):
+        """Calculate log(|Λ(l1,l2,m)|)"""
         return casimir_lnLambda(l1, l2, m)
 
     def lnab0(Casimir self, int l):
+        """Calculate prefactors log(a0), log(b0) of Mie coefficients for χ→0"""
         cdef double a0,b0
         cdef sign_t sign_a0, sign_b0
         casimir_lnab0(l, &a0, &sign_a0, &b0, &sign_b0)
         return a0, sign_a0, b0, sign_b0
 
     def lnab(Casimir self, int n, int l):
+        """Calculate Mie coefficients a_l, b_l
+
+        Calculate Mie coefficients for order l and argument χ=nT*R/(R+L). The
+        function returns log(a_l), sign(a_l), log(b_l), sign(b_l).
+        """
         cdef double lna,lnb
         cdef sign_t sign_a, sign_b
         casimir_lnab(&self.casimir, n, l, &lna, &lnb, &sign_a, &sign_b)
         return lna, sign_a, lnb, sign_b
 
     def lnab_perf(Casimir self, int n, int l):
+        """Calculate Mie coefficients for perfect reflectors"""
         cdef double lna,lnb
         cdef sign_t sign_a, sign_b
         casimir_lnab_perf(&self.casimir, n, l, &lna, &lnb, &sign_a, &sign_b)
@@ -242,15 +265,18 @@ cdef class Casimir:
 
 
     def rp(Casimir self, double nT, double k):
+        """Calculate and return Fresnel coefficients r_TE, r_TM"""
         cdef double r_TE, r_TM
         casimir_rp(&self.casimir, nT, k, &r_TE, &r_TM)
         return r_TE, r_TM
 
 
     def logdetD0(Casimir self, int m):
+        """Calculate determinant of scattering matrix in the high-temperature limit, i.e., xi=0"""
         cdef double EE, MM
         casimir_logdetD0(&self.casimir, m, &EE, &MM)
         return EE, MM
 
     def logdetD(Casimir self, int n, int m):
+        """Calculate determinant of scattering matrix"""
         return casimir_logdetD(&self.casimir, n, m)
