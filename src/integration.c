@@ -185,8 +185,8 @@ static void integrate_gauss_kronrod(integration_t *int_obj, int l1, int l2, doub
 
     /* calculate integrands at nodes and save results in G7 for Gauß, and K15
      * for Kronrod */
-    double G7[8]  = { 0,0,0,0,0,0,0,0 };
-    double K15[8] = { 0,0,0,0,0,0,0,0 };
+    double G7[8]  = { 0 };
+    double K15[8] = { 0 };
 
     for(int i = 0; i < 15; i++)
     {
@@ -265,7 +265,7 @@ static double estimate_error(interval_t intervals[], int N, double v[8], double 
 
 static double estimate_error(interval_t intervals[], int N, double v[8], double relerror[8], int *index)
 {
-    double sum_err2[8] = { 0,0,0,0,0,0,0,0 }; /* squared error */
+    double sum_err2[8] = { 0 }; /* squared error */
 
     for(int j = 0; j < 8; j++)
     {
