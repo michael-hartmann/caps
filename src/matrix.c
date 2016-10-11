@@ -1,7 +1,7 @@
 /**
  * @file   matrix.c
  * @author Michael Hartmann <michael.hartmann@physik.uni-augsburg.de>
- * @date   September, 2016
+ * @date   October, 2016
  * @brief  matrix functions
  */
 
@@ -17,6 +17,16 @@
 
 #include "clapack.h"
 
+
+/**
+ * @brief Create new matrix object
+ *
+ * Create a new square matrix with dimension dim x dim. The matrix will not be
+ * initialized.
+ *
+ * @param [in] dim dimension of square matrix
+ * @retval A matrix
+ */
 matrix_t *matrix_alloc(const size_t dim)
 {
     const size_t dim2 = dim*dim;
@@ -44,7 +54,21 @@ matrix_t *matrix_alloc(const size_t dim)
     return A;
 }
 
-matrix_t *matrix_view(double *ptr, size_t dim, size_t lda)
+
+/**
+ * @brief Create matrix view
+ *
+ * Create a matrix view from an existing matrix.
+ *
+ * Note that you still have to call matrix_free once you don't need the view
+ * anymore. The actual data given by a will not be freed.
+ *
+ * @param [in] a double array with matrix data
+ * @param [in] dim dimension of square matrix
+ * @param [in] lda leading dimension of a
+ * @retval A matrix view
+ */
+matrix_t *matrix_view(double *a, size_t dim, size_t lda)
 {
     matrix_t *A = xmalloc(sizeof(matrix_t));
     if(A == NULL)
@@ -53,12 +77,23 @@ matrix_t *matrix_view(double *ptr, size_t dim, size_t lda)
     A->dim  = dim;
     A->dim2 = dim*dim;
     A->lda  = lda;
-    A->M    = ptr;
+    A->M    = a;
     A->free_memory = false;
 
     return A;
 }
 
+
+/**
+ * @brief Free matrix
+ *
+ * This function frees memory allocated for the matrix A.
+ *
+ * Note that you also have to call matrix_free on matrix views. see \ref
+ * matrix_view.
+ *
+ * @param [in,out] A matrix
+ */
 void matrix_free(matrix_t *A)
 {
     if(A != NULL)
@@ -72,6 +107,18 @@ void matrix_free(matrix_t *A)
     }
 }
 
+/**
+ * @brief Save matrix to stream
+ *
+ * This function saves the matrix A to the stream given by stream. The output
+ * is in the numpy .npy format.
+ *
+ * This function does not support matrix views at the moment.
+ *
+ * @param [in] A matrix
+ * @param [in] stream stream
+ * @retval 0
+ */
 int matrix_save_to_stream(matrix_t *A, FILE *stream)
 {
     /* dump matrix */
@@ -96,6 +143,17 @@ int matrix_save_to_stream(matrix_t *A, FILE *stream)
     return 0;
 }
 
+
+/**
+ * @brief Save matrix to file
+ *
+ * Save matrix A to file filename. See \ref matrix_save_to_stream for more
+ * information.
+ *
+ * @param [in] A matrix
+ * @param [in] filename filename of output file
+ * @retval 0
+ */
 int matrix_save_to_file(matrix_t *A, const char *filename)
 {
     FILE *f = fopen(filename, "w");
@@ -109,6 +167,13 @@ int matrix_save_to_file(matrix_t *A, const char *filename)
     return ret;
 }
 
+
+/**
+ * @brief Set all matrix elements to value z
+ *
+ * @param [in,out] A matrix
+ * @param [in] z value
+ */
 void matrix_setall(matrix_t *A, double z)
 {
     const size_t dim = A->dim;
@@ -129,6 +194,15 @@ void matrix_setall(matrix_t *A, double z)
     }
 }
 
+/**
+ * @brief Calculate log(|det(A)|) for A triangular
+ *
+ * This function calculates the logarithm of the determinant of the matrix A
+ * assuming A is upper or lower triangular.
+ *
+ * @param [in] A triangular matrix
+ * @retval logdet log(|det(A)|)
+ */
 double matrix_logdet_triangular(matrix_t *A)
 {
     size_t dim = A->dim;
@@ -195,6 +269,15 @@ double matrix_logdet(matrix_t *A, double z, const char *detalg)
     return matrix_logdet_lu_lapack(A);
 }
 
+/**
+ * @brief Calculate log(|det(A)|) using LU decomposition
+ *
+ * Calculate LU decomposition of A and use \ref matrix_logdet_triangular to
+ * calculate log(|det(A)|).
+ *
+ * @param [in,out] A matrix
+ * @retval logdet log(|det(A)|)
+ */
 double matrix_logdet_lu_lapack(matrix_t *A)
 {
     int info = 0;
@@ -217,6 +300,16 @@ double matrix_logdet_lu_lapack(matrix_t *A)
     return matrix_logdet_triangular(A);
 }
 
+
+/**
+ * @brief Calculate log(|det(A)|) using QR decomposition
+ *
+ * Calculate QR decomposition of A and use \ref matrix_logdet_triangular to
+ * calculate log(|det(A)|).
+ *
+ * @param [in,out] A matrix
+ * @retval logdet log(|det(A)|)
+ */
 double matrix_logdet_qr_lapack(matrix_t *A)
 {
     int dim = (int)A->dim;
@@ -262,6 +355,15 @@ double matrix_logdet_qr_lapack(matrix_t *A)
     return matrix_logdet_triangular(A);
 }
 
+/**
+ * @brief Calculate log(|det(Id+z*A)|) using eigenvalues
+ *
+ * Calculate eigenvalues of A and calculate log(|det(Id+z*A)|).
+ *
+ * @param [in,out] A matrix
+ * @param [in] z factor
+ * @retval logdet log(|det(A)|)
+ */
 double matrix_logdetIdmM_eig_lapack(matrix_t *A, double z)
 {
     int dim = A->dim;
