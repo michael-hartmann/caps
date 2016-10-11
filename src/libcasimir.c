@@ -1362,51 +1362,57 @@ matrix_t *casimir_M(casimir_t *self, int n, int m)
             casimir_mie_cache_get(self, l1, n, &ln_al1, &sign_al1, &ln_bl1, &sign_bl1);
             casimir_mie_cache_get(self, l2, n, &ln_al2, &sign_al2, &ln_bl2, &sign_bl2);
 
+
             casimir_integrals_t cint;
             casimir_integrate(&int_obj, l1, l2, &cint);
 
             /* EE */
             {
-                sign_t sign;
                 /* A_TE + B_TM */
-                double elem = exp((ln_al1+ln_al2)/2+logadd_s(cint.lnA_TE, cint.signA_TE, cint.lnB_TM, cint.signB_TM, &sign));
+                double elem = cint.lnA_TE + cint.lnB_TM;
 
                 trace += elem; /* elem is positive */
 
-                matrix_set(M, i,j,             sign_al1*sign*elem);
-                matrix_set(M, j,i, MPOW(l1+l2)*sign_al2*sign*elem);
+                matrix_set(M, i,j,             sign_al1*elem);
+                matrix_set(M, j,i, MPOW(l1+l2)*sign_al2*elem);
             }
 
             /* MM */
             {
-                sign_t sign;
+                /* sqrt(|b_l1|*|b_l2|)/sqrt(|a_l1|*|a_l2|) */
+                double mie_quotient = exp((ln_bl1+ln_bl2-ln_al1-ln_al2)/2);
+
                 /* A_TM + B_TE */
-                double elem = exp((ln_bl1+ln_bl2)/2+logadd_s(cint.lnA_TM, cint.signA_TM, cint.lnB_TE, cint.signB_TE, &sign));
+                double elem = mie_quotient*cint.lnA_TM+cint.lnB_TE;
 
                 trace += elem; /* elem is positive */
 
-                matrix_set(M, i+dim,j+dim,             sign_bl1*sign*elem);
-                matrix_set(M, j+dim,i+dim, MPOW(l1+l2)*sign_bl2*sign*elem);
+                matrix_set(M, i+dim,j+dim,             sign_bl1*elem);
+                matrix_set(M, j+dim,i+dim, MPOW(l1+l2)*sign_bl2*elem);
             }
 
 
             if(m != 0)
             {
-                sign_t sign1, sign2;
+                /* sqrt(|b_l2|)/sqrt(|a_l2|) */
+                double mie_quotient1 = exp((ln_bl2-ln_al2)/2);
+
+                /* sqrt(|b_l1|)/sqrt(|a_l1|) */
+                double mie_quotient2 = exp((ln_bl1-ln_al1)/2);
 
                 /* C_TE + D_TM */
-                double elem1 = exp((ln_al1+ln_bl2)/2+logadd_s(cint.lnC_TE, cint.signC_TE, cint.lnD_TM, cint.signD_TM, &sign1));
+                double elem1 = mie_quotient1+(cint.lnC_TE+cint.lnD_TM);
 
                 /* C_TM + D_TE */
-                double elem2 = exp((ln_bl1+ln_al2)/2+logadd_s(cint.lnC_TM, cint.signC_TM, cint.lnD_TE, cint.signD_TE, &sign2));
+                double elem2 = mie_quotient2+(cint.lnC_TM+cint.lnD_TM);
 
                 /* M_EM */
-                matrix_set(M, i,dim+j,               sign_al1*sign1*elem1);
-                matrix_set(M, j,dim+i, MPOW(l1+l2+1)*sign_al2*sign2*elem2);
+                matrix_set(M, i,dim+j,               sign_al1*elem1);
+                matrix_set(M, j,dim+i, MPOW(l1+l2+1)*sign_al2*elem2);
 
                 /* M_ME */
-                matrix_set(M, dim+i,j,               sign_bl1*sign2*elem2);
-                matrix_set(M, dim+j,i, MPOW(l1+l2+1)*sign_bl2*sign1*elem1);
+                matrix_set(M, dim+i,j,               sign_bl1*elem2);
+                matrix_set(M, dim+j,i, MPOW(l1+l2+1)*sign_bl2*elem1);
             }
         }
 
