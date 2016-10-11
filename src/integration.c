@@ -89,10 +89,7 @@ void casimir_integrate_integrands(integration_t *int_obj, double t, int l1, int 
 
     /* initialize to +0 */
     for(int i = 0; i < 8; i++)
-    {
-        v[i] = -INFINITY;
-        s[i] = +1;
-    }
+        v[i] = 0;
 
     /* t=1 corresponds to z=∞; the integrands vanish for z→∞ */
     if(t == 1)
@@ -135,12 +132,12 @@ void casimir_integrate_integrands(integration_t *int_obj, double t, int l1, int 
         v[A_TM] = +comb.sign_Pl1mPl2m*m2*exp(log_rTM + log_A); /* A, TM */
 
         /* prefactor m 1/τ  1/(1-t)² r_p exp(-z) P_l1^m  P'_l2^m */
-        double C_ = log_prefactor -log_tau -z +comb.lnPl1mdPl2m +log_dz;
+        double log_C = log_prefactor -log_tau -z +comb.lnPl1mdPl2m +log_dz;
         v[C_TE] = -comb.sign_dPl1mPl2m*m*exp(log_rTE + log_C); /* C, TE */
         v[C_TM] = +comb.sign_dPl1mPl2m*m*exp(log_rTM + log_C); /* C, TM */
 
         /* prefactor m 1/τ 1/(1-t)² r_p exp(-z) P'_l1^m P_l2^m */
-        double D_ = log_prefactor -log_tau -z +comb.lndPl1mPl2m +log_dz;
+        double log_D = log_prefactor -log_tau -z +comb.lndPl1mPl2m +log_dz;
         v[D_TE] = -comb.sign_dPl1mPl2m*m*exp(log_rTE + log_D); /* D, TE */
         v[D_TM] = +comb.sign_dPl1mPl2m*m*exp(log_rTM + log_D); /* D, TM */
     }
@@ -162,9 +159,6 @@ static void integrate_gauss_kronrod(integration_t *int_obj, int l1, int l2, doub
 static void integrate_gauss_kronrod(integration_t *int_obj, int l1, int l2, double a, double b, interval_t *interval)
 {
     const double dx = (b-a)/2;
-    double points_G7[8][7];
-    double points_K15[8][15];
-    sign_t signs[8][15];
 
     TERMINATE(l1 <= 0 || l2 <= 0, "l1,l2 > 0, l1=%d, l2=%d\n", l1,l2);
     TERMINATE(a < 0 || a >= b || b > 1, "0 <= a < b <= 1, b=%g, a=%g", b, a);
@@ -193,7 +187,8 @@ static void integrate_gauss_kronrod(integration_t *int_obj, int l1, int l2, doub
 
     /* calculate integrands at nodes and save results in G7 for Gauß, and K15
      * for Kronrod */
-    double G7[8] = 0; double K15[8] = 0;
+    double G7[8]  = { 0 };
+    double K15[8] = { 0 };
     for(int i = 0; i < 15; i++)
     {
         double xi = gausskronrod[i][0]; /* node Kronrod */
@@ -221,7 +216,7 @@ static void integrate_gauss_kronrod(integration_t *int_obj, int l1, int l2, doub
         double G7_i = G7[i];
         double K15_i = K15[i];
 
-        interval->K15[i] = K15_i
+        interval->K15[i] = K15_i;
         interval->err[i] = fabs(K15_i-G7_i);
     }
 }
@@ -240,10 +235,10 @@ static void integrate_gauss_kronrod(integration_t *int_obj, int l1, int l2, doub
  */
 int casimir_integrate_init(casimir_t *casimir, integration_t *int_obj, int n, int m)
 {
-    double nT = n*casimir-T;
+    double nT = n*casimir->T;
 
-    TERMINATE(m < 0, "m > 0, m=%d", m);
-    TERMINATE(nT <= 0, "nT > 0, nT=%g", nT);
+    TERMINATE(m < 0, "m >= 0, m=%d", m);
+    TERMINATE(n <= 0, "n > 0, n=%d", n);
 
     int_obj->casimir = casimir;
     int_obj->m   = m;
@@ -274,21 +269,24 @@ static double estimate_error(interval_t intervals[], int N, double v[8], double 
 
 static double estimate_error(interval_t intervals[], int N, double v[8], double relerror[8], int *index)
 {
-    double err2[8][N];  /* log of squared error */
-    double K15[8][N];   /* log of integral according to Kronrod */
-    sign_t signs[8][N]; /* signs corresponding to K15 */
+    double sum_err2[8] = { 0 }; /* squared error */
 
-    /* copy value of integral, signs and error of every subinterval to arrays
-     * K15, signs, err2 */
+    for(int j = 0; j < 8; j++)
+    {
+        v[j] = 0;
+        relerror[j] = 0;
+    }
+
+    /* copy value of integral and error of every subinterval to arrays K15,
+     * signs, err2 */
     for(int i = 0; i < N; i++)
     {
         interval_t *interval = &intervals[i];
 
         for(int j = 0; j < 8; j++)
         {
-            err2[j][i]  = 2*interval->err[j];
-            K15[j][i]   = interval->K15[j];
-            signs[j][i] = interval->signs[j];
+            sum_err2[j] += pow_2(interval->err[j]);
+            v[j] += interval->K15[j];
         }
     }
 
@@ -296,13 +294,7 @@ static double estimate_error(interval_t intervals[], int N, double v[8], double 
      *      err = sqrt( 1/(N*(N-1)) \sum_j err_j^2 )
      */
     for(int j = 0; j < 8; j++)
-    {
-        v[j] = logadd_ms(K15[j], signs[j], N, &s[j]);
-        if(v[j] == -INFINITY)
-            relerror[j] = -INFINITY;
-        else
-            relerror[j] = (logadd_m(err2[j], N) - log(N*(N-1.)))/2 - v[j];
-    }
+        relerror[j] = sqrt(1./(N*(N-1.))) * sum_err2[j]/v[j];
 
     /* find integral with largest error; i.e. A_TE, A_TM, ..., C_TE or C_TM */
     int jmax = 0;
@@ -316,7 +308,7 @@ static double estimate_error(interval_t intervals[], int N, double v[8], double 
     int imax = 0;
     for(int i = 1; i < N; i++)
     {
-        if(err2[jmax][i] > err2[jmax][imax])
+        if(intervals[i].err[jmax] > intervals[imax].err[jmax])
             imax = i;
     }
 
@@ -330,13 +322,9 @@ int casimir_integrate(integration_t *self, int l1, int l2, casimir_integrals_t *
 {
     #define NMIN  10 /* minimum number of intervals */
     #define NMAX 150 /* maximum number of intervals */
-    #define MAXERROR -20 /* XXX */
+    #define PRECISION 1e-20 /* XXX */
 
     int N = NMIN;
-    double v[8];
-    sign_t s[8];
-    double relerror[8];
-    int index;
 
     /* Use fixed size arrays on stack instead dynamic allocation with malloc.
      * If we need more than NMAX intervals, we have a serious problem and
@@ -358,11 +346,15 @@ int casimir_integrate(integration_t *self, int l1, int l2, casimir_integrals_t *
 
     while(N < NMAX)
     {
+        int index;
+        double v[8];
+        double relerror[8];
+
         /* sum integrals of every subinterval and estimate error */
-        double error = estimate_error(intervals, N, v, s, relerror, &index);
+        double error = estimate_error(intervals, N, v, relerror, &index);
 
         /* if error is sufficiently small, we're done */
-        if(error < MAXERROR)
+        if(error < PRECISION)
         {
             /* copy results to cint */
             cint->lnA_TE = v[A_TE];
@@ -378,14 +370,14 @@ int casimir_integrate(integration_t *self, int l1, int l2, casimir_integrals_t *
             cint->lnD_TM = v[D_TM];
 
             int m = self->m;
-            cint->signA_TE = A0(l1,l2,m) * s[A_TE];
-            cint->signA_TM = A0(l1,l2,m) * s[A_TM];
-            cint->signB_TE = B0(l1,l2,m) * s[B_TE];
-            cint->signB_TM = B0(l1,l2,m) * s[B_TM];
-            cint->signC_TE = C0(l1,l2,m) * s[C_TE];
-            cint->signC_TM = C0(l1,l2,m) * s[C_TM];
-            cint->signD_TE = D0(l1,l2,m) * s[D_TE];
-            cint->signD_TM = D0(l1,l2,m) * s[D_TM];
+            cint->signA_TE = A0(l1,l2,m) * copysign(1, v[A_TE]);
+            cint->signA_TM = A0(l1,l2,m) * copysign(1, v[A_TM]);
+            cint->signB_TE = B0(l1,l2,m) * copysign(1, v[B_TE]);
+            cint->signB_TM = B0(l1,l2,m) * copysign(1, v[B_TM]);
+            cint->signC_TE = C0(l1,l2,m) * copysign(1, v[C_TE]);
+            cint->signC_TM = C0(l1,l2,m) * copysign(1, v[C_TM]);
+            cint->signD_TE = D0(l1,l2,m) * copysign(1, v[D_TE]);
+            cint->signD_TM = D0(l1,l2,m) * copysign(1, v[D_TM]);
 
             return 0;
         }
