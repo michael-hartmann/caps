@@ -14,43 +14,39 @@
 
 /* nodes and weights for Gauß-Kronrod (G7,K15); make sure that the first 7
  * points are the Gauß nodes! */
-static double log_gausskronrod[15][3] =
-{
-    /* nodes                 weight Gauß           weight Kronrod */
-    {  0.00000000000000000, -0.87237149793931956, -1.5631167886725021 },
-    { +0.40584515137739717, -0.96277966333590204, -1.6588877593062039 },
-    { -0.40584515137739717, -0.96277966333590204, -1.6588877593062039 },
-    { +0.74153118559939444, -1.2740184029883301,  -1.9614575682357287 },
-    { -0.74153118559939444, -1.2740184029883301,  -1.9614575682357287 },
-    { +0.94910791234275852, -2.0441904959417476,  -2.7631598321848663 },
-    { -0.94910791234275852, -2.0441904959417476,  -2.7631598321848663 },
+static double gausskronrod[15][3] = {
+    /* nodes,             weight Gauß,       weight Kronrod */
+    { +0.949107912342759, 0.129484966168870, 0.063092092629979},
+    { -0.949107912342759, 0.129484966168870, 0.063092092629979},
+    { +0.741531185599394, 0.279705391489277, 0.140653259715525},
+    { -0.741531185599394, 0.279705391489277, 0.140653259715525},
+    { +0.405845151377397, 0.381830050505119, 0.190350578064785},
+    { -0.405845151377397, 0.381830050505119, 0.190350578064785},
+    {  0.000000000000000, 0.417959183673469, 0.209482141084728},
 
-    { +0.20778495500789847, -INFINITY, -1.5875152786694389 },
-    { -0.20778495500789847, -INFINITY, -1.5875152786694389 },
-    { +0.58608723546769113, -INFINITY, -1.7778285961704769 },
-    { -0.58608723546769113, -INFINITY, -1.7778285961704769 },
-    { +0.86486442335976907, -INFINITY, -2.2557968329911389 },
-    { -0.86486442335976907, -INFINITY, -2.2557968329911389 },
-    { +0.99145537112081264, -INFINITY, -3.7750771108951247 },
-    { -0.99145537112081264, -INFINITY, -3.7750771108951247 }
+    { +0.991455371120813, 0, 0.022935322010529},
+    { -0.991455371120813, 0, 0.022935322010529},
+    { +0.864864423359769, 0, 0.104790010322250},
+    { -0.864864423359769, 0, 0.104790010322250},
+    { +0.586087235467691, 0, 0.169004726639267},
+    { -0.586087235467691, 0, 0.169004726639267},
+    { +0.207784955007898, 0, 0.204432940075298},
+    { -0.207784955007898, 0, 0.204432940075298}
 };
-
 
 
 /**
  * @brief Evaluate integrands A,B,C,D
  *
- * Evaluate the integrands at t in [0,1] for (l1,l2,m) and save logarithms of
- * integrands in array v, and corresponding signs in s.
- *
- * v and s are arrays and contain values and signs for A_TE, A_TM, ..., D_TE,
- * D_TM.
+ * Evaluate the integrands at t in [0,1] for (l1,l2,m) and save integrands in
+ * array v. v contains values for A_TE, A_TM, ..., D_TE, D_TM.
  *
  * We want to integrate:
- * A = A_0 m² exp(-τ)*τ  ∫ dz r_p exp(-z) P_l1^m  P_l2^m  / (z²+2τz)
- * B = B_0    exp(-τ)/τ³ ∫ dz r_p exp(-z) P'_l1^m P'_l2^m   (z²+2τz)
- * C = C_0 m  exp(-τ)/τ  ∫ dz r_p exp(-z) P_l1^m  P'_l2^m
- * D = D_0 m  exp(-τ)/τ  ∫ dz r_p exp(-z) P'_l1^m P_l2^m
+ * A = A_0 Λ(l1,l2,m) √(|a_l1|*|a_l2|) exp(-τ) m²  τ  ∫ dz r_p exp(-z) P_l1^m  P_l2^m  / (z²+2τz)
+ * B = B_0 Λ(l1,l2,m) √(|a_l1|*|a_l2|) exp(-τ)   1/τ³ ∫ dz r_p exp(-z) P'_l1^m P'_l2^m   (z²+2τz)
+ * C = C_0 Λ(l1,l2,m) √(|a_l1|*|a_l2|) exp(-τ) m 1/τ  ∫ dz r_p exp(-z) P_l1^m  P'_l2^m
+ * D = D_0 Λ(l1,l2,m) √(|a_l1|*|a_l2|) exp(-τ) m 1/τ  ∫ dz r_p exp(-z) P'_l1^m P_l2^m
+ *         \---------- prefactor ------------/
  *
  * The integration is from 0 to ∞, the associated Legendre polynomials and
  * their derivatives are evaluated at the argument arg=1+x/τ.
@@ -59,32 +55,31 @@ static double log_gausskronrod[15][3] =
  * integration is now t=0...1.
  *
  * This function returns
- *  v[A_TE] = log(| m² exp(-τ)*τ  1/(1-t)² r_TE exp(-z) P_l1^m  P_l2^m  / (z²+2τz) |)
- *  v[A_TM] = log(| m² exp(-τ)*τ  1/(1-t)² r_TM exp(-z) P_l1^m  P_l2^m  / (z²+2τz) |)
+ *  v[A_TE] = prefactor m²  τ  1/(1-t)² r_TE exp(-z) P_l1^m  P_l2^m  / (z²+2τz)
+ *  v[A_TM] = prefactor m²  τ  1/(1-t)² r_TM exp(-z) P_l1^m  P_l2^m  / (z²+2τz)
  *
- *  v[B_TE] = log(|    exp(-τ)/τ³ 1/(1-t)² r_TE exp(-z) P'_l1^m P'_l2^m   (z²+2τz) |)
- *  v[B_TM] = log(|    exp(-τ)/τ³ 1/(1-t)² r_TM exp(-z) P'_l1^m P'_l2^m   (z²+2τz) |)
+ *  v[B_TE] = prefactor   1/τ³ 1/(1-t)² r_TE exp(-z) P'_l1^m P'_l2^m   (z²+2τz)
+ *  v[B_TM] = prefactor   1/τ³ 1/(1-t)² r_TM exp(-z) P'_l1^m P'_l2^m   (z²+2τz)
  *
- *  v[C_TE] = log(| m  exp(-τ)/τ  1/(1-t)² r_TE exp(-z) P_l1^m  P'_l2^m            |)
- *  v[C_TM] = log(| m  exp(-τ)/τ  1/(1-t)² r_TM exp(-z) P_l1^m  P'_l2^m            |)
+ *  v[C_TE] = prefactor m 1/τ  1/(1-t)² r_TE exp(-z) P_l1^m  P'_l2^m
+ *  v[C_TM] = prefactor m 1/τ  1/(1-t)² r_TM exp(-z) P_l1^m  P'_l2^m
  *
- *  v[D_TE] = log(| m  exp(-τ)/τ  1/(1-t)² r_TE exp(-z) P'_l1^m P_l2^m             |)
- *  v[D_TM] = log(| m  exp(-τ)/τ  1/(1-t)² r_TM exp(-z) P'_l1^m P_l2^m             |)
+ *  v[D_TE] = prefactor m 1/τ  1/(1-t)² r_TE exp(-z) P'_l1^m P_l2^m
+ *  v[D_TM] = prefactor m 1/τ  1/(1-t)² r_TM exp(-z) P'_l1^m P_l2^m
  * where
  *      z = t/(1-t)
  *      τ = 2nT
  *      r_p: Fresnel coefficient for p=TE,TM.
- *
- * The signs are stored in s[A_TE], s[A_TM], ..., s[D_TM].
+ * The prefactor is supposed to be given as
+ *      prefactor = Λ(l1,l2,m) √(|a_l1|*|a_l2|) exp(-τ).
  *
  * @param [in]  int_obj integration object, see \ref casimir_integrate_init
  * @param [in]  t position of integrand, t in [0,1]
  * @param [in]  l1 parameter l1
  * @param [in]  l2 parameter l2
  * @param [out] v output array v of log(integrand) for A_TE,A_TM,...,D_TE,D_TM
- * @param [out] s output array s with signs of integrands
  */
-void casimir_integrate_integrands(integration_t *int_obj, double t, int l1, int l2, double v[8], sign_t s[8])
+void casimir_integrate_integrands(integration_t *int_obj, double t, int l1, int l2, double log_prefactor, double v[8])
 {
     /* 0 <= t <= 1 */
     TERMINATE(t < 0 || t > 1, "0 <= t <= 1, invalid value for t: t=%g", t);
@@ -125,37 +120,29 @@ void casimir_integrate_integrands(integration_t *int_obj, double t, int l1, int 
     plm_combination_t comb;
     plm_PlmPlm(l1, l2, m, 1+z/tau, &comb);
 
-    /* exp(-τ)/τ³ 1/(1-t)² r_p exp(-z) dPl1m dPl2m (z²+2τz)*/
-    double B_ = -tau -3*log_tau -z + log_term + comb.lndPl1mdPl2m +log_dz;
-    v[B_TE] = log_rTE + B_; /* B, TE */
-    v[B_TM] = log_rTM + B_; /* B, TM */
-    s[B_TE] = -comb.sign_dPl1mdPl2m;
-    s[B_TM] = +comb.sign_dPl1mdPl2m;
+    /* prefactor 1/τ³ 1/(1-t)² r_p exp(-z) P'_l1^m P'_l2^m   (z²+2τz) */
+    double log_B = log_prefactor -3*log_tau -z +log_term +comb.lndPl1mdPl2m +log_dz;
+    v[B_TE] = -comb.sign_dPl1mdPl2m*exp(log_rTE + log_B); /* B, TE */
+    v[B_TM] = +comb.sign_dPl1mdPl2m*exp(log_rTM + log_B); /* B, TM */
 
     if(m > 0)
     {
-        double log_m = log(m);
+        int m2 = pow_2(m); /* m² */
 
-        /* m² exp(-τ)*τ 1/(1-t)² r_p exp(-z) Pl1m Pl2m / (z²+2τz) */
-        double A_ = +2*log_m +log_tau -tau -z - log_term +comb.lnPl1mPl2m +log_dz;
-        v[A_TE] = log_rTE + A_; /* A, TE */
-        v[A_TM] = log_rTM + A_; /* A, TM */
-        s[A_TE] = -comb.sign_Pl1mPl2m;
-        s[A_TM] = +comb.sign_Pl1mPl2m;
+        /* prefactor m² τ 1/(1-t)² r_p exp(-z) P_l1^m  P_l2^m  / (z²+2τz) */
+        double log_A = log_prefactor +log_tau -z -log_term +comb.lnPl1mPl2m +log_dz;
+        v[A_TE] = -comb.sign_Pl1mPl2m*m2*exp(log_rTE + log_A); /* A, TE */
+        v[A_TM] = +comb.sign_Pl1mPl2m*m2*exp(log_rTM + log_A); /* A, TM */
 
-        /* m exp(-τ)/τ 1/(1-t)² r_p exp(-z) Pl1m dPl2m */
-        double C_ = +log_m - tau - log_tau -z +comb.lnPl1mdPl2m +log_dz;
-        v[C_TE] = log_rTE + C_; /* C, TE */
-        v[C_TM] = log_rTM + C_; /* C, TM */
-        s[C_TE] = -comb.sign_Pl1mdPl2m;
-        s[C_TM] = +comb.sign_Pl1mdPl2m;
+        /* prefactor m 1/τ  1/(1-t)² r_p exp(-z) P_l1^m  P'_l2^m */
+        double C_ = log_prefactor -log_tau -z +comb.lnPl1mdPl2m +log_dz;
+        v[C_TE] = -comb.sign_dPl1mPl2m*m*exp(log_rTE + log_C); /* C, TE */
+        v[C_TM] = +comb.sign_dPl1mPl2m*m*exp(log_rTM + log_C); /* C, TM */
 
-        /* m exp(-τ)/τ 1/(1-t)² r_p exp(-z) dPl1m Pl2m */
-        double D_ = +log_m -tau -log_tau -z +comb.lndPl1mPl2m +log_dz;
-        v[D_TE] = log_rTE + D_; /* D, TE */
-        v[D_TM] = log_rTM + D_; /* D, TM */
-        s[D_TE] = -comb.sign_dPl1mPl2m;
-        s[D_TM] = +comb.sign_dPl1mPl2m;
+        /* prefactor m 1/τ 1/(1-t)² r_p exp(-z) P'_l1^m P_l2^m */
+        double D_ = log_prefactor -log_tau -z +comb.lndPl1mPl2m +log_dz;
+        v[D_TE] = -comb.sign_dPl1mPl2m*m*exp(log_rTE + log_D); /* D, TE */
+        v[D_TM] = +comb.sign_dPl1mPl2m*m*exp(log_rTM + log_D); /* D, TM */
     }
 }
 
@@ -175,7 +162,6 @@ static void integrate_gauss_kronrod(integration_t *int_obj, int l1, int l2, doub
 static void integrate_gauss_kronrod(integration_t *int_obj, int l1, int l2, double a, double b, interval_t *interval)
 {
     const double dx = (b-a)/2;
-    const double log_dx = log(dx);
     double points_G7[8][7];
     double points_K15[8][15];
     sign_t signs[8][15];
@@ -186,54 +172,57 @@ static void integrate_gauss_kronrod(integration_t *int_obj, int l1, int l2, doub
     interval->a = a;
     interval->b = b;
 
-    /* prefactor Λ(l1,l2,m) */
-    double log_prefactor = casimir_lnLambda(l1, l2, int_obj->m) + log_dx;
+    /* prefactor */
+    double log_prefactor;
+    {
+        /* prefactor = Λ(l1,l2,m) √(|a_l1|*|a_l2|) exp(-τ) dx */
+        casimir_t *casimir = int_obj->casimir;
+        int n = int_obj->n;
+        double log_dx = log(dx);
+        double log_Lambda = casimir_lnLambda(l1, l2, int_obj->m);
+        double tau = log(int_obj->tau);
 
-    /* calculate integrands at nodes and save results in points_G7 for Gauß,
-     * and points_K15 for Kronrod */
+        sign_t dummy1,dummy2;
+        double log_al1, log_al2, log_bl1, log_bl2;
+
+        casimir_mie_cache_get(casimir, l1, n, &log_al1, &dummy1, &log_bl1, &dummy2);
+        casimir_mie_cache_get(casimir, l2, n, &log_al2, &dummy1, &log_bl2, &dummy2);
+
+        log_prefactor = log_Lambda + (log_al1+log_al2)/2 -tau +log_dx;
+    }
+
+    /* calculate integrands at nodes and save results in G7 for Gauß, and K15
+     * for Kronrod */
+    double G7[8] = 0; double K15[8] = 0;
     for(int i = 0; i < 15; i++)
     {
-        double xi = log_gausskronrod[i][0]; /* node Kronrod */
+        double xi = gausskronrod[i][0]; /* node Kronrod */
         double zi = (xi+1)*dx+a; /* transform node to interval [a,b] */
 
-        double log_wiG = log_gausskronrod[i][1]; /* weight Gauss */
-        double log_wiK = log_gausskronrod[i][2]; /* weight Kronrod */
+        double wiG = gausskronrod[i][1]; /* weight Gauss */
+        double wiK = gausskronrod[i][2]; /* weight Kronrod */
 
         /* calculate integrands A_TE, A_TM, ..., D_TE, D_TM at node zi */
         double v[8];
-        sign_t s[8];
-        casimir_integrate_integrands(int_obj, zi, l1, l2, v, s);
+        casimir_integrate_integrands(int_obj, zi, l1, l2, log_prefactor, v);
 
         if(i < 7)
         {
             for(int j = 0; j < 8; j++)
-                points_G7[j][i] = log_prefactor+log_wiG+v[j];
+                G7[i] += wiG*v[j];
         }
 
         for(int j = 0; j < 8; j++)
-        {
-            points_K15[j][i] = log_prefactor+log_wiK+v[j];
-            signs[j][i] = s[j];
-        }
+            K15[i] = wiK*v[j];
     }
 
     for(int i = 0; i < 8; i++)
     {
-        sign_t sign_G7, sign_K15, dummy;
+        double G7_i = G7[i];
+        double K15_i = K15[i];
 
-        /* add terms and calculate integral according to Gauß and Kronrod
-         * rules, estimate error */
-        double log_G7  = logadd_ms(points_G7[i],  signs[i], 7,  &sign_G7);
-        double log_K15 = logadd_ms(points_K15[i], signs[i], 15, &sign_K15);
-
-        /* 200|G7-K15| */
-        /* XXX */
-        //const double log200 = 2.298317366548036; /* log(200) */
-        double err = logadd_s(log_G7, +1, log_K15, -1, &dummy);
-
-        interval->K15[i]   = log_K15;
-        interval->signs[i] = sign_K15;
-        interval->err[i]   = err;
+        interval->K15[i] = K15_i
+        interval->err[i] = fabs(K15_i-G7_i);
     }
 }
 
@@ -249,13 +238,16 @@ static void integrate_gauss_kronrod(integration_t *int_obj, int l1, int l2, doub
  * @param [in] m magnetic number
  * @retval 0
  */
-int casimir_integrate_init(casimir_t *casimir, integration_t *int_obj, double nT, int m)
+int casimir_integrate_init(casimir_t *casimir, integration_t *int_obj, int n, int m)
 {
+    double nT = n*casimir-T;
+
     TERMINATE(m < 0, "m > 0, m=%d", m);
     TERMINATE(nT <= 0, "nT > 0, nT=%g", nT);
 
     int_obj->casimir = casimir;
     int_obj->m   = m;
+    int_obj->n   = n;
     int_obj->nT  = nT;
     int_obj->tau = 2*nT;
 
@@ -278,9 +270,9 @@ int casimir_integrate_free(__attribute__((unused)) integration_t *self)
 }
 
 
-static double estimate_error(interval_t intervals[], int N, double v[8], sign_t s[8], double relerror[8], int *index);
+static double estimate_error(interval_t intervals[], int N, double v[8], double relerror[8], int *index);
 
-static double estimate_error(interval_t intervals[], int N, double v[8], sign_t s[8], double relerror[8], int *index)
+static double estimate_error(interval_t intervals[], int N, double v[8], double relerror[8], int *index)
 {
     double err2[8][N];  /* log of squared error */
     double K15[8][N];   /* log of integral according to Kronrod */
