@@ -125,7 +125,6 @@ void casimir_integrate_integrands(integration_t *int_obj, double t, int l1, int 
 
     if(m > 0)
     {
-        TERMINATE(1, "Here be dragons");
         int m2 = pow_2(m); /* m² */
 
         /* prefactor m² τ 1/(1-t)² r_p exp(-z) P_l1^m  P_l2^m  / (z²+2τz) */
