@@ -111,27 +111,6 @@ typedef struct
 } casimir_thread_t;
 
 
-typedef struct
-{
-    double lnA_TE;  /**< logarithm of integral A_TE */
-    double lnA_TM;  /**< logarithm of integral A_TM */
-    double lnB_TE;  /**< logarithm of integral B_TE */
-    double lnB_TM;  /**< logarithm of integral B_TM */
-    double lnC_TE;  /**< logarithm of integral C_TE */
-    double lnC_TM;  /**< logarithm of integral C_TM */
-    double lnD_TE;  /**< logarithm of integral D_TE */
-    double lnD_TM;  /**< logarithm of integral D_TM */
-    sign_t signA_TE; /**< sign of lnA_TE */
-    sign_t signA_TM; /**< sign of lnA_TM */
-    sign_t signB_TE; /**< sign of lnB_TE */
-    sign_t signB_TM; /**< sign of lnB_TM */
-    sign_t signC_TE; /**< sign of lnC_TE */
-    sign_t signC_TM; /**< sign of lnC_TM */
-    sign_t signD_TE; /**< sign of lnD_TE */
-    sign_t signD_TM; /**< sign of lnD_TM */
-} casimir_integrals_t;
-
-
 /* prototypes */
 int  casimir_compile_info(char *str, size_t size);
 void casimir_info(casimir_t *self, FILE *stream, const char *prefix);

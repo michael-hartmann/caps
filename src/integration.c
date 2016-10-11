@@ -14,7 +14,8 @@
 
 /* nodes and weights for Gauß-Kronrod (G7,K15); make sure that the first 7
  * points are the Gauß nodes! */
-static double gausskronrod[15][3] = {
+static double gausskronrod[15][3] =
+{
     /* nodes,             weight Gauß,       weight Kronrod */
     { +0.949107912342759, 0.129484966168870, 0.063092092629979},
     { -0.949107912342759, 0.129484966168870, 0.063092092629979},
@@ -95,7 +96,6 @@ void casimir_integrate_integrands(integration_t *int_obj, double t, int l1, int 
     if(t == 1)
         return;
 
-    int m = int_obj->m;
     double tau = int_obj->tau;
     double log_tau = log(tau);
     double z = t/(1-t);
@@ -114,6 +114,7 @@ void casimir_integrate_integrands(integration_t *int_obj, double t, int l1, int 
 
     /* calculate products of associated Legendre polynomials: Pl1m*Pl2m,
      * dPl1m*dPl2m, dPl1m*Pl2m, Pl1m*dPl2m */
+    int m = int_obj->m;
     plm_combination_t comb;
     plm_PlmPlm(l1, l2, m, 1+z/tau, &comb);
 
@@ -124,6 +125,7 @@ void casimir_integrate_integrands(integration_t *int_obj, double t, int l1, int 
 
     if(m > 0)
     {
+        TERMINATE(1, "Here be dragons");
         int m2 = pow_2(m); /* m² */
 
         /* prefactor m² τ 1/(1-t)² r_p exp(-z) P_l1^m  P_l2^m  / (z²+2τz) */
@@ -169,26 +171,24 @@ static void integrate_gauss_kronrod(integration_t *int_obj, int l1, int l2, doub
     /* prefactor */
     double log_prefactor;
     {
-        /* prefactor = Λ(l1,l2,m) √(|a_l1|*|a_l2|) exp(-τ) dx */
         casimir_t *casimir = int_obj->casimir;
-        int n = int_obj->n;
-        double log_dx = log(dx);
         double log_Lambda = casimir_lnLambda(l1, l2, int_obj->m);
-        double tau = log(int_obj->tau);
 
+        int n = int_obj->n;
         sign_t dummy1,dummy2;
         double log_al1, log_al2, log_bl1, log_bl2;
-
         casimir_mie_cache_get(casimir, l1, n, &log_al1, &dummy1, &log_bl1, &dummy2);
         casimir_mie_cache_get(casimir, l2, n, &log_al2, &dummy1, &log_bl2, &dummy2);
 
-        log_prefactor = log_Lambda + (log_al1+log_al2)/2 -tau +log_dx;
+        /* prefactor = Λ(l1,l2,m) √(|a_l1|*|a_l2|) exp(-τ) dx */
+        log_prefactor = log_Lambda + (log_al1+log_al2)/2 -int_obj->tau +log(dx);
     }
 
     /* calculate integrands at nodes and save results in G7 for Gauß, and K15
      * for Kronrod */
-    double G7[8]  = { 0 };
-    double K15[8] = { 0 };
+    double G7[8]  = { 0,0,0,0,0,0,0,0 };
+    double K15[8] = { 0,0,0,0,0,0,0,0 };
+
     for(int i = 0; i < 15; i++)
     {
         double xi = gausskronrod[i][0]; /* node Kronrod */
@@ -198,26 +198,23 @@ static void integrate_gauss_kronrod(integration_t *int_obj, int l1, int l2, doub
         double wiK = gausskronrod[i][2]; /* weight Kronrod */
 
         /* calculate integrands A_TE, A_TM, ..., D_TE, D_TM at node zi */
-        double v[8];
+        double v[8] = { 0,0,0,0,0,0,0,0 };
         casimir_integrate_integrands(int_obj, zi, l1, l2, log_prefactor, v);
 
         if(i < 7)
         {
             for(int j = 0; j < 8; j++)
-                G7[i] += wiG*v[j];
+                G7[j] += wiG*v[j];
         }
 
         for(int j = 0; j < 8; j++)
-            K15[i] = wiK*v[j];
+            K15[j] += wiK*v[j];
     }
 
-    for(int i = 0; i < 8; i++)
+    for(int k = 0; k < 8; k++)
     {
-        double G7_i = G7[i];
-        double K15_i = K15[i];
-
-        interval->K15[i] = K15_i;
-        interval->err[i] = fabs(K15_i-G7_i);
+        interval->K15[k] = K15[k];
+        interval->err[k] = fabs(K15[k]-G7[k]);
     }
 }
 
@@ -269,7 +266,7 @@ static double estimate_error(interval_t intervals[], int N, double v[8], double 
 
 static double estimate_error(interval_t intervals[], int N, double v[8], double relerror[8], int *index)
 {
-    double sum_err2[8] = { 0 }; /* squared error */
+    double sum_err2[8] = { 0,0,0,0,0,0,0,0 }; /* squared error */
 
     for(int j = 0; j < 8; j++)
     {
@@ -277,8 +274,8 @@ static double estimate_error(interval_t intervals[], int N, double v[8], double 
         relerror[j] = 0;
     }
 
-    /* copy value of integral and error of every subinterval to arrays K15,
-     * signs, err2 */
+    /* copy value of integral and error of every subinterval to arrays K15 and
+     * err2 */
     for(int i = 0; i < N; i++)
     {
         interval_t *interval = &intervals[i];
@@ -294,7 +291,12 @@ static double estimate_error(interval_t intervals[], int N, double v[8], double 
      *      err = sqrt( 1/(N*(N-1)) \sum_j err_j^2 )
      */
     for(int j = 0; j < 8; j++)
-        relerror[j] = sqrt(1./(N*(N-1.))) * sum_err2[j]/v[j];
+    {
+        if(sum_err2[j] == 0)
+            relerror[j] = 0;
+        else
+            relerror[j] = sum_err2[j]/(v[j]*sqrt(N*(N-1.)));
+    }
 
     /* find integral with largest error; i.e. A_TE, A_TM, ..., C_TE or C_TM */
     int jmax = 0;
@@ -318,7 +320,7 @@ static double estimate_error(interval_t intervals[], int N, double v[8], double 
 }
 
 
-int casimir_integrate(integration_t *self, int l1, int l2, casimir_integrals_t *cint)
+int casimir_integrate(integration_t *self, int l1, int l2, double v[8])
 {
     #define NMIN  10 /* minimum number of intervals */
     #define NMAX 150 /* maximum number of intervals */
@@ -347,7 +349,6 @@ int casimir_integrate(integration_t *self, int l1, int l2, casimir_integrals_t *
     while(N < NMAX)
     {
         int index;
-        double v[8];
         double relerror[8];
 
         /* sum integrals of every subinterval and estimate error */
@@ -356,28 +357,19 @@ int casimir_integrate(integration_t *self, int l1, int l2, casimir_integrals_t *
         /* if error is sufficiently small, we're done */
         if(error < PRECISION)
         {
-            /* copy results to cint */
-            cint->lnA_TE = v[A_TE];
-            cint->lnA_TM = v[A_TM];
-
-            cint->lnB_TE = v[B_TE];
-            cint->lnB_TM = v[B_TM];
-
-            cint->lnC_TE = v[C_TE];
-            cint->lnC_TM = v[C_TM];
-
-            cint->lnD_TE = v[D_TE];
-            cint->lnD_TM = v[D_TM];
-
             int m = self->m;
-            cint->signA_TE = A0(l1,l2,m) * copysign(1, v[A_TE]);
-            cint->signA_TM = A0(l1,l2,m) * copysign(1, v[A_TM]);
-            cint->signB_TE = B0(l1,l2,m) * copysign(1, v[B_TE]);
-            cint->signB_TM = B0(l1,l2,m) * copysign(1, v[B_TM]);
-            cint->signC_TE = C0(l1,l2,m) * copysign(1, v[C_TE]);
-            cint->signC_TM = C0(l1,l2,m) * copysign(1, v[C_TM]);
-            cint->signD_TE = D0(l1,l2,m) * copysign(1, v[D_TE]);
-            cint->signD_TM = D0(l1,l2,m) * copysign(1, v[D_TM]);
+
+            v[A_TE] = A0(l1,l2,m)*v[A_TE];
+            v[A_TM] = A0(l1,l2,m)*v[A_TM];
+
+            v[B_TE] = B0(l1,l2,m)*v[B_TE];
+            v[B_TM] = B0(l1,l2,m)*v[B_TM];
+
+            v[C_TE] = C0(l1,l2,m)*v[C_TE];
+            v[C_TM] = C0(l1,l2,m)*v[C_TM];
+
+            v[D_TE] = D0(l1,l2,m)*v[D_TE];
+            v[D_TM] = D0(l1,l2,m)*v[D_TM];
 
             return 0;
         }

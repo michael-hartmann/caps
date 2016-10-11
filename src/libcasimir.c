@@ -1362,16 +1362,15 @@ matrix_t *casimir_M(casimir_t *self, int n, int m)
             casimir_mie_cache_get(self, l1, n, &ln_al1, &sign_al1, &ln_bl1, &sign_bl1);
             casimir_mie_cache_get(self, l2, n, &ln_al2, &sign_al2, &ln_bl2, &sign_bl2);
 
-
-            casimir_integrals_t cint;
-            casimir_integrate(&int_obj, l1, l2, &cint);
+            double v[8];
+            casimir_integrate(&int_obj, l1, l2, v);
 
             /* EE */
             {
                 /* A_TE + B_TM */
-                double elem = cint.lnA_TE + cint.lnB_TM;
+                double elem = v[A_TE] + v[B_TM];
 
-                trace += elem; /* elem is positive */
+                trace += fabs(elem); /* elem is positive */
 
                 matrix_set(M, i,j,             sign_al1*elem);
                 matrix_set(M, j,i, MPOW(l1+l2)*sign_al2*elem);
@@ -1380,12 +1379,12 @@ matrix_t *casimir_M(casimir_t *self, int n, int m)
             /* MM */
             {
                 /* sqrt(|b_l1|*|b_l2|)/sqrt(|a_l1|*|a_l2|) */
-                double mie_quotient = exp((ln_bl1+ln_bl2-ln_al1-ln_al2)/2);
+                double mie_quotient = exp((ln_bl1+ln_bl2-ln_al1-ln_al2)/2.);
 
                 /* A_TM + B_TE */
-                double elem = mie_quotient*cint.lnA_TM+cint.lnB_TE;
+                double elem = mie_quotient*(v[A_TM]+v[B_TE]);
 
-                trace += elem; /* elem is positive */
+                trace += fabs(elem); /* elem is positive */
 
                 matrix_set(M, i+dim,j+dim,             sign_bl1*elem);
                 matrix_set(M, j+dim,i+dim, MPOW(l1+l2)*sign_bl2*elem);
@@ -1401,10 +1400,10 @@ matrix_t *casimir_M(casimir_t *self, int n, int m)
                 double mie_quotient2 = exp((ln_bl1-ln_al1)/2);
 
                 /* C_TE + D_TM */
-                double elem1 = mie_quotient1+(cint.lnC_TE+cint.lnD_TM);
+                double elem1 = mie_quotient1+(v[C_TE]+v[D_TM]);
 
                 /* C_TM + D_TE */
-                double elem2 = mie_quotient2+(cint.lnC_TM+cint.lnD_TM);
+                double elem2 = mie_quotient2+(v[C_TM]+v[D_TM]);
 
                 /* M_EM */
                 matrix_set(M, i,dim+j,               sign_al1*elem1);
