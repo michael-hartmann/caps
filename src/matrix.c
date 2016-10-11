@@ -230,7 +230,7 @@ double matrix_logdet_triangular(matrix_t *A)
 double matrix_logdet(matrix_t *A, double z, const char *detalg)
 {
     if(strcmp(detalg, "EIG") == 0)
-        return matrix_logdetIdmM_eig_lapack(A, z);
+        return matrix_logdetIdmM_eig(A, z);
 
     /* M = Id+z*M */
     {
@@ -261,12 +261,12 @@ double matrix_logdet(matrix_t *A, double z, const char *detalg)
     }
 
     if(strcmp(detalg, "LU") == 0)
-        return matrix_logdet_lu_lapack(A);
+        return matrix_logdet_lu(A);
     if(strcmp(detalg, "QR") == 0)
-        return matrix_logdet_qr_lapack(A);
+        return matrix_logdet_qr(A);
 
     WARN(1, "Unknown algorithm %s, defaulting to LU", detalg);
-    return matrix_logdet_lu_lapack(A);
+    return matrix_logdet_lu(A);
 }
 
 /**
@@ -278,7 +278,7 @@ double matrix_logdet(matrix_t *A, double z, const char *detalg)
  * @param [in,out] A matrix
  * @retval logdet log(|det(A)|)
  */
-double matrix_logdet_lu_lapack(matrix_t *A)
+double matrix_logdet_lu(matrix_t *A)
 {
     int info = 0;
     int dim = (int)A->dim;
@@ -310,7 +310,7 @@ double matrix_logdet_lu_lapack(matrix_t *A)
  * @param [in,out] A matrix
  * @retval logdet log(|det(A)|)
  */
-double matrix_logdet_qr_lapack(matrix_t *A)
+double matrix_logdet_qr(matrix_t *A)
 {
     int dim = (int)A->dim;
     double tau[dim];
@@ -364,7 +364,7 @@ double matrix_logdet_qr_lapack(matrix_t *A)
  * @param [in] z factor
  * @retval logdet log(|det(A)|)
  */
-double matrix_logdetIdmM_eig_lapack(matrix_t *A, double z)
+double matrix_logdetIdmM_eig(matrix_t *A, double z)
 {
     int dim = A->dim;
     char jobvl = 'N'; /* don't compute left eigenvectors */
