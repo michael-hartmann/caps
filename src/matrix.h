@@ -2,6 +2,7 @@
 #define __MATRIX_H
 
 #include <stdio.h>
+#include <stdbool.h>
 #include <math.h>
 
 #include "utils.h"
@@ -12,6 +13,7 @@ typedef struct {
     size_t dim,dim2;
     size_t lda;
     double *M;
+    bool free_memory;
 } matrix_t;
 
 
@@ -24,6 +26,8 @@ typedef struct {
 
 /* prototypes */
 matrix_t *matrix_alloc(const size_t dim);
+matrix_t *matrix_view(double *ptr, size_t dim, size_t lda);
+
 void matrix_free(matrix_t *A);
 void matrix_setall(matrix_t *A, double z);
 
