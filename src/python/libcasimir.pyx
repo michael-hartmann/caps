@@ -1,3 +1,4 @@
+import numpy as np
 import cython
 import math
 from libcpp cimport bool
@@ -61,10 +62,10 @@ cdef extern from "sfunc.h":
         int sign_dPl1mdPl2m;
 
 
-    double ln_doublefact(int n); 
+    double ln_doublefact(int n);
 
-    double bessel_lnInu(const int n, const double x); 
-    double bessel_lnKnu(const int n, const double x); 
+    double bessel_lnInu(const int n, const double x);
+    double bessel_lnKnu(const int n, const double x);
     void bessel_lnInuKnu(int nu, const double x, double *lnInu_p, double *lnKnu_p);
 
     double plm_lnPlm (int l, int m, double x, sign_t *sign);
@@ -84,9 +85,9 @@ class sfunc:
 
     def ln_doublefact(int n):
         """Double factorial
-        
+
         This is the factorial with every second value skipped, i.e.,
-        7!! = 7*5*3*1. 
+        7!! = 7*5*3*1.
         """
         return ln_doublefact(n)
 
@@ -96,9 +97,9 @@ class sfunc:
 
         Calculate modified Bessel functions I_{nu+1/2} and K_{nu+1/2} for
         the argument x, and return logarithm of value.
-        
+
         The function returns log(I_{nu+1/2}(x)), log(K_{nu+1/2}(x)).
-        
+
         Please note that the order is not nu, but nu+1/2.
         """
         cdef double Inu, Knu
@@ -148,6 +149,8 @@ class sfunc:
 
 cdef class Casimir:
     cdef casimir_t casimir
+    cpdef args
+    cpdef epsilonm1
 
     def __init__(self, LbyR=1, T=1, verbose=False, debug=False, lmax=None, cores=None, precision=None, detalg=None):
         """Initialize Casimir object
@@ -203,6 +206,7 @@ cdef class Casimir:
         casimir_free(&self.casimir)
 
 
+
     def get_debug(self):
         return casimir_get_debug(&self.casimir)
 
@@ -222,7 +226,24 @@ cdef class Casimir:
 
     def get_precision(self):
         return casimir_get_precision(&self.casimir)
-        
+
+    def set_epsilonm1(Casimir self, epsilonm1, args):
+        """Set callback function epsilonm1
+
+        epsilonm1 must be of the form:
+
+        def epsilonm1(xi, args):
+            ...
+
+        xi corresponds to the (scaled) Matsubara frequency, and the args given
+        to set_epsilonm1 will be given to the function epsilonm1.
+        """
+        cdef void *ptr
+        ptr = <void *>self
+        self.epsilonm1 = epsilonm1
+        self.args = args
+        casimir_set_epsilonm1(&self.casimir, &__epsilonm1, ptr)
+
     def __repr__(self):
         s  = "L/R = %.8g\n" % self.casimir.LbyR
         s += "T   = %.8g\n" % self.casimir.T
@@ -232,7 +253,7 @@ cdef class Casimir:
         s += "threshold = %g\n" % self.casimir.threshold
         s += "detalg    = %s" % self.get_detalg()
         return s
-        
+
 
     def lnLambda(Casimir self, int l1, int l2, int m):
         """Calculate log(|Λ(l1,l2,m)|)"""
@@ -280,3 +301,11 @@ cdef class Casimir:
     def logdetD(Casimir self, int n, int m):
         """Calculate determinant of scattering matrix"""
         return casimir_logdetD(&self.casimir, n, m)
+
+
+cdef double __epsilonm1(double xi, void *userdata):
+    """Wrapper for callbacks"""
+    cdef Casimir self
+
+    self = <Casimir> userdata
+    return self.epsilonm1(xi, self.args)
