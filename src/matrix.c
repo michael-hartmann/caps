@@ -46,14 +46,12 @@ matrix_t *matrix_alloc(const size_t dim)
 
 matrix_t *matrix_view(double *ptr, size_t dim, size_t lda)
 {
-    size_t dim2 = dim*dim;
-
     matrix_t *A = xmalloc(sizeof(matrix_t));
     if(A == NULL)
         return NULL;
 
     A->dim  = dim;
-    A->dim2 = dim2;
+    A->dim2 = dim*dim;
     A->lda  = lda;
     A->M    = ptr;
     A->free_memory = false;
@@ -63,10 +61,13 @@ matrix_t *matrix_view(double *ptr, size_t dim, size_t lda)
 
 void matrix_free(matrix_t *A)
 {
-    if(A->free_memory && A != NULL)
+    if(A != NULL)
     {
-        xfree(A->M);
-        A->M = NULL;
+        if(A->free_memory)
+        {
+            xfree(A->M);
+            A->M = NULL;
+        }
         xfree(A);
     }
 }
