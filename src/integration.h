@@ -37,6 +37,6 @@ void casimir_integrate_integrands(integration_t *int_obj, double t, int l1, int 
 
 int casimir_integrate_init(casimir_t *self, integration_t *int_obj, int n, int m);
 int casimir_integrate_free(integration_t *int_obj);
-int casimir_integrate(integration_t *int_obj, int l1, int l2, casimir_integrals_t *cint);
+int casimir_integrate(integration_t *int_obj, int l1, int l2, double v[8]);
 
 #endif
