@@ -108,33 +108,6 @@ double matrix_logdet_triangular(matrix_t *A)
     return kahan_sum(logdet, dim);
 }
 
-double matrix_logdet_lu(matrix_t *A)
-{
-    const size_t dim = A->dim;
-    double *a = A->M;
-
-    for(size_t j = 0; j < dim; j++)
-    {
-        for(size_t i = 0; i < j+1; i++)
-        {
-            double sum = 0;
-            for(size_t k = 0; k < i; k++)
-                sum += a[i*dim+k]*a[k*dim+j];
-            a[i*dim+j] -= sum;
-        }
-        for(size_t i = j+1; i < dim; i++)
-        {
-            double sum = 0;
-            for(size_t k = 0; k < j; k++)
-                sum += a[i*dim+k]*a[k*dim+j];
-            a[i*dim+j] = (a[i*dim+j]-sum)/a[j*dim+j];
-        }
-    }
-
-    return matrix_logdet_triangular(A);
-}
-
-
 /**
  * @brief Calculate \f$\log\det(\mathrm{Id}+z*M)\f$ for matrix M
  *
