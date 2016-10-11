@@ -47,7 +47,7 @@ static double gausskronrod[15][3] =
  * B = B_0 Λ(l1,l2,m) √(|a_l1|*|a_l2|) exp(-τ)   1/τ³ ∫ dz r_p exp(-z) P'_l1^m P'_l2^m   (z²+2τz)
  * C = C_0 Λ(l1,l2,m) √(|a_l1|*|a_l2|) exp(-τ) m 1/τ  ∫ dz r_p exp(-z) P_l1^m  P'_l2^m
  * D = D_0 Λ(l1,l2,m) √(|a_l1|*|a_l2|) exp(-τ) m 1/τ  ∫ dz r_p exp(-z) P'_l1^m P_l2^m
- *         \---------- prefactor ------------/
+ *         \---------- prefactor ------------/\------ what we calculate in this function -------/
  *
  * The integration is from 0 to ∞, the associated Legendre polynomials and
  * their derivatives are evaluated at the argument arg=1+x/τ.
