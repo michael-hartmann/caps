@@ -36,8 +36,8 @@ int matrix_save_to_file(matrix_t *A, const char *filename);
 
 double matrix_logdet_triangular(matrix_t *A);
 double matrix_logdet(matrix_t *A, double z, const char *detalg);
-double matrix_logdet_lu_lapack(matrix_t *A);
-double matrix_logdet_qr_lapack(matrix_t *A);
-double matrix_logdetIdmM_eig_lapack(matrix_t *A, double z);
+double matrix_logdet_lu(matrix_t *A);
+double matrix_logdet_qr(matrix_t *A);
+double matrix_logdetIdmM_eig(matrix_t *A, double z);
 
 #endif
