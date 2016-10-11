@@ -91,11 +91,22 @@ int matrix_save_to_file(matrix_t *A, const char *filename)
 
 void matrix_setall(matrix_t *A, double z)
 {
-    const size_t dim2 = A->dim2;
-    double *a = A->M;
+    const size_t dim = A->dim;
 
-    for(size_t i = 0; i < dim2; i++)
-        a[i] = z;
+    if(A->lda == dim)
+    {
+        double *a = A->M;
+        const size_t dim2 = dim*dim;
+
+        for(size_t i = 0; i < dim2; i++)
+            a[i] = z;
+    }
+    else
+    {
+        for(size_t m = 0; m < dim; m++)
+            for(size_t n = 0; n < dim; n++)
+                matrix_set(A, m,n, z);
+    }
 }
 
 double matrix_logdet_triangular(matrix_t *A)
@@ -133,14 +144,26 @@ double matrix_logdet(matrix_t *A, double z, const char *detalg)
         const size_t dim2 = A->dim2;
         double *a = A->M;
 
-        /* multiply by z */
-        /* dscal_(&dim2, &z, a, &one); // BLAS 1 */
-        for(size_t i = 0; i < dim2; i++)
-            a[i] *= z;
+        /* multiply by z and add identity matrix */
+        if(A->lda == dim)
+        {
+            /* dscal_(&dim2, &z, a, &one); // BLAS 1 */
+            for(size_t i = 0; i < dim2; i++)
+                a[i] *= z;
 
-        /* add identity matrix */
-        for(size_t i = 0; i < dim; i++)
-            a[i*dim+i] += 1;
+            for(size_t i = 0; i < dim; i++)
+                a[i*dim+i] += 1;
+        }
+        else
+        {
+            for(size_t m = 0; m < dim; m++)
+            {
+                for(size_t n = 0; n < dim; n++)
+                    matrix_set(A, m,n, z*matrix_get(A,m,n));
+
+                matrix_set(A,m,m, 1+matrix_get(A,m,m));
+            }
+        }
     }
 
     if(strcmp(detalg, "LU") == 0)
@@ -156,6 +179,7 @@ double matrix_logdet_lu_lapack(matrix_t *A)
 {
     int info = 0;
     int dim = (int)A->dim;
+    int lda = (int)A->lda;
     int ipiv[dim];
     double *a = A->M;
 
@@ -163,7 +187,7 @@ double matrix_logdet_lu_lapack(matrix_t *A)
         &dim, /* M number of rows of A */
         &dim, /* N number of columns of A */
         a,    /* matrix A to be factored */
-        &dim, /* LDA: leading dimension of A */
+        &lda, /* LDA: leading dimension of A */
         ipiv, /* pivot indices of dimension min(rows,cols) */
         &info
     );
@@ -177,6 +201,7 @@ double matrix_logdet_qr_lapack(matrix_t *A)
 {
     int dim = (int)A->dim;
     double tau[dim];
+    int lda = A->lda;
     int info = 0;
     int lwork = -1;
     double opt_lwork = 0;
@@ -187,7 +212,7 @@ double matrix_logdet_qr_lapack(matrix_t *A)
         &dim,   /* number of rows of the matrix A */
         &dim,   /* number of columns of the matrix A */
         A->M,   /* matrix A */
-        &dim,   /* leading dimension of the array A */
+        &lda,   /* leading dimension of the array A */
         tau,   /* scalar factors of the elementary reflectors */
         &opt_lwork,/* workspace */
         &lwork, /* dimension of the array WORK */
@@ -203,7 +228,7 @@ double matrix_logdet_qr_lapack(matrix_t *A)
         &dim,   /* number of rows of the matrix A */
         &dim,   /* number of columns of the matrix A */
         A->M,   /* matrix A */
-        &dim,   /* leading dimension of the array A */
+        &lda,   /* leading dimension of the array A */
         tau,    /* scalar factors of the elementary reflectors */
         work,   /* workspace */
         &lwork, /* dimension of the array WORK */
@@ -224,6 +249,7 @@ double matrix_logdetIdmM_eig_lapack(matrix_t *A, double z)
     char jobvr = 'N'; /* don't compute right eigenvectors */
     double wr[dim]; /* real parts of eigenvalues */
     double wi[dim]; /* imaginary parts of eigenvalues */
+    int lda = (int)A->lda;
     int lwork = 100*dim;
     double logdet[dim];
     double *work = xmalloc(lwork*sizeof(double));
@@ -234,7 +260,7 @@ double matrix_logdetIdmM_eig_lapack(matrix_t *A, double z)
         &jobvr, /* JOBVR */
         &dim,   /* N */
         A->M,   /* A */
-        &dim,   /* LDA */
+        &lda,   /* LDA */
         wr,     /* WR */
         wi,     /* WI */
         NULL,   /* VL */
