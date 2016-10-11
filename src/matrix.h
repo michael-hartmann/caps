@@ -10,15 +10,16 @@
 /** define matrix type */
 typedef struct {
     size_t dim,dim2;
+    size_t lda;
     double *M;
 } matrix_t;
 
 
 /** macro to access matrix elements */
-#define matrix_get(m, i, j)   ((m)->M[(i)*m->dim+(j)])
+#define matrix_get(m, i, j)   ((m)->M[(i)*m->lda+(j)])
 
 /** macro to set matrix elements */
-#define matrix_set(m, i, j,v) ((m)->M[(i)*m->dim+(j)]=(v))
+#define matrix_set(m, i, j,v) ((m)->M[(i)*m->lda+(j)]=(v))
 
 
 /* prototypes */

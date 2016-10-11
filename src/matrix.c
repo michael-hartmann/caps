@@ -30,6 +30,7 @@ matrix_t *matrix_alloc(const size_t dim)
 
     A->dim  = dim;
     A->dim2 = dim*dim;
+    A->lda  = dim;
 
     A->M = xmalloc(dim2*sizeof(double));
     if(A->M == NULL)
