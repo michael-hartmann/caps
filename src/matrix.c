@@ -113,11 +113,9 @@ double matrix_logdet_triangular(matrix_t *A)
  * @brief Calculate \f$\log\det(\mathrm{Id}+z*M)\f$ for matrix M
  *
  * Detalg may be:
- *  - LU_LAPACK (default)
- *  - QR_LAPACK
  *  - LU
- *  - QR_GIVENS
- *  - EIG_LAPACK
+ *  - QR
+ *  - EIG
  *
  * @param [in,out] M round trip matrix M; M will be overwritten.
  * @param [in]     z factor z in log(det(Id+z*M))
