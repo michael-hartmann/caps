@@ -136,66 +136,6 @@ double matrix_logdet_lu(matrix_t *A)
 
 
 /**
- * @brief calculate QR decomposition of matrix
- *
- * This function calculates the QR decomposition of a matrix M and \f$\log|\det(M)|\f$.
- *
- * @param [in,out] M matrix
- * @retval logdet \f$\log|\det M|\f$
- */
-double matrix_logdet_qr(matrix_t *A)
-{
-    const size_t dim = A->dim;
-    double *m = A->M;
-
-    for(size_t j = 0; j < dim-1; j++)
-        for(size_t i = j+1; i < dim; i++)
-        {
-            double c,s;
-            const double b = m[i*dim+j];
-
-            if(b != 0)
-            {
-                const double a = m[j*dim+j];
-
-                if(a == 0)
-                {
-                    c = 0;
-                    s = -copysign(1, b);
-                }
-                else if(fabs(b) > fabs(a))
-                {
-                    const double t = a/b;
-                    const double u = copysign(sqrt(1+t*t),b);
-                    s = -1/u;
-                    c = -s*t;
-                }
-                else
-                {
-                    const double t = b/a;
-                    const double u = copysign(sqrt(1+t*t),a);
-                    c = 1/u;
-                    s = -c*t;
-                }
-
-                for(size_t n = j; n < dim; n++)
-                {
-                    const double Min = m[i*dim+n];
-                    const double Mjn = m[j*dim+n];
-
-                    m[i*dim+n] = c*Min + s*Mjn;
-                    m[j*dim+n] = c*Mjn - s*Min;
-                }
-
-                /* m[i*dim+j] = 0; */
-            }
-        }
-
-    return matrix_logdet_triangular(A);
-}
-
-
-/**
  * @brief Calculate \f$\log\det(\mathrm{Id}+z*M)\f$ for matrix M
  *
  * Detalg may be:
@@ -233,10 +173,6 @@ double matrix_logdet(matrix_t *A, double z, const char *detalg)
 
     if(strcmp(detalg, "LU_LAPACK") == 0)
         return matrix_logdet_lu_lapack(A);
-    if(strcmp(detalg, "LU") == 0)
-        return matrix_logdet_lu(A);
-    if(strcmp(detalg, "QR_GIVENS") == 0)
-        return matrix_logdet_qr(A);
     if(strcmp(detalg, "QR_LAPACK") == 0)
         return matrix_logdet_qr_lapack(A);
 
