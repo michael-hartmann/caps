@@ -277,7 +277,7 @@ void casimir_rp(casimir_t *self, double nT, double k, double *r_TE, double *r_TM
 
     if(fabs(x) < 1e-5)
     {
-        /* β-1 = sqrt(1+x)-1 = x/2 - x²/8 + x³/16 - x^4/128 + O(x^5) */
+        /* β-1 = sqrt(1+x)-1 = x/2 - x²/8 + x³/16 - 5*x^4/128 + O(x^5) */
         const double betam1 = x/2 - pow_2(x)/8 + pow_3(x)/16 - 5*pow_4(x)/128;
 
         *r_TE = -betam1/(2+betam1);
