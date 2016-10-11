@@ -286,6 +286,11 @@ static double estimate_error(interval_t intervals[], int N, double v[8], double 
         }
     }
 
+    /* XXX We are not interested in relative errors XXX
+     * Actually, we want to know which inteval gives the largest contribution
+     * to the error.
+     * XXX
+     */
     /* We assume that errors in subintervals are independent, then:
      *      err = sqrt( 1/(N*(N-1)) \sum_j err_j^2 )
      */
