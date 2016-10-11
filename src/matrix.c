@@ -126,7 +126,7 @@ double matrix_logdet_triangular(matrix_t *A)
  */
 double matrix_logdet(matrix_t *A, double z, const char *detalg)
 {
-    if(strcmp(detalg, "EIG_LAPACK") == 0)
+    if(strcmp(detalg, "EIG") == 0)
         return matrix_logdetIdmM_eig_lapack(A, z);
 
     /* M = Id+z*M */
@@ -145,12 +145,12 @@ double matrix_logdet(matrix_t *A, double z, const char *detalg)
             a[i*dim+i] += 1;
     }
 
-    if(strcmp(detalg, "LU_LAPACK") == 0)
+    if(strcmp(detalg, "LU") == 0)
         return matrix_logdet_lu_lapack(A);
-    if(strcmp(detalg, "QR_LAPACK") == 0)
+    if(strcmp(detalg, "QR") == 0)
         return matrix_logdet_qr_lapack(A);
 
-    WARN(1, "Unknown algorithm %s, defaulting to LU_LAPACK", detalg);
+    WARN(1, "Unknown algorithm %s, defaulting to LU", detalg);
     return matrix_logdet_lu_lapack(A);
 }
 
