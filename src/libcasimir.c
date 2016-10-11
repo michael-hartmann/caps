@@ -1468,26 +1468,16 @@ double casimir_logdetD(casimir_t *self, int n, int m)
 
     if(m == 0)
     {
-        const size_t dim = M->dim/2;
+        const size_t dim  = M->dim;
+        const size_t lmax = dim/2;
 
-        /* The memory footprint can be improved here */
-        matrix_t *EE = matrix_alloc(dim);
-        matrix_t *MM = matrix_alloc(dim);
-
-        for(size_t i = 0; i < dim; i++)
-            for(size_t j = 0; j < dim; j++)
-            {
-                matrix_set(EE, i,j, matrix_get(M, i,j));
-                matrix_set(MM, i,j, matrix_get(M, dim+i,dim+j));
-            }
-
-        matrix_free(M);
+        /* create a view of the block matrices EE and MM */
+        matrix_t *EE = matrix_view(M->M, lmax, dim);
+        matrix_t *MM = matrix_view(&M->M[lmax*(dim+1)], lmax, dim);
 
         t0 = now();
-
         logdet  = matrix_logdet(EE, -1, self->detalg);
         logdet += matrix_logdet(MM, -1, self->detalg);
-
         casimir_debug(self, "# timing: log(det(Id-EE)), log(det(Id-MM)): %gs\n", now()-t0);
 
         matrix_free(EE);
@@ -1496,13 +1486,11 @@ double casimir_logdetD(casimir_t *self, int n, int m)
     else
     {
         t0 = now();
-
         logdet = matrix_logdet(M, -1, self->detalg);
-
         casimir_debug(self, "# timing: log(det(Id-M)): %gs\n", now()-t0);
-
-        matrix_free(M);
     }
+
+    matrix_free(M);
 
     return logdet;
 }
