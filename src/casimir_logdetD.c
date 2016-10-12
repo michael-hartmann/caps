@@ -4,7 +4,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "integration_perf.h"
 #include "libcasimir.h"
 #include "sfunc.h"
 #include "utils.h"
