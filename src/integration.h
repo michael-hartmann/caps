@@ -12,6 +12,9 @@
 #define D_TE 6
 #define D_TM 7
 
+/* maximum number of intervals */
+#define INTEGRATE_INTERVALS_MAX 200
+
 /* XXX check signs! XXX */
 /*  sign of Lambda --\
  *                   |
