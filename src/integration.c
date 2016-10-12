@@ -145,7 +145,7 @@ void casimir_integrate_integrands(integration_t *int_obj, double t, int l1, int 
 }
 
 
-static void integrate_gauss_kronrod(integration_t *int_obj, int l1, int l2, double a, double b, interval_t *interval);
+static void integrate_gauss_kronrod(integration_t *int_obj, int l1, int l2, double a, double b, double log_prefactor, interval_t *interval);
 
 /**
  * @brief Integrate integrands from a to b
@@ -157,8 +157,9 @@ static void integrate_gauss_kronrod(integration_t *int_obj, int l1, int l2, doub
  * @param [in] b right border of integration, 0 <= a < b <= 1
  * @param [out] interval result of integration
  */
-static void integrate_gauss_kronrod(integration_t *int_obj, int l1, int l2, double a, double b, interval_t *interval)
+static void integrate_gauss_kronrod(integration_t *int_obj, int l1, int l2, double a, double b, double log_prefactor, interval_t *interval)
 {
+    //printf("a=%g, b=%g\n", a,b);
     const double dx = (b-a)/2;
 
     TERMINATE(l1 <= 0 || l2 <= 0, "l1,l2 > 0, l1=%d, l2=%d\n", l1,l2);
@@ -167,27 +168,14 @@ static void integrate_gauss_kronrod(integration_t *int_obj, int l1, int l2, doub
     interval->a = a;
     interval->b = b;
 
-    /* prefactor */
-    double log_prefactor;
-    {
-        casimir_t *casimir = int_obj->casimir;
-        double log_Lambda = casimir_lnLambda(l1, l2, int_obj->m);
-
-        int n = int_obj->n;
-        sign_t dummy1,dummy2;
-        double log_al1, log_al2, log_bl1, log_bl2;
-        casimir_mie_cache_get(casimir, l1, n, &log_al1, &dummy1, &log_bl1, &dummy2);
-        casimir_mie_cache_get(casimir, l2, n, &log_al2, &dummy1, &log_bl2, &dummy2);
-
-        /* prefactor = Λ(l1,l2,m) √(|a_l1|*|a_l2|) exp(-τ) dx */
-        log_prefactor = log_Lambda + (log_al1+log_al2)/2 -int_obj->tau +log(dx);
-    }
+    log_prefactor += log(dx);
 
     /* calculate integrands at nodes and save results in G7 for Gauß, and K15
      * for Kronrod */
     double G7[8]  = { 0 };
     double K15[8] = { 0 };
 
+    double v[8];
     for(int i = 0; i < 15; i++)
     {
         double xi = gausskronrod[i][0]; /* node Kronrod */
@@ -197,17 +185,14 @@ static void integrate_gauss_kronrod(integration_t *int_obj, int l1, int l2, doub
         double wiK = gausskronrod[i][2]; /* weight Kronrod */
 
         /* calculate integrands A_TE, A_TM, ..., D_TE, D_TM at node zi */
-        double v[8] = { 0,0,0,0,0,0,0,0 };
         casimir_integrate_integrands(int_obj, zi, l1, l2, log_prefactor, v);
 
-        if(i < 7)
-        {
-            for(int j = 0; j < 8; j++)
-                G7[j] += wiG*v[j];
-        }
-
         for(int j = 0; j < 8; j++)
-            K15[j] += wiK*v[j];
+        {
+            double vj = v[j];
+            G7[j]  += wiG*vj;
+            K15[j] += wiK*vj;
+        }
     }
 
     for(int k = 0; k < 8; k++)
@@ -266,6 +251,8 @@ static double estimate_error(interval_t intervals[], int N, double v[8], double 
 static double estimate_error(interval_t intervals[], int N, double v[8], double relerror[8], int *index)
 {
     double sum_err2[8] = { 0 }; /* squared error */
+    double maxerr = 0;
+    *index = 0;
 
     for(int j = 0; j < 8; j++)
     {
@@ -281,16 +268,18 @@ static double estimate_error(interval_t intervals[], int N, double v[8], double 
 
         for(int j = 0; j < 8; j++)
         {
-            sum_err2[j] += pow_2(interval->err[j]);
+            double err = interval->err[j];
+            if(err > maxerr)
+            {
+                maxerr = err;
+                *index = i;
+            }
+
+            sum_err2[j] += pow_2(err);
             v[j] += interval->K15[j];
         }
     }
 
-    /* XXX We are not interested in relative errors XXX
-     * Actually, we want to know which inteval gives the largest contribution
-     * to the error.
-     * XXX
-     */
     /* We assume that errors in subintervals are independent, then:
      *      err = sqrt( 1/(N*(N-1)) \sum_j err_j^2 )
      */
@@ -302,33 +291,30 @@ static double estimate_error(interval_t intervals[], int N, double v[8], double 
             relerror[j] = sum_err2[j]/(v[j]*sqrt(N*(N-1.)));
     }
 
-    /* find integral with largest error; i.e. A_TE, A_TM, ..., C_TE or C_TM */
-    int jmax = 0;
-    for(int j = 1; j < 8; j++)
-    {
-        if(relerror[j] > relerror[jmax])
-            jmax = j;
-    }
-
-    /* find index of subinterval with largest error */
-    int imax = 0;
-    for(int i = 1; i < N; i++)
-    {
-        if(intervals[i].err[jmax] > intervals[imax].err[jmax])
-            imax = i;
-    }
-
-    *index = imax;
-
     return max(relerror, 8);
 }
 
 
 int casimir_integrate(integration_t *self, int l1, int l2, double v[8])
 {
-    #define NMIN  10 /* minimum number of intervals */
-    #define NMAX 150 /* maximum number of intervals */
+    #define NMIN  4 /* minimum number of intervals */
     #define PRECISION 1e-20 /* XXX */
+
+    /* prefactor */
+    double log_prefactor;
+    {
+        casimir_t *casimir = self->casimir;
+        double log_Lambda = casimir_lnLambda(l1, l2, self->m);
+
+        int n = self->n;
+        sign_t dummy1,dummy2;
+        double log_al1, log_al2, log_bl1, log_bl2;
+        casimir_mie_cache_get(casimir, l1, n, &log_al1, &dummy1, &log_bl1, &dummy2);
+        casimir_mie_cache_get(casimir, l2, n, &log_al2, &dummy1, &log_bl2, &dummy2);
+
+        /* prefactor = Λ(l1,l2,m) √(|a_l1|*|a_l2|) exp(-τ) */
+        log_prefactor = log_Lambda + (log_al1+log_al2)/2 -self->tau;
+    }
 
     int N = NMIN;
 
@@ -338,7 +324,7 @@ int casimir_integrate(integration_t *self, int l1, int l2, double v[8])
      * loops.
      * Using the stack also makes execution faster and code simpler.
      */
-    interval_t intervals[NMAX];
+    interval_t intervals[INTEGRATE_INTERVALS_MAX];
 
     /* Split integral in NMIN subintervals and calculate integral in every
      * subinterval using (G7,K15) */
@@ -347,10 +333,10 @@ int casimir_integrate(integration_t *self, int l1, int l2, double v[8])
         double a = (double)i/N;
         double b = (i+1.)/N;
 
-        integrate_gauss_kronrod(self, l1, l2, a, b, &intervals[i]);
+        integrate_gauss_kronrod(self, l1, l2, a, b, log_prefactor, &intervals[i]);
     }
 
-    while(N < NMAX)
+    while(N < INTEGRATE_INTERVALS_MAX)
     {
         int index;
         double relerror[8];
@@ -362,6 +348,8 @@ int casimir_integrate(integration_t *self, int l1, int l2, double v[8])
         if(error < PRECISION)
         {
             int m = self->m;
+
+            //printf("l1=%d, l2=%d, m=%d, N=%d\n", l1, l2, m, N);
 
             v[A_TE] = A0(l1,l2,m)*v[A_TE];
             v[A_TM] = A0(l1,l2,m)*v[A_TM];
@@ -384,8 +372,8 @@ int casimir_integrate(integration_t *self, int l1, int l2, double v[8])
         double b = intervals[index].b; /* right */
         double m = (a+b)/2; /* middle */
 
-        integrate_gauss_kronrod(self, l1, l2, a, m, &intervals[index]);
-        integrate_gauss_kronrod(self, l1, l2, m, b, &intervals[N]);
+        integrate_gauss_kronrod(self, l1, l2, a, m, log_prefactor, &intervals[index]);
+        integrate_gauss_kronrod(self, l1, l2, m, b, log_prefactor, &intervals[N]);
 
         /* number of subintervals has increased */
         N++;
