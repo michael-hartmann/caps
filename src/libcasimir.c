@@ -1390,7 +1390,7 @@ matrix_t *casimir_M(casimir_t *self, int n, int m)
                 matrix_set(M, j+dim,i+dim, MPOW(l1+l2)*sign_bl2*elem);
             }
 
-
+            /* non-diagonal blocks EM and ME */
             if(m != 0)
             {
                 /* sqrt(|b_l2|)/sqrt(|a_l2|) */
@@ -1400,10 +1400,10 @@ matrix_t *casimir_M(casimir_t *self, int n, int m)
                 double mie_quotient2 = exp((ln_bl1-ln_al1)/2);
 
                 /* C_TE + D_TM */
-                double elem1 = mie_quotient1+(v[C_TE]+v[D_TM]);
+                double elem1 = mie_quotient1*(v[C_TE]+v[D_TM]);
 
                 /* C_TM + D_TE */
-                double elem2 = mie_quotient2+(v[C_TM]+v[D_TM]);
+                double elem2 = mie_quotient2*(v[C_TM]+v[D_TE]);
 
                 /* M_EM */
                 matrix_set(M, i,dim+j,               sign_al1*elem1);
