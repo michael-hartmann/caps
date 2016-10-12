@@ -163,7 +163,7 @@ cdef class Casimir:
             lmax:      truncation of vector space
             cores:     number of cores to use (only used for F)
             precision  XXX
-            detalg:    LU, LU_LAPACK, QR_GIVENS or QR_LAPACK
+            detalg:    LU, QR
             threshold: XXX
             debug:     flag, print debugging information
             verbose:   flag, print some addition information
