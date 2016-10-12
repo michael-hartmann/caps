@@ -140,56 +140,6 @@ double logadd_s(const double log_a, const sign_t sign_a, const double log_b, con
     }
 }
 
-
-/**
- * @brief Add numbers given by their logarithms.
- *
- * len numbers in list will be added. The numbers are assumed to be positive.
- *
- * @param [in]  list array of numbers given by logarithm
- * @param [in]  len length of list
- * @return log_sum \f$\log{\sum_{i=1}^\mathrm{len} \mathrm{sign\_i}\cdot\exp{(\mathrm{log\_i})}}\f$
- */
-inline double logadd_m(const double list[], const int len)
-{
-    double max = list[0];
-
-    for(int i = 1; i < len; i++)
-        if(list[i] > max)
-            max = list[i];
-
-    double sum = exp(list[0]-max);
-    for(int i = 1; i < len; i++)
-        sum += exp(list[i]-max);
-
-    return max + log(sum);
-}
-
-
-inline double logadd_ms(const double list[], const sign_t signs[], const int len, sign_t *sign)
-{
-    double sum;
-    double max = list[0];
-
-    for(int i = 1; i < len; i++)
-        if(list[i] > max)
-            max = list[i];
-
-    /* return +0 */
-    if(max == -INFINITY)
-    {
-        *sign = +1;
-        return -INFINITY;
-    }
-
-    sum = signs[0]*exp(list[0]-max);
-    for(int i = 1; i < len; i++)
-        sum += signs[i]*exp(list[i]-max);
-
-    *sign = copysign(1, sum);
-    return max + log(fabs(sum));
-}
-
 /*@}*/
 
 
