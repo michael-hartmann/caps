@@ -47,7 +47,7 @@ static double gausskronrod[15][3] =
  * B = B_0 Λ(l1,l2,m) √(|a_l1|*|a_l2|) exp(-τ)   1/τ³ ∫ dz r_p exp(-z) P'_l1^m P'_l2^m   (z²+2τz)
  * C = C_0 Λ(l1,l2,m) √(|a_l1|*|a_l2|) exp(-τ) m 1/τ  ∫ dz r_p exp(-z) P_l1^m  P'_l2^m
  * D = D_0 Λ(l1,l2,m) √(|a_l1|*|a_l2|) exp(-τ) m 1/τ  ∫ dz r_p exp(-z) P'_l1^m P_l2^m
- *         \---------- prefactor ------------/
+ *         \---------- prefactor ------------/\------ what we calculate in this function -------/
  *
  * The integration is from 0 to ∞, the associated Legendre polynomials and
  * their derivatives are evaluated at the argument arg=1+x/τ.
@@ -125,7 +125,6 @@ void casimir_integrate_integrands(integration_t *int_obj, double t, int l1, int 
 
     if(m > 0)
     {
-        TERMINATE(1, "Here be dragons");
         int m2 = pow_2(m); /* m² */
 
         /* prefactor m² τ 1/(1-t)² r_p exp(-z) P_l1^m  P_l2^m  / (z²+2τz) */
@@ -186,8 +185,8 @@ static void integrate_gauss_kronrod(integration_t *int_obj, int l1, int l2, doub
 
     /* calculate integrands at nodes and save results in G7 for Gauß, and K15
      * for Kronrod */
-    double G7[8]  = { 0,0,0,0,0,0,0,0 };
-    double K15[8] = { 0,0,0,0,0,0,0,0 };
+    double G7[8]  = { 0 };
+    double K15[8] = { 0 };
 
     for(int i = 0; i < 15; i++)
     {
@@ -266,7 +265,7 @@ static double estimate_error(interval_t intervals[], int N, double v[8], double 
 
 static double estimate_error(interval_t intervals[], int N, double v[8], double relerror[8], int *index)
 {
-    double sum_err2[8] = { 0,0,0,0,0,0,0,0 }; /* squared error */
+    double sum_err2[8] = { 0 }; /* squared error */
 
     for(int j = 0; j < 8; j++)
     {
@@ -287,6 +286,11 @@ static double estimate_error(interval_t intervals[], int N, double v[8], double 
         }
     }
 
+    /* XXX We are not interested in relative errors XXX
+     * Actually, we want to know which inteval gives the largest contribution
+     * to the error.
+     * XXX
+     */
     /* We assume that errors in subintervals are independent, then:
      *      err = sqrt( 1/(N*(N-1)) \sum_j err_j^2 )
      */
