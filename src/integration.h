@@ -3,62 +3,43 @@
 
 #include "libcasimir.h"
 
-/*
- * The accuracy of the Drude-Integration
- */
-#define DRUDE_INTEG_ACCURACY 1e-9
+#define A_TE 0
+#define A_TM 1
+#define B_TE 2
+#define B_TM 3
+#define C_TE 4
+#define C_TM 5
+#define D_TE 6
+#define D_TM 7
+
+/* maximum number of intervals */
+#define INTEGRATE_INTERVALS_MAX 200
+
+/* XXX check signs! XXX */
+/*  sign of Lambda --\
+ *                   |
+ *                   V */
+#define A0(l1,l2,m) (-MPOW((l2)+(m)))
+#define B0(l1,l2,m) (-MPOW((l2)+(m)+1))
+#define C0(l1,l2,m) (-MPOW((l2)+(m)))
+#define D0(l1,l2,m) (-MPOW((l2)+(m)+1))
 
 typedef struct {
-    sign_t sign_A;
-    double lnA_TE;
-    double lnA_TM;
-
-    sign_t sign_B;
-    double lnB_TE;
-    double lnB_TM;
-    
-    sign_t sign_C;
-    double lnC_TE;
-    double lnC_TM;
-    
-    sign_t sign_D;
-    double lnD_TE;
-    double lnD_TM;
-} integrands_drude_t;
-
-
-// Forward Declaration
-struct plm_cache;
+    casimir_t *casimir;
+    int n,m;
+    double nT,tau;
+} integration_t;
 
 typedef struct {
-    struct plm_cache*    plm_cache;
-    casimir_t*           casimir;
+    double a,b;
+    double K15[8];
+    double err[8];
+} interval_t;
 
-    int m;
-    double nT;
-    int lmax;
-} integration_drude_t;
+void casimir_integrate_integrands(integration_t *int_obj, double t, int l1, int l2, double log_prefactor, double v[8]);
 
-
-struct integ_context {
-    casimir_t*     casimir;
-    integration_drude_t* int_drude;
-    
-    double         nT;
-    int            l1, l2, m;
-    double        c0, c_max;
-};
-
-
-void casimir_integrate_drude_init(casimir_t* self, integration_drude_t* int_drude, double nT, int m, int lmax);
-
-void casimir_integrate_drude_free(integration_drude_t* int_drude);
-
-
-void casimir_integrate_drude(integration_drude_t* int_drude, int l1, int l2, casimir_integrals_t* cint);
-
-//void integrands_drude(double x, integrands_drude_t *integrands, casimir_t *self, double nT, int l1, int l2, int m);
-
-double log_polyintegrate(double p[], size_t len, int l1, int l2, int m, double tau, sign_t *sign);
+int casimir_integrate_init(casimir_t *self, integration_t *int_obj, int n, int m);
+int casimir_integrate_free(integration_t *int_obj);
+int casimir_integrate(integration_t *int_obj, int l1, int l2, double v[8]);
 
 #endif

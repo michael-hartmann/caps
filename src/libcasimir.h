@@ -111,27 +111,6 @@ typedef struct
 } casimir_thread_t;
 
 
-typedef struct
-{
-    double lnA_TE;  /**< logarithm of integral A_TE */
-    double lnA_TM;  /**< logarithm of integral A_TM */
-    double lnB_TE;  /**< logarithm of integral B_TE */
-    double lnB_TM;  /**< logarithm of integral B_TM */
-    double lnC_TE;  /**< logarithm of integral C_TE */
-    double lnC_TM;  /**< logarithm of integral C_TM */
-    double lnD_TE;  /**< logarithm of integral D_TE */
-    double lnD_TM;  /**< logarithm of integral D_TM */
-    sign_t signA_TE; /**< sign of lnA_TE */
-    sign_t signA_TM; /**< sign of lnA_TM */
-    sign_t signB_TE; /**< sign of lnB_TE */
-    sign_t signB_TM; /**< sign of lnB_TM */
-    sign_t signC_TE; /**< sign of lnC_TE */
-    sign_t signC_TM; /**< sign of lnC_TM */
-    sign_t signD_TE; /**< sign of lnD_TE */
-    sign_t signD_TM; /**< sign of lnD_TM */
-} casimir_integrals_t;
-
-
 /* prototypes */
 int  casimir_compile_info(char *str, size_t size);
 void casimir_info(casimir_t *self, FILE *stream, const char *prefix);
@@ -140,7 +119,7 @@ int casimir_vfprintf(casimir_t *self, FILE *stream, const char *format, va_list 
 int casimir_debug(casimir_t *self, const char *format, ...);
 int casimir_verbose(casimir_t *self, const char *format, ...);
 
-double casimir_lnLambda(int l1, int l2, int m, sign_t *sign);
+double casimir_lnLambda(int l1, int l2, int m);
 
 int casimir_init(casimir_t *self, double LbyR, double T);
 void casimir_free(casimir_t *self);
@@ -165,7 +144,6 @@ int casimir_set_cores(casimir_t *self, int cores);
 double casimir_get_precision(casimir_t *self);
 int    casimir_set_precision(casimir_t *self, double precision);
 
-
 void casimir_lnab0(int l, double *a0, sign_t *sign_a0, double *b0, sign_t *sign_b0);
 void casimir_lnab(casimir_t *self, int n, int l, double *lna, double *lnb, sign_t *sign_a, sign_t *sign_b);
 void casimir_lnab_perf(casimir_t *self, int n, int l, double *lna, double *lnb, sign_t *sign_a, sign_t *sign_b);
@@ -184,5 +162,8 @@ matrix_t *casimir_M(casimir_t *self, int n, int m);
 double casimir_logdetD(casimir_t *self, int n, int m);
 
 void casimir_rp(casimir_t *self, double nT, double k, double *r_TE, double *r_TM);
+
+double casimir_epsilonm1_perf(double xi, void *userdata);
+double casimir_epsilonm1_drude(double xi, void *userdata);
 
 #endif

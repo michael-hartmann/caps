@@ -13,13 +13,25 @@
 #include "utils.h"
 
 
-/* taken from Wikipedia, https://en.wikipedia.org/wiki/Kahan_summation_algorithm */
-double kahan_sum(double input[], size_t len)
+/**
+ * @brief Sum elements in array
+ *
+ * This function calculates the sum of the elements of the array input. This
+ * function uses the Kahan summation algorithm to reduce numerical error.
+ *
+ * The algorithm is taken from Wikipedia, see
+ * https://en.wikipedia.org/wiki/Kahan_summation_algorithm
+ *
+ * @param [in] input array
+ * @param [in] N length of array
+ * @return sum sum of array elements
+ */
+double kahan_sum(double input[], size_t N)
 {
     double sum = 0;
     double c = 0; /* running compensation for lost low-order bits */
 
-	for(size_t i = 0; i < len; i++)
+	for(size_t i = 0; i < N; i++)
     {
         double y = input[i] - c;
         double t = sum + y;
@@ -28,6 +40,40 @@ double kahan_sum(double input[], size_t len)
     }
 
     return sum;
+}
+
+/**
+ * @brief Find maximum in double array
+ *
+ * @param [in] input array
+ * @param [in] N length of array (must be > 0)
+ * @return maximum maximum of array elements
+ */
+double max(double input[], size_t N)
+{
+    double m = input[0];
+
+    for(size_t i = 1; i < N; i++)
+        m = MAX(m,input[i]);
+
+    return m;
+}
+
+/**
+ * @brief Find minimum in double array
+ *
+ * @param [in] input array
+ * @param [in] N length of array (must be > 0)
+ * @return minimum minimum of array elements
+ */
+double min(double input[], size_t N)
+{
+    double m = input[0];
+
+    for(size_t i = 1; i < N; i++)
+        m = MIN(m,input[i]);
+
+    return m;
 }
 
 /**
@@ -92,49 +138,6 @@ double logadd_s(const double log_a, const sign_t sign_a, const double log_b, con
         *sign = sign_b;
         return log_b + log1p(sign_a*sign_b*exp(log_a-log_b));
     }
-}
-
-
-/**
- * @brief Add numbers given by their logarithms.
- *
- * len numbers in list will be added. The numbers are assumed to be positive.
- *
- * @param [in]  list array of numbers given by logarithm
- * @param [in]  len length of list
- * @return log_sum \f$\log{\sum_{i=1}^\mathrm{len} \mathrm{sign\_i}\cdot\exp{(\mathrm{log\_i})}}\f$
- */
-inline double logadd_m(const double list[], const int len)
-{
-    double max = list[0];
-
-    for(int i = 1; i < len; i++)
-        if(list[i] > max)
-            max = list[i];
-
-    double sum = exp(list[0]-max);
-    for(int i = 1; i < len; i++)
-        sum += exp(list[i]-max);
-
-    return max + log(sum);
-}
-
-
-inline double logadd_ms(const double list[], const sign_t signs[], const int len, sign_t *sign)
-{
-    double sum;
-    double max = list[0];
-
-    for(int i = 1; i < len; i++)
-        if(list[i] > max)
-            max = list[i];
-
-    sum = signs[0]*exp(list[0]-max);
-    for(int i = 1; i < len; i++)
-        sum += signs[i]*exp(list[i]-max);
-
-    *sign = copysign(1, sum);
-    return max + log(fabs(sum));
 }
 
 /*@}*/
@@ -460,142 +463,6 @@ void plm_PlmPlm(int l1, int l2, int m, double x, plm_combination_t *res)
     /* dPl1m*dPl2m */
     res->lndPl1mdPl2m    = lndPl1m + lndPl2m;
     res->sign_dPl1mdPl2m = common_sign * sign_dPl1m * sign_dPl2m;
-}
-
-/*@}*/
-
-
-/**
-* @name Gaunt coefficients
-*/
-/*@{*/
-
-/**
- * @brief Determine qmax
- *
- * @param [in]  n  \f$n\f$
- * @param [in]  nu \f$\nu\f$
- * @param [in]  m  \f$m=\mu\f$
- * @return a0 \f$q_\mathrm{max}\f$
- */
-inline int gaunt_qmax(const int n, const int nu, const int m)
-{
-    int xi = (n+nu-2*m)/2;
-    return MIN(MIN(n,nu), xi);
-}
-
-/**
- * @brief Calculate \f$\log a_0\f$
- *
- * Cf. eq. (20).
- *
- * @param [in]  n  \f$n\f$
- * @param [in]  nu \f$\nu\f$
- * @param [in]  m  \f$m=\mu\f$
- * @return a0 \f$\log a_0\f$
- */
-inline double gaunt_log_a0(int n, int nu, int m)
-{
-    return lgamma(2*n+1)-lgamma(n+1)+lgamma(2*nu+1)-lgamma(1+nu)+lgamma(n+nu+1)-lgamma(2*n+2*nu+1)+lgamma(1+n+nu-2*m)-lgamma(1+n-m)-lgamma(1+nu-m);
-}
-
-/**
- * @brief Calculate \f$a_0\f$
- *
- * Cf. eq. (20).
- *
- * @param [in]  n  \f$n\f$
- * @param [in]  nu \f$\nu\f$
- * @param [in]  m  \f$m=\mu\f$
- * @return a0 \f$a_0\f$
- */
-inline double gaunt_a0(int n, int nu, int m)
-{
-    return exp(gaunt_log_a0(n,nu,m));
-}
-
-/* eq. (3) */
-#define alpha(p, n, nu) (((pow_2(p)-pow_2(n+nu+1))*(pow_2(p)-pow_2(n-nu)))/(4*pow_2(p)-1))
-
-
-/**
- * @brief Calculate Gaunt coefficients
- *
- * Determine Gaunt coefficients \f$a(m, n, mu, nu, p)\f$ for \f$m\f$, \f$n\f$,
- * \f$\mu\f$ and \f$\nu\f$ fixed.  These coefficients can be used to express
- * the product of two associated Legendre polynomials:
- *
- * \f[
- * P_n^m(x) P_{\nu}^{\mu}(x) = a_0 \sum_{q=0}^{q_\mathrm{max}} \tilde a_q P_{n+\nu-2q}^{m+mu}(x)
- * \f]
- *
- * \f$q_\mathrm{max}\f$ is the upper bound of summation, \f$a_0\f$ is the
- * prefactor and \f$\tilde a_q\f$ are normalized Gaunt coefficients.
- *
- * See [1] for more information, especially chapter 3. There is a brief
- * outline how to calculate Gaunt coefficients at the end of the chapter.
- *
- * Ref.: [1] Y.-L. Xu, J. Comp. Appl. Math. 85, 53 (1997)
- *
- * @param [in]  n  \f$n\f$
- * @param [in]  nu \f$\nu\f$
- * @param [in]  m  \f$m=\mu\f$
- * @param [out] a_tilde \f$\tilde a_q\f$ list of normalized Gaunt coefficients
- */
-void gaunt(const int n_, const int nu_, const int m_, double a_tilde[])
-{
-    const double n  = n_;
-    const double nu = nu_;
-    const double m  = m_;
-    const double n4 = n+nu-2*m;
-
-    /* eq. (24) */
-    const int qmax = gaunt_qmax(n,nu,m);
-
-    /* eq. (28) */
-    const double Ap = -2*m*(n-nu)*(n+nu+1);
-
-    if(qmax < 0)
-        return;
-
-    a_tilde[0] = 1;
-    if(qmax == 0)
-        return;
-
-    /* eq. (29) */
-    a_tilde[1] = (n+nu-1.5)*(1-(2*n+2*nu-1)/(n4*(n4-1))*((m-n)*(m-n+1)/(2*n-1)+(m-nu)*(m-nu+1)/(2*nu-1)));
-    if(qmax == 1)
-        return;
-
-    /* eq. (35) */
-    a_tilde[2] = (2*n+2*nu-1)*(2*n+2*nu-7)/4*( (2*n+2*nu-3)/(n4*(n4-1)) * ( (2*n+2*nu-5)/(2*(n4-2)*(n4-3)) \
-                * ( (m-n)*(m-n+1)*(m-n+2)*(m-n+3)/(2*n-1)/(2*n-3) \
-                + 2*(m-n)*(m-n+1)*(m-nu)*(m-nu+1)/((2*n-1)*(2*nu-1)) \
-                + (m-nu)*(m-nu+1)*(m-nu+2)*(m-nu+3)/(2*nu-1)/(2*nu-3) ) - (m-n)*(m-n+1)/(2*n-1) \
-                - (m-nu)*(m-nu+1)/(2*nu-1) ) +0.5);
-
-    for(int q = 3; q <= qmax; q++)
-    {
-        double c0,c1,c2;
-        const double p = n+nu-2*q;
-        const double p1 = p-2*m;
-        const double p2 = p+2*m;
-
-        if(Ap != 0)
-        {
-            /* eqs. (26), (27) */
-            c0 = (p+2)*(p+3)*(p1+1)*(p1+2)*Ap*alpha(p+1,n,nu);
-            c1 = Ap*(Ap*Ap \
-               + (p+1)*(p+3)*(p1+2)*(p2+2)*alpha(p+2,n,nu) \
-               + (p+2)*(p+4)*(p1+3)*(p2+3)*alpha(p+3,n,nu));
-            c2 = -(p+2)*(p+3)*(p2+3)*(p2+4)*Ap*alpha(p+4,n,nu);
-
-            a_tilde[q] = (c1*a_tilde[q-1] + c2*a_tilde[q-2])/c0;
-        }
-        else
-            /* eq. (30) */
-            a_tilde[q] = (p+1)*(p2+2)*alpha(p+2,n,nu)*a_tilde[q-1] / ((p+2)*(p1+1)*alpha(p+1,n,nu));
-    }
 }
 
 /*@}*/

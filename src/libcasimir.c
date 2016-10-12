@@ -1,7 +1,7 @@
 /**
  * @file   libcasimir.c
  * @author Michael Hartmann <michael.hartmann@physik.uni-augsburg.de>
- * @date   September, 2016
+ * @date   October, 2016
  * @brief  library to calculate the free Casimir energy in the plane-sphere geometry
  */
 
@@ -20,7 +20,6 @@
 #include <unistd.h>
 
 #include "integration.h"
-#include "integration_perf.h"
 #include "libcasimir.h"
 #include "matrix.h"
 #include "sfunc.h"
@@ -170,15 +169,13 @@ int casimir_verbose(casimir_t *self, const char *format, ...)
 /*@{*/
 
 /**
- * @brief Calculate logarithm and sign of prefactor \f$\Lambda_{\ell_1 \ell_2}^{(m)}\f$
+ * @brief Calculate logarithm \f$-\Lambda_{\ell_1 \ell_2}^{(m)}\f$
  *
- * This function returns the logarithm of the prefactor for given
+ * This function returns the logarithm of \f$-\Lambda_{\ell_1 \ell_2}^{(m)}\f$ for
  * \f$\ell_1,\ell_2,m\f$. This prefactor is defined by (cf Eq. (5.19))
  * \f[
  *      \Lambda_{\ell_1,\ell_2}^{(m)} = -\frac{2 N_{\ell_1,m} N_{\ell_2,m}}{\sqrt{\ell_1 (\ell_1+1) \ell_2 (\ell_2+1)}}
  * \f]
- *
- * If sign is not NULL, -1 will be stored in sign.
  *
  * The values are computed using the lgamma function to avoid overflows.
  *
@@ -191,16 +188,47 @@ int casimir_verbose(casimir_t *self, const char *format, ...)
  * @param [in]  l1 \f$\ell_1\f$
  * @param [in]  l2 \f$\ell_2\f$
  * @param [in]  m  \f$m\f$
- * @param [out] sign set to -1 if sign != NULL
  * @retval lnLambda \f$\log{\Lambda_{\ell_1,\ell_2}^{(m)}}\f$
  */
-double casimir_lnLambda(int l1, int l2, int m, sign_t *sign)
+double casimir_lnLambda(int l1, int l2, int m)
 {
-    if(sign != NULL)
-        *sign = -1;
     return (log(2*l1+1)+log(2*l2+1)-log(l1)-log(l1+1)-log(l2)-log(l2+1)+lgamma(1+l1-m)+lgamma(1+l2-m)-lgamma(1+l1+m)-lgamma(1+l2+m))/2.0;
 }
 
+/**
+ * @brief Dielectric function for perfect reflectors
+ *
+ * @param [in] xi ignored
+ * @param [in] userdata ignored
+ * @retval INFINITY epsilon(xi) = INFINITY
+ */
+double casimir_epsilonm1_perf(__attribute__((unused)) double xi, __attribute__((unused)) void *userdata)
+{
+    return INFINITY;
+}
+
+/**
+ * @brief Dielectric function for Drude reflectors
+ *
+ * Dielectric function for Drude
+ *      epsilon(ξ) = ωp²/(ξ*(ξ+γ))
+ *
+ * The parameters ωp and γ must be provided by userdata:
+ *      omegap = userdata[0]
+ *      gamma_ = userdata[1]
+ *
+ * @param [in] xi dielectric function
+ * @param [in] userdata userdata
+ * @retval epsilon epsilon(xi)
+ */
+double casimir_epsilonm1_drude(double xi, void *userdata)
+{
+    double *ptr = (double *)userdata;
+    double omegap = ptr[0];
+    double gamma_ = ptr[1];
+
+    return pow_2(omegap)/(xi*(xi+gamma_));
+}
 
 /**
  * @brief Calculate Fresnel coefficients \f$r_{TE}\f$ and \f$r_{TM}\f$ for arbitrary metals
@@ -217,49 +245,50 @@ double casimir_lnLambda(int l1, int l2, int m, sign_t *sign)
  */
 void casimir_rp(casimir_t *self, double nT, double k, double *r_TE, double *r_TM)
 {
-    if(self->epsilonm1 == NULL)
+    const double epsilonm1 = self->epsilonm1(nT, self->userdata);
+
+    if(isinf(epsilonm1))
     {
         /* perfect reflectors */
         *r_TM = 1.0;
         *r_TE = -1.0;
+
+        /* get us out of here */
+        return;
+    }
+
+    /* Arbitrary metals
+     *
+     * In scaled units
+     *     β = sqrt( 1 + ξ²/(ξ²+k²)*(ε-1) ) = sqrt(1+x),
+     * where
+     *     x = ξ²/(ξ²+k²)*(ε-1).
+     *
+     * We calculate x. If x is small, β≈1 and a loss of significance
+     * occures when calculating 1-β.
+     *
+     * For this reason we use the Taylor series
+     *     sqrt(1+x) ≈ 1 + x/2 - x²/8 + x³/16 - 5*x^4/128 + ...
+     * to avoid a loss of significance if x is small.
+     *
+     * Note: ξ=nT
+     */
+    const double x = pow_2(nT)/(pow_2(nT)+pow_2(k))*epsilonm1;
+
+    if(fabs(x) < 1e-5)
+    {
+        /* β-1 = sqrt(1+x)-1 = x/2 - x²/8 + x³/16 - 5*x^4/128 + O(x^5) */
+        const double betam1 = x/2 - pow_2(x)/8 + pow_3(x)/16 - 5*pow_4(x)/128;
+
+        *r_TE = -betam1/(2+betam1);
+        *r_TM = (epsilonm1-betam1)/(epsilonm1+2+betam1);
     }
     else
     {
-        /* Arbitrary metals
-         *
-         * In scaled units
-         *     β = sqrt( 1 + ξ²/(ξ²+k²)*(ε-1) ) = sqrt(1+x),
-         * where
-         *     x = ξ²/(ξ²+k²)*(ε-1).
-         *
-         * We calculate x. If x is small, β≈1 and a loss of significance
-         * occures when calculating 1-β.
-         *
-         * For this reason we use the Taylor series
-         *     sqrt(1+x) ≈ 1 + x/2 - x²/8 + x³/16 - 5*x^4/128 + ...
-         * to avoid a loss of significance if x is small.
-         *
-         * Note: ξ=nT
-         */
+        const double beta = sqrt(1+x);
 
-        const double epsilonm1 = self->epsilonm1(nT, self->userdata);
-        const double x         = pow_2(nT)/(pow_2(nT)+pow_2(k))*epsilonm1;
-
-        if(fabs(x) < 1e-5)
-        {
-            /* β-1 = sqrt(1+x)-1 = x/2 - x²/8 + x³/16 - x^4/128 + O(x^5) */
-            const double betam1 = x/2 - pow_2(x)/8 + pow_3(x)/16 - 5*pow_4(x)/128;
-
-            *r_TE = -betam1/(2+betam1);
-            *r_TM = (epsilonm1-betam1)/(epsilonm1+2+betam1);
-        }
-        else
-        {
-            const double beta = sqrt(1+x);
-
-            *r_TE = (1-beta)/(1+beta);
-            *r_TM = (epsilonm1+1-beta)/(epsilonm1+1+beta);
-        }
+        *r_TE = (1-beta)/(1+beta);
+        *r_TM = (epsilonm1+1-beta)/(epsilonm1+1+beta);
     }
 }
 
@@ -310,7 +339,7 @@ int casimir_init(casimir_t *self, double LbyR, double T)
     casimir_mie_cache_init(self);
 
     /* perfect reflectors */
-    self->epsilonm1 = NULL;
+    self->epsilonm1 = casimir_epsilonm1_perf;
     self->userdata  = NULL;
 
     /* XXX */
@@ -721,7 +750,11 @@ void casimir_lnab_perf(casimir_t *self, int n, int l, double *lna, double *lnb, 
  */
 void casimir_lnab(casimir_t *self, int n_mat, int l, double *lna, double *lnb, sign_t *sign_a, sign_t *sign_b)
 {
-    if(self->epsilonm1 == NULL)
+    /* ξ = nT */
+    const double xi = n_mat*self->T;
+    const double epsilonm1 = self->epsilonm1(xi, self->userdata);
+
+    if(isinf(epsilonm1))
     {
         /* Mie coefficients for perfect reflectors */
         casimir_lnab_perf(self, n_mat, l, lna, lnb, sign_a, sign_b);
@@ -729,9 +762,6 @@ void casimir_lnab(casimir_t *self, int n_mat, int l, double *lna, double *lnb, s
     }
 
     /* Mie coefficients for arbitrary metals */
-
-    /* ξ = nT */
-    const double xi = n_mat*self->T;
 
     /* χ = ξ*R/(R+L) = ξ/(1+L/R) */
     const double chi    = xi/(1.+self->LbyR);
@@ -743,7 +773,7 @@ void casimir_lnab(casimir_t *self, int n_mat, int l, double *lna, double *lnb, s
      * n    = sqrt(ε(ξ,ω_p,γ))
      * ln_n = ln(sqrt(ε)) = ln(ε)/2 = ln(1+(ε-1))/2 = log1p(ε-1)/2
      */
-    const double ln_n = log1p(self->epsilonm1(xi, self->userdata))/2;
+    const double ln_n = log1p(epsilonm1)/2;
     const double n    = exp(ln_n);
 
     double lnIlp, lnKlp, lnIlm, lnKlm, lnIlp_nchi, lnKlp_nchi, lnIlm_nchi, lnKlm_nchi;
@@ -760,8 +790,6 @@ void casimir_lnab(casimir_t *self, int n_mat, int l, double *lna, double *lnb, s
     const double ln_slc = lnIlp_nchi + logadd_s(ln_l+lnKlp,      +1,      ln_chi+lnKlm,      +1, &sign_slc);
     const double ln_sld = lnKlp      + logadd_s(ln_l+lnIlp_nchi, +1, ln_n+ln_chi+lnIlm_nchi, -1, &sign_sld);
 
-    /**
-     */
     /*
     printf("n =%.18g\n",     exp(ln_n));
     printf("n2=%.18g\n",     exp(2*ln_n));
@@ -1296,24 +1324,13 @@ void casimir_logdetD0(casimir_t *self, int m, double *logdet_EE, double *logdet_
 matrix_t *casimir_M(casimir_t *self, int n, int m)
 {
     const double nT = n*self->T;
-    integration_perf_t int_perf;
-
-    integration_drude_t int_drude = {
-        .plm_cache = NULL,
-        .m         = m,
-        .nT        = n * self->T
-    };
+    integration_t int_obj;
 
     const size_t min = MAX(m,1);
     const size_t max = self->lmax;
     const size_t dim = (max-min+1);
 
-    if(self->epsilonm1 == NULL)
-        /* perfect reflector */
-        casimir_integrate_perf_init(&int_perf, nT, m, self->lmax);
-    else
-        /* drude mirror */
-        casimir_integrate_drude_init(self, &int_drude, nT, m, self->lmax);
+    casimir_integrate_init(self, &int_obj, nT, m);
 
     /* allocate space for matrix M */
     matrix_t *M = matrix_alloc(2*dim);
@@ -1345,54 +1362,56 @@ matrix_t *casimir_M(casimir_t *self, int n, int m)
             casimir_mie_cache_get(self, l1, n, &ln_al1, &sign_al1, &ln_bl1, &sign_bl1);
             casimir_mie_cache_get(self, l2, n, &ln_al2, &sign_al2, &ln_bl2, &sign_bl2);
 
-            casimir_integrals_t cint;
-            if(self->epsilonm1 == NULL)
-                casimir_integrate_perf(&int_perf, l1, l2, &cint);
-            else
-                casimir_integrate_drude(&int_drude, l1, l2, &cint);
+            double v[8];
+            casimir_integrate(&int_obj, l1, l2, v);
 
             /* EE */
             {
-                sign_t sign;
                 /* A_TE + B_TM */
-                double elem = exp((ln_al1+ln_al2)/2+logadd_s(cint.lnA_TE, cint.signA_TE, cint.lnB_TM, cint.signB_TM, &sign));
+                double elem = v[A_TE] + v[B_TM];
 
-                trace += elem; /* elem is positive */
+                trace += fabs(elem); /* elem is positive */
 
-                matrix_set(M, i,j,             sign_al1*sign*elem);
-                matrix_set(M, j,i, MPOW(l1+l2)*sign_al2*sign*elem);
+                matrix_set(M, i,j,             sign_al1*elem);
+                matrix_set(M, j,i, MPOW(l1+l2)*sign_al2*elem);
             }
 
             /* MM */
             {
-                sign_t sign;
+                /* sqrt(|b_l1|*|b_l2|)/sqrt(|a_l1|*|a_l2|) */
+                double mie_quotient = exp((ln_bl1+ln_bl2-ln_al1-ln_al2)/2.);
+
                 /* A_TM + B_TE */
-                double elem = exp((ln_bl1+ln_bl2)/2+logadd_s(cint.lnA_TM, cint.signA_TM, cint.lnB_TE, cint.signB_TE, &sign));
+                double elem = mie_quotient*(v[A_TM]+v[B_TE]);
 
-                trace += elem; /* elem is positive */
+                trace += fabs(elem); /* elem is positive */
 
-                matrix_set(M, i+dim,j+dim,             sign_bl1*sign*elem);
-                matrix_set(M, j+dim,i+dim, MPOW(l1+l2)*sign_bl2*sign*elem);
+                matrix_set(M, i+dim,j+dim,             sign_bl1*elem);
+                matrix_set(M, j+dim,i+dim, MPOW(l1+l2)*sign_bl2*elem);
             }
 
-
+            /* non-diagonal blocks EM and ME */
             if(m != 0)
             {
-                sign_t sign1, sign2;
+                /* sqrt(|b_l2|)/sqrt(|a_l2|) */
+                double mie_quotient1 = exp((ln_bl2-ln_al2)/2);
+
+                /* sqrt(|b_l1|)/sqrt(|a_l1|) */
+                double mie_quotient2 = exp((ln_bl1-ln_al1)/2);
 
                 /* C_TE + D_TM */
-                double elem1 = exp((ln_al1+ln_bl2)/2+logadd_s(cint.lnC_TE, cint.signC_TE, cint.lnD_TM, cint.signD_TM, &sign1));
+                double elem1 = mie_quotient1*(v[C_TE]+v[D_TM]);
 
                 /* C_TM + D_TE */
-                double elem2 = exp((ln_bl1+ln_al2)/2+logadd_s(cint.lnC_TM, cint.signC_TM, cint.lnD_TE, cint.signD_TE, &sign2));
+                double elem2 = mie_quotient2*(v[C_TM]+v[D_TE]);
 
                 /* M_EM */
-                matrix_set(M, i,dim+j,               sign_al1*sign1*elem1);
-                matrix_set(M, j,dim+i, MPOW(l1+l2+1)*sign_al2*sign2*elem2);
+                matrix_set(M, i,dim+j,               sign_al1*elem1);
+                matrix_set(M, j,dim+i, MPOW(l1+l2+1)*sign_al2*elem2);
 
                 /* M_ME */
-                matrix_set(M, dim+i,j,               sign_bl1*sign2*elem2);
-                matrix_set(M, dim+j,i, MPOW(l1+l2+1)*sign_bl2*sign1*elem1);
+                matrix_set(M, dim+i,j,               sign_bl1*elem2);
+                matrix_set(M, dim+j,i, MPOW(l1+l2+1)*sign_bl2*elem1);
             }
         }
 
@@ -1402,10 +1421,7 @@ matrix_t *casimir_M(casimir_t *self, int n, int m)
                 break;
     }
 
-    if(self->epsilonm1 == NULL)
-        casimir_integrate_perf_free(&int_perf);
-    else
-        casimir_integrate_drude_free(&int_drude);
+    casimir_integrate_free(&int_obj);
 
     return M;
 }
@@ -1433,12 +1449,13 @@ double casimir_logdetD(casimir_t *self, int n, int m)
     {
         double logdet_EE = 0, logdet_MM = 0;
 
-        if(self->epsilonm1 == NULL)
+        /* XXX what happens for xi=0 XXX */
+        //if(self->epsilonm1 == NULL)
             /* perfect reflector */
             casimir_logdetD0(self, m, &logdet_EE, &logdet_MM);
-        else
-            /* drude mirror */
-            casimir_logdetD0(self, m, &logdet_EE, NULL);
+        //else
+        //    /* generic mirrors */
+        //    casimir_logdetD0(self, m, &logdet_EE, NULL);
 
         return logdet_EE + logdet_MM;
     }
@@ -1456,26 +1473,16 @@ double casimir_logdetD(casimir_t *self, int n, int m)
 
     if(m == 0)
     {
-        const size_t dim = M->dim/2;
+        const size_t dim  = M->dim;
+        const size_t lmax = dim/2;
 
-        /* The memory footprint can be improved here */
-        matrix_t *EE = matrix_alloc(dim);
-        matrix_t *MM = matrix_alloc(dim);
-
-        for(size_t i = 0; i < dim; i++)
-            for(size_t j = 0; j < dim; j++)
-            {
-                matrix_set(EE, i,j, matrix_get(M, i,j));
-                matrix_set(MM, i,j, matrix_get(M, dim+i,dim+j));
-            }
-
-        matrix_free(M);
+        /* create a view of the block matrices EE and MM */
+        matrix_t *EE = matrix_view(M->M, lmax, dim);
+        matrix_t *MM = matrix_view(&M->M[lmax*(dim+1)], lmax, dim);
 
         t0 = now();
-
         logdet  = matrix_logdet(EE, -1, self->detalg);
         logdet += matrix_logdet(MM, -1, self->detalg);
-
         casimir_debug(self, "# timing: log(det(Id-EE)), log(det(Id-MM)): %gs\n", now()-t0);
 
         matrix_free(EE);
@@ -1484,13 +1491,11 @@ double casimir_logdetD(casimir_t *self, int n, int m)
     else
     {
         t0 = now();
-
         logdet = matrix_logdet(M, -1, self->detalg);
-
         casimir_debug(self, "# timing: log(det(Id-M)): %gs\n", now()-t0);
-
-        matrix_free(M);
     }
+
+    matrix_free(M);
 
     return logdet;
 }

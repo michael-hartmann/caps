@@ -10,9 +10,7 @@ MPICC = mpicc
 #MPICC = mpiicc
 
 OBJS = \
-    gausslaguerre.o \
     integration.o \
-    integration_perf.o \
     libcasimir.o \
     matrix.o \
     sfunc.o \
@@ -42,6 +40,8 @@ CFLAGS += -I .
 
 # enable warnings and make them fatal
 CFLAGS += -Wall -Werror -Wextra -Wmissing-prototypes -Wstrict-prototypes -Wshadow -Wpointer-arith -Wcast-qual -Wwrite-strings -Wno-unused-parameter
+# profiling
+#CFLAGS += -g -pg
 
 # ldflags
 LDFLAGS += -lm -pthread -llapack -lblas -lgfortran
