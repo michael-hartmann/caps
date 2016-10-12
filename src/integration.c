@@ -12,8 +12,7 @@
 #include "libcasimir.h"
 #include "integration.h"
 
-/* nodes and weights for Gauß-Kronrod (G7,K15); make sure that the first 7
- * points are the Gauß nodes! */
+/* nodes and weights for Gauß-Kronrod (G7,K15) */
 static double gausskronrod[15][3] =
 {
     /* nodes,             weight Gauß,       weight Kronrod */
@@ -246,19 +245,16 @@ int casimir_integrate_free(__attribute__((unused)) integration_t *self)
 }
 
 
-static double estimate_error(interval_t intervals[], int N, double v[8], double relerror[8], int *index);
+static double estimate_error(interval_t intervals[], int N, double v[8], int *index);
 
-static double estimate_error(interval_t intervals[], int N, double v[8], double relerror[8], int *index)
+static double estimate_error(interval_t intervals[], int N, double v[8], int *index)
 {
     double sum_err2[8] = { 0 }; /* squared error */
     double maxerr = 0;
     *index = 0;
 
     for(int j = 0; j < 8; j++)
-    {
         v[j] = 0;
-        relerror[j] = 0;
-    }
 
     /* copy value of integral and error of every subinterval to arrays K15 and
      * err2 */
@@ -283,6 +279,7 @@ static double estimate_error(interval_t intervals[], int N, double v[8], double 
     /* We assume that errors in subintervals are independent, then:
      *      err = sqrt( 1/(N*(N-1)) \sum_j err_j^2 )
      */
+    double relerror[8];
     for(int j = 0; j < 8; j++)
     {
         if(sum_err2[j] == 0)
@@ -339,10 +336,9 @@ int casimir_integrate(integration_t *self, int l1, int l2, double v[8])
     while(N < INTEGRATE_INTERVALS_MAX)
     {
         int index;
-        double relerror[8];
 
         /* sum integrals of every subinterval and estimate error */
-        double error = estimate_error(intervals, N, v, relerror, &index);
+        double error = estimate_error(intervals, N, v, &index);
 
         /* if error is sufficiently small, we're done */
         if(error < PRECISION)
