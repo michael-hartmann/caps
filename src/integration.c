@@ -87,10 +87,6 @@ void casimir_integrate_integrands(integration_t *int_obj, double t, int l1, int 
     /* l1 > 0, l2 > 0 */
     TERMINATE(l1 <= 0 || l2 <= 0, "l1,l2 > 0, l1=%d, l2=%d\n", l1,l2);
 
-    /* initialize to +0 */
-    for(int i = 0; i < 8; i++)
-        v[i] = 0;
-
     /* t=1 corresponds to z=∞; the integrands vanish for z→∞ */
     if(t == 1)
     {
