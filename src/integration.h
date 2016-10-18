@@ -31,7 +31,8 @@ typedef struct {
 } integration_t;
 
 typedef struct {
-    double a,b;
+    /* a = k/N, b = (k+1)/N */
+    int k,N;
     double K15[8];
     double err[8];
 } interval_t;
