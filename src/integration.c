@@ -16,22 +16,22 @@
 static double gausskronrod[15][3] =
 {
     /* nodes,             weight Gauß,       weight Kronrod */
-    { +0.949107912342759, 0.129484966168870, 0.063092092629979},
-    { -0.949107912342759, 0.129484966168870, 0.063092092629979},
-    { +0.741531185599394, 0.279705391489277, 0.140653259715525},
-    { -0.741531185599394, 0.279705391489277, 0.140653259715525},
-    { +0.405845151377397, 0.381830050505119, 0.190350578064785},
-    { -0.405845151377397, 0.381830050505119, 0.190350578064785},
-    {  0.000000000000000, 0.417959183673469, 0.209482141084728},
+    { +0.949107912342759, 0.129484966168870, 0.063092092629979 },
+    { -0.949107912342759, 0.129484966168870, 0.063092092629979 },
+    { +0.741531185599394, 0.279705391489277, 0.140653259715525 },
+    { -0.741531185599394, 0.279705391489277, 0.140653259715525 },
+    { +0.405845151377397, 0.381830050505119, 0.190350578064785 },
+    { -0.405845151377397, 0.381830050505119, 0.190350578064785 },
+    {  0.000000000000000, 0.417959183673469, 0.209482141084728 },
 
-    { +0.991455371120813, 0, 0.022935322010529},
-    { -0.991455371120813, 0, 0.022935322010529},
-    { +0.864864423359769, 0, 0.104790010322250},
-    { -0.864864423359769, 0, 0.104790010322250},
-    { +0.586087235467691, 0, 0.169004726639267},
-    { -0.586087235467691, 0, 0.169004726639267},
-    { +0.207784955007898, 0, 0.204432940075298},
-    { -0.207784955007898, 0, 0.204432940075298}
+    { +0.991455371120813, 0, 0.022935322010529 },
+    { -0.991455371120813, 0, 0.022935322010529 },
+    { +0.864864423359769, 0, 0.104790010322250 },
+    { -0.864864423359769, 0, 0.104790010322250 },
+    { +0.586087235467691, 0, 0.169004726639267 },
+    { -0.586087235467691, 0, 0.169004726639267 },
+    { +0.207784955007898, 0, 0.204432940075298 },
+    { -0.207784955007898, 0, 0.204432940075298 }
 };
 
 
@@ -158,7 +158,6 @@ static void integrate_gauss_kronrod(integration_t *int_obj, int l1, int l2, doub
  */
 static void integrate_gauss_kronrod(integration_t *int_obj, int l1, int l2, double a, double b, double log_prefactor, interval_t *interval)
 {
-    //printf("a=%g, b=%g\n", a,b);
     const double dx = (b-a)/2;
 
     TERMINATE(l1 <= 0 || l2 <= 0, "l1,l2 > 0, l1=%d, l2=%d\n", l1,l2);
@@ -317,8 +316,7 @@ int casimir_integrate(integration_t *self, int l1, int l2, double v[8])
 
     /* Use fixed size arrays on stack instead dynamic allocation with malloc.
      * If we need more than NMAX intervals, we have a serious problem and
-     * should terminate with an error. This also avoids possible infinity
-     * loops.
+     * should terminate with an error. This also avoids infinity loops.
      * Using the stack also makes execution faster and code simpler.
      */
     interval_t intervals[INTEGRATE_INTERVALS_MAX];
@@ -345,8 +343,6 @@ int casimir_integrate(integration_t *self, int l1, int l2, double v[8])
         {
             int m = self->m;
 
-            //printf("l1=%d, l2=%d, m=%d, N=%d\n", l1, l2, m, N);
-
             v[A_TE] = A0(l1,l2,m)*v[A_TE];
             v[A_TM] = A0(l1,l2,m)*v[A_TM];
 
@@ -362,8 +358,7 @@ int casimir_integrate(integration_t *self, int l1, int l2, double v[8])
             return 0;
         }
 
-        /* accuracy is not high enough; split the interval with largest error
-         * in half */
+        /* accuracy is not high enough; split interval with largest error */
         double a = intervals[index].a; /* left */
         double b = intervals[index].b; /* right */
         double m = (a+b)/2; /* middle */
