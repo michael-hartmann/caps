@@ -144,7 +144,7 @@ void casimir_integrate_integrands(integration_t *int_obj, double t, int l1, int 
 }
 
 
-static void integrate_gauss_kronrod(integration_t *int_obj, int l1, int l2, double a, double b, double log_prefactor, interval_t *interval);
+static void integrate_gauss_kronrod(integration_t *int_obj, int l1, int l2, int k, int N, double log_prefactor, interval_t *interval);
 
 /**
  * @brief Integrate integrands from a to b
@@ -156,15 +156,16 @@ static void integrate_gauss_kronrod(integration_t *int_obj, int l1, int l2, doub
  * @param [in] b right border of integration, 0 <= a < b <= 1
  * @param [out] interval result of integration
  */
-static void integrate_gauss_kronrod(integration_t *int_obj, int l1, int l2, double a, double b, double log_prefactor, interval_t *interval)
+static void integrate_gauss_kronrod(integration_t *int_obj, int l1, int l2, int k, int N, double log_prefactor, interval_t *interval)
 {
-    const double dx = (b-a)/2;
+    const double a = (k+0.0)/N;
+    //const double b = (k+1.0)/N;
+    const double dx = 1./(2*N);
 
     TERMINATE(l1 <= 0 || l2 <= 0, "l1,l2 > 0, l1=%d, l2=%d\n", l1,l2);
-    TERMINATE(a < 0 || a >= b || b > 1, "0 <= a < b <= 1, b=%g, a=%g", b, a);
 
-    interval->a = a;
-    interval->b = b;
+    interval->k = k;
+    interval->N = N;
 
     log_prefactor += log(dx);
 
@@ -193,10 +194,11 @@ static void integrate_gauss_kronrod(integration_t *int_obj, int l1, int l2, doub
         }
     }
 
-    for(int k = 0; k < 8; k++)
+    /* copy to struct */
+    for(int j = 0; j < 8; j++)
     {
-        interval->K15[k] = K15[k];
-        interval->err[k] = fabs(K15[k]-G7[k]);
+        interval->K15[j] = K15[j];
+        interval->err[j] = fabs(K15[j]-G7[j]);
     }
 }
 
@@ -296,7 +298,14 @@ int casimir_integrate(integration_t *self, int l1, int l2, double v[8])
     #define NMIN  4 /* minimum number of intervals */
     #define PRECISION 1e-20 /* XXX */
 
-    /* prefactor */
+    /* Use fixed size arrays on stack instead dynamic allocation with malloc.
+     * If we need more than NMAX intervals, we have a serious problem and
+     * should terminate with an error. This also avoids infinity loops.
+     * Using the stack also makes execution faster and code simpler.
+     */
+    interval_t intervals[INTEGRATE_INTERVALS_MAX];
+
+    /* calculate prefactor */
     double log_prefactor;
     {
         casimir_t *casimir = self->casimir;
@@ -312,62 +321,59 @@ int casimir_integrate(integration_t *self, int l1, int l2, double v[8])
         log_prefactor = log_Lambda + (log_al1+log_al2)/2 -self->tau;
     }
 
-    int N = NMIN;
-
-    /* Use fixed size arrays on stack instead dynamic allocation with malloc.
-     * If we need more than NMAX intervals, we have a serious problem and
-     * should terminate with an error. This also avoids infinity loops.
-     * Using the stack also makes execution faster and code simpler.
+    /* we label the left and right border of every interval by k and N:
+     *      a = k/N   and   b = (k+1)/N
+     * For convenience, N will always be a power of 2.
      */
-    interval_t intervals[INTEGRATE_INTERVALS_MAX];
 
-    /* Split integral in NMIN subintervals and calculate integral in every
-     * subinterval using (G7,K15) */
-    for(int i = 0; i < N; i++)
-    {
-        double a = (double)i/N;
-        double b = (i+1.)/N;
+    /* we start with NMIN subintervals */
+    int subintervals = NMIN;
 
-        integrate_gauss_kronrod(self, l1, l2, a, b, log_prefactor, &intervals[i]);
-    }
+    /* Calculate integral of every subinterval using (G7,K15) */
+    for(int k = 0; k < subintervals; k++)
+        integrate_gauss_kronrod(self, l1, l2, k, subintervals, log_prefactor, &intervals[k]);
 
-    while(N < INTEGRATE_INTERVALS_MAX)
+    while(subintervals < INTEGRATE_INTERVALS_MAX)
     {
         int index;
 
         /* sum integrals of every subinterval and estimate error */
-        double error = estimate_error(intervals, N, v, &index);
+        double error = estimate_error(intervals, subintervals, v, &index);
 
         /* if error is sufficiently small, we're done */
         if(error < PRECISION)
         {
-            int m = self->m;
+            const int m = self->m;
+            /* signs of integrals A,B,C and D */
+            const sign_t a0 = A0(l1,l2,m);
+            const sign_t b0 = B0(l1,l2,m);
+            const sign_t c0 = C0(l1,l2,m);
+            const sign_t d0 = D0(l1,l2,m);
 
-            v[A_TE] = A0(l1,l2,m)*v[A_TE];
-            v[A_TM] = A0(l1,l2,m)*v[A_TM];
+            v[A_TE] = a0*v[A_TE];
+            v[A_TM] = a0*v[A_TM];
 
-            v[B_TE] = B0(l1,l2,m)*v[B_TE];
-            v[B_TM] = B0(l1,l2,m)*v[B_TM];
+            v[B_TE] = b0*v[B_TE];
+            v[B_TM] = b0*v[B_TM];
 
-            v[C_TE] = C0(l1,l2,m)*v[C_TE];
-            v[C_TM] = C0(l1,l2,m)*v[C_TM];
+            v[C_TE] = c0*v[C_TE];
+            v[C_TM] = c0*v[C_TM];
 
-            v[D_TE] = D0(l1,l2,m)*v[D_TE];
-            v[D_TM] = D0(l1,l2,m)*v[D_TM];
+            v[D_TE] = d0*v[D_TE];
+            v[D_TM] = d0*v[D_TM];
 
             return 0;
         }
 
         /* accuracy is not high enough; split interval with largest error */
-        double a = intervals[index].a; /* left */
-        double b = intervals[index].b; /* right */
-        double m = (a+b)/2; /* middle */
+        int k = intervals[index].k;
+        int N = intervals[index].N;
 
-        integrate_gauss_kronrod(self, l1, l2, a, m, log_prefactor, &intervals[index]);
-        integrate_gauss_kronrod(self, l1, l2, m, b, log_prefactor, &intervals[N]);
+        integrate_gauss_kronrod(self, l1, l2, 2*k,   2*N, log_prefactor, &intervals[index]);
+        integrate_gauss_kronrod(self, l1, l2, 2*k+1, 2*N, log_prefactor, &intervals[subintervals]);
 
         /* number of subintervals has increased */
-        N++;
+        subintervals++;
     }
 
     /* give up :( */
