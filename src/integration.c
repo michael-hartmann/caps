@@ -118,7 +118,7 @@ void casimir_integrate_integrands(integration_t *int_obj, double t, int l1, int 
     plm_combination_t comb;
     plm_PlmPlm(l1, l2, m, 1+z/tau, &comb);
 
-    /* prefactor exp(-z) dz */
+    /* prefactor exp(-z) 1/(1-t)² */
     double common = log_prefactor-z+log_dz;
 
     /* prefactor 1/τ³ 1/(1-t)² r_p exp(-z) P'_l1^m P'_l2^m   (z²+2τz) */
