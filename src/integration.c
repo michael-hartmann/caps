@@ -93,7 +93,15 @@ void casimir_integrate_integrands(integration_t *int_obj, double t, int l1, int 
 
     /* t=1 corresponds to z=∞; the integrands vanish for z→∞ */
     if(t == 1)
+    {
+        /* initialize to +0 */
+        v[A_TE] = v[A_TM] = 0;
+        v[B_TE] = v[B_TM] = 0;
+        v[C_TE] = v[C_TM] = 0;
+        v[D_TE] = v[D_TM] = 0;
+
         return;
+    }
 
     double tau = int_obj->tau;
     double log_tau = log(tau);
@@ -114,27 +122,37 @@ void casimir_integrate_integrands(integration_t *int_obj, double t, int l1, int 
     plm_combination_t comb;
     plm_PlmPlm(l1, l2, m, 1+z/tau, &comb);
 
+    /* prefactor exp(-z) dz */
+    double common = log_prefactor-z+log_dz;
+
     /* prefactor 1/τ³ 1/(1-t)² r_p exp(-z) P'_l1^m P'_l2^m   (z²+2τz) */
-    double B = comb.sign_dPl1mdPl2m*exp(log_prefactor -3*log_tau -z +log_term +comb.lndPl1mdPl2m +log_dz);
+    double B = comb.sign_dPl1mdPl2m*exp(common -3*log_tau +log_term +comb.lndPl1mdPl2m);
     v[B_TE] = rTE*B; /* B, TE */
     v[B_TM] = rTM*B; /* B, TM */
 
     if(m > 0)
     {
         /* prefactor m² τ 1/(1-t)² r_p exp(-z) P_l1^m  P_l2^m  / (z²+2τz) */
-        double A = comb.sign_Pl1mPl2m*pow_2(m)*exp(log_prefactor +log_tau -z -log_term +comb.lnPl1mPl2m +log_dz);
+        double A = comb.sign_Pl1mPl2m*pow_2(m)*exp(common +log_tau -log_term +comb.lnPl1mPl2m);
         v[A_TE] = rTE*A; /* A, TE */
         v[A_TM] = rTM*A; /* A, TM */
 
         /* prefactor m 1/τ  1/(1-t)² r_p exp(-z) P_l1^m  P'_l2^m */
-        double C = comb.sign_dPl1mPl2m*m*exp(log_prefactor -log_tau -z +comb.lnPl1mdPl2m +log_dz);
+        double C = comb.sign_Pl1mdPl2m*m*exp(common -log_tau +comb.lnPl1mdPl2m);
         v[C_TE] = rTE*C; /* C, TE */
         v[C_TM] = rTM*C; /* C, TM */
 
         /* prefactor m 1/τ 1/(1-t)² r_p exp(-z) P'_l1^m P_l2^m */
-        double D = comb.sign_dPl1mPl2m*m*exp(log_prefactor -log_tau -z +comb.lndPl1mPl2m +log_dz);
+        double D = comb.sign_dPl1mPl2m*m*exp(common -log_tau +comb.lndPl1mPl2m);
         v[D_TE] = rTE*D; /* D, TE */
         v[D_TM] = rTM*D; /* D, TM */
+    }
+    else
+    {
+        /* m = 0 */
+        v[A_TE] = v[A_TM] = 0;
+        v[C_TE] = v[C_TM] = 0;
+        v[D_TE] = v[D_TM] = 0;
     }
 }
 
