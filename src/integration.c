@@ -104,7 +104,7 @@ void casimir_integrate_integrands(integration_t *int_obj, double t, int l1, int 
     }
 
     double tau = int_obj->tau;
-    double log_tau = log(tau);
+    double log_tau = int_obj->log_tau;
     double z = t/(1-t);
     double log_dz = -2*log1p(-t); /* 1/(1-t)² */
     double log_term = log(pow_2(z)+2*tau*z); /* z²+2τz */
@@ -239,6 +239,7 @@ int casimir_integrate_init(casimir_t *casimir, integration_t *int_obj, int n, in
     int_obj->n   = n;
     int_obj->nT  = nT;
     int_obj->tau = 2*nT;
+    int_obj->log_tau = log(2*nT);
 
     return 0;
 }

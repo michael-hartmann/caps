@@ -27,7 +27,7 @@
 typedef struct {
     casimir_t *casimir;
     int n,m;
-    double nT,tau;
+    double nT,tau,log_tau;
 } integration_t;
 
 typedef struct {
