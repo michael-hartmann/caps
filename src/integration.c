@@ -102,13 +102,10 @@ void casimir_integrate_integrands(integration_t *int_obj, double t, int l1, int 
     double log_term = log(pow_2(z)+2*tau*z); /* z²+2τz */
 
     /* calculate Fresnel coefficients */
-    double log_rTE, log_rTM;
+    double rTE,rTM;
     {
-        double rTE,rTM;
         double k = sqrt(pow_2(z)+2*tau*z)/2; /* sqrt(z²+2τz)/2 */
         casimir_rp(int_obj->casimir, int_obj->nT, k, &rTE, &rTM);
-        log_rTE = log(-rTE);
-        log_rTM = log(+rTM);
     }
 
     /* calculate products of associated Legendre polynomials: Pl1m*Pl2m,
@@ -118,28 +115,26 @@ void casimir_integrate_integrands(integration_t *int_obj, double t, int l1, int 
     plm_PlmPlm(l1, l2, m, 1+z/tau, &comb);
 
     /* prefactor 1/τ³ 1/(1-t)² r_p exp(-z) P'_l1^m P'_l2^m   (z²+2τz) */
-    double log_B = log_prefactor -3*log_tau -z +log_term +comb.lndPl1mdPl2m +log_dz;
-    v[B_TE] = -comb.sign_dPl1mdPl2m*exp(log_rTE + log_B); /* B, TE */
-    v[B_TM] = +comb.sign_dPl1mdPl2m*exp(log_rTM + log_B); /* B, TM */
+    double B = comb.sign_dPl1mdPl2m*exp(log_prefactor -3*log_tau -z +log_term +comb.lndPl1mdPl2m +log_dz);
+    v[B_TE] = rTE*B; /* B, TE */
+    v[B_TM] = rTM*B; /* B, TM */
 
     if(m > 0)
     {
-        int m2 = pow_2(m); /* m² */
-
         /* prefactor m² τ 1/(1-t)² r_p exp(-z) P_l1^m  P_l2^m  / (z²+2τz) */
-        double log_A = log_prefactor +log_tau -z -log_term +comb.lnPl1mPl2m +log_dz;
-        v[A_TE] = -comb.sign_Pl1mPl2m*m2*exp(log_rTE + log_A); /* A, TE */
-        v[A_TM] = +comb.sign_Pl1mPl2m*m2*exp(log_rTM + log_A); /* A, TM */
+        double A = comb.sign_Pl1mPl2m*pow_2(m)*exp(log_prefactor +log_tau -z -log_term +comb.lnPl1mPl2m +log_dz);
+        v[A_TE] = rTE*A; /* A, TE */
+        v[A_TM] = rTM*A; /* A, TM */
 
         /* prefactor m 1/τ  1/(1-t)² r_p exp(-z) P_l1^m  P'_l2^m */
-        double log_C = log_prefactor -log_tau -z +comb.lnPl1mdPl2m +log_dz;
-        v[C_TE] = -comb.sign_dPl1mPl2m*m*exp(log_rTE + log_C); /* C, TE */
-        v[C_TM] = +comb.sign_dPl1mPl2m*m*exp(log_rTM + log_C); /* C, TM */
+        double C = comb.sign_dPl1mPl2m*m*exp(log_prefactor -log_tau -z +comb.lnPl1mdPl2m +log_dz);
+        v[C_TE] = rTE*C; /* C, TE */
+        v[C_TM] = rTM*C; /* C, TM */
 
         /* prefactor m 1/τ 1/(1-t)² r_p exp(-z) P'_l1^m P_l2^m */
-        double log_D = log_prefactor -log_tau -z +comb.lndPl1mPl2m +log_dz;
-        v[D_TE] = -comb.sign_dPl1mPl2m*m*exp(log_rTE + log_D); /* D, TE */
-        v[D_TM] = +comb.sign_dPl1mPl2m*m*exp(log_rTM + log_D); /* D, TM */
+        double D = comb.sign_dPl1mPl2m*m*exp(log_prefactor -log_tau -z +comb.lndPl1mPl2m +log_dz);
+        v[D_TE] = rTE*D; /* D, TE */
+        v[D_TM] = rTM*D; /* D, TM */
     }
 }
 
