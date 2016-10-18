@@ -419,13 +419,19 @@ void plm_PlmPlm(int l1, int l2, int m, double x, plm_combination_t *res)
     const int lmax = MAX(l1,l2)+1;
     double lnPlm[lmax-m+1];
     sign_t signs[lmax-m+1];
-    double logx = log(x);
-    double logx2m1 = log(pow_2(x)-1);
+
+    plm_lnPlm_array(lmax, m, x, lnPlm, signs);
+
+    plm_PlmPlm_from_array(l1, l2, m, x, lnPlm, signs, res);
+}
+
+void plm_PlmPlm_from_array(int l1, int l2, int m, double x, double lnPlm[], sign_t signs[], plm_combination_t *res)
+{
+    const double logx = log(x);
+    const double logx2m1 = log(pow_2(x)-1);
     double lnPl1m, lnPl2m, lndPl1m, lndPl2m;
     sign_t sign_Pl1m, sign_Pl2m, sign_dPl1m, sign_dPl2m;
     sign_t common_sign = MPOW(m%2);
-
-    plm_lnPlm_array(lmax, m, x, lnPlm, signs);
 
     lnPl1m    = lnPlm[l1-m];
     sign_Pl1m = signs[l1-m];

@@ -60,5 +60,6 @@ double plm_lndPlm(int l, int m, double x, sign_t *sign);
 double plm_dPlm  (int l, int m, double x);
 
 void plm_PlmPlm(int l1, int l2, int m, double x, plm_combination_t *res);
+void plm_PlmPlm_from_array(int l1, int l2, int m, double x, double lnPlm[], sign_t signs[], plm_combination_t *res);
 
 #endif
