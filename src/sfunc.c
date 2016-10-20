@@ -90,7 +90,7 @@ double min(double input[], size_t N)
  * @param [in] log_b number
  * @return log_sum \f$\log{\left[\exp{(\mathrm{log\_a})}+\exp{(log\_b)}\right]}\f$
  */
-inline double logadd(const double log_a, const double log_b)
+double logadd(const double log_a, const double log_b)
 {
     if(isinf(log_a) && log_a < 0)
         return log_b;

@@ -36,7 +36,7 @@ TESTS = \
 CFLAGS = -std=c99
 
 # use traditional GNU semantics for inline
-CFLAGS += -fgnu89-inline
+#CFLAGS += -fgnu89-inline
 CFLAGS += -I .
 
 # enable warnings and make them fatal
