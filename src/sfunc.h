@@ -42,10 +42,8 @@ double kahan_sum(double input[], size_t len);
 double max(double input[], size_t len);
 double min(double input[], size_t len);
 
-inline double logadd(const double a, const double b);
-inline double logadd_s(const double a, const sign_t sign_a, const double b, const sign_t sign_b, sign_t *sign);
-inline double logadd_m(const double list[], const int len);
-inline double logadd_ms(const double list[], const sign_t signs[], const int len, sign_t *sign);
+double logadd(const double a, const double b);
+double logadd_s(const double a, const sign_t sign_a, const double b, const sign_t sign_b, sign_t *sign);
 
 double bessel_lnInu(const int n, const double x);
 double bessel_lnKnu(const int n, const double x);
