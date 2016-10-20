@@ -57,7 +57,7 @@ static uint64_t hash(double value)
     return cast.u64;
 }
 
-static cache_entry_t *cache_entry_create(double z, integration_t *integration)
+static cache_entry_t *cache_entry_create(integration_t *integration, double z)
 {
     casimir_t *casimir = integration->casimir;
     const double tau = integration->tau;
@@ -76,6 +76,22 @@ static cache_entry_t *cache_entry_create(double z, integration_t *integration)
     const double nT = integration->nT;
     const double k  = sqrt(pow_2(z)+2*tau*z)/2; /* sqrt(z²+2τz)/2 */
     casimir_rp(casimir, nT, k, &entry->rTE, &entry->rTM);
+
+    return entry;
+}
+
+static cache_entry_t *cache_get(integration_t *integration, double z, int l1, int l2)
+{
+    HashTable *hash_table = integration->hash_table;
+    uint64_t key = hash(z);
+
+    cache_entry_t *entry = hash_table_lookup(hash_table, key);
+    if(entry == NULL)
+    {
+        /* create entry and insert into hash */
+        entry = cache_entry_create(integration,z);
+        hash_table_insert(hash_table, key, entry);
+    }
 
     return entry;
 }
@@ -159,14 +175,7 @@ void casimir_integrate_integrands(integration_t *integration, double t, int l1, 
 
     /* calculate products of associated Legendre polynomials: Pl1m*Pl2m,
      * dPl1m*dPl2m, dPl1m*Pl2m, Pl1m*dPl2m, and Fresnel coefficients */
-    HashTable *hash_table = integration->hash_table;
-    uint64_t key = hash(z);
-    cache_entry_t *entry = hash_table_lookup(hash_table, key);
-    if(entry == NULL)
-    {
-        entry = cache_entry_create(z, integration);
-        hash_table_insert(hash_table, key, entry);
-    }
+    cache_entry_t *entry = cache_get(integration, z, l1, l2);
     double rTE = entry->rTE;
     double rTM = entry->rTM;
     plm_PlmPlm_from_array(l1, l2, m, 1+z/tau, entry->lnPlm, entry->signs, &comb);
@@ -310,6 +319,8 @@ integration_t *casimir_integrate_init(casimir_t *casimir, int n, int m)
  */
 void casimir_integrate_free(integration_t *integration)
 {
+    printf("entries: %lu\n", hash_table_num_entries(integration->hash_table)); //XXX
+
     hash_table_free(integration->hash_table);
     xfree(integration);
 }
