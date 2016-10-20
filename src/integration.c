@@ -62,15 +62,15 @@ static cache_entry_t *cache_entry_create(integration_t *integration, double z)
     casimir_t *casimir = integration->casimir;
     const double tau = integration->tau;
     const int m = integration->m;
-    int lmax = casimir->lmax+1;
-    size_t size = lmax-m+1;
+    int lmax = casimir->lmax;
+    size_t size = (lmax+1)-m+1;
 
     cache_entry_t *entry = xmalloc(sizeof(cache_entry_t));
 
     entry->lnPlm = xmalloc(size*sizeof(double));
     entry->signs = xmalloc(size*sizeof(sign_t));
 
-    plm_lnPlm_array(lmax, m, 1+z/tau, entry->lnPlm, entry->signs);
+    plm_lnPlm_array(lmax+1, m, 1+z/tau, entry->lnPlm, entry->signs);
 
     /* calculate Fresnel coefficient */
     const double nT = integration->nT;
