@@ -302,7 +302,6 @@ int main(int argc, char *argv[])
     for(int iLbyR = 0; iLbyR < lLbyR[2]; iLbyR++)
         for(int iT = 0; iT < lT[2]; iT++)
         {
-            casimir_t casimir;
             double start_time = now();
             int nmax;
             double F,LbyR,T;
@@ -317,11 +316,11 @@ int main(int argc, char *argv[])
             else
                 T = logspace(lT[0], lT[1], lT[2], iT);
 
-            casimir_init(&casimir, LbyR, T);
+            casimir_t *casimir = casimir_init(LbyR, T);
 
-            casimir_set_verbose(&casimir, verbose_flag);
-            casimir_set_cores(&casimir, cores);
-            casimir_set_precision(&casimir, precision);
+            casimir_set_verbose(casimir, verbose_flag);
+            casimir_set_cores(casimir, cores);
+            casimir_set_precision(casimir, precision);
 
             /* XXX
             if(isfinite(omegap))
@@ -329,16 +328,16 @@ int main(int argc, char *argv[])
             */
 
             if(lmax > 0)
-                casimir_set_lmax(&casimir, lmax);
+                casimir_set_lmax(casimir, lmax);
             else
-                casimir_set_lmax(&casimir, MAX((int)ceil(lfac/LbyR), MIN_LMAX));
+                casimir_set_lmax(casimir, MAX((int)ceil(lfac/LbyR), MIN_LMAX));
 
 
             if(!quiet_flag)
-                casimir_info(&casimir, stdout, "# ");
+                casimir_info(casimir, stdout, "# ");
 
-            F = casimir_F(&casimir, &nmax);
-            casimir_free(&casimir);
+            F = casimir_F(casimir, &nmax);
+            casimir_free(casimir);
 
             if(!quiet_flag)
                 printf("#\n");
@@ -351,7 +350,7 @@ int main(int argc, char *argv[])
             printf("%g, %g, %g, %g, %.12g, %d, %d, %g\n",
                 LbyR, T,
                 omegap, gamma_,
-                F, casimir.lmax, nmax, now()-start_time
+                F, casimir_get_lmax(casimir), nmax, now()-start_time
             );
 
             if(!quiet_flag)

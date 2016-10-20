@@ -179,45 +179,45 @@ int main(int argc, char *argv[])
         printf(", %s", argv[i]);
     printf("\n");
 
-    casimir_t casimir;
+    casimir_t *casimir;
     if(nT > 0)
-        casimir_init(&casimir, LbyR, nT);
+        casimir = casimir_init(LbyR, nT);
     else
-        casimir_init(&casimir, LbyR, 1);
+        casimir = casimir_init(LbyR, 1);
 
     if(lmax)
-        casimir_set_lmax(&casimir, lmax);
+        casimir_set_lmax(casimir, lmax);
 
     /* XXX
     if(gamma_ >= 0 && isfinite(omegap))
-        casimir_set_drude(&casimir, omegap, gamma_, omegap, gamma_);
+        casimir_set_drude(casimir, omegap, gamma_, omegap, gamma_);
     */
 
-    casimir_set_debug(&casimir, debug);
+    casimir_set_debug(casimir, debug);
 
     if(strlen(detalg))
-        casimir_set_detalg(&casimir, detalg);
+        casimir_set_detalg(casimir, detalg);
 
-    casimir_info(&casimir, stdout, "# ");
+    casimir_info(casimir, stdout, "# ");
     printf("#\n");
 
     if(nT > 0)
     {
-        double logdet = casimir_logdetD(&casimir, 1, m);
+        double logdet = casimir_logdetD(casimir, 1, m);
 
         printf("# L/R, ξ*(L+R)/c, ωp*(L+R)/c, γ*(L+R)/c, m, logdetD, lmax, time\n");
-        printf("%g, %g, %g, %g, %d, %.16g, %d, %g\n", LbyR, nT, omegap, gamma_, m, logdet, casimir.lmax, now()-start_time);
+        printf("%g, %g, %g, %g, %d, %.16g, %d, %g\n", LbyR, nT, omegap, gamma_, m, logdet, casimir_get_lmax(casimir), now()-start_time);
     }
     else /* nT == 0 */
     {
         double logdet_EE = 0, logdet_MM = 0;
-        casimir_logdetD0(&casimir, m, &logdet_EE, &logdet_MM);
+        casimir_logdetD0(casimir, m, &logdet_EE, &logdet_MM);
 
         printf("# L/R, ξ*(L+R)/c, m, logdetD (EE), logdetD (MM), lmax, time\n");
-        printf("%g, 0, %d, %.16g, %.16g, %d, %g\n", LbyR, m, logdet_EE, logdet_MM, casimir.lmax, now()-start_time);
+        printf("%g, 0, %d, %.16g, %.16g, %d, %g\n", LbyR, m, logdet_EE, logdet_MM, casimir_get_lmax(casimir), now()-start_time);
     }
 
-    casimir_free(&casimir);
+    casimir_free(casimir);
 
     return 0;
 }
