@@ -1,12 +1,11 @@
 /**
  * @file   sfunc.c
  * @author Michael Hartmann <michael.hartmann@physik.uni-augsburg.de>
- * @date   September, 2016
+ * @date   October, 2016
  * @brief  various functions implementing mostly special functions
  */
 
 #include <stdlib.h>
-#include <stdio.h>
 #include <math.h>
 
 #include "sfunc.h"
