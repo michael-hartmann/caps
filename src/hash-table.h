@@ -45,6 +45,8 @@ CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #ifndef ALGORITHM_HASH_TABLE_H
 #define ALGORITHM_HASH_TABLE_H
 
+#include <stdint.h>
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -52,52 +54,45 @@ extern "C" {
 /**
  * A hash table structure.
  */
-
 typedef struct _HashTable HashTable;
 
 /**
  * Structure used to iterate over a hash table.
  */
-
 typedef struct _HashTableIterator HashTableIterator;
 
 /**
  * Internal structure representing an entry in a hash table.
  */
-
 typedef struct _HashTableEntry HashTableEntry;
 
 /**
  * A value stored in a @ref HashTable.
  */
-
 typedef void *HashTableValue;
 
 /**
  * Internal structure representing an entry in hash table
  * used as @ref HashTableIterator next result.
  */
-
 typedef struct _HashTablePair{
-	uint64_t key;
-	HashTableValue value;
+    uint64_t key;
+    HashTableValue value;
 } HashTablePair;
 
 /**
  * Definition of a @ref HashTableIterator.
  */
-
 struct _HashTableIterator {
-	HashTable *hash_table;
-	HashTableEntry *next_entry;
-	uint64_t next_chain;
+    HashTable *hash_table;
+    HashTableEntry *next_entry;
+    uint64_t next_chain;
 };
 
 /**
  * Type of function used to free values when entries are removed from a
  * hash table.
  */
-
 typedef void (*HashTableValueFreeFunc)(HashTableValue value);
 
 /**
@@ -108,7 +103,6 @@ typedef void (*HashTableValueFreeFunc)(HashTableValue value);
  *                             was not possible to allocate the new hash
  *                             table.
  */
-
 HashTable *hash_table_new(HashTableValueFreeFunc value_free_func);
 
 /**
@@ -116,15 +110,7 @@ HashTable *hash_table_new(HashTableValueFreeFunc value_free_func);
  *
  * @param hash_table           The hash table to destroy.
  */
-
 void hash_table_free(HashTable *hash_table);
-
-/**
- * Register functions used to free the key and value when an entry is
- * removed from a hash table.
- *
- * @param hash_table           The hash table.
- */
 
 /**
  * Insert a value into a hash table, overwriting any existing entry
@@ -137,10 +123,7 @@ void hash_table_free(HashTable *hash_table);
  *                             or zero if it was not possible to allocate
  *                             memory for the new entry.
  */
-
-int hash_table_insert(HashTable *hash_table,
-                      uint64_t key,
-                      HashTableValue value);
+int hash_table_insert(HashTable *hash_table, uint64_t key, HashTableValue value);
 
 /**
  * Look up a value in a hash table by key.
@@ -150,7 +133,6 @@ int hash_table_insert(HashTable *hash_table,
  * @return                    The value, or NULL if there is no value with that
  *                            key in the hash table.
  */
-
 HashTableValue hash_table_lookup(HashTable *hash_table, uint64_t key);
 
 /**
@@ -161,7 +143,6 @@ HashTableValue hash_table_lookup(HashTable *hash_table, uint64_t key);
  * @return                    Non-zero if a key was removed, or zero if the
  *                            specified key was not found in the hash table.
  */
-
 int hash_table_remove(HashTable *hash_table, uint64_t key);
 
 /**
@@ -170,7 +151,6 @@ int hash_table_remove(HashTable *hash_table, uint64_t key);
  * @param hash_table          The hash table.
  * @return                    The number of entries in the hash table.
  */
-
 uint64_t hash_table_num_entries(HashTable *hash_table);
 
 /**
@@ -182,7 +162,6 @@ uint64_t hash_table_num_entries(HashTable *hash_table);
  */
 
 void hash_table_iterate(HashTable *hash_table, HashTableIterator *iter);
-
 /**
  * Determine if there are more keys in the hash table to iterate
  * over.
@@ -194,7 +173,6 @@ void hash_table_iterate(HashTable *hash_table, HashTableIterator *iter);
  */
 
 int hash_table_iter_has_more(HashTableIterator *iterator);
-
 /**
  * Using a hash table iterator, retrieve the next @ref HashTablePair.
  *
@@ -208,7 +186,6 @@ int hash_table_iter_has_more(HashTableIterator *iterator);
  *                            table, or NULL of Key and Value if there are no
  *                            more keys to iterate over.
  */
-
 HashTablePair hash_table_iter_next(HashTableIterator *iterator);
 
 #ifdef __cplusplus
