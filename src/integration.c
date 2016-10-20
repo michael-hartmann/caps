@@ -168,7 +168,6 @@ void casimir_integrate_integrands(integration_t *integration, double t, int l1, 
         return;
     }
 
-    plm_combination_t comb;
     double z = t/(1-t);
     double tau = integration->tau;
     int m = integration->m;
@@ -178,6 +177,7 @@ void casimir_integrate_integrands(integration_t *integration, double t, int l1, 
     cache_entry_t *entry = cache_get(integration, z, l1, l2);
     double rTE = entry->rTE;
     double rTM = entry->rTM;
+    plm_combination_t comb;
     plm_PlmPlm_from_array(l1, l2, m, 1+z/tau, entry->lnPlm, entry->signs, &comb);
 
     /* create various factors */
@@ -218,8 +218,6 @@ void casimir_integrate_integrands(integration_t *integration, double t, int l1, 
 }
 
 
-static void integrate_gauss_kronrod(integration_t *int_obj, int l1, int l2, int k, int N, double log_prefactor, interval_t *interval);
-
 /**
  * @brief Integrate integrands from a to b
  *
@@ -232,8 +230,7 @@ static void integrate_gauss_kronrod(integration_t *int_obj, int l1, int l2, int 
  */
 static void integrate_gauss_kronrod(integration_t *int_obj, int l1, int l2, int k, int N, double log_prefactor, interval_t *interval)
 {
-    const double a = (k+0.0)/N;
-    //const double b = (k+1.0)/N;
+    const double a = (double)k/N;
     const double dx = 1./(2*N);
 
     TERMINATE(l1 <= 0 || l2 <= 0, "l1,l2 > 0, l1=%d, l2=%d\n", l1,l2);
@@ -385,21 +382,13 @@ int casimir_integrate(integration_t *self, int l1, int l2, double v[8])
      */
     interval_t intervals[INTEGRATE_INTERVALS_MAX];
 
-    /* calculate prefactor */
-    double log_prefactor;
-    {
-        casimir_t *casimir = self->casimir;
-        double log_Lambda = casimir_lnLambda(l1, l2, self->m);
+    sign_t dummy1,dummy2;
+    double log_al1, log_al2, log_bl1, log_bl2;
+    casimir_mie_cache_get(self->casimir, l1, self->n, &log_al1, &dummy1, &log_bl1, &dummy2);
+    casimir_mie_cache_get(self->casimir, l2, self->n, &log_al2, &dummy1, &log_bl2, &dummy2);
 
-        int n = self->n;
-        sign_t dummy1,dummy2;
-        double log_al1, log_al2, log_bl1, log_bl2;
-        casimir_mie_cache_get(casimir, l1, n, &log_al1, &dummy1, &log_bl1, &dummy2);
-        casimir_mie_cache_get(casimir, l2, n, &log_al2, &dummy1, &log_bl2, &dummy2);
-
-        /* prefactor = Λ(l1,l2,m) √(|a_l1|*|a_l2|) exp(-τ) */
-        log_prefactor = log_Lambda + (log_al1+log_al2)/2 -self->tau;
-    }
+    /* prefactor = Λ(l1,l2,m) √(|a_l1|*|a_l2|) exp(-τ) */
+    double log_prefactor = casimir_lnLambda(l1, l2, self->m) + (log_al1+log_al2)/2 -self->tau;
 
     /* we label the left and right border of every interval by k and N:
      *      a = k/N   and   b = (k+1)/N
