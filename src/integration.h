@@ -2,6 +2,8 @@
 #define __INTEGRATION_H
 
 #include "libcasimir.h"
+#include "integration.h"
+#include "hash-table.h"
 
 #define A_TE 0
 #define A_TM 1
@@ -28,6 +30,7 @@ typedef struct {
     casimir_t *casimir;
     int n,m;
     double nT,tau,log_tau;
+    HashTable *hash_table;
 } integration_t;
 
 typedef struct {
