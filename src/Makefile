@@ -1,5 +1,5 @@
 .PHONY: clean doc casimir casimir_logdetD casimir_hiT casimir_Fn casimir_T0 casimir_tests dependencies dependencies_test
-all: casimir casimir_logdetD casimir_tests
+all: casimir casimir_logdetD
 
 # Choose a compiler.
 #
@@ -10,6 +10,7 @@ MPICC = mpicc
 #MPICC = mpiicc
 
 OBJS = \
+    hash-table.c \
     integration.o \
     libcasimir.o \
     matrix.o \
