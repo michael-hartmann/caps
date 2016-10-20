@@ -11,6 +11,7 @@
 #include "sfunc.h"
 #include "libcasimir.h"
 #include "integration.h"
+#include "hash-table.h"
 
 /* nodes and weights for Gauß-Kronrod (G7,K15) */
 static double gausskronrod[15][3] =
@@ -34,6 +35,60 @@ static double gausskronrod[15][3] =
     { -0.207784955007898, 0, 0.204432940075298 }
 };
 
+typedef struct
+{
+    double rTE, rTM;
+    double *lnPlm;
+    sign_t *signs;
+} cache_entry_t;
+
+#if 0
+/**
+ * @brief Create a uint64_t hash from a double value
+ */
+static uint64_t hash(double value)
+{
+    union
+    {
+        double   d64;
+        uint64_t u64;
+    } cast;
+
+    cast.d64 = value;
+    return cast.u64;
+}
+#endif
+
+static cache_entry_t *cache_entry_create(double z, integration_t *integration)
+{
+    casimir_t *casimir = integration->casimir;
+    const double tau = integration->tau;
+    const int m = integration->m;
+    int lmax = casimir->lmax+1;
+    size_t size = lmax-m+1;
+
+    cache_entry_t *entry = xmalloc(sizeof(cache_entry_t));
+
+    entry->lnPlm = xmalloc(size*sizeof(double));
+    entry->signs = xmalloc(size*sizeof(sign_t));
+
+    plm_lnPlm_array(lmax, m, 1+z/tau, entry->lnPlm, entry->signs);
+
+    /* calculate Fresnel coefficient */
+    const double nT = integration->nT;
+    const double k  = sqrt(pow_2(z)+2*tau*z)/2; /* sqrt(z²+2τz)/2 */
+    casimir_rp(casimir, nT, k, &entry->rTE, &entry->rTM);
+
+    return entry;
+}
+
+static void cache_entry_free(void *ptr)
+{
+    cache_entry_t *entry = ptr;
+    xfree(entry->lnPlm);
+    xfree(entry->signs);
+    xfree(entry);
+}
 
 /**
  * @brief Evaluate integrands A,B,C,D
@@ -79,7 +134,7 @@ static double gausskronrod[15][3] =
  * @param [in]  l2 parameter l2
  * @param [out] v output array v of log(integrand) for A_TE,A_TM,...,D_TE,D_TM
  */
-void casimir_integrate_integrands(integration_t *int_obj, double t, int l1, int l2, double log_prefactor, double v[8])
+void casimir_integrate_integrands(integration_t *integration, double t, int l1, int l2, double log_prefactor, double v[8])
 {
     /* 0 <= t <= 1 */
     TERMINATE(t < 0 || t > 1, "0 <= t <= 1, invalid value for t: t=%g", t);
@@ -99,27 +154,25 @@ void casimir_integrate_integrands(integration_t *int_obj, double t, int l1, int 
         return;
     }
 
-    double tau = int_obj->tau;
-    double log_tau = int_obj->log_tau;
+    plm_combination_t comb;
     double z = t/(1-t);
-    double log_dz = -2*log1p(-t); /* 1/(1-t)² */
-    double log_term = log(pow_2(z)+2*tau*z); /* z²+2τz */
-
-    /* calculate Fresnel coefficients */
-    double rTE,rTM;
-    {
-        double k = sqrt(pow_2(z)+2*tau*z)/2; /* sqrt(z²+2τz)/2 */
-        casimir_rp(int_obj->casimir, int_obj->nT, k, &rTE, &rTM);
-    }
+    double tau = integration->tau;
+    int m = integration->m;
 
     /* calculate products of associated Legendre polynomials: Pl1m*Pl2m,
-     * dPl1m*dPl2m, dPl1m*Pl2m, Pl1m*dPl2m */
-    int m = int_obj->m;
-    plm_combination_t comb;
-    plm_PlmPlm(l1, l2, m, 1+z/tau, &comb);
+     * dPl1m*dPl2m, dPl1m*Pl2m, Pl1m*dPl2m, and Fresnel coefficients */
+    cache_entry_t *entry;
+    entry = cache_entry_create(z, integration);
+    double rTE = entry->rTE;
+    double rTM = entry->rTM;
+    plm_PlmPlm_from_array(l1, l2, m, 1+z/tau, entry->lnPlm, entry->signs, &comb);
+    cache_entry_free(entry);
 
-    /* prefactor exp(-z) 1/(1-t)² */
-    double common = log_prefactor-z+log_dz;
+    /* create various factors */
+    double log_dz   = -2*log1p(-t);           /* 1/(1-t)² */
+    double log_term = log(pow_2(z)+2*tau*z);  /* z²+2τz */
+    double log_tau  = integration->log_tau;   /* log(tau) */
+    double common   = log_prefactor-z+log_dz; /* prefactor exp(-z) 1/(1-t)² */
 
     /* prefactor 1/τ³ 1/(1-t)² r_p exp(-z) P'_l1^m P'_l2^m   (z²+2τz) */
     double B = comb.sign_dPl1mdPl2m*exp(common -3*log_tau +log_term +comb.lndPl1mdPl2m);
@@ -230,6 +283,7 @@ int casimir_integrate_init(casimir_t *casimir, integration_t *int_obj, int n, in
     TERMINATE(m < 0, "m >= 0, m=%d", m);
     TERMINATE(n <= 0, "n > 0, n=%d", n);
 
+    int_obj->hash_table = hash_table_new(cache_entry_free);
     int_obj->casimir = casimir;
     int_obj->m   = m;
     int_obj->n   = n;
@@ -249,9 +303,10 @@ int casimir_integrate_init(casimir_t *casimir, integration_t *int_obj, int n, in
  * @param [in,out] self integration object
  * @retval 0
  */
-int casimir_integrate_free(__attribute__((unused)) integration_t *self)
+int casimir_integrate_free(integration_t *self)
 {
-    /* NOP at the moment */
+    hash_table_free(self->hash_table);
+
     return 0;
 }
 
