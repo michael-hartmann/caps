@@ -319,14 +319,12 @@ void casimir_rp(casimir_t *self, double nT, double k, double *r_TE, double *r_TM
  * @retval -1 if wrong value for LbyR
  * @retval -2 if wrong value for T
  */
-int casimir_init(casimir_t *self, double LbyR, double T)
+casimir_t *casimir_init(double LbyR, double T)
 {
-    if(LbyR <= 0)
-        return -1;
-    if(T <= 0)
-        return -2;
+    if(LbyR <= 0 || T <= 0)
+        return NULL;
 
-    self->lmax = ceil(MAX(CASIMIR_MINIMUM_LMAX, CASIMIR_FACTOR_LMAX/LbyR));
+    casimir_t *self = xmalloc(sizeof(casimir_t));
 
     self->T          = T;
     self->RbyScriptL = 1./(1.+LbyR);
@@ -334,6 +332,8 @@ int casimir_init(casimir_t *self, double LbyR, double T)
     self->precision  = CASIMIR_PRECISION;
     self->cores      = 1;
     self->threads    = xmalloc(self->cores*sizeof(pthread_t));
+
+    self->lmax = ceil(MAX(CASIMIR_MINIMUM_LMAX, CASIMIR_FACTOR_LMAX/LbyR));
 
     /* initialize mie cache */
     casimir_mie_cache_init(self);
@@ -362,7 +362,7 @@ int casimir_init(casimir_t *self, double LbyR, double T)
     memset(self->detalg, 0, sizeof(self->detalg));
     strcpy(self->detalg, CASIMIR_DETALG);
 
-    return 0;
+    return self;
 }
 
 
@@ -607,6 +607,8 @@ void casimir_free(casimir_t *self)
 
     xfree(self->threads);
     self->threads = NULL;
+
+    xfree(self);
 }
 
 /*@}*/
@@ -1324,13 +1326,12 @@ void casimir_logdetD0(casimir_t *self, int m, double *logdet_EE, double *logdet_
 matrix_t *casimir_M(casimir_t *self, int n, int m)
 {
     const double nT = n*self->T;
-    integration_t int_obj;
 
     const size_t min = MAX(m,1);
     const size_t max = self->lmax;
     const size_t dim = (max-min+1);
 
-    casimir_integrate_init(self, &int_obj, nT, m);
+    integration_t *integration = casimir_integrate_init(self, nT, m);
 
     /* allocate space for matrix M */
     matrix_t *M = matrix_alloc(2*dim);
@@ -1363,7 +1364,7 @@ matrix_t *casimir_M(casimir_t *self, int n, int m)
             casimir_mie_cache_get(self, l2, n, &ln_al2, &sign_al2, &ln_bl2, &sign_bl2);
 
             double v[8];
-            casimir_integrate(&int_obj, l1, l2, v);
+            casimir_integrate(integration, l1, l2, v);
 
             /* EE */
             {
@@ -1421,7 +1422,7 @@ matrix_t *casimir_M(casimir_t *self, int n, int m)
                 break;
     }
 
-    casimir_integrate_free(&int_obj);
+    casimir_integrate_free(integration);
 
     return M;
 }

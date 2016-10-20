@@ -121,7 +121,7 @@ int casimir_verbose(casimir_t *self, const char *format, ...);
 
 double casimir_lnLambda(int l1, int l2, int m);
 
-int casimir_init(casimir_t *self, double LbyR, double T);
+casimir_t *casimir_init(double LbyR, double T);
 void casimir_free(casimir_t *self);
 
 void casimir_set_debug(casimir_t *self, bool debug);
