@@ -82,7 +82,6 @@ static int hash_table_allocate_table(HashTable *hash_table)
     hash_table->table_size = new_table_size;
 
     /* Allocate the table and initialise to NULL for all entries */
-
     hash_table->table = calloc(hash_table->table_size,
                                sizeof(HashTableEntry *));
 
