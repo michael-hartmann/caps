@@ -42,8 +42,8 @@ typedef struct {
 
 void casimir_integrate_integrands(integration_t *int_obj, double t, int l1, int l2, double log_prefactor, double v[8]);
 
-int casimir_integrate_init(casimir_t *self, integration_t *int_obj, int n, int m);
-int casimir_integrate_free(integration_t *int_obj);
+integration_t *casimir_integrate_init(casimir_t *self, int n, int m);
+void casimir_integrate_free(integration_t *integration);
 int casimir_integrate(integration_t *int_obj, int l1, int l2, double v[8]);
 
 #endif
