@@ -40,9 +40,6 @@ static void usage(FILE *stream)
 "        Enable buffering. By default buffering for stderr and stdout is\n"
 "        disabled.\n"
 "\n"
-"    --detalg DETALG\n"
-"        Use DETALG to calculate determinant.\n"
-"\n"
 "    -D, --debug\n"
 "        Enable debugging information.\n"
 "\n"
@@ -65,7 +62,6 @@ int main(int argc, char *argv[])
 
     /* numerical parameters */
     int lmax = 0;
-    char detalg[64] = { 0 };
 
     /* flags */
     bool debug = false, buffering = false;
@@ -79,7 +75,6 @@ int main(int argc, char *argv[])
 
             { "LbyR",      required_argument, 0, 'x' },
             { "nT",        required_argument, 0, 'T' },
-            { "detalg",    required_argument, 0, 'd' },
             { "lmax",      required_argument, 0, 'L' },
             { "lscale",    required_argument, 0, 'l' },
             { "omegap",    required_argument, 0, 'w' },
@@ -90,7 +85,7 @@ int main(int argc, char *argv[])
 
         /* getopt_long stores the option index here. */
         int option_index = 0;
-        int c = getopt_long (argc, argv, "x:T:m:l:w:g:d:L:t:bhD", long_options, &option_index);
+        int c = getopt_long (argc, argv, "x:T:m:l:w:g:L:t:bhD", long_options, &option_index);
 
         /* Detect the end of the options. */
         if(c == -1)
@@ -119,9 +114,6 @@ int main(int argc, char *argv[])
                 break;
             case 'm':
                 m = atoi(optarg);
-                break;
-            case 'd':
-                strncpy(detalg, optarg, sizeof(detalg)/sizeof(char)-1);
                 break;
             case 'b':
                 buffering = true;
@@ -194,9 +186,6 @@ int main(int argc, char *argv[])
     */
 
     casimir_set_debug(casimir, debug);
-
-    if(strlen(detalg))
-        casimir_set_detalg(casimir, detalg);
 
     casimir_info(casimir, stdout, "# ");
     printf("#\n");
