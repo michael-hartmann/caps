@@ -5,6 +5,10 @@ from libcpp cimport bool
 
 ctypedef signed char sign_t
 
+cdef extern from "matrix.h":
+    ctypedef enum detalg_t:
+         DETALG_LU, DETALG_QR, DETALG_EIG
+
 cdef extern from "libcasimir.h":
     ctypedef struct casimir_t:
         double LbyR
@@ -12,7 +16,7 @@ cdef extern from "libcasimir.h":
         double threshold
         int lmax
 
-    int casimir_init(casimir_t *self, double LbyR, double T)
+    casimir_t *casimir_init(double LbyR, double T)
     void casimir_free(casimir_t *self)
 
     void casimir_set_debug(casimir_t *self, bool debug)
@@ -26,8 +30,8 @@ cdef extern from "libcasimir.h":
     int casimir_get_lmax(casimir_t *self)
     int casimir_set_lmax(casimir_t *self, int lmax)
 
-    int casimir_get_detalg(casimir_t *self, char detalg[128])
-    int casimir_set_detalg(casimir_t *self, const char *detalg)
+    detalg_t casimir_get_detalg(casimir_t *self)
+    int casimir_set_detalg(casimir_t *self, detalg_t detalg)
 
     int casimir_get_cores(casimir_t *self)
     int casimir_set_cores(casimir_t *self, int cores)
@@ -148,11 +152,11 @@ class sfunc:
 
 
 cdef class Casimir:
-    cdef casimir_t casimir
+    cdef casimir_t *casimir
     cpdef args
     cpdef epsilonm1
 
-    def __init__(self, LbyR=1, T=1, verbose=False, debug=False, lmax=None, cores=None, precision=None, detalg=None):
+    def __init__(self, LbyR, T, verbose=False, debug=False, lmax=None, cores=1, precision=None, detalg="LU"):
         """Initialize Casimir object
 
         Required arguments:
@@ -163,13 +167,11 @@ cdef class Casimir:
             lmax:      truncation of vector space
             cores:     number of cores to use (only used for F)
             precision  XXX
-            detalg:    LU, QR
+            detalg:    LU, QR, EIG
             threshold: XXX
             debug:     flag, print debugging information
             verbose:   flag, print some addition information
         """
-        cdef char c_detalg[128]
-
         if LbyR <= 0:
             raise ValueError("LbyR must be positive")
         if T <= 0:
@@ -178,54 +180,52 @@ cdef class Casimir:
             raise ValueError("lmax must be positive")
         if precision != None and precision <= 0:
             raise ValueError("precision must be positive")
-        if cores != None and (type(cores) != int or cores < 1):
+        if type(cores) != int or cores < 1:
             raise ValueError("cores must be a positive integer")
-        if detalg != None and len(detalg) >= 128:
-            raise ValueError("length of detalg must be smaller than 128")
+        if detalg != None and detalg not in ("LU", "QR", "EIG"):
+            raise ValueError("detalg must be one of LU, QR or EIG")
 
-        assert casimir_init(&(self.casimir), LbyR, T) == 0
+        self.casimir = casimir_init(LbyR, T)
+        if self.casimir == NULL:
+            raise RuntimeError("casimir_init returned NULL. Something went terrible wrong.")
 
         if lmax:
-            casimir_set_lmax(&self.casimir, lmax)
+            casimir_set_lmax(self.casimir, lmax)
         if precision:
-            casimir_set_precision(&self.casimir, precision)
+            casimir_set_precision(self.casimir, precision)
         if debug:
-            casimir_set_debug(&self.casimir, True)
+            casimir_set_debug(self.casimir, True)
         if cores:
-            casimir_set_cores(&self.casimir, cores)
+            casimir_set_cores(self.casimir, cores)
         if verbose:
-            casimir_set_verbose(&self.casimir, verbose)
-        if detalg:
-            # pad to 128 bytes
-            detalg = detalg + (128-len(detalg))*"\0"
-            detalg_ascii = bytes(detalg, "ascii")
-            c_detalg = detalg_ascii
-            casimir_set_detalg(&self.casimir, c_detalg)
+            casimir_set_verbose(self.casimir, verbose)
+        if detalg == "LU":
+            casimir_set_detalg(self.casimir, DETALG_LU)
+        elif detalg == "QR":
+            casimir_set_detalg(self.casimir, DETALG_QR)
+        elif detalg == "EIG":
+            casimir_set_detalg(self.casimir, DETALG_EIG)
 
     def __dealloc__(self):
-        casimir_free(&self.casimir)
-
-
+        casimir_free(self.casimir)
 
     def get_debug(self):
-        return casimir_get_debug(&self.casimir)
+        return casimir_get_debug(self.casimir)
 
     def get_verbose(self):
-        return casimir_get_verbose(&self.casimir)
+        return casimir_get_verbose(self.casimir)
 
     def get_lmax(self):
-        return casimir_get_lmax(&self.casimir)
+        return casimir_get_lmax(self.casimir)
 
     def get_detalg(self):
-        cdef char detalg[128]
-        casimir_get_detalg(&self.casimir, detalg)
-        return str(<bytes>detalg, "ascii")
+        return casimir_get_detalg(self.casimir)
 
     def get_cores(self):
-        return casimir_get_cores(&self.casimir)
+        return casimir_get_cores(self.casimir)
 
     def get_precision(self):
-        return casimir_get_precision(&self.casimir)
+        return casimir_get_precision(self.casimir)
 
     def set_epsilonm1(Casimir self, epsilonm1, args):
         """Set callback function epsilonm1
@@ -242,7 +242,7 @@ cdef class Casimir:
         ptr = <void *>self
         self.epsilonm1 = epsilonm1
         self.args = args
-        casimir_set_epsilonm1(&self.casimir, &__epsilonm1, ptr)
+        casimir_set_epsilonm1(self.casimir, &__epsilonm1, ptr)
 
     def __repr__(self):
         s  = "L/R = %.8g\n" % self.casimir.LbyR
@@ -251,7 +251,7 @@ cdef class Casimir:
         s += "cores     = %d\n" % self.get_cores()
         s += "precision = %g\n" % self.get_precision()
         s += "threshold = %g\n" % self.casimir.threshold
-        s += "detalg    = %s" % self.get_detalg()
+        s += "detalg    = %d" % self.get_detalg()
         return s
 
 
@@ -274,33 +274,33 @@ cdef class Casimir:
         """
         cdef double lna,lnb
         cdef sign_t sign_a, sign_b
-        casimir_lnab(&self.casimir, n, l, &lna, &lnb, &sign_a, &sign_b)
+        casimir_lnab(self.casimir, n, l, &lna, &lnb, &sign_a, &sign_b)
         return lna, sign_a, lnb, sign_b
 
     def lnab_perf(Casimir self, int n, int l):
         """Calculate Mie coefficients for perfect reflectors"""
         cdef double lna,lnb
         cdef sign_t sign_a, sign_b
-        casimir_lnab_perf(&self.casimir, n, l, &lna, &lnb, &sign_a, &sign_b)
+        casimir_lnab_perf(self.casimir, n, l, &lna, &lnb, &sign_a, &sign_b)
         return lna, sign_a, lnb, sign_b
 
 
     def rp(Casimir self, double nT, double k):
         """Calculate and return Fresnel coefficients r_TE, r_TM"""
         cdef double r_TE, r_TM
-        casimir_rp(&self.casimir, nT, k, &r_TE, &r_TM)
+        casimir_rp(self.casimir, nT, k, &r_TE, &r_TM)
         return r_TE, r_TM
 
 
     def logdetD0(Casimir self, int m):
         """Calculate determinant of scattering matrix in the high-temperature limit, i.e., xi=0"""
         cdef double EE, MM
-        casimir_logdetD0(&self.casimir, m, &EE, &MM)
+        casimir_logdetD0(self.casimir, m, &EE, &MM)
         return EE, MM
 
     def logdetD(Casimir self, int n, int m):
         """Calculate determinant of scattering matrix"""
-        return casimir_logdetD(&self.casimir, n, m)
+        return casimir_logdetD(self.casimir, n, m)
 
 
 cdef double __epsilonm1(double xi, void *userdata):
