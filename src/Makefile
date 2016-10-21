@@ -40,7 +40,7 @@ CFLAGS = -std=c99
 CFLAGS += -I .
 
 # enable warnings and make them fatal
-CFLAGS += -Wall -Werror -Wextra -Wmissing-prototypes -Wstrict-prototypes -Wshadow -Wpointer-arith -Wcast-qual -Wwrite-strings -Wno-unused-parameter
+CFLAGS += -g -Wall -Werror -Wextra -Wmissing-prototypes -Wstrict-prototypes -Wshadow -Wpointer-arith -Wcast-qual -Wwrite-strings -Wno-unused-parameter
 # profiling
 #CFLAGS += -g -pg
 
