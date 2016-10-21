@@ -4,6 +4,7 @@ from distutils.extension import Extension
 
 sources = [
     "libcasimir.pyx",
+    "../hash-table.c",
     "../integration.c",
     "../libcasimir.c",
     "../matrix.c",
