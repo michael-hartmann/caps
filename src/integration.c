@@ -13,6 +13,16 @@
 #include "integration.h"
 #include "hash-table.h"
 
+typedef struct
+{
+    double rTE, rTM;
+    double log_dz, log_term, log_tau;
+    double lnPl1m, lnPl2m;
+    sign_t sign_Pl1m, sign_Pl2m;
+    double lndPl1m, lndPl2m;
+    sign_t sign_dPl1m, sign_dPl2m;
+} integrand_t;
+
 /* nodes and weights for Gauß-Kronrod (G7,K15) */
 static double gausskronrod[15][3] =
 {
@@ -39,7 +49,13 @@ typedef struct
 {
     double rTE, rTM;
     double *lnPlm;
-    sign_t *signs;
+    sign_t *signs_Plm;
+    double *lndPlm;
+    sign_t *signs_dPlm;
+
+    double arg, log_arg, log_arg2m1;
+
+    double log_dz, log_term, log_tau, common;
 } cache_entry_t;
 
 /**
@@ -57,7 +73,7 @@ static uint64_t hash(double value)
     return cast.u64;
 }
 
-static cache_entry_t *cache_entry_create(integration_t *integration, double z)
+static cache_entry_t *cache_entry_create(integration_t *integration, double t)
 {
     casimir_t *casimir = integration->casimir;
     const double tau = integration->tau;
@@ -65,42 +81,83 @@ static cache_entry_t *cache_entry_create(integration_t *integration, double z)
     int lmax = casimir->lmax;
     size_t size = (lmax+1)-m+1;
 
+    const double z = t/(1-t);
+
     cache_entry_t *entry = xmalloc(sizeof(cache_entry_t));
 
-    entry->lnPlm = xmalloc(size*sizeof(double));
-    entry->signs = xmalloc(size*sizeof(sign_t));
+    entry->lnPlm      = xmalloc(size*sizeof(double));
+    entry->lndPlm     = xmalloc(size*sizeof(double));
+    entry->signs_Plm  = xmalloc(size*sizeof(sign_t));
+    entry->signs_dPlm = xmalloc(size*sizeof(sign_t));
 
-    plm_lnPlm_array(lmax+1, m, 1+z/tau, entry->lnPlm, entry->signs);
+    for(size_t i = 0; i < size; i++)
+    {
+        entry->lndPlm[i] = 0;
+        entry->signs_dPlm[i] = 0;
+    }
+
+    const double arg = 1+z/tau;
+    entry->arg = arg;
+    entry->log_arg    = log(arg);
+    entry->log_arg2m1 = log(pow_2(arg)-1);
+
+    plm_lnPlm_array(lmax+1, m, arg, entry->lnPlm, entry->signs_Plm);
 
     /* calculate Fresnel coefficient */
     const double nT = integration->nT;
     const double k  = sqrt(pow_2(z)+2*tau*z)/2; /* sqrt(z²+2τz)/2 */
     casimir_rp(casimir, nT, k, &entry->rTE, &entry->rTM);
 
+    entry->log_dz   = -2*log1p(-t);           /* 1/(1-t)² */
+    entry->log_term = log(pow_2(z)+2*tau*z);  /* z²+2τz */
+    entry->log_tau  = integration->log_tau;   /* log(tau) */
+
     return entry;
 }
 
-static cache_entry_t *cache_get(integration_t *integration, double z, int l1, int l2)
+static void cache_get(integration_t *integration, double t, int l1, int l2, integrand_t *res)
 {
     HashTable *hash_table = integration->hash_table;
-    uint64_t key = hash(z);
+    const int m = integration->m;
+    uint64_t key = hash(t);
 
     cache_entry_t *entry = hash_table_lookup(hash_table, key);
     if(entry == NULL)
     {
         /* create entry and insert into hash */
-        entry = cache_entry_create(integration,z);
+        entry = cache_entry_create(integration,t);
         hash_table_insert(hash_table, key, entry);
     }
 
-    return entry;
+    res->rTE = entry->rTE;
+    res->rTM = entry->rTM;
+    res->log_dz = entry->log_dz;
+    res->log_term = entry->log_term;
+    res->log_tau = entry->log_tau;
+
+    res->lnPl1m = entry->lnPlm[l1-m];
+    res->lnPl2m = entry->lnPlm[l2-m];
+    res->sign_Pl1m = entry->signs_Plm[l1-m];
+    res->sign_Pl2m = entry->signs_Plm[l2-m];
+
+    if(entry->signs_dPlm[l1-m] == 0)
+        entry->lndPlm[l1-m] = logadd_s(logi(l1-m+1)+entry->lnPlm[l1+1-m], entry->signs_Plm[l1+1-m], logi(l1+1)+entry->log_arg+entry->lnPlm[l1-m], -entry->signs_Plm[l1+1-m], &entry->signs_dPlm[l1-m])-entry->log_arg2m1;
+    if(entry->signs_dPlm[l2-m] == 0)
+        entry->lndPlm[l2-m] = logadd_s(logi(l2-m+1)+entry->lnPlm[l2+1-m], entry->signs_Plm[l2+1-m], logi(l2+1)+entry->log_arg+entry->lnPlm[l2-m], -entry->signs_Plm[l2+1-m], &entry->signs_dPlm[l2-m])-entry->log_arg2m1;
+
+    res->lndPl1m = entry->lndPlm[l1-m];
+    res->lndPl2m = entry->lndPlm[l2-m];
+    res->sign_dPl1m = entry->signs_dPlm[l1-m];
+    res->sign_dPl2m = entry->signs_dPlm[l2-m];
 }
 
 static void cache_entry_free(void *ptr)
 {
     cache_entry_t *entry = ptr;
     xfree(entry->lnPlm);
-    xfree(entry->signs);
+    xfree(entry->lndPlm);
+    xfree(entry->signs_Plm);
+    xfree(entry->signs_dPlm);
     xfree(entry);
 }
 
@@ -168,45 +225,43 @@ void casimir_integrate_integrands(integration_t *integration, double t, int l1, 
         return;
     }
 
-    double z = t/(1-t);
-    double tau = integration->tau;
-    int m = integration->m;
+    const double z = t/(1-t);
+    //const double tau = integration->tau;
+    const int m = integration->m;
 
     /* calculate products of associated Legendre polynomials: Pl1m*Pl2m,
      * dPl1m*dPl2m, dPl1m*Pl2m, Pl1m*dPl2m, and Fresnel coefficients */
-    cache_entry_t *entry = cache_get(integration, z, l1, l2);
-    double rTE = entry->rTE;
-    double rTM = entry->rTM;
-    plm_combination_t comb;
-    plm_PlmPlm_from_array(l1, l2, m, 1+z/tau, entry->lnPlm, entry->signs, &comb);
+    sign_t common_sign = MPOW(m%2);
+    integrand_t res;
+    cache_get(integration, t, l1, l2, &res);
 
     /* create various factors */
-    double log_dz   = -2*log1p(-t);           /* 1/(1-t)² */
-    double log_term = log(pow_2(z)+2*tau*z);  /* z²+2τz */
-    double log_tau  = integration->log_tau;   /* log(tau) */
+    double log_dz   = res.log_dz;   /* 1/(1-t)² */
+    double log_term = res.log_term; /* z²+2τz */
+    double log_tau  = res.log_tau;  /* log(tau) */
     double common   = log_prefactor-z+log_dz; /* prefactor exp(-z) 1/(1-t)² */
 
     /* prefactor 1/τ³ 1/(1-t)² r_p exp(-z) P'_l1^m P'_l2^m   (z²+2τz) */
-    double B = comb.sign_dPl1mdPl2m*exp(common -3*log_tau +log_term +comb.lndPl1mdPl2m);
-    v[B_TE] = rTE*B; /* B, TE */
-    v[B_TM] = rTM*B; /* B, TM */
+    double B = common_sign*res.sign_dPl1m*res.sign_dPl2m*exp(common -3*log_tau +log_term +res.lndPl1m+res.lndPl2m);
+    v[B_TE] = res.rTE*B; /* B, TE */
+    v[B_TM] = res.rTM*B; /* B, TM */
 
     if(m > 0)
     {
         /* prefactor m² τ 1/(1-t)² r_p exp(-z) P_l1^m  P_l2^m  / (z²+2τz) */
-        double A = comb.sign_Pl1mPl2m*pow_2(m)*exp(common +log_tau -log_term +comb.lnPl1mPl2m);
-        v[A_TE] = rTE*A; /* A, TE */
-        v[A_TM] = rTM*A; /* A, TM */
+        double A = common_sign*res.sign_Pl1m*res.sign_Pl2m*pow_2(m)*exp(common +log_tau -log_term +res.lnPl1m+res.lnPl2m);
+        v[A_TE] = res.rTE*A; /* A, TE */
+        v[A_TM] = res.rTM*A; /* A, TM */
 
         /* prefactor m 1/τ  1/(1-t)² r_p exp(-z) P_l1^m  P'_l2^m */
-        double C = comb.sign_Pl1mdPl2m*m*exp(common -log_tau +comb.lnPl1mdPl2m);
-        v[C_TE] = rTE*C; /* C, TE */
-        v[C_TM] = rTM*C; /* C, TM */
+        double C = common_sign*res.sign_Pl1m*res.sign_dPl2m*m*exp(common -log_tau +res.lnPl1m+res.lndPl2m);
+        v[C_TE] = res.rTE*C; /* C, TE */
+        v[C_TM] = res.rTM*C; /* C, TM */
 
         /* prefactor m 1/τ 1/(1-t)² r_p exp(-z) P'_l1^m P_l2^m */
-        double D = comb.sign_dPl1mPl2m*m*exp(common -log_tau +comb.lndPl1mPl2m);
-        v[D_TE] = rTE*D; /* D, TE */
-        v[D_TM] = rTM*D; /* D, TM */
+        double D = common_sign*res.sign_dPl1m*res.sign_Pl2m*m*exp(common -log_tau +res.lndPl1m+res.lnPl2m);
+        v[D_TE] = res.rTE*D; /* D, TE */
+        v[D_TM] = res.rTM*D; /* D, TM */
     }
     else
     {
