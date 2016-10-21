@@ -27,11 +27,6 @@ typedef signed char sign_t;
 #define CASIMIR_MINIMUM_LMAX 20      /**< minimum value for lmax */
 #define CASIMIR_FACTOR_LMAX 5        /**< by default: lmax=ceil(5/LbyR) */
 
-#ifndef CASIMIR_DETALG
-#define CASIMIR_DETALG "LU" /**< default algorithm for matrix decomposition */
-#endif
-
-
 /**
  * Cache for Mie coefficients.
  */
@@ -85,7 +80,7 @@ typedef struct
     double threshold;       /**< XXX TBD */
     pthread_t **threads;    /**< list of pthread objects */
 
-    char detalg[128];       /**< algorithm to calculate determinant */
+    detalg_t detalg;        /**< algorithm to calculate determinant */
 
     casimir_mie_cache_t *mie_cache; /**< Mie chache */
 
@@ -135,8 +130,8 @@ int casimir_set_epsilonm1(casimir_t *self, double (*epsilonm1)(double xi, void *
 int casimir_get_lmax(casimir_t *self);
 int casimir_set_lmax(casimir_t *self, int lmax);
 
-int casimir_get_detalg(casimir_t *self, char detalg[128]);
-int casimir_set_detalg(casimir_t *self, const char *detalg);
+detalg_t casimir_get_detalg(casimir_t *self);
+int casimir_set_detalg(casimir_t *self, detalg_t detalg);
 
 int casimir_get_cores(casimir_t *self);
 int casimir_set_cores(casimir_t *self, int cores);
