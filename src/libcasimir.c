@@ -192,7 +192,7 @@ int casimir_verbose(casimir_t *self, const char *format, ...)
  */
 double casimir_lnLambda(int l1, int l2, int m)
 {
-    return (log(2*l1+1)+log(2*l2+1)-log(l1)-log(l1+1)-log(l2)-log(l2+1)+lgamma(1+l1-m)+lgamma(1+l2-m)-lgamma(1+l1+m)-lgamma(1+l2+m))/2.0;
+    return (logi(2*l1+1)+logi(2*l2+1)-logi(l1)-logi(l1+1)-logi(l2)-logi(l2+1)+lgamma(1+l1-m)+lgamma(1+l2-m)-lgamma(1+l1+m)-lgamma(1+l2+m))/2.0;
 }
 
 /**
@@ -707,8 +707,9 @@ void casimir_lnab_perf(casimir_t *self, int n, int l, double *lna, double *lnb, 
 
     /* numerator and denominator to calculate al */
     sign_t sign_numerator;
-    double numerator   = logadd_s(log(l), +1, log(chi)+lnIlm-lnIlp, -1, &sign_numerator);
-    double denominator = logadd(log(l), log(chi)+lnKlm-lnKlp);
+    double log_chi = log(chi);
+    double numerator   = logadd_s(logi(l), +1, log_chi+lnIlm-lnIlp, -1, &sign_numerator);
+    double denominator = logadd(logi(l), log_chi+lnKlm-lnKlp);
 
     *lna    = *lnb+numerator-denominator;
     *sign_a = *sign_b*sign_numerator;
@@ -768,7 +769,7 @@ void casimir_lnab(casimir_t *self, int n_mat, int l, double *lna, double *lnb, s
     /* χ = ξ*R/(R+L) = ξ/(1+L/R) */
     const double chi    = xi/(1.+self->LbyR);
     const double ln_chi = log(xi)-log1p(self->LbyR);
-    const double ln_l   = log(l);
+    const double ln_l   = logi(l);
 
     /**
      * Note: n is the refraction index, n_mat the Matsubara index
