@@ -88,10 +88,11 @@ class sfunc:
     """
 
     def ln_doublefact(int n):
-        """Double factorial
+        """Logarithm of double factorial
 
-        This is the factorial with every second value skipped, i.e.,
-        7!! = 7*5*3*1.
+        Logarithm of double factorial log(n!!), where n!! is the factorial with
+        every second value skipped, i.e.,
+            log(7!! = 7*5*3*1.
         """
         return ln_doublefact(n)
 
