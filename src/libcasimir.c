@@ -79,7 +79,16 @@ void casimir_info(casimir_t *self, FILE *stream, const char *prefix)
     fprintf(stream, "%scores     = %d\n", prefix, self->cores);
     fprintf(stream, "%sprecision = %g\n", prefix, self->precision);
     fprintf(stream, "%sthreshold = %g\n", prefix, self->threshold);
-    fprintf(stream, "%sdetalg    = %s\n", prefix, self->detalg);
+
+    const char *s;
+    switch(self->detalg)
+    {
+        case DETALG_LU:  s = "LU"; break;
+        case DETALG_QR:  s = "QR"; break;
+        case DETALG_EIG: s = "EIG"; break;
+        default:         s = "unknown";
+    }
+    fprintf(stream, "%sdetalg    = %d (%s)\n", prefix, self->detalg, s);
 }
 
 
@@ -358,9 +367,7 @@ casimir_t *casimir_init(double LbyR, double T)
     /* set debug flag */
     self->debug = false;
 
-    /* use QR decomposition to calculate determinant */
-    memset(self->detalg, 0, sizeof(self->detalg));
-    strcpy(self->detalg, CASIMIR_DETALG);
+    self->detalg = 0;
 
     return self;
 }
@@ -478,9 +485,9 @@ int casimir_set_cores(casimir_t *self, int cores)
  * @param [in] detalg algorithm to compute determinant
  * @retval 1
  */
-int casimir_set_detalg(casimir_t *self, const char *detalg)
+int casimir_set_detalg(casimir_t *self, detalg_t detalg)
 {
-    strncpy(self->detalg, detalg, sizeof(self->detalg)/sizeof(char)-1);
+    self->detalg = detalg;
     return 0;
 }
 
@@ -495,10 +502,9 @@ int casimir_set_detalg(casimir_t *self, const char *detalg)
  * @param [out] detalg buffer
  * @retval 1
  */
-int casimir_get_detalg(casimir_t *self, char detalg[128])
+detalg_t casimir_get_detalg(casimir_t *self)
 {
-    strcpy(detalg, self->detalg);
-    return 1;
+    return self->detalg;
 }
 
 /**

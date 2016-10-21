@@ -227,9 +227,9 @@ double matrix_logdet_triangular(matrix_t *A)
  * @param [in]     detalg algorithm to be used
  * @retval logdet  \f$\log\det(\mathrm{Id}+z*M)\f$
  */
-double matrix_logdet(matrix_t *A, double z, const char *detalg)
+double matrix_logdet(matrix_t *A, double z, detalg_t detalg)
 {
-    if(strcmp(detalg, "EIG") == 0)
+    if(detalg == DETALG_EIG)
         return matrix_logdetIdmM_eig(A, z);
 
     /* M = Id+z*M */
@@ -260,12 +260,12 @@ double matrix_logdet(matrix_t *A, double z, const char *detalg)
         }
     }
 
-    if(strcmp(detalg, "LU") == 0)
+    if(detalg == DETALG_LU)
         return matrix_logdet_lu(A);
-    if(strcmp(detalg, "QR") == 0)
+    if(detalg == DETALG_QR)
         return matrix_logdet_qr(A);
 
-    WARN(1, "Unknown algorithm %s, defaulting to LU", detalg);
+    WARN(1, "Unknown algorithm %d, defaulting to LU", detalg);
     return matrix_logdet_lu(A);
 }
 
