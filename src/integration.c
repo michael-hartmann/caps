@@ -293,8 +293,6 @@ static void integrate_gauss_kronrod(integration_t *int_obj, int l1, int l2, int 
     interval->k = k;
     interval->N = N;
 
-    log_prefactor += log(dx);
-
     /* calculate integrands at nodes and save results in G7 for Gauß, and K15
      * for Kronrod */
     double G7[8]  = { 0 };
@@ -323,8 +321,8 @@ static void integrate_gauss_kronrod(integration_t *int_obj, int l1, int l2, int 
     /* copy to struct */
     for(int j = 0; j < 8; j++)
     {
-        interval->K15[j] = K15[j];
-        interval->err[j] = fabs(K15[j]-G7[j]);
+        interval->K15[j] = dx*K15[j];
+        interval->err[j] = dx*fabs(K15[j]-G7[j]);
     }
 }
 
