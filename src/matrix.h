@@ -19,10 +19,10 @@ typedef struct {
 
 
 /** macro to access matrix elements */
-#define matrix_get(m, i, j)   ((m)->M[(i)*m->lda+(j)])
+#define matrix_get(m, i, j)   ((m)->M[(i)*(m)->lda+(j)])
 
 /** macro to set matrix elements */
-#define matrix_set(m, i, j,v) ((m)->M[(i)*m->lda+(j)]=(v))
+#define matrix_set(m, i, j,v) ((m)->M[(i)*(m)->lda+(j)]=(v))
 
 
 /* prototypes */
