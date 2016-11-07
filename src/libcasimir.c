@@ -1229,6 +1229,22 @@ double casimir_F(casimir_t *self, int *nmax)
     }
 }
 
+
+/**
+ * @brief Calculate round-trip matrices M for xi=nT=0
+ *
+ * For xi=0 the round-trip matrix M is block diagonal with block matrices EE,
+ * MM. This function calculates the block matrices EE and MM.
+ *
+ * If EE is not NULL, create and calculate block matrix EE.
+ * If MM is not NULL, create and calculate block matrix MM.
+
+ * You have to free the matrices yourself using matrix_free.
+ *
+ * @param [in] self Casimir object
+ * @param [out] EE pointer for block matrix EE
+ * @param [out] MM pointer for block matrix MM
+ */
 void casimir_M0(casimir_t *self, int m, matrix_t **EE, matrix_t **MM)
 {
     /* y = log(R/(R+L)/2) */
