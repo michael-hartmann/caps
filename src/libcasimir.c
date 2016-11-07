@@ -1339,7 +1339,19 @@ void casimir_logdetD0(casimir_t *self, int m, double *logdet_EE, double *logdet_
     }
 }
 
-
+/**
+ * @brief Calculate round-trip matrix M
+ *
+ * Create and the round-trip matrix M for matsubara frequency xi=nT and angular
+ * momentum number m.
+ *
+ * You have to free the matrix yourself using matrix_free.
+ *
+ * @param [in] self Casimir object
+ * @param [in] n Matsubara term, xi=nT
+ * @param [in] m
+ * @retval M round-trip matrix
+ */
 matrix_t *casimir_M(casimir_t *self, int n, int m)
 {
     const double nT = n*self->T;
