@@ -1229,43 +1229,28 @@ double casimir_F(casimir_t *self, int *nmax)
     }
 }
 
-
-/**
- * @brief Calculate \f$\log\det \mathcal{D}^{(m)}(\xi=0)\f$ for EE and MM
- *
- * This function calculates the logarithm of the determinant of the scattering
- * operator D for the Matsubara term \f$n=0\f$.
- *
- * This function is thread-safe as long you don't change lmax and aspect ratio.
- *
- * @param [in,out] self Casimir object
- * @param [in] m
- * @param [out] logdet_EE
- * @param [out] logdet_MM
- */
-void casimir_logdetD0(casimir_t *self, int m, double *logdet_EE, double *logdet_MM)
+void casimir_M0(casimir_t *self, int m, matrix_t **EE, matrix_t **MM)
 {
     /* y = log(R/(R+L)/2) */
     const double y = log(self->RbyScriptL/2);
-    matrix_t *EE = NULL, *MM = NULL;
 
     const size_t min = MAX(m,1);
     const size_t max = self->lmax;
     const size_t dim = max-min+1;
 
     /* nothing to do... */
-    if(logdet_EE == NULL && logdet_MM == NULL)
+    if(EE == NULL && MM == NULL)
         return;
 
-    if(logdet_EE != NULL)
+    if(EE != NULL)
     {
-        EE = matrix_alloc(dim);
-        matrix_setall(EE,0);
+        *EE = matrix_alloc(dim);
+        matrix_setall(*EE,0);
     }
-    if(logdet_MM != NULL)
+    if(MM != NULL)
     {
-        MM = matrix_alloc(dim);
-        matrix_setall(MM,0);
+        *MM = matrix_alloc(dim);
+        matrix_setall(*MM,0);
     }
 
     double trace_diag = 0; /* sum of modulus of matrix elements of diagonal */
@@ -1299,14 +1284,14 @@ void casimir_logdetD0(casimir_t *self, int m, double *logdet_EE, double *logdet_
             /* The matrix M is symmetric. */
             if(EE != NULL)
             {
-                matrix_set(EE, i,j, EE_ij);
-                matrix_set(EE, j,i, EE_ij);
+                matrix_set(*EE, i,j, EE_ij);
+                matrix_set(*EE, j,i, EE_ij);
             }
             if(MM != NULL)
             {
                 const double MM_ij = EE_ij*sqrt((l1*l2)/((l1+1.)*(l2+1.)));
-                matrix_set(MM, i,j, MM_ij);
-                matrix_set(MM, j,i, MM_ij);
+                matrix_set(*MM, i,j, MM_ij);
+                matrix_set(*MM, j,i, MM_ij);
             }
         }
 
@@ -1315,6 +1300,31 @@ void casimir_logdetD0(casimir_t *self, int m, double *logdet_EE, double *logdet_
         else if(trace/trace_diag <= self->threshold)
             break;
     }
+}
+
+/**
+ * @brief Calculate \f$\log\det \mathcal{D}^{(m)}(\xi=0)\f$ for EE and MM
+ *
+ * This function calculates the logarithm of the determinant of the scattering
+ * operator D for the Matsubara term \f$n=0\f$.
+ *
+ * This function is thread-safe as long you don't change lmax and aspect ratio.
+ *
+ * @param [in,out] self Casimir object
+ * @param [in] m
+ * @param [out] logdet_EE
+ * @param [out] logdet_MM
+ */
+void casimir_logdetD0(casimir_t *self, int m, double *logdet_EE, double *logdet_MM)
+{
+    matrix_t *EE = NULL, *MM = NULL;
+
+    if(logdet_EE != NULL && logdet_MM != NULL)
+        casimir_M0(self, m, &EE, &MM);
+    else if(logdet_EE == NULL && logdet_MM != NULL)
+        casimir_M0(self, m, NULL, &MM);
+    else if(logdet_EE != NULL && logdet_MM == NULL)
+        casimir_M0(self, m, &EE, NULL);
 
     /* Calculate logdet=log(det(Id-M)) and free space. */
     if(EE != NULL)
