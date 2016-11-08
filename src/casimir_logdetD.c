@@ -194,16 +194,29 @@ int main(int argc, char *argv[])
     {
         double logdet = casimir_logdetD(casimir, 1, m);
 
-        printf("# L/R, ξ*(L+R)/c, ωp*(L+R)/c, γ*(L+R)/c, m, logdetD, lmax, time\n");
+        printf("# L/R, ξ*(L+R)/c, ωp*(L+R)/c, γ*(L+R)/c, m, logdet(Id-M), lmax, time\n");
         printf("%g, %g, %g, %g, %d, %.16g, %d, %g\n", LbyR, nT, omegap, gamma_, m, logdet, casimir_get_lmax(casimir), now()-start_time);
     }
     else /* nT == 0 */
     {
-        double logdet_EE = 0, logdet_MM = 0;
-        casimir_logdetD0(casimir, m, &logdet_EE, &logdet_MM);
+        /* Calculate logdet(Id-M) for xi=0. In order to reduce the memory
+         * footprint, we first calculate logdet(Id-EE) and then logdet(Id-MM).
+         * Moreover, we calculate the traces of EE and MM.
+         */
+        matrix_t *EE, *MM;
 
-        printf("# L/R, ξ*(L+R)/c, m, logdetD (EE), logdetD (MM), lmax, time\n");
-        printf("%g, 0, %d, %.16g, %.16g, %d, %g\n", LbyR, m, logdet_EE, logdet_MM, casimir_get_lmax(casimir), now()-start_time);
+        casimir_M0(casimir, m, &EE, NULL);
+        double trace_EE = matrix_trace(EE);
+        double logdet_EE = matrix_logdet(EE, -1, casimir->detalg);
+        matrix_free(EE);
+
+        casimir_M0(casimir, m, NULL, &MM);
+        double trace_MM = matrix_trace(MM);
+        double logdet_MM = matrix_logdet(MM, -1, casimir->detalg);
+        matrix_free(MM);
+
+        printf("# L/R, ξ*(L+R)/c, m, logdet(Id-EE), -trace(EE), logdet(Id-MM), -trace(MM), lmax, time\n");
+        printf("%g, 0, %d, %.16g, %.16g, %.16g, %.16g, %d, %g\n", LbyR, m, logdet_EE, -trace_EE, logdet_MM, -trace_MM, casimir_get_lmax(casimir), now()-start_time);
     }
 
     casimir_free(casimir);
