@@ -1,7 +1,7 @@
 /**
  * @file   matrix.c
  * @author Michael Hartmann <michael.hartmann@physik.uni-augsburg.de>
- * @date   October, 2016
+ * @date   November, 2016
  * @brief  matrix functions
  */
 
@@ -53,7 +53,6 @@ matrix_t *matrix_alloc(const size_t dim)
 
     return A;
 }
-
 
 /**
  * @brief Create matrix view
@@ -193,6 +192,26 @@ void matrix_setall(matrix_t *A, double z)
                 matrix_set(A, m,n, z);
     }
 }
+
+/**
+ * @brief Calculate trace of matrix
+ * 
+ * This function uses kahan sumation to decrease rounding errors.
+ *
+ * @param [in] A matrix
+ * @retval trace trace of A
+ */
+double matrix_trace(matrix_t *A)
+{
+    const size_t dim = A->dim;
+    double array[dim];
+
+    for(size_t i = 0; i < dim; i++)
+        array[i] = matrix_get(A, i,i);
+
+    return kahan_sum(array, dim);
+}
+
 
 /**
  * @brief Calculate log(|det(A)|) for A triangular
