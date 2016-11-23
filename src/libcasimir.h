@@ -10,7 +10,7 @@ typedef signed char sign_t;
 /**
  * define fresnel_t as either TE or TM.
  */
-typedef enum { TE, TM } fresnel_t;
+typedef enum { TE, TM } polarization_t;
 
 #include <pthread.h>
 #include <stdarg.h>
