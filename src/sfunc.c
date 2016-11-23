@@ -28,6 +28,11 @@ double logi(unsigned int n)
         return log(n);
 }
 
+double lfac(unsigned int n)
+{
+    return lgamma(1+n);
+}
+
 /**
  * @brief Sum elements in array
  *
