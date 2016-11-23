@@ -17,7 +17,7 @@
  *
  * This function uses a lookup table to avoid calling log() for n "small".
  *
- * @param [in] n double
+ * @param [in] n integer
  * @retval log log(n)
  */
 double logi(unsigned int n)
@@ -28,6 +28,12 @@ double logi(unsigned int n)
         return log(n);
 }
 
+
+/** @brief Calculate log(n!) = log(Γ(n+1))
+ *
+ * @param [in] n integer
+ * @retval lfac log(n!) = log(Γ(n+1))
+ */
 double lfac(unsigned int n)
 {
     return lgamma(1+n);
