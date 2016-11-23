@@ -192,7 +192,7 @@ void bessel_lnInuKnu(int nu, const double x, double *lnInu_p, double *lnKnu_p)
         {
             for(int l = 2; l <= nu+1; l++)
             {
-                double lnKn_new = logadd(log(2*l-1)+lnKnup-logx, lnKnu);
+                double lnKn_new = logadd(logi(2*l-1)+lnKnup-logx, lnKnu);
                 lnKnu  = lnKnup;
                 lnKnup = lnKn_new;
             }
