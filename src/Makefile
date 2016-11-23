@@ -11,6 +11,7 @@ MPICC = mpicc
 
 OBJS = \
     hash-table.c \
+    lookup.c \
     integration.o \
     libcasimir.o \
     matrix.o \
