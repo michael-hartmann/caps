@@ -29,7 +29,6 @@ double I_zmax(int l1, int l2, double tau);
 double I_integrand(double z, void *args_);
 double I_log_integrand_max(int l1, int l2, int m, double tau);
 double I(int l1, int l2, int m, int p, double tau, double epsrel);
-double Plmmax(int l, int m, double x);
 
 static double f_bisect(double left, double right, int N, int nu, double tau, double log_c)
 {
@@ -119,18 +118,12 @@ double I_log_integrand_max(int l1, int l2, int m, double tau)
     return lfac(2*l1)+lfac(2*l2)-(l1+l2)*M_LOG2-lfac(l1)-lfac(l1-m)-lfac(l2)-lfac(l2-m) + (l1+l2-2)*log(zmax)-tau*zmax;
 }
 
-/* estimate Plm for x >> 1 */
-double Plmmax(int l, int m, double x)
-{
-    return lfac(2*l)-l*M_LOG2-lfac(l)-lfac(l-m)+l*log(x);
-}
-
 double I(int l1, int l2, int m, int p, double tau, double epsrel)
 {
     const double zmax = I_zmax(l1,l2,tau);
     const int lmax = MAX(l1,l2);
 
-    const double normalization = exp( (Plmmax(lmax,m,1+zmax) - log(zmax))/lmax );
+    const double normalization = exp( (Plm_estimate(lmax,m,1+zmax) - log(zmax))/lmax );
 
     integrand_t args = {
         .l1   = l1,
