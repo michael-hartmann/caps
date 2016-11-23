@@ -37,6 +37,7 @@ typedef struct {
     int sign_dPl1mdPl2m;
 } plm_combination_t;
 
+double lfac(unsigned int n);
 double logi(unsigned int x);
 
 double kahan_sum(double input[], size_t len);
