@@ -291,8 +291,8 @@ double factorial2(unsigned int n)
 /**
  * @brief Calculate associated Legendre polynomials for argument \f$x \ge 1\f$
  *
- * This function calculates associated legendre functions and its derivatives
- * for \f$m \ge 0\f$ and \f$x \ge 1\f$.
+ * This function calculates associated Legendre functions for \f$m \ge 0\f$ and
+ * \f$x \ge 1\f$.
  *
  * Associated Legendre polynomials are defined as follows:
  * \f[
@@ -307,8 +307,18 @@ double factorial2(unsigned int n)
  * Note: Products of associated legendre polynomials with common \f$m\f$ are
  * unambiguous, because
  * \f[
- *     i^2 = (-i)^2 = -1.
+ *     (+i)^2 = (-i)^2 = -1.
  * \f]
+ *
+ * So, we actually calculate
+ * \f[
+ *     P_\ell^m(x) = (-1)^m (x^2-1)^{m/2} \frac{\mathrm{d}^m}{\mathrm{d}x^m} P_\ell(x) .
+ * \f]
+ * Note that we don't include the factor i^m in our calculuation.
+ *
+ * The values of Plm are calculated from Plm(l=m,m=m,x) to Plm(l=lmax,m=m,x).
+ * The associated Legendre polynomials are calculated using a recurrence
+ * relation. Each Plm is normalized as Plm(l,m,x)/factor^l.
  *
  * This function calculates the associated Legendre polynomials for
  * \f$\ell=m,...,\ell_\mathrm{max}\f$.
@@ -317,191 +327,40 @@ double factorial2(unsigned int n)
  *
  * @param [in] lmax maximum value of \f$\ell\f$
  * @param [in] m order
- * @param [in] x position to evaluate associated Legendre polynomial
- * @param [out] lnplm array of logarithms of values
- * @param [out] sign corressponding signs
+ * @param [in] x argument
+ * @param [in] factor scaling factor
+ * @param [out] array array of values
  */
-void plm_lnPlm_array(int lmax, int m, double x, double lnplm[], sign_t sign[])
+void Plm_array(int lmax, int m, double x, double factor, double array[])
 {
-    double logx = log(x);
-
     if(m == 0)
-    {
-        sign[0] = +1;
-        lnplm[0] = 0; // log(1)
-    }
+        array[0] = 1;
     else
-    {
-        sign[0]  = MPOW((int)(m/2) + m%2);
-        lnplm[0] = ln_factorial2(2*m-1) + m*0.5*log(pow_2(x)-1); // l=m,m=m
-    }
+        array[0] = MPOW(m)*factorial2(2*m-1)*pow(sqrt(x*x-1)/factor,m);
 
     if(lmax == m)
         return;
 
-    sign[1]  = sign[0];
-    lnplm[1] = lnplm[0]+logx+logi(2*m+1); // l=m+1, m=m
+    array[1] = x*(2*m+1)*array[0]/factor;
 
-    /* (l-m)*P_l^m(x) = x*(2l-1)*P_(l-1)^m(x) - (l+m-1)*P_(l-2)^m(x) */
     for(int l = m+2; l <= lmax; l++)
-        lnplm[l-m] = logadd_s(logi(2*l-1)+logx+lnplm[l-m-1], sign[l-m-1], logi(l+m-1)+lnplm[l-m-2], -sign[l-m-2], &sign[l-m]) - logi(l-m);
+        array[l-m] = ((2*l-1)*x*array[l-m-1] - (l+m-1)*array[l-m-2]/factor)/((l-m)*factor);
 }
 
-/**
- * @brief Calculate \f$P_\ell^m(x)\f$
+
+/** @brief Estimate value of Plm(x) for x >> 1
  *
- * See \ref plm_lnPlm_array.
+ * This function computes the value of Plm(x) using an approximation for large
+ * arguments x >> 1 and returns the logarithm of the estimate.
  *
- * @param l degree
- * @param m order
- * @param x position
- * @param sign sign of result
- * @return lnPlm \f$\log\left|P_\ell^m(x)\right|\f$
+ * @param [in] l l
+ * @param [in] m m
+ * @param [in] x argument
+ * @retval estimate, ≈log(Plm(x))
  */
-double plm_lnPlm(int l, int m, double x, sign_t *sign)
+double Plm_estimate(int l, int m, double x)
 {
-    double plm[l-m+1];
-    sign_t  signs[l-m+1];
-
-    plm_lnPlm_array(l, m, x, plm, signs);
-    *sign = signs[l-m];
-
-    return plm[l-m];
-}
-
-/**
- * @brief Calculate \f$P_\ell^m(x)\f$
- *
- * See \ref plm_lnPlm_array.
- *
- * @param l degree
- * @param m order
- * @param x position
- * @return Plm \f$P_\ell^m(x)\f$
- */
-double plm_Plm(int l, int m, double x)
-{
-    sign_t sign;
-    double value = plm_lnPlm(l, m, x, &sign);
-    return sign*exp(value);
-}
-
-/**
- * @brief Calculate \f${P_\ell^m}^\prime (x)\f$
- *
- * See \ref plm_lnPlm_array.
- *
- * @param l degree
- * @param m order
- * @param x position
- * @param sign sign of result
- * @return lndPlm \f$\log\left|{P_\ell^m}^\prime(x)\right|\f$
- */
-double plm_lndPlm(int l, int m, double x, sign_t *sign)
-{
-    if(m == 0 && l == 1)
-        return 0;
-    else
-    {
-        const int lmax = l+1;
-        double plm[lmax-m+1];
-        sign_t signs[lmax-m+1];
-
-        plm_lnPlm_array(lmax, m, x, plm, signs);
-
-        return logadd_s(logi(l-m+1)+plm[l+1-m], signs[l+1-m], logi(l+1)+log(x)+plm[l-m], -signs[l+1-m], sign) - log(pow_2(x)-1);
-    }
-}
-
-
-/**
- * @brief Calculate \f${P_\ell^m}^\prime(x)\f$
- *
- * See \ref plm_lnPlm_array.
- *
- * @param l degree
- * @param m order
- * @param x position
- * @return dPlm \f${P_\ell^m}^\prime(x)\f$
- */
-double plm_dPlm(int l, int m, double x)
-{
-    sign_t sign = 0;
-    double value = plm_lndPlm(l, m, x, &sign);
-    return sign*exp(value);
-}
-
-/**
- * @brief Calculate products of associated Legendre polynomials and its derivatives
- *
- * Calculate products \f$P_{\ell_1}^m(x) P_{\ell_2}^m(x)\f$,
- * \f${P_{\ell_1}^m}^\prime(x) P_{\ell_2}^m(x)\f$ \f$P_{\ell_1}^m(x)
- * {P_{\ell_2}^m}^\prime(x)\f$ \f${P_{\ell_1}^m}^\prime(x)
- * {P_{\ell_2}^m}^\prime(x)\f$.
- *
- * See \ref plm_lnPlm_array.
- *
- * @param [in]  l1 \f$\ell_1\f$
- * @param [in]  l2 \f$\ell_2\f$
- * @param [in]  m \f$m\f$
- * @param [in]  x \f$x\f$
- * @param [out] res save results in this struct
- */
-void plm_PlmPlm(int l1, int l2, int m, double x, plm_combination_t *res)
-{
-    const int lmax = MAX(l1,l2)+1;
-    double lnPlm[lmax-m+1];
-    sign_t signs[lmax-m+1];
-
-    plm_lnPlm_array(lmax, m, x, lnPlm, signs);
-
-    plm_PlmPlm_from_array(l1, l2, m, x, lnPlm, signs, res);
-}
-
-void plm_PlmPlm_from_array(int l1, int l2, int m, double x, double lnPlm[], sign_t signs[], plm_combination_t *res)
-{
-    const double logx = log(x);
-    const double logx2m1 = log(pow_2(x)-1);
-    double lnPl1m, lnPl2m, lndPl1m, lndPl2m;
-    sign_t sign_Pl1m, sign_Pl2m, sign_dPl1m, sign_dPl2m;
-    sign_t common_sign = MPOW(m%2);
-
-    lnPl1m    = lnPlm[l1-m];
-    sign_Pl1m = signs[l1-m];
-    lnPl2m    = lnPlm[l2-m];
-    sign_Pl2m = signs[l2-m];
-
-    /* Plm(l=1,m=0,x) = x */
-    if(m == 0 && l1 == 1)
-    {
-        sign_dPl1m = +1;
-        lndPl1m = 0;
-    }
-    else
-        lndPl1m = logadd_s(logi(l1-m+1)+lnPlm[l1+1-m], signs[l1+1-m], logi(l1+1)+logx+lnPlm[l1-m], -signs[l1+1-m], &sign_dPl1m) - logx2m1;
-    if(m == 0 && l2 == 1)
-    {
-        sign_dPl2m = +1;
-        lndPl2m = 0;
-    }
-    else
-        lndPl2m = logadd_s(logi(l2-m+1)+lnPlm[l2+1-m], signs[l2+1-m], logi(l2+1)+logx+lnPlm[l2-m], -signs[l2+1-m], &sign_dPl2m) - logx2m1;
-
-    /* Pl1m*Pl2m */
-    res->lnPl1mPl2m    = lnPl1m + lnPl2m;
-    res->sign_Pl1mPl2m = common_sign * sign_Pl1m * sign_Pl2m;
-
-    /* Pl1m*dPl2m */
-    res->lnPl1mdPl2m    = lnPl1m + lndPl2m;
-    res->sign_Pl1mdPl2m = common_sign * sign_Pl1m * sign_dPl2m;
-
-    /* dPl1m*Pl2m */
-    res->lndPl1mPl2m    = lndPl1m + lnPl2m;
-    res->sign_dPl1mPl2m = common_sign * sign_dPl1m * sign_Pl2m;
-
-    /* dPl1m*dPl2m */
-    res->lndPl1mdPl2m    = lndPl1m + lndPl2m;
-    res->sign_dPl1mdPl2m = common_sign * sign_dPl1m * sign_dPl2m;
+    return lfac(2*l)-l*M_LOG2-lfac(l)-lfac(l-m)+l*log(x);
 }
 
 /*@}*/
