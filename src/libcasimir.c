@@ -1376,7 +1376,7 @@ matrix_t *casimir_M(casimir_t *self, int n, int m)
     const size_t max = self->lmax;
     const size_t dim = (max-min+1);
 
-    integration_t *integration = casimir_integrate_init(self, nT, m);
+    integration_t *integration = casimir_integrate_init(self, nT, m, 1e-6);
 
     /* allocate space for matrix M */
     matrix_t *M = matrix_alloc(2*dim);
