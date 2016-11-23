@@ -37,7 +37,8 @@ typedef struct {
     int sign_dPl1mdPl2m;
 } plm_combination_t;
 
-double logi(int x);
+double lfac(unsigned int n);
+double logi(unsigned int x);
 
 double kahan_sum(double input[], size_t len);
 
@@ -51,7 +52,8 @@ double bessel_lnInu(const int n, const double x);
 double bessel_lnKnu(const int n, const double x);
 void bessel_lnInuKnu(int nu, const double x, double *lnInu_p, double *lnKnu_p);
 
-double ln_doublefact(int n);
+double ln_factorial2(unsigned int n);
+double factorial2(unsigned int n);
 
 void plm_lnPlm_array(int lmax, int m, double x, double lnplm[], sign_t sign[]);
 double plm_lnPlm (int l, int m, double x, sign_t *sign);
