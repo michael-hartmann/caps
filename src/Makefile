@@ -10,6 +10,12 @@ MPICC = mpicc
 #MPICC = mpiicc
 
 OBJS = \
+    cquadpack/src/dqagi.c \
+    cquadpack/src/dqags.c \
+    cquadpack/src/dqext.c \
+    cquadpack/src/dqk15i.c \
+    cquadpack/src/dqk21.c \
+    cquadpack/src/dqsort.c \
     hash-table.c \
     lookup.c \
     integration.o \
@@ -38,10 +44,10 @@ CFLAGS = -std=c99
 
 # use traditional GNU semantics for inline
 #CFLAGS += -fgnu89-inline
-CFLAGS += -I .
+CFLAGS += -I . -I cquadpack/include
 
 # enable warnings and make them fatal
-CFLAGS += -g -Wall -Werror -Wextra -Wmissing-prototypes -Wstrict-prototypes -Wshadow -Wpointer-arith -Wcast-qual -Wwrite-strings -Wno-unused-parameter
+CFLAGS += -g -Wall -Werror -Wextra -Wmissing-prototypes -Wshadow -Wpointer-arith -Wcast-qual -Wwrite-strings -Wno-unused-parameter
 # profiling
 #CFLAGS += -g -pg
 
