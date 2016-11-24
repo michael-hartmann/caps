@@ -67,9 +67,6 @@ static void I_estimate_width(int l1, int l2, double tau, double eps, double *a, 
     double log_c = log(eps)+nu*log(zmax)-tau*zmax;
 
     /* a */
-    if(zmax <= 5)
-        *a = 0;
-    else
     {
         double left = delta;
         double right = zmax;
@@ -77,20 +74,30 @@ static void I_estimate_width(int l1, int l2, double tau, double eps, double *a, 
         *a = f_bisect(left, right, N, nu, tau, log_c);
     }
 
+
     /* b */
-    for(int i = 1;; i++)
     {
-        double left = i*zmax;
-        double right = (i+1)*zmax;
-
-        double fl = nu*log(left) -tau*left -log_c;
-        double fr = nu*log(right)-tau*right-log_c;
-
-        if(fl*fr <= 0)
+        if(l1 == 1 && l2 == 1)
         {
-            int N = ceil((log(right-left)-log(delta))/M_LOG2);
-            *b = f_bisect(left, right, N, nu, tau, log_c);
+            /* I(z) = rp*exp(-τz) */
+            *b = -log(eps)/tau;
             return;
+        }
+
+        for(int i = 1;; i++)
+        {
+            double left = i*zmax;
+            double right = (i+1)*zmax;
+
+            double fl = nu*log(left) -tau*left -log_c;
+            double fr = nu*log(right)-tau*right-log_c;
+
+            if(fl*fr <= 0)
+            {
+                int N = ceil((log(right-left)-log(delta))/M_LOG2);
+                *b = f_bisect(left, right, N, nu, tau, log_c);
+                return;
+            }
         }
     }
 }
@@ -127,13 +134,26 @@ double I_integrand(double z, void *args_)
 
 double casimir_integrate_I(integration_t *self, int l1, int l2, polarization_t p, double *prefactor)
 {
-    const int lmax = MAX(l1,l2);
     const int m = self->m;
+
+    if(l1 < m || l2 < m)
+    {
+        *prefactor = 0;
+        return 0;
+    }
+
+    const int lmax = MAX(l1,l2);
     const double tau = self->tau;
     const double zmax = ZMAX(l1,l2,tau);
-
-    const double log_normalization = (Plm_estimate(lmax,m,1+zmax) - log(zmax))/lmax;
     const double epsrel = self->epsrel;
+
+    double log_normalization;
+
+    if(zmax > 0)
+        log_normalization = (Plm_estimate(lmax,m,1+zmax) - log(zmax))/lmax;
+    else
+        /* l1 == l2 == 1 => I(z) = rp*exp(-τz) */
+        log_normalization = 0;
 
     integrand_t args = {
         .l1   = l1,
