@@ -15,6 +15,15 @@
 #include "integration.h"
 //#include "hash-table.h"
 
+/* The integrand I has the form
+ *      I(z) = Plm(l1,m,1+z)*Plm(l2,m,1+z)/(z²+2z)*exp(-τz).
+ * For z>>1 the integrand is proporional to
+ *      I(z) ~ c*z^(l1+l2-2)*exp(-τz),
+ * where c is a constant. Therefore, the maximum of I(z) is approximately
+ *      zmax ≈ (l1+l2-2)/τ
+ * and the maximum is
+ *      I(zmax) ≈ (2l1)!*(2l2)!/(2^(l1+l2)*l1!*(l1-m)!*l2!*(l2-m)!) * zmax^(l1+l2-2)*exp(-τzmax).
+ */
 #define ZMAX(l1,l2,tau) (((l1)+(l2)-2.)/(tau))
 
 typedef struct
@@ -107,10 +116,12 @@ double I_integrand(double z, void *args_)
     double Pl1m, Pl2m;
     Pl1mPl2m(l1, l2, args->m, 1+z, factor, &Pl1m, &Pl2m);
 
+    const double v = Pl1m*Pl2m/(z*(z+2));
+
     if(args->p == TE)
-        return rTE*Pl1m*Pl2m/(z*(z+2));
+        return rTE*v;
     else
-        return rTM*Pl1m*Pl2m/(z*(z+2));
+        return rTM*v;
 }
 
 
@@ -121,7 +132,7 @@ double casimir_integrate_I(integration_t *self, int l1, int l2, polarization_t p
     const double tau = self->tau;
     const double zmax = ZMAX(l1,l2,tau);
 
-    const double normalization = exp( (Plm_estimate(lmax,m,1+zmax) - log(zmax))/lmax );
+    const double log_normalization = (Plm_estimate(lmax,m,1+zmax) - log(zmax))/lmax;
     const double epsrel = self->epsrel;
 
     integrand_t args = {
@@ -131,7 +142,7 @@ double casimir_integrate_I(integration_t *self, int l1, int l2, polarization_t p
         .p    = p,
         .tau  = tau,
         .zmax = zmax,
-        .normalization = normalization,
+        .normalization = exp(log_normalization),
         .casimir = self->casimir
     };
 
@@ -140,13 +151,13 @@ double casimir_integrate_I(integration_t *self, int l1, int l2, polarization_t p
 
     double abserr, result1, result2, result3;
     int neval1, neval2, neval3, ier1, ier2, ier3;
-    result1 = dqags(I_integrand, a, b, 0, epsrel, &abserr, &neval1, &ier1, &args); /* [0,a] */
-    result2 = dqags(I_integrand, 0, a, 0, epsrel, &abserr, &neval2, &ier2, &args); /* [a,b] */
+    result1 = dqags(I_integrand, 0, a, 0, epsrel, &abserr, &neval1, &ier1, &args); /* [0,a] */
+    result2 = dqags(I_integrand, a, b, 0, epsrel, &abserr, &neval2, &ier2, &args); /* [a,b] */
     result3 = dqagi(I_integrand, b, 1, 0, epsrel, &abserr, &neval3, &ier3, &args); /* [b,∞] */
 
     TERMINATE(ier1 != 0 || ier2 != 0 || ier3 != 0, "ier1=%d, ier2=%d, ier3=%d\nl1=%d, l2=%d, m=%d, tau=%g\na=%g, b=%g", ier1, ier2, ier3, l1,l2,m,tau,a,b);
 
-    *prefactor = lfac(2*l1)+lfac(2*l2)-(l1+l2)*M_LOG2-lfac(l1)-lfac(l1-m)-lfac(l2)-lfac(l2-m) + (l1+l2-2)*log(zmax)-tau*zmax;
+    *prefactor = -tau*zmax + log_normalization*(l1+l2);
 
     return result1+result2+result3;
 }
@@ -177,7 +188,7 @@ double casimir_integrate_A(integration_t *self, int l1, int l2, polarization_t p
     const double A0 = -MPOW(l2+m)*pow_2(self->m);
 
     const double I = casimir_integrate_I(self, l1, l2, p, prefactor);
-    *prefactor += casimir_lnLambda(l1, l2, m);
+    *prefactor += casimir_lnLambda(l1, l2, m)-self->tau;
 
     return A0*I;
 }
@@ -199,7 +210,7 @@ double casimir_integrate_B(integration_t *self, int l1, int l2, polarization_t p
     I -=   (l1+1)*(l1+m)*l2*(l2-m+1)/denom*I3*exp(prefactor3-prefactor4);
     I +=     l1*(l1-m+1)*l2*(l2-m+1)/denom*I4;
 
-    *prefactor = prefactor4+casimir_lnLambda(l1,l2,m);
+    *prefactor = prefactor4+casimir_lnLambda(l1,l2,m)-self->tau;
 
     return B0*I;
 }
@@ -216,7 +227,7 @@ double casimir_integrate_C(integration_t *self, int l1, int l2, polarization_t p
     const double denom = 2*l2+1;
     I  = -(l2+1)*(l2+m)/denom*I1*exp(prefactor1-prefactor2);
     I += l2*(l2-m+1)/denom*I2;
-    *prefactor = prefactor2+casimir_lnLambda(l1,l2,m);
+    *prefactor = prefactor2+casimir_lnLambda(l1,l2,m)-self->tau;
 
     return C0*I;
 }
