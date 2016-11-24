@@ -40,6 +40,12 @@ static double I_integrand(double z, void *args_);
 
 static double f_bisect(double left, double right, int N, int nu, double tau, double log_c)
 {
+    /* We want to solve
+     *      x^ν*exp(-τx) = c, c>0.
+     * Taking the logarithm of both sides yields
+     *      ν*log(x)-τx-log(c) = 0.
+     * We find the solution using bisection method (N times).
+     */
     for(int i = 0; i < N; i++)
     {
         double middle = (right+left)/2;
@@ -62,13 +68,13 @@ static void I_estimate_width(int l1, int l2, double tau, double eps, double *a, 
     double nu = l1+l2-2;
     double delta = 1e-3;
 
-    /* f(z) = z^(l1+l2-2)*exp(-tau*z) */
+    /* f(z) = z^(l1+l2-2)*exp(-τz) */
     double zmax = ZMAX(l1,l2,tau);
     double log_c = log(eps)+nu*log(zmax)-tau*zmax;
 
     /* a */
     {
-        double left = delta;
+        double left = 0;
         double right = zmax;
         int N = ceil((log(right-left)-log(delta))/M_LOG2);
         *a = f_bisect(left, right, N, nu, tau, log_c);
