@@ -9,7 +9,14 @@ sources = [
     "../libcasimir.c",
     "../matrix.c",
     "../sfunc.c",
-    "../utils.c"
+    "../utils.c",
+    "../lookup.c",
+    "../cquadpack/src/dqagi.c",
+    "../cquadpack/src/dqags.c",
+    "../cquadpack/src/dqext.c",
+    "../cquadpack/src/dqk15i.c",
+    "../cquadpack/src/dqk21.c",
+    "../cquadpack/src/dqsort.c"
 ]
 
 CFLAGS = [
@@ -17,9 +24,12 @@ CFLAGS = [
     "-fgnu89-inline",
     "-Wall",
     "-Wextra",
+    "-Wno-strict-prototypes",
+    "-Wno-unused-parameter",
     "-O3",
     "-march=native",
     "-I..",
+    "-I../cquadpack/include",
     "-lm",
     "-pthread",
 ]

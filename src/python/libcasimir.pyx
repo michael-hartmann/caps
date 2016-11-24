@@ -2,6 +2,7 @@ import numpy as np
 import cython
 import math
 from libcpp cimport bool
+from libc.stdlib cimport malloc, free
 
 ctypedef signed char sign_t
 
@@ -52,30 +53,20 @@ cdef extern from "libcasimir.h":
 
 
 cdef extern from "sfunc.h":
-    ctypedef struct plm_combination_t:
-        double lnPl1mPl2m;
-        int sign_Pl1mPl2m;
+    double lfac(unsigned int n);
+    double logi(unsigned int x);
 
-        double lndPl1mPl2m;
-        int sign_dPl1mPl2m;
+    void Plm_array(int lmax, int m, double x, double factor, double array[]);
 
-        double lnPl1mdPl2m;
-        int sign_Pl1mdPl2m;
-
-        double lndPl1mdPl2m;
-        int sign_dPl1mdPl2m;
-
-
-    double ln_doublefact(int n);
+    double factorial2(unsigned int n);
+    double ln_factorial2(unsigned int n);
 
     double bessel_lnInu(const int n, const double x);
     double bessel_lnKnu(const int n, const double x);
     void bessel_lnInuKnu(int nu, const double x, double *lnInu_p, double *lnKnu_p);
 
-    double plm_lnPlm (int l, int m, double x, sign_t *sign);
-    double plm_lndPlm(int l, int m, double x, sign_t *sign);
-
-    void plm_PlmPlm(int l1, int l2, int m, double x, plm_combination_t *res);
+    void Plm_array(int lmax, int m, double x, double factor, double array[]);
+    double Plm_estimate(int l, int m, double x);
 
 
 class sfunc:
@@ -87,14 +78,26 @@ class sfunc:
     associated Legendre polynomials, and the double factorial.
     """
 
-    def ln_doublefact(int n):
+    def ln_factorial2(unsigned int n):
         """Logarithm of double factorial
 
         Logarithm of double factorial log(n!!), where n!! is the factorial with
         every second value skipped, i.e.,
             log(7!! = 7*5*3*1.
         """
-        return ln_doublefact(n)
+        return ln_factorial2(n)
+
+    def factorial2(unsigned int n):
+        """Calculate double factorial n!!"""
+        return factorial2(n)
+
+    def lfac(unsigned n):
+        """Calculate log(n!)"""
+        return lfac(n)
+
+    def logi(unsigned n):
+        """Calculate log(n) for n integer"""
+        return logi(n)
 
 
     def lnInuKnu(int nu, double x):
@@ -119,37 +122,20 @@ class sfunc:
         """Modified Bessel function K_{nu+1/2}(x) (see lnInuKnu)"""
         return bessel_lnKnu(nu, x)
 
+    def Plm_estimate(int l, int m, double x):
+        return Plm_estimate(l, m, x)
 
-    def PlmPlm(int l1, int l2, int m, double x):
-        """Product of associated Legendre polynomials
+    def Plm(int lmax, int m, double x, double factor=1):
+        cdef int i, elems = lmax-m+1
+        array_py = np.empty(elems)
+        cdef double *array = <double *>malloc(elems*sizeof(double))
+        Plm_array(lmax, m, x, factor, array)
 
-        Calculate the product of the associated Legendre polynomials
-            (i)   Pl1m(x)*Pl2m(x)
-            (ii)  Pl1m'(x)*Pl2m(x)
-            (iii) Pl1m(x)*Pl2m'(x)
-            (iv)  Pl1m'(x)*Pl2m'(x)
-        for x > 1.
+        for i in range(elems):
+            array_py[i] = array[i]
 
-        The function returns the logarithm and the sign for the product (i) to
-        (iv).
-        """
-        cdef plm_combination_t res
-        plm_PlmPlm(l1, l2, m, x, &res)
-        return res.lnPl1mPl2m, res.sign_Pl1mPl2m, res.lndPl1mPl2m, res.sign_dPl1mPl2m, res.lnPl1mdPl2m, res.sign_Pl1mdPl2m, res.lndPl1mdPl2m, res.sign_dPl1mdPl2m
-
-    def lnPlm(int l, int m, double x):
-        """Calculate log(Plm(x)) for x>1 and its sign"""
-        cdef sign_t sign
-        cdef double v
-        v = plm_lnPlm(l, m, x, &sign)
-        return v,sign
-
-    def lndPlm(int l, int m, double x):
-        """Calculate log(Plm'(x)) for x>1 and its sign"""
-        cdef sign_t sign
-        cdef double v
-        v = plm_lndPlm(l, m, x, &sign)
-        return v,sign
+        free(array)
+        return array_py
 
 
 cdef class Casimir:
