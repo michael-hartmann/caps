@@ -9,10 +9,11 @@ static double _mie_lna_perf(int l, double arg, sign_t *sign_a)
     double lna, lnb;
     sign_t dummy;
 
-    casimir_t self;
-    casimir_init(&self, 1, 2*arg);
+    casimir_t *self = casimir_init(1, 2*arg);
 
-    casimir_lnab_perf(&self, 1, l, &lna, &lnb, sign_a, &dummy);
+    casimir_lnab_perf(self, 1, l, &lna, &lnb, sign_a, &dummy);
+
+    casimir_free(self);
 
     return lna;
 }
@@ -22,10 +23,11 @@ static double _mie_lnb_perf(int l, double arg, sign_t *sign_b)
     double lna, lnb;
     sign_t dummy;
 
-    casimir_t self;
-    casimir_init(&self, 1, 2*arg);
+    casimir_t *self = casimir_init(1, 2*arg);
 
-    casimir_lnab_perf(&self, 1, l, &lna, &lnb, &dummy, sign_b);
+    casimir_lnab_perf(self, 1, l, &lna, &lnb, &dummy, sign_b);
+
+    casimir_free(self);
 
     return lnb;
 }
