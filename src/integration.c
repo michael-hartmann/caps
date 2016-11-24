@@ -211,6 +211,12 @@ void casimir_integrate_free(integration_t *integration)
 double casimir_integrate_A(integration_t *self, int l1, int l2, polarization_t p, double *prefactor)
 {
     const int m = self->m;
+    if(m == 0)
+    {
+        *prefactor = 0;
+        return 0;
+    }
+
     const double A0 = -MPOW(l2)*pow_2(self->m);
 
     const double I = casimir_integrate_I(self, l1, l2, p, prefactor);
@@ -243,8 +249,14 @@ double casimir_integrate_B(integration_t *self, int l1, int l2, polarization_t p
 
 double casimir_integrate_C(integration_t *self, int l1, int l2, polarization_t p, double *prefactor)
 {
-    double I, prefactor1, prefactor2;
     const int m = self->m;
+    if(m == 0)
+    {
+        *prefactor = 0;
+        return 0;
+    }
+
+    double I, prefactor1, prefactor2;
     const double C0 = -MPOW(l2)*m;
 
     const double I1 = casimir_integrate_I(self, l1, l2-1, p, &prefactor1);
