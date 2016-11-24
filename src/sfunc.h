@@ -23,20 +23,6 @@
 #define MAX(a,b) ((((a))>((b)))?((a)):((b)))
 #endif
 
-typedef struct {
-    double lnPl1mPl2m;
-    int sign_Pl1mPl2m;
-
-    double lndPl1mPl2m;
-    int sign_dPl1mPl2m;
-
-    double lnPl1mdPl2m;
-    int sign_Pl1mdPl2m;
-
-    double lndPl1mdPl2m;
-    int sign_dPl1mdPl2m;
-} plm_combination_t;
-
 double lfac(unsigned int n);
 double logi(unsigned int x);
 
