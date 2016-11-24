@@ -211,7 +211,7 @@ void casimir_integrate_free(integration_t *integration)
 double casimir_integrate_A(integration_t *self, int l1, int l2, polarization_t p, double *prefactor)
 {
     const int m = self->m;
-    const double A0 = -MPOW(l2+m)*pow_2(self->m);
+    const double A0 = -MPOW(l2)*pow_2(self->m);
 
     const double I = casimir_integrate_I(self, l1, l2, p, prefactor);
     *prefactor += casimir_lnLambda(l1, l2, m)-self->tau;
@@ -223,7 +223,7 @@ double casimir_integrate_B(integration_t *self, int l1, int l2, polarization_t p
 {
     double I, prefactor1, prefactor2, prefactor3, prefactor4;
     const int m = self->m;
-    const double B0 = -MPOW(l2+m+1);
+    const double B0 = -MPOW(l2+1);
 
     const double I1 = casimir_integrate_I(self, l1-1, l2-1, p, &prefactor1);
     const double I2 = casimir_integrate_I(self, l1+1, l2-1, p, &prefactor2);
@@ -245,7 +245,7 @@ double casimir_integrate_C(integration_t *self, int l1, int l2, polarization_t p
 {
     double I, prefactor1, prefactor2;
     const int m = self->m;
-    const double C0 = -MPOW(l2+m);
+    const double C0 = -MPOW(l2)*m;
 
     const double I1 = casimir_integrate_I(self, l1, l2-1, p, &prefactor1);
     const double I2 = casimir_integrate_I(self, l1, l2+1, p, &prefactor2);
