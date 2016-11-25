@@ -354,11 +354,11 @@ double casimir_integrate_B(integration_t *self, int l1, int l2, polarization_t p
     const double I3 = casimir_integrate_I(self, l1-1, l2+1, p, &prefactor3);
     const double I4 = casimir_integrate_I(self, l1+1, l2+1, p, &prefactor4);
 
-    const double denom = (2*l1+1)*(2*l2+1);
-    I  = (l1+1)*(l1+m)*(l2+1)*(l2+m)/denom*I1*exp(prefactor1-prefactor4);
-    I -=   l1*(l1-m+1)*(l2+1)*(l2+m)/denom*I2*exp(prefactor2-prefactor4);
-    I -=   (l1+1)*(l1+m)*l2*(l2-m+1)/denom*I3*exp(prefactor3-prefactor4);
-    I +=     l1*(l1-m+1)*l2*(l2-m+1)/denom*I4;
+    const double denom = (2*l1+1.)*(2*l2+1.);
+    I  = (l1+1.)*(l1+m)*(l2+1.)*(l2+m)/denom*I1*exp(prefactor1-prefactor4);
+    I -=   l1*(l1-m+1.)*(l2+1.)*(l2+m)/denom*I2*exp(prefactor2-prefactor4);
+    I -=   (l1+1.)*(l1+m)*l2*(l2-m+1.)/denom*I3*exp(prefactor3-prefactor4);
+    I +=     l1*(l1-m+1.)*l2*(l2-m+1.)/denom*I4;
 
     *prefactor = prefactor4+casimir_lnLambda(l1,l2,m)-self->tau;
 
@@ -380,9 +380,9 @@ double casimir_integrate_C(integration_t *self, int l1, int l2, polarization_t p
     const double I1 = casimir_integrate_I(self, l1, l2-1, p, &prefactor1);
     const double I2 = casimir_integrate_I(self, l1, l2+1, p, &prefactor2);
 
-    const double denom = 2*l2+1;
-    I  = -(l2+1)*(l2+m)/denom*I1*exp(prefactor1-prefactor2);
-    I += l2*(l2-m+1)/denom*I2;
+    const double denom = 2.*l2+1.;
+    I  = -(l2+1.)*(l2+m)/denom*I1*exp(prefactor1-prefactor2);
+    I += l2*(l2-m+1.)/denom*I2;
     *prefactor = prefactor2+casimir_lnLambda(l1,l2,m)-self->tau;
 
     return C0*I;
