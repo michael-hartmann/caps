@@ -6,6 +6,8 @@
  */
 
 #include <math.h>
+#include <stdint.h>
+#include <inttypes.h>
 
 #include "quadpack.h"
 
@@ -13,8 +15,58 @@
 #include "sfunc.h"
 #include "libcasimir.h"
 #include "integration.h"
-//#include "hash-table.h"
+#include "hash-table.h"
 
+/* arguments for integrand in function I_integrand */
+typedef struct
+{
+    int l1,l2,m;
+    polarization_t p; /* TE or TM */
+    double tau,zmax,normalization;
+    casimir_t *casimir;
+} integrand_t;
+
+/* entry of cache constisting of the value of the integral; exp(prefactor)*I */
+typedef struct
+{
+    double I,prefactor;
+} cache_entry_t;
+
+/* swap integer a and b */
+inline static void swap(int *a, int *b)
+{
+    int t = *a;
+    *a = *b;
+    *b = t;
+}
+
+/* allocate memory and create new cache entry */
+static cache_entry_t *cache_entry_create(double I, double prefactor)
+{
+    cache_entry_t *entry = xmalloc(sizeof(cache_entry_t));
+    entry->I = I;
+    entry->prefactor = prefactor;
+    return entry;
+}
+
+/* free memory for cache entry */
+static void cache_entry_destroy(void *entry)
+{
+    xfree(entry);
+}
+
+/* Create a hash from l1, l2 and p. The hash function breaks if l1 or l2 >
+ * 2^31. This, however, exceeds the ressources available by orders of
+ * magnitude. Other things will break earlier...
+ */
+static uint64_t hash(int l1, int l2, polarization_t p)
+{
+    uint64_t l1_ = l1;
+    uint64_t l2_ = l2;
+    uint64_t p_  = (p == TM) ? 1 : 0;
+
+    return (l1_ << 32) | (l2_ << 1) | p_;
+}
 
 /**
  * We want to solve the generic integral ∫ dz i(z) where
@@ -37,7 +89,6 @@
  *      i(zmax) ≈ (2l1)!*(2l2)!/(2^(l1+l2)*l1!*(l1-m)!*l2!*(l2-m)!) * zmax^(l1+l2-2)*exp(-τ zmax) for m≠0,
  *      i(zmax) ≈ (2l1)!*(2l2)!/(2^(l1+l2)*l1!*(l1-m)!*l2!*(l2-m)!) * zmax^(l1+l2)*exp(-τ zmax)   for m=0.
  */
-
 static double ZMAX(int l1, int l2, int m, double tau)
 {
     if(m == 0)
@@ -45,16 +96,6 @@ static double ZMAX(int l1, int l2, int m, double tau)
     else
         return (l1+l2-2)/tau;
 }
-
-typedef struct
-{
-    int l1,l2,m;
-    polarization_t p; /* TE or TM */
-    double tau,zmax,normalization;
-    casimir_t *casimir;
-} integrand_t;
-
-static double I_integrand(double z, void *args_);
 
 static double f_bisect(double left, double right, int N, int nu, double tau, double log_c)
 {
@@ -131,7 +172,7 @@ static void I_estimate_width(int l1, int l2, int m, double tau, double eps, doub
     }
 }
 
-double I_integrand(double z, void *args_)
+static double I_integrand(double z, void *args_)
 {
     if(z <= 0)
         return 0;
@@ -141,7 +182,8 @@ double I_integrand(double z, void *args_)
     const int l1 = args->l1, l2 = args->l2, m = args->m;
 
     const double tau = args->tau;
-    const double k = tau/2*sqrt(pow_2(z)+2*z);
+    const double z2p2z = z*(z+2); /* z²+2z */
+    const double k = tau/2*sqrt(z2p2z);
 
     double rTE, rTM;
     casimir_rp(args->casimir, tau/2, k, &rTE, &rTM);
@@ -158,7 +200,7 @@ double I_integrand(double z, void *args_)
     else
     {
         Pl1mPl2m(l1, l2, m, 1+z, factor, &Pl1m, &Pl2m);
-        v = Pl1m*Pl2m/(z*(z+2));
+        v = Pl1m*Pl2m/z2p2z;
     }
 
     if(args->p == TE)
@@ -168,27 +210,13 @@ double I_integrand(double z, void *args_)
 }
 
 
-double casimir_integrate_I(integration_t *self, int l1, int l2, polarization_t p, double *prefactor)
+static double _casimir_integrate_I(integration_t *self, int l1, int l2, polarization_t p, double *prefactor)
 {
     const int m = self->m;
 
-    if(l1 < m || l2 < m)
-    {
-        *prefactor = 0;
-        return 0;
-    }
+    TERMINATE(l1 < m || l2 < m, "l1=%d, l2=%d, m=%d\n", l1,l2,m);
 
-    /* I(l1,l2) = I(l2,l1)
-     * Make sure that l1 >= l2
-     */
-    if(l1 < l2)
-    {
-        const int temp = l2;
-        l2 = l1;
-        l1 = temp;
-    }
-
-    const int lmax = l1; /* l1 >= l2 */
+    const int lmax = MAX(l1,l2);
     const double tau = self->tau;
     const double zmax = ZMAX(l1,l2,m,tau);
     const double epsrel = self->epsrel;
@@ -233,6 +261,42 @@ double casimir_integrate_I(integration_t *self, int l1, int l2, polarization_t p
     return result1+result2+result3;
 }
 
+double casimir_integrate_I(integration_t *self, int l1, int l2, polarization_t p, double *prefactor)
+{
+    const int m = self->m;
+
+    if(l1 < m || l2 < m)
+    {
+        *prefactor = 0;
+        return 0;
+    }
+
+    /* I(l1,l2) = I(l2,l1)
+     * Make sure that l1 >= l2
+     */
+    if(l1 < l2)
+        swap(&l1, &l2);
+
+    HashTable *hash_table = self->hash_table;
+    const uint64_t key = hash(l1,l2,p);
+    cache_entry_t *entry = hash_table_lookup(hash_table, key);
+
+    if(entry)
+    {
+        /* lookup successful */
+        *prefactor = entry->prefactor;
+        return entry->I;
+    }
+    else
+    {
+        /* compute and save integral */
+        double I = _casimir_integrate_I(self, l1, l2, p, prefactor);
+        entry = cache_entry_create(I, *prefactor);
+        hash_table_insert(self->hash_table, key, entry);
+        return I;
+    }
+}
+
 integration_t *casimir_integrate_init(casimir_t *casimir, int n, int m, double epsrel)
 {
     integration_t *self = (integration_t *)xmalloc(sizeof(integration_t));
@@ -243,11 +307,14 @@ integration_t *casimir_integrate_init(casimir_t *casimir, int n, int m, double e
     self->tau = 2*n*casimir->T;
     self->epsrel = epsrel;
 
+    self->hash_table = hash_table_new(cache_entry_destroy);
+
     return self;
 }
 
 void casimir_integrate_free(integration_t *integration)
 {
+    hash_table_free(integration->hash_table);
     xfree(integration);
 }
 
