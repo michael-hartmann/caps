@@ -205,6 +205,20 @@ double casimir_lnLambda(int l1, int l2, int m)
 }
 
 /**
+ * @brief Evaluate dielectric function
+ *
+ * The dielectrict function set by casimir_set_epsilonm1 will be called.
+ *
+ * @param [in] self Casimir object
+ * @param [in] xi
+ * @retval epsilon-1, epsilon(xi)-1
+ */
+double casimir_epsilonm1(casimir_t *self, double xi)
+{
+    return self->epsilonm1(xi, self->userdata);
+}
+
+/**
  * @brief Dielectric function for perfect reflectors
  *
  * @param [in] xi ignored
@@ -254,7 +268,7 @@ double casimir_epsilonm1_drude(double xi, void *userdata)
  */
 void casimir_rp(casimir_t *self, double nT, double k, double *r_TE, double *r_TM)
 {
-    const double epsilonm1 = self->epsilonm1(nT, self->userdata);
+    const double epsilonm1 = casimir_epsilonm1(self, nT);
 
     if(isinf(epsilonm1))
     {
@@ -761,7 +775,7 @@ void casimir_lnab(casimir_t *self, int n_mat, int l, double *lna, double *lnb, s
 {
     /* ξ = nT */
     const double xi = n_mat*self->T;
-    const double epsilonm1 = self->epsilonm1(xi, self->userdata);
+    const double epsilonm1 = casimir_epsilonm1(self, xi);
 
     if(isinf(epsilonm1))
     {
