@@ -164,6 +164,7 @@ double casimir_logdetD(casimir_t *self, int n, int m);
 
 void casimir_rp(casimir_t *self, double nT, double k, double *r_TE, double *r_TM);
 
+double casimir_epsilonm1(casimir_t *self, double xi);
 double casimir_epsilonm1_perf(double xi, void *userdata);
 double casimir_epsilonm1_drude(double xi, void *userdata);
 
