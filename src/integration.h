@@ -3,7 +3,7 @@
 
 #include "libcasimir.h"
 #include "integration.h"
-//#include "hash-table.h"
+#include "hash-table.h"
 
 
 #define A_TE 0
@@ -19,7 +19,7 @@ typedef struct {
     casimir_t *casimir;
     int n,m;
     double tau,epsrel;
-    //HashTable *hash_table;
+    HashTable *hash_table;
 } integration_t;
 
 integration_t *casimir_integrate_init(casimir_t *self, int n, int m, double epsrel);
