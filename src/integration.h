@@ -15,7 +15,6 @@ typedef struct {
 
 integration_t *casimir_integrate_init(casimir_t *self, int n, int m, double epsrel);
 void casimir_integrate_free(integration_t *integration);
-int casimir_integrate(integration_t *int_obj, int l1, int l2, double v[8]);
 
 double casimir_integrate_I(integration_t *self, int l1, int l2, polarization_t p, double *prefactor);
 double casimir_integrate_A(integration_t *self, int l1, int l2, polarization_t p, double *prefactor);

@@ -392,8 +392,3 @@ double casimir_integrate_D(integration_t *self, int l1, int l2, polarization_t p
 {
     return MPOW(l1+l2+1)*casimir_integrate_C(self, l2, l1, p, prefactor);
 }
-
-int casimir_integrate(integration_t *int_obj, int l1, int l2, double v[8])
-{
-    return 0;
-}
