@@ -6,15 +6,6 @@
 #include "hash-table.h"
 
 
-#define A_TE 0
-#define A_TM 1
-#define B_TE 2
-#define B_TM 3
-#define C_TE 4
-#define C_TM 5
-#define D_TE 6
-#define D_TM 7
-
 typedef struct {
     casimir_t *casimir;
     int n,m;
