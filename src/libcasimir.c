@@ -201,7 +201,7 @@ int casimir_verbose(casimir_t *self, const char *format, ...)
  */
 double casimir_lnLambda(int l1, int l2, int m)
 {
-    return (logi(2*l1+1)+logi(2*l2+1)-logi(l1)-logi(l1+1)-logi(l2)-logi(l2+1)+lgamma(1+l1-m)+lgamma(1+l2-m)-lgamma(1+l1+m)-lgamma(1+l2+m))/2.0;
+    return (logi(2*l1+1)+logi(2*l2+1)-logi(l1)-logi(l1+1)-logi(l2)-logi(l2+1)+lfac(l1-m)+lfac(l2-m)-lfac(l1+m)-lfac(l2+m))/2.0;
 }
 
 /**
@@ -1306,7 +1306,7 @@ void casimir_M0(casimir_t *self, int m, matrix_t **EE, matrix_t **MM)
              * M_EE_{l1,l2} = (x/2)^(l1+l2) * (l1+l2)! / sqrt( (l1+m)!*(l1-m)! * (l2+m)!*(l2-m)! )
              * M_MM_{l1,l2} = M_EE_{l1,l2} * sqrt( l1/(l1+1) * l2/(l2+1) )
              */
-            const double EE_ij = exp( (l1+l2+1)*y + lgamma(1+l1+l2) - 0.5*(lgamma(1+l1+m)+lgamma(1+l1-m) + lgamma(1+l2+m)+lgamma(1+l2-m)) );
+            const double EE_ij = exp( (l1+l2+1)*y + lfac(l1+l2) - 0.5*(lfac(l1+m)+lfac(l1-m) + lfac(l2+m)+lfac(l2-m)) );
 
             /* calculate trace of n-th minor diagonal */
             trace += fabs(EE_ij);
