@@ -168,14 +168,13 @@ double logadd_s(const double log_a, const sign_t sign_a, const double log_b, con
 
 double logadd_ms(const double list[], const sign_t signs[], const int len, sign_t *sign)
 {
-    double sum;
     double max = list[0];
 
     for(int i = 1; i < len; i++)
         if(list[i] > max)
             max = list[i];
 
-    sum = signs[0]*exp(list[0]-max);
+    double sum = signs[0]*exp(list[0]-max);
     for(int i = 1; i < len; i++)
         sum += signs[i]*exp(list[i]-max);
 
@@ -354,7 +353,7 @@ void Plm_array(int lmax, int m, double x, double factor, double array[])
         array[0] = 1;
     else
         //array[0] = MPOW(m)*factorial2(2*m-1)*pow(sqrt(x*x-1)/factor,m);
-        array[0] = factorial2(2*m-1)*pow(sqrt(x*x-1)/factor,m);
+        array[0] = factorial2(2*m-1)*pow(sqrt((x+1)*(x-1))/factor,m);
 
     if(lmax == m)
         return;
