@@ -28,4 +28,6 @@ void _xfree(void *p);
 int cinstr(const char *str, char c);
 const char *indexn(const char *str, char c, int n);
 
+void swap(int *a, int *b);
+
 #endif
