@@ -1,6 +1,8 @@
 #ifndef __INTEGRATION_H
 #define __INTEGRATION_H
 
+#include <stdbool.h>
+
 #include "libcasimir.h"
 #include "integration.h"
 #include "hash-table.h"
@@ -12,6 +14,7 @@ typedef struct {
     double tau,epsrel;
     HashTable *hash_table_I;
     HashTable *hash_table_K;
+    bool is_pc;
 } integration_t;
 
 integration_t *casimir_integrate_init(casimir_t *self, int n, int m, double epsrel);

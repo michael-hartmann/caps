@@ -267,6 +267,14 @@ double casimir_integrate_I(integration_t *self, int l1, int l2, polarization_t p
         return -INFINITY;
     }
 
+    /* simplification for perfect conductors */
+    if(self->is_pc && p == TE)
+    {
+        const double v = casimir_integrate_I(self, l1, l2, TM, sign);
+        *sign = -1;
+        return v;
+    }
+
     /* I(l1,l2) = I(l2,l1)
      * Make sure that l1 >= l2
      */
@@ -305,6 +313,11 @@ integration_t *casimir_integrate_init(casimir_t *casimir, int n, int m, double e
 
     self->hash_table_I = hash_table_new(cache_entry_destroy);
     self->hash_table_K = hash_table_new(cache_entry_destroy);
+
+    if(isinf(casimir_epsilonm1(casimir, INFINITY)))
+        self->is_pc = true;
+    else
+        self->is_pc = false;
 
     return self;
 }
