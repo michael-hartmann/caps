@@ -12,6 +12,7 @@
 #include "quadpack.h"
 
 #include "utils.h"
+#include "gaunt.h"
 #include "sfunc.h"
 #include "libcasimir.h"
 #include "integration.h"
@@ -29,15 +30,15 @@ typedef struct
 /* entry of cache constisting of the value of the integral; exp(prefactor)*I */
 typedef struct
 {
-    double I;
+    double v;
     sign_t sign;
 } cache_entry_t;
 
 /* allocate memory and create new cache entry */
-static cache_entry_t *cache_entry_create(double I, sign_t sign)
+static cache_entry_t *cache_entry_create(double v, sign_t sign)
 {
     cache_entry_t *entry = xmalloc(sizeof(cache_entry_t));
-    entry->I = I;
+    entry->v = v;
     entry->sign = sign;
     return entry;
 }
@@ -101,12 +102,10 @@ static void K_estimate_width(int nu, int m, double tau, double eps, double *a, d
 
     /* a */
     {
-        double left = 0;
-        double right = zmax;
+        double left = 0, right = zmax;
         int N = ceil((log(right-left)-log(delta))/M_LOG2);
         *a = f_bisect(left, right, N, nu, tau, log_c);
     }
-
 
     /* b */
     {
@@ -119,8 +118,7 @@ static void K_estimate_width(int nu, int m, double tau, double eps, double *a, d
 
         for(int i = 1;; i++)
         {
-            double left = i*zmax;
-            double right = (i+1)*zmax;
+            double left = i*zmax, right = (i+1)*zmax;
 
             double fl = nu*log(left) -tau*left -log_c;
             double fr = nu*log(right)-tau*right-log_c;
@@ -154,7 +152,9 @@ static double K_integrand(double z, void *args_)
     const double exp_function = exp(tau*(z-args->zmax)/nu);
     const double factor = args->normalization * exp_function;
 
-    double v = Plm(nu,2*m,1+z,factor);
+    const double v = Plm(nu,2*m,1+z,factor)/z2p2z;
+
+    //fprintf(stderr, "%g %g\n", z, v);
 
     if(args->p == TE)
         return rTE*v;
@@ -162,7 +162,7 @@ static double K_integrand(double z, void *args_)
         return rTM*v;
 }
 
-static double _casimir_integrate_K(integration_t *self, int nu, polarization_t p, double *prefactor)
+static double _casimir_integrate_K(integration_t *self, int nu, polarization_t p, sign_t *sign)
 {
     const int m = self->m;
 
@@ -173,7 +173,7 @@ static double _casimir_integrate_K(integration_t *self, int nu, polarization_t p
     double log_normalization;
 
     if(zmax > 0)
-        log_normalization = Plm_estimate(nu,2*m,1+zmax)-log(zmax)/nu;
+        log_normalization = (Plm_estimate(nu,2*m,1+zmax)-log(zmax*(zmax+2)))/nu;
     else
         /* nu == 1 => I(z) = rp*exp(-τz) */
         log_normalization = 0;
@@ -189,50 +189,69 @@ static double _casimir_integrate_K(integration_t *self, int nu, polarization_t p
     };
 
     double a,b;
-    K_estimate_width(nu, m, tau, 1e-5, &a, &b);
+    K_estimate_width(nu, m, tau, 1e-6, &a, &b);
 
-    double abserr, result1, result2, result3;
+    double abserr1 = 0, abserr2, abserr3, result1, result2, result3;
     int neval1, neval2, neval3, ier1, ier2, ier3;
-    result1 = dqags(K_integrand, 0, a, 0, epsrel, &abserr, &neval1, &ier1, &args); /* [0,a] */
-    result2 = dqags(K_integrand, a, b, 0, epsrel, &abserr, &neval2, &ier2, &args); /* [a,b] */
-    result3 = dqagi(K_integrand, b, 1, 0, epsrel, &abserr, &neval3, &ier3, &args); /* [b,∞] */
+    result2 = dqags(K_integrand, a, b, 0, epsrel, &abserr1, &neval2, &ier2, &args); /* [a,b] */
+    abserr2 = abserr3 = abserr1;
+    result1 = dqags(K_integrand, 0, a, 0, 1, &abserr2, &neval1, &ier1, &args); /* [0,a] */
+    result3 = dqagi(K_integrand, b, 1, 0, 1, &abserr3, &neval3, &ier3, &args); /* [b,∞] */
 
+    //printf("ier1=%d, ier2=%d, ier3=%d, nu=%d, m=%d, tau=%g, a=%g, b=%g\n", ier1, ier2, ier3, nu,m,tau,a,b);
     TERMINATE(ier1 != 0 || ier2 != 0 || ier3 != 0, "ier1=%d, ier2=%d, ier3=%d, nu=%d, m=%d, tau=%g, a=%g, b=%g", ier1, ier2, ier3, nu,m,tau,a,b);
 
-    *prefactor = -tau*zmax + log_normalization*nu;
-
-    return result1+result2+result3;
+    double sum = result1+result2+result3;
+    *sign = copysign(1, sum);
+    return log(fabs(sum))-tau*zmax + log_normalization*nu;
 }
 
 
-double casimir_integrate_K(integration_t *self, int nu, polarization_t p, double *prefactor)
+double casimir_integrate_K(integration_t *self, int nu, polarization_t p, sign_t *sign)
 {
-    /* add cache */
-    return _casimir_integrate_K(self, nu, p, prefactor);
+    HashTable *hash_table = self->hash_table_K;
+    const uint64_t key = hash(0,nu,p);
+    cache_entry_t *entry = hash_table_lookup(hash_table, key);
+
+    if(entry)
+    {
+        /* lookup successful */
+        *sign = entry->sign;
+        return entry->v;
+    }
+    else
+    {
+        /* compute and save integral */
+        double K = _casimir_integrate_K(self, nu, p, sign);
+        entry = cache_entry_create(K, *sign);
+        hash_table_insert(hash_table, key, entry);
+        return K;
+    }
 }
 
 static double _casimir_integrate_I(integration_t *self, int l1, int l2, polarization_t p, sign_t *sign)
 {
     const int m = self->m;
-    const int qmax = GAUNT_QMAX(l1,l2,m,m);
+    const int qmax = gaunt_qmax(l1,l2,m);
     const int nu = l1+l2;
     double a_tilde[qmax+1];
-    double a0;
     double v[qmax+1];
     sign_t s[qmax+1];
 
-    gaunt(l1, l2, m, m, &a0, a_tilde);
+    gaunt(l1, l2, m, a_tilde);
 
-    for(int q = 0; q <= qmax; q++)
+    int q;
+    for(q = 0; q <= qmax; q++)
     {
-        double pre;
-        double K = casimir_integrate_K(self, nu-2*q, p, &pre);
+        double aq = a_tilde[q];
+        double K = casimir_integrate_K(self, nu-2*q, p, &s[q]);
+        //printf("q=%d, nu=%d, K=%.10e, a_tilde=%g, tau=%g\n", q, nu-2*q, K*exp(pre), a_tilde[q], self->tau);
         
-        s[q] = copysign(1, K);
-        v[q] = pre+log(fabs(K));
+        s[q] *= copysign(1, aq);
+        v[q] = K+log(fabs(aq));
     }
 
-    return logadd_ms(v, s, qmax+1, sign);
+    return gaunt_log_a0(l1,l2,m)+logadd_ms(v, s, q, sign);
 }
 
 double casimir_integrate_I(integration_t *self, int l1, int l2, polarization_t p, sign_t *sign)
@@ -242,7 +261,7 @@ double casimir_integrate_I(integration_t *self, int l1, int l2, polarization_t p
     if(l1 < m || l2 < m)
     {
         *sign = 0;
-        return 0;
+        return -INFINITY;
     }
 
     /* I(l1,l2) = I(l2,l1)
@@ -251,7 +270,7 @@ double casimir_integrate_I(integration_t *self, int l1, int l2, polarization_t p
     if(l1 < l2)
         swap(&l1, &l2);
 
-    HashTable *hash_table = self->hash_table;
+    HashTable *hash_table = self->hash_table_I;
     const uint64_t key = hash(l1,l2,p);
     cache_entry_t *entry = hash_table_lookup(hash_table, key);
 
@@ -259,14 +278,14 @@ double casimir_integrate_I(integration_t *self, int l1, int l2, polarization_t p
     {
         /* lookup successful */
         *sign = entry->sign;
-        return entry->I;
+        return entry->v;
     }
     else
     {
         /* compute and save integral */
         double I = _casimir_integrate_I(self, l1, l2, p, sign);
         entry = cache_entry_create(I, *sign);
-        hash_table_insert(self->hash_table, key, entry);
+        hash_table_insert(hash_table, key, entry);
         return I;
     }
 }
@@ -281,98 +300,99 @@ integration_t *casimir_integrate_init(casimir_t *casimir, int n, int m, double e
     self->tau = 2*n*casimir->T;
     self->epsrel = epsrel;
 
-    self->hash_table = hash_table_new(cache_entry_destroy);
+    self->hash_table_I = hash_table_new(cache_entry_destroy);
+    self->hash_table_K = hash_table_new(cache_entry_destroy);
 
     return self;
 }
 
 void casimir_integrate_free(integration_t *integration)
 {
-    hash_table_free(integration->hash_table);
+    hash_table_free(integration->hash_table_I);
+    hash_table_free(integration->hash_table_K);
     xfree(integration);
 }
 
 
-double casimir_integrate_A(integration_t *self, int l1, int l2, polarization_t p, double *prefactor)
+double casimir_integrate_A(integration_t *self, int l1, int l2, polarization_t p, sign_t *sign)
 {
-    sign_t sign;
     const int m = self->m;
     if(m == 0)
     {
-        *prefactor = 0;
-        return 0;
+        *sign = 0;
+        return -INFINITY;
     }
 
-    const double A0 = -MPOW(l2)*pow_2(self->m);
+    const double I1 = casimir_integrate_I(self, l1, l2, p, sign);
+    const double log_A0 = 2*logi(m)+casimir_lnLambda(l1,l2,m)-self->tau;
 
-    *prefactor  = casimir_integrate_I(self, l1, l2, p, &sign);
-    *prefactor += casimir_lnLambda(l1, l2, m)-self->tau;
+    *sign *= -MPOW(l2);
 
-    return sign*A0;
+    return log_A0+I1;
 }
 
-double casimir_integrate_B(integration_t *self, int l1, int l2, polarization_t p, double *prefactor)
+double casimir_integrate_B(integration_t *self, int l1, int l2, polarization_t p, sign_t *sign)
 {
-    *prefactor = 0;
-    return 0;
-    #if 0
-    double I, prefactor1, prefactor2, prefactor3, prefactor4;
     const int m = self->m;
-    const double B0 = -MPOW(l2+1);
 
     if(m == 0)
     {
+        *sign = 0;
+        return 0;
+        /*
         I = casimir_integrate_I(self, l1, l2, p, &prefactor1);
         *prefactor = prefactor1+casimir_lnLambda(l1,l2,m)-self->tau;
         return B0*I;
+        */
     }
 
-    const double I1 = casimir_integrate_I(self, l1-1, l2-1, p, &prefactor1);
-    const double I2 = casimir_integrate_I(self, l1+1, l2-1, p, &prefactor2);
-    const double I3 = casimir_integrate_I(self, l1-1, l2+1, p, &prefactor3);
-    const double I4 = casimir_integrate_I(self, l1+1, l2+1, p, &prefactor4);
+    const double log_B0 = casimir_lnLambda(l1,l2,m)-self->tau;
+    sign_t sign1, sign2, sign3, sign4;
+    const double log_I1 = casimir_integrate_I(self, l1-1, l2-1, p, &sign1);
+    const double log_I2 = casimir_integrate_I(self, l1+1, l2-1, p, &sign2);
+    const double log_I3 = casimir_integrate_I(self, l1-1, l2+1, p, &sign3);
+    const double log_I4 = casimir_integrate_I(self, l1+1, l2+1, p, &sign4);
 
+    double I;
     const double denom = (2*l1+1.)*(2*l2+1.);
-    I  = (l1+1.)*(l1+m)*(l2+1.)*(l2+m)/denom*I1*exp(prefactor1-prefactor4);
-    I -=   l1*(l1-m+1.)*(l2+1.)*(l2+m)/denom*I2*exp(prefactor2-prefactor4);
-    I -=   (l1+1.)*(l1+m)*l2*(l2-m+1.)/denom*I3*exp(prefactor3-prefactor4);
-    I +=     l1*(l1-m+1.)*l2*(l2-m+1.)/denom*I4;
+    I  = (l1+1.)*(l1+m)*(l2+1.)*(l2+m)/denom*sign1*exp(log_I1-log_I4);
+    I -=   l1*(l1-m+1.)*(l2+1.)*(l2+m)/denom*sign2*exp(log_I2-log_I4);
+    I -=   (l1+1.)*(l1+m)*l2*(l2-m+1.)/denom*sign3*exp(log_I3-log_I4);
+    I +=     l1*(l1-m+1.)*l2*(l2-m+1.)/denom*sign4;
 
-    *prefactor = prefactor4+casimir_lnLambda(l1,l2,m)-self->tau;
+    *sign = -MPOW(l2+1)*copysign(1,I);
 
-    return B0*I;
-    #endif
+    return log_B0+log_I4+log(fabs(I));
 }
 
-double casimir_integrate_C(integration_t *self, int l1, int l2, polarization_t p, double *prefactor)
+double casimir_integrate_C(integration_t *self, int l1, int l2, polarization_t p, sign_t *sign)
 {
-    *prefactor = 0;
-    return 0;
-
-    #if 0
     const int m = self->m;
     if(m == 0)
     {
-        *prefactor = 0;
-        return 0;
+        *sign = 0;
+        return -INFINITY;
     }
 
-    double I, prefactor1, prefactor2;
-    const double C0 = -MPOW(l2)*m;
+    const double log_C0 = logi(m)+casimir_lnLambda(l1,l2,m)-self->tau;
 
-    const double I1 = casimir_integrate_I(self, l1, l2-1, p, &prefactor1);
-    const double I2 = casimir_integrate_I(self, l1, l2+1, p, &prefactor2);
+    sign_t sign1, sign2;
+    const double log_I1 = casimir_integrate_I(self, l1, l2-1, p, &sign1);
+    const double log_I2 = casimir_integrate_I(self, l1, l2+1, p, &sign2);
 
     const double denom = 2.*l2+1.;
-    I  = -(l2+1.)*(l2+m)/denom*I1*exp(prefactor1-prefactor2);
-    I += l2*(l2-m+1.)/denom*I2;
-    *prefactor = prefactor2+casimir_lnLambda(l1,l2,m)-self->tau;
+    double I;
+    I  = -(l2+1.)*(l2+m)/denom*sign1*exp(log_I1-log_I2);
+    I += l2*(l2-m+1.)/denom*sign2;
 
-    return C0*I;
-    #endif
+    *sign = -MPOW(l2)*copysign(1,I);
+
+    return log_C0 + log_I2+log(fabs(I));
 }
 
-double casimir_integrate_D(integration_t *self, int l1, int l2, polarization_t p, double *prefactor)
+double casimir_integrate_D(integration_t *self, int l1, int l2, polarization_t p, sign_t *sign)
 {
-    return MPOW(l1+l2+1)*casimir_integrate_C(self, l2, l1, p, prefactor);
+    double log_C = casimir_integrate_C(self, l2, l1, p, sign);
+    *sign *= MPOW(l1+l2+1);
+    return log_C;
 }
