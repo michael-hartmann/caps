@@ -17,6 +17,7 @@ OBJS = \
     cquadpack/src/dqk21.c \
     cquadpack/src/dqsort.c \
     hash-table.c \
+    gaunt.c \
     lookup.c \
     integration.o \
     libcasimir.o \
@@ -61,7 +62,7 @@ LDFLAGS += -lm -pthread -llapack -lblas -lgfortran
 TARGET = "../bin/"
 
 # optimize for native CPU
-OPT = -march=native -O3
+OPT = -march=native -O3 -mmmx -msse -msse2
 OPT +=-flto
 
 # This file contains header dependencies. dependencies and dependencies_test will update this file.
