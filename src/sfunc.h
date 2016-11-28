@@ -23,6 +23,8 @@
 #define MAX(a,b) ((((a))>((b)))?((a)):((b)))
 #endif
 
+#define SGN(val) ((0 < (val)) - ((val) < 0))
+
 double lfac(unsigned int n);
 double logi(unsigned int x);
 
