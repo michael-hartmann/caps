@@ -94,7 +94,7 @@ static double f_bisect(double left, double right, int N, int nu, double tau, dou
 
 static void K_estimate_width(int nu, int m, double tau, double eps, double *a, double *b)
 {
-    double delta = 1e-3;
+    double delta = 1e-2;
 
     /* f(z) = z^ν*exp(-τz) */
     double zmax = ZMAX(nu,m,tau);
@@ -249,6 +249,9 @@ static double _casimir_integrate_I(integration_t *self, int l1, int l2, polariza
         
         s[q] *= copysign(1, aq);
         v[q] = K+log(fabs(aq));
+
+        if(v[q]-v[0] < -70)
+            break;
     }
 
     return gaunt_log_a0(l1,l2,m)+logadd_ms(v, s, q, sign);
