@@ -1422,19 +1422,19 @@ matrix_t *casimir_M(casimir_t *self, int n, int m)
             casimir_mie_cache_get(self, l1, n, &ln_al1, &sign_al1, &ln_bl1, &sign_bl1);
             casimir_mie_cache_get(self, l2, n, &ln_al2, &sign_al2, &ln_bl2, &sign_bl2);
 
-            double prefactorA, prefactorB;
+            sign_t signA_TE, signA_TM, signB_TE, signB_TM;
 
-            const double A_TE = casimir_integrate_A(integration, l1, l2, TE, &prefactorA);
-            const double A_TM = casimir_integrate_A(integration, l1, l2, TM, &prefactorA);
+            const double log_A_TE = casimir_integrate_A(integration, l1, l2, TE, &signA_TE);
+            const double log_A_TM = casimir_integrate_A(integration, l1, l2, TM, &signA_TM);
 
-            const double B_TE = casimir_integrate_B(integration, l1, l2, TE, &prefactorB);
-            const double B_TM = casimir_integrate_B(integration, l1, l2, TM, &prefactorB);
+            const double log_B_TE = casimir_integrate_B(integration, l1, l2, TE, &signB_TE);
+            const double log_B_TM = casimir_integrate_B(integration, l1, l2, TM, &signB_TM);
 
             /* EE */
             {
                 /* √(a_l1*a_l2)*(A_TE + B_TM) */
                 const double mie = (ln_al1+ln_al2)/2;
-                const double elem = exp(prefactorA+mie)*A_TE+exp(prefactorB+mie)*B_TM;
+                const double elem = exp(log_A_TE+mie)*signA_TE+exp(log_B_TM+mie)*signB_TM;
 
                 trace += fabs(elem); /* elem is positive */
 
@@ -1446,7 +1446,7 @@ matrix_t *casimir_M(casimir_t *self, int n, int m)
             {
                 /* √(b_l1*b_l2)*(A_TM + B_TE) */
                 const double mie = (ln_bl1+ln_bl2)/2;
-                const double elem = exp(prefactorA+mie)*A_TM+exp(prefactorB+mie)*B_TE;
+                const double elem = exp(log_A_TM+mie)*signA_TM+exp(log_B_TE+mie)*signB_TE;
 
                 trace += fabs(elem); /* elem is positive */
 
@@ -1457,22 +1457,22 @@ matrix_t *casimir_M(casimir_t *self, int n, int m)
             /* non-diagonal blocks EM and ME */
             if(m != 0)
             {
-                double prefactorC, prefactorD;
+                sign_t signC_TE, signC_TM, signD_TE, signD_TM;
 
-                const double C_TE = casimir_integrate_C(integration, l1, l2, TE, &prefactorC);
-                const double C_TM = casimir_integrate_C(integration, l1, l2, TM, &prefactorC);
+                const double log_C_TE = casimir_integrate_C(integration, l1, l2, TE, &signC_TE);
+                const double log_C_TM = casimir_integrate_C(integration, l1, l2, TM, &signC_TM);
 
-                const double D_TE = casimir_integrate_D(integration, l1, l2, TE, &prefactorD);
-                const double D_TM = casimir_integrate_D(integration, l1, l2, TM, &prefactorD);
+                const double log_D_TE = casimir_integrate_D(integration, l1, l2, TE, &signD_TE);
+                const double log_D_TM = casimir_integrate_D(integration, l1, l2, TM, &signD_TM);
 
                 const double mie1 = (ln_al1+ln_bl2)/2;
                 const double mie2 = (ln_bl1+ln_al2)/2;
 
                 /* C_TE + D_TM */
-                const double elem1 = exp(prefactorC+mie1)*C_TE+exp(prefactorD+mie1)*D_TM;
+                const double elem1 = exp(log_C_TE+mie1)*signC_TE+exp(log_D_TM+mie1)*signD_TM;
 
                 /* C_TM + D_TE */
-                const double elem2 = exp(prefactorC+mie2)*C_TM+exp(prefactorD+mie2)*D_TE;
+                const double elem2 = exp(log_C_TM+mie2)*signC_TM+exp(log_D_TE+mie2)*signD_TE;
 
                 /* M_EM */
                 matrix_set(M, i,dim+j,               sign_al1*elem1);
