@@ -126,6 +126,6 @@ void gaunt(const int n_, const int nu_, const int m_, double a_tilde[])
         }
         else
             /* eq. (30) */
-            a_tilde[q] = (p+1)*(p2+2)*alpha(p+2,n,nu)*a_tilde[q-1] / ((p+2)*(p1+1)*alpha(p+1,n,nu));
+            a_tilde[q] = (p+1)*(p2+2)*alpha(p+2,n,nu)*a_tilde[q-1] / ((p+2)*(p1+1)*(double)alpha(p+1,n,nu));
     }
 }
