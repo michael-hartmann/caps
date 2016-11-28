@@ -47,13 +47,4 @@ void Plm_array(int lmax, int m, double x, double factor, double array[]);
 double Plm_estimate(int l, int m, double x);
 void Pl1mPl2m(int l1, int l2, int m, double x, double factor, double *Pl1m, double *Pl2m);
 
-
-/* eq. (24) */
-#define GAUNT_QMAX(n,nu,m,mu) ( MIN(MIN((n),(nu)),((n)+(nu)-abs((m)+(mu)))/2) )
-
-/* eq. (20) */
-#define GAUNT_a0(n,nu,m,mu) (exp( lfac(2*(n))-lfac((n))+lfac(2*(nu))-lfac((nu))+lfac((n)+(nu))-lfac(2*(n)+2*(nu)) + lfac((n)+(nu)-(m)-(mu))-lfac((n)-(m))-lfac((nu)-(mu)) )) 
-
-void gaunt(int n, int nu, int m, int mu, double *a0_p, double a_tilde[]);
-
 #endif
