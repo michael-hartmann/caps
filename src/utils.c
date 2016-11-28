@@ -115,3 +115,11 @@ const char *indexn(const char *str, char c, int n)
 
     return NULL;
 }
+
+/* swap integer a and b */
+void swap(int *a, int *b)
+{
+    int t = *a;
+    *a = *b;
+    *b = t;
+}
