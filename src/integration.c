@@ -240,6 +240,7 @@ static double _casimir_integrate_I(integration_t *self, int l1, int l2, polariza
 
     gaunt(l1, l2, m, a_tilde);
 
+    /* improve this */
     int q;
     for(q = 0; q <= qmax; q++)
     {
@@ -333,6 +334,7 @@ void casimir_integrate_free(integration_t *integration)
 double casimir_integrate_A(integration_t *self, int l1, int l2, polarization_t p, sign_t *sign)
 {
     const int m = self->m;
+
     if(m == 0)
     {
         *sign = 0;
@@ -396,7 +398,7 @@ double casimir_integrate_C(integration_t *self, int l1, int l2, polarization_t p
     const double log_I1 = casimir_integrate_I(self, l1, l2-1, p, &sign1);
     const double log_I2 = casimir_integrate_I(self, l1, l2+1, p, &sign2);
 
-    const double denom = 2.*l2+1.;
+    const double denom = 2*l2+1;
     double I;
     I  = -(l2+1.)*(l2+m)/denom*sign1*exp(log_I1-log_I2);
     I += l2*(l2-m+1.)/denom*sign2;
