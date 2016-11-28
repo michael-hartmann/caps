@@ -202,7 +202,7 @@ static double _casimir_integrate_K(integration_t *self, int nu, polarization_t p
     TERMINATE(ier1 != 0 || ier2 != 0 || ier3 != 0, "ier1=%d, ier2=%d, ier3=%d, nu=%d, m=%d, tau=%g, a=%g, b=%g", ier1, ier2, ier3, nu,m,tau,a,b);
 
     double sum = result1+result2+result3;
-    *sign = copysign(1, sum);
+    *sign = SGN(sum);
     return log(fabs(sum))-tau*zmax + log_normalization*nu;
 }
 
@@ -243,11 +243,11 @@ static double _casimir_integrate_I(integration_t *self, int l1, int l2, polariza
     int q;
     for(q = 0; q <= qmax; q++)
     {
-        double aq = a_tilde[q];
-        double K = casimir_integrate_K(self, nu-2*q, p, &s[q]);
+        const double aq = a_tilde[q];
+        const double K = casimir_integrate_K(self, nu-2*q, p, &s[q]);
         //printf("q=%d, nu=%d, K=%.10e, a_tilde=%g, tau=%g\n", q, nu-2*q, K*exp(pre), a_tilde[q], self->tau);
         
-        s[q] *= copysign(1, aq);
+        s[q] *= SGN(aq);
         v[q] = K+log(fabs(aq));
 
         if(v[q]-v[0] < -70)
@@ -376,7 +376,7 @@ double casimir_integrate_B(integration_t *self, int l1, int l2, polarization_t p
     I -=   (l1+1.)*(l1+m)*l2*(l2-m+1.)/denom*sign3*exp(log_I3-log_I4);
     I +=     l1*(l1-m+1.)*l2*(l2-m+1.)/denom*sign4;
 
-    *sign = -MPOW(l2+1)*copysign(1,I);
+    *sign = -MPOW(l2+1)*SGN(I);
 
     return log_B0+log_I4+log(fabs(I));
 }
@@ -401,7 +401,7 @@ double casimir_integrate_C(integration_t *self, int l1, int l2, polarization_t p
     I  = -(l2+1.)*(l2+m)/denom*sign1*exp(log_I1-log_I2);
     I += l2*(l2-m+1.)/denom*sign2;
 
-    *sign = -MPOW(l2)*copysign(1,I);
+    *sign = -MPOW(l2)*SGN(I);
 
     return log_C0 + log_I2+log(fabs(I));
 }

@@ -178,7 +178,7 @@ double logadd_ms(const double list[], const sign_t signs[], const int len, sign_
     for(int i = 1; i < len; i++)
         sum += signs[i]*exp(list[i]-max);
 
-    *sign = copysign(1, sum);
+    *sign = SGN(sum);
     return max + log(fabs(sum));
 }
 
