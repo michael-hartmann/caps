@@ -169,17 +169,17 @@ double logadd_s(const double log_a, const sign_t sign_a, const double log_b, con
     }
 }
 
-double logadd_ms(const double list[], const sign_t signs[], const int len, sign_t *sign)
+double logadd_ms(log_t list[], const int len, sign_t *sign)
 {
-    double max = list[0];
+    double max = list[0].v;
 
     for(int i = 1; i < len; i++)
-        if(list[i] > max)
-            max = list[i];
+        if(list[i].v > max)
+            max = list[i].v;
 
-    double sum = signs[0]*exp(list[0]-max);
+    double sum = list[0].s*exp(list[0].v-max);
     for(int i = 1; i < len; i++)
-        sum += signs[i]*exp(list[i]-max);
+        sum += list[i].s*exp(list[i].v-max);
 
     *sign = SGN(sum);
     return max + log(fabs(sum));
@@ -331,7 +331,7 @@ double factorial2(unsigned int n)
  *
  * So, we actually calculate
  * \f[
- *     P_\ell^m(x) = (-1)^m (x^2-1)^{m/2} \frac{\mathrm{d}^m}{\mathrm{d}x^m} P_\ell(x) .
+ *     P_\ell^m(x) = (x^2-1)^{m/2} \frac{\mathrm{d}^m}{\mathrm{d}x^m} P_\ell(x) .
  * \f]
  * Note that we don't include the factor i^m in our calculuation.
  *
@@ -355,7 +355,6 @@ void Plm_array(int lmax, int m, double x, double factor, double array[])
     if(m == 0)
         array[0] = 1;
     else
-        //array[0] = MPOW(m)*factorial2(2*m-1)*pow(sqrt(x*x-1)/factor,m);
         array[0] = factorial2(2*m-1)*pow(sqrt((x+1)*(x-1))/factor,m);
 
     if(lmax == m)
@@ -363,8 +362,15 @@ void Plm_array(int lmax, int m, double x, double factor, double array[])
 
     array[1] = x*(2*m+1)*array[0]/factor;
 
+    /*
     for(int l = m+2; l <= lmax; l++)
         array[l-m] = ((2*l-1)*x*array[l-m-1] - (l+m-1)*array[l-m-2]/factor)/((l-m)*factor);
+    */
+    const double factor2 = pow_2(factor);
+    const double y = factor*x;
+
+    for(int l = m+2; l <= lmax; l++)
+        array[l-m] = ((2*l-1)*y*array[l-m-1] - (l+m-1)*array[l-m-2])/((l-m)*factor2);
 }
 
 

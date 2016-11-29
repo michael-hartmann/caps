@@ -25,6 +25,12 @@
 
 #define SGN(val) ((0 < (val)) - ((val) < 0))
 
+typedef struct
+{
+    sign_t s;
+    double v;
+} log_t;
+
 double lfac(unsigned int n);
 double logi(unsigned int x);
 
@@ -34,7 +40,7 @@ double max(double input[], size_t len);
 double min(double input[], size_t len);
 
 double logadd(const double a, const double b);
-double logadd_ms(const double list[], const sign_t signs[], const int len, sign_t *sign);
+double logadd_ms(log_t list[], const int len, sign_t *sign);
 double logadd_s(const double a, const sign_t sign_a, const double b, const sign_t sign_b, sign_t *sign);
 
 double bessel_lnInu(const int n, const double x);
