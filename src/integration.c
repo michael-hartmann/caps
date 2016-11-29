@@ -12,7 +12,6 @@
 #include "quadpack.h"
 
 #include "utils.h"
-#include "gaunt.h"
 #include "sfunc.h"
 #include "libcasimir.h"
 #include "integration.h"
