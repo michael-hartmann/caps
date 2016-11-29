@@ -50,7 +50,7 @@ CFLAGS += -I . -I cquadpack/include
 # enable warnings and make them fatal
 CFLAGS += -g -Wall -Wextra -Werror -Wmissing-prototypes -Wshadow -Wpointer-arith -Wcast-qual -Wwrite-strings -Wno-unused-parameter -fstrict-aliasing
 # profiling
-#CFLAGS += -g -pg
+#CFLAGS += -pg
 
 # ldflags
 LDFLAGS += -lm -pthread -llapack -lblas -lgfortran
@@ -62,8 +62,8 @@ LDFLAGS += -lm -pthread -llapack -lblas -lgfortran
 TARGET = "../bin/"
 
 # optimize for native CPU
-OPT = -march=native -O3 -mmmx -msse -msse2 -msse3 -msse4
-OPT +=-flto
+OPT  = -march=native -O3 -mmmx -msse -msse2 -msse3 -msse4
+OPT += -flto
 
 # This file contains header dependencies. dependencies and dependencies_test will update this file.
 DEPEND_FILE = .depend
