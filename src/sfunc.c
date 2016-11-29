@@ -36,7 +36,10 @@ double logi(unsigned int n)
  */
 double lfac(unsigned int n)
 {
-    return lgamma(1+n);
+    if(n < lookup_lfac_elems)
+        return lookup_lfac[n];
+    else
+        return lgamma(1+n);
 }
 
 /**
