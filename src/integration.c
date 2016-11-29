@@ -18,7 +18,7 @@
 #include "integration.h"
 #include "hash-table.h"
 
-/* arguments for integrand in function I_integrand */
+/* arguments for integrand in function K_integrand */
 typedef struct
 {
     int nu,m;
@@ -27,7 +27,7 @@ typedef struct
     casimir_t *casimir;
 } integrand_t;
 
-/* entry of cache constisting of the value of the integral; exp(prefactor)*I */
+/* entry of cache constisting of the value of the integral; sign*exp(v) */
 typedef struct
 {
     double v;
@@ -154,8 +154,6 @@ static double K_integrand(double z, void *args_)
 
     const double v = Plm(nu,2*m,1+z,factor)/z2p2z;
 
-    //fprintf(stderr, "%g %g\n", z, v);
-
     if(args->p == TE)
         return rTE*v;
     else
@@ -191,12 +189,12 @@ static double _casimir_integrate_K(integration_t *self, int nu, polarization_t p
     double a,b;
     K_estimate_width(nu, m, tau, 1e-6, &a, &b);
 
-    double abserr1 = 0, abserr2, abserr3, result1, result2, result3;
+    double abserr1 = 1e300, abserr2, abserr3, result1, result2, result3;
     int neval1, neval2, neval3, ier1, ier2, ier3;
     result2 = dqags(K_integrand, a, b, 0, epsrel, &abserr1, &neval2, &ier2, &args); /* [a,b] */
     abserr2 = abserr3 = abserr1;
-    result1 = dqags(K_integrand, 0, a, 0, 1, &abserr2, &neval1, &ier1, &args); /* [0,a] */
-    result3 = dqagi(K_integrand, b, 1, 0, 1, &abserr3, &neval3, &ier3, &args); /* [b,∞] */
+    result1 = dqags(K_integrand, 0, a, 0, 1e300, &abserr2, &neval1, &ier1, &args); /* [0,a] */
+    result3 = dqagi(K_integrand, b, 1, 0, 1e300, &abserr3, &neval3, &ier3, &args); /* [b,∞] */
 
     //printf("ier1=%d, ier2=%d, ier3=%d, nu=%d, m=%d, tau=%g, a=%g, b=%g\n", ier1, ier2, ier3, nu,m,tau,a,b);
     TERMINATE(ier1 != 0 || ier2 != 0 || ier3 != 0, "ier1=%d, ier2=%d, ier3=%d, nu=%d, m=%d, tau=%g, a=%g, b=%g", ier1, ier2, ier3, nu,m,tau,a,b);
@@ -229,33 +227,105 @@ double casimir_integrate_K(integration_t *self, int nu, polarization_t p, sign_t
     }
 }
 
-static double _casimir_integrate_I(integration_t *self, int l1, int l2, polarization_t p, sign_t *sign)
+/* eq. (3) */
+#define alpha(p, n, nu) (((pow_2(p)-pow_2(n+nu+1))*(pow_2(p)-pow_2(n-nu)))/(4*pow_2(p)-1))
+
+static double _casimir_integrate_I(integration_t *self, int l1, int l2, polarization_t p_, sign_t *sign)
 {
-    const int m = self->m;
-    const int qmax = gaunt_qmax(l1,l2,m);
-    const int nu = l1+l2;
-    double a_tilde[qmax+1];
-    double v[qmax+1];
-    sign_t s[qmax+1];
+    sign_t s;
+    double K;
 
-    gaunt(l1, l2, m, a_tilde);
+    const int m_ = self->m;
+    const double n  = l1;
+    const double nu = l2;
+    const double m  = m_;
+    const double n4 = l1+l2-2*m_;
+    const int l1pl2 = l1+l2;
 
-    /* improve this */
-    int q;
-    for(q = 0; q <= qmax; q++)
+    /* eq. (24) */
+    const int qmax = MIN(MIN(n,nu), (l1pl2-2*m_)/2);
+
+    /* eq. (28) */
+    const double Ap = -2*m*(n-nu)*(n+nu+1);
+
+    /* eq. (20) */
+    const double log_a0 = lfac(2*l1)-lfac(l1)+lfac(2*l2)-lfac(l2)+lfac(l1+l2)-lfac(2*l1pl2)+lfac(l1pl2-2*m_)-lfac(l1-m_)-lfac(l2-m_);
+
+    double aq[qmax+1];
+    log_t array[qmax+1];
+
+    if(qmax < 0)
     {
-        const double aq = a_tilde[q];
-        const double K = casimir_integrate_K(self, nu-2*q, p, &s[q]);
-        //printf("q=%d, nu=%d, K=%.10e, a_tilde=%g, tau=%g\n", q, nu-2*q, K*exp(pre), a_tilde[q], self->tau);
-        
-        s[q] *= SGN(aq);
-        v[q] = K+log(fabs(aq));
+        TERMINATE(1, "l1=%d, l2=%d, m=%d\n", l1, l2, (int)m);
+        return 0;
+    }
 
-        if(v[q]-v[0] < -70)
+    /* q = 0 */
+    int q = 0;
+    aq[q] = 1;
+    K = casimir_integrate_K(self, l1pl2-2*q, p_, &s);
+    array[q].s = s;
+    array[q].v = K;
+    
+    if(qmax == 0)
+        goto done;
+
+    /* q = 1 */
+    q = 1;
+    /* eq. (29) */
+    aq[q] = (n+nu-1.5)*(1-(2*n+2*nu-1)/(n4*(n4-1))*((m-n)*(m-n+1)/(2*n-1)+(m-nu)*(m-nu+1)/(2*nu-1)));
+    K = casimir_integrate_K(self, l1pl2-2*q, p_, &s);
+    array[q].s = SGN(aq[q])*s;
+    array[q].v = K+log(fabs(aq[q]));
+    if(qmax == 1)
+        goto done;
+
+    q = 2;
+    /* eq. (35) */
+    aq[2] = (2*n+2*nu-1)*(2*n+2*nu-7)/4*( (2*n+2*nu-3)/(n4*(n4-1)) * ( (2*n+2*nu-5)/(2*(n4-2)*(n4-3)) \
+                * ( (m-n)*(m-n+1)*(m-n+2)*(m-n+3)/(2*n-1)/(2*n-3) \
+                + 2*(m-n)*(m-n+1)*(m-nu)*(m-nu+1)/((2*n-1)*(2*nu-1)) \
+                + (m-nu)*(m-nu+1)*(m-nu+2)*(m-nu+3)/(2*nu-1)/(2*nu-3) ) - (m-n)*(m-n+1)/(2*n-1) \
+                - (m-nu)*(m-nu+1)/(2*nu-1) ) +0.5);
+
+    K = casimir_integrate_K(self, l1pl2-2*q, p_, &s);
+    array[q].s = SGN(aq[q])*s;
+    array[q].v = K+log(fabs(aq[q]));
+
+    if(qmax == 2)
+        goto done;
+
+    for(q = 3; q <= qmax; q++)
+    {
+        const int p = n+nu-2*q;
+        const int p1 = p-2*m;
+        const int p2 = p+2*m;
+
+        if(Ap != 0)
+        {
+            /* eqs. (26), (27) */
+            double c0 = (p+2)*(p+3)*(p1+1)*(p1+2)*Ap*alpha(p+1,n,nu);
+            double c1 = Ap*(Ap*Ap \
+               + (p+1)*(p+3)*(p1+2)*(p2+2)*alpha(p+2,n,nu) \
+               + (p+2)*(p+4)*(p1+3)*(p2+3)*alpha(p+3,n,nu));
+            double c2 = -(p+2)*(p+3)*(p2+3)*(p2+4)*Ap*alpha(p+4,n,nu);
+
+            aq[q] = (c1*aq[q-1] + c2*aq[q-2])/c0;
+        }
+        else
+            /* eq. (30) */
+            aq[q] = (p+1)*(p2+2)*alpha(p+2,n,nu)*aq[q-1] / ((p+2)*(p1+1)*(double)alpha(p+1,n,nu));
+
+        K = casimir_integrate_K(self, l1pl2-2*q, p_, &s);
+        array[q].s = SGN(aq[q])*s;
+        array[q].v = K+log(fabs(aq[q]));
+
+        if((array[q].v - array[0].v) < -75)
             break;
     }
 
-    return gaunt_log_a0(l1,l2,m)+logadd_ms(v, s, q, sign);
+    done:
+    return log_a0+logadd_ms(array, MIN(q,qmax)+1, sign);
 }
 
 double casimir_integrate_I(integration_t *self, int l1, int l2, polarization_t p, sign_t *sign)
