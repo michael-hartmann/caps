@@ -7,4 +7,7 @@ extern size_t lookup_logi_elems;
 
 extern double lookup_factorial2[];
 extern size_t lookup_factorial2_elems;
+
+extern double lookup_lfac[];
+extern size_t lookup_lfac_elems;
 #endif
