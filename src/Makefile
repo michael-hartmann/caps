@@ -17,7 +17,6 @@ OBJS = \
     cquadpack/src/dqk21.c \
     cquadpack/src/dqsort.c \
     hash-table.c \
-    gaunt.c \
     lookup.c \
     integration.o \
     libcasimir.o \
