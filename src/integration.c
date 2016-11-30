@@ -154,7 +154,11 @@ static double K_integrand(double z, void *args_)
     if(isinf(factor))
         return 0;
 
-    const double v = Plm(nu,2*m,1+z,factor)/z2p2z;
+    double v;
+    if(m)
+        v = Plm(nu,2*m,1+z,factor)/z2p2z;
+    else
+        v = Plm(nu,2,1+z,factor);
 
     if(isnan(v))
         return 0;
@@ -240,7 +244,7 @@ static double _casimir_integrate_I(integration_t *self, int l1, int l2, polariza
     sign_t s;
     double K;
 
-    const int m_ = self->m;
+    const int m_ = self->m > 0 ? self->m : 1;
     const double n  = l1;
     const double nu = l2;
     const double m  = m_;
@@ -428,18 +432,17 @@ double casimir_integrate_B(integration_t *self, int l1, int l2, polarization_t p
 {
     const int m = self->m;
 
+    const double log_B0 = casimir_lnLambda(l1,l2,m)-self->tau;
+
     if(m == 0)
     {
-        *sign = 0;
-        return 0;
-        /*
-        I = casimir_integrate_I(self, l1, l2, p, &prefactor1);
-        *prefactor = prefactor1+casimir_lnLambda(l1,l2,m)-self->tau;
-        return B0*I;
-        */
+        const double I = casimir_integrate_I(self, l1, l2, p, sign);
+
+        *sign *= -MPOW(l2+1);
+
+        return log_B0+I;
     }
 
-    const double log_B0 = casimir_lnLambda(l1,l2,m)-self->tau;
     sign_t sign1, sign2, sign3, sign4;
     const double log_I1 = casimir_integrate_I(self, l1-1, l2-1, p, &sign1);
     const double log_I2 = casimir_integrate_I(self, l1+1, l2-1, p, &sign2);
