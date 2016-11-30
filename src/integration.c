@@ -180,7 +180,12 @@ static double _casimir_integrate_K(integration_t *self, int nu, polarization_t p
     double log_normalization;
 
     if(zmax > 0)
-        log_normalization = (Plm_estimate(nu,2*m,1+zmax)-log(zmax*(zmax+2)))/nu;
+    {
+        if(m)
+            log_normalization = (Plm_estimate(nu,2*m,1+zmax)-log(zmax*(zmax+2)))/nu;
+        else
+            log_normalization = Plm_estimate(nu,2*m,1+zmax)/nu;
+    }
     else
         /* nu == 1 => I(z) = rp*exp(-τz) */
         log_normalization = 0;
