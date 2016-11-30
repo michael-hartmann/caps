@@ -22,6 +22,7 @@ OBJS = \
     libcasimir.o \
     matrix.o \
     sfunc.o \
+    gausslaguerre.c \
     utils.o
 
 TESTS = \
@@ -78,7 +79,7 @@ dependencies_test: $(TESTS:.o=.c) dependencies
 	$(CC) $(CFLAGS) $(OPT) -o $@ -c $<
 
 casimir_T0.o:
-	$(MPICC) $(CFLAGS) $(OPT) -o $@ -c $<
+	$(MPICC) $(CFLAGS) $(OPT) casimir_T0.c -o $@ -c $<
 
 casimir: casimir.o $(OBJS) dependencies
 	$(CC) $(CFLAGS) $(OPT) casimir.o $(OBJS) $(LDFLAGS) -o casimir
