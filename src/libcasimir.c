@@ -1384,13 +1384,11 @@ void casimir_logdetD0(casimir_t *self, int m, double *logdet_EE, double *logdet_
  */
 matrix_t *casimir_M(casimir_t *self, int n, int m)
 {
-    const double nT = n*self->T;
-
     const size_t min = MAX(m,1);
     const size_t max = self->lmax;
     const size_t dim = (max-min+1);
 
-    integration_t *integration = casimir_integrate_init(self, nT, m, 1e-6);
+    integration_t *integration = casimir_integrate_init(self, n, m, 1e-6);
 
     /* allocate space for matrix M */
     matrix_t *M = matrix_alloc(2*dim);
