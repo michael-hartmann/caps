@@ -9,7 +9,6 @@
 
 #include "casimir_T0.h"
 
-#include "integration_perf.h"
 #include "gausslaguerre.h"
 #include "libcasimir.h"
 #include "sfunc.h"
@@ -351,7 +350,7 @@ int master(int argc, char *argv[], int cores)
             else
                 value += values[i][m];
         }
-        printf("# k=%d, x=%.10Lg, logdetD(xi = x/alpha)=%.16Lg\n", i, xk[i], value);
+        printf("# k=%d, x=%.10g, logdetD(xi = x/alpha)=%.16g\n", i, xk[i], value);
         integral += exp(ln_wk[i]+xk[i])*value;
     }
 
@@ -360,7 +359,7 @@ int master(int argc, char *argv[], int cores)
 
     printf("#\n");
     printf("# L/R, lmax, order, alpha, F(T=0)*(L+R)/(ħc)\n");
-    printf("%g, %d, %d, %.15g, %.12Lg\n", LbyR, lmax, order, alpha, F0);
+    printf("%g, %d, %d, %.15g, %.12g\n", LbyR, lmax, order, alpha, F0);
 
     /* free memory */
     for(int i = 0; i < order; i++)
@@ -382,7 +381,6 @@ int slave(MPI_Comm master_comm, int rank)
     double logdet,xi,LbyR;
     MPI_Status status;
     MPI_Request request;
-    casimir_t casimir;
 
     while(1)
     {
@@ -396,10 +394,10 @@ int slave(MPI_Comm master_comm, int rank)
         if(xi < 0)
             break;
 
-        casimir_init(&casimir, LbyR, xi);
-        casimir_set_lmax(&casimir, lmax);
-        logdet = casimir_logdetD(&casimir, 1, m);
-        casimir_free(&casimir);
+        casimir_t *casimir = casimir_init(LbyR, xi);
+        casimir_set_lmax(casimir, lmax);
+        logdet = casimir_logdetD(casimir, 1, m);
+        casimir_free(casimir);
 
         MPI_Isend(&logdet, 1, MPI_DOUBLE, 0, 0, master_comm, &request);
         MPI_Wait(&request, &status);
