@@ -1,15 +1,11 @@
-\documentclass[10pt]{article}
+\documentclass[twocolumn,superscriptaddress,prb]{revtex4-1}
 
 \usepackage[english]{babel}
-\usepackage{setspace}
-\usepackage[T1]{fontenc}						%Europäischer Schriftsatz
-\usepackage{a4wide}					 				%Bessere Ausnutzung der DinA4 größe ohne Randbemerkungen, auch a4 möglich
 \usepackage[utf8]{inputenc}
 \usepackage{amssymb,amsmath}				%Mathe und Schriftsatz
 \usepackage{prettyref}
 \usepackage{bbm}
 \usepackage{txfonts}
-\usepackage[format=plain,margin=1.5cm,small]{caption} %Legenden: mergin versetzt beitseitig nach innen, format=plain verhindert einrücken (einfacher blocksatz)
 
 \usepackage[babel]{csquotes}
 \usepackage[hidelinks]{hyperref}  % unbedingt als letztes Paket laden
@@ -28,9 +24,6 @@
 
 \newcommand{\Plm}[2]{{\text{P}_{#1}^{#2}}}
 
-\newcommand{\F}{\ensuremath{\mathcal{F}}}
-
-\newcommand{\Id}{\mathbbm{1}}
 \newcommand{\lmax}{{\ell_\text{max}}}
 \newcommand{\tmax}{{\text{max}}}
 
@@ -39,9 +32,22 @@
 
 \begin{document}
 
-\section{Integration}
+\title{Evaluating the integrals in the plane-sphere geometry within the multipole-approach}
 
-We want to compute the integrals
+\author{Michael Hartmann}
+\affiliation{Universität Augsburg, Institut für Physik, 86135 Augsburg, Germany}
+
+\date{\today}
+
+\begin{abstract}
+We briefly describe how to evaluate the integration over the wavevector $k$ in the plane-sphere geometry.
+\end{abstract}
+
+\maketitle
+\section{Introduction}
+
+In this document we briefly describe how to evaluate the integration over $k$.
+After substitution, the problem is to calculate the integrals
 \begin{align}
 \label{eq:A}
 A_{\ell_1,\ell_2,p}^{m}(\tau) &= A_0 \int_0^\infty \mathrm{d}z \, r_p \, \frac{\e^{-\tau z}}{z^2+2z} \, \Plm{\ell_1}{m}(1+z) \Plm{\ell_2}{m}(1+z), \\
@@ -50,34 +56,48 @@ B_{\ell_1,\ell_2,p}^{m}(\tau) &= B_0 \int_0^\infty \mathrm{d}z \, r_p \, \e^{-\t
 \label{eq:C}
 C_{\ell_1,\ell_2,p}^{m}(\tau) &= C_0 \int_0^\infty \mathrm{d}z \, r_p \, \e^{-\tau z} \, \Plm{\ell_1}{m}(1+z) \Plm{\ell_2}{m}^\prime(1+z), \\
 \label{eq:D}
-D_{\ell_1,\ell_2,p}^{m}(\tau) &= (-1)^{\ell_1+\ell_2+1} C_{\ell_2\ell_1,p}^{m}
+D_{\ell_1,\ell_2,p}^{m}(\tau) &= (-1)^{\ell_1+\ell_2+1} C_{\ell_2\ell_1,p}^{m},
 \end{align}
 where
+\begin{align}
+A_0 &= (-1)^{\ell_2+m} \Lambda_{\ell_1,\ell_2}^m m^2 \e^{-\tau}, \\
+B_0 &= (-1)^{\ell_2+m+1} \Lambda_{\ell_1,\ell_2}^m \e^{-\tau}, \\
+C_0 &= (-1)^{\ell_2+m} \Lambda_{\ell_1,\ell_2}^m \imag m \e^{-\tau},
+\end{align}
+and $\tau \equiv 2nT$. The prefactor $\Lambda_{\ell_1,\ell_2}^m$ is defined as
 \begin{equation}
-A_0 = (-1)^{\ell_2+m} \Lambda_{\ell_1,\ell_2}^m m^2 \e^{-\tau}, \qquad
-B_0 = (-1)^{\ell_2+m+1} \Lambda_{\ell_1,\ell_2}^m \e^{-\tau}, \qquad
-C_0 = (-1)^{\ell_2+m} \Lambda_{\ell_1,\ell_2}^m \imag m \e^{-\tau},
+\Lambda_{\ell_1,\ell_2}^m = -2 \frac{N_{\ell_1}^m N_{\ell_2}^m}{\sqrt{\ell_1 (\ell_1+1) \ell_2 (\ell_2+1)}},
 \end{equation}
-and $\tau \equiv 2nT$.
+and
+\begin{equation}
+N_\ell^m = \sqrt{\frac{2\ell+1}{2} \frac{(\ell-m)!}{(\ell+m)!}}
+\end{equation}
+is the normalizing factor of spherical harmonics.
 The integrals \eqref{eq:A}--\eqref{eq:D} are identical to (6.11)--(6.14) in
-\cite{hartmann} after substitution $z = x/\tau$.
+\cite{hartmann} after the substitution $z = x/\tau$.
 
-Using the recurrence relation \eqref{appendix:dPlm} we find
+
+\section{Eliminating the derivatives}
+
+Using the recurrence relation \eqref{appendix:dPlm} we can express derivatives
+of associated Legendre polynomials as a sum of associated Legendre polynomials:
 \begin{align}
 \frac{A_{\ell_1,\ell_2,p}^{m}}{A_0} =& \mathcal{I}_{\ell_1,\ell_2,p}^{m} \\
-\nonumber
-\frac{B_{\ell_1,\ell_2,p}^{m}}{B_0} =& \frac{(\ell_1+1)(\ell_1+m)(\ell_2+1)(\ell_2+m)}{(2\ell_1+1)(2\ell_2+1)} \mathcal{I}_{\ell_1-1,\ell_2-1,p}^{m} - \frac{\ell_1(\ell_1-m+1)(\ell_2+1)(\ell_2+m)}{(2\ell_1+1)(2\ell_2+1)} \mathcal{I}_{\ell_1+1,\ell_2-1,p}^{m} \\
-& - \frac{(\ell_1+1)(\ell_1+m)\ell_2(\ell_2-m+1)}{(2\ell_1+1)(2\ell_2+1)} \mathcal{I}_{\ell_1-1,\ell_2+1,p}^{m} + \frac{\ell_1(\ell_1-m+1)\ell_2(\ell_2-m+1)}{(2\ell_1+1)(2\ell_2+1)} \mathcal{I}_{\ell_1+1,\ell_2+1,p}^{m} \\
-\frac{C_{\ell_1,\ell_2,p}^{m}}{C_0} =& -\frac{(\ell_2+1)(\ell_2+m)}{2\ell_2+1} \mathcal{I}_{\ell_1,\ell_2-1,p}^{m} + \frac{\ell_2 (\ell_2-m+1)}{2\ell_2+1} \mathcal{I}_{\ell_1,\ell_2+1,p}^{m}
+\frac{B_{\ell_1,\ell_2,p}^{m}}{B_0} =& \frac{(\ell_1+1)(\ell_1+m)(\ell_2+1)(\ell_2+m)}{(2\ell_1+1)(2\ell_2+1)} \mathcal{I}_{\ell_1-1,\ell_2-1,p}^{m} \nonumber \\
+                                     & -\frac{\ell_1(\ell_1-m+1)(\ell_2+1)(\ell_2+m)}{(2\ell_1+1)(2\ell_2+1)} \mathcal{I}_{\ell_1+1,\ell_2-1,p}^{m} \nonumber \\
+                                     & - \frac{(\ell_1+1)(\ell_1+m)\ell_2(\ell_2-m+1)}{(2\ell_1+1)(2\ell_2+1)} \mathcal{I}_{\ell_1-1,\ell_2+1,p}^{m} \nonumber \\
+                                     & + \frac{\ell_1(\ell_1-m+1)\ell_2(\ell_2-m+1)}{(2\ell_1+1)(2\ell_2+1)} \mathcal{I}_{\ell_1+1,\ell_2+1,p}^{m} \\
+\frac{C_{\ell_1,\ell_2,p}^{m}}{C_0} =&  \frac{\ell_2 (\ell_2-m+1)}{2\ell_2+1} \mathcal{I}_{\ell_1,\ell_2+1,p}^{m} - \frac{(\ell_2+1)(\ell_2+m)}{2\ell_2+1} \mathcal{I}_{\ell_1,\ell_2-1,p}^{m}
 \end{align}
 where we have defined
 \begin{equation}
 \mathcal{I}_{\ell_1,\ell_2,p}^{m}(\tau) = \int_0^\infty \mathrm{d}z \, r_p \, \frac{\e^{-\tau z}}{z^2+2z} \, \Plm{\ell_1}{m}(1+z) \Plm{\ell_2}{m}(1+z) \,.
 \end{equation}
-So, we reduced the problem of calculating the integrals $A,B,C,D$ to the problem of calculating the integral $\mathcal{I}$.
-The integral is symmetric with respect to $\ell_1$ and $\ell_2$
+So, we reduced the problem of calculating the integrals $A,B,C,D$ to the
+problem of calculating the integral $\mathcal{I}$. The integral is symmetric
+with respect to $\ell_1$ and $\ell_2$
 \begin{equation}
-\mathcal{I}_{\ell_1,\ell_2,p}^{m} = \mathcal{I}_{\ell_2,\ell_1,p}^{m}
+\mathcal{I}_{\ell_1,\ell_2,p}^{m} = \mathcal{I}_{\ell_2,\ell_1,p}^{m} \,.
 \end{equation}
 
 Using Gaunt coefficients a product of associated Legendre polynomials can be expressed as a sum of associated Legendre polynomials
@@ -85,10 +105,11 @@ Using Gaunt coefficients a product of associated Legendre polynomials can be exp
 \Plm{\ell_1}{m}(x) \Plm{\ell_2}{m}(x) = a_0 \sum_{q=0}^{q_\tmax} \tilde a_q \Plm{\ell_1+\ell_2-2q}{2m}(x) \,.
 \end{equation}
 Thus we can express the integral $\mathcal{I}_{\ell_1,\ell_2,p}^{m}$ as
-\begin{equation}
-\mathcal{I}_{\ell_1,\ell_2,p}^{m}(\tau) = \int_0^\infty \mathrm{d}z \, r_p \, \frac{\e^{-\tau z}}{z^2+2z} \, \Plm{\ell_1}{m}(1+z) \Plm{\ell_2}{m}(1+z)
- = a_0 \sum_{q=0}^{q_\tmax} \tilde a_q \, \mathcal{K}_{\ell_1+\ell_2-2q}^{2m}(1+z)
-\end{equation}
+\begin{align}
+\nonumber
+\mathcal{I}_{\ell_1,\ell_2,p}^{m}(\tau) &= \int_0^\infty \mathrm{d}z \, r_p \, \frac{\e^{-\tau z}}{z^2+2z} \, \Plm{\ell_1}{m}(1+z) \Plm{\ell_2}{m}(1+z) \\
+& = a_0 \sum_{q=0}^{q_\tmax} \tilde a_q \, \mathcal{K}_{\ell_1+\ell_2-2q}^{2m}(1+z)
+\end{align}
 where we have defined
 \begin{equation}
 \mathcal{K}_{\nu,p}^m = \int_0^\infty \mathrm{d}z \, r_p \frac{\e^{-\tau z}}{z^2+2z} \Plm{\nu}{2m}(1+z) \,.
@@ -97,20 +118,22 @@ The advantage is that for a scattering matrix $\mathcal{M}^m(\xi)$ we only have
 to evaluate $\mathcal{O}(\lmax)$ instead of $\mathcal{O}(\ell_\tmax^2)$
 integrals.
 
+\section{Shape of integrand}
+
 To estimate the shape and the maximum of $\mathcal{K}_{\nu,p}^m$ we assume that
-the Fresnel coefficient $r_p$ varies slowly and we ignore it. For large values
+the Fresnel coefficient $r_p$ varies slowly and ignore it. For large values
 of $z$ we can approximate the integrand of $\mathcal{K}_{\nu,p}^m$
 \begin{equation}
 k(z) = r_p \frac{\e^{-\tau z}}{z^2+2z} \Plm{\nu}{2m}(1+z) \overset{z \gg 1}{\approx} c \e^{-\tau z} z^\nu ,
 \end{equation}
-where $c$ is a constant. From this we find that the maximum of the integral is approximately at $z_\tmax \approx \nu/\tau$.
-As
+where $c$ is a constant. We find that the maximum of the integral is
+approximately at $z_\tmax \approx \nu/\tau$. As
 \begin{equation}
 \Plm{\ell}{m}(1+z_\tmax) \approx \frac{(2\ell)!}{2^\ell \, \ell! \, (\ell-m)!} z^\ell
 \end{equation}
 the integrand at $z_\tmax$ is approximately
 \begin{equation}
-k(z_\tmax) \approx \frac{(2\nu)!}{2^\nu \nu! (\nu-2m)!} \e^{-\tau z_\tmax} z_\tmax^\nu
+k(z_\tmax) \approx \frac{(2\nu)!}{2^\nu \nu! (\nu-2m)!} \e^{-\tau z_\tmax} z_\tmax^\nu \,.
 \end{equation}
 
 \appendix
@@ -130,12 +153,10 @@ The associated Legendre polynomials fullfil many recurrence relations, but we wi
 \frac{\mathrm{d}}{\mathrm{d}x} \Plm{\ell}{m}(x) = \frac{1}{x^2-1} \left[ -\frac{(\ell+1)(\ell+m)}{2\ell+1} \Plm{\ell-1}{m}(x) + \frac{\ell(\ell-m+1)}{2\ell+1} \Plm{\ell+1}{m}(x) \right]
 \end{equation}
 For large arguments $x\gg 1$ the associated Legendre polynomials and its derivatives may be approximated by
-\begin{align}
+\begin{equation}
 \label{appendix:Plm_gg}
-\Plm{\ell}{m}(x)        &= (-\imag)^m \frac{(2\ell)!}{2^\ell \, \ell! \, (\ell-m)!} x^\ell \\
-\label{appendix:dPlm_gg}
-\Plm{\ell}{m}^\prime(x) &= (-\imag)^m \frac{(2\ell)!}{2^\ell \, (\ell-1)! \, (\ell-m)! } x^{\ell-1}
-\end{align}
+\Plm{\ell}{m}(x) = (-\imag)^m \frac{(2\ell)!}{2^\ell \, \ell! \, (\ell-m)!} x^\ell \,.
+\end{equation}
 
 \addcontentsline{toc}{chapter}{Bibliography}
 %\printbibliography
