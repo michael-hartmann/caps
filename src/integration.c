@@ -151,7 +151,13 @@ static double K_integrand(double z, void *args_)
     const double exp_function = exp(tau*(z-args->zmax)/nu);
     const double factor = args->normalization * exp_function;
 
+    if(isinf(factor))
+        return 0;
+
     const double v = Plm(nu,2*m,1+z,factor)/z2p2z;
+
+    if(isnan(v))
+        return 0;
 
     if(args->p == TE)
         return rTE*v;
@@ -196,7 +202,7 @@ static double _casimir_integrate_K(integration_t *self, int nu, polarization_t p
     result3 = dqagi(K_integrand, b, 1, 0, 1e300, &abserr3, &neval3, &ier3, &args); /* [b,∞] */
 
     //printf("ier1=%d, ier2=%d, ier3=%d, nu=%d, m=%d, tau=%g, a=%g, b=%g\n", ier1, ier2, ier3, nu,m,tau,a,b);
-    TERMINATE(ier1 != 0 || ier2 != 0 || ier3 != 0, "ier1=%d, ier2=%d, ier3=%d, nu=%d, m=%d, tau=%g, a=%g, b=%g", ier1, ier2, ier3, nu,m,tau,a,b);
+    TERMINATE(ier1 != 0 || ier2 != 0 || ier3 != 0, "ier1=%d, ier2=%d, ier3=%d, nu=%d, m=%d, tau=%g, zmax=%g, a=%g, b=%g", ier1, ier2, ier3, nu,m,tau,zmax,a,b);
 
     double sum = result1+result2+result3;
     *sign = SGN(sum);
