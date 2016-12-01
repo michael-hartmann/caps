@@ -211,7 +211,7 @@ static double _casimir_integrate_K(integration_t *self, int nu, polarization_t p
     result3 = dqagi(K_integrand, b, 1, 0, 1e300, &abserr3, &neval3, &ier3, &args); /* [b,∞] */
 
     //printf("ier1=%d, ier2=%d, ier3=%d, nu=%d, m=%d, tau=%g, a=%g, b=%g\n", ier1, ier2, ier3, nu,m,tau,a,b);
-    TERMINATE(ier1 != 0 || ier2 != 0 || ier3 != 0, "ier1=%d, ier2=%d, ier3=%d, nu=%d, m=%d, tau=%g, zmax=%g, a=%g, b=%g", ier1, ier2, ier3, nu,m,tau,zmax,a,b);
+    WARN(ier1 != 0 || ier2 != 0 || ier3 != 0, "ier1=%d, ier2=%d, ier3=%d, nu=%d, m=%d, tau=%g, zmax=%g, a=%g, b=%g", ier1, ier2, ier3, nu,m,tau,zmax,a,b);
 
     double sum = result1+result2+result3;
     *sign = SGN(sum);
@@ -311,9 +311,9 @@ static double _casimir_integrate_I(integration_t *self, int l1, int l2, polariza
 
     for(q = 3; q <= qmax; q++)
     {
-        const int p = n+nu-2*q;
-        const int p1 = p-2*m;
-        const int p2 = p+2*m;
+        const double p = n+nu-2*q;
+        const double p1 = p-2*m;
+        const double p2 = p+2*m;
 
         if(Ap != 0)
         {
