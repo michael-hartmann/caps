@@ -376,9 +376,7 @@ out:
 
 int slave(MPI_Comm master_comm, int rank)
 {
-    int m, lmax;
     double buf[5];
-    double logdet,xi,LbyR;
     MPI_Status status;
     MPI_Request request;
 
@@ -386,17 +384,18 @@ int slave(MPI_Comm master_comm, int rank)
     {
         MPI_Recv(buf, 5, MPI_DOUBLE, 0, 0, master_comm, &status);
 
-        xi   = buf[0];
-        LbyR = buf[1];
-        m    = (int)buf[2];
-        lmax = buf[3];
+        const double xi   = buf[0];
+        const double LbyR = buf[1];
+        const int m    = (int)buf[2];
+        const int lmax = buf[3];
 
         if(xi < 0)
             break;
 
         casimir_t *casimir = casimir_init(LbyR, xi);
         casimir_set_lmax(casimir, lmax);
-        logdet = casimir_logdetD(casimir, 1, m);
+        double logdet = casimir_logdetD(casimir, 1, m);
+        TERMINATE(isnan(logdet), "LbyR=%.10g, xi=%.10g, m=%d, lmax=%d", LbyR, xi, m, lmax);
         casimir_free(casimir);
 
         MPI_Isend(&logdet, 1, MPI_DOUBLE, 0, 0, master_comm, &request);
