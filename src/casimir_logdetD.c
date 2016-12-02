@@ -206,10 +206,7 @@ int main(int argc, char *argv[])
         matrix_t *EE, *MM;
 
         casimir_M0(casimir, m, &EE, NULL);
-        double sum = 0;
-        for(size_t i = 0; i < EE->dim; i++)
-            sum += log1p(-matrix_get(EE, i,i));
-        printf("EE %.10g\n", sum);
+
         double trace_EE = matrix_trace(EE);
         double logdet_EE = matrix_logdet(EE, -1, casimir->detalg);
         matrix_free(EE);
