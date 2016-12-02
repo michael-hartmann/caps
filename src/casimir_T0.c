@@ -14,10 +14,10 @@
 #include "sfunc.h"
 #include "utils.h"
 
-#define PRECISION 1e-12
+#define PRECISION 1e-9
 #define ORDER 50
 #define LFAC 6.
-#define IDLE 10
+#define IDLE 25
 
 #define STATE_RUNNING 1
 #define STATE_IDLE    0
