@@ -121,19 +121,34 @@ integrals.
 \section{Shape of integrand}
 
 To estimate the shape and the maximum of $\mathcal{K}_{\nu,p}^m$ we assume that
-the Fresnel coefficient $r_p$ varies slowly and ignore it. For large values
-of $z$ we can approximate the integrand of $\mathcal{K}_{\nu,p}^m$
+the Fresnel coefficient $r_p$ varies slowly and ignore it.
+
+\subsection{Large values}
+For large values of $z$ we can approximate the integrand of
+$\mathcal{K}_{\nu,p}^m$ using \eqref{appendix:Plm_gg}
 \begin{equation}
 k(z) = r_p \frac{\e^{-\tau z}}{z^2+2z} \Plm{\nu}{2m}(1+z) \overset{z \gg 1}{\approx} c \e^{-\tau z} z^\nu ,
 \end{equation}
-where $c$ is a constant. We find that the maximum of the integral is
+where $c$ is a constant. We find that the maximum of the integrand is
 approximately at $z_\tmax \approx \nu/\tau$. As
 \begin{equation}
-\Plm{\ell}{m}(1+z_\tmax) \approx \frac{(2\ell)!}{2^\ell \, \ell! \, (\ell-m)!} z^\ell
+\Plm{\nu}{2m}(1+z_\tmax) \approx \frac{(2\nu)!}{2^\nu \, \nu! \, (\nu-2m)!} z_\tmax^\nu
 \end{equation}
 the integrand at $z_\tmax$ is approximately
 \begin{equation}
 k(z_\tmax) \approx \frac{(2\nu)!}{2^\nu \nu! (\nu-2m)!} \e^{-\tau z_\tmax} z_\tmax^\nu \,.
+\end{equation}
+
+\subsection{Small values}
+For small values of $z$ we can approximate the integrand of
+$\mathcal{K}_{\nu,p}^m$ using \eqref{appendix:Plm_1}
+\begin{equation}
+k(z) = r_p \frac{\e^{-\tau z}}{z^2+2z} \Plm{\nu}{2m}(1+z) \overset{z \sim 1}{\approx} c \e^{-\tau z} z^m
+\end{equation}
+where $c$ is a constant. The maximum of the integrand is approximately at $z_\tmax \approx m/\tau$ and the
+integrand at $z_\tmax$ is approximately
+\begin{equation}
+k(z_\tmax) \approx \frac{(\nu+2m)!}{(2m)! \, (\nu-2m)!} \frac{\e^{-\tau z_\tmax}}{z^2+2z} \left(\frac{z}{2}\right)^m \,.
 \end{equation}
 
 \appendix
@@ -150,16 +165,23 @@ We define associated Legendre polynomials for $x>1$ as
 The associated Legendre polynomials fullfil many recurrence relations, but we will only need this one:
 \begin{equation}
 \label{appendix:dPlm}
-\frac{\mathrm{d}}{\mathrm{d}x} \Plm{\ell}{m}(x) = \frac{1}{x^2-1} \left[ -\frac{(\ell+1)(\ell+m)}{2\ell+1} \Plm{\ell-1}{m}(x) + \frac{\ell(\ell-m+1)}{2\ell+1} \Plm{\ell+1}{m}(x) \right]
+\frac{\mathrm{d}}{\mathrm{d}x} \Plm{\ell}{m}(x) = \frac{1}{x^2-1} \left[
+\frac{\ell(\ell-m+1)}{2\ell+1} \Plm{\ell+1}{m}(x)
+-\frac{(\ell+1)(\ell+m)}{2\ell+1} \Plm{\ell-1}{m}(x)
+\right]
 \end{equation}
-For large arguments $x\gg 1$ the associated Legendre polynomials and its derivatives may be approximated by
+For large arguments $x\gg 1$ the associated Legendre polynomials may be approximated by
 \begin{equation}
 \label{appendix:Plm_gg}
-\Plm{\ell}{m}(x) = (-\imag)^m \frac{(2\ell)!}{2^\ell \, \ell! \, (\ell-m)!} x^\ell \,.
+\Plm{\ell}{m}(x) \approx (-\imag)^m \frac{(2\ell)!}{2^\ell \, \ell! \, (\ell-m)!} x^\ell,
+\end{equation}
+for $x\sim1$ they may be approximated by
+\begin{equation}
+\label{appendix:Plm_1}
+\Plm{\ell}{m}(x) \approx \frac{(\ell+m)!}{m! \, (\ell-m)!} \left(\frac{x-1}{2}\right)^{m/2} \,.
 \end{equation}
 
 \addcontentsline{toc}{chapter}{Bibliography}
-%\printbibliography
 
 
 \begin{thebibliography}{9}
