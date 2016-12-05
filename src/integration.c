@@ -174,21 +174,34 @@ static double _casimir_integrate_K(integration_t *self, int nu, polarization_t p
     const int m = self->m;
 
     const double tau = self->tau;
-    const double zmax = ZMAX(nu,m,tau);
     const double epsrel = self->epsrel;
 
-    double log_normalization;
+    double zmax = ZMAX(nu,m,tau);
+    double log_normalization,a,b;
 
-    if(zmax > 0)
+    if(zmax <= 0)
     {
-        if(m)
+        TERMINATE(true, "XXX, nu=%d, m=%d, tau=%g\n", nu, m, tau);
+        /* nu == 1 => I(z) = rp*exp(-τz) */
+        log_normalization = 0;
+    }
+    if(zmax < 1)
+    {
+        zmax = (m-2)/tau;
+        log_normalization = (m*(log(zmax)-M_LOG2)+lfac(nu+2*m)-lfac(nu-2*m)-lfac(2*m)-log(zmax*(zmax+2)))/nu;
+
+        a = 0;
+        b = 2*zmax; /* XXX */
+    }
+    else
+    {
+        if(m > 0)
             log_normalization = (Plm_estimate(nu,2*m,1+zmax)-log(zmax*(zmax+2)))/nu;
         else
             log_normalization = Plm_estimate(nu,2*m,1+zmax)/nu;
+
+        K_estimate_width(nu, m, tau, 1e-6, &a, &b);
     }
-    else
-        /* nu == 1 => I(z) = rp*exp(-τz) */
-        log_normalization = 0;
 
     integrand_t args = {
         .nu   = nu,
@@ -200,20 +213,18 @@ static double _casimir_integrate_K(integration_t *self, int nu, polarization_t p
         .casimir = self->casimir
     };
 
-    double a,b;
-    K_estimate_width(nu, m, tau, 1e-6, &a, &b);
-
-    double abserr1 = 1e300, abserr2, abserr3, result1, result2, result3;
-    int neval1, neval2, neval3, ier1, ier2, ier3;
-    result2 = dqags(K_integrand, a, b, 0, epsrel, &abserr1, &neval2, &ier2, &args); /* [a,b] */
+    double abserr1 = 1e300, abserr2, abserr3, I1 = 0, I2 = 0, I3 = 0;
+    int neval1, neval2, neval3, ier1 = 0, ier2 = 0, ier3 = 0;
+    I2 = dqags(K_integrand, a, b, 0, epsrel, &abserr1, &neval2, &ier2, &args); /* [a,b] */
     abserr2 = abserr3 = abserr1;
-    result1 = dqags(K_integrand, 0, a, 0, 1e300, &abserr2, &neval1, &ier1, &args); /* [0,a] */
-    result3 = dqagi(K_integrand, b, 1, 0, 1e300, &abserr3, &neval3, &ier3, &args); /* [b,∞] */
+    I3 = dqagi(K_integrand, b, 1, 0, 1, &abserr3, &neval3, &ier3, &args); /* [b,∞] */
+    if(a > 0)
+        I1 = dqags(K_integrand, 0, a, 0, 10, &abserr2, &neval1, &ier1, &args); /* [0,a] */
 
-    //printf("ier1=%d, ier2=%d, ier3=%d, nu=%d, m=%d, tau=%g, a=%g, b=%g\n", ier1, ier2, ier3, nu,m,tau,a,b);
-    WARN(ier1 != 0 || ier2 != 0 || ier3 != 0, "ier1=%d, ier2=%d, ier3=%d, nu=%d, m=%d, tau=%g, zmax=%g, a=%g, b=%g", ier1, ier2, ier3, nu,m,tau,zmax,a,b);
+    WARN(ier1+ier2+ier3 > 0, "ier1=%d, ier2=%d, ier3=%d, nu=%d, m=%d, tau=%g, zmax=%g, a=%g, b=%g, I1=%g, I2=%g, I3=%g", ier1, ier2, ier3, nu,m,tau,zmax,a,b, I1, I2, I3);
 
-    double sum = result1+result2+result3;
+    const double sum = I1+I2+I3;
+    TERMINATE(sum == 0, "ier1=%d, ier2=%d, ier3=%d, nu=%d, m=%d, tau=%g, zmax=%g, a=%g, b=%g, I1=%g, I2=%g, I3=%g", ier1, ier2, ier3, nu,m,tau,zmax,a,b, I1, I2, I3);
     *sign = SGN(sum);
     return log(fabs(sum))-tau*zmax + log_normalization*nu;
 }
@@ -242,7 +253,11 @@ double casimir_integrate_K(integration_t *self, int nu, polarization_t p, sign_t
 }
 
 /* eq. (3) */
-#define alpha(p, n, nu) (((pow_2(p)-pow_2(n+nu+1))*(pow_2(p)-pow_2(n-nu)))/(4*pow_2(p)-1))
+//#define alpha(p, n, nu) (((double)(pow_2(p)-pow_2(n+nu+1))*(double)(pow_2(p)-pow_2(n-nu)))/(4*pow_2(p)-1))
+static double alpha(double p, double n, double nu)
+{
+    return (((pow_2(p)-pow_2(n+nu+1))*(double)(pow_2(p)-pow_2(n-nu)))/(4*pow_2(p)-1));
+}
 
 static double _casimir_integrate_I(integration_t *self, int l1, int l2, polarization_t p_, sign_t *sign)
 {
@@ -328,11 +343,14 @@ static double _casimir_integrate_I(integration_t *self, int l1, int l2, polariza
         }
         else
             /* eq. (30) */
-            aq[q] = (p+1)*(p2+2)*alpha(p+2,n,nu)*aq[q-1] / ((p+2)*(p1+1)*(double)alpha(p+1,n,nu));
+            aq[q] = (p+1)*(p2+2)*(double)alpha(p+2,n,nu)*aq[q-1] / ((p+2)*(p1+1)*(double)alpha(p+1,n,nu));
 
         K = casimir_integrate_K(self, l1pl2-2*q, p_, &s);
         array[q].s = SGN(aq[q])*s;
         array[q].v = K+log(fabs(aq[q]));
+
+        TERMINATE(isnan(aq[q]) || isinf(aq[q]), "aq[%d]=%g", q, aq[q]);
+        TERMINATE(isinf(array[q].v), "array[q]=%g, aq=%g, K=%g", array[q].v, aq[q], K);
 
         if((array[q].v - array[0].v) < -75)
             break;
@@ -388,6 +406,9 @@ double casimir_integrate_I(integration_t *self, int l1, int l2, polarization_t p
 
 integration_t *casimir_integrate_init(casimir_t *casimir, int n, int m, double epsrel)
 {
+    if(n < 0 || m < 0 || epsrel <= 0)
+        return NULL;
+
     integration_t *self = (integration_t *)xmalloc(sizeof(integration_t));
 
     self->casimir = casimir;
@@ -409,9 +430,12 @@ integration_t *casimir_integrate_init(casimir_t *casimir, int n, int m, double e
 
 void casimir_integrate_free(integration_t *integration)
 {
-    hash_table_free(integration->hash_table_I);
-    hash_table_free(integration->hash_table_K);
-    xfree(integration);
+    if(integration != NULL)
+    {
+        hash_table_free(integration->hash_table_I);
+        hash_table_free(integration->hash_table_K);
+        xfree(integration);
+    }
 }
 
 
