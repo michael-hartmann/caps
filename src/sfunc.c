@@ -354,8 +354,12 @@ void Plm_array(int lmax, int m, double x, double factor, double array[])
 {
     if(m == 0)
         array[0] = 1;
-    else
+    /*
+    else if(m < 150)
         array[0] = factorial2(2*m-1)*pow(sqrt((x+1)*(x-1))/factor,m);
+    */
+    else
+        array[0] = exp(ln_factorial2(2*m-1) + m/2.*log((x+1)/factor*(x-1)/factor));
 
     if(lmax == m)
         return;
