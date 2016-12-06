@@ -2,16 +2,23 @@ import numpy as np
 import libcasimir
 from multiprocessing import Pool
 from multiprocessing.context import TimeoutError
-from random import random
 from time import sleep
+from math import fsum
+
+def logdetD(LbyR,xi,m,lmax):
+    casimir = libcasimir.Casimir(LbyR,xi,lmax=lmax)
+    return casimir.logdetD(1,m)
 
 class Queue:
-    def __init__(self,processes=4):
+    def __init__(self,LbyR,lmax,processes=4):
+        self.LbyR = LbyR
+        self.lmax = lmax
         self.queue = {}
         self.pool = Pool(processes=processes)
 
-    def submit(self,xi,m,lmax):
-        self.queue[(xi,m,lmax)] = self.pool.apply_async(logdetD, (xi,m,lmax))
+    def submit(self,xi,m):
+        LbyR, lmax = self.LbyR, self.lmax
+        self.queue[(xi,m)] = self.pool.apply_async(logdetD, (LbyR,xi,m,lmax))
 
     def join(self):
         d = []
@@ -19,8 +26,8 @@ class Queue:
             try:
                 v = self.queue[key].get(False)
                 del self.queue[key]
-                xi,m,lmax = key
-                d.append((xi,m,lmax,v))
+                xi,m = key
+                d.append((xi,m,v))
             except TimeoutError:
                 pass
 
@@ -30,70 +37,75 @@ class Queue:
         return len(self.queue)
 
 
-def logdetD(xi,m,lmax):
-    casimir = libcasimir.Casimir(1,xi,lmax=lmax)
-    return casimir.logdetD(1,m)
-
-
 def accurate(l, eps):
     l0 = l[0]
-    if l0 == 0:
+    
+    if l0 > 0:
         return False
 
-    for j in range(len(l)):
-        if l[j] == 0:
-            if abs(l[j-1]/l0 ) < prec:
-                return True
-            else:
-                return False
+    if l0 == 0:
+        return True
+
+    for j in range(1,len(l)):
+        lj = l[j]
+        if lj > 0:
+            return False
+        if abs(lj/l0) < eps:
+            return True
+
+    return True
 
 
 if __name__ == "__main__":
-    prec = 1e-6
-    LbyR = 0.1
-    processes = 4
+    prec = 1e-12
+    LbyR = 0.05
+    processes = 6
     deg = 80
-    lmax = 40
+    lmax = 160
     idle = 2 # in ms
 
     alpha = 2*LbyR/(1+LbyR);
     xk,wk = np.polynomial.laguerre.laggauss(deg)
-    xk /= alpha
 
     d = {}
     for i,x in enumerate(xk):
-        d[x] = i
+        d[x/alpha] = i
 
-    queue = Queue()
+    queue = Queue(LbyR, lmax)
 
     # initialize results
-    M = np.zeros((deg,lmax))
+    M = np.empty((deg,lmax))
+    M.fill(1)
 
     for m in range(lmax):
         stop = True
-        #print("m=%d" % m)
-        for i,xi in enumerate(xk):
-            if not accurate(M[i,:],prec):
+
+        for j,xj in enumerate(xk):
+            if not accurate(M[j,:],prec):
                 stop = False
-                queue.submit(xi,m,lmax)
+                xi = xj/alpha
+                queue.submit(xi,m)
 
             while len(queue) >= processes:
-                for xi_,m_,lmax_,v in queue.join():
-                    print("# xi=%g, m=%d, v=%g" % (xi_,m_,v))
+                for xi_,m_,v in queue.join():
                     M[d[xi_],m_] = v
-
                 sleep(idle/1000)
 
         if stop:
             break
 
 
-    print("get all remaining processes")
+    # get all remaining processes
     while len(queue) > processes:
         for xi_,m_,v in queue.join():
-            print("# xi=%g, m=%d, v=%g" % (xi_,m_,v))
+            #print("# xi=%g, m=%d, v=%g" % (xi_,m_,v))
             M[d[xi_],m_] = v
+        sleep(idle/1000)
 
+
+    mask = np.where(M == 1)
+    M[mask] = 0
 
     for i,xi in enumerate(xk):
-        print(xi, np.sum(M[i,:]))
+        M[i,0] /= 2
+        print("# k=%d, x=%g, logdetD(xi=x/alpha)=%.15g" % (i, xi*alpha, fsum(M[i,:])))
