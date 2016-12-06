@@ -34,9 +34,6 @@ cdef extern from "libcasimir.h":
     detalg_t casimir_get_detalg(casimir_t *self)
     int casimir_set_detalg(casimir_t *self, detalg_t detalg)
 
-    int casimir_get_cores(casimir_t *self)
-    int casimir_set_cores(casimir_t *self, int cores)
-
     double casimir_get_precision(casimir_t *self)
     int    casimir_set_precision(casimir_t *self, double precision)
 
@@ -143,7 +140,7 @@ cdef class Casimir:
     cpdef args
     cpdef epsilonm1
 
-    def __init__(self, LbyR, T, verbose=False, debug=False, lmax=None, cores=1, precision=None, detalg="LU"):
+    def __init__(self, LbyR, T, verbose=False, debug=False, lmax=None, precision=None, detalg="LU"):
         """Initialize Casimir object
 
         Required arguments:
@@ -152,7 +149,6 @@ cdef class Casimir:
 
         Optional arguments:
             lmax:      truncation of vector space
-            cores:     number of cores to use (only used for F)
             precision  XXX
             detalg:    LU, QR, EIG
             threshold: XXX
@@ -167,8 +163,6 @@ cdef class Casimir:
             raise ValueError("lmax must be positive")
         if precision != None and precision <= 0:
             raise ValueError("precision must be positive")
-        if type(cores) != int or cores < 1:
-            raise ValueError("cores must be a positive integer")
         if detalg != None and detalg not in ("LU", "QR", "EIG"):
             raise ValueError("detalg must be one of LU, QR or EIG")
 
@@ -182,8 +176,6 @@ cdef class Casimir:
             casimir_set_precision(self.casimir, precision)
         if debug:
             casimir_set_debug(self.casimir, True)
-        if cores:
-            casimir_set_cores(self.casimir, cores)
         if verbose:
             casimir_set_verbose(self.casimir, verbose)
         if detalg == "LU":
@@ -207,9 +199,6 @@ cdef class Casimir:
 
     def get_detalg(self):
         return casimir_get_detalg(self.casimir)
-
-    def get_cores(self):
-        return casimir_get_cores(self.casimir)
 
     def get_precision(self):
         return casimir_get_precision(self.casimir)
@@ -235,7 +224,6 @@ cdef class Casimir:
         s  = "L/R = %.8g\n" % self.casimir.LbyR
         s += "T   = %.8g\n" % self.casimir.T
         s += "lmax      = %d\n" % self.get_lmax()
-        s += "cores     = %d\n" % self.get_cores()
         s += "precision = %g\n" % self.get_precision()
         s += "threshold = %g\n" % self.casimir.threshold
         s += "detalg    = %d" % self.get_detalg()
