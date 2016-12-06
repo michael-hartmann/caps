@@ -57,7 +57,7 @@ int casimir_compile_info(char *str, size_t size)
  * This function will print information about the object self to stream.
  * Information include all parameters like \f$R/L\f$, \f$\omega_\mathrm{P}\f$
  * and \f$\gamma\f$ of sphere and plane, as well as maximum value of
- * \f$\ell\f$, precision, number of cores...
+ * \f$\ell\f$, precision...
  *
  * This function is thread-safe. However, do not modify parameters (e.g. lmax,
  * dielectric properties of plane and sphere...) while calling this function.
@@ -76,7 +76,6 @@ void casimir_info(casimir_t *self, FILE *stream, const char *prefix)
     fprintf(stream, "%sT   = %.8g\n", prefix, self->T);
 
     fprintf(stream, "%slmax      = %d\n", prefix, self->lmax);
-    fprintf(stream, "%scores     = %d\n", prefix, self->cores);
     fprintf(stream, "%sprecision = %g\n", prefix, self->precision);
     fprintf(stream, "%sthreshold = %g\n", prefix, self->threshold);
 
@@ -356,8 +355,6 @@ casimir_t *casimir_init(double LbyR, double T)
     self->RbyScriptL = 1./(1.+LbyR);
     self->LbyR       = LbyR;
     self->precision  = CASIMIR_PRECISION;
-    self->cores      = 1;
-    self->threads    = xmalloc(self->cores*sizeof(pthread_t));
 
     self->lmax = ceil(MAX(CASIMIR_MINIMUM_LMAX, CASIMIR_FACTOR_LMAX/LbyR));
 
@@ -438,54 +435,6 @@ int casimir_set_epsilonm1(casimir_t *self, double (*epsilonm1)(double xi, void *
 
     return 1;
 }
-
-
-/**
- * @brief Return numbers of used cores
- *
- * See \ref casimir_set_cores.
- *
- * This function is not thread-safe.
- *
- * @param [in,out] self Casimir object
- * @retval number of used cores (>=0)
- */
-int casimir_get_cores(casimir_t *self)
-{
-    return self->cores;
-}
-
-
-/**
- * @brief Set the number of used cores
- *
- * This library supports multiple processor cores. However, you must specify
- * how many cores the library should use. By default, only one core will be
- * used.
- *
- * The libraray uses POSIX threads for parallelization. Threads share memory and
- * for this reason all cores must be on the same computer.
- *
- * Restrictions: cores > 0
- *
- * This function is not thread-safe.
- *
- * @param [in,out] self Casimir object
- * @param [in] cores number of cores that should be used
- * @retval 1 if successful
- * @retval 0 if cores < 1
- */
-int casimir_set_cores(casimir_t *self, int cores)
-{
-    if(cores < 1)
-        return 0;
-
-    self->cores = cores;
-    self->threads = xrealloc(self->threads, cores*sizeof(pthread_t));
-
-    return 1;
-}
-
 
 /**
  * @brief Set algorithm to calculate deterimant
@@ -578,6 +527,41 @@ int casimir_get_lmax(casimir_t *self)
     return self->lmax;
 }
 
+
+/**
+ * @brief Get threshold
+ *
+ * See \ref casimir_set_threshold.
+ *
+ * This function is not thread-safe.
+ *
+ * @param [in,out] self Casimir object
+ * @retval threshold
+ */
+double casimir_get_threshold(casimir_t *self)
+{
+    return self->threshold;
+}
+
+/**
+ * @brief Set thresold
+ *
+ * @param [in,out] self Casimir object
+ * @param [in] threshold
+ * @retval success, 1 if successfull, 0 if threshold <= 0
+ */
+int casimir_set_threshold(casimir_t *self, double threshold)
+{
+    if(threshold < 0)
+    {
+        TERMINATE(true, "Invalid argument: threshold=%g", threshold);
+        return 0;
+    }
+
+    self->threshold = threshold;
+    return 1;
+}
+
 /**
  * @brief Get precision
  *
@@ -633,9 +617,6 @@ void casimir_free(casimir_t *self)
     pthread_mutex_destroy(&self->mutex);
 
     casimir_mie_cache_free(self);
-
-    xfree(self->threads);
-    self->threads = NULL;
 
     xfree(self);
 }
@@ -1037,220 +1018,6 @@ void casimir_mie_cache_free(casimir_t *self)
 }
 
 /*@}*/
-
-
-/* This is the function the thread executes */
-static void *_thread_f(void *p)
-{
-    casimir_thread_t *r = (casimir_thread_t *)p;
-    r->value = casimir_F_n(r->self, r->n, &r->nmax);
-    return r;
-}
-
-/* This function starts a thread to compute the free energy corresponding to
- * the Matsubara term n
- *
- * The memory for the thread object and the variable r will be allocated in this function
- * and freed in _join_threads.
- */
-static pthread_t *_start_thread(casimir_t *self, int n)
-{
-    pthread_t *t = xmalloc(sizeof(pthread_t));
-    casimir_thread_t *r = xmalloc(sizeof(casimir_thread_t));
-
-    r->self  = self;
-    r->n     = n;
-    r->value = 0;
-    r->nmax  = 0;
-
-    pthread_create(t, NULL, _thread_f, (void *)r);
-
-    return t;
-}
-
-/* This function tries to join threads and writed the result to values */
-static int _join_threads(casimir_t *self, double values[], int *ncalc)
-{
-    int joined = 0, running = 0;
-    casimir_thread_t *r;
-    pthread_t **threads = self->threads;
-
-    for(int i = 0; i < self->cores; i++)
-    {
-        if(threads[i] != NULL)
-        {
-            running++;
-
-            if(pthread_tryjoin_np(*threads[i], (void *)&r) == 0)
-            {
-                joined++;
-
-                if(r->n > *ncalc)
-                    *ncalc = r->n;
-
-                if(r->n == 0)
-                    values[r->n] = r->value/2;
-                else
-                    values[r->n] = r->value;
-
-                xfree(r);
-                xfree(threads[i]);
-                threads[i] = NULL;
-            }
-        }
-    }
-
-    if(running == 0)
-        return -1;
-
-    return joined;
-}
-
-
-/**
-* @name Calculate free energy
-*/
-/*@{*/
-
-/**
- * @brief Calculate free energy for Matsubara term n
- *
- * This function calculates the free energy for the Matsubara term n. If mmax
- * is not NULL, the largest value of m calculated will be stored in mmax.
- *
- * This function is thread-safe - as long you don't change temperature, aspect
- * ratio, dielectric properties of sphere and plane, lmax and integration.
- *
- * @param [in,out] self Casimir object
- * @param [in] n Matsubara term, \f$\xi=nT\f$
- * @param [out] mmax maximum number of \f$m\f$
- * @retval F Casimir free energy for given \f$n\f$
- */
-double casimir_F_n(casimir_t *self, const int n, int *mmax)
-{
-    const double precision = self->precision;
-    const int lmax = self->lmax;
-    double values[lmax+1];
-
-    /* initialize to 0 */
-    for(int m = 0; m <= lmax; m++)
-        values[m] = 0;
-
-    for(int m = 0; m <= lmax; m++)
-    {
-        values[m] = casimir_logdetD(self,n,m);
-        casimir_verbose(self, "# n=%d, m=%d, logdetD=%.15g\n", n, m, values[m]);
-        if(m == 0)
-            values[0] /= 2.;
-
-        /* The stop criterion is as follows: If
-         * logdetD(n,m)/(\sum_i^m logdetD(n,i)) < precision
-         * we can skip the summation.
-         */
-        double sum_n = kahan_sum(values, lmax+1);
-        if(values[0] != 0 && fabs(values[m]/sum_n) < precision)
-        {
-            if(mmax != NULL)
-                *mmax = m;
-
-            return sum_n;
-        }
-    }
-
-    if(mmax != NULL)
-        *mmax = lmax;
-
-    return kahan_sum(values, lmax+1);
-}
-
-
-/**
- * @brief Calculate free energy
- *
- * This function calculates the free energy. If nmax is not NULL, the highest
- * Matsubara term calculated will be stored in nnmax.
- *
- * This function will use as many cores as specified by casimir_set_cores.
- *
- * @param [in,out] self Casimir object
- * @param [out] nmax maximum number of n
- * @retval F Casimir free energy
- */
-double casimir_F(casimir_t *self, int *nmax)
-{
-    int n = 0;
-    double sum_n = 0;
-    const double precision = self->precision;
-    double *values = NULL;
-    int len = 0;
-    int ncalc = 0;
-    const int cores = self->cores;
-    const int delta = MAX(1024, cores);
-    pthread_t **threads = self->threads;
-
-    for(int i = 0; i < cores; i++)
-        threads[i] = NULL;
-
-    /* So, here we sum up all m and n that contribute to F.
-     * So, what do we do here?
-     *
-     * We want to evaluate
-     *      \sum_{n=0}^\infty \sum{m=0}^{l_max} log(det(1-M)),
-     * where the terms for n=0 and m=0 are weighted with a factor 1/2.
-     */
-    while(1)
-    {
-        if(n >= len)
-        {
-            values = (double *)xrealloc(values, (len+delta)*sizeof(double));
-
-            for(int i = len; i < len+delta; i++)
-                values[i] = 0;
-
-            len += delta;
-        }
-
-        if(cores > 1)
-        {
-            for(int i = 0; i < cores; i++)
-                if(threads[i] == NULL)
-                    threads[i] = _start_thread(self, n++);
-
-            if(_join_threads(self, values, &ncalc) == 0)
-                usleep(CASIMIR_IDLE);
-        }
-        else
-        {
-            values[n] = casimir_F_n(self, n, NULL);
-            if(n == 0)
-                values[0] /= 2;
-
-            ncalc = n;
-            n++;
-        }
-
-        if(values[0] != 0)
-        {
-            if(fabs(values[ncalc]/(2*values[0])) < precision)
-            {
-                if(cores > 1)
-                    while(_join_threads(self, values, &ncalc) != -1)
-                        usleep(CASIMIR_IDLE);
-
-                sum_n = kahan_sum(values, n);
-
-                /* get out of here */
-                if(nmax != NULL)
-                    *nmax = n-1; // we calculated n term from n=0,...,nmax=n-1
-
-                if(values != NULL)
-                    xfree(values);
-
-                return self->T/M_PI*sum_n;
-            }
-        }
-    }
-}
 
 
 /**

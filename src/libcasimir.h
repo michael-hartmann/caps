@@ -23,12 +23,16 @@ typedef enum { TE, TM } polarization_t;
 #define M_PI 3.14159265358979323846
 #endif
 
+#ifndef M_LOG2
 #define M_LOG2 0.6931471805599453
+#endif
+
+#ifndef M_LOGPI
 #define M_LOGPI 1.1447298858494002
+#endif
 
 /* default values */
 #define CASIMIR_PRECISION 1e-12      /**< default precision */
-#define CASIMIR_IDLE 1000            /**< idle time in µs */
 #define CASIMIR_MINIMUM_LMAX 20      /**< minimum value for lmax */
 #define CASIMIR_FACTOR_LMAX 5        /**< by default: lmax=ceil(5/LbyR) */
 
@@ -80,10 +84,8 @@ typedef struct
      */
      /*@{*/
     int lmax;               /**< truncation value for vector space \f$\ell_\mathrm{max}\f$ */
-    int cores;              /**< number of thread that should be used */
     double precision;       /**< precision \f$\epsilon_p\f$ */
     double threshold;       /**< XXX TBD */
-    pthread_t **threads;    /**< list of pthread objects */
 
     detalg_t detalg;        /**< algorithm to calculate determinant */
 
@@ -138,18 +140,15 @@ int casimir_set_lmax(casimir_t *self, int lmax);
 detalg_t casimir_get_detalg(casimir_t *self);
 int casimir_set_detalg(casimir_t *self, detalg_t detalg);
 
-int casimir_get_cores(casimir_t *self);
-int casimir_set_cores(casimir_t *self, int cores);
-
 double casimir_get_precision(casimir_t *self);
 int    casimir_set_precision(casimir_t *self, double precision);
+
+double casimir_get_threshold(casimir_t *self);
+int    casimir_set_threshold(casimir_t *self, double threshold);
 
 void casimir_lnab0(int l, double *a0, sign_t *sign_a0, double *b0, sign_t *sign_b0);
 void casimir_lnab(casimir_t *self, int n, int l, double *lna, double *lnb, sign_t *sign_a, sign_t *sign_b);
 void casimir_lnab_perf(casimir_t *self, int n, int l, double *lna, double *lnb, sign_t *sign_a, sign_t *sign_b);
-
-double casimir_F_n(casimir_t *self, const int n, int *mmax);
-double casimir_F(casimir_t *self, int *nmax);
 
 void casimir_mie_cache_init(casimir_t *self);
 void casimir_mie_cache_alloc(casimir_t *self, int n);
