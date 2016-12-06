@@ -5,10 +5,6 @@
  * @brief  library to calculate the free Casimir energy in the plane-sphere geometry
  */
 
-
-/* for usleep and pthread_tryjoin_np */
-#define _GNU_SOURCE
-
 #include <math.h>
 #include <pthread.h>
 #include <stdarg.h>
