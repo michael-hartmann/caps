@@ -2,10 +2,11 @@
 
 #include <ctype.h>
 #include <getopt.h>
+#include <mpi.h>
+#include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
-#include <mpi.h>
 
 #include "casimir_T0.h"
 
@@ -14,7 +15,7 @@
 #include "sfunc.h"
 #include "utils.h"
 
-#define PRECISION 1e-9
+#define PRECISION 1e-12
 #define ORDER 50
 #define LFAC 6.
 #define IDLE 25
@@ -151,6 +152,7 @@ int main(int argc, char *argv[])
 
 int master(int argc, char *argv[], int cores)
 {
+    bool debug = false;
     int order = ORDER, lmax = 0, ret = 0;
     double F0;
     double alpha, LbyR = -1, lfac = LFAC, precision = PRECISION;
@@ -166,6 +168,7 @@ int master(int argc, char *argv[], int cores)
         int c;
         struct option long_options[] = {
             { "help",      no_argument,       0, 'h' },
+            { "debug",     no_argument,       0, 'd' },
             { "LbyR",      required_argument, 0, 'x' },
             { "lmax",      required_argument, 0, 'L' },
             { "order",     required_argument, 0, 'N' },
@@ -177,7 +180,7 @@ int master(int argc, char *argv[], int cores)
         /* getopt_long stores the option index here. */
         int option_index = 0;
 
-        c = getopt_long (argc, argv, "x:L:N:l:c:p:h", long_options, &option_index);
+        c = getopt_long (argc, argv, "x:L:N:l:c:p:dh", long_options, &option_index);
 
         /* Detect the end of the options. */
         if(c == -1)
@@ -203,6 +206,9 @@ int master(int argc, char *argv[], int cores)
                 break;
             case 'N':
                 order = atoi(optarg);
+                break;
+            case 'd':
+                debug = true;
                 break;
             case 'h':
                 usage(stdout);
@@ -314,7 +320,11 @@ int master(int argc, char *argv[], int cores)
 
                     /* retrieve jobs */
                     while(casimir_mpi_retrieve(&casimir_mpi, &task))
+                    {
                         values[task->index][task->m] = task->value;
+                        if(debug)
+                            fprintf(stderr, "# m=%d, xi=%.12g, logdetD=%.12g\n", task->m, xk[task->index]/alpha, task->value);
+                    }
 
                     usleep(IDLE);
                 }
@@ -329,7 +339,11 @@ int master(int argc, char *argv[], int cores)
         casimir_task_t *task = NULL;
 
         while(casimir_mpi_retrieve(&casimir_mpi, &task))
+        {
             values[task->index][task->m] = task->value;
+            if(debug)
+                fprintf(stderr, "# m=%d, xi=%.12g, logdetD=%.12g\n", task->m, xk[task->index]/alpha, task->value);
+        }
 
         usleep(IDLE);
     }
