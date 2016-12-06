@@ -134,8 +134,7 @@ static void K_estimate_width(int nu, int m, double tau, double eps, double *a, d
 
 static double K_integrand(double z, void *args_)
 {
-    if(z <= 0)
-        return 0;
+    TERMINATE(z < 0, "Invalid parameter: z=%g\n", z);
 
     integrand_t *args = (integrand_t *)args_;
 
