@@ -58,10 +58,10 @@ def accurate(l, eps):
 
 if __name__ == "__main__":
     prec = 1e-12
-    LbyR = 0.05
+    LbyR = 0.1
     processes = 6
     deg = 80
-    lmax = 160
+    lmax = 80
     idle = 2 # in ms
 
     alpha = 2*LbyR/(1+LbyR);
@@ -98,14 +98,24 @@ if __name__ == "__main__":
     # get all remaining processes
     while len(queue) > processes:
         for xi_,m_,v in queue.join():
-            #print("# xi=%g, m=%d, v=%g" % (xi_,m_,v))
             M[d[xi_],m_] = v
         sleep(idle/1000)
 
 
-    mask = np.where(M == 1)
+    # set all matrix elements > 0 to 0
+    mask = np.where(M > 0)
     M[mask] = 0
 
+    # m=0 term factor 1/2
+    M[:,0] /= 2
+
+    terms_integral = []
     for i,xi in enumerate(xk):
-        M[i,0] /= 2
-        print("# k=%d, x=%g, logdetD(xi=x/alpha)=%.15g" % (i, xi*alpha, fsum(M[i,:])))
+        value = fsum(M[i,:])
+        terms_integral.append( wk[i]*np.exp(xk[i])*value )
+        print("# k=%d, x=%g, logdetD(xi=x/alpha)=%.15g" % (i, xi, value))
+
+    integral = fsum(terms_integral)/alpha/np.pi
+    print("#")
+    print("# L/R, lmax, order, alpha, F(T=0)*(L+R)/(ħc)")
+    print("%g, %d, %d, %.15g, %.15g" % (LbyR, lmax, deg, alpha, integral))
