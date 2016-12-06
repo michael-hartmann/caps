@@ -285,12 +285,12 @@ double ln_factorial2(unsigned int n)
     if(n % 2 == 0) /* even */
     {
         int k = n/2;
-        return k*M_LOG2 + lgamma(1+k);
+        return k*M_LOG2 + lfac(k);
     }
     else /* odd */
     {
         int k = (n+1)/2;
-        return lgamma(1+2*k) - k*M_LOG2 - lgamma(1+k);
+        return lfac(2*k) - k*M_LOG2 - lfac(k);
     }
 }
 
