@@ -1,7 +1,7 @@
 /**
  * @file   libcasimir.c
  * @author Michael Hartmann <michael.hartmann@physik.uni-augsburg.de>
- * @date   October, 2016
+ * @date   November, 2016
  * @brief  library to calculate the free Casimir energy in the plane-sphere geometry
  */
 
@@ -345,7 +345,10 @@ void casimir_rp(casimir_t *self, double nT, double k, double *r_TE, double *r_TM
 casimir_t *casimir_init(double LbyR, double T)
 {
     if(LbyR <= 0 || T <= 0)
+    {
+        TERMINATE(true, "Invalid argument: LbyR=%g, T=%g", LbyR, T);
         return NULL;
+    }
 
     casimir_t *self = xmalloc(sizeof(casimir_t));
 
@@ -545,8 +548,11 @@ detalg_t casimir_get_detalg(casimir_t *self)
  */
 int casimir_set_lmax(casimir_t *self, int lmax)
 {
-    if(lmax <= 0)
+    if(lmax < 1)
+    {
+        TERMINATE(true, "Invalid argument: lmax=%d", lmax);
         return 0;
+    }
 
     self->lmax = lmax;
 
@@ -601,7 +607,10 @@ double casimir_get_precision(casimir_t *self)
 int casimir_set_precision(casimir_t *self, double precision)
 {
     if(precision <= 0)
+    {
+        TERMINATE(true, "Invalid argument: precision=%g", precision);
         return 0;
+    }
 
     self->precision = precision;
     return 1;
@@ -1261,6 +1270,8 @@ double casimir_F(casimir_t *self, int *nmax)
  */
 void casimir_M0(casimir_t *self, int m, matrix_t **EE, matrix_t **MM)
 {
+    TERMINATE(m > self->lmax, "Invalid argument: m=%d, lmax=%d", m, self->lmax);
+
     /* y = log(R/(R+L)/2) */
     const double y = log(self->RbyScriptL/2);
 
@@ -1347,6 +1358,8 @@ void casimir_M0(casimir_t *self, int m, matrix_t **EE, matrix_t **MM)
  */
 void casimir_logdetD0(casimir_t *self, int m, double *logdet_EE, double *logdet_MM)
 {
+    TERMINATE(m > self->lmax, "Invalid argument: m=%d, lmax=%d", m, self->lmax);
+
     matrix_t *EE = NULL, *MM = NULL;
 
     if(logdet_EE != NULL && logdet_MM != NULL)
@@ -1384,6 +1397,8 @@ void casimir_logdetD0(casimir_t *self, int m, double *logdet_EE, double *logdet_
  */
 matrix_t *casimir_M(casimir_t *self, int n, int m)
 {
+    TERMINATE(m > self->lmax, "Invalid argument: m=%d, lmax=%d", m, self->lmax);
+
     const size_t min = MAX(m,1);
     const size_t max = self->lmax;
     const size_t dim = (max-min+1);
@@ -1509,6 +1524,8 @@ matrix_t *casimir_M(casimir_t *self, int n, int m)
  */
 double casimir_logdetD(casimir_t *self, int n, int m)
 {
+    TERMINATE(m > self->lmax, "Invalid argument: m=%d, lmax=%d", m, self->lmax);
+
     double t0;
     double logdet = 0;
 
