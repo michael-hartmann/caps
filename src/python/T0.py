@@ -6,6 +6,7 @@ from time import sleep
 from math import fsum
 
 def logdetD(LbyR,xi,m,lmax):
+    """Calculate log(det(1-M))"""
     casimir = libcasimir.Casimir(LbyR,xi,lmax=lmax)
     return casimir.logdetD(1,m)
 
@@ -38,6 +39,7 @@ class Queue:
 
 
 def accurate(l, eps):
+    """Determine if we have to calculate more terms for higher values of m"""
     l0 = l[0]
     
     if l0 > 0:
@@ -94,7 +96,6 @@ if __name__ == "__main__":
         if stop:
             break
 
-
     # get all remaining processes
     while len(queue) > processes:
         for xi_,m_,v in queue.join():
@@ -102,7 +103,7 @@ if __name__ == "__main__":
         sleep(idle/1000)
 
 
-    # set all matrix elements > 0 to 0
+    # set all matrix 0 which are > 0
     mask = np.where(M > 0)
     M[mask] = 0
 
