@@ -48,7 +48,7 @@ CFLAGS = -std=c99
 CFLAGS += -I . -I cquadpack/include
 
 # enable warnings and make them fatal
-CFLAGS += -g -Wall -Wextra -Werror -Wmissing-prototypes -Wshadow -Wpointer-arith -Wcast-qual -Wwrite-strings -Wno-unused-parameter -fstrict-aliasing
+CFLAGS += -g -Wall -Wextra -Wmissing-prototypes -Wshadow -Wpointer-arith -Wcast-qual -Wwrite-strings -Wno-unused-parameter -fstrict-aliasing -Wdouble-promotion
 # profiling
 #CFLAGS += -pg
 
