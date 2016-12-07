@@ -72,40 +72,6 @@ double kahan_sum(double input[], size_t N)
 }
 
 /**
- * @brief Find maximum in double array
- *
- * @param [in] input array
- * @param [in] N length of array (must be > 0)
- * @return maximum maximum of array elements
- */
-double max(double input[], size_t N)
-{
-    double m = input[0];
-
-    for(size_t i = 1; i < N; i++)
-        m = MAX(m,input[i]);
-
-    return m;
-}
-
-/**
- * @brief Find minimum in double array
- *
- * @param [in] input array
- * @param [in] N length of array (must be > 0)
- * @return minimum minimum of array elements
- */
-double min(double input[], size_t N)
-{
-    double m = input[0];
-
-    for(size_t i = 1; i < N; i++)
-        m = MIN(m,input[i]);
-
-    return m;
-}
-
-/**
 * @name Add numbers given as logarithms
 */
 /*@{*/
