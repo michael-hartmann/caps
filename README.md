@@ -69,11 +69,13 @@ should install all dependencies and compile the code.
 Usage
 -----
 
-Developing and contributing
----------------------------
+Bugs, developing and contributing
+---------------------------------
 
-Citing
-------
+The latest version if libcasimir is available at
+[github](https://github.com/michael-hartmann/libcasimir-dev). If you find a bug, please
+create an [issue](https://github.com/michael-hartmann/libcasimir-dev/issues). If you have
+improvements, create a pull request.
 
 Authors, license and credits
 ----------------------------
@@ -87,6 +89,15 @@ Authors, license and credits
 For a full list, see CREDITS.
 
 The code is licensed under GPLv2, see LICENSE.
+
+Also, libcasimir uses some third-party software:
+ * [cquadpack](https://github.com/ESSS/cquadpack) for integration. cquadpack is
+   a a C port of the QUADPACK software originally written in Fortran for
+   solving integrals. (public domain)
+ * [hash-table](https://github.com/fragglet/c-algorithms) is an implementation
+   of hash tables in C. The code was slightly modified for the use in
+   libcasimir. (ISC license)
+
 
 Publications
 ------------
