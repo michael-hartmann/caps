@@ -54,8 +54,8 @@ static void cache_entry_destroy(void *entry)
  */
 static uint64_t hash(int l1, int l2, polarization_t p)
 {
-    uint64_t l1_ = l1;
-    uint64_t l2_ = l2;
+    uint64_t l1_ = (uint64_t)l1;
+    uint64_t l2_ = (uint64_t)l2;
     uint64_t p_  = (p == TM) ? 1 : 0;
 
     return (l1_ << 32) | (l2_ << 1) | p_;
@@ -159,6 +159,7 @@ static double K_integrand(double z, void *args_)
     else
         v = Plm(nu,2,1+z,factor);
 
+    WARN(isnan(v), "z=%g, nu=%d, m=%d, tau=%g, factor=%g, v=nan\n", z, nu, m, tau, factor);
     if(isnan(v))
         return 0;
 
