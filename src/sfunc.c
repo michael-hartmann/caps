@@ -340,10 +340,6 @@ void Plm_array(int lmax, int m, double x, double factor, double array[])
         return;
     }
 
-    /*
-    for(int l = m+2; l <= lmax; l++)
-        array[l-m] = ((2*l-1)*x*array[l-m-1] - (l+m-1)*array[l-m-2]/factor)/((l-m)*factor);
-    */
     const double y = factor*x;
     const double factor2 = pow_2(factor);
 
