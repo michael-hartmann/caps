@@ -58,7 +58,7 @@ pthread_t *start_thread(double LbyR, int m, int lmax, double precision)
 
 void *logdetD0(void *p)
 {
-    casimir_t casimir;
+    casimir_t *casimir;
     double start = now();
     double logdet_EE = 0, logdet_MM = 0;
     param_t *params = p;
@@ -67,12 +67,12 @@ void *logdetD0(void *p)
     int m            = params->m;
     int lmax         = params->lmax;
 
-    casimir_init(&casimir, LbyR, 0.1);
-    casimir_set_precision(&casimir, precision);
-    casimir_set_lmax(&casimir, lmax);
+    casimir = casimir_init(LbyR, 0.1);
+    casimir_set_precision(casimir, precision);
+    casimir_set_lmax(casimir, lmax);
 
-    casimir_logdetD0(&casimir, m, &logdet_EE, &logdet_MM);
-    casimir_free(&casimir);
+    casimir_logdetD0(casimir, m, &logdet_EE, &logdet_MM);
+    casimir_free(casimir);
 
     // n == 0
     logdet_EE /= 2;
