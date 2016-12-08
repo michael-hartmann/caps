@@ -174,9 +174,17 @@ static double _casimir_integrate_K(integration_t *self, int nu, polarization_t p
 {
     TERMINATE(nu < 2, "nu=%d", nu);
     const int m = self->m;
-
+    const double eps = 1e-6;
     const double tau = self->tau;
     const double epsrel = self->epsrel;
+
+    integrand_t args = {
+        .nu   = nu,
+        .m    = m,
+        .p    = p,
+        .tau  = tau,
+        .casimir = self->casimir
+    };
 
     double zmax = ZMAX(nu,m,tau);
     double log_normalization,a,b;
@@ -190,7 +198,7 @@ static double _casimir_integrate_K(integration_t *self, int nu, polarization_t p
          */
         zmax = 0;
         a = 0;
-        b = 14/tau; /* exp(-14) =~ 1e-6 */
+        b = log(eps)/tau; /* exp(-14) =~ 1e-6 */
         log_normalization = 1;
     }
     else if(zmax < 1)
@@ -211,25 +219,17 @@ static double _casimir_integrate_K(integration_t *self, int nu, polarization_t p
     }
     else
     {
+        /* large z limit */
         if(m > 0)
             log_normalization = (Plm_estimate(nu,2*m,1+zmax)-log(zmax*(zmax+2)))/nu;
         else
-        {
             log_normalization = Plm_estimate(nu,0,1+zmax)/nu;
-        }
 
-        K_estimate_width(nu, m, tau, 1e-6, &a, &b);
+        K_estimate_width(nu, m, tau, eps, &a, &b);
     }
 
-    integrand_t args = {
-        .nu   = nu,
-        .m    = m,
-        .p    = p,
-        .tau  = tau,
-        .zmax = zmax,
-        .normalization = exp(log_normalization),
-        .casimir = self->casimir
-    };
+    args.zmax = zmax;
+    args.normalization = exp(log_normalization);
 
     double abserr1, abserr2, abserr3, I1 = 0, I2 = 0, I3 = 0;
     int neval1, neval2, neval3, ier1 = 0, ier2 = 0, ier3 = 0;
