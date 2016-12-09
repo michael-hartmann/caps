@@ -1,7 +1,7 @@
 /**
  * @file   integration.c
  * @author Michael Hartmann <michael.hartmann@physik.uni-augsburg.de>
- * @date   November, 2016
+ * @date   December, 2016
  * @brief  Perform integration for arbitrary materials
  */
 
@@ -128,38 +128,35 @@ static void K_estimate_width(int nu, int m, double tau, double zmax, double eps,
 
 static double K_integrand(double z, void *args_)
 {
+    double v, rTE, rTM;
     TERMINATE(z < 0, "Invalid parameter: z=%g\n", z);
 
     integrand_t *args = (integrand_t *)args_;
 
-    const int nu = args->nu, m = args->m;
-
+    const int nu = args->nu;
+    const int m  = args->m;
     const double tau = args->tau;
-    const double z2p2z = z*(z+2); /* z²+2z */
-    const double k = tau/2*sqrt(z2p2z);
-
-    double rTE, rTM;
-    casimir_rp(args->casimir, tau/2, k, &rTE, &rTM);
+    const double xi = tau/2;
 
     const double exp_function = exp(tau*(z-args->zmax)/nu);
-    const double factor = args->normalization * exp_function;
+    const double factor = args->normalization*exp_function;
 
     if(isinf(factor))
         return 0;
 
-    double v;
+    const double z2p2z = z*(z+2);
+
     if(m)
         v = Plm(nu,2*m,1+z,factor)/z2p2z;
     else
         v = Plm(nu,2,1+z,factor);
 
+    casimir_rp(args->casimir, xi, xi*sqrt(z2p2z), &rTE, &rTM);
+
     /*
     WARN(isnan(v), "z=%g, nu=%d, m=%d, tau=%g, factor=%g, v=nan\n", z, nu, m, tau, factor);
-    if(isnan(v))
-        return 0;
-        */
+     */
 
-    //fprintf(stderr, "%g %g\n", z, v);
     if(args->p == TE)
         return rTE*v;
     else
@@ -182,9 +179,10 @@ static double _casimir_integrate_K(integration_t *self, int nu, polarization_t p
         .casimir = self->casimir
     };
 
-    double zmax = nu/tau;
+    double zmax;
     double log_normalization,a,b;
 
+    /* estimate width and height of the peak of the integrand. */
     if(nu == 2 && m == 1)
     {
         /* Integrate
@@ -195,9 +193,21 @@ static double _casimir_integrate_K(integration_t *self, int nu, polarization_t p
         zmax = 0;
         a = 0;
         b = -log(eps)/tau; /* exp(-14) =~ 1e-6 */
-        log_normalization = 1;
+        log_normalization = log(3);
     }
-    else if(zmax < 1)
+    else if(nu/tau > 1)
+    {
+        /* large z limit */
+        zmax = nu/tau;
+
+        if(m > 0)
+            log_normalization = (Plm_estimate(nu,2*m,1+zmax)-log(zmax*(zmax+2)))/nu;
+        else
+            log_normalization = Plm_estimate(nu,0,1+zmax)/nu; /* XXX */
+
+        K_estimate_width(nu, m, tau, zmax, eps, &a, &b);
+    }
+    else
     {
         /* improve prediction here */
         if(m > 0)
@@ -213,16 +223,6 @@ static double _casimir_integrate_K(integration_t *self, int nu, polarization_t p
 
         a = 0;
         b = 1; /* XXX */
-    }
-    else
-    {
-        /* large z limit */
-        if(m > 0)
-            log_normalization = (Plm_estimate(nu,2*m,1+zmax)-log(zmax*(zmax+2)))/nu;
-        else
-            log_normalization = Plm_estimate(nu,0,1+zmax)/nu;
-
-        K_estimate_width(nu, m, tau, zmax, eps, &a, &b);
     }
 
     args.zmax = zmax;
