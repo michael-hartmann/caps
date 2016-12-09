@@ -20,15 +20,19 @@ typedef enum { TE, TM } polarization_t;
 #include "matrix.h"
 
 #ifndef M_PI
-#define M_PI 3.14159265358979323846
+#define M_PI 3.14159265358979323846 /**< π */
 #endif
 
 #ifndef M_LOG2
-#define M_LOG2 0.6931471805599453
+#define M_LOG2 0.6931471805599453 /**< log(2) */
 #endif
 
 #ifndef M_LOGPI
-#define M_LOGPI 1.1447298858494002
+#define M_LOGPI 1.1447298858494002 /**< log(π) */
+#endif
+
+#ifndef M_GM
+#define M_GM 1.618033988749895 /**< golden mean, (1+√5)/2 */
 #endif
 
 /* default values */
