@@ -61,11 +61,6 @@ static uint64_t hash(int l1, int l2, polarization_t p)
     return (l1_ << 32) | (l2_ << 1) | p_;
 }
 
-static double ZMAX(int nu, int m, double tau)
-{
-    return nu/tau;
-}
-
 static double f_bisect(double left, double right, int N, int nu, double tau, double log_c)
 {
     /* We want to solve
@@ -91,12 +86,11 @@ static double f_bisect(double left, double right, int N, int nu, double tau, dou
     return (left+right)/2;
 }
 
-static void K_estimate_width(int nu, int m, double tau, double eps, double *a, double *b)
+static void K_estimate_width(int nu, int m, double tau, double zmax, double eps, double *a, double *b)
 {
     double delta = 1e-2;
 
     /* f(z) = z^ν*exp(-τz) */
-    double zmax = ZMAX(nu,m,tau);
     double log_c = log(eps)+nu*log(zmax)-tau*zmax;
 
     /* a */
@@ -159,9 +153,11 @@ static double K_integrand(double z, void *args_)
     else
         v = Plm(nu,2,1+z,factor);
 
+    /*
     WARN(isnan(v), "z=%g, nu=%d, m=%d, tau=%g, factor=%g, v=nan\n", z, nu, m, tau, factor);
     if(isnan(v))
         return 0;
+        */
 
     //fprintf(stderr, "%g %g\n", z, v);
     if(args->p == TE)
@@ -186,7 +182,7 @@ static double _casimir_integrate_K(integration_t *self, int nu, polarization_t p
         .casimir = self->casimir
     };
 
-    double zmax = ZMAX(nu,m,tau);
+    double zmax = nu/tau;
     double log_normalization,a,b;
 
     if(nu == 2 && m == 1)
@@ -198,11 +194,12 @@ static double _casimir_integrate_K(integration_t *self, int nu, polarization_t p
          */
         zmax = 0;
         a = 0;
-        b = log(eps)/tau; /* exp(-14) =~ 1e-6 */
+        b = -log(eps)/tau; /* exp(-14) =~ 1e-6 */
         log_normalization = 1;
     }
     else if(zmax < 1)
     {
+        /* improve prediction here */
         if(m > 0)
         {
             zmax = m/tau;
@@ -225,7 +222,7 @@ static double _casimir_integrate_K(integration_t *self, int nu, polarization_t p
         else
             log_normalization = Plm_estimate(nu,0,1+zmax)/nu;
 
-        K_estimate_width(nu, m, tau, eps, &a, &b);
+        K_estimate_width(nu, m, tau, zmax, eps, &a, &b);
     }
 
     args.zmax = zmax;
@@ -233,7 +230,17 @@ static double _casimir_integrate_K(integration_t *self, int nu, polarization_t p
 
     double abserr1, abserr2, abserr3, I1 = 0, I2 = 0, I3 = 0;
     int neval1, neval2, neval3, ier1 = 0, ier2 = 0, ier3 = 0;
-    I2 = dqags(K_integrand, a, b, 0, epsrel, &abserr1, &neval2, &ier2, &args); /* [a,b] */
+    for(int i = 0; i < 3; i++)
+    {
+        I2 = dqags(K_integrand, a, b, 0, epsrel, &abserr1, &neval2, &ier2, &args); /* [a,b] */
+        if(ier2 != 7)
+            break;
+
+        printf("redo\n");
+        log_normalization += 700./nu;
+        args.normalization = exp(log_normalization);
+        I2 = dqags(K_integrand, a, b, 0, epsrel, &abserr1, &neval2, &ier2, &args); /* [a,b] */
+    }
     I3 = dqagi(K_integrand, b, 1, abserr1, epsrel, &abserr3, &neval3, &ier3, &args); /* [b,∞] */
     if(a > 0)
         I1 = dqags(K_integrand, 0, a, abserr1, epsrel, &abserr2, &neval1, &ier1, &args); /* [0,a] */
