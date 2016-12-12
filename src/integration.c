@@ -197,20 +197,21 @@ static double log_k_zsmall(double z, int nu, int m, double tau, double *factor)
 static double K_estimate_zsmall(int nu, int m, double tau, double eps, double *a, double *b, double *log_normalization)
 {
     double left, right, middle, log_k_zmax, zmax, factor;
-    const double tol = 1e-2;
+    const double tol = 1e-3;
 
     /* estimate zmax and k(zmax) according to the z/τ << 1 limit */
     if(m > 0)
     {
-        zmax = (m-1)/tau;
+        zmax = m/tau;
         factor = exp((lfac(nu+2*m)-lfac(2*m)-lfac(nu-2*m)-m*M_LOG2-log(zmax*(zmax+2))+m*log(zmax))/nu);
     }
     else
     {
-        zmax = m/tau;
-        factor = exp(m*log(zmax)/nu);
+        zmax = 1/tau;
+        factor = exp(log(zmax)/nu);
     }
 
+    TERMINATE(isnan(factor), "nu=%d, m=%d, tau=%g, eps=%g", nu, m, tau, eps);
     *a = 0;
     *b = 1;
 
@@ -374,21 +375,23 @@ static double _casimir_integrate_K(integration_t *self, int nu, polarization_t p
         /* large z limit */
         zmax = K_estimate_zlarge(nu, m, tau, eps, &a, &b, &log_normalization);
     else
-        /* improve prediction here */
+        /* small z limit */
         zmax = K_estimate_zsmall(nu, m, tau, eps, &a, &b, &log_normalization);
 
     args.zmax = zmax;
     args.normalization = exp(log_normalization);
 
-    double abserr1, abserr2, abserr3, I1 = 0, I2 = 0, I3 = 0;
-    int neval1, neval2, neval3, ier1 = 0, ier2 = 0, ier3 = 0;
+    double abserr1 = 0, abserr2 = 0, abserr3 = 0, I1 = 0, I2 = 0, I3 = 0;
+    int neval1 = 0, neval2 = 0, neval3 = 0, ier1 = 0, ier2 = 0, ier3 = 0;
     I2 = dqags(K_integrand, a, b, 0, epsrel, &abserr1, &neval2, &ier2, &args); /* [a,b] */
     I3 = dqagi(K_integrand, b, 1, abserr1, epsrel, &abserr3, &neval3, &ier3, &args); /* [b,∞] */
     if(a > 0)
         I1 = dqags(K_integrand, 0, a, abserr1, epsrel, &abserr2, &neval1, &ier1, &args); /* [0,a] */
 
     const double sum = I1+I2+I3;
-    WARN(ier1+ier2+ier3 > 0 || isnan(sum) || sum == 0, "ier1=%d, ier2=%d, ier3=%d, nu=%d, m=%d, tau=%g, zmax=%g, a=%g, b=%g, I1=%g, I2=%g, I3=%g", ier1, ier2, ier3, nu,m,tau,zmax,a,b, I1, I2, I3);
+
+    bool warn = ier1+ier2+ier3 > 0 || isnan(sum) || sum == 0;
+    WARN(warn, "ier1=%d, ier2=%d, ier3=%d, nu=%d, m=%d, tau=%.20g, zmax=%g, a=%g, b=%g, I1=%g, I2=%g, I3=%g", ier1, ier2, ier3, nu,m,tau,zmax,a,b, I1, I2, I3);
 
     *sign = SGN(sum);
     return log(fabs(sum))-tau*zmax + log_normalization*nu;
