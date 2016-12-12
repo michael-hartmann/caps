@@ -67,7 +67,7 @@ static uint64_t hash(int l1, int l2, polarization_t p)
  *      ν*log(x)-τx-log(c) = 0.
  * We find the solution using bisection method (N times).
  */
-static double k_bisect(double left, double right, int N, int nu, double tau, double log_c)
+static double k_bisect_zlarge(double left, double right, int N, int nu, double tau, double log_c)
 {
     for(int i = 0; i < N; i++)
     {
@@ -135,7 +135,7 @@ static double K_estimate_zlarge(int nu, int m, double tau, double eps, double *a
     {
         const double left = 0, right = zmax;
         const int N = ceil((log(right-left)-log(tol))/M_LOG2);
-        *a = k_bisect(left, right, N, nu, tau, log_c);
+        *a = k_bisect_zlarge(left, right, N, nu, tau, log_c);
     }
 
     /* b */
@@ -153,7 +153,7 @@ static double K_estimate_zlarge(int nu, int m, double tau, double eps, double *a
             if(kl*kr <= 0)
             {
                 const int N = ceil((log(right-left)-log(tol))/M_LOG2);
-                *b = k_bisect(left, right, N, nu, tau, log_c);
+                *b = k_bisect_zlarge(left, right, N, nu, tau, log_c);
                 return zmax;
             }
         }
@@ -162,7 +162,7 @@ static double K_estimate_zlarge(int nu, int m, double tau, double eps, double *a
     return zmax;
 }
 
-static double k(double z, int nu, int m, double tau, double *factor)
+static double log_k_zsmall(double z, int nu, int m, double tau, double *factor)
 {
     double denom,v;
     int m_;
@@ -180,23 +180,26 @@ static double k(double z, int nu, int m, double tau, double *factor)
         denom = 1;
     }
 
-    while(true)
+    for(int i = 0; i < 3; i++)
     {
         v = Plm(nu,m_,1+z,*factor)/denom;
         if(!isinf(v) && !isnan(v))
             return nu*log(*factor)+log(v)-tau*z;
 
-        printf("foo\n");
         *factor = *factor*exp(log(1e300)/nu);
     }
+
+    TERMINATE(true, "z=%g, nu=%d, m=%d, tau=%g, factor=%g", z, nu, m, tau, *factor);
+
+    return NAN;
 }
 
 static double K_estimate_zsmall(int nu, int m, double tau, double eps, double *a, double *b, double *log_normalization)
 {
-    double left, right, middle, k_zmax;
+    double left, right, middle, log_k_zmax, zmax, factor;
     const double tol = 1e-2;
-    double zmax, factor;
 
+    /* estimate zmax and k(zmax) according to the z/τ << 1 limit */
     if(m > 0)
     {
         zmax = (m-1)/tau;
@@ -211,26 +214,24 @@ static double K_estimate_zsmall(int nu, int m, double tau, double eps, double *a
     *a = 0;
     *b = 1;
 
-    /* do Golden section search; taken from Wikipedia:
-     * https://en.wikipedia.org/wiki/Golden_section_search */
-    double fc = NAN;
-    double fd = NAN;
+    /* Now, we search a good approximation for zmax using Golden section
+     * search. If the associated Legendre polynomial cannot be evaluated,
+     * because it becomes inf, we increase factor. This is handled in
+     * log_k_zsmall.
+     * The code for Golden section search is taken from Wikipedia:
+     * https://en.wikipedia.org/wiki/Golden_section_search
+     */
+    double fc = NAN, fd = NAN;
     double c = *b-(*b-*a)/M_GM;
     double d = *a+(*b-*a)/M_GM;
 
-    size_t elems = 0;
     while(fabs(c-d) > tol)
     {
+        /* we only have to caclulate fc or fd is it is NAN */
         if(isnan(fc))
-        {
-            fc = k(c, nu, m, tau, &factor);
-            elems++;
-        }
+            fc = log_k_zsmall(c, nu, m, tau, &factor);
         if(isnan(fd))
-        {
-            fd = k(d, nu, m, tau, &factor);
-            elems++;
-        }
+            fd = log_k_zsmall(d, nu, m, tau, &factor);
 
         if(fc > fd)
         {
@@ -251,26 +252,35 @@ static double K_estimate_zsmall(int nu, int m, double tau, double eps, double *a
         d = *a+(*b-*a)/M_GM;
     }
 
+    /* now we have a good approximation for zmax */
     zmax = (*a+*b)/2;
 
+    /* and we also know log(k(zmax)) which is approximately fc or fd */
     if(isnan(fc))
-        k_zmax = fd;
+        log_k_zmax = fd;
     else
-        k_zmax = fc;
+        log_k_zmax = fc;
 
-    *log_normalization = k_zmax/nu;
+    /* thus we can set log_normalization */
+    *log_normalization = log_k_zmax/nu;
 
+    /* now we are trying to estimate the interval [a,b] which gives the main
+     * contributions to the integration; we are looking for a < zmax < b such
+     * that a/zmax ≈ b/zmax ≈ eps
+     *
+     * We are using the bisection method and have to apply it N times.
+     */
     const int N = ceil(-log(tol)/M_LOG2);
 
     /* a */
     left = 0;
     right = zmax;
-    for(int i = 0; i < N ; i++)
+    for(int i = 0; i < N; i++)
     {
         middle = (left+right)/2;
-        double fm = k(middle, nu, m, tau, &factor);
+        double fm = log_k_zsmall(middle, nu, m, tau, &factor);
 
-        if((fm-k_zmax) < log(eps))
+        if((fm-log_k_zmax) < log(eps))
             left = middle;
         else
             right = middle;
@@ -280,12 +290,12 @@ static double K_estimate_zsmall(int nu, int m, double tau, double eps, double *a
     /* b */
     left = zmax;
     right = 1;
-    for(int i = 0; i < N ; i++)
+    for(int i = 0; i < N; i++)
     {
         middle = (left+right)/2;
-        double fm = k(middle, nu, m, tau, &factor);
+        double fm = log_k_zsmall(middle, nu, m, tau, &factor);
 
-        if((fm-k_zmax) < log(eps))
+        if((fm-log_k_zmax) < log(eps))
             right = middle;
         else
             left = middle;
@@ -302,8 +312,7 @@ static double K_integrand(double z, void *args_)
 
     integrand_t *args = (integrand_t *)args_;
 
-    const int nu = args->nu;
-    const int m  = args->m;
+    const int nu = args->nu, m = args->m;
     const double tau = args->tau;
     const double xi = tau/2;
 
@@ -322,9 +331,7 @@ static double K_integrand(double z, void *args_)
 
     casimir_rp(args->casimir, xi, xi*sqrt(z2p2z), &rTE, &rTM);
 
-    /*
-    WARN(isnan(v), "z=%g, nu=%d, m=%d, tau=%g, factor=%g, v=nan\n", z, nu, m, tau, factor);
-     */
+    TERMINATE(isnan(v), "z=%g, nu=%d, m=%d, tau=%g, factor=%g, v=nan\n", z, nu, m, tau, factor);
 
     if(args->p == TE)
         return rTE*v;
@@ -348,8 +355,7 @@ static double _casimir_integrate_K(integration_t *self, int nu, polarization_t p
         .casimir = self->casimir
     };
 
-    double zmax;
-    double log_normalization,a,b;
+    double zmax,log_normalization,a,b;
 
     /* estimate width and height of the peak of the integrand. */
     if(nu == 2 && m == 1)
@@ -365,15 +371,11 @@ static double _casimir_integrate_K(integration_t *self, int nu, polarization_t p
         log_normalization = log(3);
     }
     else if(nu/tau > 1)
-    {
         /* large z limit */
         zmax = K_estimate_zlarge(nu, m, tau, eps, &a, &b, &log_normalization);
-    }
     else
-    {
         /* improve prediction here */
         zmax = K_estimate_zsmall(nu, m, tau, eps, &a, &b, &log_normalization);
-    }
 
     args.zmax = zmax;
     args.normalization = exp(log_normalization);
@@ -385,11 +387,9 @@ static double _casimir_integrate_K(integration_t *self, int nu, polarization_t p
     if(a > 0)
         I1 = dqags(K_integrand, 0, a, abserr1, epsrel, &abserr2, &neval1, &ier1, &args); /* [0,a] */
 
-    WARN(ier1+ier2+ier3 > 0, "ier1=%d, ier2=%d, ier3=%d, nu=%d, m=%d, tau=%g, zmax=%g, a=%g, b=%g, I1=%g, I2=%g, I3=%g", ier1, ier2, ier3, nu,m,tau,zmax,a,b, I1, I2, I3);
-    //printf("ier1=%d, ier2=%d, ier3=%d, nu=%d, m=%d, tau=%g, zmax=%g, a=%g, b=%g, I1=%g, I2=%g, I3=%g\n", ier1, ier2, ier3, nu,m,tau,zmax,a,b, I1, I2, I3);
-
     const double sum = I1+I2+I3;
-    TERMINATE(sum == 0, "ier1=%d, ier2=%d, ier3=%d, nu=%d, m=%d, tau=%g, zmax=%g, a=%g, b=%g, I1=%g, I2=%g, I3=%g", ier1, ier2, ier3, nu,m,tau,zmax,a,b, I1, I2, I3);
+    WARN(ier1+ier2+ier3 > 0 || isnan(sum) || sum == 0, "ier1=%d, ier2=%d, ier3=%d, nu=%d, m=%d, tau=%g, zmax=%g, a=%g, b=%g, I1=%g, I2=%g, I3=%g", ier1, ier2, ier3, nu,m,tau,zmax,a,b, I1, I2, I3);
+
     *sign = SGN(sum);
     return log(fabs(sum))-tau*zmax + log_normalization*nu;
 }
