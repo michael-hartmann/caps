@@ -61,21 +61,19 @@ static uint64_t hash(int l1, int l2, polarization_t p)
     return (l1_ << 32) | (l2_ << 1) | p_;
 }
 
-static double f_bisect(double left, double right, int N, int nu, double tau, double log_c)
+/* We want to solve
+ *      x^ν*exp(-τx) = c, c>0.
+ * Taking the logarithm of both sides yields
+ *      ν*log(x)-τx-log(c) = 0.
+ * We find the solution using bisection method (N times).
+ */
+static double k_bisect(double left, double right, int N, int nu, double tau, double log_c)
 {
-    /* We want to solve
-     *      x^ν*exp(-τx) = c, c>0.
-     * Taking the logarithm of both sides yields
-     *      ν*log(x)-τx-log(c) = 0.
-     * We find the solution using bisection method (N times).
-     */
     for(int i = 0; i < N; i++)
     {
-        double middle = (right+left)/2;
-
-        double fl = nu*log(left)  -tau*left  -log_c;
-        double fm = nu*log(middle)-tau*middle-log_c;
-        //double fr = nu*log(right) -tau*right -log_c;
+        const double middle = (right+left)/2;
+        const double fl = nu*log(left)  -tau*left  -log_c;
+        const double fm = nu*log(middle)-tau*middle-log_c;
 
         if(fl*fm < 0)
             right = middle;
@@ -86,45 +84,93 @@ static double f_bisect(double left, double right, int N, int nu, double tau, dou
     return (left+right)/2;
 }
 
-static void K_estimate_width(int nu, int m, double tau, double zmax, double eps, double *a, double *b)
+/* Estimate shape of integrand K assuming nu/tau >> 1.
+ *
+ * If nu/tau >> 1, we can approximate the associated Legendre polynomial
+ *      Plm(ν,m,1+z) ≈ (2l)!/(2^l*l!*(l-m)!) z^ν.
+ *
+ * We are only interested in the rough shape of the integrand, so we also
+ * ignore the Fresnel coefficient r_p. This means, we assume that the Fresnel
+ * coefficient varies slowly compared to the other factors of the integrand.
+ *
+ * Thus the integrand looks like (m>0)
+ *      k(z) = (2l)!/(2^l*l!*(l-m)!) z^(ν-2) * exp(-τz).
+ *
+ * The maximum of the integrand is at
+ *      zmax ≈ (ν-2)/τ.
+ *
+ * For m=0 we find
+ *      k(z) = (2l)!/(2^l*l!*l!) z^ν * exp(-τz).
+ * and
+ *      zmax ≈ ν/τ.
+ *
+ * We estimate the position a < zmax where the integrand is approximately
+ * zmax*eps with precision delta=1e-2 using the bisection method for the
+ * simplified integrand k(z).
+ *
+ * We also estimate the position b > zmax where the integrand is approximately
+ * zmax*eps with precision delta=1e-2 using bisection method.
+ */
+static double K_estimate_zlarge(int nu, int m, double tau, double eps, double *a, double *b, double *log_normalization)
 {
-    double delta = 1e-2;
+    double zmax;
+    const double delta = 1e-2;
 
-    /* f(z) = z^ν*exp(-τz) */
-    double log_c = log(eps)+nu*log(zmax)-tau*zmax;
+    if(m > 0)
+    {
+        zmax = (nu-2)/tau;
+        *log_normalization = (Plm_estimate(nu,2*m,1+zmax)-log(zmax*(zmax+2)))/nu;
+        nu -= 2;
+    }
+    else
+    {
+        zmax = nu/tau;
+        *log_normalization = Plm_estimate(nu,0,1+zmax)/nu;
+    }
+
+    /* k(z) = z^ν*exp(-τz) */
+    const double log_c = log(eps)+nu*log(zmax)-tau*zmax;
 
     /* a */
     {
-        double left = 0, right = zmax;
-        int N = ceil((log(right-left)-log(delta))/M_LOG2);
-        *a = f_bisect(left, right, N, nu, tau, log_c);
+        const double left = 0, right = zmax;
+        const int N = ceil((log(right-left)-log(delta))/M_LOG2);
+        *a = k_bisect(left, right, N, nu, tau, log_c);
     }
 
     /* b */
     {
-        if(nu == 1)
-        {
-            /* k(z) = rp*exp(-τz) */
-            *b = -log(eps)/tau;
-            return;
-        }
-
         for(int i = 1;; i++)
         {
-            double left = i*zmax, right = (i+1)*zmax;
+            const double left = i*zmax, right = (i+1)*zmax;
+            const double kl   = nu*log(left) -tau*left -log_c;
+            const double kr   = nu*log(right)-tau*right-log_c;
 
-            double fl = nu*log(left) -tau*left -log_c;
-            double fr = nu*log(right)-tau*right-log_c;
-
-            if(fl*fr <= 0)
+            /* if we found left and right, so that
+             *      k(left)/k(zmax) > eps > k(right)/k(zmax),
+             * we can use the bisection method.
+             */
+            if(kl*kr <= 0)
             {
-                int N = ceil((log(right-left)-log(delta))/M_LOG2);
-                *b = f_bisect(left, right, N, nu, tau, log_c);
-                return;
+                const int N = ceil((log(right-left)-log(delta))/M_LOG2);
+                *b = k_bisect(left, right, N, nu, tau, log_c);
+                return zmax;
             }
         }
     }
+
+    return zmax;
 }
+
+/*
+static double f()
+static double K_estimate_zsmall(int nu, int m, double tau, double eps, double *a, double *b, double *log_normalization)
+{
+    *a = 0;
+    *b = 1;
+
+}
+*/
 
 static double K_integrand(double z, void *args_)
 {
@@ -198,14 +244,7 @@ static double _casimir_integrate_K(integration_t *self, int nu, polarization_t p
     else if(nu/tau > 1)
     {
         /* large z limit */
-        zmax = nu/tau;
-
-        if(m > 0)
-            log_normalization = (Plm_estimate(nu,2*m,1+zmax)-log(zmax*(zmax+2)))/nu;
-        else
-            log_normalization = Plm_estimate(nu,0,1+zmax)/nu; /* XXX */
-
-        K_estimate_width(nu, m, tau, zmax, eps, &a, &b);
+        zmax = K_estimate_zlarge(nu, m, tau, eps, &a, &b, &log_normalization);
     }
     else
     {
@@ -220,6 +259,8 @@ static double _casimir_integrate_K(integration_t *self, int nu, polarization_t p
             zmax = 1/tau;
             log_normalization = (log(zmax)-M_LOG2+lfac(nu+2)-lfac(nu-2)-lfac(2))/nu;
         }
+
+        //K_estimate_zsmall(nu, m, tau, eps, &a, &b);
 
         a = 0;
         b = 1; /* XXX */
