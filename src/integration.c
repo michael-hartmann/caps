@@ -105,16 +105,16 @@ static double k_bisect(double left, double right, int N, int nu, double tau, dou
  *      zmax ≈ ν/τ.
  *
  * We estimate the position a < zmax where the integrand is approximately
- * zmax*eps with precision delta=1e-2 using the bisection method for the
+ * zmax*eps with precision tol=1e-2 using the bisection method for the
  * simplified integrand k(z).
  *
  * We also estimate the position b > zmax where the integrand is approximately
- * zmax*eps with precision delta=1e-2 using bisection method.
+ * zmax*eps with precision tol=1e-2 using bisection method.
  */
 static double K_estimate_zlarge(int nu, int m, double tau, double eps, double *a, double *b, double *log_normalization)
 {
+    const double tol = 1e-2;
     double zmax;
-    const double delta = 1e-2;
 
     if(m > 0)
     {
@@ -134,7 +134,7 @@ static double K_estimate_zlarge(int nu, int m, double tau, double eps, double *a
     /* a */
     {
         const double left = 0, right = zmax;
-        const int N = ceil((log(right-left)-log(delta))/M_LOG2);
+        const int N = ceil((log(right-left)-log(tol))/M_LOG2);
         *a = k_bisect(left, right, N, nu, tau, log_c);
     }
 
@@ -152,7 +152,7 @@ static double K_estimate_zlarge(int nu, int m, double tau, double eps, double *a
              */
             if(kl*kr <= 0)
             {
-                const int N = ceil((log(right-left)-log(delta))/M_LOG2);
+                const int N = ceil((log(right-left)-log(tol))/M_LOG2);
                 *b = k_bisect(left, right, N, nu, tau, log_c);
                 return zmax;
             }
@@ -162,15 +162,138 @@ static double K_estimate_zlarge(int nu, int m, double tau, double eps, double *a
     return zmax;
 }
 
-/*
-static double f()
+static double k(double z, int nu, int m, double tau, double *factor)
+{
+    double denom,v;
+    int m_;
+    if(z == 0)
+        return -INFINITY;
+
+    if(m > 0)
+    {
+        m_ = 2*m;
+        denom = z*(z+2);
+    }
+    else
+    {
+        m_ = 2;
+        denom = 1;
+    }
+
+    while(true)
+    {
+        v = Plm(nu,m_,1+z,*factor)/denom;
+        if(!isinf(v) && !isnan(v))
+            return nu*log(*factor)+log(v)-tau*z;
+
+        printf("foo\n");
+        *factor = *factor*exp(log(1e300)/nu);
+    }
+}
+
 static double K_estimate_zsmall(int nu, int m, double tau, double eps, double *a, double *b, double *log_normalization)
 {
+    double left, right, middle, k_zmax;
+    const double tol = 1e-2;
+    double zmax, factor;
+
+    if(m > 0)
+    {
+        zmax = (m-1)/tau;
+        factor = exp((lfac(nu+2*m)-lfac(2*m)-lfac(nu-2*m)-m*M_LOG2-log(zmax*(zmax+2))+m*log(zmax))/nu);
+    }
+    else
+    {
+        zmax = m/tau;
+        factor = exp(m*log(zmax)/nu);
+    }
+
     *a = 0;
     *b = 1;
 
+    /* do Golden section search; taken from Wikipedia:
+     * https://en.wikipedia.org/wiki/Golden_section_search */
+    double fc = NAN;
+    double fd = NAN;
+    double c = *b-(*b-*a)/M_GM;
+    double d = *a+(*b-*a)/M_GM;
+
+    size_t elems = 0;
+    while(fabs(c-d) > tol)
+    {
+        if(isnan(fc))
+        {
+            fc = k(c, nu, m, tau, &factor);
+            elems++;
+        }
+        if(isnan(fd))
+        {
+            fd = k(d, nu, m, tau, &factor);
+            elems++;
+        }
+
+        if(fc > fd)
+        {
+            *b = d;
+            fd = fc;
+            fc = NAN;
+        }
+        else
+        {
+            *a = c;
+            fc = fd;
+            fd = NAN;
+        }
+
+        /* we recompute both c and d here to avoid loss of precision which may
+         * lead to incorrect results or infinite loop */
+        c = *b-(*b-*a)/M_GM;
+        d = *a+(*b-*a)/M_GM;
+    }
+
+    zmax = (*a+*b)/2;
+
+    if(isnan(fc))
+        k_zmax = fd;
+    else
+        k_zmax = fc;
+
+    *log_normalization = k_zmax/nu;
+
+    const int N = ceil(-log(tol)/M_LOG2);
+
+    /* a */
+    left = 0;
+    right = zmax;
+    for(int i = 0; i < N ; i++)
+    {
+        middle = (left+right)/2;
+        double fm = k(middle, nu, m, tau, &factor);
+
+        if((fm-k_zmax) < log(eps))
+            left = middle;
+        else
+            right = middle;
+    }
+    *a = (left+right)/2;
+
+    /* b */
+    left = zmax;
+    right = 1;
+    for(int i = 0; i < N ; i++)
+    {
+        middle = (left+right)/2;
+        double fm = k(middle, nu, m, tau, &factor);
+
+        if((fm-k_zmax) < log(eps))
+            right = middle;
+        else
+            left = middle;
+    }
+    *b = (left+right)/2;
+
+    return zmax;
 }
-*/
 
 static double K_integrand(double z, void *args_)
 {
@@ -249,21 +372,7 @@ static double _casimir_integrate_K(integration_t *self, int nu, polarization_t p
     else
     {
         /* improve prediction here */
-        if(m > 0)
-        {
-            zmax = m/tau;
-            log_normalization = (m*(log(zmax)-M_LOG2)+lfac(nu+2*m)-lfac(nu-2*m)-lfac(2*m)-log(zmax*(zmax+2)))/nu;
-        }
-        else
-        {
-            zmax = 1/tau;
-            log_normalization = (log(zmax)-M_LOG2+lfac(nu+2)-lfac(nu-2)-lfac(2))/nu;
-        }
-
-        //K_estimate_zsmall(nu, m, tau, eps, &a, &b);
-
-        a = 0;
-        b = 1; /* XXX */
+        zmax = K_estimate_zsmall(nu, m, tau, eps, &a, &b, &log_normalization);
     }
 
     args.zmax = zmax;
@@ -271,17 +380,7 @@ static double _casimir_integrate_K(integration_t *self, int nu, polarization_t p
 
     double abserr1, abserr2, abserr3, I1 = 0, I2 = 0, I3 = 0;
     int neval1, neval2, neval3, ier1 = 0, ier2 = 0, ier3 = 0;
-    for(int i = 0; i < 3; i++)
-    {
-        I2 = dqags(K_integrand, a, b, 0, epsrel, &abserr1, &neval2, &ier2, &args); /* [a,b] */
-        if(ier2 != 7)
-            break;
-
-        printf("redo\n");
-        log_normalization += 700./nu;
-        args.normalization = exp(log_normalization);
-        I2 = dqags(K_integrand, a, b, 0, epsrel, &abserr1, &neval2, &ier2, &args); /* [a,b] */
-    }
+    I2 = dqags(K_integrand, a, b, 0, epsrel, &abserr1, &neval2, &ier2, &args); /* [a,b] */
     I3 = dqagi(K_integrand, b, 1, abserr1, epsrel, &abserr3, &neval3, &ier3, &args); /* [b,∞] */
     if(a > 0)
         I1 = dqags(K_integrand, 0, a, abserr1, epsrel, &abserr2, &neval1, &ier1, &args); /* [0,a] */
@@ -361,7 +460,7 @@ static double _casimir_integrate_I(integration_t *self, int l1, int l2, polariza
     K = casimir_integrate_K(self, l1pl2-2*q, p_, &s);
     array[q].s = s;
     array[q].v = K;
-    
+
     if(qmax == 0)
         goto done;
 
