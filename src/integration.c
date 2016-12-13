@@ -26,11 +26,11 @@ typedef struct
     casimir_t *casimir;
 } integrand_t;
 
-/* entry of cache constisting of the value of the integral; sign*exp(v) */
+/* entry of cache consists of value of integral and sign: sign*exp(v) */
 typedef struct
 {
-    double v;
-    sign_t sign;
+    double v;    /**< logarithmic value of integral */
+    sign_t sign; /**< sign of integral */
 } cache_entry_t;
 
 /* allocate memory and create new cache entry */
@@ -94,7 +94,7 @@ static double k_bisect_zlarge(double left, double right, int N, int nu, double t
  * coefficient varies slowly compared to the other factors of the integrand.
  *
  * Thus the integrand looks like (m>0)
- *      k(z) = (2l)!/(2^l*l!*(l-m)!) z^(ν-2) * exp(-τz).
+ *      k(z) ≈ (2l)!/(2^l*l!*(l-m)!) z^(ν-2) * exp(-τz).
  *
  * The maximum of the integrand is at
  *      zmax ≈ (ν-2)/τ.
@@ -180,13 +180,16 @@ static double log_k_zsmall(double z, int nu, int m, double tau, double *factor)
         denom = 1;
     }
 
-    for(int i = 0; i < 3; i++)
+    for(int i = 0; i < 5; i++)
     {
         v = Plm(nu,m_,1+z,*factor)/denom;
-        if(!isinf(v) && !isnan(v))
+        //printf("z=%g, v=%g, factor=%g\n", z,v,*factor);
+        if(!isinf(v) && !isnan(v) && v != 0)
             return nu*log(*factor)+log(v)-tau*z;
-
-        *factor = *factor*exp(log(1e300)/nu);
+        else if(v == 0)
+            *factor = exp(log(*factor)+log(1e-300)/nu);
+        else if(isnan(v) || isinf(v))
+            *factor = exp(log(*factor)+log(1e300)/nu);
     }
 
     TERMINATE(true, "z=%g, nu=%d, m=%d, tau=%g, factor=%g", z, nu, m, tau, *factor);
@@ -213,7 +216,7 @@ static double K_estimate_zsmall(int nu, int m, double tau, double eps, double *a
 
     TERMINATE(isnan(factor), "nu=%d, m=%d, tau=%g, eps=%g", nu, m, tau, eps);
     *a = 0;
-    *b = 1;
+    *b = 4;
 
     /* Now, we search a good approximation for zmax using Golden section
      * search. If the associated Legendre polynomial cannot be evaluated,
@@ -228,7 +231,7 @@ static double K_estimate_zsmall(int nu, int m, double tau, double eps, double *a
 
     while(fabs(c-d) > tol)
     {
-        /* we only have to caclulate fc or fd is it is NAN */
+        /* we only have to caclulate fc or fd if it is NAN */
         if(isnan(fc))
             fc = log_k_zsmall(c, nu, m, tau, &factor);
         if(isnan(fd))
@@ -257,13 +260,14 @@ static double K_estimate_zsmall(int nu, int m, double tau, double eps, double *a
     zmax = (*a+*b)/2;
 
     /* and we also know log(k(zmax)) which is approximately fc or fd */
-    if(isnan(fc))
-        log_k_zmax = fd;
-    else
+    if(!isnan(fc))
         log_k_zmax = fc;
+    else
+        log_k_zmax = fd;
 
     /* thus we can set log_normalization */
-    *log_normalization = log_k_zmax/nu;
+    *log_normalization = (log_k_zmax+tau*zmax)/nu;
+    factor = exp(*log_normalization);
 
     /* now we are trying to estimate the interval [a,b] which gives the main
      * contributions to the integration; we are looking for a < zmax < b such
@@ -309,8 +313,6 @@ static double K_estimate_zsmall(int nu, int m, double tau, double eps, double *a
 static double K_integrand(double z, void *args_)
 {
     double v, rTE, rTM;
-    TERMINATE(z < 0, "Invalid parameter: z=%g\n", z);
-
     integrand_t *args = (integrand_t *)args_;
 
     const int nu = args->nu, m = args->m;
@@ -342,7 +344,9 @@ static double K_integrand(double z, void *args_)
 
 static double _casimir_integrate_K(integration_t *self, int nu, polarization_t p, sign_t *sign)
 {
-    TERMINATE(nu < 2, "nu=%d", nu);
+    double abserr1 = 0, abserr2 = 0, abserr3 = 0, I1 = 0, I2 = 0, I3 = 0;
+    double zmax,log_normalization,a,b;
+    int neval1 = 0, neval2 = 0, neval3 = 0, ier1 = 0, ier2 = 0, ier3 = 0;
     const int m = self->m;
     const double eps = 1e-6;
     const double tau = self->tau;
@@ -355,8 +359,6 @@ static double _casimir_integrate_K(integration_t *self, int nu, polarization_t p
         .tau  = tau,
         .casimir = self->casimir
     };
-
-    double zmax,log_normalization,a,b;
 
     /* estimate width and height of the peak of the integrand. */
     if(nu == 2 && m == 1)
@@ -371,7 +373,7 @@ static double _casimir_integrate_K(integration_t *self, int nu, polarization_t p
         b = -log(eps)/tau; /* exp(-14) =~ 1e-6 */
         log_normalization = log(3);
     }
-    else if(nu/tau > 1)
+    else if(nu/tau > 3)
         /* large z limit */
         zmax = K_estimate_zlarge(nu, m, tau, eps, &a, &b, &log_normalization);
     else
@@ -381,8 +383,7 @@ static double _casimir_integrate_K(integration_t *self, int nu, polarization_t p
     args.zmax = zmax;
     args.normalization = exp(log_normalization);
 
-    double abserr1 = 0, abserr2 = 0, abserr3 = 0, I1 = 0, I2 = 0, I3 = 0;
-    int neval1 = 0, neval2 = 0, neval3 = 0, ier1 = 0, ier2 = 0, ier3 = 0;
+    /* perform integration */
     I2 = dqags(K_integrand, a, b, 0, epsrel, &abserr1, &neval2, &ier2, &args); /* [a,b] */
     I3 = dqagi(K_integrand, b, 1, abserr1, epsrel, &abserr3, &neval3, &ier3, &args); /* [b,∞] */
     if(a > 0)
@@ -392,6 +393,15 @@ static double _casimir_integrate_K(integration_t *self, int nu, polarization_t p
 
     bool warn = ier1+ier2+ier3 > 0 || isnan(sum) || sum == 0;
     WARN(warn, "ier1=%d, ier2=%d, ier3=%d, nu=%d, m=%d, tau=%.20g, zmax=%g, a=%g, b=%g, I1=%g, I2=%g, I3=%g", ier1, ier2, ier3, nu,m,tau,zmax,a,b, I1, I2, I3);
+    /*
+    if(fabs(I1) > 1e50 || fabs(I2) > 1e50 || fabs(I3) > 1e50)
+    {
+        printf("ier1=%d, ier2=%d, ier3=%d, nu=%d, m=%d, tau=%.20g, zmax=%g, a=%g, b=%g, I1=%g, I2=%g, I3=%g, log_normalization=%g\n", ier1, ier2, ier3, nu,m,tau,zmax,a,b, I1, I2, I3, log_normalization);
+
+        double foobar = K_integrand(zmax, &args);
+        printf("f(zmax)=%g\n", foobar);
+    }
+    */
 
     *sign = SGN(sum);
     return log(fabs(sum))-tau*zmax + log_normalization*nu;
@@ -421,7 +431,6 @@ double casimir_integrate_K(integration_t *self, int nu, polarization_t p, sign_t
 }
 
 /* eq. (3) */
-//#define alpha(p, n, nu) (((double)(pow_2(p)-pow_2(n+nu+1))*(double)(pow_2(p)-pow_2(n-nu)))/(4*pow_2(p)-1))
 static double alpha(double p, double n, double nu)
 {
     return (((pow_2(p)-pow_2(n+nu+1))*(double)(pow_2(p)-pow_2(n-nu)))/(4*pow_2(p)-1));
@@ -453,7 +462,7 @@ static double _casimir_integrate_I(integration_t *self, int l1, int l2, polariza
 
     if(qmax < 0)
     {
-        TERMINATE(1, "l1=%d, l2=%d, m=%d\n", l1, l2, (int)m);
+        TERMINATE(true, "l1=%d, l2=%d, m=%d\n", l1, l2, (int)m);
         return 0;
     }
 
@@ -479,7 +488,7 @@ static double _casimir_integrate_I(integration_t *self, int l1, int l2, polariza
 
     q = 2;
     /* eq. (35) */
-    aq[2] = (2*n+2*nu-1)*(2*n+2*nu-7)/4*( (2*n+2*nu-3)/(n4*(n4-1)) * ( (2*n+2*nu-5)/(2*(n4-2)*(n4-3)) \
+    aq[q] = (2*n+2*nu-1)*(2*n+2*nu-7)/4*( (2*n+2*nu-3)/(n4*(n4-1)) * ( (2*n+2*nu-5)/(2*(n4-2)*(n4-3)) \
                 * ( (m-n)*(m-n+1)*(m-n+2)*(m-n+3)/(2*n-1)/(2*n-3) \
                 + 2*(m-n)*(m-n+1)*(m-nu)*(m-nu+1)/((2*n-1)*(2*nu-1)) \
                 + (m-nu)*(m-nu+1)*(m-nu+2)*(m-nu+3)/(2*nu-1)/(2*nu-3) ) - (m-n)*(m-n+1)/(2*n-1) \
