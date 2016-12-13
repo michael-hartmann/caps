@@ -184,10 +184,10 @@ static double log_k_zsmall(double z, int nu, int m, double tau, double *factor)
     {
         v = Plm(nu,m_,1+z,*factor)/denom;
         //printf("z=%g, v=%g, factor=%g\n", z,v,*factor);
-        if(!isinf(v) && !isnan(v) && v != 0)
-            return nu*log(*factor)+log(v)-tau*z;
-        else if(v == 0)
+        if(v == 0)
             *factor = exp(log(*factor)+log(1e-300)/nu);
+        else if(!isinf(v) && !isnan(v))
+            return nu*log(*factor)+log(v)-tau*z;
         else if(isnan(v) || isinf(v))
             *factor = exp(log(*factor)+log(1e300)/nu);
     }
