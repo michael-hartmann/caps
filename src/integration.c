@@ -84,6 +84,41 @@ static double k_bisect_zlarge(double left, double right, int N, int nu, double t
     return (left+right)/2;
 }
 
+static double log_k(double z, int nu, int m, double tau, double *factor)
+{
+    double denom,v;
+    int m_;
+    if(z == 0)
+        return -INFINITY;
+
+    if(m > 0)
+    {
+        m_ = 2*m;
+        denom = z*(z+2);
+    }
+    else
+    {
+        m_ = 2;
+        denom = 1;
+    }
+
+    for(int i = 0; i < 5; i++)
+    {
+        v = Plm(nu,m_,1+z,*factor)/denom;
+        //printf("z=%g, v=%g, factor=%g\n", z,v,*factor);
+        if(v == 0)
+            *factor = exp(log(*factor)+log(1e-300)/nu);
+        else if(!isinf(v) && !isnan(v))
+            return nu*log(*factor)+log(v)-tau*z;
+        else if(isnan(v) || isinf(v))
+            *factor = exp(log(*factor)+log(1e300)/nu);
+    }
+
+    TERMINATE(true, "z=%g, nu=%d, m=%d, tau=%g, factor=%g", z, nu, m, tau, *factor);
+
+    return NAN;
+}
+
 /* Estimate shape of integrand K assuming nu/tau >> 1.
  *
  * If nu/tau >> 1, we can approximate the associated Legendre polynomial
@@ -120,6 +155,7 @@ static double K_estimate_zlarge(int nu, int m, double tau, double eps, double *a
     {
         zmax = (nu-2)/tau;
         *log_normalization = (Plm_estimate(nu,2*m,1+zmax)-log(zmax*(zmax+2)))/nu;
+
         nu -= 2;
     }
     else
@@ -162,41 +198,6 @@ static double K_estimate_zlarge(int nu, int m, double tau, double eps, double *a
     return zmax;
 }
 
-static double log_k_zsmall(double z, int nu, int m, double tau, double *factor)
-{
-    double denom,v;
-    int m_;
-    if(z == 0)
-        return -INFINITY;
-
-    if(m > 0)
-    {
-        m_ = 2*m;
-        denom = z*(z+2);
-    }
-    else
-    {
-        m_ = 2;
-        denom = 1;
-    }
-
-    for(int i = 0; i < 5; i++)
-    {
-        v = Plm(nu,m_,1+z,*factor)/denom;
-        //printf("z=%g, v=%g, factor=%g\n", z,v,*factor);
-        if(v == 0)
-            *factor = exp(log(*factor)+log(1e-300)/nu);
-        else if(!isinf(v) && !isnan(v))
-            return nu*log(*factor)+log(v)-tau*z;
-        else if(isnan(v) || isinf(v))
-            *factor = exp(log(*factor)+log(1e300)/nu);
-    }
-
-    TERMINATE(true, "z=%g, nu=%d, m=%d, tau=%g, factor=%g", z, nu, m, tau, *factor);
-
-    return NAN;
-}
-
 static double K_estimate_zsmall(int nu, int m, double tau, double eps, double *a, double *b, double *log_normalization)
 {
     double left, right, middle, log_k_zmax, zmax, factor;
@@ -221,7 +222,7 @@ static double K_estimate_zsmall(int nu, int m, double tau, double eps, double *a
     /* Now, we search a good approximation for zmax using Golden section
      * search. If the associated Legendre polynomial cannot be evaluated,
      * because it becomes inf, we increase factor. This is handled in
-     * log_k_zsmall.
+     * log_k.
      * The code for Golden section search is taken from Wikipedia:
      * https://en.wikipedia.org/wiki/Golden_section_search
      */
@@ -233,9 +234,9 @@ static double K_estimate_zsmall(int nu, int m, double tau, double eps, double *a
     {
         /* we only have to caclulate fc or fd if it is NAN */
         if(isnan(fc))
-            fc = log_k_zsmall(c, nu, m, tau, &factor);
+            fc = log_k(c, nu, m, tau, &factor);
         if(isnan(fd))
-            fd = log_k_zsmall(d, nu, m, tau, &factor);
+            fd = log_k(d, nu, m, tau, &factor);
 
         if(fc > fd)
         {
@@ -283,7 +284,7 @@ static double K_estimate_zsmall(int nu, int m, double tau, double eps, double *a
     for(int i = 0; i < N; i++)
     {
         middle = (left+right)/2;
-        double fm = log_k_zsmall(middle, nu, m, tau, &factor);
+        double fm = log_k(middle, nu, m, tau, &factor);
 
         if((fm-log_k_zmax) < log(eps))
             left = middle;
@@ -298,7 +299,7 @@ static double K_estimate_zsmall(int nu, int m, double tau, double eps, double *a
     for(int i = 0; i < N; i++)
     {
         middle = (left+right)/2;
-        double fm = log_k_zsmall(middle, nu, m, tau, &factor);
+        double fm = log_k(middle, nu, m, tau, &factor);
 
         if((fm-log_k_zmax) < log(eps))
             right = middle;
@@ -379,6 +380,8 @@ static double _casimir_integrate_K(integration_t *self, int nu, polarization_t p
     else
         /* small z limit */
         zmax = K_estimate_zsmall(nu, m, tau, eps, &a, &b, &log_normalization);
+
+    printf("a=%g, b=%g, zmax=%g\n", a, b, zmax);
 
     args.zmax = zmax;
     args.normalization = exp(log_normalization);
