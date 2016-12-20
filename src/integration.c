@@ -381,7 +381,7 @@ static double _casimir_integrate_K(integration_t *self, int nu, polarization_t p
         /* small z limit */
         zmax = K_estimate_zsmall(nu, m, tau, eps, &a, &b, &log_normalization);
 
-    printf("a=%g, b=%g, zmax=%g\n", a, b, zmax);
+    //printf("a=%g, b=%g, zmax=%g\n", a, b, zmax);
 
     args.zmax = zmax;
     args.normalization = exp(log_normalization);
