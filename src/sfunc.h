@@ -50,6 +50,5 @@ double factorial2(unsigned int n);
 double Plm(int l, int m, double x, double factor);
 void Plm_array(int lmax, int m, double x, double factor, double array[]);
 double Plm_estimate(int l, int m, double x);
-void Pl1mPl2m(int l1, int l2, int m, double x, double factor, double *Pl1m, double *Pl2m);
 
 #endif

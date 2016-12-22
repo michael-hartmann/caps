@@ -358,26 +358,6 @@ void Plm_array(int lmax, int m, double x, double factor, double array[])
 }
 
 
-/** @brief Calculate Pl1m(x) and Pl2m(x)
- *
- * @param [in] l1
- * @param [in] l2
- * @param [in] m
- * @param [in] x argument
- * @param [in] factor
- * @param [out] Pl1m
- * @param [out] Pl2m
- */
-void Pl1mPl2m(int l1, int l2, int m, double x, double factor, double *Pl1m, double *Pl2m)
-{
-    int lmax = MAX(l1,l2);
-
-    double array[lmax-m+1];
-    Plm_array(lmax, m, x, factor, array);
-    *Pl1m = array[l1-m];
-    *Pl2m = array[l2-m];
-}
-
 double Plm(int l, int m, double x, double factor)
 {
     double array[l-m+1];
