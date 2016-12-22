@@ -331,7 +331,6 @@ void Plm_array(int lmax, int m, double x, double factor, double array[])
         //array[0] = exp(ln_factorial2(2*m-1) + m/2.*log((x+1)/factor*(x-1)/factor));
         factor /= exp((ln_factorial2(2*m-1) + m/2.*log((x+1)/factor*(x-1)/factor))/(lmax-m));
 
-    printf("1 %g\n", array[1]);
     array[1] = x*(2*m+1)*array[0]/factor;
 
     if(array[1] == 0)
