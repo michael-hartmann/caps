@@ -48,7 +48,7 @@ CFLAGS = -std=c99
 CFLAGS += -I . -I cquadpack/include
 
 # enable warnings and make them fatal
-CFLAGS += -g -Wall -Wextra -Wmissing-prototypes -Wshadow -Wpointer-arith -Wcast-qual -Wwrite-strings -Wno-unused-parameter -fstrict-aliasing -Wdouble-promotion
+CFLAGS += -g -Werror -Wall -Wextra -Wmissing-prototypes -Wshadow -Wpointer-arith -Wcast-qual -Wwrite-strings -Wno-unused-parameter -fstrict-aliasing
 # profiling
 #CFLAGS += -pg
 
@@ -86,6 +86,9 @@ casimir: casimir.o $(OBJS) dependencies
 
 casimir_logdetD: casimir_logdetD.o $(OBJS) dependencies
 	$(CC) $(CFLAGS) $(OPT) casimir_logdetD.o $(OBJS) $(LDFLAGS) -o casimir_logdetD
+
+integrate_K: integrate_K.o $(OBJS) dependencies
+	$(CC) $(CFLAGS) $(OPT) integrate_K.o $(OBJS) $(LDFLAGS) -o integrate_K
 
 casimir_hiT: casimir_hiT.o $(OBJS) dependencies
 	$(CC) $(CFLAGS) $(OPT) casimir_hiT.o $(OBJS) $(LDFLAGS) -o casimir_hiT
