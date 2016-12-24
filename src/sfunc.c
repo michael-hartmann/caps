@@ -316,54 +316,33 @@ double factorial2(unsigned int n)
  * @param [in] factor scaling factor
  * @param [out] array array of values
  */
-void Plm_array(int lmax, int m, double x, double factor, double array[])
+double Plm(int l, int m, double x, double factor)
 {
+    double array[l-m+1];
+
+    if(l == m)
+        return exp(ln_factorial2(2*m-1) + m/2.*log((x+1)/factor*(x-1)/factor));
+
+    if(m > 0)
+        factor /= exp((ln_factorial2(2*m-1) + m/2.*log((x+1)/factor*(x-1)/factor))/(l-m));
+
     array[0] = 1;
-
-    if(lmax == m)
-    {
-        array[0] = exp(ln_factorial2(2*m-1) + m/2.*log((x+1)/factor*(x-1)/factor));
-        for(int ll = 1; ll < lmax-m+1; ll++)
-            array[ll] = 0;
-        return;
-    }
-    else if(m > 0)
-        //array[0] = exp(ln_factorial2(2*m-1) + m/2.*log((x+1)/factor*(x-1)/factor));
-        factor /= exp((ln_factorial2(2*m-1) + m/2.*log((x+1)/factor*(x-1)/factor))/(lmax-m));
-
     array[1] = x*(2*m+1)*array[0]/factor;
 
     if(array[1] == 0)
-    {
-        for(int ll = 2; ll < lmax-m+1; ll++)
-            array[ll] = 0;
-
-        return;
-    }
+        return 0;
 
     const double y = factor*x;
     const double factor2 = pow_2(factor);
 
     if(isinf(factor2))
-    {
-        for(int ll = m+2; ll < lmax+1; ll++)
-            array[ll-m] = 0;
+        return 0;
 
-        return;
-    }
-
-    for(int ll = m+2; ll < lmax+1; ll++)
+    for(int ll = m+2; ll < l+1; ll++)
         array[ll-m] = ((2*ll-1)*y*array[ll-m-1] - (ll+m-1)*array[ll-m-2])/((ll-m)*factor2);
-}
 
-
-double Plm(int l, int m, double x, double factor)
-{
-    double array[l-m+1];
-    Plm_array(l, m, x, factor, array);
     return array[l-m];
 }
-
 
 /** @brief Estimate value of Plm(x) for x >> 1
  *
