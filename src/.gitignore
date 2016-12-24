@@ -5,8 +5,8 @@ casimir_Fn
 casimir_T0
 casimir_hiT
 casimir_logdetD
-casimir_psd
 casimir_tests
+integrate_K
 ld_drude
 pfa.pyc
 .depend
