@@ -68,9 +68,6 @@ void usage(FILE *stream)
 "    -L, --lmax LMAX\n"
 "        Set lmax to LMAX. When -L is specified and positive -l will be ignored.\n"
 "\n"
-"    -c, --cores CORES\n"
-"        Use CORES of processors for computation (default: 1)\n"
-"\n"
 "    -p, --precision\n"
 "        Set precision to given value. The value determines when the sum over\n"
 "        the Matsubara frequencies and the sum over m is truncated. The sum is\n"
@@ -178,7 +175,6 @@ int main(int argc, char *argv[])
     double lfac      = DEFAULT_LFAC;
     double lT[4]     = { 0,0,0,SCALE_LIN }; /* start, stop, N, lin/log */
     double lLbyR[4]  = { 0,0,0,SCALE_LIN }; /* start, stop, N, lin/log */
-    int cores = 1;
     int lmax = 0;
     int buffering_flag = 0, quiet_flag = 0, verbose_flag = 0;
 
@@ -194,7 +190,6 @@ int main(int argc, char *argv[])
             { "LbyR",      required_argument, 0, 'x' },
             { "lscale",    required_argument, 0, 'l' },
             { "lmax",      required_argument, 0, 'L' },
-            { "cores",     required_argument, 0, 'c' },
             { "precision", required_argument, 0, 'p' },
             { "gamma",     required_argument, 0, 'g' },
             { "omegap",    required_argument, 0, 'w' },
@@ -204,7 +199,7 @@ int main(int argc, char *argv[])
         /* getopt_long stores the option index here. */
         int option_index = 0;
 
-        int c = getopt_long (argc, argv, "x:T:c:l:L:p:g:w:qh", long_options, &option_index);
+        int c = getopt_long (argc, argv, "x:T:l:L:p:g:w:qh", long_options, &option_index);
 
         /* Detect the end of the options. */
         if(c == -1)
@@ -227,9 +222,6 @@ int main(int argc, char *argv[])
                 break;
             case 'q':
                 quiet_flag = 1;
-                break;
-            case 'c':
-                cores = atoi(optarg);
                 break;
             case 'l':
                 lfac = atof(optarg);
@@ -276,8 +268,6 @@ int main(int argc, char *argv[])
             fprintf(stderr, "wrong argument for -x: x=L/R must be positive\n\n");
         else if(lT[0] <= 0 || lT[1] <= 0)
             fprintf(stderr, "wrong argument for -T: temperature must be positive\n\n");
-        else if(cores < 1)
-            fprintf(stderr, "wrong argument for -c: number of cores must be >= 1\n\n");
         else if(gamma_ < 0)
             fprintf(stderr, "wrong argument for --gamma: gamma must be nonnegative\n\n");
         else if(omegap <= 0)
@@ -319,7 +309,6 @@ int main(int argc, char *argv[])
             casimir_t *casimir = casimir_init(LbyR, T);
 
             casimir_set_verbose(casimir, verbose_flag);
-            casimir_set_cores(casimir, cores);
             casimir_set_precision(casimir, precision);
 
             /* XXX
