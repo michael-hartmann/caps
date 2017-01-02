@@ -17,7 +17,7 @@
 #define WARN(cond, ...)      if(cond) { fprintf(stderr, "Warning: ");     fprintf(stderr, __VA_ARGS__); fprintf(stderr, " (in %s, %s:%d)\n", __func__, __FILE__, __LINE__); }
 
 
-#define xfree(p) do { _xfree(p); p = NULL; } while (0)
+#define xfree(p) do { _xfree(p); p = NULL; } while(0)
 
 double now(void);
 
