@@ -102,16 +102,16 @@ static double log_k(double z, int nu, int m, double tau, double *factor)
         denom = 1;
     }
 
-    for(int i = 0; i < 5; i++)
+    for(int i = 0; i < 25; i++)
     {
         v = Plm(nu,m_,1+z,*factor)/denom;
         //printf("z=%g, v=%g, factor=%g\n", z,v,*factor);
-        if(v == 0)
-            *factor = exp(log(*factor)+log(1e-300)/nu);
+        if(v < 1e-200)
+            *factor = exp(log(*factor)+log(1e-150)/nu);
         else if(!isinf(v) && !isnan(v))
             return nu*log(*factor)+log(v)-tau*z;
         else if(isnan(v) || isinf(v))
-            *factor = exp(log(*factor)+log(1e300)/nu);
+            *factor = exp(log(*factor)+log(1e150)/nu);
     }
 
     TERMINATE(true, "z=%g, nu=%d, m=%d, tau=%g, factor=%g", z, nu, m, tau, *factor);
