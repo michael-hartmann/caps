@@ -260,14 +260,6 @@ double ln_factorial2(unsigned int n)
     }
 }
 
-double factorial2(unsigned int n)
-{
-    if(n < lookup_factorial2_elems)
-        return lookup_factorial2[n];
-    else
-        return exp(ln_factorial2(n));
-}
-
 /**
 * @name Associated Legendre polynomials
 */
