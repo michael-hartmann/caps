@@ -60,7 +60,7 @@ matrix_t *matrix_alloc(const size_t dim)
  * Create a matrix view from an existing matrix.
  *
  * Note that you still have to call matrix_free once you don't need the view
- * anymore. The actual data given by a will not be freed.
+ * anymore. The actual data given by will not be freed.
  *
  * @param [in] a double array with matrix data
  * @param [in] dim dimension of square matrix
@@ -98,10 +98,8 @@ void matrix_free(matrix_t *A)
     if(A != NULL)
     {
         if(A->free_memory)
-        {
             xfree(A->M);
-            A->M = NULL;
-        }
+
         xfree(A);
     }
 }
@@ -320,7 +318,7 @@ double matrix_logdet_lu(matrix_t *A)
         &info
     );
 
-    WARN(info != 0, "dgetrf returned %d", info);
+    TERMINATE(info != 0, "dgetrf returned %d", info);
 
     return matrix_logdet_triangular(A);
 }
@@ -375,7 +373,7 @@ double matrix_logdet_qr(matrix_t *A)
 
     xfree(work);
 
-    WARN(info != 0, "dgeqrf returned %d", info);
+    TERMINATE(info != 0, "dgeqrf returned %d", info);
 
     return matrix_logdet_triangular(A);
 }
@@ -421,7 +419,7 @@ double matrix_logdetIdmM_eig(matrix_t *A, double z)
 
     xfree(work);
 
-    WARN(info != 0, "dgetrf returned %d", info);
+    TERMINATE(info != 0, "dgeev returned %d", info);
 
     for(int i = 0; i < dim; i++)
     {
