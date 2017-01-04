@@ -23,6 +23,7 @@ double now(void);
 
 void *xmalloc(size_t size);
 void *xrealloc(void *p, size_t size);
+void *xcalloc(size_t nmemb, size_t size);
 void _xfree(void *p);
 
 int cinstr(const char *str, char c);
