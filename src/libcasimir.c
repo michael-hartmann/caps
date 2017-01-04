@@ -371,7 +371,8 @@ casimir_t *casimir_init(double LbyR, double T)
     /* set debug flag */
     self->debug = false;
 
-    self->detalg = 0;
+    /* use LU decomposition by default */
+    self->detalg = DETALG_LU;
 
     return self;
 }
