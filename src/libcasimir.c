@@ -51,12 +51,9 @@ int casimir_compile_info(char *str, size_t size)
 /** @brief Print object information to stream
  *
  * This function will print information about the object self to stream.
- * Information include all parameters like \f$R/L\f$, \f$\omega_\mathrm{P}\f$
- * and \f$\gamma\f$ of sphere and plane, as well as maximum value of
- * \f$\ell\f$, precision...
  *
- * This function is thread-safe. However, do not modify parameters (e.g. lmax,
- * dielectric properties of plane and sphere...) while calling this function.
+ * This function is thread-safe. However, do not modify parameters while
+ * calling this function.
  *
  * @param self Casimir object
  * @param stream where to print the string
@@ -115,13 +112,13 @@ int casimir_vfprintf(casimir_t *self, FILE *stream, const char *format, va_list 
  *
  * A general note on debugging and error handling:
  *
- * 1) When an fatal error occures, for example allocating memory failed, the
- * program should terminate using the macro TERMINATE from utils.h.
+ * 1) When a fatal error occures, e.g. allocating memory failed, the program
+ * should terminate using the macro TERMINATE from utils.h.
  *
  * 2) If there was potentially a problem the program should use the macro WARN.
  * This macro will print a warning to stderr, but it will not terminate the
- * program. For example if there might be numerical instabilities or
- * convergence problems, but it is not 100% clear, the program should use WARN.
+ * program. For example, if there might be numerical instabilities or
+ * convergence problems, the program should use WARN.
  *
  * 3) For debugging information / profiling information use casimir_debug.
  *
@@ -255,11 +252,11 @@ double casimir_epsilonm1_drude(double xi, void *userdata)
  *
  * This function is thread-safe.
  *
- * @param [in]      self    Casimir object
- * @param [in]      nT      \f$\xi=nT\f$ imaginary frequency
- * @param [in]      k       xy projection of wavevector
- * @param [in,out]  r_TE    Fresnel coefficient for TE mode
- * @param [in,out]  r_TM    Fresnel coefficient for TM mode
+ * @param [in]     self  Casimir object
+ * @param [in]     nT    \f$\xi=nT\f$ imaginary frequency
+ * @param [in]     k     xy projection of wavevector
+ * @param [in,out] r_TE  Fresnel coefficient for TE mode
+ * @param [in,out] r_TM  Fresnel coefficient for TM mode
  */
 void casimir_rp(casimir_t *self, double nT, double k, double *r_TE, double *r_TM)
 {
@@ -318,10 +315,11 @@ void casimir_rp(casimir_t *self, double nT, double k, double *r_TE, double *r_TM
 /*@{*/
 
 /**
- * @brief Create a new Casimir object for perfect reflectors
+ * @brief Create a new Casimir object
  *
  * This function will initialize a Casimir object with sphere and plane perfect
- * reflectors.
+ * reflectors. By default the dielectric function corresponds to perfect
+ * reflectors, i.e. epsilon=inf.
  *
  * By default, the value of lmax is chosen by:
  * lmax = ceil(max(CASIMIR_MINIMUM_LMAX, CASIMIR_FACTOR_LMAX/LbyR))
@@ -333,17 +331,13 @@ void casimir_rp(casimir_t *self, double nT, double k, double *r_TE, double *r_TM
  * @param [out] self Casimir object
  * @param [in]  LbyR \f$\frac{L}{R}\f$
  * @param [in]  T temperature in units of \f$2\pi k_B \mathcal{L}/(\hbar c)\f$
- * @retval 0 if successful
- * @retval -1 if wrong value for LbyR
- * @retval -2 if wrong value for T
+ * @retval object Casimir object if successful
+ * @retval NULL   an error occured
  */
 casimir_t *casimir_init(double LbyR, double T)
 {
     if(LbyR <= 0 || T <= 0)
-    {
-        TERMINATE(true, "Invalid argument: LbyR=%g, T=%g", LbyR, T);
         return NULL;
-    }
 
     casimir_t *self = xmalloc(sizeof(casimir_t));
 
