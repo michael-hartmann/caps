@@ -489,10 +489,7 @@ detalg_t casimir_get_detalg(casimir_t *self)
 int casimir_set_lmax(casimir_t *self, int lmax)
 {
     if(lmax < 1)
-    {
-        TERMINATE(true, "Invalid argument: lmax=%d", lmax);
         return 0;
-    }
 
     self->lmax = lmax;
 
