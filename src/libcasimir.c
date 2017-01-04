@@ -541,10 +541,7 @@ double casimir_get_threshold(casimir_t *self)
 int casimir_set_threshold(casimir_t *self, double threshold)
 {
     if(threshold < 0)
-    {
-        TERMINATE(true, "Invalid argument: threshold=%g", threshold);
         return 0;
-    }
 
     self->threshold = threshold;
     return 1;
@@ -579,10 +576,7 @@ double casimir_get_precision(casimir_t *self)
 int casimir_set_precision(casimir_t *self, double precision)
 {
     if(precision <= 0)
-    {
-        TERMINATE(true, "Invalid argument: precision=%g", precision);
         return 0;
-    }
 
     self->precision = precision;
     return 1;
@@ -1025,7 +1019,7 @@ void casimir_mie_cache_free(casimir_t *self)
  */
 void casimir_M0(casimir_t *self, int m, matrix_t **EE, matrix_t **MM)
 {
-    TERMINATE(m > self->lmax, "Invalid argument: m=%d, lmax=%d", m, self->lmax);
+    TERMINATE(m > self->lmax || m < 0, "Invalid argument: m=%d, lmax=%d", m, self->lmax);
 
     /* y = log(R/(R+L)/2) */
     const double y = log(self->RbyScriptL/2);
@@ -1113,7 +1107,7 @@ void casimir_M0(casimir_t *self, int m, matrix_t **EE, matrix_t **MM)
  */
 void casimir_logdetD0(casimir_t *self, int m, double *logdet_EE, double *logdet_MM)
 {
-    TERMINATE(m > self->lmax, "Invalid argument: m=%d, lmax=%d", m, self->lmax);
+    TERMINATE(m > self->lmax || m < 0, "Invalid argument: m=%d, lmax=%d", m, self->lmax);
 
     matrix_t *EE = NULL, *MM = NULL;
 
@@ -1152,7 +1146,7 @@ void casimir_logdetD0(casimir_t *self, int m, double *logdet_EE, double *logdet_
  */
 matrix_t *casimir_M(casimir_t *self, int n, int m)
 {
-    TERMINATE(m > self->lmax, "Invalid argument: m=%d, lmax=%d", m, self->lmax);
+    TERMINATE(m > self->lmax || m < 0, "Invalid argument: m=%d, lmax=%d", m, self->lmax);
 
     const size_t min = MAX(m,1);
     const size_t max = self->lmax;
@@ -1279,7 +1273,7 @@ matrix_t *casimir_M(casimir_t *self, int n, int m)
  */
 double casimir_logdetD(casimir_t *self, int n, int m)
 {
-    TERMINATE(m > self->lmax, "Invalid argument: m=%d, lmax=%d", m, self->lmax);
+    TERMINATE(m > self->lmax || m < 0 || n < 0, "Invalid argument: m=%d, lmax=%d, n=%d", m, self->lmax, n);
 
     double t0;
     double logdet = 0;
