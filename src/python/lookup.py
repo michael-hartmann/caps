@@ -1,9 +1,7 @@
-from scipy.special import factorial2
 from math import log,lgamma
 
 max_logi = 32768
 max_lfac = 32768
-max_factorial2 = 256
 
 header = """/* created by lookup.py */
 #ifndef LOOKUP_H
@@ -11,9 +9,6 @@ header = """/* created by lookup.py */
 
 extern double lookup_logi[];
 extern size_t lookup_logi_elems;
-
-extern double lookup_factorial2[];
-extern size_t lookup_factorial2_elems;
 
 extern double lookup_lfac[];
 extern size_t lookup_lfac_elems;
@@ -42,20 +37,6 @@ double lookup_logi[] = { /* %g kb */
     print("};\n", file=f);
 
     print("size_t lookup_logi_elems = sizeof(lookup_logi)/sizeof(lookup_logi[0]);", file=f)
-
-
-    print("\n", file=f)
-
-
-    print("double lookup_factorial2[] = { /* %g kb */" % (max_factorial2*8/1024), file=f)
-
-    for i in range(max_factorial2-1):
-        print("    %.20e, /* %d!! */" % (factorial2(i, exact=True),i), file=f)
-
-    print("    %.20e /* %d!! */" % (factorial2(max_factorial2-1, exact=True),max_factorial2-1), file=f)
-    print("};\n", file=f);
-
-    print("size_t lookup_factorial2_elems = sizeof(lookup_factorial2)/sizeof(lookup_factorial2[0]);", file=f)
 
 
     print("\n", file=f)
