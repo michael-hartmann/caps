@@ -24,7 +24,25 @@ void *xmalloc(size_t size)
 {
     void *p = malloc(size);
 
-    TERMINATE(p == NULL, "malloc failed");
+    TERMINATE(p == NULL, "malloc failed: size=%zu", size);
+
+    return p;
+}
+
+
+/** @brief Wrapper for calloc
+ *
+ * This function is a wrapper for calloc. If calloc fails TERMINATE is called.
+ *
+ * @param mnemb
+ * @param size
+ * @retval ptr pointer to memory
+ */
+void *xcalloc(size_t nmemb, size_t size)
+{
+    void *p = calloc(nmemb, size);
+
+    TERMINATE(p == NULL, "calloc failed: nmemb=%zu, size=%zu", nmemb, size);
 
     return p;
 }
@@ -43,7 +61,7 @@ void *xrealloc(void *p, size_t size)
 {
     void *p2 = realloc(p, size);
 
-    TERMINATE(p2 == NULL, "realloc failed");
+    TERMINATE(p2 == NULL, "realloc failed: p=%p, size=%zu", p, size);
 
     return p2;
 }
