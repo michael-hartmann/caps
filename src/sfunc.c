@@ -375,7 +375,7 @@ double Plm(int l, int m, double x, double factor, int mode)
         return log_prefactor+log(fabs(array[l-m]));
     else
     {
-        if(fabs(log_prefactor) < 300)
+        if(fabs(log_prefactor) < log(1e300))
         {
             return exp(log_prefactor)*array[l-m];
         }
