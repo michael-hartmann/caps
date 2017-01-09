@@ -308,32 +308,82 @@ double ln_factorial2(unsigned int n)
  * @param [in] factor scaling factor
  * @param [out] array array of values
  */
-double Plm(int l, int m, double x, double factor)
+double Plm(int l, int m, double x, double factor, int mode)
 {
     double array[l-m+1];
+    double log_prefactor = 0;
 
     if(l == m)
-        return exp(ln_factorial2(2*m-1) + m/2.*log((x+1)/factor*(x-1)/factor));
+    {
+        double log_v = ln_factorial2(2*m-1) + m/2.*log((x+1)/factor*(x-1)/factor);
+        if(mode == 1)
+            return log_v;
+        else
+            return exp(log_v);
+    }
 
     if(m > 0)
-        factor /= exp((ln_factorial2(2*m-1) + m/2.*log((x+1)/factor*(x-1)/factor))/(l-m));
+        log_prefactor = ln_factorial2(2*m-1) + m/2.*log((x+1)*(x-1)) - m*log(factor);
 
     array[0] = 1;
     array[1] = x*(2*m+1)*array[0]/factor;
 
     if(array[1] == 0)
-        return 0;
+    {
+        if(mode == 1)
+            return -INFINITY;
+        else
+            return 0;
+    }
 
     const double y = factor*x;
     const double factor2 = pow_2(factor);
 
     if(isinf(factor2))
-        return 0;
+    {
+        if(mode == 1)
+            return -INFINITY;
+        else
+            return 0;
+    }
 
     for(int ll = m+2; ll < l+1; ll++)
+    {
         array[ll-m] = ((2*ll-1)*y*array[ll-m-1] - (ll+m-1)*array[ll-m-2])/((ll-m)*factor2);
+        //printf("array[%d] = %g\n", ll-m, array[ll-m]);
 
-    return array[l-m];
+        if(true)
+        {
+            if(isnan(array[ll-m]))
+                return NAN;
+            else if(fabs(array[ll-m]) < 1e-100)
+            {
+                log_prefactor -= log(1e100);
+                array[ll-m]   *= 1e100;
+                array[ll-m-1] *= 1e100;
+            }
+            else if(fabs(array[ll-m]) > 1e+100)
+            {
+                log_prefactor += log(1e100);
+                array[ll-m]   /= 1e100;
+                array[ll-m-1] /= 1e100;
+            }
+        }
+    }
+
+    if(mode == 1)
+        return log_prefactor+log(fabs(array[l-m]));
+    else
+    {
+        if(fabs(log_prefactor) < 300)
+        {
+            return exp(log_prefactor)*array[l-m];
+        }
+        else
+        {
+            return exp(log_prefactor+log(array[l-m]));
+        }
+    }
 }
 
 /** @brief Estimate value of Plm(x) for x >> 1
