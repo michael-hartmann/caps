@@ -34,6 +34,7 @@ CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #include <string.h>
 #include <stdint.h>
 
+#include "utils.h"
 #include "hash-table.h"
 
 struct _HashTableEntry {
@@ -73,7 +74,6 @@ static int hash_table_allocate_table(HashTable *hash_table)
      * An attempt is made here to ensure sensible behavior if the
      * maximum prime is exceeded, but in practice other things are
      * likely to break long before that happens. */
-
     if(hash_table->prime_index < hash_table_num_primes)
         new_table_size = hash_table_primes[hash_table->prime_index];
     else
@@ -82,8 +82,7 @@ static int hash_table_allocate_table(HashTable *hash_table)
     hash_table->table_size = new_table_size;
 
     /* Allocate the table and initialise to NULL for all entries */
-    hash_table->table = calloc(hash_table->table_size,
-                               sizeof(HashTableEntry *));
+    hash_table->table = xcalloc(hash_table->table_size, sizeof(HashTableEntry *));
 
     return hash_table->table != NULL;
 }
@@ -91,9 +90,7 @@ static int hash_table_allocate_table(HashTable *hash_table)
 /* Free an entry, calling the free functions if there are any registered */
 static void hash_table_free_entry(HashTable *hash_table, HashTableEntry *entry)
 {
-    HashTablePair *pair;
-
-    pair = &(entry->pair);
+    HashTablePair *pair = &(entry->pair);
 
     /* If there is a function registered for freeing values, use it to free the
      * value */
@@ -101,18 +98,13 @@ static void hash_table_free_entry(HashTable *hash_table, HashTableEntry *entry)
         hash_table->value_free_func(pair->value);
 
     /* Free the data structure */
-    free(entry);
+    xfree(entry);
 }
 
 HashTable *hash_table_new(HashTableValueFreeFunc value_free_func)
 {
-    HashTable *hash_table;
-
     /* Allocate a new hash table structure */
-    hash_table = (HashTable *) malloc(sizeof(HashTable));
-
-    if(hash_table == NULL)
-        return NULL;
+    HashTable *hash_table = (HashTable *)xmalloc(sizeof(HashTable));
 
     hash_table->value_free_func = value_free_func;
     hash_table->entries = 0;
@@ -121,7 +113,7 @@ HashTable *hash_table_new(HashTableValueFreeFunc value_free_func)
     /* Allocate the table */
     if(!hash_table_allocate_table(hash_table))
     {
-        free(hash_table);
+        xfree(hash_table);
         return NULL;
     }
 
@@ -130,47 +122,35 @@ HashTable *hash_table_new(HashTableValueFreeFunc value_free_func)
 
 void hash_table_free(HashTable *hash_table)
 {
-    HashTableEntry *rover;
-    HashTableEntry *next;
-    uint64_t i;
-
     /* Free all entries in all chains */
-
-    for(i = 0; i < hash_table->table_size; i++)
+    for(uint64_t i = 0; i < hash_table->table_size; i++)
     {
-        rover = hash_table->table[i];
+        HashTableEntry *rover = hash_table->table[i];
         while(rover != NULL)
         {
-            next = rover->next;
+            HashTableEntry *next = rover->next;
             hash_table_free_entry(hash_table, rover);
             rover = next;
         }
     }
 
     /* Free the table */
-    free(hash_table->table);
+    xfree(hash_table->table);
 
     /* Free the hash table structure */
-    free(hash_table);
+    xfree(hash_table);
 }
 
 
 static int hash_table_enlarge(HashTable *hash_table)
 {
-    HashTableEntry **old_table;
-    uint64_t old_table_size;
-    uint64_t old_prime_index;
-    HashTableEntry *rover;
-    HashTablePair *pair;
-    HashTableEntry *next;
     uint64_t index;
-    uint64_t i;
 
     /* Store a copy of the old table */
 
-    old_table = hash_table->table;
-    old_table_size = hash_table->table_size;
-    old_prime_index = hash_table->prime_index;
+    HashTableEntry **old_table = hash_table->table;
+    uint64_t old_table_size = hash_table->table_size;
+    uint64_t old_prime_index = hash_table->prime_index;
 
     /* Allocate a new, larger table */
     ++hash_table->prime_index;
@@ -187,16 +167,16 @@ static int hash_table_enlarge(HashTable *hash_table)
 
     /* Link all entries from all chains into the new table */
 
-    for(i = 0; i < old_table_size; i++)
+    for(uint64_t i = 0; i < old_table_size; i++)
     {
-        rover = old_table[i];
+        HashTableEntry *rover = old_table[i];
 
-        while (rover != NULL)
+        while(rover != NULL)
         {
-            next = rover->next;
+            HashTableEntry *next = rover->next;
 
             /* Fetch rover HashTablePair */
-            pair = &(rover->pair);
+            HashTablePair *pair = &(rover->pair);
 
             /* Find the index into the new table */
             index = pair->key % hash_table->table_size;
@@ -211,18 +191,13 @@ static int hash_table_enlarge(HashTable *hash_table)
     }
 
     /* Free the old table */
-    free(old_table);
+    xfree(old_table);
 
     return 1;
 }
 
 int hash_table_insert(HashTable *hash_table, uint64_t key, HashTableValue value)
 {
-    HashTableEntry *rover;
-    HashTablePair *pair;
-    HashTableEntry *newentry;
-    uint64_t index;
-
     /* If there are too many items in the table with respect to the table
      * size, the number of hash collisions increases and performance
      * decreases. Enlarge the table size to prevent this happening */
@@ -236,16 +211,16 @@ int hash_table_insert(HashTable *hash_table, uint64_t key, HashTableValue value)
 
     /* Generate the hash of the key and hence the index into the table */
 
-    index = key % hash_table->table_size;
+    uint64_t index = key % hash_table->table_size;
 
     /* Traverse the chain at this location and look for an existing
      * entry with the same key */
-    rover = hash_table->table[index];
+    HashTableEntry *rover = hash_table->table[index];
 
     while(rover != NULL)
     {
         /* Fetch rover's HashTablePair entry */
-        pair = &(rover->pair);
+        HashTablePair *pair = &(rover->pair);
 
         if(pair->key == key)
         {
@@ -267,10 +242,7 @@ int hash_table_insert(HashTable *hash_table, uint64_t key, HashTableValue value)
     }
 
     /* Not in the hash table yet.  Create a new entry */
-    newentry = (HashTableEntry *)malloc(sizeof(HashTableEntry));
-
-    if(newentry == NULL)
-        return 0;
+    HashTableEntry *newentry = (HashTableEntry *)xmalloc(sizeof(HashTableEntry));
 
     newentry->pair.key = key;
     newentry->pair.value = value;
@@ -288,20 +260,16 @@ int hash_table_insert(HashTable *hash_table, uint64_t key, HashTableValue value)
 
 HashTableValue hash_table_lookup(HashTable *hash_table, uint64_t key)
 {
-    HashTableEntry *rover;
-    HashTablePair *pair;
-    uint64_t index;
-
     /* Generate the hash of the key and hence the index into the table */
-    index = key % hash_table->table_size;
+    uint64_t index = key % hash_table->table_size;
 
     /* Walk the chain at this index until the corresponding entry is
      * found */
-    rover = hash_table->table[index];
+    HashTableEntry *rover = hash_table->table[index];
 
-    while (rover != NULL)
+    while(rover != NULL)
     {
-        pair = &(rover->pair);
+        HashTablePair *pair = &(rover->pair);
 
         if (key == pair->key)
             /* Found the entry.  Return the data. */
@@ -316,30 +284,24 @@ HashTableValue hash_table_lookup(HashTable *hash_table, uint64_t key)
 
 int hash_table_remove(HashTable *hash_table, uint64_t key)
 {
-    HashTableEntry **rover;
-    HashTableEntry *entry;
-    HashTablePair *pair;
-    uint64_t index;
-    int result;
-
     /* Generate the hash of the key and hence the index into the table */
-    index = key % hash_table->table_size;
+    uint64_t index = key % hash_table->table_size;
 
     /* Rover points at the pointer which points at the current entry
      * in the chain being inspected.  ie. the entry in the table, or
      * the "next" pointer of the previous entry in the chain.  This
      * allows us to unlink the entry when we find it. */
-    result = 0;
-    rover = &hash_table->table[index];
+    int result = 0;
+    HashTableEntry **rover = &hash_table->table[index];
 
     while(*rover != NULL)
     {
-        pair = &((*rover)->pair);
+        HashTablePair *pair = &((*rover)->pair);
 
         if(key != pair->key)
         {
             /* This is the entry to remove */
-            entry = *rover;
+            HashTableEntry *entry = *rover;
 
             /* Unlink from the list */
             *rover = entry->next;
@@ -369,15 +331,13 @@ uint64_t hash_table_num_entries(HashTable *hash_table)
 
 void hash_table_iterate(HashTable *hash_table, HashTableIterator *iterator)
 {
-    uint64_t chain;
-
     iterator->hash_table = hash_table;
 
     /* Default value of next if no entries are found. */
     iterator->next_entry = NULL;
 
     /* Find the first entry */
-    for(chain = 0; chain < hash_table->table_size; chain++)
+    for(uint64_t chain = 0; chain < hash_table->table_size; chain++)
     {
         if(hash_table->table[chain] != NULL)
         {
@@ -395,18 +355,15 @@ int hash_table_iter_has_more(HashTableIterator *iterator)
 
 HashTablePair hash_table_iter_next(HashTableIterator *iterator)
 {
-    HashTableEntry *current_entry;
-    HashTable *hash_table;
     HashTablePair pair = {0, 0};
-    uint64_t chain;
 
-    hash_table = iterator->hash_table;
+    HashTable *hash_table = iterator->hash_table;
 
     if(iterator->next_entry == NULL)
         return pair;
 
     /* Result is immediately available */
-    current_entry = iterator->next_entry;
+    HashTableEntry *current_entry = iterator->next_entry;
     pair = current_entry->pair;
 
     /* Find the next entry */
@@ -416,7 +373,7 @@ HashTablePair hash_table_iter_next(HashTableIterator *iterator)
     else
     {
         /* None left in this chain, so advance to the next chain */
-        chain = iterator->next_chain + 1;
+        uint64_t chain = iterator->next_chain + 1;
 
         /* Default value if no next chain found */
         iterator->next_entry = NULL;
