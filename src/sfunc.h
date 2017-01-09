@@ -46,7 +46,7 @@ void bessel_lnInuKnu(int nu, const double x, double *lnInu_p, double *lnKnu_p);
 
 double ln_factorial2(unsigned int n);
 
-double Plm(int l, int m, double x, double factor);
+double Plm(int l, int m, double x, double factor, int mode);
 void Plm_array(int lmax, int m, double x, double factor, double array[]);
 double Plm_estimate(int l, int m, double x);
 

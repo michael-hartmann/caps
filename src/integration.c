@@ -86,7 +86,7 @@ static double k_bisect_zlarge(double left, double right, int N, int nu, double t
 
 static double log_k(double z, int nu, int m, double tau, double *factor)
 {
-    double denom,v;
+    double denom,log_v;
     int m_;
     if(z == 0)
         return -INFINITY;
@@ -102,15 +102,15 @@ static double log_k(double z, int nu, int m, double tau, double *factor)
         denom = 1;
     }
 
-    for(int i = 0; i < 25; i++)
+    for(int i = 0; i < 250; i++)
     {
-        v = Plm(nu,m_,1+z,*factor)/denom;
+        log_v = Plm(nu,m_,1+z,*factor,1)-log(denom);
         //printf("z=%g, v=%g, factor=%g\n", z,v,*factor);
-        if(v < 1e-200)
+        if(log_v < log(1e-200))
             *factor = exp(log(*factor)+log(1e-150)/nu);
-        else if(!isinf(v) && !isnan(v))
-            return nu*log(*factor)+log(v)-tau*z;
-        else if(isnan(v) || isinf(v))
+        else if(!isinf(log_v) && !isnan(log_v))
+            return nu*log(*factor)+log_v-tau*z;
+        else if(isnan(log_v) || isinf(log_v))
             *factor = exp(log(*factor)+log(1e150)/nu);
     }
 
@@ -329,9 +329,9 @@ static double K_integrand(double z, void *args_)
     const double z2p2z = z*(z+2);
 
     if(m)
-        v = Plm(nu,2*m,1+z,factor)/z2p2z;
+        v = Plm(nu,2*m,1+z,factor,0)/z2p2z;
     else
-        v = Plm(nu,2,1+z,factor);
+        v = Plm(nu,2,1+z,factor,0);
 
     casimir_rp(args->casimir, xi, xi*sqrt(z2p2z), &rTE, &rTM);
 
