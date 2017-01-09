@@ -352,22 +352,19 @@ double Plm(int l, int m, double x, double factor, int mode)
         array[ll-m] = ((2*ll-1)*y*array[ll-m-1] - (ll+m-1)*array[ll-m-2])/((ll-m)*factor2);
         //printf("array[%d] = %g\n", ll-m, array[ll-m]);
 
-        if(true)
+        if(isnan(array[ll-m]))
+            return NAN;
+        else if(fabs(array[ll-m]) < 1e-100)
         {
-            if(isnan(array[ll-m]))
-                return NAN;
-            else if(fabs(array[ll-m]) < 1e-100)
-            {
-                log_prefactor -= log(1e100);
-                array[ll-m]   *= 1e100;
-                array[ll-m-1] *= 1e100;
-            }
-            else if(fabs(array[ll-m]) > 1e+100)
-            {
-                log_prefactor += log(1e100);
-                array[ll-m]   /= 1e100;
-                array[ll-m-1] /= 1e100;
-            }
+            log_prefactor -= log(1e100);
+            array[ll-m]   *= 1e100;
+            array[ll-m-1] *= 1e100;
+        }
+        else if(fabs(array[ll-m]) > 1e+100)
+        {
+            log_prefactor += log(1e100);
+            array[ll-m]   *= 1e-100;
+            array[ll-m-1] *= 1e-100;
         }
     }
 
