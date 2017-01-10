@@ -11,6 +11,8 @@ MPICC = mpicc
 
 OBJS = \
     cquadpack/src/dqagi.c \
+    cquadpack/src/dqk15.c \
+    cquadpack/src/dqage.c \
     cquadpack/src/dqags.c \
     cquadpack/src/dqext.c \
     cquadpack/src/dqk15i.c \
