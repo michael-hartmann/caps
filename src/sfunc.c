@@ -337,9 +337,9 @@ double Plm(int l, int m, double x, double factor, int mode)
     }
 
     const double y = factor*x;
-    const double factor2 = pow_2(factor);
+    const double factor2 = 1/pow_2(factor);
 
-    if(isinf(factor2))
+    if(factor2 == 0)
     {
         if(mode == 1)
             return -INFINITY;
@@ -347,39 +347,42 @@ double Plm(int l, int m, double x, double factor, int mode)
             return 0;
     }
 
-    for(int ll = m+2; ll < l+1; ll++)
+    for(int ll = 2; ll < l+1-m; ll++)
     {
-        array[ll-m] = ((2*ll-1)*y*array[ll-m-1] - (ll+m-1)*array[ll-m-2])/((ll-m)*factor2);
+        const double k = (2.*m-1.)/ll;
+
+        array[ll] = ((2+k)*y*array[ll-1] - (1+k)*array[ll-2])*factor2;
         //printf("array[%d] = %g\n", ll-m, array[ll-m]);
 
-        if(isnan(array[ll-m]))
-            return NAN;
-        else if(fabs(array[ll-m]) < 1e-100)
+        if(ll % 128 == 0)
+            if(isnan(array[ll]))
+                return NAN;
+
+        const double elem = fabs(array[ll]);
+        if(elem < 1e-100)
         {
             log_prefactor -= log(1e100);
-            array[ll-m]   *= 1e100;
-            array[ll-m-1] *= 1e100;
+            array[ll]   *= 1e100;
+            array[ll-1] *= 1e100;
         }
-        else if(fabs(array[ll-m]) > 1e+100)
+        else if(elem > 1e+100)
         {
             log_prefactor += log(1e100);
-            array[ll-m]   *= 1e-100;
-            array[ll-m-1] *= 1e-100;
+            array[ll]   *= 1e-100;
+            array[ll-1] *= 1e-100;
         }
     }
 
-    if(mode == 1)
+    if(isnan(array[l-m]))
+        return NAN;
+    else if(mode == 1)
         return log_prefactor+log(fabs(array[l-m]));
     else
     {
         if(fabs(log_prefactor) < log(1e300))
-        {
             return exp(log_prefactor)*array[l-m];
-        }
         else
-        {
             return exp(log_prefactor+log(array[l-m]));
-        }
     }
 }
 
