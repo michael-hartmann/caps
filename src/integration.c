@@ -345,9 +345,7 @@ static double K_integrand(double z, void *args_)
 
 static double _casimir_integrate_K(integration_t *self, int nu, polarization_t p, sign_t *sign)
 {
-    double abserr1 = 0, abserr2 = 0, abserr3 = 0, I1 = 0, I2 = 0, I3 = 0;
     double zmax,log_normalization,a,b;
-    int neval1 = 0, neval2 = 0, neval3 = 0, ier1 = 0, ier2 = 0, ier3 = 0;
     const int m = self->m;
     const double eps = 1e-6;
     const double tau = self->tau;
@@ -386,25 +384,29 @@ static double _casimir_integrate_K(integration_t *self, int nu, polarization_t p
     args.zmax = zmax;
     args.normalization = exp(log_normalization);
 
-    /* perform integration */
-    I2 = dqags(K_integrand, a, b, 0, epsrel, &abserr1, &neval2, &ier2, &args); /* [a,b] */
-    I3 = dqagi(K_integrand, b, 1, abserr1, epsrel, &abserr3, &neval3, &ier3, &args); /* [b,∞] */
+    /* perform integrations in intervals [0,a], [a,b] and [b,∞] */
+    int neval1 = 0, neval2 = 0, neval3 = 0, ier1 = 0, ier2 = 0, ier3 = 0;
+    double abserr1 = 0, abserr2 = 0, abserr3 = 0, I1 = 0, I2 = 0, I3 = 0;
+
+    /* I2: [a,b] */
+    I2 = dqags(K_integrand, a, b, 0, epsrel, &abserr1, &neval2, &ier2, &args);
+
+    /* I3: [b,∞] */
+    I3 = dqagi(K_integrand, b, 1, abserr1, epsrel, &abserr3, &neval3, &ier3, &args);
     if(a > 0)
-        I1 = dqags(K_integrand, 0, a, abserr1, epsrel, &abserr2, &neval1, &ier1, &args); /* [0,a] */
+    {
+        /* I1: [0,a]
+         * The contribution of this integral should be small, so use
+         * Gauss-Kronrod G_K 7-15 as integration rule.
+         */
+        int limit = 200;
+        I1 = dqage(K_integrand, 0, a, abserr1, epsrel, GK_7_15, &abserr2, &neval1, &ier1, &limit, &args);
+    }
 
     const double sum = I1+I2+I3;
 
-    bool warn = ier1+ier2+ier3 > 0 || isnan(sum) || sum == 0;
+    bool warn = ier1 != 0 || ier2 != 0 || ier3 != 0 || isnan(sum) || sum == 0;
     WARN(warn, "ier1=%d, ier2=%d, ier3=%d, nu=%d, m=%d, tau=%.20g, zmax=%g, a=%g, b=%g, I1=%g, I2=%g, I3=%g", ier1, ier2, ier3, nu,m,tau,zmax,a,b, I1, I2, I3);
-    /*
-    if(fabs(I1) > 1e50 || fabs(I2) > 1e50 || fabs(I3) > 1e50)
-    {
-        printf("ier1=%d, ier2=%d, ier3=%d, nu=%d, m=%d, tau=%.20g, zmax=%g, a=%g, b=%g, I1=%g, I2=%g, I3=%g, log_normalization=%g\n", ier1, ier2, ier3, nu,m,tau,zmax,a,b, I1, I2, I3, log_normalization);
-
-        double foobar = K_integrand(zmax, &args);
-        printf("f(zmax)=%g\n", foobar);
-    }
-    */
 
     *sign = SGN(sum);
     return log(fabs(sum))-tau*zmax + log_normalization*nu;
