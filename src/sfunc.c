@@ -328,18 +328,10 @@ double Plm(int l, int m, double x, double factor, int mode)
     array[0] = 1;
     array[1] = x*(2*m+1)*array[0]/factor;
 
-    if(array[1] == 0)
-    {
-        if(mode == 1)
-            return -INFINITY;
-        else
-            return 0;
-    }
-
+    const double invfactor2 = 1/pow_2(factor);
     const double y = factor*x;
-    const double factor2 = 1/pow_2(factor);
 
-    if(factor2 == 0)
+    if(array[1] == 0 || invfactor2 == 0)
     {
         if(mode == 1)
             return -INFINITY;
@@ -351,8 +343,7 @@ double Plm(int l, int m, double x, double factor, int mode)
     {
         const double k = (2.*m-1.)/ll;
 
-        array[ll] = ((2+k)*y*array[ll-1] - (1+k)*array[ll-2])*factor2;
-        //printf("array[%d] = %g\n", ll-m, array[ll-m]);
+        array[ll] = ((2+k)*y*array[ll-1] - (1+k)*array[ll-2])*invfactor2;
 
         if(ll % 128 == 0)
             if(isnan(array[ll]))
