@@ -1249,7 +1249,7 @@ matrix_t *casimir_M(casimir_t *self, int n, int m)
         if(md == 0)
             trace_diag = 2*dim - trace;
         else if(trace/trace_diag <= self->threshold)
-                break;
+            break;
     }
 
     casimir_integrate_free(integration);
