@@ -2,12 +2,9 @@
 all: casimir casimir_logdetD
 
 # Choose a compiler.
-#
 # At the moment gcc, clang and icc are supported.
-CC = gcc
-#CC = icc
-MPICC = mpicc
-#MPICC = mpiicc
+CC = gcc # icc, clang
+MPICC = mpicc # mpiicc
 
 OBJS = \
     cquadpack/src/dqagi.c \
@@ -53,8 +50,8 @@ CFLAGS = -std=c99
 #CFLAGS += -fgnu89-inline
 CFLAGS += -I . -I cquadpack/include
 
-# enable warnings and make them fatal
-CFLAGS += -g -Werror -Wall -Wextra -Wmissing-prototypes -Wshadow -Wpointer-arith -Wcast-qual -Wwrite-strings -Wno-unused-parameter -fstrict-aliasing
+# enable warnings
+CFLAGS += -g -Wall -Wextra -Wmissing-prototypes -Wshadow -Wpointer-arith -Wcast-qual -Wwrite-strings -Wno-unused-parameter -fstrict-aliasing
 # profiling
 #CFLAGS += -pg
 
@@ -68,8 +65,10 @@ LDFLAGS += -lm -pthread -llapack -lblas -lgfortran
 TARGET = "../bin/"
 
 # optimize for native CPU
-OPT  = -march=native -O3 -mmmx -msse -msse2 -msse3 -msse4
-OPT += -flto
+OPT = -march=native -O3 -mmmx -msse -msse2 -msse3 -msse4
+
+# link time optimization
+#OPT += -flto
 
 # This file contains header dependencies. dependencies and dependencies_test will update this file.
 DEPEND_FILE = .depend
