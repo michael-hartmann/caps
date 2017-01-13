@@ -938,6 +938,7 @@ matrix_t *casimir_M(casimir_t *self, int n, int m)
 {
     TERMINATE(m > self->lmax || m < 0, "Invalid argument: m=%d, lmax=%d", m, self->lmax);
 
+    /* The main contribution comes from l1≈l2≈m/√(-log(x)) */
     const size_t min = MAX(m,1);
     const size_t max = self->lmax;
     const size_t dim = (max-min+1);
