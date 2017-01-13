@@ -237,8 +237,7 @@ double casimir_epsilonm1_perf(__attribute__((unused)) double xi, __attribute__((
 double casimir_epsilonm1_drude(double xi, void *userdata)
 {
     double *ptr = (double *)userdata;
-    double omegap = ptr[0];
-    double gamma_ = ptr[1];
+    double omegap = ptr[0], gamma_ = ptr[1];
 
     return pow_2(omegap)/(xi*(xi+gamma_));
 }
@@ -322,13 +321,12 @@ void casimir_rp(casimir_t *self, double nT, double k, double *r_TE, double *r_TM
  * By default, the value of lmax is chosen by:
  * lmax = ceil(max(CASIMIR_MINIMUM_LMAX, CASIMIR_FACTOR_LMAX/LbyR))
  *
- * Restrictions: \f$T > 0\f$, \f$0 < R/\mathcal{L} < 1\f$
+ * Restrictions: \f$\frac{L}{R} > 0\f$
  *
  * This function is not thread-safe.
  *
  * @param [out] self Casimir object
  * @param [in]  LbyR \f$\frac{L}{R}\f$
- * @param [in]  T temperature in units of \f$2\pi k_B \mathcal{L}/(\hbar c)\f$
  * @retval object Casimir object if successful
  * @retval NULL   an error occured
  */
@@ -647,7 +645,7 @@ void casimir_lnab0(int l, double *a0, sign_t *sign_a0, double *b0, sign_t *sign_
  *
  * @param [in,out] self Casimir object
  * @param [in] l \f$\ell\f$
- * @param [in] n Matsubara term, \f$xi = nT\f$
+ * @param [in] nT Matsubara frequency
  * @param [out] sign sign of \f$a_\ell\f$
  * @retval logarithm of Mie coefficient \f$a_\ell\f$
  */
@@ -718,7 +716,7 @@ void casimir_lnab_perf(casimir_t *self, double nT, int l, double *lna, double *l
  * [3] Negative Casimir entropies in the plane-sphere geometry, Hartmann, 2014
  *
  * @param [in,out] self Casimir object
- * @param [in] n_mat Matsubara term, \f$\xi = nT\f$
+ * @param [in] nT Matsubara frequency
  * @param [in] l \f$\ell\f$
  * @param [out] lna logarithm of Mie coefficient \f$a_\ell\f$
  * @param [out] lnb logarithm of Mie coefficient \f$b_\ell\f$
@@ -926,13 +924,13 @@ void casimir_logdetD0(casimir_t *self, int m, double *logdet_EE, double *logdet_
  * You have to free the matrix yourself using matrix_free.
  *
  * @param [in] self Casimir object
- * @param [in] n Matsubara term, xi=nT
+ * @param [in] nT Matsubara frequency
  * @param [in] m
  * @retval M round-trip matrix
  */
 matrix_t *casimir_M(casimir_t *self, double nT, int m)
 {
-    //TERMINATE(m > self->lmax || m < 0, "Invalid argument: m=%d, lmax=%d", m, self->lmax);
+    TERMINATE(m > self->lmax || m < 0, "Invalid argument: m=%d, lmax=%d", m, self->lmax);
 
     /* The main contribution comes from l1≈l2≈m/√(-log(x)) */
     const size_t min = MAX(m,1);
@@ -1070,7 +1068,7 @@ matrix_t *casimir_M(casimir_t *self, double nT, int m)
  * aspect ratio, dielectric properties of sphere and plane, and integration.
  *
  * @param [in,out] self Casimir object
- * @param [in] n Matsubara term
+ * @param [in] nT Matsubara frequency
  * @param [in] m
  * @retval logdetD \f$\log \det \mathcal{D}^{(m)}(\xi=nT)\f$
  */
