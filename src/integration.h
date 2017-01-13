@@ -10,14 +10,14 @@
 
 typedef struct {
     casimir_t *casimir;
-    int n,m;
+    int m;
     double tau,epsrel;
     HashTable *hash_table_I;
     HashTable *hash_table_K;
     bool is_pc;
 } integration_t;
 
-integration_t *casimir_integrate_init(casimir_t *self, int n, int m, double epsrel);
+integration_t *casimir_integrate_init(casimir_t *self, double xi, int m, double epsrel);
 void casimir_integrate_free(integration_t *integration);
 
 double casimir_integrate_I(integration_t *self, int l1, int l2, polarization_t p, sign_t *sign);
