@@ -789,6 +789,7 @@ void casimir_lnab(casimir_t *self, int n_mat, int l, double *lna, double *lnb, s
     *sign_a = MPOW(l+1)*sign_a_num*sign_a_denom;
     *sign_b = MPOW(l+1)*sign_b_num*sign_b_denom;
 }
+/*@}*/
 
 
 /**
