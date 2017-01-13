@@ -131,8 +131,8 @@ double casimir_get_threshold(casimir_t *self);
 int    casimir_set_threshold(casimir_t *self, double threshold);
 
 void casimir_lnab0(int l, double *a0, sign_t *sign_a0, double *b0, sign_t *sign_b0);
-void casimir_lnab(casimir_t *self, int n, int l, double *lna, double *lnb, sign_t *sign_a, sign_t *sign_b);
-void casimir_lnab_perf(casimir_t *self, int n, int l, double *lna, double *lnb, sign_t *sign_a, sign_t *sign_b);
+void casimir_lnab(casimir_t *self, double nT, int l, double *lna, double *lnb, sign_t *sign_a, sign_t *sign_b);
+void casimir_lnab_perf(casimir_t *self, double nT, int l, double *lna, double *lnb, sign_t *sign_a, sign_t *sign_b);
 
 void casimir_M0(casimir_t *self, int m, matrix_t **EE, matrix_t **MM);
 void casimir_logdetD0(casimir_t *self, int m, double *EE, double *MM);
