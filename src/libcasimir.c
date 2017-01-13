@@ -654,10 +654,10 @@ void casimir_lnab0(int l, double *a0, sign_t *sign_a0, double *b0, sign_t *sign_
  * @param [out] sign sign of \f$a_\ell\f$
  * @retval logarithm of Mie coefficient \f$a_\ell\f$
  */
-void casimir_lnab_perf(casimir_t *self, int n, int l, double *lna, double *lnb, sign_t *sign_a, sign_t *sign_b)
+void casimir_lnab_perf(casimir_t *self, double nT, int l, double *lna, double *lnb, sign_t *sign_a, sign_t *sign_b)
 {
     double lnKlp,lnKlm,lnIlm,lnIlp;
-    const double chi = n*self->T*self->RbyScriptL;
+    const double chi = nT*self->RbyScriptL;
 
     /* we could do both calculations together. but it doesn't cost much time -
      * so why bother?
@@ -728,24 +728,23 @@ void casimir_lnab_perf(casimir_t *self, int n, int l, double *lna, double *lnb, 
  * @param [out] sign_a sign of Mie coefficient \f$a_\ell\f$
  * @param [out] sign_b sign of Mie coefficient \f$b_\ell\f$
  */
-void casimir_lnab(casimir_t *self, int n_mat, int l, double *lna, double *lnb, sign_t *sign_a, sign_t *sign_b)
+void casimir_lnab(casimir_t *self, double nT, int l, double *lna, double *lnb, sign_t *sign_a, sign_t *sign_b)
 {
     /* ξ = nT */
-    const double xi = n_mat*self->T;
-    const double epsilonm1 = casimir_epsilonm1(self, xi);
+    const double epsilonm1 = casimir_epsilonm1(self, nT);
 
     if(isinf(epsilonm1))
     {
         /* Mie coefficients for perfect reflectors */
-        casimir_lnab_perf(self, n_mat, l, lna, lnb, sign_a, sign_b);
+        casimir_lnab_perf(self, nT, l, lna, lnb, sign_a, sign_b);
         return;
     }
 
     /* Mie coefficients for arbitrary metals */
 
     /* χ = ξ*R/(R+L) = ξ/(1+L/R) */
-    const double chi    = xi/(1.+self->LbyR);
-    const double ln_chi = log(xi)-log1p(self->LbyR);
+    const double chi    = nT/(1.+self->LbyR);
+    const double ln_chi = log(nT)-log1p(self->LbyR);
     const double ln_l   = logi(l);
 
     /**
@@ -937,6 +936,7 @@ void casimir_logdetD0(casimir_t *self, int m, double *logdet_EE, double *logdet_
 matrix_t *casimir_M(casimir_t *self, int n, int m)
 {
     //TERMINATE(m > self->lmax || m < 0, "Invalid argument: m=%d, lmax=%d", m, self->lmax);
+    double nT = n*self->T;
 
     /* The main contribution comes from l1≈l2≈m/√(-log(x)) */
     const size_t min = MAX(m,1);
@@ -980,10 +980,10 @@ matrix_t *casimir_M(casimir_t *self, int n, int m)
 
             /* if neccessary, compute Mie coefficients */
             if(sign_a[i] == 0)
-                casimir_lnab(self, n, l1, &ln_a[i], &ln_b[i], &sign_a[i], &sign_b[i]);
+                casimir_lnab(self, nT, l1, &ln_a[i], &ln_b[i], &sign_a[i], &sign_b[i]);
 
             if(sign_a[j] == 0)
-                casimir_lnab(self, n, l2, &ln_a[j], &ln_b[j], &sign_a[j], &sign_b[j]);
+                casimir_lnab(self, nT, l2, &ln_a[j], &ln_b[j], &sign_a[j], &sign_b[j]);
 
             double ln_al1 = ln_a[i], ln_bl1 = ln_b[i];
             double ln_al2 = ln_a[j], ln_bl2 = ln_b[j];
