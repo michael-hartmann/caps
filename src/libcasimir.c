@@ -1,7 +1,7 @@
 /**
  * @file   libcasimir.c
  * @author Michael Hartmann <michael.hartmann@physik.uni-augsburg.de>
- * @date   November, 2016
+ * @date   January, 2017
  * @brief  library to calculate the free Casimir energy in the plane-sphere geometry
  */
 
@@ -952,6 +952,15 @@ matrix_t *casimir_M(casimir_t *self, int n, int m)
     /* M_EE, -M_EM
        M_ME,  M_MM */
 
+    /* Allocate memory for Mie cache on the stack. For dim=10000 this requires
+     * about 10000*2*(8+1) bytes = 170kb. So it's easier just to use the stack.
+     */
+    double ln_a[dim], ln_b[dim];
+    sign_t sign_a[dim], sign_b[dim];
+
+    for(size_t j = 0; j < dim; j++)
+        sign_a[j] = sign_b[j] = 0;
+
     double trace_diag = 0;
 
     /* n-th minor diagonal */
@@ -967,11 +976,18 @@ matrix_t *casimir_M(casimir_t *self, int n, int m)
             /* i: row of matrix, j: column of matrix */
             const size_t i = l1-min, j = l2-min;
 
-            sign_t sign_al1, sign_bl1, sign_al2, sign_bl2;
-            double ln_al1, ln_bl1, ln_al2, ln_bl2;
+            /* if neccessary, compute Mie coefficients */
+            if(sign_a[i] == 0)
+                casimir_lnab(self, n, l1, &ln_a[i], &ln_b[i], &sign_a[i], &sign_b[i]);
 
-            casimir_lnab(self, n, l1, &ln_al1, &ln_bl1, &sign_al1, &sign_bl1);
-            casimir_lnab(self, n, l2, &ln_al2, &ln_bl2, &sign_al2, &sign_bl2);
+            if(sign_a[j] == 0)
+                casimir_lnab(self, n, l2, &ln_a[j], &ln_b[j], &sign_a[j], &sign_b[j]);
+
+            double ln_al1 = ln_a[i], ln_bl1 = ln_b[i];
+            double ln_al2 = ln_a[j], ln_bl2 = ln_b[j];
+            sign_t sign_al1 = sign_a[i], sign_bl1 = sign_b[i];
+            sign_t sign_al2 = sign_a[j], sign_bl2 = sign_b[j];
+
 
             sign_t signA_TE, signA_TM, signB_TE, signB_TM;
 
