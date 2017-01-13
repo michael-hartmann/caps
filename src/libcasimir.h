@@ -107,7 +107,7 @@ int casimir_verbose(casimir_t *self, const char *format, ...);
 
 double casimir_lnLambda(int l1, int l2, int m);
 
-casimir_t *casimir_init(double LbyR, double T);
+casimir_t *casimir_init(double LbyR);
 void casimir_free(casimir_t *self);
 
 void casimir_set_debug(casimir_t *self, bool debug);
@@ -136,8 +136,8 @@ void casimir_lnab_perf(casimir_t *self, double nT, int l, double *lna, double *l
 
 void casimir_M0(casimir_t *self, int m, matrix_t **EE, matrix_t **MM);
 void casimir_logdetD0(casimir_t *self, int m, double *EE, double *MM);
-matrix_t *casimir_M(casimir_t *self, int n, int m);
-double casimir_logdetD(casimir_t *self, int n, int m);
+matrix_t *casimir_M(casimir_t *self, double nT, int m);
+double casimir_logdetD(casimir_t *self, double nT, int m);
 
 void casimir_rp(casimir_t *self, double nT, double k, double *r_TE, double *r_TM);
 

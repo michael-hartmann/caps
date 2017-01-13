@@ -66,8 +66,6 @@ void casimir_info(casimir_t *self, FILE *stream, const char *prefix)
         prefix = "";
 
     fprintf(stream, "%sL/R = %.8g\n", prefix, self->LbyR);
-    fprintf(stream, "%sT   = %.8g\n", prefix, self->T);
-
     fprintf(stream, "%slmax      = %d\n", prefix, self->lmax);
     fprintf(stream, "%sprecision = %g\n", prefix, self->precision);
     fprintf(stream, "%sthreshold = %g\n", prefix, self->threshold);
@@ -334,14 +332,13 @@ void casimir_rp(casimir_t *self, double nT, double k, double *r_TE, double *r_TM
  * @retval object Casimir object if successful
  * @retval NULL   an error occured
  */
-casimir_t *casimir_init(double LbyR, double T)
+casimir_t *casimir_init(double LbyR)
 {
-    if(LbyR <= 0 || T <= 0)
+    if(LbyR <= 0)
         return NULL;
 
     casimir_t *self = xmalloc(sizeof(casimir_t));
 
-    self->T          = T;
     self->RbyScriptL = 1./(1.+LbyR);
     self->LbyR       = LbyR;
     self->precision  = CASIMIR_PRECISION;
@@ -933,17 +930,16 @@ void casimir_logdetD0(casimir_t *self, int m, double *logdet_EE, double *logdet_
  * @param [in] m
  * @retval M round-trip matrix
  */
-matrix_t *casimir_M(casimir_t *self, int n, int m)
+matrix_t *casimir_M(casimir_t *self, double nT, int m)
 {
     //TERMINATE(m > self->lmax || m < 0, "Invalid argument: m=%d, lmax=%d", m, self->lmax);
-    double nT = n*self->T;
 
     /* The main contribution comes from l1≈l2≈m/√(-log(x)) */
     const size_t min = MAX(m,1);
     const size_t max = self->lmax;
     const size_t dim = (max-min+1);
 
-    integration_t *integration = casimir_integrate_init(self, n*self->T, m, 1e-8);
+    integration_t *integration = casimir_integrate_init(self, nT, m, 1e-8);
 
     /* allocate space for matrix M */
     matrix_t *M = matrix_alloc(2*dim);
@@ -1078,14 +1074,14 @@ matrix_t *casimir_M(casimir_t *self, int n, int m)
  * @param [in] m
  * @retval logdetD \f$\log \det \mathcal{D}^{(m)}(\xi=nT)\f$
  */
-double casimir_logdetD(casimir_t *self, int n, int m)
+double casimir_logdetD(casimir_t *self, double nT, int m)
 {
-    TERMINATE(m > self->lmax || m < 0 || n < 0, "Invalid argument: m=%d, lmax=%d, n=%d", m, self->lmax, n);
+    TERMINATE(m > self->lmax || m < 0 || nT < 0, "Invalid argument: m=%d, lmax=%d, nT=%g", m, self->lmax, nT);
 
     double t0;
     double logdet = 0;
 
-    if(n == 0)
+    if(nT == 0)
     {
         double logdet_EE = 0, logdet_MM = 0;
 
@@ -1101,7 +1097,7 @@ double casimir_logdetD(casimir_t *self, int n, int m)
     }
 
     t0 = now();
-    matrix_t *M = casimir_M(self, n, m);
+    matrix_t *M = casimir_M(self, nT, m);
     casimir_debug(self, "# timing: matrix elements: %gs\n", now()-t0);
 
     #if 0
