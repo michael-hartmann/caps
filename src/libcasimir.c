@@ -348,9 +348,6 @@ casimir_t *casimir_init(double LbyR, double T)
 
     self->lmax = ceil(MAX(CASIMIR_MINIMUM_LMAX, CASIMIR_FACTOR_LMAX/LbyR));
 
-    /* initialize mie cache */
-    casimir_mie_cache_init(self);
-
     /* perfect reflectors */
     self->epsilonm1 = casimir_epsilonm1_perf;
     self->userdata  = NULL;
@@ -472,13 +469,6 @@ detalg_t casimir_get_detalg(casimir_t *self)
  * result depends on the truncation of the vector space. For more information,
  * cf. chapter 6.1.
  *
- * Please note that the cache of the Mie coefficients has to be cleaned. This
- * means that all Mie coefficients have to be calculated again.
- *
- * In order to get meaningful results and to prevent recalculating Mie
- * coefficients, set the lmax at the beginning before doing expensive
- * computations.
- *
  * This function is not thread-safe.
  *
  * @param [in,out] self Casimir object
@@ -492,9 +482,6 @@ int casimir_set_lmax(casimir_t *self, int lmax)
         return 0;
 
     self->lmax = lmax;
-
-    /* reinit mie cache */
-    casimir_mie_cache_clean(self);
 
     return 1;
 }
@@ -597,8 +584,6 @@ int casimir_set_precision(casimir_t *self, double precision)
 void casimir_free(casimir_t *self)
 {
     pthread_mutex_destroy(&self->mutex);
-
-    casimir_mie_cache_free(self);
 
     xfree(self);
 }
@@ -807,202 +792,6 @@ void casimir_lnab(casimir_t *self, int n_mat, int l, double *lna, double *lnb, s
 
 
 /**
- * @brief Initialize Mie cache
- *
- * This will initialize a cache for the Mie coefficients. If a Mie coefficient
- * \f$a_\ell(\xi=nT)\f$ or \f$b_\ell(xi=nT)\f$ is needed, the coefficients only
- * needs to be calculated the first time. The result will be saved.
- *
- * The cache will grow on demand. But it will never shrink - unless you call
- * casimir_free or casimir_mie_cache_clean.
- *
- * The casimir_init function will call this function and the cache will be used
- * throughout computations. So you usually don't want to use this function
- * yourself.
- *
- * This function is not thread safe.
- *
- * @param [in,out] self Casimir object
- */
-void casimir_mie_cache_init(casimir_t *self)
-{
-    casimir_mie_cache_t *cache = self->mie_cache = (casimir_mie_cache_t *)xmalloc(sizeof(casimir_mie_cache_t));
-
-    cache->lmax = self->lmax;
-    cache->nmax = 0;
-
-    pthread_mutex_init(&cache->mutex, NULL);
-
-    cache->entries = xmalloc(sizeof(casimir_mie_cache_entry_t *));
-
-    cache->entries[0] = xmalloc(sizeof(casimir_mie_cache_entry_t));
-    cache->entries[0]->ln_al   = NULL;
-    cache->entries[0]->sign_al = NULL;
-    cache->entries[0]->ln_bl   = NULL;
-    cache->entries[0]->sign_bl = NULL;
-}
-
-
-/**
- * @brief Allocate memory for the Mie coefficients \f$a_\ell\f$ and \f$b_\ell\f$
- *
- * You usually don't want to use this function yourself.
- *
- * This function is not thread safe.
- *
- * @param [in,out] self Casimir object
- * @param [in] n Matsubara term
- */
-void casimir_mie_cache_alloc(casimir_t *self, int n)
-{
-    const int nmax = self->mie_cache->nmax;
-    const int lmax = self->mie_cache->lmax;
-    casimir_mie_cache_t *cache = self->mie_cache;
-
-    if(n > nmax)
-    {
-        cache->entries = xrealloc(cache->entries, (n+1)*sizeof(casimir_mie_cache_entry_t *));
-
-        for(int l = nmax+1; l <= n; l++)
-            cache->entries[l] = NULL;
-    }
-
-    if(cache->entries[n] == NULL)
-    {
-        cache->entries[n] = xmalloc(sizeof(casimir_mie_cache_entry_t));
-        casimir_mie_cache_entry_t *entry = cache->entries[n];
-
-        entry->ln_al   = xmalloc((lmax+1)*sizeof(double));
-        entry->ln_bl   = xmalloc((lmax+1)*sizeof(double));
-        entry->sign_al = xmalloc((lmax+1)*sizeof(sign_t));
-        entry->sign_bl = xmalloc((lmax+1)*sizeof(sign_t));
-
-        entry->ln_al[0] = entry->ln_bl[0] = NAN; /* should never be read */
-        for(int l = 1; l <= lmax; l++)
-            casimir_lnab(self, n, l, &entry->ln_al[l], &entry->ln_bl[l], &entry->sign_al[l], &entry->sign_bl[l]);
-    }
-
-    self->mie_cache->nmax = n;
-}
-
-
-/**
- * @brief Clean memory of cache
- *
- * This function will free allocated memory for the cache. The cache will still
- * work, but the precomputed values for the Mie coefficients will be lost.
- *
- * You usually don't want to use this function yourself.
- *
- * This function is not thread-safe.
- *
- * @param [in, out] self Casimir object
- */
-void casimir_mie_cache_clean(casimir_t *self)
-{
-    casimir_mie_cache_free(self);
-    casimir_mie_cache_init(self);
-}
-
-/**
- * @brief Clean memory of cache
- *
- * Get Mie coefficients for \f$\ell\f$ and Matsubara frequency \f$\xi=nT\f$. If
- * the Mie coefficients have not been calculated yet, they will be computed and
- * stored in the cache.
- *
- * This function is thread-safe.
- *
- * @param [in, out] self Casimir object
- * @param [in] l \f$\ell\f$
- * @param [in] n Matsubara term
- * @param [out] ln_a logarithm of \f$a_\ell\f$
- * @param [out] sign_a sign of \f$a_\ell\f$
- * @param [out] ln_b logarithm of \f$b_\ell\f$
- * @param [out] sign_b sign of \f$b_\ell\f$
- */
-void casimir_mie_cache_get(casimir_t *self, int l, int n, double *ln_a, sign_t *sign_a, double *ln_b, sign_t *sign_b)
-{
-    /* this mutex is important to prevent memory corruption */
-    pthread_mutex_lock(&self->mie_cache->mutex);
-
-    int nmax = self->mie_cache->nmax;
-    if(n > nmax || self->mie_cache->entries[n] == NULL)
-        casimir_mie_cache_alloc(self, n);
-
-    /* This is a first class example of concurrent accesses on memory and
-     * locking: You might think, we don't need a lock anymore. All the data has
-     * been written and it is safe to release the mutex. Unfortunately, this is
-     * not true.
-     *
-     * Although all data has been written, another thread might add more Mie
-     * coefficients to the cache. In this case, the array
-     * self->mie_cache->entries needs to hold more values. For this reason,
-     * realloc is called. However, realloc may change the position of the array
-     * in memory and the pointer self->mie_cache->entries becomes invalid. This
-     * will usually cause a segmentation fault.
-     */
-    casimir_mie_cache_entry_t *entry = self->mie_cache->entries[n];
-
-    /* at this point it is finally safe to release the mutex */
-    pthread_mutex_unlock(&self->mie_cache->mutex);
-
-    *ln_a   = entry->ln_al[l];
-    *sign_a = entry->sign_al[l];
-    *ln_b   = entry->ln_bl[l];
-    *sign_b = entry->sign_bl[l];
-}
-
-/**
- * @brief Free memory of cache.
- *
- * This function will free allocated memory for the cache. Don't use the cache
- * afterwards!
- *
- * You usually don't want to use this function yourself.
- *
- * This function is not thread-safe.
- *
- * @param [in, out] self Casimir object
- */
-void casimir_mie_cache_free(casimir_t *self)
-{
-    casimir_mie_cache_t *cache = self->mie_cache;
-    casimir_mie_cache_entry_t **entries = cache->entries;
-
-    pthread_mutex_destroy(&cache->mutex);
-
-    /* free
-     * 1) the lists of al, bl, sign_al, sign_bl for every entry
-     * 2) every entry (casimir_mie_cache_entry_t)
-     * 3) the list of entries
-     * 4) the mie cache object (casimir_mie_cache_t)
-     */
-    for(int n = 0; n <= cache->nmax; n++)
-    {
-        if(entries[n] != NULL)
-        {
-            xfree(entries[n]->ln_al);
-            xfree(entries[n]->sign_al);
-            xfree(entries[n]->ln_bl);
-            xfree(entries[n]->sign_bl);
-            xfree(entries[n]);
-
-            entries[n] = NULL;
-        }
-    }
-
-    xfree(cache->entries);
-    cache->entries = NULL;
-
-    xfree(self->mie_cache);
-    self->mie_cache = NULL;
-}
-
-/*@}*/
-
-
-/**
  * @brief Calculate round-trip matrices M for xi=nT=0
  *
  * For xi=0 the round-trip matrix M is block diagonal with block matrices EE,
@@ -1181,8 +970,8 @@ matrix_t *casimir_M(casimir_t *self, int n, int m)
             sign_t sign_al1, sign_bl1, sign_al2, sign_bl2;
             double ln_al1, ln_bl1, ln_al2, ln_bl2;
 
-            casimir_mie_cache_get(self, l1, n, &ln_al1, &sign_al1, &ln_bl1, &sign_bl1);
-            casimir_mie_cache_get(self, l2, n, &ln_al2, &sign_al2, &ln_bl2, &sign_bl2);
+            casimir_lnab(self, n, l1, &ln_al1, &ln_bl1, &sign_al1, &sign_bl1);
+            casimir_lnab(self, n, l2, &ln_al2, &ln_bl2, &sign_al2, &sign_bl2);
 
             sign_t signA_TE, signA_TM, signB_TE, signB_TM;
 
