@@ -41,24 +41,6 @@ typedef enum { TE, TM } polarization_t;
 #define CASIMIR_FACTOR_LMAX 5        /**< by default: lmax=ceil(5/LbyR) */
 
 /**
- * Cache for Mie coefficients.
- */
-typedef struct
-{
-    double *ln_al;  /**< list of Mie coefficients \f$a_\ell\f$ (logarithms) */
-    sign_t *sign_al; /**< list of signs of Mie coefficients \f$a_\ell\f$ */
-    double *ln_bl;  /**< list of Mie coefficients \f$b_\ell\f$ (logarithms) */
-    sign_t *sign_bl; /**< list of signs of Mie coefficients \f$b_\ell\f$ */
-} casimir_mie_cache_entry_t;
-
-typedef struct {
-    int nmax;                            /**< maximum value of n */
-    int lmax;                            /**< maximum value of \f$\ell\f$ */
-    casimir_mie_cache_entry_t **entries; /**< entries */
-    pthread_mutex_t mutex;               /**< mutex for Mie cache */
-} casimir_mie_cache_t;
-
-/**
  * The Casimir object. This structure stores all essential information about
  * temperature, geometry and the reflection properties of the mirrors.
  *
@@ -92,8 +74,6 @@ typedef struct
     double threshold;       /**< XXX TBD */
 
     detalg_t detalg;        /**< algorithm to calculate determinant */
-
-    casimir_mie_cache_t *mie_cache; /**< Mie chache */
 
     bool verbose; /**< verbose flag */
 
@@ -153,12 +133,6 @@ int    casimir_set_threshold(casimir_t *self, double threshold);
 void casimir_lnab0(int l, double *a0, sign_t *sign_a0, double *b0, sign_t *sign_b0);
 void casimir_lnab(casimir_t *self, int n, int l, double *lna, double *lnb, sign_t *sign_a, sign_t *sign_b);
 void casimir_lnab_perf(casimir_t *self, int n, int l, double *lna, double *lnb, sign_t *sign_a, sign_t *sign_b);
-
-void casimir_mie_cache_init(casimir_t *self);
-void casimir_mie_cache_alloc(casimir_t *self, int n);
-void casimir_mie_cache_clean(casimir_t *self);
-void casimir_mie_cache_get(casimir_t *self, int l, int n, double *ln_a, sign_t *sign_a, double *ln_b, sign_t *sign_b);
-void casimir_mie_cache_free(casimir_t *self);
 
 void casimir_M0(casimir_t *self, int m, matrix_t **EE, matrix_t **MM);
 void casimir_logdetD0(casimir_t *self, int m, double *EE, double *MM);
