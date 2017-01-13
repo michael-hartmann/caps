@@ -583,17 +583,16 @@ double casimir_integrate_I(integration_t *self, int l1, int l2, polarization_t p
     }
 }
 
-integration_t *casimir_integrate_init(casimir_t *casimir, int n, int m, double epsrel)
+integration_t *casimir_integrate_init(casimir_t *casimir, double xi, int m, double epsrel)
 {
-    if(n < 0 || m < 0 || epsrel <= 0)
+    if(xi < 0 || m < 0 || epsrel <= 0)
         return NULL;
 
     integration_t *self = (integration_t *)xmalloc(sizeof(integration_t));
 
     self->casimir = casimir;
-    self->n = n;
     self->m = m;
-    self->tau = 2*n*casimir->T;
+    self->tau = 2*xi;
     self->epsrel = epsrel;
 
     self->hash_table_I = hash_table_new(cache_entry_destroy);
