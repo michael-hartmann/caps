@@ -406,9 +406,9 @@ int slave(MPI_Comm master_comm, int rank)
         if(xi < 0)
             break;
 
-        casimir_t *casimir = casimir_init(LbyR, xi);
+        casimir_t *casimir = casimir_init(LbyR);
         casimir_set_lmax(casimir, lmax);
-        double logdet = casimir_logdetD(casimir, 1, m);
+        double logdet = casimir_logdetD(casimir, xi, m);
         TERMINATE(isnan(logdet), "LbyR=%.10g, xi=%.10g, m=%d, lmax=%d", LbyR, xi, m, lmax);
         casimir_free(casimir);
 
