@@ -172,10 +172,7 @@ int main(int argc, char *argv[])
     printf("\n");
 
     casimir_t *casimir;
-    if(nT > 0)
-        casimir = casimir_init(LbyR, nT);
-    else
-        casimir = casimir_init(LbyR, 1);
+    casimir = casimir_init(LbyR);
 
     if(lmax)
         casimir_set_lmax(casimir, lmax);
@@ -192,7 +189,7 @@ int main(int argc, char *argv[])
 
     if(nT > 0)
     {
-        double logdet = casimir_logdetD(casimir, 1, m);
+        double logdet = casimir_logdetD(casimir, nT, m);
 
         printf("# L/R, ξ*(L+R)/c, ωp*(L+R)/c, γ*(L+R)/c, m, logdet(Id-M), lmax, time\n");
         printf("%g, %g, %g, %g, %d, %.16g, %d, %g\n", LbyR, nT, omegap, gamma_, m, logdet, casimir_get_lmax(casimir), now()-start_time);
