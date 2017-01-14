@@ -786,6 +786,34 @@ void casimir_lnab(casimir_t *self, double nT, int l, double *lna, double *lnb, s
 /*@}*/
 
 
+int casimir_estimate_lminmax(double LbyR, int m, int dim, int *lmin, int *lmax)
+{
+    int l;
+    const double x = 1/(1+LbyR);
+
+    /* find maximum, i.e., main contributions */
+    double last = 2*m*log(x/2);
+    for(l = m+1; 1; l++)
+    {
+        double f = lfac(2*l)-lfac(l+m)-lfac(l-m)+2*l*log(x/2);
+        if(f < last)
+        {
+            l--;
+            break;
+        }
+
+        last = f;
+    }
+
+    *lmin = l-dim/2;
+    if(*lmin < m)
+        *lmin = m;
+
+    *lmax = *lmin + dim;
+
+    return l;
+}
+
 /**
  * @brief Calculate round-trip matrices M for xi=nT=0
  *
