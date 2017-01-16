@@ -423,9 +423,9 @@ int casimir_set_epsilonm1(casimir_t *self, double (*epsilonm1)(double xi, void *
  *
  * The algorithm is given by detalg. Make sure that detalg contains a valid
  * algorithm, otherwise the computation will print a warning on runtime and
- * default to XXX.
+ * default to DETALG_LU.
  *
- * detalg may be: XXX
+ * detalg may be: DETALG_LU, DETALG_QR, DETALG_EIG
  *
  * This function is not thread-safe.
  *
