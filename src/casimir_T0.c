@@ -23,10 +23,10 @@
 #define STATE_RUNNING 1
 #define STATE_IDLE    0
 
-void casimir_mpi_init(casimir_mpi_t *self, double LbyR, int lmax, double precision, int cores)
+void casimir_mpi_init(casimir_mpi_t *self, double LbyR, int ldim, double precision, int cores)
 {
     self->LbyR      = LbyR;
-    self->lmax      = lmax;
+    self->ldim      = ldim;
     self->precision = precision;
     self->cores     = cores;
     self->tasks     = xmalloc(cores*sizeof(casimir_task_t *));
@@ -78,7 +78,7 @@ int casimir_mpi_submit(casimir_mpi_t *self, int index, double xi, int m)
 
         if(task->state == STATE_IDLE)
         {
-            double buf[] = { xi, self->LbyR, m, self->lmax };
+            double buf[] = { xi, self->LbyR, m, self->ldim };
 
             task->index = index;
             task->xi    = xi;
@@ -153,7 +153,7 @@ int main(int argc, char *argv[])
 int master(int argc, char *argv[], int cores)
 {
     bool debug = false;
-    int order = ORDER, lmax = 0, ret = 0;
+    int order = ORDER, ldim = 0, ret = 0;
     double F0;
     double alpha, LbyR = -1, lfac = LFAC, precision = PRECISION;
     double integral = 0, *xk, *ln_wk;
@@ -170,7 +170,7 @@ int master(int argc, char *argv[], int cores)
             { "help",      no_argument,       0, 'h' },
             { "debug",     no_argument,       0, 'd' },
             { "LbyR",      required_argument, 0, 'x' },
-            { "lmax",      required_argument, 0, 'L' },
+            { "ldim",      required_argument, 0, 'L' },
             { "order",     required_argument, 0, 'N' },
             { "lscale",    required_argument, 0, 'l' },
             { "precision", required_argument, 0, 'p' },
@@ -196,7 +196,7 @@ int master(int argc, char *argv[], int cores)
                 LbyR = atof(optarg);
                 break;
             case 'L':
-                lmax = atoi(optarg);
+                ldim = atoi(optarg);
                 break;
             case 'l':
                 lfac = atof(optarg);
@@ -241,11 +241,11 @@ int master(int argc, char *argv[], int cores)
         usage(stderr);
         EXIT(1);
     }
-    if(lmax <= 0)
+    if(ldim <= 0)
     {
         if(lfac > 0)
         {
-            lmax = lfac/LbyR;
+            ldim = lfac/LbyR;
         }
         else if(lfac < 0)
         {
@@ -255,7 +255,7 @@ int master(int argc, char *argv[], int cores)
         }
         else
         {
-            fprintf(stderr, "lmax must be positive\n\n");
+            fprintf(stderr, "ldim must be positive\n\n");
             usage(stderr);
             EXIT(1);
         }
@@ -281,24 +281,24 @@ int master(int argc, char *argv[], int cores)
     printf("# alpha = %.15g\n", alpha);
     printf("# order = %d\n", order);
     printf("# prec  = %g\n", precision);
-    printf("# lmax  = %d\n", lmax);
+    printf("# ldim  = %d\n", ldim);
     printf("# cores = %d\n", cores);
     printf("#\n");
 
-    casimir_mpi_init(&casimir_mpi, LbyR, lmax, precision, cores);
+    casimir_mpi_init(&casimir_mpi, LbyR, ldim, precision, cores);
 
     /* allocate memory */
     values = xmalloc(order*sizeof(double *));
     for(int i = 0; i < order; i++)
     {
-        values[i] = xmalloc(lmax*sizeof(double));
+        values[i] = xmalloc(ldim*sizeof(double));
 
-        for(int m = 0; m < lmax; m++)
+        for(int m = 0; m < ldim; m++)
             values[i][m] = NAN;
     }
 
     /* gather all data */
-    for(int m = 0; m < lmax; m++)
+    for(int m = 0; m < ldim; m++)
     {
         for(int i = 0; i < order; i++)
         {
@@ -354,7 +354,7 @@ int master(int argc, char *argv[], int cores)
     for(int i = 0; i < order; i++)
     {
         double value = 0;
-        for(int m = 0; m < lmax; m++)
+        for(int m = 0; m < ldim; m++)
         {
             if(isnan(values[i][m]))
                 break;
@@ -372,8 +372,8 @@ int master(int argc, char *argv[], int cores)
     F0 = integral/alpha/M_PI;
 
     printf("#\n");
-    printf("# L/R, lmax, order, alpha, F(T=0)*(L+R)/(ħc)\n");
-    printf("%g, %d, %d, %.15g, %.12g\n", LbyR, lmax, order, alpha, F0);
+    printf("# L/R, ldim, order, alpha, F(T=0)*(L+R)/(ħc)\n");
+    printf("%g, %d, %d, %.15g, %.12g\n", LbyR, ldim, order, alpha, F0);
 
     /* free memory */
     for(int i = 0; i < order; i++)
@@ -401,15 +401,15 @@ int slave(MPI_Comm master_comm, int rank)
         const double xi   = buf[0];
         const double LbyR = buf[1];
         const int m    = (int)buf[2];
-        const int lmax = buf[3];
+        const int ldim = buf[3];
 
         if(xi < 0)
             break;
 
         casimir_t *casimir = casimir_init(LbyR);
-        casimir_set_lmax(casimir, lmax);
+        casimir_set_ldim(casimir, ldim);
         double logdet = casimir_logdetD(casimir, xi, m);
-        TERMINATE(isnan(logdet), "LbyR=%.10g, xi=%.10g, m=%d, lmax=%d", LbyR, xi, m, lmax);
+        TERMINATE(isnan(logdet), "LbyR=%.10g, xi=%.10g, m=%d, ldim=%d", LbyR, xi, m, ldim);
         casimir_free(casimir);
 
         MPI_Isend(&logdet, 1, MPI_DOUBLE, 0, 0, master_comm, &request);
@@ -446,10 +446,10 @@ void usage(FILE *stream)
 "Further options:\n"
 "    -l, --lscale\n"
 "        Specify parameter lscale. The vector space has to be truncated for\n"
-"        some value lmax. This program will use lmax=(R/L*lscale) (default: %g)\n"
+"        some value ldim. This program will use ldim=(R/L*lscale) (default: %g)\n"
 "\n"
-"    -L LMAX\n"
-"        Set lmax to the value LMAX. When -L is specified, -l will be ignored\n"
+"    -L LDIM\n"
+"        Set ldim to the value LMAX. When -L is specified, -l will be ignored\n"
 "\n"
 "    -p, --precision\n"
 "        Set precision to given value (default: %g)\n"
