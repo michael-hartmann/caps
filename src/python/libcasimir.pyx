@@ -1,4 +1,5 @@
 import numpy as np
+cimport numpy as np
 import cython
 import math
 from libcpp cimport bool
@@ -9,6 +10,30 @@ ctypedef signed char sign_t
 cdef extern from "matrix.h":
     ctypedef enum detalg_t:
          DETALG_LU, DETALG_QR, DETALG_EIG
+
+    ctypedef struct matrix_t:
+        size_t dim,dim2
+        size_t lda
+        double *M;
+        bool free_memory
+
+    matrix_t *matrix_alloc(const size_t dim)
+    matrix_t *matrix_view(double *ptr, size_t dim, size_t lda)
+
+    void matrix_free(matrix_t *A)
+#    void matrix_setall(matrix_t *A, double z)
+#
+#    int matrix_save_to_stream(matrix_t *A, FILE *stream)
+#    int matrix_save_to_file(matrix_t *A, const char *filename)
+#
+#    double matrix_trace(matrix_t *A)
+#
+#    double matrix_logdet_triangular(matrix_t *A)
+#    double matrix_logdet(matrix_t *A, double z, detalg_t detalg)
+#    double matrix_logdet_lu(matrix_t *A)
+#    double matrix_logdet_qr(matrix_t *A)
+#    double matrix_logdetIdmM_eig(matrix_t *A, double z);
+
 
 cdef extern from "libcasimir.h":
     ctypedef struct casimir_t:
@@ -42,14 +67,16 @@ cdef extern from "libcasimir.h":
 
     double casimir_lnLambda(int l1, int l2, int m)
 
-    void casimir_lnab0(int l, double *a0, sign_t *sign_a0, double *b0, sign_t *sign_b0);
-    void casimir_lnab(casimir_t *self, double nT, int l, double *lna, double *lnb, sign_t *sign_a, sign_t *sign_b);
-    void casimir_lnab_perf(casimir_t *self, double nT, int l, double *lna, double *lnb, sign_t *sign_a, sign_t *sign_b);
+    void casimir_lnab0(int l, double *a0, sign_t *sign_a0, double *b0, sign_t *sign_b0)
+    void casimir_lnab(casimir_t *self, double nT, int l, double *lna, double *lnb, sign_t *sign_a, sign_t *sign_b)
+    void casimir_lnab_perf(casimir_t *self, double nT, int l, double *lna, double *lnb, sign_t *sign_a, sign_t *sign_b)
 
     void casimir_rp(casimir_t *self, double nT, double k, double *r_TE, double *r_TM)
 
-    void casimir_logdetD0(casimir_t *self, int m, double *EE, double *MM);
-    double casimir_logdetD(casimir_t *self, double nT, int m);
+    void casimir_logdetD0(casimir_t *self, int m, double *EE, double *MM)
+    double casimir_logdetD(casimir_t *self, double nT, int m)
+
+    matrix_t *casimir_M(casimir_t *self, double nT, int m)
 
 
 cdef extern from "integration.h":
@@ -78,6 +105,9 @@ cdef extern from "sfunc.h":
     double Plm(int l, int m, double x, double factor, int mode);
     double Plm_estimate(int l, int m, double x);
 
+
+cdef extern from "numpy/arrayobject.h":
+    void PyArray_ENABLEFLAGS(np.ndarray arr, int flags)
 
 class sfunc:
     """Special functions
@@ -294,8 +324,11 @@ cdef class Casimir:
         """Calculate determinant of scattering matrix"""
         return casimir_logdetD(self.casimir, nT, m)
 
-    def get_integration(Casimir self, double xi, int m):
-        return Integration(self, xi, m, epsrel=self.get_tolerance())
+    def M(Casimir self, double nT, int m):
+        raise NotImplementedError()
+
+    def get_integration(Casimir self, double nT, int m):
+        return Integration(self, nT, m, epsrel=self.get_tolerance())
 
 cdef polarization_t __polarization(p):
     if p.upper() == "TE":
