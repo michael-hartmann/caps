@@ -788,6 +788,13 @@ void casimir_lnab(casimir_t *self, double nT, int l, double *lna, double *lnb, s
 
 int casimir_estimate_lminmax(double LbyR, int m, int dim, int *lmin, int *lmax)
 {
+    if(m == 0)
+    {
+        *lmin = 1;
+        *lmax = *lmin+dim;
+        return 0;
+    }
+
     int l;
     const double x = 1/(1+LbyR);
 
