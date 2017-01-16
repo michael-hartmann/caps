@@ -40,6 +40,7 @@ typedef enum { TE, TM } polarization_t;
 #define CASIMIR_MINIMUM_LMAX 20 /**< minimum value for lmax */
 #define CASIMIR_FACTOR_LMAX 5   /**< by default: lmax=ceil(5/LbyR) */
 #define CASIMIR_THRESHOLD 1e-16 /**< default value of threshold */
+#define CASIMIR_TOLERANCE 1e-8  /**< default tolerance for integration */
 
 /**
  * The Casimir object. This structure stores all essential information about
@@ -70,11 +71,11 @@ typedef struct
      * @name accuracy and numerical parameters
      */
      /*@{*/
-    int ldim;               /**< truncation value for vector space \f$\ell_\mathrm{max}\f$ */
-    double precision;       /**< precision \f$\epsilon_p\f$ */
-    double threshold;       /**< XXX TBD */
-
-    detalg_t detalg;        /**< algorithm to calculate determinant */
+    int ldim;         /**< truncation value for vector space \f$\ell_\mathrm{max}\f$ */
+    double precision; /**< precision \f$\epsilon_p\f$ */
+    double threshold; /**< threshold for matrix elements */
+    double tolerance; /**< tolerance for integration */
+    detalg_t detalg;  /**< algorithm to calculate determinant */
 
     bool verbose; /**< verbose flag */
 
@@ -118,6 +119,9 @@ int    casimir_set_precision(casimir_t *self, double precision);
 
 double casimir_get_threshold(casimir_t *self);
 int    casimir_set_threshold(casimir_t *self, double threshold);
+
+double casimir_get_tolerance(casimir_t *self);
+int    casimir_set_tolerance(casimir_t *self, double tolerance);
 
 void casimir_lnab0(int l, double *a0, sign_t *sign_a0, double *b0, sign_t *sign_b0);
 void casimir_lnab(casimir_t *self, double nT, int l, double *lna, double *lnb, sign_t *sign_a, sign_t *sign_b);
