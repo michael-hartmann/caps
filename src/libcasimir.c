@@ -40,10 +40,7 @@ int casimir_compile_info(char *str, size_t size)
 {
     /* snprintf() writes at most size bytes (including the terminating null
      * byte ('\0')) to str. */
-    return snprintf(str, size,
-             "Compiled on %s at %s with %s",
-              __DATE__, __TIME__, COMPILER
-            );
+    return snprintf(str, size, "Compiled on %s at %s with %s", __DATE__, __TIME__, COMPILER);
 }
 
 
@@ -64,9 +61,9 @@ void casimir_info(casimir_t *self, FILE *stream, const char *prefix)
     if(prefix == NULL)
         prefix = "";
 
-    fprintf(stream, "%sL/R = %.8g\n", prefix, self->LbyR);
+    fprintf(stream, "%sL/R       = %.8g\n", prefix, self->LbyR);
     fprintf(stream, "%sldim      = %d\n", prefix, self->ldim);
-    fprintf(stream, "%sprecision = %g\n", prefix, self->precision);
+    fprintf(stream, "%stolerance = %g\n", prefix, self->tolerance);
     fprintf(stream, "%sthreshold = %g\n", prefix, self->threshold);
 
     const char *s;
@@ -338,7 +335,6 @@ casimir_t *casimir_init(double LbyR)
 
     self->RbyScriptL = 1./(1.+LbyR);
     self->LbyR       = LbyR;
-    self->precision  = CASIMIR_PRECISION;
 
     self->ldim = ceil(MAX(CASIMIR_MINIMUM_LMAX, CASIMIR_FACTOR_LMAX/LbyR));
 
@@ -544,42 +540,6 @@ int casimir_set_threshold(casimir_t *self, double threshold)
     self->threshold = threshold;
     return 1;
 }
-
-/**
- * @brief Get precision
- *
- * See \ref casimir_set_precision
- *
- * This function is not thread-safe.
- *
- * @param [in,out] self Casimir object
- * @retval precision \f$\epsilon_p\f$
- */
-double casimir_get_precision(casimir_t *self)
-{
-    return self->precision;
-}
-
-
-/**
- * @brief Set precision
- *
- * This function is not thread-safe.
- *
- * @param [in,out] self Casimir object
- * @param [in] precision \f$\epsilon_p\f$
- * @retval 1 if successful
- * @retval 0 if precision <= 0
- */
-int casimir_set_precision(casimir_t *self, double precision)
-{
-    if(precision <= 0)
-        return 0;
-
-    self->precision = precision;
-    return 1;
-}
-
 
 /**
  * @brief Free memory for Casimir object
