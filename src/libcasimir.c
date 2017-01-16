@@ -349,6 +349,9 @@ casimir_t *casimir_init(double LbyR)
     /* set threshold */
     self->threshold = CASIMIR_THRESHOLD;
 
+    /* integration error */
+    self->tolerance = CASIMIR_TOLERANCE;
+
     /* set verbose flag */
     self->verbose = false;
 
@@ -396,6 +399,20 @@ void casimir_set_verbose(casimir_t *self, bool verbose)
 bool casimir_get_verbose(casimir_t *self)
 {
     return self->verbose;
+}
+
+int casimir_set_tolerance(casimir_t *self, double tolerance)
+{
+    if(tolerance <= 0)
+        return 0;
+
+    self->tolerance = tolerance;
+    return 1;
+}
+
+double casimir_get_tolerance(casimir_t *self)
+{
+    return self->tolerance;
 }
 
 /**
@@ -967,7 +984,7 @@ matrix_t *casimir_M(casimir_t *self, double nT, int m)
     size_t lmin,lmax,ldim = self->ldim;
     casimir_estimate_lminmax(self, m, &lmin, &lmax);
 
-    integration_t *integration = casimir_integrate_init(self, nT, m, 1e-8);
+    integration_t *integration = casimir_integrate_init(self, nT, m, self->tolerance);
 
     /* allocate space for matrix M */
     matrix_t *M = matrix_alloc(2*ldim);
@@ -1009,10 +1026,10 @@ matrix_t *casimir_M(casimir_t *self, double nT, int m)
             if(sign_a[j] == 0)
                 casimir_lnab(self, nT, l2, &ln_a[j], &ln_b[j], &sign_a[j], &sign_b[j]);
 
-            double ln_al1 = ln_a[i], ln_bl1 = ln_b[i];
-            double ln_al2 = ln_a[j], ln_bl2 = ln_b[j];
-            sign_t sign_al1 = sign_a[i], sign_bl1 = sign_b[i];
-            sign_t sign_al2 = sign_a[j], sign_bl2 = sign_b[j];
+            const double ln_al1 = ln_a[i], ln_bl1 = ln_b[i];
+            const double ln_al2 = ln_a[j], ln_bl2 = ln_b[j];
+            const sign_t sign_al1 = sign_a[i], sign_bl1 = sign_b[i];
+            const sign_t sign_al2 = sign_a[j], sign_bl2 = sign_b[j];
 
 
             sign_t signA_TE, signA_TM, signB_TE, signB_TM;
