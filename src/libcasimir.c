@@ -786,7 +786,7 @@ void casimir_lnab(casimir_t *self, double nT, int l, double *lna, double *lnb, s
 /*@}*/
 
 
-int casimir_estimate_lminmax(double LbyR, int m, int dim, int *lmin, int *lmax)
+int casimir_estimate_lminmax(double LbyR, int m, size_t dim, size_t *lmin, size_t *lmax)
 {
     if(m == 0)
     {
@@ -813,7 +813,7 @@ int casimir_estimate_lminmax(double LbyR, int m, int dim, int *lmin, int *lmax)
     }
 
     *lmin = l-dim/2;
-    if(*lmin < m)
+    if(*lmin < (size_t)m)
         *lmin = m;
 
     *lmax = *lmin + dim;
