@@ -57,23 +57,23 @@ int casimir_compile_info(char *str, size_t size)
  */
 void casimir_info(casimir_t *self, FILE *stream, const char *prefix)
 {
-    const char *s;
+    const char *detalg_str;
     if(prefix == NULL)
         prefix = "";
 
     switch(self->detalg)
     {
-        case DETALG_LU:  s = "LU"; break;
-        case DETALG_QR:  s = "QR"; break;
-        case DETALG_EIG: s = "EIG"; break;
-        default:         s = "unknown";
+        case DETALG_LU:  detalg_str = "LU"; break;
+        case DETALG_QR:  detalg_str = "QR"; break;
+        case DETALG_EIG: detalg_str = "EIG"; break;
+        default:         detalg_str = "unknown";
     }
 
     fprintf(stream, "%sL/R       = %.8g\n", prefix, self->LbyR);
     fprintf(stream, "%sldim      = %d\n", prefix, self->ldim);
     fprintf(stream, "%stolerance = %g\n", prefix, self->tolerance);
     fprintf(stream, "%sthreshold = %g\n", prefix, self->threshold);
-    fprintf(stream, "%sdetalg    = %d (%s)\n", prefix, self->detalg, s);
+    fprintf(stream, "%sdetalg    = %s\n", prefix, detalg_str);
     fprintf(stream, "%sverbose   = %s\n", prefix, self->verbose ? "true" : "false");
     fprintf(stream, "%sdebug     = %s\n", prefix, self->debug ? "true" : "false");
 }
