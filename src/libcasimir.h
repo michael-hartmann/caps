@@ -36,9 +36,10 @@ typedef enum { TE, TM } polarization_t;
 #endif
 
 /* default values */
-#define CASIMIR_PRECISION 1e-12      /**< default precision */
-#define CASIMIR_MINIMUM_LMAX 20      /**< minimum value for lmax */
-#define CASIMIR_FACTOR_LMAX 5        /**< by default: lmax=ceil(5/LbyR) */
+#define CASIMIR_PRECISION 1e-12 /**< default precision */
+#define CASIMIR_MINIMUM_LMAX 20 /**< minimum value for lmax */
+#define CASIMIR_FACTOR_LMAX 5   /**< by default: lmax=ceil(5/LbyR) */
+#define CASIMIR_THRESHOLD 1e-16 /**< default value of threshold */
 
 /**
  * The Casimir object. This structure stores all essential information about

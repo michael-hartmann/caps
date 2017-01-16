@@ -346,8 +346,8 @@ casimir_t *casimir_init(double LbyR)
     self->epsilonm1 = casimir_epsilonm1_perf;
     self->userdata  = NULL;
 
-    /* XXX */
-    self->threshold = 1e-16;
+    /* set threshold */
+    self->threshold = CASIMIR_THRESHOLD;
 
     /* set verbose flag */
     self->verbose = false;
