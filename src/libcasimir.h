@@ -85,18 +85,6 @@ typedef struct
 } casimir_t;
 
 
-/**
- * thread object.
- */
-typedef struct
-{
-    casimir_t *self; /**< pointer to Casimir object */
-    int n;           /**< Matsubara term */
-    int nmax;        /**< maximum number of n */
-    double value;    /**< free energy for Matsubara term n*/
-} casimir_thread_t;
-
-
 /* prototypes */
 int  casimir_compile_info(char *str, size_t size);
 void casimir_info(casimir_t *self, FILE *stream, const char *prefix);
