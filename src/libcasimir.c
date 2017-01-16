@@ -361,8 +361,11 @@ casimir_t *casimir_init(double LbyR)
  */
 void casimir_free(casimir_t *self)
 {
-    pthread_mutex_destroy(&self->mutex);
-    xfree(self);
+    if(self != NULL)
+    {
+        pthread_mutex_destroy(&self->mutex);
+        xfree(self);
+    }
 }
 
 /**
