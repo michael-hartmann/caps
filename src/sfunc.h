@@ -40,8 +40,6 @@ double logadd(const double a, const double b);
 double logadd_ms(log_t list[], const int len, sign_t *sign);
 double logadd_s(const double a, const sign_t sign_a, const double b, const sign_t sign_b, sign_t *sign);
 
-double bessel_lnInu(const int n, const double x);
-double bessel_lnKnu(const int n, const double x);
 void bessel_lnInuKnu(int nu, const double x, double *lnInu_p, double *lnKnu_p);
 
 double ln_factorial2(unsigned int n) __attribute__ ((pure));
