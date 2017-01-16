@@ -66,7 +66,7 @@ void casimir_info(casimir_t *self, FILE *stream, const char *prefix)
         prefix = "";
 
     fprintf(stream, "%sL/R = %.8g\n", prefix, self->LbyR);
-    fprintf(stream, "%slmax      = %d\n", prefix, self->lmax);
+    fprintf(stream, "%sldim      = %d\n", prefix, self->ldim);
     fprintf(stream, "%sprecision = %g\n", prefix, self->precision);
     fprintf(stream, "%sthreshold = %g\n", prefix, self->threshold);
 
@@ -318,8 +318,8 @@ void casimir_rp(casimir_t *self, double nT, double k, double *r_TE, double *r_TM
  * reflectors. By default the dielectric function corresponds to perfect
  * reflectors, i.e. epsilon=inf.
  *
- * By default, the value of lmax is chosen by:
- * lmax = ceil(max(CASIMIR_MINIMUM_LMAX, CASIMIR_FACTOR_LMAX/LbyR))
+ * By default, the value of ldim is chosen by:
+ * ldim = ceil(max(CASIMIR_MINIMUM_LMAX, CASIMIR_FACTOR_LMAX/LbyR))
  *
  * Restrictions: \f$\frac{L}{R} > 0\f$
  *
@@ -341,7 +341,7 @@ casimir_t *casimir_init(double LbyR)
     self->LbyR       = LbyR;
     self->precision  = CASIMIR_PRECISION;
 
-    self->lmax = ceil(MAX(CASIMIR_MINIMUM_LMAX, CASIMIR_FACTOR_LMAX/LbyR));
+    self->ldim = ceil(MAX(CASIMIR_MINIMUM_LMAX, CASIMIR_FACTOR_LMAX/LbyR));
 
     /* perfect reflectors */
     self->epsilonm1 = casimir_epsilonm1_perf;
@@ -467,16 +467,16 @@ detalg_t casimir_get_detalg(casimir_t *self)
  * This function is not thread-safe.
  *
  * @param [in,out] self Casimir object
- * @param [in] lmax maximum number of \f$\ell\f$
+ * @param [in] ldim maximum number of \f$\ell\f$
  * @retval 1 if successful
- * @retval 0 if lmax < 1
+ * @retval 0 if ldim < 1
  */
-int casimir_set_lmax(casimir_t *self, int lmax)
+int casimir_set_ldim(casimir_t *self, int ldim)
 {
-    if(lmax < 1)
+    if(ldim < 1)
         return 0;
 
-    self->lmax = lmax;
+    self->ldim = ldim;
 
     return 1;
 }
@@ -485,16 +485,16 @@ int casimir_set_lmax(casimir_t *self, int lmax)
 /**
  * @brief Get maximum value of \f$\ell\f$
  *
- * See \ref casimir_set_lmax.
+ * See \ref casimir_set_ldim.
  *
  * This function is not thread-safe.
  *
  * @param [in,out] self Casimir object
- * @retval lmax maximum value of \f$\ell\f$
+ * @retval ldim maximum value of \f$\ell\f$
  */
-int casimir_get_lmax(casimir_t *self)
+int casimir_get_ldim(casimir_t *self)
 {
-    return self->lmax;
+    return self->ldim;
 }
 
 
@@ -838,13 +838,13 @@ int casimir_estimate_lminmax(double LbyR, int m, int dim, int *lmin, int *lmax)
  */
 void casimir_M0(casimir_t *self, int m, matrix_t **EE, matrix_t **MM)
 {
-    TERMINATE(m > self->lmax || m < 0, "Invalid argument: m=%d, lmax=%d", m, self->lmax);
+    TERMINATE(m > self->ldim || m < 0, "Invalid argument: m=%d, ldim=%d", m, self->ldim);
 
     /* y = log(R/(R+L)/2) */
     const double y = log(self->RbyScriptL/2);
 
     const size_t min = MAX(m,1);
-    const size_t max = self->lmax;
+    const size_t max = self->ldim;
     const size_t dim = max-min+1;
 
     /* nothing to do... */
@@ -917,7 +917,7 @@ void casimir_M0(casimir_t *self, int m, matrix_t **EE, matrix_t **MM)
  * This function calculates the logarithm of the determinant of the scattering
  * operator D for the Matsubara term \f$n=0\f$.
  *
- * This function is thread-safe as long you don't change lmax and aspect ratio.
+ * This function is thread-safe as long you don't change ldim and aspect ratio.
  *
  * @param [in,out] self Casimir object
  * @param [in] m
@@ -926,7 +926,7 @@ void casimir_M0(casimir_t *self, int m, matrix_t **EE, matrix_t **MM)
  */
 void casimir_logdetD0(casimir_t *self, int m, double *logdet_EE, double *logdet_MM)
 {
-    TERMINATE(m > self->lmax || m < 0, "Invalid argument: m=%d, lmax=%d", m, self->lmax);
+    TERMINATE(m > self->ldim || m < 0, "Invalid argument: m=%d, ldim=%d", m, self->ldim);
 
     matrix_t *EE = NULL, *MM = NULL;
 
@@ -965,11 +965,11 @@ void casimir_logdetD0(casimir_t *self, int m, double *logdet_EE, double *logdet_
  */
 matrix_t *casimir_M(casimir_t *self, double nT, int m)
 {
-    TERMINATE(m > self->lmax || m < 0, "Invalid argument: m=%d, lmax=%d", m, self->lmax);
+    TERMINATE(m > self->ldim || m < 0, "Invalid argument: m=%d, ldim=%d", m, self->ldim);
 
     /* The main contribution comes from l1≈l2≈m/√(-log(x)) */
     const size_t min = MAX(m,1);
-    const size_t max = self->lmax;
+    const size_t max = self->ldim;
     const size_t dim = (max-min+1);
 
     integration_t *integration = casimir_integrate_init(self, nT, m, 1e-8);
@@ -1099,7 +1099,7 @@ matrix_t *casimir_M(casimir_t *self, double nT, int m)
  * This function calculates the logarithm of the determinant of the scattering
  * operator D for the Matsubara term \f$n\f$.
  *
- * This function is thread-safe - as long you don't change lmax, temperature,
+ * This function is thread-safe - as long you don't change ldim, temperature,
  * aspect ratio, dielectric properties of sphere and plane, and integration.
  *
  * @param [in,out] self Casimir object
@@ -1109,7 +1109,7 @@ matrix_t *casimir_M(casimir_t *self, double nT, int m)
  */
 double casimir_logdetD(casimir_t *self, double nT, int m)
 {
-    TERMINATE(m > self->lmax || m < 0 || nT < 0, "Invalid argument: m=%d, lmax=%d, nT=%g", m, self->lmax, nT);
+    TERMINATE(m > self->ldim || m < 0 || nT < 0, "Invalid argument: m=%d, ldim=%d, nT=%g", m, self->ldim, nT);
 
     double t0;
     double logdet = 0;
@@ -1143,11 +1143,11 @@ double casimir_logdetD(casimir_t *self, double nT, int m)
     if(m == 0)
     {
         const size_t dim  = M->dim;
-        const size_t lmax = dim/2;
+        const size_t ldim = dim/2;
 
         /* create a view of the block matrices EE and MM */
-        matrix_t *EE = matrix_view(M->M, lmax, dim);
-        matrix_t *MM = matrix_view(&M->M[lmax*(dim+1)], lmax, dim);
+        matrix_t *EE = matrix_view(M->M, ldim, dim);
+        matrix_t *MM = matrix_view(&M->M[ldim*(dim+1)], ldim, dim);
 
         t0 = now();
         logdet  = matrix_logdet(EE, -1, self->detalg);

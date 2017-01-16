@@ -69,7 +69,7 @@ typedef struct
      * @name accuracy and numerical parameters
      */
      /*@{*/
-    int lmax;               /**< truncation value for vector space \f$\ell_\mathrm{max}\f$ */
+    int ldim;               /**< truncation value for vector space \f$\ell_\mathrm{max}\f$ */
     double precision;       /**< precision \f$\epsilon_p\f$ */
     double threshold;       /**< XXX TBD */
 
@@ -118,8 +118,8 @@ bool casimir_get_verbose(casimir_t *self);
 
 int casimir_set_epsilonm1(casimir_t *self, double (*epsilonm1)(double xi, void *userdata), void *userdata);
 
-int casimir_get_lmax(casimir_t *self);
-int casimir_set_lmax(casimir_t *self, int lmax);
+int casimir_get_ldim(casimir_t *self);
+int casimir_set_ldim(casimir_t *self, int ldim);
 
 detalg_t casimir_get_detalg(casimir_t *self);
 int casimir_set_detalg(casimir_t *self, detalg_t detalg);
