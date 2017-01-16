@@ -23,8 +23,8 @@ int main(int argc, char *argv[])
     printf("nu = %d\n", nu);
     printf("tau= %g\n", tau);
 
-    casimir_t *casimir = casimir_init(0.05,tau/2);
-    integration_t *integration = casimir_integrate_init(casimir, 1, m, epsrel);
+    casimir_t *casimir = casimir_init(1);
+    integration_t *integration = casimir_integrate_init(casimir, tau/2, m, epsrel);
     double v = casimir_integrate_K(integration, nu, p, &sign);
     casimir_free(casimir);
 
