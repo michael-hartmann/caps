@@ -129,7 +129,7 @@ double casimir_logdetD(casimir_t *self, double nT, int m);
 
 void casimir_rp(casimir_t *self, double nT, double k, double *r_TE, double *r_TM);
 
-int casimir_estimate_lminmax(double LbyR, int m, size_t dim, size_t *lmin, size_t *lmax);
+int casimir_estimate_lminmax(casimir_t *self, int m, size_t *lmin_p, size_t *lmax_p);
 
 double casimir_epsilonm1(casimir_t *self, double xi);
 double casimir_epsilonm1_perf(double xi, void *userdata);
