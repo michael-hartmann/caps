@@ -58,15 +58,10 @@ int casimir_compile_info(char *str, size_t size)
  */
 void casimir_info(casimir_t *self, FILE *stream, const char *prefix)
 {
+    const char *s;
     if(prefix == NULL)
         prefix = "";
 
-    fprintf(stream, "%sL/R       = %.8g\n", prefix, self->LbyR);
-    fprintf(stream, "%sldim      = %d\n", prefix, self->ldim);
-    fprintf(stream, "%stolerance = %g\n", prefix, self->tolerance);
-    fprintf(stream, "%sthreshold = %g\n", prefix, self->threshold);
-
-    const char *s;
     switch(self->detalg)
     {
         case DETALG_LU:  s = "LU"; break;
@@ -74,7 +69,14 @@ void casimir_info(casimir_t *self, FILE *stream, const char *prefix)
         case DETALG_EIG: s = "EIG"; break;
         default:         s = "unknown";
     }
+
+    fprintf(stream, "%sL/R       = %.8g\n", prefix, self->LbyR);
+    fprintf(stream, "%sldim      = %d\n", prefix, self->ldim);
+    fprintf(stream, "%stolerance = %g\n", prefix, self->tolerance);
+    fprintf(stream, "%sthreshold = %g\n", prefix, self->threshold);
     fprintf(stream, "%sdetalg    = %d (%s)\n", prefix, self->detalg, s);
+    fprintf(stream, "%sverbose   = %s\n", prefix, self->verbose ? "true" : "false");
+    fprintf(stream, "%sdebug     = %s\n", prefix, self->debug ? "true" : "false");
 }
 
 
