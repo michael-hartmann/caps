@@ -36,8 +36,8 @@ typedef enum { TE, TM } polarization_t;
 #endif
 
 /* default values */
-#define CASIMIR_MINIMUM_LMAX 20 /**< minimum value for lmax */
-#define CASIMIR_FACTOR_LMAX 5   /**< by default: lmax=ceil(5/LbyR) */
+#define CASIMIR_MINIMUM_LDIM 20 /**< minimum value for lmax */
+#define CASIMIR_FACTOR_LDIM 5   /**< by default: lmax=ceil(5/LbyR) */
 #define CASIMIR_THRESHOLD 1e-16 /**< default value of threshold */
 #define CASIMIR_TOLERANCE 1e-8  /**< default tolerance for integration */
 
@@ -102,13 +102,13 @@ bool casimir_get_debug(casimir_t *self);
 void casimir_set_verbose(casimir_t *self, bool verbose);
 bool casimir_get_verbose(casimir_t *self);
 
-int casimir_set_epsilonm1(casimir_t *self, double (*epsilonm1)(double xi, void *userdata), void *userdata);
+void casimir_set_epsilonm1(casimir_t *self, double (*epsilonm1)(double xi, void *userdata), void *userdata);
 
 int casimir_get_ldim(casimir_t *self);
 int casimir_set_ldim(casimir_t *self, int ldim);
 
 detalg_t casimir_get_detalg(casimir_t *self);
-int casimir_set_detalg(casimir_t *self, detalg_t detalg);
+void casimir_set_detalg(casimir_t *self, detalg_t detalg);
 
 double casimir_get_threshold(casimir_t *self);
 int    casimir_set_threshold(casimir_t *self, double threshold);
