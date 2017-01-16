@@ -12,6 +12,12 @@ sources = [
     "../utils.c",
     "../lookup.c",
     "../cquadpack/src/dqagi.c",
+    "../cquadpack/src/dqk15.c",
+    "../cquadpack/src/dqk61.c",
+    "../cquadpack/src/dqk51.c",
+    "../cquadpack/src/dqk41.c",
+    "../cquadpack/src/dqk31.c",
+    "../cquadpack/src/dqage.c",
     "../cquadpack/src/dqags.c",
     "../cquadpack/src/dqext.c",
     "../cquadpack/src/dqk15i.c",
@@ -21,7 +27,6 @@ sources = [
 
 CFLAGS = [
     "-std=c99",
-    "-fgnu89-inline",
     "-Wall",
     "-Wextra",
     "-Wno-strict-prototypes",
