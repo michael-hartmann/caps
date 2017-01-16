@@ -12,7 +12,6 @@
 #include <stdint.h>
 #include <stdio.h>
 #include <string.h>
-#include <time.h>
 #include <unistd.h>
 
 #include "integration.h"
@@ -786,17 +785,19 @@ void casimir_lnab(casimir_t *self, double nT, int l, double *lna, double *lnb, s
 /*@}*/
 
 
-int casimir_estimate_lminmax(double LbyR, int m, size_t dim, size_t *lmin, size_t *lmax)
+int casimir_estimate_lminmax(casimir_t *self, int m, size_t *lmin_p, size_t *lmax_p)
 {
+    const size_t dim = self->ldim;
+
     if(m == 0)
     {
-        *lmin = 1;
-        *lmax = *lmin+dim;
+        *lmin_p = 1;
+        *lmax_p = 1+dim;
         return 0;
     }
 
     int l;
-    const double x = 1/(1+LbyR);
+    const double x = 1/(1+self->LbyR);
 
     /* find maximum, i.e., main contributions */
     double last = 2*m*log(x/2);
@@ -812,11 +813,12 @@ int casimir_estimate_lminmax(double LbyR, int m, size_t dim, size_t *lmin, size_
         last = f;
     }
 
-    *lmin = l-dim/2;
-    if(*lmin < (size_t)m)
-        *lmin = m;
+    int lmin = l-dim/2;
+    if(lmin < m)
+        lmin = m;
 
-    *lmax = *lmin + dim;
+    *lmin_p = lmin;
+    *lmax_p = lmin + dim;
 
     return l;
 }
@@ -838,14 +840,12 @@ int casimir_estimate_lminmax(double LbyR, int m, size_t dim, size_t *lmin, size_
  */
 void casimir_M0(casimir_t *self, int m, matrix_t **EE, matrix_t **MM)
 {
-    TERMINATE(m > self->ldim || m < 0, "Invalid argument: m=%d, ldim=%d", m, self->ldim);
-
     /* y = log(R/(R+L)/2) */
     const double y = log(self->RbyScriptL/2);
 
-    const size_t min = MAX(m,1);
-    const size_t max = self->ldim;
-    const size_t dim = max-min+1;
+    /* main contributions comes from l1≈l2≈m */
+    size_t lmin,lmax,ldim = self->ldim;
+    casimir_estimate_lminmax(self, m, &lmin, &lmax);
 
     /* nothing to do... */
     if(EE == NULL && MM == NULL)
@@ -853,12 +853,12 @@ void casimir_M0(casimir_t *self, int m, matrix_t **EE, matrix_t **MM)
 
     if(EE != NULL)
     {
-        *EE = matrix_alloc(dim);
+        *EE = matrix_alloc(ldim);
         matrix_setall(*EE,0);
     }
     if(MM != NULL)
     {
-        *MM = matrix_alloc(dim);
+        *MM = matrix_alloc(ldim);
         matrix_setall(*MM,0);
     }
 
@@ -867,15 +867,15 @@ void casimir_M0(casimir_t *self, int m, matrix_t **EE, matrix_t **MM)
     /* calculate matrix elements of M */
 
     /* n-th minor diagonal */
-    for(size_t n = 0; n < dim; n++)
+    for(size_t n = 0; n < ldim; n++)
     {
         /* sum of modulus of matrix elements of n-th minor diagonal */
         double trace = 0;
 
-        for(size_t d = 0; d < dim-n; d++)
+        for(size_t d = 0; d < ldim-n; d++)
         {
-            const int l1 = d+min;
-            const int l2 = d+n+min;
+            const int l1 = d+lmin;
+            const int l2 = d+n+lmin;
 
             /* i: row of matrix, j: column of matrix */
             const size_t i = d, j = d+n;
@@ -905,7 +905,7 @@ void casimir_M0(casimir_t *self, int m, matrix_t **EE, matrix_t **MM)
         }
 
         if(n == 0)
-            trace_diag = dim-trace;
+            trace_diag = ldim-trace;
         else if(trace/trace_diag <= self->threshold)
             break;
     }
@@ -926,8 +926,6 @@ void casimir_M0(casimir_t *self, int m, matrix_t **EE, matrix_t **MM)
  */
 void casimir_logdetD0(casimir_t *self, int m, double *logdet_EE, double *logdet_MM)
 {
-    TERMINATE(m > self->ldim || m < 0, "Invalid argument: m=%d, ldim=%d", m, self->ldim);
-
     matrix_t *EE = NULL, *MM = NULL;
 
     if(logdet_EE != NULL && logdet_MM != NULL)
@@ -965,17 +963,14 @@ void casimir_logdetD0(casimir_t *self, int m, double *logdet_EE, double *logdet_
  */
 matrix_t *casimir_M(casimir_t *self, double nT, int m)
 {
-    TERMINATE(m > self->ldim || m < 0, "Invalid argument: m=%d, ldim=%d", m, self->ldim);
-
-    /* The main contribution comes from l1≈l2≈m/√(-log(x)) */
-    const size_t min = MAX(m,1);
-    const size_t max = self->ldim;
-    const size_t dim = (max-min+1);
+    /* main contributions comes from l1≈l2≈m */
+    size_t lmin,lmax,ldim = self->ldim;
+    casimir_estimate_lminmax(self, m, &lmin, &lmax);
 
     integration_t *integration = casimir_integrate_init(self, nT, m, 1e-8);
 
     /* allocate space for matrix M */
-    matrix_t *M = matrix_alloc(2*dim);
+    matrix_t *M = matrix_alloc(2*ldim);
 
     /* set matrix elements to 0 */
     matrix_setall(M, 0);
@@ -983,29 +978,29 @@ matrix_t *casimir_M(casimir_t *self, double nT, int m)
     /* M_EE, -M_EM
        M_ME,  M_MM */
 
-    /* Allocate memory for Mie cache on the stack. For dim=10000 this requires
+    /* Allocate memory for Mie cache on the stack. For ldim=10000 this requires
      * about 10000*2*(8+1) bytes = 170kb. So it's easier just to use the stack.
      */
-    double ln_a[dim], ln_b[dim];
-    sign_t sign_a[dim], sign_b[dim];
+    double ln_a[ldim], ln_b[ldim];
+    sign_t sign_a[ldim], sign_b[ldim];
 
-    for(size_t j = 0; j < dim; j++)
+    for(size_t j = 0; j < ldim; j++)
         sign_a[j] = sign_b[j] = 0;
 
     double trace_diag = 0;
 
     /* n-th minor diagonal */
-    for(size_t md = 0; md < dim; md++)
+    for(size_t md = 0; md < ldim; md++)
     {
         double trace = 0;
 
-        for(size_t k = 0; k < dim-md; k++)
+        for(size_t k = 0; k < ldim-md; k++)
         {
-            const int l1 = k+min;
-            const int l2 = k+md+min;
+            const int l1 = k+lmin;
+            const int l2 = k+md+lmin;
 
             /* i: row of matrix, j: column of matrix */
-            const size_t i = l1-min, j = l2-min;
+            const size_t i = l1-lmin, j = l2-lmin;
 
             /* if neccessary, compute Mie coefficients */
             if(sign_a[i] == 0)
@@ -1048,8 +1043,8 @@ matrix_t *casimir_M(casimir_t *self, double nT, int m)
 
                 trace += fabs(elem); /* elem is positive */
 
-                matrix_set(M, i+dim,j+dim,             sign_bl1*elem);
-                matrix_set(M, j+dim,i+dim, MPOW(l1+l2)*sign_bl2*elem);
+                matrix_set(M, i+ldim,j+ldim,             sign_bl1*elem);
+                matrix_set(M, j+ldim,i+ldim, MPOW(l1+l2)*sign_bl2*elem);
             }
 
             /* non-diagonal blocks EM and ME */
@@ -1073,17 +1068,17 @@ matrix_t *casimir_M(casimir_t *self, double nT, int m)
                 const double elem2 = exp(log_C_TM+mie2)*signC_TM+exp(log_D_TE+mie2)*signD_TE;
 
                 /* M_EM */
-                matrix_set(M, i,dim+j,               sign_al1*elem1);
-                matrix_set(M, j,dim+i, MPOW(l1+l2+1)*sign_al2*elem2);
+                matrix_set(M, i,ldim+j,               sign_al1*elem1);
+                matrix_set(M, j,ldim+i, MPOW(l1+l2+1)*sign_al2*elem2);
 
                 /* M_ME */
-                matrix_set(M, dim+i,j,               sign_bl1*elem2);
-                matrix_set(M, dim+j,i, MPOW(l1+l2+1)*sign_bl2*elem1);
+                matrix_set(M, ldim+i,j,               sign_bl1*elem2);
+                matrix_set(M, ldim+j,i, MPOW(l1+l2+1)*sign_bl2*elem1);
             }
         }
 
         if(md == 0)
-            trace_diag = 2*dim - trace;
+            trace_diag = 2*ldim - trace;
         else if(trace/trace_diag <= self->threshold)
             break;
     }
@@ -1109,8 +1104,6 @@ matrix_t *casimir_M(casimir_t *self, double nT, int m)
  */
 double casimir_logdetD(casimir_t *self, double nT, int m)
 {
-    TERMINATE(m > self->ldim || m < 0 || nT < 0, "Invalid argument: m=%d, ldim=%d, nT=%g", m, self->ldim, nT);
-
     double t0;
     double logdet = 0;
 
