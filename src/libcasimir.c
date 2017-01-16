@@ -24,12 +24,10 @@
 */
 /*@{*/
 
-/** @brief Return string with information about the binary
+/** @brief Return string with information about compilation
  *
- * The string contains date and time of compilation, the compiler and kind of
- * arithmetics the binary uses.
- *
- * This function is thread-safe.
+ * The string contains date and time of compilation, and the name of the
+ * compiler.
  *
  * @param [out] str buffer for string
  * @param [in]  len length of string
@@ -38,17 +36,14 @@
 int casimir_compile_info(char *str, size_t size)
 {
     /* snprintf() writes at most size bytes (including the terminating null
-     * byte ('\0')) to str. */
+     * byte \0) to str. */
     return snprintf(str, size, "Compiled on %s at %s with %s", __DATE__, __TIME__, COMPILER);
 }
 
 
 /** @brief Print object information to stream
  *
- * This function will print information about the object self to stream.
- *
- * This function is thread-safe. However, do not modify parameters while
- * calling this function.
+ * Print information about the object self to stream.
  *
  * @param self Casimir object
  * @param stream where to print the string
@@ -110,7 +105,7 @@ int casimir_vfprintf(casimir_t *self, FILE *stream, const char *format, va_list 
  * 1) When a fatal error occures, e.g. allocating memory failed, the program
  * should terminate using the macro TERMINATE from utils.h.
  *
- * 2) If there was potentially a problem the program should use the macro WARN.
+ * 2) If there was probably a problem the program should use the macro WARN.
  * This macro will print a warning to stderr, but it will not terminate the
  * program. For example, if there might be numerical instabilities or
  * convergence problems, the program should use WARN.
@@ -175,15 +170,11 @@ int casimir_verbose(casimir_t *self, const char *format, ...)
  *
  * The values are computed using the lgamma function to avoid overflows.
  *
- * Restrictions: \f$\ell_1,\ell_2 \ge 1\f$, \f$\ell_1,\ell_2 \ge m > 0\f$
- *
  * Symmetries: \f$\Lambda_{\ell_1,\ell_2}^{(m)} = \Lambda_{\ell_2,\ell_1}^{(m)}\f$
  *
- * This function is thread-safe.
- *
- * @param [in]  l1 \f$\ell_1\f$
- * @param [in]  l2 \f$\ell_2\f$
- * @param [in]  m  \f$m\f$
+ * @param [in]  l1 \f$\ell_1\f$, l1>0
+ * @param [in]  l2 \f$\ell_2\f$, l2>0
+ * @param [in]  m  \f$m\f$, MIN(l1,l2)>=m>=0
  * @retval lnLambda \f$\log{\Lambda_{\ell_1,\ell_2}^{(m)}}\f$
  */
 double casimir_lnLambda(int l1, int l2, int m)
@@ -243,8 +234,6 @@ double casimir_epsilonm1_drude(double xi, void *userdata)
  * @brief Calculate Fresnel coefficients \f$r_{TE}\f$ and \f$r_{TM}\f$ for arbitrary metals
  *
  * This function calculates the Fresnel coefficients for TE and TM mode
- *
- * This function is thread-safe.
  *
  * @param [in]     self  Casimir object
  * @param [in]     nT    \f$\xi=nT\f$ imaginary frequency
@@ -311,19 +300,16 @@ void casimir_rp(casimir_t *self, double nT, double k, double *r_TE, double *r_TM
 /**
  * @brief Create a new Casimir object
  *
- * This function will initialize a Casimir object with sphere and plane perfect
- * reflectors. By default the dielectric function corresponds to perfect
- * reflectors, i.e. epsilon=inf.
+ * This function will initialize a Casimir object.  By default the dielectric
+ * function corresponds to perfect reflectors, i.e. epsilon=inf.
  *
  * By default, the value of ldim is chosen by:
- * ldim = ceil(max(CASIMIR_MINIMUM_LMAX, CASIMIR_FACTOR_LMAX/LbyR))
+ * ldim = ceil(max(CASIMIR_MINIMUM_LDIM, CASIMIR_FACTOR_LDIM/LbyR))
  *
  * Restrictions: \f$\frac{L}{R} > 0\f$
  *
- * This function is not thread-safe.
- *
  * @param [out] self Casimir object
- * @param [in]  LbyR \f$\frac{L}{R}\f$
+ * @param [in]  LbyR \f$\frac{L}{R}\f$, LbyR > 0
  * @retval object Casimir object if successful
  * @retval NULL   an error occured
  */
@@ -334,9 +320,11 @@ casimir_t *casimir_init(double LbyR)
 
     casimir_t *self = xmalloc(sizeof(casimir_t));
 
-    self->LbyR       = LbyR;
+    /* geometry */
+    self->LbyR = LbyR;
 
-    self->ldim = ceil(MAX(CASIMIR_MINIMUM_LMAX, CASIMIR_FACTOR_LMAX/LbyR));
+    /* dimension of vector space */
+    self->ldim = ceil(MAX(CASIMIR_MINIMUM_LDIM, CASIMIR_FACTOR_LDIM/LbyR));
 
     /* perfect reflectors */
     self->epsilonm1 = casimir_epsilonm1_perf;
@@ -354,10 +342,6 @@ casimir_t *casimir_init(double LbyR)
     /* initialize mutex for printf */
     pthread_mutex_init(&self->mutex, NULL);
 
-    /**
-     * parameters that users usually don't change
-     */
-
     /* set debug flag */
     self->debug = false;
 
@@ -369,10 +353,22 @@ casimir_t *casimir_init(double LbyR)
 
 
 /**
+ * @brief Free memory for Casimir object
+ *
+ * Free allocated memory for the Casimir object self.
+ *
+ * @param [in,out] self Casimir object
+ */
+void casimir_free(casimir_t *self)
+{
+    pthread_mutex_destroy(&self->mutex);
+    xfree(self);
+}
+
+/**
  * @brief Enable/disable debugging information
  *
- * This will enable/disable debugging information wether the flag debug is true
- * or false.
+ * Enable/disable debugging information if flag debug is true/false.
  *
  * @param [in] self Casimir object
  * @param [in] debug flag, true to enable, false to disable debugging
@@ -382,21 +378,49 @@ void casimir_set_debug(casimir_t *self, bool debug)
     self->debug = debug;
 }
 
+/**
+ * @brief Get debugging flag
+ *
+ * @retval debug true/false
+ */
 bool casimir_get_debug(casimir_t *self)
 {
     return self->debug;
 }
 
+/**
+ * @brief Enable/disable verbose information
+ *
+ * Enable/disable verbose information if flag debug is true/false.
+ *
+ * @param [in] self Casimir object
+ * @param [in] verbose flag, true to enable, false to disable
+ */
 void casimir_set_verbose(casimir_t *self, bool verbose)
 {
     self->verbose = verbose;
 }
 
+/**
+ * @brief Get verbose flag
+ *
+ * @retval verbose true/false
+ */
 bool casimir_get_verbose(casimir_t *self)
 {
     return self->verbose;
 }
 
+/**
+ * @brief Set tolerance for numerical integration
+ *
+ * Set relative tolerance for numerical integration.
+ *
+ * @param [in] self Casimir object
+ * @param [in] tolerance relative tolerance
+ * @retval 0 if an error occured
+ * @retval 1 on success
+ */
 int casimir_set_tolerance(casimir_t *self, double tolerance)
 {
     if(tolerance <= 0)
@@ -406,6 +430,11 @@ int casimir_set_tolerance(casimir_t *self, double tolerance)
     return 1;
 }
 
+/**
+ * @brief Get relative tolerance for numerical integration
+ *
+ * @retval tolerance numerical tolerance
+ */
 double casimir_get_tolerance(casimir_t *self)
 {
     return self->tolerance;
@@ -421,14 +450,11 @@ double casimir_get_tolerance(casimir_t *self)
  * @param [in,out] self Casimir object
  * @param [in] epsilonm1  callback to the function that calculates epsilon(i*xi)-1
  * @param [in] userdata   arbitrary pointer to data that is passwd to epsilonm1 whenever the function is called
- * @retval 1
  */
-int casimir_set_epsilonm1(casimir_t *self, double (*epsilonm1)(double xi, void *userdata), void *userdata)
+void casimir_set_epsilonm1(casimir_t *self, double (*epsilonm1)(double xi, void *userdata), void *userdata)
 {
     self->epsilonm1 = epsilonm1;
     self->userdata  = userdata;
-
-    return 1;
 }
 
 /**
@@ -440,16 +466,12 @@ int casimir_set_epsilonm1(casimir_t *self, double (*epsilonm1)(double xi, void *
  *
  * detalg may be: DETALG_LU, DETALG_QR, DETALG_EIG
  *
- * This function is not thread-safe.
- *
  * @param [in,out] self Casimir object
  * @param [in] detalg algorithm to compute determinant
- * @retval 1
  */
-int casimir_set_detalg(casimir_t *self, detalg_t detalg)
+void casimir_set_detalg(casimir_t *self, detalg_t detalg)
 {
     self->detalg = detalg;
-    return 0;
 }
 
 /**
@@ -469,17 +491,16 @@ detalg_t casimir_get_detalg(casimir_t *self)
 }
 
 /**
- * @brief Set maximum value of l
+ * @brief Set dimension of vector space
  *
- * In general the round trip matrices are infinite. For a numerical evaluation
- * the dimension has to be limited to a finite value. The accuracy of the
- * result depends on the truncation of the vector space. For more information,
- * cf. chapter 6.1.
- *
- * This function is not thread-safe.
+ * The round trip matrices are infinite. For a numerical evaluation the
+ * dimension has to be limited to a finite value. The accuracy of the result
+ * depends on the truncation of the vector space. ldim determines the dimension
+ * in the angular momenta l that is used. The main contributions come from l1≈l2≈X.
+ * X can be determined using \ref casimir_estimate_lminmax.
  *
  * @param [in,out] self Casimir object
- * @param [in] ldim maximum number of \f$\ell\f$
+ * @param [in] ldim dimension in angular momenta l
  * @retval 1 if successful
  * @retval 0 if ldim < 1
  */
@@ -489,20 +510,17 @@ int casimir_set_ldim(casimir_t *self, int ldim)
         return 0;
 
     self->ldim = ldim;
-
     return 1;
 }
 
 
 /**
- * @brief Get maximum value of \f$\ell\f$
+ * @brief Get dimension of vector space
  *
  * See \ref casimir_set_ldim.
  *
- * This function is not thread-safe.
- *
  * @param [in,out] self Casimir object
- * @retval ldim maximum value of \f$\ell\f$
+ * @retval ldim dimension of vector space
  */
 int casimir_get_ldim(casimir_t *self)
 {
@@ -514,8 +532,6 @@ int casimir_get_ldim(casimir_t *self)
  * @brief Get threshold
  *
  * See \ref casimir_set_threshold.
- *
- * This function is not thread-safe.
  *
  * @param [in,out] self Casimir object
  * @retval threshold
@@ -530,7 +546,8 @@ double casimir_get_threshold(casimir_t *self)
  *
  * @param [in,out] self Casimir object
  * @param [in] threshold
- * @retval success, 1 if successfull, 0 if threshold <= 0
+ * @retval 0 if threshold <= 0
+ * @retval 1 if successful
  */
 int casimir_set_threshold(casimir_t *self, double threshold)
 {
@@ -539,24 +556,6 @@ int casimir_set_threshold(casimir_t *self, double threshold)
 
     self->threshold = threshold;
     return 1;
-}
-
-/**
- * @brief Free memory for Casimir object
- *
- * This function will free allocated memory for the Casimir object. If you have
- * allocated memory for the object yourself, you have, however, to free this
- * yourself.
- *
- * This function is not thread-safe.
- *
- * @param [in,out] self Casimir object
- */
-void casimir_free(casimir_t *self)
-{
-    pthread_mutex_destroy(&self->mutex);
-
-    xfree(self);
 }
 
 /*@}*/
@@ -586,8 +585,6 @@ void casimir_free(casimir_t *self)
  *
  * The pointers a0, sign_a0, b0 and sign_b0 must not be NULL.
  *
- * This function is thread-safe.
- *
  * @param [in] l \f$\ell\f$
  * @param [out] a0 coefficient \f$a_{\ell,0}^\mathrm{perf}\f$
  * @param [out] sign_a0 sign of \f$a_{\ell,0}^\mathrm{perf}\f$
@@ -608,27 +605,24 @@ void casimir_lnab0(int l, double *a0, sign_t *sign_a0, double *b0, sign_t *sign_
  * This function calculates the logarithms of the Mie coefficients
  * \f$a_\ell(i\chi)\f$ and \f$b_\ell(i\chi)\f$ for perfect reflectors and their
  * signs. The Mie coefficients are evaluated at the argument
- * \f$\chi=nTR/(R+L)\f$.
- *
- * The frequency will be determined by n: \f$\xi = nT\f$
+ * \f$\chi=nT R/(R+L)\f$.
  *
  * lna, lnb, sign_a and sign_b must be valid pointers and must not be NULL.
  *
  * Restrictions: \f$\ell \ge 1\f$, \f$\ell \ge 0\f$
  *
- * This function is thread-safe - as long you don't change temperature and
- * aspect ratio.
- *
  * @param [in,out] self Casimir object
- * @param [in] l \f$\ell\f$
  * @param [in] nT Matsubara frequency
+ * @param [in] l angular momentum \f$\ell\f$
+ * @param [out] ln_a logarithm of \f$a_\ell\f$
  * @param [out] sign sign of \f$a_\ell\f$
- * @retval logarithm of Mie coefficient \f$a_\ell\f$
+ * @param [out] ln_b logarithm of \f$b_\ell\f$
+ * @param [out] sign sign of \f$b_\ell\f$
  */
 void casimir_lnab_perf(casimir_t *self, double nT, int l, double *lna, double *lnb, sign_t *sign_a, sign_t *sign_b)
 {
     double lnKlp,lnKlm,lnIlm,lnIlp;
-    const double chi = nT/(1+self->LbyR); /* xi*RbyScriptL */
+    const double chi = nT/(1+self->LbyR); /* xi*R/(R+L) = xi/(1+L/R) */
 
     /* we could do both calculations together. but it doesn't cost much time -
      * so why bother?
@@ -693,7 +687,7 @@ void casimir_lnab_perf(casimir_t *self, double nT, int l, double *lna, double *l
  *
  * @param [in,out] self Casimir object
  * @param [in] nT Matsubara frequency
- * @param [in] l \f$\ell\f$
+ * @param [in] l angular momentum \f$\ell\f$
  * @param [out] lna logarithm of Mie coefficient \f$a_\ell\f$
  * @param [out] lnb logarithm of Mie coefficient \f$b_\ell\f$
  * @param [out] sign_a sign of Mie coefficient \f$a_\ell\f$
@@ -714,7 +708,7 @@ void casimir_lnab(casimir_t *self, double nT, int l, double *lna, double *lnb, s
     /* Mie coefficients for arbitrary metals */
 
     /* χ = ξ*R/(R+L) = ξ/(1+L/R) */
-    const double chi    = nT/(1.+self->LbyR);
+    const double chi    = nT/(1+self->LbyR);
     const double ln_chi = log(nT)-log1p(self->LbyR);
     const double ln_l   = logi(l);
 
@@ -762,6 +756,18 @@ void casimir_lnab(casimir_t *self, double nT, int l, double *lna, double *lnb, s
 /*@}*/
 
 
+/** @brief Estimate lmin and lmax for given m and dim
+ *
+ * Estimate the vector space. The main contributions come from l1≈l2≈X and only
+ * depends on geometry, L/R, and the quantum number m. This function calculates
+ * X using the formula in the high-temperature limit and calculates lmin, lmax.
+ *
+ * @param [in] self Casimir object
+ * @param [in] m quantum number
+ * @param [out] lmin_p minimum value of l
+ * @param [out] lmax_p maximum value of l
+ * @retval X
+ */
 int casimir_estimate_lminmax(casimir_t *self, int m, size_t *lmin_p, size_t *lmax_p)
 {
     const size_t dim = self->ldim;
@@ -940,7 +946,7 @@ void casimir_logdetD0(casimir_t *self, int m, double *logdet_EE, double *logdet_
  */
 matrix_t *casimir_M(casimir_t *self, double nT, int m)
 {
-    /* main contributions comes from l1≈l2≈m */
+    /* main contributions comes from l1≈l2 */
     size_t lmin,lmax,ldim = self->ldim;
     casimir_estimate_lminmax(self, m, &lmin, &lmax);
 
