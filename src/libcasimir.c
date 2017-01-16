@@ -335,7 +335,6 @@ casimir_t *casimir_init(double LbyR)
 
     casimir_t *self = xmalloc(sizeof(casimir_t));
 
-    self->RbyScriptL = 1./(1.+LbyR);
     self->LbyR       = LbyR;
 
     self->ldim = ceil(MAX(CASIMIR_MINIMUM_LMAX, CASIMIR_FACTOR_LMAX/LbyR));
@@ -630,7 +629,7 @@ void casimir_lnab0(int l, double *a0, sign_t *sign_a0, double *b0, sign_t *sign_
 void casimir_lnab_perf(casimir_t *self, double nT, int l, double *lna, double *lnb, sign_t *sign_a, sign_t *sign_b)
 {
     double lnKlp,lnKlm,lnIlm,lnIlp;
-    const double chi = nT*self->RbyScriptL;
+    const double chi = nT/(1+self->LbyR); /* xi*RbyScriptL */
 
     /* we could do both calculations together. but it doesn't cost much time -
      * so why bother?
@@ -820,7 +819,7 @@ int casimir_estimate_lminmax(casimir_t *self, int m, size_t *lmin_p, size_t *lma
 void casimir_M0(casimir_t *self, int m, matrix_t **EE, matrix_t **MM)
 {
     /* y = log(R/(R+L)/2) */
-    const double y = log(self->RbyScriptL/2);
+    const double y = -M_LOG2-log1p(self->LbyR);
 
     /* main contributions comes from l1≈l2≈m */
     size_t lmin,lmax,ldim = self->ldim;
