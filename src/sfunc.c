@@ -218,22 +218,6 @@ void bessel_lnInuKnu(int nu, const double x, double *lnInu_p, double *lnKnu_p)
     }
 }
 
-
-double bessel_lnKnu(const int nu, const double x)
-{
-    double Knu;
-    bessel_lnInuKnu(nu, x, NULL, &Knu);
-    return Knu;
-}
-
-
-double bessel_lnInu(const int nu, const double x)
-{
-    double Inu;
-    bessel_lnInuKnu(nu, x, &Inu, NULL);
-    return Inu;
-}
-
 /*@}*/
 
 /**
