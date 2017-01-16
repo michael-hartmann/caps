@@ -14,7 +14,11 @@ cdef extern from "libcasimir.h":
     ctypedef struct casimir_t:
         double LbyR
         double threshold
+        double tolerance
         int ldim
+
+    ctypedef enum polarization_t:
+         TE, TM
 
     casimir_t *casimir_init(double LbyR)
     void casimir_free(casimir_t *self)
@@ -46,6 +50,21 @@ cdef extern from "libcasimir.h":
 
     void casimir_logdetD0(casimir_t *self, int m, double *EE, double *MM);
     double casimir_logdetD(casimir_t *self, double nT, int m);
+
+
+cdef extern from "integration.h":
+    ctypedef struct integration_t
+
+    integration_t *casimir_integrate_init(casimir_t *self, double xi, int m, double epsrel);
+    void casimir_integrate_free(integration_t *integration);
+
+    double casimir_integrate_I(integration_t *self, int l1, int l2, polarization_t p, sign_t *sign);
+    double casimir_integrate_K(integration_t *self, int nu, polarization_t p, sign_t *sign);
+
+    double casimir_integrate_A(integration_t *self, int l1, int l2, polarization_t p, sign_t *sign);
+    double casimir_integrate_B(integration_t *self, int l1, int l2, polarization_t p, sign_t *sign);
+    double casimir_integrate_C(integration_t *self, int l1, int l2, polarization_t p, sign_t *sign);
+    double casimir_integrate_D(integration_t *self, int l1, int l2, polarization_t p, sign_t *sign);
 
 
 cdef extern from "sfunc.h":
@@ -123,10 +142,10 @@ cdef class Casimir:
     cpdef args
     cpdef epsilonm1
 
-    def __init__(self, LbyR, verbose=False, debug=False, ldim=None, tolerance=None, detalg="LU"):
+    def __init__(Casimir self, double LbyR, verbose=False, debug=False, ldim=None, tolerance=None, detalg="LU"):
         """Initialize Casimir object
 
-        Required arguments:
+        Required argument:
             LbyR: aspect ration L/R, LbyR > 0
 
         Optional arguments:
@@ -138,6 +157,7 @@ cdef class Casimir:
             verbose:   flag, print some addition information
         """
         if LbyR <= 0:
+            self.casimir = NULL
             raise ValueError("invalid value for LbyR")
 
         self.casimir = casimir_init(LbyR)
@@ -155,7 +175,8 @@ cdef class Casimir:
         self.set_verbose(verbose)
 
     def __dealloc__(self):
-        casimir_free(self.casimir)
+        if self.casimir != NULL:
+            casimir_free(self.casimir)
 
     def get_debug(self):
         return casimir_get_debug(self.casimir)
@@ -181,11 +202,11 @@ cdef class Casimir:
         return casimir_get_detalg(self.casimir)
 
     def set_detalg(self, detalg):
-        if detalg == "LU":
+        if detalg.upper() == "LU":
             casimir_set_detalg(self.casimir, DETALG_LU)
-        elif detalg == "QR":
+        elif detalg.upper() == "QR":
             casimir_set_detalg(self.casimir, DETALG_QR)
-        elif detalg == "EIG":
+        elif detalg.upper() == "EIG":
             casimir_set_detalg(self.casimir, DETALG_EIG)
         else:
             raise ValueError("invalid value for detalg")
@@ -272,6 +293,68 @@ cdef class Casimir:
     def logdetD(Casimir self, double nT, int m):
         """Calculate determinant of scattering matrix"""
         return casimir_logdetD(self.casimir, nT, m)
+
+    def get_integration(Casimir self, double xi, int m):
+        return Integration(self, xi, m, epsrel=self.get_tolerance())
+
+cdef polarization_t __polarization(p):
+    if p.upper() == "TE":
+        return TE
+    else:
+        return TM
+
+cdef class Integration:
+    cdef double xi,epsrel
+    cdef int m
+    cdef integration_t *integration
+
+    def __init__(Integration self, Casimir casimir, xi, m, epsrel=1e-8):
+        self.xi = xi
+        self.m  = m
+        self.epsrel = epsrel
+        self.integration = casimir_integrate_init(casimir.casimir, xi, m, epsrel)
+        if self.integration == NULL:
+            raise RuntimeError("casimir_integrate_init returned NULL.")
+
+    def __dealloc__(Integration self):
+         if self.integration != NULL:
+             casimir_integrate_free(self.integration)
+
+    def __repr__(Integration self):
+        s  = "xi     = %g\n" % self.xi
+        s += "m      = %d\n" % self.m
+        s += "epsrel = %g" % self.epsrel
+        return s
+
+    def I(Integration self, int l1, int l2, p):
+        cdef sign_t sign
+        v = casimir_integrate_I(self.integration, l1, l2, __polarization(p), &sign)
+        return v,sign
+
+    def K(Integration self, int nu, p):
+        cdef sign_t sign
+        v = casimir_integrate_K(self.integration, nu, __polarization(p), &sign)
+        return v,sign
+
+    def A(Integration self, int l1, int l2, p):
+        cdef sign_t sign
+        v = casimir_integrate_A(self.integration, l1, l2, __polarization(p), &sign)
+        return v,sign
+
+    def B(Integration self, int l1, int l2, p):
+        cdef sign_t sign
+        v = casimir_integrate_B(self.integration, l1, l2, __polarization(p), &sign)
+        return v,sign
+
+    def C(Integration self, int l1, int l2, p):
+        cdef sign_t sign
+        v = casimir_integrate_C(self.integration, l1, l2, __polarization(p), &sign)
+        return v,sign
+
+    def D(Integration self, int l1, int l2, p):
+        cdef sign_t sign
+        v = casimir_integrate_D(self.integration, l1, l2, __polarization(p), &sign)
+        return v,sign
 
 
 cdef double __epsilonm1(double xi, void *userdata):
