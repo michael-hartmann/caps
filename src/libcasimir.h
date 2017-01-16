@@ -36,7 +36,6 @@ typedef enum { TE, TM } polarization_t;
 #endif
 
 /* default values */
-#define CASIMIR_PRECISION 1e-12 /**< default precision */
 #define CASIMIR_MINIMUM_LMAX 20 /**< minimum value for lmax */
 #define CASIMIR_FACTOR_LMAX 5   /**< by default: lmax=ceil(5/LbyR) */
 #define CASIMIR_THRESHOLD 1e-16 /**< default value of threshold */
@@ -72,7 +71,6 @@ typedef struct
      */
      /*@{*/
     int ldim;         /**< truncation value for vector space \f$\ell_\mathrm{max}\f$ */
-    double precision; /**< precision \f$\epsilon_p\f$ */
     double threshold; /**< threshold for matrix elements */
     double tolerance; /**< tolerance for integration */
     detalg_t detalg;  /**< algorithm to calculate determinant */
@@ -113,9 +111,6 @@ int casimir_set_ldim(casimir_t *self, int ldim);
 
 detalg_t casimir_get_detalg(casimir_t *self);
 int casimir_set_detalg(casimir_t *self, detalg_t detalg);
-
-double casimir_get_precision(casimir_t *self);
-int    casimir_set_precision(casimir_t *self, double precision);
 
 double casimir_get_threshold(casimir_t *self);
 int    casimir_set_threshold(casimir_t *self, double threshold);
