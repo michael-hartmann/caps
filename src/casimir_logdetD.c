@@ -33,8 +33,8 @@ static void usage(FILE *stream)
 "       Set value of relaxation frequency gamma of Drude metals in units of\n"
 "       c/(L+R). If omitted, gamma = 0.\n"
 "\n"
-"    -L, --lmax LMAX\n"
-"        Set lmax to LMAX. When -L is used, -l will be ignored.\n"
+"    -L, --ldim LDIM\n"
+"        Set ldim to LDIM. When -L is used, -l will be ignored.\n"
 "\n"
 "    -b, --buffering\n"
 "        Enable buffering. By default buffering for stderr and stdout is\n"
@@ -61,7 +61,7 @@ int main(int argc, char *argv[])
     double gamma_ = 0, omegap = INFINITY;
 
     /* numerical parameters */
-    int lmax = 0;
+    int ldim = 0;
 
     /* flags */
     bool debug = false, buffering = false;
@@ -75,7 +75,7 @@ int main(int argc, char *argv[])
 
             { "LbyR",      required_argument, 0, 'x' },
             { "nT",        required_argument, 0, 'T' },
-            { "lmax",      required_argument, 0, 'L' },
+            { "ldim",      required_argument, 0, 'L' },
             { "lscale",    required_argument, 0, 'l' },
             { "omegap",    required_argument, 0, 'w' },
             { "gamma",     required_argument, 0, 'g' },
@@ -110,7 +110,7 @@ int main(int argc, char *argv[])
                 gamma_ = atof(optarg);
                 break;
             case 'L':
-                lmax = atoi(optarg);
+                ldim = atoi(optarg);
                 break;
             case 'm':
                 m = atoi(optarg);
@@ -174,8 +174,8 @@ int main(int argc, char *argv[])
     casimir_t *casimir;
     casimir = casimir_init(LbyR);
 
-    if(lmax)
-        casimir_set_lmax(casimir, lmax);
+    if(ldim)
+        casimir_set_ldim(casimir, ldim);
 
     /* XXX
     if(gamma_ >= 0 && isfinite(omegap))
@@ -191,8 +191,8 @@ int main(int argc, char *argv[])
     {
         double logdet = casimir_logdetD(casimir, nT, m);
 
-        printf("# L/R, ξ*(L+R)/c, ωp*(L+R)/c, γ*(L+R)/c, m, logdet(Id-M), lmax, time\n");
-        printf("%g, %g, %g, %g, %d, %.16g, %d, %g\n", LbyR, nT, omegap, gamma_, m, logdet, casimir_get_lmax(casimir), now()-start_time);
+        printf("# L/R, ξ*(L+R)/c, ωp*(L+R)/c, γ*(L+R)/c, m, logdet(Id-M), ldim, time\n");
+        printf("%g, %g, %g, %g, %d, %.16g, %d, %g\n", LbyR, nT, omegap, gamma_, m, logdet, casimir_get_ldim(casimir), now()-start_time);
     }
     else /* nT == 0 */
     {
@@ -214,7 +214,7 @@ int main(int argc, char *argv[])
         matrix_free(MM);
 
         printf("# L/R, ξ*(L+R)/c, m, logdet(Id-EE), -trace(EE), logdet(Id-MM), -trace(MM), lmax, time\n");
-        printf("%g, 0, %d, %.16g, %.16g, %.16g, %.16g, %d, %g\n", LbyR, m, logdet_EE, -trace_EE, logdet_MM, -trace_MM, casimir_get_lmax(casimir), now()-start_time);
+        printf("%g, 0, %d, %.16g, %.16g, %.16g, %.16g, %d, %g\n", LbyR, m, logdet_EE, -trace_EE, logdet_MM, -trace_MM, casimir_get_ldim(casimir), now()-start_time);
     }
 
     casimir_free(casimir);
