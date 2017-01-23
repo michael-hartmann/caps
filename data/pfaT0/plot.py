@@ -68,7 +68,7 @@ if __name__ == "__main__":
         # plot F/F_PFA and Bimonte
         g = graph.graphxy(
             width = 10,
-            x = graph.axis.log(title=r"$x=L/R$", max=0.2, min=0.002),
+            x = graph.axis.log(title=r"$x=L/R$", max=0.2, min=0.001),
             y = graph.axis.lin(title=r"$\mathcal{F}/\mathcal{F}_\mathrm{PFA}(T=0)$", min=0.8),
             key=graph.key.key(pos="tr", dist=0.1)
         )
@@ -77,7 +77,7 @@ if __name__ == "__main__":
             width = 4,
             xpos = 1.7,
             ypos = 1,
-            x = graph.axis.lin(max=0.008, min=0.002),
+            x = graph.axis.lin(max=0.008, min=0.001),
             y = graph.axis.lin(max=0.997, min=0.9875)
         ))
 
@@ -105,7 +105,7 @@ if __name__ == "__main__":
         g = graph.graphxy(
             width = 10,
             key   = graph.key.key(pos="bl"),
-            x     = graph.axis.log(title=r"$x=L/R$", max=0.02, min=0.0019),
+            x     = graph.axis.log(title=r"$x=L/R$", max=0.02, min=0.0009),
             y     = graph.axis.lin(min=0.9998, max=1.0003, title=r"$\frac{\mathcal{F}(T=0)}{\mathcal{F}_\mathrm{PFA}(T=0)}/\left(1+\theta_1 x + \theta_2 x^2 \log x\right)$"),
         )
 
