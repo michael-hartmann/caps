@@ -4,7 +4,7 @@
 #include <pthread.h>
 
 typedef struct {
-    double LbyR, precision;
+    double LbyR, threshold;
     int ldim, m;
     double value, time, logdet_EE, logdet_MM;
 } param_t;
