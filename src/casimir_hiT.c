@@ -17,11 +17,11 @@
 #define LSCALE 7.0
 #define PRECISION 5e-9
 
-double sumF(double *values, int lmax)
+double sumF(double *values, int ldim)
 {
     double F = 0;
 
-    for(int i = lmax-1; i >= 0; i--)
+    for(int i = ldim-1; i >= 0; i--)
         F += values[i];
 
     return F;
@@ -29,23 +29,23 @@ double sumF(double *values, int lmax)
 
 void usage(FILE *stream, const char *name)
 {
-    fprintf(stream, "Usage: %s -x L/R [-l lscale -L lmax -p precision]\n\n", name);
+    fprintf(stream, "Usage: %s -x L/R [-l lscale -L ldim -p precision]\n\n", name);
     fprintf(stream, "Options:\n");
     fprintf(stream, "\t-x L/R:    ratio of L and R, L/R > 0\n");
-    fprintf(stream, "\t-L lmax:   set lmax\n");
-    fprintf(stream, "\t-l lscale: lmax = lscale*R/L (ignored if -L is used), default: %g\n", LSCALE);
+    fprintf(stream, "\t-L ldim:   set ldim\n");
+    fprintf(stream, "\t-l lscale: ldim = lscale*R/L (ignored if -L is used), default: %g\n", LSCALE);
     fprintf(stream, "\t-p prec:   precision, default: %g\n", PRECISION);
     fprintf(stream, "\t-c cores:  cores used for computation, default: 1\n");
 }
 
-pthread_t *start_thread(double LbyR, int m, int lmax, double precision)
+pthread_t *start_thread(double LbyR, int m, int ldim, double precision)
 {
     pthread_t *thread = xmalloc(sizeof(pthread_t));
     param_t *p        = xmalloc(sizeof(param_t));
 
     p->LbyR      = LbyR;
     p->precision = precision;
-    p->lmax      = lmax;
+    p->ldim      = ldim;
     p->m         = m;
     p->value     = -1;
     p->time      = -1;
@@ -65,11 +65,11 @@ void *logdetD0(void *p)
     double LbyR      = params->LbyR;
     double precision = params->precision;
     int m            = params->m;
-    int lmax         = params->lmax;
+    int ldim         = params->ldim;
 
-    casimir = casimir_init(LbyR, 0.1);
-    casimir_set_precision(casimir, precision);
-    casimir_set_lmax(casimir, lmax);
+    casimir = casimir_init(LbyR);
+    //casimir_set_precision(casimir, precision);
+    casimir_set_ldim(casimir, ldim);
 
     casimir_logdetD0(casimir, m, &logdet_EE, &logdet_MM);
     casimir_free(casimir);
@@ -96,7 +96,7 @@ int main(int argc, char *argv[])
 {
     double precision = PRECISION;
     double lscale = LSCALE;
-    int lmax = -1;
+    int ldim = -1;
     int cores = 1;
     double start_time = now();
     double LbyR = -1;
@@ -109,7 +109,7 @@ int main(int argc, char *argv[])
         struct option long_options[] = {
             { "help",      no_argument,       0, 'h' },
             { "LbyR",      required_argument, 0, 'x' },
-            { "lmax",      required_argument, 0, 'L' },
+            { "ldim",      required_argument, 0, 'L' },
             { "lscale",    required_argument, 0, 'l' },
             { "precision", required_argument, 0, 'p' },
             { 0, 0, 0, 0 }
@@ -134,7 +134,7 @@ int main(int argc, char *argv[])
                 LbyR = atof(optarg);
                 break;
             case 'L':
-                lmax = atoi(optarg);
+                ldim = atoi(optarg);
                 break;
             case 'l':
                 lscale = atof(optarg);
@@ -176,8 +176,8 @@ int main(int argc, char *argv[])
         usage(stderr, argv[0]);
         exit(1);
     }
-    if(lmax <= 0)
-        lmax = lscale/LbyR;
+    if(ldim <= 0)
+        ldim = lscale/LbyR;
 
     // disable buffering
     {
@@ -187,12 +187,12 @@ int main(int argc, char *argv[])
         setvbuf(stderr, NULL, _IONBF, 0);
     }
 
-    fprintf(stderr, "# L/R=%g, precision=%g, lmax=%d, cores=%d\n", LbyR, precision, lmax, cores);
+    fprintf(stderr, "# L/R=%g, precision=%g, ldim=%d, cores=%d\n", LbyR, precision, ldim, cores);
 
-    values = (double *)xmalloc(lmax*sizeof(double));
-    EE     = (double *)xmalloc(lmax*sizeof(double));
+    values = (double *)xmalloc(ldim*sizeof(double));
+    EE     = (double *)xmalloc(ldim*sizeof(double));
 
-    for(int i = 0; i < lmax; i++)
+    for(int i = 0; i < ldim; i++)
     {
         values[i] = 0;
         EE[i]     = 0;
@@ -203,7 +203,7 @@ int main(int argc, char *argv[])
         threads[i] = NULL;
 
     int m = 0;
-    while(m < lmax)
+    while(m < ldim)
     {
         int bye = 0;
         param_t *r;
@@ -212,13 +212,13 @@ int main(int argc, char *argv[])
         for(int i = 0; i < cores; i++)
         {
             if(threads[i] == NULL)
-                threads[i] = start_thread(LbyR, m++, lmax, precision);
+                threads[i] = start_thread(LbyR, m++, ldim, precision);
             else if(pthread_tryjoin_np(*threads[i], (void *)&r) == 0)
             {
                 values[r->m] = r->value;
                 EE[r->m]     = r->logdet_EE;
                 fprintf(stderr, "# m=%d, value=%.15g, logdet_EE=%.15g, logdet_MM=%.15g, time=%g\n", r->m, r->value, r->logdet_EE, r->logdet_MM, r->time);
-                if(r->value/sumF(values, lmax) < precision)
+                if(r->value/sumF(values, ldim) < precision)
                     bye = 1;
                 xfree(r);
                 threads[i] = NULL;
@@ -249,7 +249,7 @@ int main(int argc, char *argv[])
     xfree(threads);
 
     printf("# L/R, value_perf, value_Drude, time\n");
-    printf("%.15g, %.15g, %.15g, %.15g\n", LbyR, sumF(values, lmax), sumF(EE, lmax), now()-start_time);
+    printf("%.15g, %.15g, %.15g, %.15g\n", LbyR, sumF(values, ldim), sumF(EE, ldim), now()-start_time);
 
     xfree(values);
     xfree(EE);
