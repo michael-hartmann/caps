@@ -105,7 +105,7 @@ if __name__ == "__main__":
         g = graph.graphxy(
             width = 10,
             key   = graph.key.key(pos="bl"),
-            x     = graph.axis.log(title=r"$x=L/R$", max=0.02, min=0.0009),
+            x     = graph.axis.log(title=r"$x=L/R$", max=0.02, min=0.0007),
             y     = graph.axis.lin(min=0.9998, max=1.0003, title=r"$\frac{\mathcal{F}(T=0)}{\mathcal{F}_\mathrm{PFA}(T=0)}/\left(1+\theta_1 x + \theta_2 x^2 \log x\right)$"),
         )
 
