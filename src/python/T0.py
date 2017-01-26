@@ -1,122 +1,93 @@
 import numpy as np
-import libcasimir
-from multiprocessing import Pool
-from multiprocessing.context import TimeoutError
-from time import sleep
-from math import fsum
+from scipy.integrate import quad
+from argparse import ArgumentParser
+from libcasimir import Casimir
+from math import fsum,ceil
+from sys import stderr
 
-def logdetD(LbyR,xi,m,lmax):
-    """Calculate log(det(1-M))"""
-    casimir = libcasimir.Casimir(LbyR,xi,lmax=lmax)
-    return casimir.logdetD(1,m)
+def integrand(xi, LbyR, ldim, threshold=None, precision=1e-10):
+    terms = []
+    m = 0
+    while True:
+        casimir = Casimir(LbyR, ldim=ldim)
+        if threshold != None:
+            casimir.set_threshold(threshold)
+        logdetD_m = casimir.logdetD(xi, m)
+        del casimir
 
-class Queue:
-    def __init__(self,LbyR,lmax,processes=4):
-        self.LbyR = LbyR
-        self.lmax = lmax
-        self.queue = {}
-        self.pool = Pool(processes=processes)
+        terms.append(logdetD_m)
+        if m == 0 and terms[m] == 0:
+            break
+        elif abs(terms[m]/terms[0]) < precision:
+            break
+        m = m+1
 
-    def submit(self,xi,m):
-        LbyR, lmax = self.LbyR, self.lmax
-        self.queue[(xi,m)] = self.pool.apply_async(logdetD, (LbyR,xi,m,lmax))
+    terms[0] = terms[0]/2
+    terms.sort()
+    value = fsum(terms)
 
-    def join(self):
-        d = []
-        for key in list(self.queue.keys()):
-            try:
-                v = self.queue[key].get(False)
-                del self.queue[key]
-                xi,m = key
-                d.append((xi,m,v))
-            except TimeoutError:
-                pass
-
-        return d
-
-    def __len__(self):
-        return len(self.queue)
-
-
-def accurate(l, eps):
-    """Determine if we have to calculate more terms for higher values of m"""
-    l0 = l[0]
-    
-    if l0 > 0:
-        return False
-
-    if l0 == 0:
-        return True
-
-    for j in range(1,len(l)):
-        lj = l[j]
-        if lj > 0:
-            return False
-        if abs(lj/l0) < eps:
-            return True
-
-    return True
+    print("# xi*(L+R)/c=%.15g, logdetD(xi)=%.15g" % (xi, value))
+    return value
 
 
 if __name__ == "__main__":
-    prec = 1e-12
-    LbyR = 0.1
-    processes = 6
-    deg = 80
-    lmax = 80
-    idle = 2 # in ms
+    parser = ArgumentParser(description="Calculate free Casimir energy for T=0")
+    parser.add_argument("-x", "--LbyR", action="store", dest="LbyR", type=float,   help="aspect ratio x=L/R")
+    parser.add_argument("-L", "--ldim", action="store", dest="ldim", type=int)
 
-    alpha = 2*LbyR/(1+LbyR);
-    xk,wk = np.polynomial.laguerre.laggauss(deg)
+    parser.add_argument("--eta",    action="store", dest="eta",  type=float, default=6)
+    parser.add_argument("--lmin",   action="store", dest="lmin", type=float, default=30)
+    parser.add_argument("--epsrel", action="store", dest="epsrel", type=float, default=1e-6)
 
-    d = {}
-    for i,x in enumerate(xk):
-        d[x/alpha] = i
+    parser.add_argument("-p", "--precision",  action="store", dest="precision", type=float, default=1e-10)
+    parser.add_argument("-t", "--threshold" , action="store", dest="threshold", type=float)
 
-    queue = Queue(LbyR, lmax)
+    args = parser.parse_args()
 
-    # initialize results
-    M = np.empty((deg,lmax))
-    M.fill(1)
+    LbyR = args.LbyR
+    if LbyR <= 0:
+        print("-x, --LbyR: argument must be positive")
+        exit(1)
 
-    for m in range(lmax):
-        stop = True
+    if args.ldim != None:
+        if args.ldim < 1:
+            print("-L, --ldim: argument must be positive integer", file=stderr)
+            exit(1)
+        ldim = args.ldim
+    else:
+        if args.lmin < 1:
+            print("--lmin: argument must be a positive integer", file=stderr)
+            exit(1)
+        if args.eta <= 0:
+            print("--eta: argument must be positive", file=stderr)
+            exit(1)
+        ldim = int(ceil(max(args.lmin, args.eta/LbyR)))
 
-        for j,xj in enumerate(xk):
-            if not accurate(M[j,:],prec):
-                stop = False
-                xi = xj/alpha
-                queue.submit(xi,m)
+    if args.precision != None:
+        if args.precision <= 0:
+            print("-p, --precision: argument must be positive")
+            exit(1)
+    precision = args.precision
 
-            while len(queue) >= processes:
-                for xi_,m_,v in queue.join():
-                    M[d[xi_],m_] = v
-                sleep(idle/1000)
+    if args.epsrel < 0:
+        print("--epsrel: argument must be positive")
+        exit(1)
+    epsrel = args.epsrel
 
-        if stop:
-            break
+    if args.threshold != None:
+        if threshold <= 0:
+            print("-t, --threshold: argument must be positive")
+            exit(1)
+    threshold = args.threshold
 
-    # get all remaining processes
-    while len(queue) > processes:
-        for xi_,m_,v in queue.join():
-            M[d[xi_],m_] = v
-        sleep(idle/1000)
-
-
-    # set all matrix 0 which are > 0
-    mask = np.where(M > 0)
-    M[mask] = 0
-
-    # m=0 term factor 1/2
-    M[:,0] /= 2
-
-    terms_integral = []
-    for i,xi in enumerate(xk):
-        value = fsum(M[i,:])
-        terms_integral.append( wk[i]*np.exp(xk[i])*value )
-        print("# k=%d, x=%g, logdetD(xi=x/alpha)=%.15g" % (i, xi, value))
-
-    integral = fsum(terms_integral)/alpha/np.pi
+    print("#", args)
     print("#")
-    print("# L/R, lmax, order, alpha, F(T=0)*(L+R)/(ħc)")
-    print("%g, %d, %d, %.15g, %.15g" % (LbyR, lmax, deg, alpha, integral))
+
+    integral,abserr,infodict = quad(integrand, 0, np.inf, epsabs=0, epsrel=epsrel, full_output=True, args=(LbyR,ldim,threshold,precision))
+    F = integral/np.pi
+
+    print("#")
+    print("# neval = %d" % infodict["neval"])
+    print("#")
+    print("# L/R, ldim, F(T=0)*(L+R)/(hbar*c), error (absolute), error (relative)")
+    print("%.15g, %d, %.15g, %g, %g" % (LbyR, ldim, F, abserr/np.pi, abserr/integral))
