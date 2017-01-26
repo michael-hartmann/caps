@@ -65,6 +65,9 @@ cdef extern from "libcasimir.h":
     double casimir_get_tolerance(casimir_t *self);
     int    casimir_set_tolerance(casimir_t *self, double tolerance);
 
+    double casimir_get_threshold(casimir_t *self);
+    int    casimir_set_threshold(casimir_t *self, double threshold);
+
     double casimir_lnLambda(int l1, int l2, int m)
 
     void casimir_lnab0(int l, double *a0, sign_t *sign_a0, double *b0, sign_t *sign_b0)
@@ -172,7 +175,7 @@ cdef class Casimir:
     cpdef args
     cpdef epsilonm1
 
-    def __init__(Casimir self, double LbyR, verbose=False, debug=False, ldim=None, tolerance=None, detalg="LU"):
+    def __init__(Casimir self, double LbyR, verbose=False, debug=False, ldim=None, tolerance=None, threshold=None, detalg="LU"):
         """Initialize Casimir object
 
         Required argument:
@@ -198,6 +201,8 @@ cdef class Casimir:
             self.set_ldim(ldim)
         if tolerance != None:
             self.set_tolerance(tolerance)
+        if threshold != None:
+            self.set_threshold(threshold)
         if detalg != None:
             self.set_detalg(detalg)
 
@@ -248,6 +253,14 @@ cdef class Casimir:
         if tolerance <= 0:
             raise ValueError("invalid value for tolerance")
         return casimir_set_tolerance(self.casimir, tolerance)
+
+    def get_threshold(self):
+        return casimir_get_threshold(self.casimir)
+
+    def set_threshold(self, double threshold):
+        if threshold <= 0:
+            raise ValueError("invalid value for threshold")
+        return casimir_set_threshold(self.casimir, threshold)
 
     def set_epsilonm1(Casimir self, epsilonm1, args):
         """Set callback function epsilonm1
