@@ -17,18 +17,20 @@
 
 int main(int argc, char *argv[])
 {
-    //test_Lambda();
+    test_Lambda();
 
-    //test_fresnel();
-    //test_Plm();
-    //test_doublefact();
+    test_fresnel();
+    test_doublefact();
 
-    //test_besselI();
-    //test_besselK();
-    //test_mie();
+    test_besselI();
+    test_besselK();
+
+    test_mie();
+    test_Plm();
+
     //test_mie_drude();
 
-    test_integration_perf();
+    //test_integration_perf();
     //test_integration_drude();
 
     //test_logdet_HT();
