@@ -159,6 +159,20 @@ double logadd_ms(log_t list[], const int len, sign_t *sign)
 */
 /*@{*/
 
+double bessel_lnInu(int nu, double x)
+{
+    double lnInu;
+    bessel_lnInuKnu(nu, x, &lnInu, NULL);
+    return lnInu;
+}
+
+double bessel_lnKnu(int nu, double x)
+{
+    double lnKnu;
+    bessel_lnInuKnu(nu, x, NULL, &lnKnu);
+    return lnKnu;
+}
+
 void bessel_lnInuKnu(int nu, const double x, double *lnInu_p, double *lnKnu_p)
 {
     const double logx = log(x);
