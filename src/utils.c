@@ -1,8 +1,8 @@
 /**
  * @file   utils.c
  * @author Michael Hartmann <michael.hartmann@physik.uni-augsburg.de>
- * @date   March, 2016
- * @brief  helper functions
+ * @date   January, 2017
+ * @brief  wrappers for malloc, calloc realloc, and a few more useful functions
  */
 
 #include <math.h>
