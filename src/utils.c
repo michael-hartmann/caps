@@ -94,45 +94,6 @@ double now(void)
     return tv.tv_sec + tv.tv_usec*1e-6;
 }
 
-/** @brief Find character in string
- *
- * This function counts how many times the character c in string str appears.
- *
- * @param str string
- * @param c character
- * retval how many times c is in str
- */
-int cinstr(const char *str, char c)
-{
-    int i = 0;
-    while(*str++ != '\0')
-        if(*str == c)
-            i++;
-
-    return i;
-}
-
-/** @brief Find n-th occurence of character in string
- *
- * This function returns a pointer to the n-th occurrence of the character c in
- * the string s. If the character c occures less than n times, NULL is
- * returned.
- *
- * @param str string
- * @param c character
- * @param n occurence
- * @retval NULL if c occures less than n times in str
- * @retval ptr pointer to n-th occurence of c
- */
-const char *indexn(const char *str, char c, int n)
-{
-    int i = 0;
-    while(*str++ != '\0')
-        if(*str == c && ++i == n)
-            return str;
-
-    return NULL;
-}
 
 /* swap integer a and b */
 void swap(int *a, int *b)
