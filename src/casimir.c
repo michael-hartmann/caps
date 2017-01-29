@@ -20,6 +20,45 @@
 #define DEFAULT_LFAC 5
 #define MIN_LMAX 20
 
+/** @brief Find character in string
+ *
+ * This function counts how many times the character c in string str appears.
+ *
+ * @param str string
+ * @param c character
+ * retval how many times c is in str
+ */
+static int cinstr(const char *str, char c)
+{
+    int i = 0;
+    while(*str++ != '\0')
+        if(*str == c)
+            i++;
+
+    return i;
+}
+
+/** @brief Find n-th occurence of character in string
+ *
+ * This function returns a pointer to the n-th occurrence of the character c in
+ * the string s. If the character c occures less than n times, NULL is
+ * returned.
+ *
+ * @param str string
+ * @param c character
+ * @param n occurence
+ * @retval NULL if c occures less than n times in str
+ * @retval ptr pointer to n-th occurence of c
+ */
+static const char *indexn(const char *str, char c, int n)
+{
+    int i = 0;
+    while(*str++ != '\0')
+        if(*str == c && ++i == n)
+            return str;
+
+    return NULL;
+}
 
 /* print usage */
 void usage(FILE *stream)
