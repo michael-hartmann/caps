@@ -8,6 +8,14 @@
 #include "sfunc.h"
 #include "utils.h"
 
+static double epsilonm1(double xi, void *userdata)
+{
+    double omegap_ = ((double *)userdata)[0];
+    double gamma_  = ((double *)userdata)[1];
+
+    return pow_2(omegap_)/(xi*(xi+gamma_));
+}
+
 /* print usage */
 static void usage(FILE *stream)
 {
@@ -58,6 +66,7 @@ int main(int argc, char *argv[])
     int m = -1;
 
     /* material properties, be default: perfect reflectors */
+    double userdata[2];
     double gamma_ = 0, omegap = INFINITY;
 
     /* numerical parameters */
@@ -177,10 +186,12 @@ int main(int argc, char *argv[])
     if(ldim)
         casimir_set_ldim(casimir, ldim);
 
-    /* XXX
     if(gamma_ >= 0 && isfinite(omegap))
-        casimir_set_drude(casimir, omegap, gamma_, omegap, gamma_);
-    */
+    {
+        userdata[0] = omegap;
+        userdata[1] = gamma_;
+        casimir_set_epsilonm1(casimir, epsilonm1, userdata);
+    }
 
     casimir_set_debug(casimir, debug);
 
