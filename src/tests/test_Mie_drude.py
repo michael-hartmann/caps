@@ -7,7 +7,7 @@ from mpmath import *
 from numpy import linspace
 from sys import stderr
 
-mp.dps = 140
+mp.dps = 40
 
 def prettyprint(x, length=17):
     """Return mpf float in a nice format"""
@@ -53,7 +53,6 @@ def lnab(nT,l,LbyR,omegap,gamma):
 
 if __name__ == "__main__":
     LbyR = 1
-    T = 1e-4
 
     print("/* This code was created by test_Mie_drude.py */")
     print("#include \"sfunc.h\"")
@@ -65,36 +64,43 @@ if __name__ == "__main__":
     print("int test_mie_drude(void)")
     print("{")
     print("    double lna, lnb;")
-    print("    double omegap, gamma_;");
+    print("    double userdata[2];");
     print("    sign_t sign_a, sign_b;")
-    print("    casimir_t casimir;")
+    print("    casimir_t *casimir;")
     print("    unittest_t test;")
     print()
     print("    unittest_init(&test, \"Mie (Drude)\", \"Test Mie coefficients for various parameters\");")
+    print()
+    print("    casimir = casimir_init(%g);" % LbyR)
 
 
     for omegap,gamma in ((500,1), (100,1), (50,1), (1,1)):
-        print("    omegap = %g;" % omegap)
-        print("    gamma_ = %g;" % gamma)
-        print("    casimir_init(&casimir, %g, %g);" % (LbyR, T))
-        print("    casimir_set_drude(&casimir, omegap, gamma_, omegap, gamma_);")
+        print("    userdata[0] = %g; userdata[1] = %g;" % (omegap,gamma))
+        print("    casimir_set_epsilonm1(casimir, casimir_epsilonm1_drude, userdata);")
         print()
-        for n in (1, 10, 100, 1000, 500, 10000, 20000, 100000, 1000000, 10000000, 100000000, 1000000000):
+        for nT in (1e-4, 1e-3, 1e-2, 0.1, 0.5, 1, 2, 10, 100, 1000, 10000, 100000):
             for l in (1, 5, 10, 100, 500, 1000, 5000):
                 try:
-                    lna, sign_a, lnb, sign_b = lnab(mpf(n*T),l,mpf(LbyR),mpf(omegap),mpf(gamma))
+                    lna, sign_a, lnb, sign_b = lnab(mpf(nT),l,mpf(LbyR),mpf(omegap),mpf(gamma))
 
-                    print("    casimir_lnab(&casimir, %d, %d, &lna, &lnb, &sign_a, &sign_b); // nT=%g, l=%d" % (n,l, n*T, l))
+                    print("    casimir_lnab(casimir, %g, %d, &lna, &lnb, &sign_a, &sign_b);" % (nT,l))
                     print("    AssertEqual(&test, sign_a, %d);" % sign_a)
                     print("    AssertEqual(&test, sign_b, %d);" % sign_b)
                     print("    AssertAlmostEqual(&test, lna, %s);" % prettyprint(lna))
                     print("    AssertAlmostEqual(&test, lnb, %s);" % prettyprint(lnb))
                     print()
                 except (ValueError, libmp.libhyper.NoConvergence):
-                    print("Couldn't calculate omegap=%g, gamma=%g, nT=%g, l=%d" %(omegap,gamma,n*T,l), file=stderr)
+                    print("/*")
+                    print("    casimir_lnab(casimir, %g, %d, &lna, &lnb, &sign_a, &sign_b);" % (nT,l))
+                    print("    AssertEqual(&test, sign_a, %d);" % sign_a)
+                    print("    AssertEqual(&test, sign_b, %d);" % sign_b)
+                    print("    AssertAlmostEqual(&test, lna, %s);" % prettyprint(lna))
+                    print("    AssertAlmostEqual(&test, lnb, %s);" % prettyprint(lnb))
+                    print("*/")
+                    print()
         print()
 
-    print("    casimir_free(&casimir);")
+    print("    casimir_free(casimir);")
     print()
     print("    return test_results(&test, stderr);")
     print("}")
