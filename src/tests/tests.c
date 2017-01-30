@@ -26,9 +26,10 @@ int main(int argc, char *argv[])
     test_besselK();
 
     test_mie();
+    test_mie_drude();
+
     test_Plm();
 
-    //test_mie_drude();
 
     //test_integration_perf();
     //test_integration_drude();
