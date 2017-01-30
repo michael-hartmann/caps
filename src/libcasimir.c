@@ -740,16 +740,26 @@ void casimir_lnab(casimir_t *self, double nT, int l, double *lna, double *lnb, s
     /*
     printf("n =%.18g\n",     exp(ln_n));
     printf("n2=%.18g\n",     exp(2*ln_n));
-    printf("lnIl = %.18g\n", exp(lnIl));
     printf("chi=%.18g\n",    chi);
 
-    printf("sla=%.18g\n", sign_sla*exp(ln_sla));
-    printf("slb=%.18g\n", sign_slb*exp(ln_slb));
-    printf("slc=%.18g\n", sign_slc*exp(ln_slc));
-    printf("sld=%.18g\n", sign_sld*exp(ln_sld));
+    printf("Inup = %.18g\n", lnIlp);
+    printf("Knup = %.18g\n", lnKlp);
+    printf("Inum = %.18g\n", lnIlm);
+    printf("Knum = %.18g\n", lnKlm);
+    printf("ln_sla=%.18g (%d)\n", ln_sla, sign_sla);
+    printf("ln_slb=%.18g (%d)\n", ln_slb, sign_slb);
+    printf("ln_slc=%.18g (%d)\n", ln_slc, sign_slc);
+    printf("ln_sld=%.18g (%d)\n", ln_sld, sign_sld);
     */
 
     sign_t sign_a_num, sign_a_denom, sign_b_num, sign_b_denom;
+
+    //printf("%.18g\n", logadd_s(2*ln_n+ln_sla, +sign_sla, ln_slb, -sign_slb, &sign_a_num));
+
+    /* XXX TODO XXX
+     * prevent cancellation for n~1
+     */
+
     *lna = M_LOGPI - M_LOG2 + logadd_s(2*ln_n+ln_sla, +sign_sla, ln_slb, -sign_slb, &sign_a_num) - logadd_s(2*ln_n+ln_slc, +sign_slc, ln_sld, -sign_sld, &sign_a_denom);
     *lnb = M_LOGPI - M_LOG2 + logadd_s(       ln_sla, +sign_sla, ln_slb, -sign_slb, &sign_b_num) - logadd_s(       ln_slc, +sign_slc, ln_sld, -sign_sld, &sign_b_denom);
 
