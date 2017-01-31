@@ -159,6 +159,29 @@ double logadd_ms(log_t list[], const int len, sign_t *sign)
 */
 /*@{*/
 
+double bessel_continued_fraction(int nu, double x)
+{
+    #define an(n,nu,x) ((2*((nu)+(n))+1)/(x))
+
+    double num   = an(2,nu,x)+1/an(1,nu,x);
+    double denom = an(2,nu,x);
+    double ratio = (an(1,nu,x)*num)/denom;
+    double ratio_last = 0;
+
+    for(int l = 3; 1; l++)
+    {
+        num   = an(l,nu,x)+1/num;
+        denom = an(l,nu,x)+1/denom;
+        ratio *= num/denom;
+
+        if(ratio_last != 0 && fabs(1.-ratio/ratio_last) == 0)
+            return ratio;
+
+        ratio_last = ratio;
+    }
+    #undef an
+}
+
 double bessel_lnInu(int nu, double x)
 {
     double lnInu;
@@ -208,27 +231,8 @@ void bessel_lnInuKnu(int nu, const double x, double *lnInu_p, double *lnKnu_p)
 
     if(lnInu_p != NULL)
     {
-        #define an(n,nu,x) (2*((nu)+0.5+(n))/(x))
-
-        double num   = an(2,nu,x)+1/an(1,nu,x);
-        double denom = an(2,nu,x);
-        double ratio = (an(1,nu,x)*num)/denom;
-        double ratio_last = 0;
-
-        for(int l = 3; 1; l++)
-        {
-            num   = an(l,nu,x)+1/num;
-            denom = an(l,nu,x)+1/denom;
-            ratio *= num/denom;
-
-            if(ratio_last != 0 && fabs(1.-ratio/ratio_last) < 1e-20)
-                break;
-
-            ratio_last = ratio;
-        }
-
+        double ratio = bessel_continued_fraction(nu,x);
         *lnInu_p = -logx-lnKnu-logadd(lnKnup-lnKnu, -log(ratio));
-        #undef an
     }
 }
 

@@ -40,6 +40,7 @@ double logadd(const double a, const double b);
 double logadd_ms(log_t list[], const int len, sign_t *sign);
 double logadd_s(const double a, const sign_t sign_a, const double b, const sign_t sign_b, sign_t *sign);
 
+double bessel_continued_fraction(int nu, double x);
 double bessel_lnInu(int nu, double x);
 double bessel_lnKnu(int nu, double x);
 void bessel_lnInuKnu(int nu, const double x, double *lnInu_p, double *lnKnu_p);
