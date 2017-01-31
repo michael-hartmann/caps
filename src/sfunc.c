@@ -174,7 +174,7 @@ double bessel_continued_fraction(int nu, double x)
         denom = an(l,nu,x)+1/denom;
         ratio *= num/denom;
 
-        if(ratio_last != 0 && fabs(1.-ratio/ratio_last) == 0)
+        if(ratio_last != 0 && ratio/ratio_last == 1)
             return ratio;
 
         ratio_last = ratio;
