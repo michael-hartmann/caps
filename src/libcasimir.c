@@ -722,6 +722,7 @@ void casimir_lnab(casimir_t *self, double nT, int l, double *lna, double *lnb, s
      */
     const double ln_n = log1p(epsilonm1)/2;
     const double n    = exp(ln_n);
+    const double n2   = exp(log1p(epsilonm1));
 
     double lnIlp, lnKlp, lnIlm, lnKlm, lnIlp_nchi, lnKlp_nchi, lnIlm_nchi, lnKlm_nchi;
 
@@ -731,13 +732,21 @@ void casimir_lnab(casimir_t *self, double nT, int l, double *lna, double *lnb, s
     bessel_lnInuKnu(l,   n*chi, &lnIlp_nchi, &lnKlp_nchi); /* I_{l+0.5}(nχ), K_{l+0.5}(nχ) */
     bessel_lnInuKnu(l-1, n*chi, &lnIlm_nchi, &lnKlm_nchi); /* K_{l-0.5}(nχ), K_{l-0.5}(nχ) */
 
-    sign_t sign_sla, sign_slb, sign_slc, sign_sld;
-    const double ln_sla = lnIlp_nchi + logadd_s(ln_l+lnIlp,      +1,      ln_chi+lnIlm,      -1, &sign_sla);
-    const double ln_slb = lnIlp      + logadd_s(ln_l+lnIlp_nchi, +1, ln_n+ln_chi+lnIlm_nchi, -1, &sign_slb);
-    const double ln_slc = lnIlp_nchi + logadd_s(ln_l+lnKlp,      +1,      ln_chi+lnKlm,      +1, &sign_slc);
-    const double ln_sld = lnKlp      + logadd_s(ln_l+lnIlp_nchi, +1, ln_n+ln_chi+lnIlm_nchi, -1, &sign_sld);
+    double ln_A, ln_B, ln_C, ln_D;
+    sign_t sign_A, sign_B;
 
-    /*
+    if(n > 1.00001)
+        ln_B = ln_chi + logadd_s(ln_n+lnIlp+lnIlm_nchi, +1, lnIlp_nchi+lnIlm, -1, &sign_B);
+    else
+    {
+        /* avoid loss of significance by using multiplication theorem */
+        double lnIlpp;
+        bessel_lnInuKnu(l+1, chi, &lnIlpp, NULL);
+        ln_B = log(pow(n,l+0.5))+2*ln_chi+log(n-1)+log(n+1)-log(2)+logadd_s(2*lnIlp, +1, lnIlm+lnIlpp, -1, &sign_B);
+    }
+    ln_D = ln_chi + logadd(lnIlp_nchi+lnKlm, ln_n+lnKlp+lnIlm_nchi);
+
+    #if 0
     printf("n =%.18g\n",     exp(ln_n));
     printf("n2=%.18g\n",     exp(2*ln_n));
     printf("chi=%.18g\n",    chi);
@@ -750,21 +759,16 @@ void casimir_lnab(casimir_t *self, double nT, int l, double *lna, double *lnb, s
     printf("ln_slb=%.18g (%d)\n", ln_slb, sign_slb);
     printf("ln_slc=%.18g (%d)\n", ln_slc, sign_slc);
     printf("ln_sld=%.18g (%d)\n", ln_sld, sign_sld);
-    */
+    #endif
 
-    sign_t sign_a_num, sign_a_denom, sign_b_num, sign_b_denom;
+    *lnb = M_LOGPI-M_LOG2 + ln_B-ln_D;
+    *sign_b = MPOW(l+1)*sign_B;
 
-    //printf("%.18g\n", logadd_s(2*ln_n+ln_sla, +sign_sla, ln_slb, -sign_slb, &sign_a_num));
+    ln_A = log(n2-1)+lnIlp_nchi + logadd_s(ln_l+lnIlp, +1, ln_chi+lnIlm, -1, &sign_A);
+    ln_C = log(n2-1)+lnIlp_nchi + logadd(ln_chi+lnKlm, ln_l+lnKlp);
 
-    /* XXX TODO XXX
-     * prevent cancellation for n~1
-     */
-
-    *lna = M_LOGPI - M_LOG2 + logadd_s(2*ln_n+ln_sla, +sign_sla, ln_slb, -sign_slb, &sign_a_num) - logadd_s(2*ln_n+ln_slc, +sign_slc, ln_sld, -sign_sld, &sign_a_denom);
-    *lnb = M_LOGPI - M_LOG2 + logadd_s(       ln_sla, +sign_sla, ln_slb, -sign_slb, &sign_b_num) - logadd_s(       ln_slc, +sign_slc, ln_sld, -sign_sld, &sign_b_denom);
-
-    *sign_a = MPOW(l+1)*sign_a_num*sign_a_denom;
-    *sign_b = MPOW(l+1)*sign_b_num*sign_b_denom;
+    *lna = M_LOGPI-M_LOG2 + logadd_s(ln_A, sign_A, ln_B, sign_B, sign_a) - logadd(ln_C, ln_D);
+    *sign_a *= MPOW(l+1);
 }
 /*@}*/
 
