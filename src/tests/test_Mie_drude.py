@@ -79,7 +79,7 @@ if __name__ == "__main__":
         print("    casimir_set_epsilonm1(casimir, casimir_epsilonm1_drude, userdata);")
         print()
         for nT in (1e-4, 1e-3, 1e-2, 0.1, 0.5, 1, 2, 10, 100, 1000, 10000, 100000):
-            for l in (1, 5, 10, 100, 500, 1000, 5000):
+            for l in (1, 2, 3, 5, 10, 100, 500, 1000, 5000):
                 try:
                     lna, sign_a, lnb, sign_b = lnab(mpf(nT),l,mpf(LbyR),mpf(omegap),mpf(gamma))
 
