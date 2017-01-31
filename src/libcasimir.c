@@ -660,7 +660,6 @@ void casimir_lnab_perf(casimir_t *self, double nT, int l, double *lna, double *l
     *sign_a = *sign_b*sign_numerator;
 }
 
-
 /**
  * @brief Return logarithm of Mie coefficients \f$a_\ell\f$, \f$b_\ell\f$ for arbitrary metals
  *
@@ -735,30 +734,33 @@ void casimir_lnab(casimir_t *self, double nT, int l, double *lna, double *lnb, s
     double ln_A, ln_B, ln_C, ln_D;
     sign_t sign_A, sign_B;
 
-    if(n > 1.00001)
-        ln_B = ln_chi + logadd_s(ln_n+lnIlp+lnIlm_nchi, +1, lnIlp_nchi+lnIlm, -1, &sign_B);
-    else
+    if(l > 1)
     {
-        /* avoid loss of significance by using multiplication theorem */
-        double lnIlpp;
-        bessel_lnInuKnu(l+1, chi, &lnIlpp, NULL);
-        ln_B = log(pow(n,l+0.5))+2*ln_chi+log(n-1)+log(n+1)-log(2)+logadd_s(2*lnIlp, +1, lnIlm+lnIlpp, -1, &sign_B);
+        double ratio_chi  = bessel_continued_fraction(l-1,chi);
+        double ratio_nchi = bessel_continued_fraction(l-1,n*chi);
+        double c = n/ratio_chi-1/ratio_nchi;
+        ln_B = ln_chi + lnIlm+lnIlm_nchi+log(fabs(c));
+        sign_B = copysign(1,c);
     }
+    else
+        ln_B = ln_chi + lnIlm+lnIlm_nchi + logadd_s(ln_n+lnIlp-lnIlm, +1, lnIlp_nchi-lnIlm_nchi, -1, &sign_B);
+
     ln_D = ln_chi + logadd(lnIlp_nchi+lnKlm, ln_n+lnKlp+lnIlm_nchi);
 
     #if 0
     printf("n =%.18g\n",     exp(ln_n));
     printf("n2=%.18g\n",     exp(2*ln_n));
     printf("chi=%.18g\n",    chi);
+    printf("n*chi=%g\n", n*chi);
 
     printf("Inup = %.18g\n", lnIlp);
     printf("Knup = %.18g\n", lnKlp);
     printf("Inum = %.18g\n", lnIlm);
     printf("Knum = %.18g\n", lnKlm);
-    printf("ln_sla=%.18g (%d)\n", ln_sla, sign_sla);
-    printf("ln_slb=%.18g (%d)\n", ln_slb, sign_slb);
-    printf("ln_slc=%.18g (%d)\n", ln_slc, sign_slc);
-    printf("ln_sld=%.18g (%d)\n", ln_sld, sign_sld);
+    //printf("ln_A=%.18g\n", ln_A);
+    printf("ln_B=%.18g\n", ln_B);
+    //printf("ln_C=%.18g\n", ln_C);
+    printf("ln_D=%.18g\n", ln_D);
     #endif
 
     *lnb = M_LOGPI-M_LOG2 + ln_B-ln_D;
