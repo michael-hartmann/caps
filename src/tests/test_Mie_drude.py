@@ -7,7 +7,7 @@ from mpmath import *
 from numpy import linspace
 from sys import stderr
 
-mp.dps = 40
+mp.dps = 35
 
 def prettyprint(x, length=17):
     """Return mpf float in a nice format"""
@@ -74,7 +74,7 @@ if __name__ == "__main__":
     print("    casimir = casimir_init(%g);" % LbyR)
 
 
-    for omegap,gamma in ((500,1), (100,1), (50,1), (1,1)):
+    for omegap,gamma in ((50000,1),(5000,1), (500,1), (100,1), (50,1), (1,1)):
         print("    userdata[0] = %g; userdata[1] = %g;" % (omegap,gamma))
         print("    casimir_set_epsilonm1(casimir, casimir_epsilonm1_drude, userdata);")
         print()
