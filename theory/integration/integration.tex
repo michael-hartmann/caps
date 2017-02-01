@@ -1,18 +1,18 @@
-\documentclass[twocolumn,superscriptaddress,prb]{revtex4-1}
+\documentclass[superscriptaddress,prb]{revtex4-1}
 
 \usepackage[english]{babel}
 \usepackage[utf8]{inputenc}
-\usepackage{amssymb,amsmath}				%Mathe und Schriftsatz
+\usepackage{amssymb,amsmath}
 \usepackage{prettyref}
 \usepackage{bbm}
 \usepackage{txfonts}
 
 \usepackage[babel]{csquotes}
-\usepackage[hidelinks]{hyperref}  % unbedingt als letztes Paket laden
+\usepackage[hidelinks]{hyperref}
 
-% imaginary unit
 \newcommand{\imag}{i} % imaginary unit
 \newcommand{\e}{e}    % euler's number
+\newcommand{\sol}{\mathrm{c}} % speed of light
 
 % real/imaginary part
 \renewcommand{\Re}{\mathrm{Re}}
@@ -32,7 +32,7 @@
 
 \begin{document}
 
-\title{Evaluating the integrals in the plane-sphere geometry within the multipole-approach}
+\title{Numerical issues in the plane-sphere geometry within the multipole-approach}
 
 \author{Michael Hartmann}
 \affiliation{Universität Augsburg, Institut für Physik, 86135 Augsburg, Germany}
@@ -44,7 +44,7 @@ We briefly describe how to evaluate the integration over the wavevector $k$ in t
 \end{abstract}
 
 \maketitle
-\section{Introduction}
+\section{Integration}
 
 In this document we briefly describe how to evaluate the integration over $k$.
 After substitution, the problem is to calculate the integrals
@@ -77,7 +77,7 @@ The integrals \eqref{eq:A}--\eqref{eq:D} are identical to (6.11)--(6.14) in
 \cite{hartmann} after the substitution $z = x/\tau$.
 
 
-\section{Eliminating the derivatives}
+\subsection{Eliminating the derivatives}
 
 Using the recurrence relation \eqref{appendix:dPlm} we can express derivatives
 of associated Legendre polynomials as a sum of associated Legendre polynomials:
@@ -119,12 +119,12 @@ The advantage is that for a scattering matrix $\mathcal{M}^m(\xi)$ we only have
 to evaluate $\mathcal{O}(\lmax)$ instead of $\mathcal{O}(\ell_\tmax^2)$
 integrals.
 
-\section{Shape of integrand}
+\subsection{Shape of integrand}
 
 To estimate the shape and the maximum of $\mathcal{K}_{\nu,p}^m$ we assume that
 the Fresnel coefficient $r_p$ varies slowly and ignore it.
 
-\subsection{Large values}
+\subsubsection{Large values}
 For large values of $z$ we can approximate the integrand of
 $\mathcal{K}_{\nu,p}^m$ using \eqref{appendix:Plm_gg}
 \begin{equation}
@@ -140,7 +140,7 @@ the integrand at $z_\tmax$ is approximately
 k(z_\tmax) \approx \frac{(2\nu)!}{2^\nu \nu! (\nu-2m)!} \e^{-\tau z_\tmax} z_\tmax^\nu \,.
 \end{equation}
 
-\subsection{Small values}
+\subsubsection{Small values}
 For small values of $z$ we can approximate the integrand of
 $\mathcal{K}_{\nu,p}^m$ using \eqref{appendix:Plm_1}
 \begin{equation}
@@ -152,12 +152,47 @@ integrand at $z_\tmax$ is approximately
 k(z_\tmax) \approx \frac{(\nu+2m)!}{(2m)! \, (\nu-2m)!} \frac{\e^{-\tau z_\tmax}}{z^2+2z} \left(\frac{z}{2}\right)^m \,.
 \end{equation}
 
+
+\section{Mie coefficients}
+
+The Mie coefficients for complex frequencies are given by
+\begin{align}
+a_\ell(\imag\chi) &= (-1)^{\ell+1} \frac{\pi}{2} \frac{n^2 s_\ell^{(a)} - s_\ell^{(b)}}{n^2 s_\ell^{(c)} - s_\ell^{(d)}} \\
+b_\ell(\imag\chi) &= (-1)^{\ell+1} \frac{\pi}{2} \frac{s_\ell^{(a)} - s_\ell^{(b)}}{s_\ell^{(c)} - s_\ell^{(d)}}
+\end{align}
+using the abbrevations
+\begin{align}
+s_\ell^{(a)} &= I_{\ell+1/2}(n\chi) \left[\ell I_{\ell+1/2}(\chi)  -  \chi I_{\ell-1/2}(\chi) \right], \\
+s_\ell^{(b)} &= I_{\ell+1/2}(\chi)  \left[\ell I_{\ell+1/2}(n\chi) - n\chi I_{\ell-1/2}(n\chi)\right], \\
+s_\ell^{(c)} &= I_{\ell+1/2}(n\chi) \left[\ell K_{\ell+1/2}(\chi)  +  \chi K_{\ell-1/2}(\chi) \right], \\
+s_\ell^{(d)} &= K_{\ell+1/2}(\chi)  \left[\ell I_{\ell+1/2}(n\chi) - n\chi I_{\ell-1/2}(n\chi)\right] \,.
+\end{align}
+Here, $n=\sqrt{\epsilon}$ denotes the refraction index, and $\chi=\xi R/\sol$. However, it is easier to express
+the Mie coefficients as
+\begin{align}
+a_\ell(\imag\chi) &= (-1)^{\ell+1} \frac{\pi}{2} \frac{\gamma^{(a)}_\ell+\gamma^{(b)}_\ell}{\gamma^{(c)}_\ell+\gamma^{(d)}_\ell} \\
+b_\ell(\imag\chi) &= (-1)^{\ell+1} \frac{\pi}{2} \frac{\gamma^{(b)}_\ell}{\gamma^{(d)}_\ell}
+\end{align}
+with
+\begin{align}
+\gamma_\ell^{(a)} &= (n^2-1) I_{\ell+1/2}(n\chi) \left[\ell I_{\ell+1/2}(\chi) - \chi I_{\ell-1/2}(\chi)\right] \\
+\gamma_\ell^{(b)} &= \chi I_{\ell-1/2}(n\chi) I_{\ell-1/2}(\chi) \left[n\frac{I_{\ell+1/2}(\chi)}{I_{\ell-1/2}(\chi)}-\frac{I_{\ell+1/2}(n\chi)}{I_{\ell-1/2}(n\chi)}\right] \\
+\gamma_\ell^{(c)} &= (n^2-1) I_{\ell+1/2}(n\chi) \left[\ell K_{\ell+1/2}(\chi) + \chi K_{\ell-1/2}(\chi)\right] \\
+\gamma_\ell^{(d)} &= \chi \left[I_{\ell+1/2}(n\chi) K_{\ell-1/2}(\chi) + n K_{\ell+1/2}(\chi) I_{\ell-1/2}(n\chi)\right]
+\end{align}
+Note that $\gamma_\ell^{(c)}$ and $\gamma_\ell^{(d)}$ are positive, so the
+denominators of $a_\ell$ and $b_\ell$ are positive. The fractions of
+$\gamma_\ell^{(b)}$ can be calculated using a continued fraction.
+
+\section{Fresnel coefficients}
+\section{Truncation of the vector space}
+
 \appendix
 
 \section{Formulae}
 
 
-\subsection{Associated Legendre polynomials}
+\section{Associated Legendre polynomials}
 
 We define associated Legendre polynomials for $x>1$ as
 \begin{equation}
