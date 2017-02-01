@@ -1,6 +1,6 @@
-integration.aux
-integration.log
-integration.out
-integration.pdf
-x.log
-integrationNotes.bib
+*.aux
+*.log
+*.out
+*.pdf
+*.log
+*.bib
