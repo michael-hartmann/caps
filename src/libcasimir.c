@@ -721,7 +721,6 @@ void casimir_lnab(casimir_t *self, double nT, int l, double *lna, double *lnb, s
      */
     const double ln_n = log1p(epsilonm1)/2;
     const double n    = exp(ln_n);
-    const double n2   = exp(log1p(epsilonm1));
 
     double lnIlp, lnKlp, lnIlm, lnKlm, lnIlp_nchi, lnKlp_nchi, lnIlm_nchi, lnKlm_nchi;
 
@@ -731,45 +730,25 @@ void casimir_lnab(casimir_t *self, double nT, int l, double *lna, double *lnb, s
     bessel_lnInuKnu(l,   n*chi, &lnIlp_nchi, &lnKlp_nchi); /* I_{l+0.5}(nχ), K_{l+0.5}(nχ) */
     bessel_lnInuKnu(l-1, n*chi, &lnIlm_nchi, &lnKlm_nchi); /* K_{l-0.5}(nχ), K_{l-0.5}(nχ) */
 
-    double ln_A, ln_B, ln_C, ln_D;
-    sign_t sign_A, sign_B;
+    double ln_gammaA, ln_gammaB, ln_gammaC, ln_gammaD;
+    sign_t sign_gammaA, sign_gammaB;
 
-    if(l > 1)
+    ln_gammaA = log(epsilonm1)+lnIlp_nchi + logadd_s(ln_l+lnIlp, +1, ln_chi+lnIlm, -1, &sign_gammaA);
+    ln_gammaC = log(epsilonm1)+lnIlp_nchi + logadd(ln_chi+lnKlm, ln_l+lnKlp);
+    ln_gammaD = ln_chi + logadd(lnIlp_nchi+lnKlm, ln_n+lnKlp+lnIlm_nchi);
+
     {
         double ratio_chi  = bessel_continued_fraction(l-1,chi);
         double ratio_nchi = bessel_continued_fraction(l-1,n*chi);
         double c = n/ratio_chi-1/ratio_nchi;
-        ln_B = ln_chi + lnIlm+lnIlm_nchi+log(fabs(c));
-        sign_B = copysign(1,c);
+        ln_gammaB = ln_chi + lnIlm+lnIlm_nchi+log(fabs(c));
+        sign_gammaB = copysign(1,c);
     }
-    else
-        ln_B = ln_chi + lnIlm+lnIlm_nchi + logadd_s(ln_n+lnIlp-lnIlm, +1, lnIlp_nchi-lnIlm_nchi, -1, &sign_B);
 
-    ln_D = ln_chi + logadd(lnIlp_nchi+lnKlm, ln_n+lnKlp+lnIlm_nchi);
+    *lnb = M_LOGPI-M_LOG2 + ln_gammaB-ln_gammaD;
+    *sign_b = MPOW(l+1)*sign_gammaB;
 
-    #if 0
-    printf("n =%.18g\n",     exp(ln_n));
-    printf("n2=%.18g\n",     exp(2*ln_n));
-    printf("chi=%.18g\n",    chi);
-    printf("n*chi=%g\n", n*chi);
-
-    printf("Inup = %.18g\n", lnIlp);
-    printf("Knup = %.18g\n", lnKlp);
-    printf("Inum = %.18g\n", lnIlm);
-    printf("Knum = %.18g\n", lnKlm);
-    //printf("ln_A=%.18g\n", ln_A);
-    printf("ln_B=%.18g\n", ln_B);
-    //printf("ln_C=%.18g\n", ln_C);
-    printf("ln_D=%.18g\n", ln_D);
-    #endif
-
-    *lnb = M_LOGPI-M_LOG2 + ln_B-ln_D;
-    *sign_b = MPOW(l+1)*sign_B;
-
-    ln_A = log(n2-1)+lnIlp_nchi + logadd_s(ln_l+lnIlp, +1, ln_chi+lnIlm, -1, &sign_A);
-    ln_C = log(n2-1)+lnIlp_nchi + logadd(ln_chi+lnKlm, ln_l+lnKlp);
-
-    *lna = M_LOGPI-M_LOG2 + logadd_s(ln_A, sign_A, ln_B, sign_B, sign_a) - logadd(ln_C, ln_D);
+    *lna = M_LOGPI-M_LOG2 + logadd_s(ln_gammaA, sign_gammaA, ln_gammaB, sign_gammaB, sign_a) - logadd(ln_gammaC, ln_gammaD);
     *sign_a *= MPOW(l+1);
 }
 /*@}*/
