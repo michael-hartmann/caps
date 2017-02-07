@@ -193,7 +193,7 @@ void matrix_setall(matrix_t *A, double z)
 
 /**
  * @brief Calculate trace of matrix
- * 
+ *
  * This function uses kahan sumation to decrease rounding errors.
  *
  * @param [in] A matrix
@@ -206,6 +206,30 @@ double matrix_trace(matrix_t *A)
 
     for(size_t i = 0; i < dim; i++)
         array[i] = matrix_get(A, i,i);
+
+    return kahan_sum(array, dim);
+}
+
+/**
+ * @brief Calculate trace of A²
+ *
+ * This function uses kahan sumation to decrease rounding errors.
+ *
+ * @param [in] A matrix
+ * @retval trace trace of A²
+ */
+double matrix_trace2(matrix_t *A)
+{
+    const size_t dim = A->dim;
+    double *M = A->M;
+    double array[dim];
+
+    int N = dim;
+    int incx = 1;
+    int incy = N;
+
+    for(size_t i = 0; i < dim; i++)
+        array[i] = ddot_(&N, &M[dim*i], &incx, &M[i], &incy);
 
     return kahan_sum(array, dim);
 }
