@@ -270,11 +270,18 @@ double matrix_logdet_triangular(matrix_t *A)
  */
 double matrix_logdet(matrix_t *A, double z, detalg_t detalg)
 {
-    const double trace = z*matrix_trace(A);
+    /* log(det(Id+zA)) ≈ z*tr(A) - z²/2 tr(A²) + ... */
+    {
+        const double trace  = z*matrix_trace(A);
+        const double trace2 = pow_2(z)*matrix_trace2(A);
 
-    /* log(det(Id+A)) ≈ tr(A) - 1/2 tr(A²) + ... */
-    if(fabs(trace) < 1e-8)
-        return trace;
+        /*
+        printf("tr(M)=%g, tr(M²)=%g, tr(M²)/tr(M)=%e, logdetD=%.16g\n", trace, trace2, trace2/trace, trace-trace2/2);
+        */
+
+        if(fabs(trace2/trace) < 1e-6)
+            return trace+trace2/2;
+    }
 
     if(detalg == DETALG_EIG)
         return matrix_logdetIdmM_eig(A, z);
