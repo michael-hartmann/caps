@@ -272,15 +272,15 @@ double matrix_logdet(matrix_t *A, double z, detalg_t detalg)
 {
     /* log(det(Id+zA)) ≈ z*tr(A) - z²/2 tr(A²) + ... */
     {
-        const double trace  = z*matrix_trace(A);
-        const double trace2 = pow_2(z)*matrix_trace2(A);
+        const double trM  = z*matrix_trace(A);
+        const double trM2 = pow_2(z)*matrix_trace2(A);
 
         /*
-        printf("tr(M)=%g, tr(M²)=%g, tr(M²)/tr(M)=%e, logdetD=%.16g\n", trace, trace2, trace2/trace, trace-trace2/2);
+        printf("tr(M)=%g, tr(M²)=%g, tr(M²)/tr(M)=%e, logdetD≈%.16g\n", trM, trM2, trM2/trM, trM-trM2/2);
         */
 
-        if(fabs(trace2/trace) < 1e-6)
-            return trace+trace2/2;
+        if(fabs(trM2/trM) < 1e-6)
+            return trM+trM2/2;
     }
 
     if(detalg == DETALG_EIG)
