@@ -234,6 +234,24 @@ double matrix_trace2(matrix_t *A)
     return kahan_sum(array, dim);
 }
 
+/**
+ * @brief Calculate Frobenius norm of A
+ *
+ * @param [in] A matrix
+ * @retval |A| Frobenius norm of A
+ */
+double matrix_norm_frobenius(matrix_t *A)
+{
+    double norm = 0;
+    const double const *M = A->M;
+
+    for(size_t i = 0; i < A->dim2; i++)
+        norm += pow_2(M[i]);
+
+    return sqrt(norm);
+}
+
+
 
 /**
  * @brief Calculate log(|det(A)|) for A triangular

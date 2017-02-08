@@ -38,6 +38,8 @@ int matrix_save_to_file(matrix_t *A, const char *filename);
 double matrix_trace(matrix_t *A);
 double matrix_trace2(matrix_t *A);
 
+double matrix_norm_frobenius(matrix_t *A);
+
 double matrix_logdet_triangular(matrix_t *A);
 double matrix_logdet(matrix_t *A, double z, detalg_t detalg);
 double matrix_logdet_lu(matrix_t *A);
