@@ -531,7 +531,7 @@ static double _casimir_integrate_I(integration_t *self, int l1, int l2, polariza
             aq[q-1] /= fabs(aq[q]);
             aq[q] = SGN(aq[q]);
         }
-        else if(fabs(aq[q]) < 1e-100)
+        else if(fabs(aq[q]) < 1e-100 && fabs(aq[q]) > 0)
         {
             log_scaling -= log(fabs(aq[q]));
             aq[q-1] *= fabs(aq[q]);
@@ -549,7 +549,7 @@ static double _casimir_integrate_I(integration_t *self, int l1, int l2, polariza
     double log_I;
     done:
     log_I = log_a0+logadd_ms(array, MIN(q,qmax)+1, sign);
-    TERMINATE(!isfinite(log_I), "l1=%d, l2=%d, p=%d", l1, l2, p_);
+    TERMINATE(!isfinite(log_I), "l1=%d, l2=%d, p=%d, log_I=%g", l1, l2, p_, log_I);
     return log_I;
 }
 
