@@ -13,6 +13,7 @@
 \newcommand{\imag}{i} % imaginary unit
 \newcommand{\e}{e}    % euler's number
 \newcommand{\sol}{\mathrm{c}} % speed of light
+\DeclareMathOperator{\trace}{tr}
 
 % real/imaginary part
 \renewcommand{\Re}{\mathrm{Re}}
@@ -183,6 +184,38 @@ with
 Note that $\gamma_\ell^{(c)}$ and $\gamma_\ell^{(d)}$ are positive, so the
 denominators of $a_\ell$ and $b_\ell$ are positive. The fractions of
 $\gamma_\ell^{(b)}$ can be calculated using a continued fraction.
+
+\section{Calculating the determinant}
+
+In order to calculate
+\begin{equation}
+\log\det\mathcal{D} = \trace\log\mathcal{D}
+\end{equation}
+one has to perform a LU decomposition:
+\begin{equation}
+\log\det\mathcal{D} = \log\det\left(PLU\right) = \log\left(\det L + \det U\right) = \log\left(\prod_j L_{jj} U_{jj}\right) = \sum_j \log\left(L_{jj} U_{jj}\right)
+\end{equation}
+
+If the value of the determinant is small, one may also make use of the mercator series
+\begin{equation}
+\trace\log \mathcal{D} = \trace\log\left(\mathbbm{1}-\mathcal{M}\right) = \sum_{k=1}^\infty \frac{1}{k} \trace\mathcal{M}^k \,.
+\end{equation}
+If we just keep the
+\begin{equation}
+\trace\log\mathcal{D} = \trace\mathcal{M} + \frac{1}{2} \trace\mathcal{M}^2 + E \,.
+\end{equation}
+The error can be estimated
+\begin{align}
+|E| &=  \left|\sum_{k=3}^\infty \frac{\trace\mathcal{M}^k}{k}\right|
+\le \sum_{k=3}^\infty \frac{1}{k} \left| \trace\mathcal{M}^k \right|
+= \sum_{k=3}^\infty \frac{1}{k} \left| \sum_j \lambda_j^k \right|
+\le \sum_{k=3}^\infty \frac{1}{k} \left(\sum_j |\lambda_j|^2\right)^{k/2}
+\le \sum_{k=3}^\infty \frac{1}{k} \left(||\mathcal{M}||_F^2\right)^{k/2} \\
+&= \sum_{k=3}^\infty \frac{1}{k} ||\mathcal{M}||_F = -\left[\frac{1}{2}||\mathcal{M}||_F^2+||\mathcal{M}||_F -\log\left(1-||\mathcal{M}||_F\right)\right)
+\end{align}
+This estimation is true if all eigenvalues $|\lambda_j| < 1$. If the Frobenius
+norm is smaller than $1$, then the modulus of all eigenvalues is smaller than
+one. So, a sufficient condition is that the Frobenius norm is smaller than $1$.
 
 \section{Fresnel coefficients}
 \section{Truncation of the vector space}
