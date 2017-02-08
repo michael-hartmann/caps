@@ -456,6 +456,8 @@ static double _casimir_integrate_I(integration_t *self, int l1, int l2, polariza
     /* eq. (24) */
     const int qmax = MIN(MIN(n,nu), (l1pl2-2*m_)/2);
 
+    TERMINATE(qmax < 0, "l1=%d, l2=%d, m=%d\n", l1, l2, (int)m);
+
     /* eq. (28) */
     const double Ap = -2*m*(n-nu)*(n+nu+1);
 
@@ -465,11 +467,6 @@ static double _casimir_integrate_I(integration_t *self, int l1, int l2, polariza
     double aq[qmax+1];
     log_t array[qmax+1];
 
-    if(qmax < 0)
-    {
-        TERMINATE(true, "l1=%d, l2=%d, m=%d\n", l1, l2, (int)m);
-        return 0;
-    }
 
     /* q = 0 */
     int q = 0;
@@ -535,8 +532,11 @@ static double _casimir_integrate_I(integration_t *self, int l1, int l2, polariza
             break;
     }
 
+    double log_I;
     done:
-    return log_a0+logadd_ms(array, MIN(q,qmax)+1, sign);
+    log_I = log_a0+logadd_ms(array, MIN(q,qmax)+1, sign);
+    TERMINATE(!isfinite(log_I), "l1=%d, l2=%d, p=%d", l1, l2, p_);
+    return log_I;
 }
 
 double casimir_integrate_I(integration_t *self, int l1, int l2, polarization_t p, sign_t *sign)
