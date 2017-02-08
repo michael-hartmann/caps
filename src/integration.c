@@ -503,6 +503,7 @@ static double _casimir_integrate_I(integration_t *self, int l1, int l2, polariza
     if(qmax == 2)
         goto done;
 
+    double log_scaling = 0;
     for(q = 3; q <= qmax; q++)
     {
         const double p = n+nu-2*q;
@@ -524,9 +525,22 @@ static double _casimir_integrate_I(integration_t *self, int l1, int l2, polariza
             /* eq. (30) */
             aq[q] = (p+1)*(p2+2)*alpha(p+2,n,nu)*aq[q-1] / ((p+2)*(p1+1)*alpha(p+1,n,nu));
 
+        if(fabs(aq[q]) > 1e100)
+        {
+            log_scaling += log(fabs(aq[q]));
+            aq[q-1] /= fabs(aq[q]);
+            aq[q] = SGN(aq[q]);
+        }
+        else if(fabs(aq[q]) < 1e-100)
+        {
+            log_scaling -= log(fabs(aq[q]));
+            aq[q-1] *= fabs(aq[q]);
+            aq[q] = SGN(aq[q]);
+        }
+
         K = casimir_integrate_K(self, l1pl2-2*q, p_, &s);
         array[q].s = SGN(aq[q])*s;
-        array[q].v = K+log(fabs(aq[q]));
+        array[q].v = log_scaling+K+log(fabs(aq[q]));
 
         if((array[q].v - array[0].v) < -75)
             break;
