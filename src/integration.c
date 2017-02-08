@@ -628,44 +628,51 @@ double casimir_integrate_A(integration_t *self, int l1, int l2, polarization_t p
     }
 
     const double I1 = casimir_integrate_I(self, l1, l2, p, sign);
-    const double log_A0 = 2*logi(m)+casimir_lnLambda(l1,l2,m)-self->tau;
+    const double A0 = 2*logi(m)+casimir_lnLambda(l1,l2,m)-self->tau;
 
     *sign *= -MPOW(l2);
 
-    return log_A0+I1;
+    const double A = A0+I1;
+    TERMINATE(!isfinite(A), "l1=%d, l2=%d, m=%d, p=%d, I1=%g, A0=%g, A=%g", l1,l2,m,p, I1, A0, A);
+    return A;
 }
 
 double casimir_integrate_B(integration_t *self, int l1, int l2, polarization_t p, sign_t *sign)
 {
     const int m = self->m;
 
-    const double log_B0 = casimir_lnLambda(l1,l2,m)-self->tau;
+    const double B0 = casimir_lnLambda(l1,l2,m)-self->tau;
 
     if(m == 0)
     {
         const double I = casimir_integrate_I(self, l1, l2, p, sign);
+        const double B = B0+I;
+
+        TERMINATE(!isfinite(B), "l1=%d, l2=%d, m=%d, p=%d, I=%g, B0=%g, B=%g", l1,l2,m,p, I, B0, B);
 
         *sign *= -MPOW(l2+1);
 
-        return log_B0+I;
+        return B;
     }
 
     sign_t sign1, sign2, sign3, sign4;
-    const double log_I1 = casimir_integrate_I(self, l1-1, l2-1, p, &sign1);
-    const double log_I2 = casimir_integrate_I(self, l1+1, l2-1, p, &sign2);
-    const double log_I3 = casimir_integrate_I(self, l1-1, l2+1, p, &sign3);
-    const double log_I4 = casimir_integrate_I(self, l1+1, l2+1, p, &sign4);
+    const double I1 = casimir_integrate_I(self, l1-1, l2-1, p, &sign1);
+    const double I2 = casimir_integrate_I(self, l1+1, l2-1, p, &sign2);
+    const double I3 = casimir_integrate_I(self, l1-1, l2+1, p, &sign3);
+    const double I4 = casimir_integrate_I(self, l1+1, l2+1, p, &sign4);
 
     double I;
     const double denom = (2*l1+1.)*(2*l2+1.);
-    I  = (l1+1.)*(l1+m)*(l2+1.)*(l2+m)/denom*sign1*exp(log_I1-log_I4);
-    I -=   l1*(l1-m+1.)*(l2+1.)*(l2+m)/denom*sign2*exp(log_I2-log_I4);
-    I -=   (l1+1.)*(l1+m)*l2*(l2-m+1.)/denom*sign3*exp(log_I3-log_I4);
+    I  = (l1+1.)*(l1+m)*(l2+1.)*(l2+m)/denom*sign1*exp(I1-I4);
+    I -=   l1*(l1-m+1.)*(l2+1.)*(l2+m)/denom*sign2*exp(I2-I4);
+    I -=   (l1+1.)*(l1+m)*l2*(l2-m+1.)/denom*sign3*exp(I3-I4);
     I +=     l1*(l1-m+1.)*l2*(l2-m+1.)/denom*sign4;
 
     *sign = -MPOW(l2+1)*SGN(I);
 
-    return log_B0+log_I4+log(fabs(I));
+    const double B = B0+I4+log(fabs(I));
+    TERMINATE(!isfinite(B), "l1=%d, l2=%d, m=%d, p=%d, I1=%g, I2=%g, I3=%g, I4=%g, B0=%g, B=%g", l1,l2,m,p, I1,I2,I3,I4, B0, B);
+    return B;
 }
 
 double casimir_integrate_C(integration_t *self, int l1, int l2, polarization_t p, sign_t *sign)
@@ -677,20 +684,22 @@ double casimir_integrate_C(integration_t *self, int l1, int l2, polarization_t p
         return -INFINITY;
     }
 
-    const double log_C0 = logi(m)+casimir_lnLambda(l1,l2,m)-self->tau;
+    const double C0 = logi(m)+casimir_lnLambda(l1,l2,m)-self->tau;
 
     sign_t sign1, sign2;
-    const double log_I1 = casimir_integrate_I(self, l1, l2-1, p, &sign1);
-    const double log_I2 = casimir_integrate_I(self, l1, l2+1, p, &sign2);
+    const double I1 = casimir_integrate_I(self, l1, l2-1, p, &sign1);
+    const double I2 = casimir_integrate_I(self, l1, l2+1, p, &sign2);
 
     const double denom = 2*l2+1;
     double I;
-    I  = -(l2+1.)*(l2+m)/denom*sign1*exp(log_I1-log_I2);
+    I  = -(l2+1.)*(l2+m)/denom*sign1*exp(I1-I2);
     I += l2*(l2-m+1.)/denom*sign2;
 
     *sign = -MPOW(l2)*SGN(I);
 
-    return log_C0 + log_I2+log(fabs(I));
+    const double C = C0+I2+log(fabs(I));
+    TERMINATE(!isfinite(C), "l1=%d, l2=%d, m=%d, p=%d, I1=%g, I2=%g, C0=%g, C=%g", l1,l2,m,p, I1,I2, C0, C);
+    return C;
 }
 
 double casimir_integrate_D(integration_t *self, int l1, int l2, polarization_t p, sign_t *sign)
