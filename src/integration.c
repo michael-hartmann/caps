@@ -438,7 +438,7 @@ double casimir_integrate_K(integration_t *self, int nu, polarization_t p, sign_t
 /* eq. (3) */
 static double alpha(double p, double n, double nu)
 {
-    return (((pow_2(p)-pow_2(n+nu+1))*(double)(pow_2(p)-pow_2(n-nu)))/(4*pow_2(p)-1));
+    return (((pow_2(p)-pow_2(n+nu+1))*(pow_2(p)-pow_2(n-nu)))/(4*pow_2(p)-1));
 }
 
 static double _casimir_integrate_I(integration_t *self, int l1, int l2, polarization_t p_, sign_t *sign)
@@ -522,7 +522,7 @@ static double _casimir_integrate_I(integration_t *self, int l1, int l2, polariza
         }
         else
             /* eq. (30) */
-            aq[q] = (p+1)*(p2+2)*(double)alpha(p+2,n,nu)*aq[q-1] / ((p+2)*(p1+1)*(double)alpha(p+1,n,nu));
+            aq[q] = (p+1)*(p2+2)*alpha(p+2,n,nu)*aq[q-1] / ((p+2)*(p1+1)*alpha(p+1,n,nu));
 
         K = casimir_integrate_K(self, l1pl2-2*q, p_, &s);
         array[q].s = SGN(aq[q])*s;
