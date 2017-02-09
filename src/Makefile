@@ -3,8 +3,16 @@ all: casimir casimir_logdetD
 
 # Choose a compiler.
 # At the moment gcc, clang and icc are supported.
-CC = gcc # icc, clang
-MPICC = mpicc # mpiicc
+ifeq ($(CC),)
+    CC = gcc
+endif
+
+ifeq ($(CC),icc)
+    MPICC = mpiicc
+else
+    MPICC = mpicc
+endif
+
 
 OBJS = \
     cquadpack/src/dqagi.c \
@@ -52,6 +60,10 @@ CFLAGS += -I . -I cquadpack/include
 
 # enable warnings
 CFLAGS += -g -Wall -Wextra -Wmissing-prototypes -Wshadow -Wpointer-arith -Wcast-qual -Wwrite-strings -Wno-unused-parameter -fstrict-aliasing
+ifeq ($(CC),icc)
+    CFLAGS += -fp-model precise -mkl=sequential
+endif
+
 # profiling
 #CFLAGS += -pg
 
@@ -62,10 +74,8 @@ LDFLAGS += -lm -pthread -llapack -lblas -lgfortran
 # it's a good and easy way to find bugs.
 #CFLAGS += -fsanitize=undefined,memory
 
-TARGET = "../bin/"
-
-# optimize for native CPU
-OPT = -march=native -O3 -mmmx -msse -msse2 -msse3 -msse4
+# optimize
+OPT = -O3 -msse
 
 # link time optimization
 #OPT += -flto
@@ -104,9 +114,6 @@ casimir_tests: $(TESTS) $(OBJS) dependencies_test
 
 casimir_T0: casimir_T0.o $(OBJS) dependencies
 	$(MPICC) $(CFLAGS) $(OPT) casimir_T0.o $(OBJS) $(LDFLAGS) -o casimir_T0
-
-install:
-	cp casimir casimir_tests casimir_hiT casimir_logdetD casimir_T0 ${TARGET}
 
 clean:
 	rm -f casimir casimir_tests casimir_hiT casimir_logdetD casimir_T0 *.o tests/*.o $(DEPEND_FILE)
