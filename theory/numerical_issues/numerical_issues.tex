@@ -171,19 +171,82 @@ s_\ell^{(d)} &= K_{\ell+1/2}(\chi)  \left[\ell I_{\ell+1/2}(n\chi) - n\chi I_{\e
 Here, $n=\sqrt{\epsilon}$ denotes the refraction index, and $\chi=\xi R/\sol$. However, it is easier to express
 the Mie coefficients as
 \begin{align}
-a_\ell(\imag\chi) &= (-1)^{\ell+1} \frac{\pi}{2} \frac{\gamma^{(a)}_\ell+\gamma^{(b)}_\ell}{\gamma^{(c)}_\ell+\gamma^{(d)}_\ell} \\
+a_\ell(\imag\chi) &= (-1)^\ell \frac{\pi}{2} \frac{\gamma^{(a)}_\ell-\gamma^{(b)}_\ell}{\gamma^{(c)}_\ell+\gamma^{(d)}_\ell} \\
 b_\ell(\imag\chi) &= (-1)^{\ell+1} \frac{\pi}{2} \frac{\gamma^{(b)}_\ell}{\gamma^{(d)}_\ell}
 \end{align}
 with
 \begin{align}
-\gamma_\ell^{(a)} &= (n^2-1) I_{\ell+1/2}(n\chi) \left[\ell I_{\ell+1/2}(\chi) - \chi I_{\ell-1/2}(\chi)\right] \\
-\gamma_\ell^{(b)} &= \chi I_{\ell-1/2}(n\chi) I_{\ell-1/2}(\chi) \left[n\frac{I_{\ell+1/2}(\chi)}{I_{\ell-1/2}(\chi)}-\frac{I_{\ell+1/2}(n\chi)}{I_{\ell-1/2}(n\chi)}\right] \\
-\gamma_\ell^{(c)} &= (n^2-1) I_{\ell+1/2}(n\chi) \left[\ell K_{\ell+1/2}(\chi) + \chi K_{\ell-1/2}(\chi)\right] \\
-\gamma_\ell^{(d)} &= \chi \left[I_{\ell+1/2}(n\chi) K_{\ell-1/2}(\chi) + n K_{\ell+1/2}(\chi) I_{\ell-1/2}(n\chi)\right]
+\gamma_\ell^{(a)} &= (n^2-1) I_{\ell+1/2}(n\chi) I_{\ell+1/2}(\chi) \left[\chi \frac{I_{\ell-1/2}(\chi)}{I_{\ell+1/2)}(\chi)} - \ell\right], \\
+\gamma_\ell^{(b)} &= I_{\ell+1/2}(n\chi) I_{\ell+1/2}(\chi) \left[n\chi\frac{I_{\ell-1/2}(n\chi)}{I_{\ell+1/2}(n\chi)}-\chi\frac{I_{\ell-1/2}(\chi)}{I_{\ell+1/2}(\chi)}\right], \\
+\gamma_\ell^{(c)} &= (n^2-1) I_{\ell+1/2}(n\chi) \left[\ell K_{\ell+1/2}(\chi) + \chi K_{\ell-1/2}(\chi)\right], \\
+\gamma_\ell^{(d)} &= \chi \left[I_{\ell+1/2}(n\chi) K_{\ell-1/2}(\chi) + n K_{\ell+1/2}(\chi) I_{\ell-1/2}(n\chi)\right] \,.
 \end{align}
-Note that $\gamma_\ell^{(c)}$ and $\gamma_\ell^{(d)}$ are positive, so the
-denominators of $a_\ell$ and $b_\ell$ are positive. The fractions of
-$\gamma_\ell^{(b)}$ can be calculated using a continued fraction.
+The modified Bessel functions $I_\nu(x)$ and $K_\nu(x)$ are positive for $x \ge
+0$. Therefore, $\gamma_\ell^{(c)}$ and $\gamma_\ell^{(d)}$ are positive.
+The fractions of $\gamma_\ell^{(b)}$ can be calculated using a continued
+fraction.
+
+Defining
+\begin{equation}
+g_\nu(x) = x \frac{I_\nu(x)}{I_{\nu+1}(x)}
+\end{equation}
+we find for $x\to0$
+\begin{equation}
+\lim_{x\to0} g_\nu(x) = 2(\nu+1)
+\end{equation}
+and for $x\to\infty$
+\begin{equation}
+\lim_{x\to\infty} g_\nu(x) = x \,.
+\end{equation}
+Using the Mittag Leffler expansion
+\begin{equation}
+\frac{1}{x} \frac{I_{\nu+1}(x)}{I_\nu(x)} = g_\nu^{-1}(x) = \sum_{k=0}^\infty \frac{2}{J_{\nu,k}^2+x^2}
+\end{equation}
+we find for the derivative
+\begin{equation}
+\frac{\mathrm{d}}{\mathrm{d}x} g_\nu^{-1}(x) = -\frac{1}{g_\nu^2(x)} \frac{\mathrm{d}}{\mathrm{d}x} g_\nu(x) = \sum_{k=0}^\infty \frac{-4x}{\left(J_{\nu,k}^2+x^2\right)^2}
+\end{equation}
+and thus
+\begin{equation}
+\frac{\mathrm{d}}{\mathrm{d}x} g_\nu(x) = g_\nu^2(x) \sum_{k=0}^\infty \frac{4x}{(J^2_{\nu,k}+x^2)^2} > 0 \,.
+\end{equation}
+
+Combining both results we find $g_\nu(x) \ge 2(\nu+1)$ and thus
+$\gamma_\ell^{(a)} > 0$. Also, as the derivative is always positive, it is easy
+to see that $\gamma_\ell^{(b)}$ is also positive.
+The difference is given by
+\begin{equation}
+\gamma_\ell^{(a)} - \gamma_\ell^{(b)} = I_{\ell+1/2}(n\chi) I_{\ell+1/2}(\chi) \left[ n^2 g_{\ell-1/2}(\chi) - (n^2-1)\ell - g_{\ell-1/2}(n\chi) \right] \,.
+\end{equation}
+As $g_\nu(x)$ is a monotonic function, the ratio $g_\nu(nx)/g_\nu(x)$ for $n>1$
+is also monotonic and the maximum is obtained for $n\to\infty$
+\begin{equation}
+\frac{g_\nu(nx)}{g_\nu(x)} = n \frac{I_\nu(nx)}{I_{\nu+1}(nx)} \frac{I_{\nu+1}(x)}{I_\nu(x)} \overset{n\gg1}{=} n \frac{I_{\nu+1}(x)}{I_\nu(x)} < n \,.
+\end{equation}
+The difference becomes with $\nu=\ell-1/2$
+\begin{align}
+n^2 g_\nu(\chi) - (n^2-1)(\nu+1/2) - g_\nu(n\chi) &> n^2 g_\nu(\chi) -n g_\nu(\chi) - (n^2-1)(\nu+1/2) \\
+&> n(n-1) g_\nu(\chi) - (n+1)(n-1)(\nu+1) \\
+&= (n-1) \left[ ng_\nu(\chi) - (n+1)(\nu+1) \right] \\
+&> (n-1) \left[ 2n(\nu+1) - (n+1)(\nu+1) \right] \\
+&= (n-1)(\nu+1) \left[ 2n - (n+1) \right] \\
+&= (n-1)^2 (\nu+1) > 0
+\end{align}
+Moreover,
+\begin{equation}
+\lim_{\chi\to0} \left[ n^2 g_{\ell-1/2}(\chi) - (n^2-1)\ell - g_{\ell-1/2}(n\chi) \right] = (n^2-1)(\ell+1) > 0
+\end{equation}
+and
+\begin{equation}
+\lim_{\chi\to\infty} \left[ n^2 g_{\ell-1/2}(\chi) - (n^2-1)\ell - g_{\ell-1/2}(n\chi) \right] = n\chi(n-1)
+\end{equation}
+Thus, $\gamma_\ell^{(a)}-\gamma_\ell^{(b)} > 0$.
+
+So, the Mie coefficients are:
+\begin{align}
+a_\ell(\chi) &= (-1)^\ell | a_\ell(\chi) | \\
+b_\ell(\chi) &= (-1)^{\ell+1} | b_\ell(\chi) |
+\end{align}
 
 \section{Calculating the determinant}
 
