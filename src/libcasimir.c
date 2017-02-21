@@ -1020,12 +1020,12 @@ double casimir_kernel_M(int i, int j, void *args_)
     const int ldim = args->casimir->ldim;
     int l1 = i+1, l2 = j+1;
 
-    if(i > ldim)
+    if(i >= ldim)
     {
         p1 = 'M';
         l1 -= ldim;
     }
-    if(j > ldim)
+    if(j >= ldim)
     {
         p2 = 'M';
         l2 -= ldim;
@@ -1253,6 +1253,23 @@ matrix_t *casimir_M(casimir_t *self, double nT, int m)
     return M;
 }
 
+double casimir_logdetD(casimir_t *self, double nT, int m)
+{
+    if(self->detalg != DETALG_HODLR)
+        return casimir_logdetD_dense(self, nT, m);
+
+    unsigned int nLeaf = 100; /* XXX */
+    int is_symmetric = 1;
+    double tolerance = 1e-15;
+
+    casimir_M_t *obj = casimir_M_init(self, m, nT);
+    double logdet = hodlr_logdet(2*self->ldim, &casimir_kernel_M, obj, nLeaf, tolerance, is_symmetric);
+
+    casimir_M_free(obj);
+
+    return logdet;
+}
+
 /**
  * @brief Calculate \f$\log\det \mathcal{D}^{(m)}(\xi=nT)\f$
  *
@@ -1267,7 +1284,7 @@ matrix_t *casimir_M(casimir_t *self, double nT, int m)
  * @param [in] m
  * @retval logdetD \f$\log \det \mathcal{D}^{(m)}(\xi=nT)\f$
  */
-double casimir_logdetD(casimir_t *self, double nT, int m)
+double casimir_logdetD_dense(casimir_t *self, double nT, int m)
 {
     double t0;
     double logdet = 0;
