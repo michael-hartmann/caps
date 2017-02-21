@@ -322,6 +322,7 @@ casimir_t *casimir_init(double LbyR)
 
     /* geometry */
     self->LbyR = LbyR;
+    self->y = -M_LOG2-log1p(LbyR);
 
     /* dimension of vector space */
     self->ldim = ceil(MAX(CASIMIR_MINIMUM_LDIM, CASIMIR_FACTOR_LDIM/LbyR));
@@ -805,6 +806,39 @@ int casimir_estimate_lminmax(casimir_t *self, int m, size_t *lmin_p, size_t *lma
 }
 
 /**
+ * @brief Calculate matrix elements for xi=0
+ *
+ * This function calculates the matrix elements for <l1,m,E|M|l2,m,E> and
+ * <l1,m,M|M|l2,m,M> in the high-temperature limit, i.e. xi=0.
+ *
+ * If EE or MM is NULL, it is not written. Otherwise the result is written to
+ * memory pointed by EE and MM.
+ *
+ * @param [in]  self Casimir object
+ * @param [in]  l1
+ * @param [in]  l2
+ * @param [in]  m
+ * @param [out] EE
+ * @param [out] MM
+ */
+void casimir_M0_elem(casimir_t *self, int l1, int l2, int m, double *EE, double *MM)
+{
+    /* y = log(R/(R+L)/2) */
+    double y = self->y;
+
+    /* See thesis of Antoine, section 6.7:
+     * x = R/(R+L)
+     * M_EE_{l1,l2} = (x/2)^(l1+l2) * (l1+l2)! / sqrt( (l1+m)!*(l1-m)! * (l2+m)!*(l2-m)! )
+     * M_MM_{l1,l2} = M_EE_{l1,l2} * sqrt( l1/(l1+1) * l2/(l2+1) )
+     */
+    double _EE = exp( (l1+l2+1)*y + lfac(l1+l2) - 0.5*(lfac(l1+m)+lfac(l1-m) + lfac(l2+m)+lfac(l2-m)) );
+    if(EE != NULL)
+        *EE = _EE;
+    if(MM != NULL)
+        *MM = _EE*sqrt((l1*l2)/((l1+1.)*(l2+1.)));
+}
+
+/**
  * @brief Calculate round-trip matrices M for xi=nT=0
  *
  * For xi=0 the round-trip matrix M is block diagonal with block matrices EE,
@@ -821,9 +855,6 @@ int casimir_estimate_lminmax(casimir_t *self, int m, size_t *lmin_p, size_t *lma
  */
 void casimir_M0(casimir_t *self, int m, matrix_t **EE, matrix_t **MM)
 {
-    /* y = log(R/(R+L)/2) */
-    const double y = -M_LOG2-log1p(self->LbyR);
-
     /* main contributions comes from l1≈l2≈m */
     size_t lmin,lmax,ldim = self->ldim;
     casimir_estimate_lminmax(self, m, &lmin, &lmax);
@@ -855,18 +886,14 @@ void casimir_M0(casimir_t *self, int m, matrix_t **EE, matrix_t **MM)
 
         for(size_t d = 0; d < ldim-n; d++)
         {
+            double EE_ij, MM_ij;
             const int l1 = d+lmin;
             const int l2 = d+n+lmin;
 
             /* i: row of matrix, j: column of matrix */
             const size_t i = d, j = d+n;
 
-            /* See thesis of Antoine, section 6.7:
-             * x = R/(R+L)
-             * M_EE_{l1,l2} = (x/2)^(l1+l2) * (l1+l2)! / sqrt( (l1+m)!*(l1-m)! * (l2+m)!*(l2-m)! )
-             * M_MM_{l1,l2} = M_EE_{l1,l2} * sqrt( l1/(l1+1) * l2/(l2+1) )
-             */
-            const double EE_ij = exp( (l1+l2+1)*y + lfac(l1+l2) - 0.5*(lfac(l1+m)+lfac(l1-m) + lfac(l2+m)+lfac(l2-m)) );
+            casimir_M0_elem(self, l1, l2, m, &EE_ij, &MM_ij);
 
             /* calculate trace of n-th minor diagonal */
             trace += fabs(EE_ij);
@@ -879,7 +906,6 @@ void casimir_M0(casimir_t *self, int m, matrix_t **EE, matrix_t **MM)
             }
             if(MM != NULL)
             {
-                const double MM_ij = EE_ij*sqrt((l1*l2)/((l1+1.)*(l2+1.)));
                 matrix_set(*MM, i,j, MM_ij);
                 matrix_set(*MM, j,i, MM_ij);
             }
