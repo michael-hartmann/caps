@@ -56,7 +56,7 @@ CFLAGS = -std=c99
 
 # use traditional GNU semantics for inline
 #CFLAGS += -fgnu89-inline
-CFLAGS += -I . -I cquadpack/include
+CFLAGS += -I . -I cquadpack/include -I /cfs/home/h/a/hartmmic/git/hodlr/include
 
 # enable warnings
 CFLAGS += -g -Wall -Wextra -Wmissing-prototypes -Wshadow -Wpointer-arith -Wcast-qual -Wwrite-strings -Wno-unused-parameter -fstrict-aliasing
@@ -68,7 +68,7 @@ endif
 #CFLAGS += -pg
 
 # ldflags
-LDFLAGS += -lm -pthread -llapack -lblas -lgfortran
+LDFLAGS += -lm -pthread -llapack -lblas -lgfortran -L /cfs/home/h/a/hartmmic/git/hodlr -lhodlr
 
 # clang supports various runtime checks. This will slow down the program, but
 # it's a good and easy way to find bugs.
