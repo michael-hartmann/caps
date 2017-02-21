@@ -7,8 +7,6 @@
 
 #include "utils.h"
 
-typedef enum { DETALG_LU, DETALG_QR, DETALG_EIG } detalg_t;
-
 /** define matrix type */
 typedef struct {
     size_t dim,dim2;
@@ -44,7 +42,7 @@ double matrix_trace2(matrix_t *A);
 double matrix_norm_frobenius(matrix_t *A);
 
 double matrix_logdet_triangular(matrix_t *A);
-double matrix_logdet(matrix_t *A, double z, detalg_t detalg);
+double matrix_logdet(matrix_t *A, double z);
 double matrix_logdet_lu(matrix_t *A);
 double matrix_logdet_qr(matrix_t *A);
 double matrix_logdetIdmM_eig(matrix_t *A, double z);

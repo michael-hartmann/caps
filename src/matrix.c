@@ -371,10 +371,9 @@ double matrix_logdet_triangular(matrix_t *A)
  *
  * @param [in,out] M round trip matrix M; M will be overwritten.
  * @param [in]     z factor z in log(det(Id+z*M))
- * @param [in]     detalg algorithm to be used
  * @retval logdet  \f$\log\det(\mathrm{Id}+z*M)\f$
  */
-double matrix_logdet(matrix_t *A, double z, detalg_t detalg)
+double matrix_logdet(matrix_t *A, double z)
 {
     /* ||zA|| = |z| ||A|| */
     const double norm = fabs(z)*matrix_norm_frobenius(A);
@@ -396,9 +395,6 @@ double matrix_logdet(matrix_t *A, double z, detalg_t detalg)
         if(rel_error < 1e-8)
             return mercator;
     }
-
-    if(detalg == DETALG_EIG)
-        return matrix_logdetIdmM_eig(A, z);
 
     /* M = Id+z*M */
     {
@@ -428,12 +424,6 @@ double matrix_logdet(matrix_t *A, double z, detalg_t detalg)
         }
     }
 
-    if(detalg == DETALG_LU)
-        return matrix_logdet_lu(A);
-    if(detalg == DETALG_QR)
-        return matrix_logdet_qr(A);
-
-    WARN(1, "Unknown algorithm %d, defaulting to LU", detalg);
     return matrix_logdet_lu(A);
 }
 
