@@ -347,7 +347,7 @@ casimir_t *casimir_init(double LbyR)
     self->debug = false;
 
     /* use LU decomposition by default */
-    self->detalg = DETALG_LU;
+    self->detalg = DETALG_HODLR;
 
     return self;
 }
