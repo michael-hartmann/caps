@@ -12,6 +12,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <unistd.h>
+#include <hodlr.h>
 
 #include "integration.h"
 #include "libcasimir.h"
@@ -860,13 +861,6 @@ double casimir_kernel_M0_MM(int i, int j, void *args)
     return MM;
 }
 
-#if 0
-double casimir_kernel_M0_MM(int i, int j, void *args)
-{
-
-}
-#endif
-
 /**
  * @brief Calculate round-trip matrices M for xi=nT=0
  *
@@ -947,6 +941,7 @@ void casimir_M0(casimir_t *self, int m, matrix_t **EE, matrix_t **MM)
     }
 }
 
+#if 0
 /**
  * @brief Calculate \f$\log\det \mathcal{D}^{(m)}(\xi=0)\f$ for EE and MM
  *
@@ -983,13 +978,31 @@ void casimir_logdetD0(casimir_t *self, int m, double *logdet_EE, double *logdet_
         matrix_free(MM);
     }
 }
-
-#if 0
-void casimir_logdetD0_hodlr(casimir_t *self, int m, double *logdet_EE, double *logdet_MM)
-{
-
-}
 #endif
+
+void casimir_logdetD0(casimir_t *self, int m, double *logdet_EE, double *logdet_MM)
+{
+    unsigned int nLeaf = 100; /* XXX */
+    int is_symmetric = 1;
+    double tolerance = 1e-15;
+
+    printf("hodlr\n");
+
+    casimir_kernel_t args = {
+        .casimir = self,
+        .m = m,
+        .integration = NULL,
+        .al = NULL,
+        .bl = NULL,
+        .signs_al = NULL,
+        .signs_bl = NULL
+    };
+
+    if(logdet_EE != NULL)
+        *logdet_EE = hodlr_logdet(self->ldim, &casimir_kernel_M0_EE, &args, nLeaf, tolerance, is_symmetric);
+    if(logdet_MM != NULL)
+        *logdet_MM = hodlr_logdet(self->ldim, &casimir_kernel_M0_MM, &args, nLeaf, tolerance, is_symmetric);
+}
 
 /**
  * @brief Calculate round-trip matrix M
