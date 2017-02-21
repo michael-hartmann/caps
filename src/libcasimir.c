@@ -635,8 +635,7 @@ void casimir_lnab_perf(casimir_t *self, double nT, int l, double *lna, double *l
     bessel_lnInuKnu(l,   chi, &lnIlp, &lnKlp);
 
     /* Calculate b_l(chi), i.e. lnb and sign_b */
-    *lnb    = M_LOGPI-M_LOG2+lnIlp-lnKlp;
-    *sign_b = MPOW(l+1);
+    *lnb = M_LOGPI-M_LOG2+lnIlp-lnKlp;
 
     /* We want to calculate
      * a_l(chi) = (-1)^(l+1)*pi/2 * ( l*Ip-chi*Im )/( l*Kp+chi*Km )
@@ -657,8 +656,12 @@ void casimir_lnab_perf(casimir_t *self, double nT, int l, double *lna, double *l
     double numerator   = logadd_s(logi(l), +1, log_chi+lnIlm-lnIlp, -1, &sign_numerator);
     double denominator = logadd(logi(l), log_chi+lnKlm-lnKlp);
 
-    *lna    = *lnb+numerator-denominator;
-    *sign_a = *sign_b*sign_numerator;
+    *lna = *lnb+numerator-denominator;
+
+    if(sign_b != NULL)
+        *sign_b = MPOW(l+1);
+    if(sign_a != NULL)
+        *sign_a = MPOW(l+1)*sign_numerator;
 }
 
 /**
@@ -679,6 +682,8 @@ void casimir_lnab_perf(casimir_t *self, double nT, int l, double *lna, double *l
  * This function is thread safe - as long you don't change temperature, aspect
  * ratio and dielectric properties of sphere.
  *
+ * The signs are given by sign_al = (-1)^l, sign_bl = (-1)^(l+1).
+ *
  * References:
  * [1] Erratum: Thermal Casimir effect for Drude metals in the plane-sphere
  * geometry, Canaguier-Durand, Neto, Lambrecht, Reynaud (2010)
@@ -698,6 +703,8 @@ void casimir_lnab_perf(casimir_t *self, double nT, int l, double *lna, double *l
  */
 void casimir_lnab(casimir_t *self, double nT, int l, double *lna, double *lnb, sign_t *sign_a, sign_t *sign_b)
 {
+    sign_t sign;
+
     /* ξ = nT */
     const double epsilonm1 = casimir_epsilonm1(self, nT);
 
@@ -747,10 +754,12 @@ void casimir_lnab(casimir_t *self, double nT, int l, double *lna, double *lnb, s
     }
 
     *lnb = M_LOGPI-M_LOG2 + ln_gammaB-ln_gammaD;
-    *sign_b = MPOW(l+1)*sign_gammaB;
+    *lna = M_LOGPI-M_LOG2 + logadd_s(ln_gammaA, sign_gammaA, ln_gammaB, sign_gammaB, &sign) - logadd(ln_gammaC, ln_gammaD);
 
-    *lna = M_LOGPI-M_LOG2 + logadd_s(ln_gammaA, sign_gammaA, ln_gammaB, sign_gammaB, sign_a) - logadd(ln_gammaC, ln_gammaD);
-    *sign_a *= MPOW(l+1);
+    if(sign_a != NULL)
+        *sign_a = sign*MPOW(l+1);
+    if(sign_b != NULL)
+        *sign_b = MPOW(l+1)*sign_gammaB;
 }
 /*@}*/
 
@@ -1039,10 +1048,9 @@ matrix_t *casimir_M(casimir_t *self, double nT, int m)
      * about 10000*2*(8+1) bytes = 170kb. So it's easier just to use the stack.
      */
     double ln_a[ldim], ln_b[ldim];
-    sign_t sign_a[ldim], sign_b[ldim];
 
     for(size_t j = 0; j < ldim; j++)
-        sign_a[j] = sign_b[j] = 0;
+        ln_a[j] = ln_b[j] = NAN;
 
     double trace_diag = 0;
 
@@ -1060,17 +1068,14 @@ matrix_t *casimir_M(casimir_t *self, double nT, int m)
             const size_t i = l1-lmin, j = l2-lmin;
 
             /* if neccessary, compute Mie coefficients */
-            if(sign_a[i] == 0)
-                casimir_lnab(self, nT, l1, &ln_a[i], &ln_b[i], &sign_a[i], &sign_b[i]);
+            if(isnan(ln_a[i]))
+                casimir_lnab(self, nT, l1, &ln_a[i], &ln_b[i], NULL, NULL);
 
-            if(sign_a[j] == 0)
-                casimir_lnab(self, nT, l2, &ln_a[j], &ln_b[j], &sign_a[j], &sign_b[j]);
+            if(isnan(ln_a[j]))
+                casimir_lnab(self, nT, l2, &ln_a[j], &ln_b[j], NULL, NULL);
 
             const double ln_al1 = ln_a[i], ln_bl1 = ln_b[i];
             const double ln_al2 = ln_a[j], ln_bl2 = ln_b[j];
-            const sign_t sign_al1 = sign_a[i], sign_bl1 = sign_b[i];
-            const sign_t sign_al2 = sign_a[j], sign_bl2 = sign_b[j];
-
 
             sign_t signA_TE, signA_TM, signB_TE, signB_TM;
 
@@ -1088,8 +1093,8 @@ matrix_t *casimir_M(casimir_t *self, double nT, int m)
 
                 trace += fabs(elem); /* elem is positive */
 
-                matrix_set(M, i,j,             sign_al1*elem);
-                matrix_set(M, j,i, MPOW(l1+l2)*sign_al2*elem);
+                matrix_set(M, i,j, MPOW(l1)*elem);
+                matrix_set(M, j,i, MPOW(l1)*elem);
             }
 
             /* MM */
@@ -1100,8 +1105,8 @@ matrix_t *casimir_M(casimir_t *self, double nT, int m)
 
                 trace += fabs(elem); /* elem is positive */
 
-                matrix_set(M, i+ldim,j+ldim,             sign_bl1*elem);
-                matrix_set(M, j+ldim,i+ldim, MPOW(l1+l2)*sign_bl2*elem);
+                matrix_set(M, i+ldim,j+ldim, MPOW(l1+1)*elem);
+                matrix_set(M, j+ldim,i+ldim, MPOW(l1+1)*elem);
             }
 
             /* non-diagonal blocks EM and ME */
@@ -1125,12 +1130,12 @@ matrix_t *casimir_M(casimir_t *self, double nT, int m)
                 const double elem2 = exp(log_C_TM+mie2)*signC_TM+exp(log_D_TE+mie2)*signD_TE;
 
                 /* M_EM */
-                matrix_set(M, i,ldim+j,               sign_al1*elem1);
-                matrix_set(M, j,ldim+i, MPOW(l1+l2+1)*sign_al2*elem2);
+                matrix_set(M, i,ldim+j,  MPOW(l1)*elem1);
+                matrix_set(M, j,ldim+i, -MPOW(l1)*elem2);
 
                 /* M_ME */
-                matrix_set(M, ldim+i,j,               sign_bl1*elem2);
-                matrix_set(M, ldim+j,i, MPOW(l1+l2+1)*sign_bl2*elem1);
+                matrix_set(M, ldim+i,j, -MPOW(l1)*elem2);
+                matrix_set(M, ldim+j,i,  MPOW(l1)*elem1);
             }
         }
 
