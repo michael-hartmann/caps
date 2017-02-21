@@ -102,9 +102,10 @@ typedef struct
     casimir_t *casimir;
     int m;
     integration_t *integration;
+    double nT;
     double *al, *bl;
     sign_t *signs_al, *signs_bl;
-} casimir_kernel_t;
+} casimir_M_t;
 
 
 /* prototypes */
@@ -151,6 +152,10 @@ void casimir_M0_elem(casimir_t *self, int l1, int l2, int m, double *EE, double 
 void casimir_M0(casimir_t *self, int m, matrix_t **EE, matrix_t **MM);
 void casimir_logdetD0_dense(casimir_t *self, int m, double *EE, double *MM);
 void casimir_logdetD0(casimir_t *self, int m, double *EE, double *MM);
+
+casimir_M_t *casimir_M_init(casimir_t *self, int m, double nT);
+double casimir_M_elem(casimir_M_t *self, int l1, int l2, char p1, char p2);
+void casimir_M_free(casimir_M_t *self);
 matrix_t *casimir_M(casimir_t *self, double nT, int m);
 double casimir_logdetD(casimir_t *self, double nT, int m);
 
