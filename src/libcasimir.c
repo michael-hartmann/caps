@@ -1013,6 +1013,27 @@ void casimir_logdetD0(casimir_t *self, int m, double *logdet_EE, double *logdet_
         *logdet_MM = hodlr_logdet(self->ldim, &casimir_kernel_M0_MM, &args, nLeaf, tolerance, is_symmetric);
 }
 
+double casimir_kernel_M(int i, int j, void *args_)
+{
+    char p1 = 'E', p2 = 'E';
+    casimir_M_t *args = (casimir_M_t *)args_;
+    const int ldim = args->casimir->ldim;
+    int l1 = i+1, l2 = j+1;
+
+    if(i > ldim)
+    {
+        p1 = 'M';
+        l1 -= ldim;
+    }
+    if(j > ldim)
+    {
+        p2 = 'M';
+        l2 -= ldim;
+    }
+
+    return casimir_M_elem(args, l1, l2, p1, p2);
+}
+
 casimir_M_t *casimir_M_init(casimir_t *casimir, int m, double nT)
 {
     const int ldim = casimir->ldim;
@@ -1133,10 +1154,8 @@ void casimir_M_free(casimir_M_t *self)
 matrix_t *casimir_M(casimir_t *self, double nT, int m)
 {
     /* main contributions comes from l1≈l2 */
-    size_t lmin,lmax,ldim = self->ldim;
+    size_t lmin = 1, ldim = self->ldim;
     //casimir_estimate_lminmax(self, m, &lmin, &lmax);
-    lmin = 1;
-    lmax = ldim;
 
     casimir_M_t *obj = casimir_M_init(self, m, nT);
 
