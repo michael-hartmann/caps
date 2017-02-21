@@ -54,6 +54,7 @@ typedef struct
      */
      /*@{*/
     double LbyR; /**< \f$L/R\f$, where \f$R\f$ is the radius of the sphere and \f$L\f$ is the separation of plane and sphere. */
+    double y;    /**< log(R/(R+L)/2) */
     /*@}*/
 
     /**
@@ -120,6 +121,7 @@ void casimir_lnab0(int l, double *a0, sign_t *sign_a0, double *b0, sign_t *sign_
 void casimir_lnab(casimir_t *self, double nT, int l, double *lna, double *lnb, sign_t *sign_a, sign_t *sign_b);
 void casimir_lnab_perf(casimir_t *self, double nT, int l, double *lna, double *lnb, sign_t *sign_a, sign_t *sign_b);
 
+void casimir_M0_elem(casimir_t *self, int l1, int l2, int m, double *EE, double *MM);
 void casimir_M0(casimir_t *self, int m, matrix_t **EE, matrix_t **MM);
 void casimir_logdetD0(casimir_t *self, int m, double *EE, double *MM);
 matrix_t *casimir_M(casimir_t *self, double nT, int m);
