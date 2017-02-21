@@ -1043,21 +1043,17 @@ double casimir_M_elem(casimir_M_t *self, int l1, int l2, char p1, char p2)
     if(isnan(self->al[l2-1]))
         casimir_lnab(casimir, nT, l2, &self->al[l2-1], &self->bl[l2-1], NULL, NULL);
 
-    const double al1 = self->al[l1], bl1 = self->bl[l1];
-    const double al2 = self->al[l2], bl2 = self->bl[l2];
+    const double al1 = self->al[l1-1], bl1 = self->bl[l1-1];
+    const double al2 = self->al[l2-1], bl2 = self->bl[l2-1];
 
     if(p1 == p2) /* EE or MM */
     {
-        sign_t signA_TE, signA_TM, signB_TE, signB_TM;
-
-        const double log_A_TE = casimir_integrate_A(integration, l1, l2, TE, &signA_TE);
-        const double log_A_TM = casimir_integrate_A(integration, l1, l2, TM, &signA_TM);
-
-        const double log_B_TE = casimir_integrate_B(integration, l1, l2, TE, &signB_TE);
-        const double log_B_TM = casimir_integrate_B(integration, l1, l2, TM, &signB_TM);
-
         if(p1 == 'E') /* EE */
         {
+            sign_t signA_TE, signB_TM;
+            double log_A_TE = casimir_integrate_A(integration, l1, l2, TE, &signA_TE);
+            double log_B_TM = casimir_integrate_B(integration, l1, l2, TM, &signB_TM);
+
             /* √(a_l1*a_l2)*(A_TE + B_TM) */
             const double mie = (al1+al2)/2;
             const double elem = exp(log_A_TE+mie)*signA_TE+exp(log_B_TM+mie)*signB_TM;
@@ -1066,6 +1062,10 @@ double casimir_M_elem(casimir_M_t *self, int l1, int l2, char p1, char p2)
         }
         else /* MM */
         {
+            sign_t signA_TM, signB_TE;
+            double log_A_TM = casimir_integrate_A(integration, l1, l2, TM, &signA_TM);
+            double log_B_TE = casimir_integrate_B(integration, l1, l2, TE, &signB_TE);
+
             /* √(b_l1*b_l2)*(A_TM + B_TE) */
             const double mie = (bl1+bl2)/2;
             const double elem = exp(log_A_TM+mie)*signA_TM+exp(log_B_TE+mie)*signB_TE;
@@ -1134,9 +1134,11 @@ matrix_t *casimir_M(casimir_t *self, double nT, int m)
 {
     /* main contributions comes from l1≈l2 */
     size_t lmin,lmax,ldim = self->ldim;
-    casimir_estimate_lminmax(self, m, &lmin, &lmax);
+    //casimir_estimate_lminmax(self, m, &lmin, &lmax);
+    lmin = 1;
+    lmax = ldim;
 
-    integration_t *integration = casimir_integrate_init(self, nT, m, self->tolerance);
+    casimir_M_t *obj = casimir_M_init(self, m, nT);
 
     /* allocate space for matrix M */
     matrix_t *M = matrix_alloc(2*ldim);
@@ -1146,14 +1148,6 @@ matrix_t *casimir_M(casimir_t *self, double nT, int m)
 
     /* M_EE, -M_EM
        M_ME,  M_MM */
-
-    /* Allocate memory for Mie cache on the stack. For ldim=10000 this requires
-     * about 10000*2*(8+1) bytes = 170kb. So it's easier just to use the stack.
-     */
-    double ln_a[ldim], ln_b[ldim];
-
-    for(size_t j = 0; j < ldim; j++)
-        ln_a[j] = ln_b[j] = NAN;
 
     double trace_diag = 0;
 
@@ -1170,49 +1164,35 @@ matrix_t *casimir_M(casimir_t *self, double nT, int m)
             /* i: row of matrix, j: column of matrix */
             const size_t i = l1-lmin, j = l2-lmin;
 
-            /* if neccessary, compute Mie coefficients */
-            if(isnan(ln_a[i]))
-                casimir_lnab(self, nT, l1, &ln_a[i], &ln_b[i], NULL, NULL);
-
-            if(isnan(ln_a[j]))
-                casimir_lnab(self, nT, l2, &ln_a[j], &ln_b[j], NULL, NULL);
-
-            const double ln_al1 = ln_a[i], ln_bl1 = ln_b[i];
-            const double ln_al2 = ln_a[j], ln_bl2 = ln_b[j];
-
-            sign_t signA_TE, signA_TM, signB_TE, signB_TM;
-
-            const double log_A_TE = casimir_integrate_A(integration, l1, l2, TE, &signA_TE);
-            const double log_A_TM = casimir_integrate_A(integration, l1, l2, TM, &signA_TM);
-
-            const double log_B_TE = casimir_integrate_B(integration, l1, l2, TE, &signB_TE);
-            const double log_B_TM = casimir_integrate_B(integration, l1, l2, TM, &signB_TM);
-
             /* EE */
-            {
-                /* √(a_l1*a_l2)*(A_TE + B_TM) */
-                const double mie = (ln_al1+ln_al2)/2;
-                const double elem = exp(log_A_TE+mie)*signA_TE+exp(log_B_TM+mie)*signB_TM;
-
-                trace += fabs(elem); /* elem is positive */
-
-                matrix_set(M, i,j, MPOW(l1)*elem);
-                matrix_set(M, j,i, MPOW(l1)*elem);
-            }
+            double EE = casimir_M_elem(obj, l1, l2, 'E', 'E');
+            matrix_set(M, i,j, EE);
+            matrix_set(M, j,i, EE);
 
             /* MM */
+            double MM = casimir_M_elem(obj, l1, l2, 'M', 'M');
+            matrix_set(M, i+ldim,j+ldim, MM);
+            matrix_set(M, j+ldim,i+ldim, MM);
+
+            trace += fabs(EE)+fabs(MM);
+
+            if(m)
             {
-                /* √(b_l1*b_l2)*(A_TM + B_TE) */
-                const double mie = (ln_bl1+ln_bl2)/2;
-                const double elem = exp(log_A_TM+mie)*signA_TM+exp(log_B_TE+mie)*signB_TE;
+                /* non-diagonal blocks EM and ME */
+                double EM = casimir_M_elem(obj, l1, l2, 'E', 'M');
+                double ME = casimir_M_elem(obj, l1, l2, 'M', 'E');
 
-                trace += fabs(elem); /* elem is positive */
+                /* EM */
+                matrix_set(M, i,ldim+j, EM);
+                matrix_set(M, j,ldim+i, ME);
 
-                matrix_set(M, i+ldim,j+ldim, MPOW(l1+1)*elem);
-                matrix_set(M, j+ldim,i+ldim, MPOW(l1+1)*elem);
+                /* ME */
+                matrix_set(M, ldim+i,j, ME);
+                matrix_set(M, ldim+j,i, EM);
             }
 
-            /* non-diagonal blocks EM and ME */
+            #if 0
+            /* ME */
             if(m != 0)
             {
                 sign_t signC_TE, signC_TM, signD_TE, signD_TM;
@@ -1240,6 +1220,7 @@ matrix_t *casimir_M(casimir_t *self, double nT, int m)
                 matrix_set(M, ldim+i,j, -MPOW(l1)*elem2);
                 matrix_set(M, ldim+j,i,  MPOW(l1)*elem1);
             }
+            #endif
         }
 
         if(md == 0)
@@ -1248,7 +1229,7 @@ matrix_t *casimir_M(casimir_t *self, double nT, int m)
             break;
     }
 
-    casimir_integrate_free(integration);
+    casimir_M_free(obj);
 
     return M;
 }
