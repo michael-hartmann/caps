@@ -986,8 +986,6 @@ void casimir_logdetD0(casimir_t *self, int m, double *logdet_EE, double *logdet_
     int is_symmetric = 1;
     double tolerance = 1e-15;
 
-    printf("hodlr\n");
-
     casimir_kernel_t args = {
         .casimir = self,
         .m = m,
