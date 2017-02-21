@@ -1,7 +1,7 @@
 /**
  * @file   libcasimir.c
  * @author Michael Hartmann <michael.hartmann@physik.uni-augsburg.de>
- * @date   January, 2017
+ * @date   February, 2017
  * @brief  library to calculate the free Casimir energy in the plane-sphere geometry
  */
 
@@ -932,7 +932,7 @@ void casimir_logdetD0(casimir_t *self, int m, double *logdet_EE, double *logdet_
 /**
  * @brief Calculate round-trip matrix M
  *
- * Create and the round-trip matrix M for matsubara frequency xi=nT and angular
+ * Create the round-trip matrix M for Matsubara frequency xi=nT and angular
  * momentum number m.
  *
  * You have to free the matrix yourself using matrix_free.
