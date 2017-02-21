@@ -5,17 +5,6 @@
 
 #include "libcasimir.h"
 #include "integration.h"
-#include "hash-table.h"
-
-
-typedef struct {
-    casimir_t *casimir;
-    int m;
-    double tau,epsrel;
-    HashTable *hash_table_I;
-    HashTable *hash_table_K;
-    bool is_pc;
-} integration_t;
 
 integration_t *casimir_integrate_init(casimir_t *self, double xi, int m, double epsrel);
 void casimir_integrate_free(integration_t *integration);
