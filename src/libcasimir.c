@@ -347,7 +347,7 @@ casimir_t *casimir_init(double LbyR)
     self->debug = false;
 
     /* use LU decomposition by default */
-    self->detalg = DETALG_HODLR;
+    self->detalg = DETALG_LU;
 
     return self;
 }
@@ -847,22 +847,22 @@ void casimir_M0_elem(casimir_t *self, int l1, int l2, int m, double *EE, double 
         *MM = _EE*sqrt((l1*l2)/((l1+1.)*(l2+1.)));
 }
 
-double casimir_kernel_M0_EE(int i, int j, void *args)
+double casimir_kernel_M0_EE(int i, int j, void *args_)
 {
-    casimir_kernel_t *kernel_args = (casimir_kernel_t *)args;
-    const int l1 = i+1, l2 = j+1, m = kernel_args->m;
-    casimir_t *casimir = kernel_args->casimir;
+    casimir_M_t *args = (casimir_M_t *)args_;
+    const int l1 = i+1, l2 = j+1, m = args->m;
+    casimir_t *casimir = args->casimir;
 
     double EE;
     casimir_M0_elem(casimir, l1, l2, m, &EE, NULL);
     return EE;
 }
 
-double casimir_kernel_M0_MM(int i, int j, void *args)
+double casimir_kernel_M0_MM(int i, int j, void *args_)
 {
-    casimir_kernel_t *kernel_args = (casimir_kernel_t *)args;
-    const int l1 = i+1, l2 = j+1, m = kernel_args->m;
-    casimir_t *casimir = kernel_args->casimir;
+    casimir_M_t *args = (casimir_M_t *)args_;
+    const int l1 = i+1, l2 = j+1, m = args->m;
+    casimir_t *casimir = args->casimir;
 
     double MM;
     casimir_M0_elem(casimir, l1, l2, m, NULL, &MM);
@@ -998,20 +998,34 @@ void casimir_logdetD0(casimir_t *self, int m, double *logdet_EE, double *logdet_
     int is_symmetric = 1;
     double tolerance = 1e-15;
 
-    casimir_kernel_t args = {
+    casimir_M_t args = {
         .casimir = self,
         .m = m,
+        .nT = 0,
         .integration = NULL,
         .al = NULL,
-        .bl = NULL,
-        .signs_al = NULL,
-        .signs_bl = NULL
+        .bl = NULL
     };
 
     if(logdet_EE != NULL)
         *logdet_EE = hodlr_logdet(self->ldim, &casimir_kernel_M0_EE, &args, nLeaf, tolerance, is_symmetric);
     if(logdet_MM != NULL)
         *logdet_MM = hodlr_logdet(self->ldim, &casimir_kernel_M0_MM, &args, nLeaf, tolerance, is_symmetric);
+}
+
+casimir_M_t *casimir_M_init(casimir_t *self, int m, double nT)
+{
+    return NULL;
+}
+
+double casimir_M_elem(casimir_M_t *self, int l1, int l2, char p1, char p2)
+{
+    return 0;
+}
+
+void casimir_M_free(casimir_M_t *self)
+{
+    return;
 }
 
 /**
