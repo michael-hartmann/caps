@@ -1013,19 +1013,108 @@ void casimir_logdetD0(casimir_t *self, int m, double *logdet_EE, double *logdet_
         *logdet_MM = hodlr_logdet(self->ldim, &casimir_kernel_M0_MM, &args, nLeaf, tolerance, is_symmetric);
 }
 
-casimir_M_t *casimir_M_init(casimir_t *self, int m, double nT)
+casimir_M_t *casimir_M_init(casimir_t *casimir, int m, double nT)
 {
-    return NULL;
+    const int ldim = casimir->ldim;
+    casimir_M_t *self = xmalloc(sizeof(casimir_M_t));
+
+    self->casimir = casimir;
+    self->m = m;
+    self->integration = casimir_integrate_init(casimir, nT, m, casimir->tolerance);
+    self->nT = nT;
+    self->al = xmalloc(ldim*sizeof(double));
+    self->bl = xmalloc(ldim*sizeof(double));
+
+    for(int j = 0; j < ldim; j++)
+        self->al[j] = self->bl[j] = NAN;
+
+    return self;
 }
 
 double casimir_M_elem(casimir_M_t *self, int l1, int l2, char p1, char p2)
 {
-    return 0;
+    const double nT = self->nT;
+    casimir_t *casimir = self->casimir;
+    integration_t *integration = self->integration;
+
+    if(isnan(self->al[l1-1]))
+        casimir_lnab(casimir, nT, l1, &self->al[l1-1], &self->bl[l1-1], NULL, NULL);
+
+    if(isnan(self->al[l2-1]))
+        casimir_lnab(casimir, nT, l2, &self->al[l2-1], &self->bl[l2-1], NULL, NULL);
+
+    const double al1 = self->al[l1], bl1 = self->bl[l1];
+    const double al2 = self->al[l2], bl2 = self->bl[l2];
+
+    if(p1 == p2) /* EE or MM */
+    {
+        sign_t signA_TE, signA_TM, signB_TE, signB_TM;
+
+        const double log_A_TE = casimir_integrate_A(integration, l1, l2, TE, &signA_TE);
+        const double log_A_TM = casimir_integrate_A(integration, l1, l2, TM, &signA_TM);
+
+        const double log_B_TE = casimir_integrate_B(integration, l1, l2, TE, &signB_TE);
+        const double log_B_TM = casimir_integrate_B(integration, l1, l2, TM, &signB_TM);
+
+        if(p1 == 'E') /* EE */
+        {
+            /* √(a_l1*a_l2)*(A_TE + B_TM) */
+            const double mie = (al1+al2)/2;
+            const double elem = exp(log_A_TE+mie)*signA_TE+exp(log_B_TM+mie)*signB_TM;
+
+            return MPOW(l1)*elem;
+        }
+        else /* MM */
+        {
+            /* √(b_l1*b_l2)*(A_TM + B_TE) */
+            const double mie = (bl1+bl2)/2;
+            const double elem = exp(log_A_TM+mie)*signA_TM+exp(log_B_TE+mie)*signB_TE;
+
+            return MPOW(l1+1)*elem;
+        }
+    }
+    else /* EM or ME */
+    {
+        const int m = self->m;
+        if(m == 0)
+            return 0;
+
+        /* M_EM */
+        if(p1 == 'E') /* EM */
+        {
+            sign_t signC_TE, signD_TM;
+
+            double log_C_TE = casimir_integrate_C(integration, l1, l2, TE, &signC_TE);
+            double log_D_TM = casimir_integrate_D(integration, l1, l2, TM, &signD_TM);
+
+            /* C_TE + D_TM */
+            double mie1 = (al1+bl2)/2;
+            double elem1 = exp(log_C_TE+mie1)*signC_TE+exp(log_D_TM+mie1)*signD_TM;
+
+            return MPOW(l1)*elem1;
+        }
+        else /* ME */
+        {
+            sign_t signC_TM, signD_TE;
+
+            double log_C_TM = casimir_integrate_C(integration, l1, l2, TM, &signC_TM);
+            double log_D_TE = casimir_integrate_D(integration, l1, l2, TE, &signD_TE);
+
+            /* C_TM + D_TE */
+            const double mie2 = (bl1+al2)/2;
+            const double elem2 = exp(log_C_TM+mie2)*signC_TM+exp(log_D_TE+mie2)*signD_TE;
+
+            return -MPOW(l1)*elem2;
+        }
+    }
 }
 
 void casimir_M_free(casimir_M_t *self)
 {
-    return;
+    xfree(self->al);
+    xfree(self->bl);
+    casimir_integrate_free(self->integration);
+    xfree(self);
 }
 
 /**

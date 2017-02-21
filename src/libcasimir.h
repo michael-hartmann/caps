@@ -104,7 +104,6 @@ typedef struct
     integration_t *integration;
     double nT;
     double *al, *bl;
-    sign_t *signs_al, *signs_bl;
 } casimir_M_t;
 
 
