@@ -1,7 +1,7 @@
 /**
  * @file   matrix.c
  * @author Michael Hartmann <michael.hartmann@physik.uni-augsburg.de>
- * @date   November, 2016
+ * @date   February, 2017
  * @brief  matrix functions
  */
 
@@ -16,7 +16,6 @@
 #include "utils.h"
 
 #include "clapack.h"
-
 
 /**
  * @brief Create new matrix object
@@ -364,10 +363,8 @@ double matrix_logdet_triangular(matrix_t *A)
 /**
  * @brief Calculate \f$\log\det(\mathrm{Id}+z*M)\f$ for matrix M
  *
- * Detalg may be:
- *  - LU
- *  - QR
- *  - EIG
+ * This function tries to approximate logdet(A) using a mercator series if
+ * possible to reduce the complexity for an NxN matrix A from O(N³) to O(N²).
  *
  * @param [in,out] M round trip matrix M; M will be overwritten.
  * @param [in]     z factor z in log(det(Id+z*M))
@@ -386,11 +383,6 @@ double matrix_logdet(matrix_t *A, double z)
         const double mercator = trM-trM2/2;
         const double error = fabs(pow_2(norm)/2+norm+log1p(-norm));
         const double rel_error = fabs(error/mercator);
-
-        /*
-        printf("tr(M)=%g, tr(M²)=%g, tr(M²)/tr(M)=%e, logdetD≈%.16g\n", trM, trM2, trM2/trM, mercator);
-        printf("error=%g, rel=%g\n", error, rel_error);
-        */
 
         if(rel_error < 1e-8)
             return mercator;
