@@ -152,6 +152,8 @@ void casimir_M0(casimir_t *self, int m, matrix_t **EE, matrix_t **MM);
 void casimir_logdetD0_dense(casimir_t *self, int m, double *EE, double *MM);
 void casimir_logdetD0(casimir_t *self, int m, double *EE, double *MM);
 
+double casimir_kernel_M(int i, int j, void *args_);
+
 casimir_M_t *casimir_M_init(casimir_t *self, int m, double nT);
 double casimir_M_elem(casimir_M_t *self, int l1, int l2, char p1, char p2);
 void casimir_M_free(casimir_M_t *self);
