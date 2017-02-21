@@ -140,7 +140,6 @@ int matrix_save_to_stream(matrix_t *A, FILE *stream)
     return 0;
 }
 
-
 /**
  * @brief Save matrix to file
  *
@@ -164,6 +163,95 @@ int matrix_save_to_file(matrix_t *A, const char *filename)
     return ret;
 }
 
+
+/**
+ * @brief Load matrix from stream
+ *
+ * This function loads a matrix from a given stream. The input must be in .npy
+ * format. The input matrix must be a square matrix.
+ *
+ * The function will rudimentary parse the description string and abort if an
+ * error occured. However, do not use this function on untrusted data.
+ *
+ * This function does not support matrix views at the moment.
+ *
+ * @param [in] stream stream
+ * @retval A matrix if successful
+ * @retval NULL if an error occured
+ */
+matrix_t *matrix_load_from_stream(FILE *stream)
+{
+    matrix_t *A = NULL;
+    int dim1, dim2;
+    char *p = NULL;
+    char header[8] = { 0 };
+    char d_str[512] = { 0 };
+    uint16_t len = 0;
+
+    /* check if header is correct */
+    fread(header, sizeof(char), 8, stream);
+    if(strcmp(header, "\x93NUMPY\x01\x00") != 0)
+        return NULL;
+
+    /* read len and description */
+    fread(&len, sizeof(len), 1, stream);
+    fread(d_str, sizeof(char), len, stream);
+
+    if(len < 2)
+        return NULL;
+
+    if(d_str[0] != '{' && d_str[len-1] != '}')
+        return NULL;
+
+    if(strstr(d_str, "'descr': '<f8'") == NULL)
+        return NULL;
+
+    if(strstr(d_str, "'fortran_order': True") == NULL)
+        return NULL;
+
+    p = strstr(d_str, "'shape': (");
+    if(p == NULL)
+        return NULL;
+
+    p += 10;
+    dim1 = atoi(p);
+    p = strstr(p, ",");
+    if(p == NULL)
+        return NULL;
+
+    dim2 = atoi(p+1);
+
+    if(dim1 != dim2)
+        return NULL;
+
+    A = matrix_alloc(dim1);
+    fread(A->M, sizeof(double), dim1*dim1, stream);
+
+    return A;
+}
+
+/**
+ * @brief Load matrix from file
+ *
+ * Load matrix matrix from file filename. See \ref matrix_load_from_file for
+ * more information.
+ *
+ * @param [in] filename filename of output file
+ * @retval A matrix if successful
+ * @retval NULL if an error occured
+ */
+matrix_t *matrix_load_from_file(const char *filename)
+{
+    FILE *f = fopen(filename, "r");
+    if(f == NULL)
+        return NULL;
+
+    matrix_t *A = matrix_load_from_stream(f);
+
+    fclose(f);
+
+    return A;
+}
 
 /**
  * @brief Set all matrix elements to value z

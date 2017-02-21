@@ -35,6 +35,9 @@ void matrix_setall(matrix_t *A, double z);
 int matrix_save_to_stream(matrix_t *A, FILE *stream);
 int matrix_save_to_file(matrix_t *A, const char *filename);
 
+matrix_t *matrix_load_from_stream(FILE *stream);
+matrix_t *matrix_load_from_file(const char *filename);
+
 double matrix_trace(matrix_t *A);
 double matrix_trace2(matrix_t *A);
 
