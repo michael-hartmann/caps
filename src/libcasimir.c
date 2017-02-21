@@ -838,6 +838,35 @@ void casimir_M0_elem(casimir_t *self, int l1, int l2, int m, double *EE, double 
         *MM = _EE*sqrt((l1*l2)/((l1+1.)*(l2+1.)));
 }
 
+double casimir_kernel_M0_EE(int i, int j, void *args)
+{
+    casimir_kernel_t *kernel_args = (casimir_kernel_t *)args;
+    const int l1 = i+1, l2 = j+1, m = kernel_args->m;
+    casimir_t *casimir = kernel_args->casimir;
+
+    double EE;
+    casimir_M0_elem(casimir, l1, l2, m, &EE, NULL);
+    return EE;
+}
+
+double casimir_kernel_M0_MM(int i, int j, void *args)
+{
+    casimir_kernel_t *kernel_args = (casimir_kernel_t *)args;
+    const int l1 = i+1, l2 = j+1, m = kernel_args->m;
+    casimir_t *casimir = kernel_args->casimir;
+
+    double MM;
+    casimir_M0_elem(casimir, l1, l2, m, NULL, &MM);
+    return MM;
+}
+
+#if 0
+double casimir_kernel_M0_MM(int i, int j, void *args)
+{
+
+}
+#endif
+
 /**
  * @brief Calculate round-trip matrices M for xi=nT=0
  *
@@ -954,6 +983,13 @@ void casimir_logdetD0(casimir_t *self, int m, double *logdet_EE, double *logdet_
         matrix_free(MM);
     }
 }
+
+#if 0
+void casimir_logdetD0_hodlr(casimir_t *self, int m, double *logdet_EE, double *logdet_MM)
+{
+
+}
+#endif
 
 /**
  * @brief Calculate round-trip matrix M

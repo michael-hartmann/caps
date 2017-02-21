@@ -97,7 +97,7 @@ typedef struct {
 
 typedef struct
 {
-    casimir_t *self;
+    casimir_t *casimir;
     int m;
     integration_t *integration;
     double *al, *bl;
@@ -141,6 +141,9 @@ int    casimir_set_tolerance(casimir_t *self, double tolerance);
 void casimir_lnab0(int l, double *a0, sign_t *sign_a0, double *b0, sign_t *sign_b0);
 void casimir_lnab(casimir_t *self, double nT, int l, double *lna, double *lnb, sign_t *sign_a, sign_t *sign_b);
 void casimir_lnab_perf(casimir_t *self, double nT, int l, double *lna, double *lnb, sign_t *sign_a, sign_t *sign_b);
+
+double casimir_kernel_M0_EE(int i, int j, void *args);
+double casimir_kernel_M0_MM(int i, int j, void *args);
 
 void casimir_M0_elem(casimir_t *self, int l1, int l2, int m, double *EE, double *MM);
 void casimir_M0(casimir_t *self, int m, matrix_t **EE, matrix_t **MM);
