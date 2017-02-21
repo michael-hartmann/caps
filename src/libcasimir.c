@@ -59,10 +59,9 @@ void casimir_info(casimir_t *self, FILE *stream, const char *prefix)
 
     switch(self->detalg)
     {
-        case DETALG_LU:  detalg_str = "LU"; break;
-        case DETALG_QR:  detalg_str = "QR"; break;
-        case DETALG_EIG: detalg_str = "EIG"; break;
-        default:         detalg_str = "unknown";
+        case DETALG_HODLR: detalg_str = "HODLR"; break;
+        case DETALG_LU:    detalg_str = "LU";    break;
+        default:           detalg_str = "unknown";
     }
 
     fprintf(stream, "%sL/R       = %.8g\n", prefix, self->LbyR);
@@ -348,7 +347,7 @@ casimir_t *casimir_init(double LbyR)
     self->debug = false;
 
     /* use LU decomposition by default */
-    self->detalg = DETALG_LU;
+    self->detalg = DETALG_HODLR;
 
     return self;
 }
@@ -941,7 +940,6 @@ void casimir_M0(casimir_t *self, int m, matrix_t **EE, matrix_t **MM)
     }
 }
 
-#if 0
 /**
  * @brief Calculate \f$\log\det \mathcal{D}^{(m)}(\xi=0)\f$ for EE and MM
  *
@@ -955,7 +953,7 @@ void casimir_M0(casimir_t *self, int m, matrix_t **EE, matrix_t **MM)
  * @param [out] logdet_EE
  * @param [out] logdet_MM
  */
-void casimir_logdetD0(casimir_t *self, int m, double *logdet_EE, double *logdet_MM)
+void casimir_logdetD0_dense(casimir_t *self, int m, double *logdet_EE, double *logdet_MM)
 {
     matrix_t *EE = NULL, *MM = NULL;
 
@@ -969,19 +967,24 @@ void casimir_logdetD0(casimir_t *self, int m, double *logdet_EE, double *logdet_
     /* Calculate logdet=log(det(Id-M)) and free space. */
     if(EE != NULL)
     {
-        *logdet_EE = matrix_logdet(EE, -1, self->detalg);
+        *logdet_EE = matrix_logdet(EE, -1);
         matrix_free(EE);
     }
     if(MM != NULL)
     {
-        *logdet_MM = matrix_logdet(MM, -1, self->detalg);
+        *logdet_MM = matrix_logdet(MM, -1);
         matrix_free(MM);
     }
 }
-#endif
 
 void casimir_logdetD0(casimir_t *self, int m, double *logdet_EE, double *logdet_MM)
 {
+    if(self->detalg != DETALG_HODLR)
+    {
+        casimir_logdetD0_dense(self, m, logdet_EE, logdet_MM);
+        return;
+    }
+
     unsigned int nLeaf = 100; /* XXX */
     int is_symmetric = 1;
     double tolerance = 1e-15;
@@ -1197,8 +1200,8 @@ double casimir_logdetD(casimir_t *self, double nT, int m)
         matrix_t *MM = matrix_view(&M->M[ldim*(dim+1)], ldim, dim);
 
         t0 = now();
-        logdet  = matrix_logdet(EE, -1, self->detalg);
-        logdet += matrix_logdet(MM, -1, self->detalg);
+        logdet  = matrix_logdet(EE, -1);
+        logdet += matrix_logdet(MM, -1);
         casimir_debug(self, "# timing: log(det(Id-EE)), log(det(Id-MM)): %gs\n", now()-t0);
 
         matrix_free(EE);
@@ -1207,7 +1210,7 @@ double casimir_logdetD(casimir_t *self, double nT, int m)
     else
     {
         t0 = now();
-        logdet = matrix_logdet(M, -1, self->detalg);
+        logdet = matrix_logdet(M, -1);
         casimir_debug(self, "# timing: log(det(Id-M)): %gs\n", now()-t0);
     }
 

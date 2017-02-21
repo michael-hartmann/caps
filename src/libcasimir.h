@@ -12,6 +12,8 @@ typedef signed char sign_t;
  */
 typedef enum { TE, TM } polarization_t;
 
+typedef enum { DETALG_HODLR, DETALG_LU } detalg_t;
+
 #include <pthread.h>
 #include <stdarg.h>
 #include <stdbool.h>
@@ -147,6 +149,7 @@ double casimir_kernel_M0_MM(int i, int j, void *args);
 
 void casimir_M0_elem(casimir_t *self, int l1, int l2, int m, double *EE, double *MM);
 void casimir_M0(casimir_t *self, int m, matrix_t **EE, matrix_t **MM);
+void casimir_logdetD0_dense(casimir_t *self, int m, double *EE, double *MM);
 void casimir_logdetD0(casimir_t *self, int m, double *EE, double *MM);
 matrix_t *casimir_M(casimir_t *self, double nT, int m);
 double casimir_logdetD(casimir_t *self, double nT, int m);
