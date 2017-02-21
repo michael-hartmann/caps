@@ -17,6 +17,7 @@ typedef enum { TE, TM } polarization_t;
 #include <stdbool.h>
 #include <stdio.h>
 
+#include "hash-table.h"
 #include "matrix.h"
 
 #ifndef M_PI
@@ -82,6 +83,26 @@ typedef struct
     pthread_mutex_t mutex; /**< mutex for printing */
     /*@}*/
 } casimir_t;
+
+
+typedef struct {
+    casimir_t *casimir;
+    int m;
+    double tau,epsrel;
+    HashTable *hash_table_I;
+    HashTable *hash_table_K;
+    bool is_pc;
+} integration_t;
+
+
+typedef struct
+{
+    casimir_t *self;
+    int m;
+    integration_t *integration;
+    double *al, *bl;
+    sign_t *signs_al, *signs_bl;
+} casimir_kernel_t;
 
 
 /* prototypes */
