@@ -100,7 +100,7 @@ typedef struct {
 typedef struct
 {
     casimir_t *casimir;
-    int m;
+    int m, lmin;
     integration_t *integration;
     double nT;
     double *al, *bl;

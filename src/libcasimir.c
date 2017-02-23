@@ -850,7 +850,8 @@ void casimir_M0_elem(casimir_t *self, int l1, int l2, int m, double *EE, double 
 double casimir_kernel_M0_EE(int i, int j, void *args_)
 {
     casimir_M_t *args = (casimir_M_t *)args_;
-    const int l1 = i+1, l2 = j+1, m = args->m;
+    const int lmin = args->lmin;
+    const int l1 = i+lmin, l2 = j+lmin, m = args->m;
     casimir_t *casimir = args->casimir;
 
     double EE;
@@ -861,7 +862,8 @@ double casimir_kernel_M0_EE(int i, int j, void *args_)
 double casimir_kernel_M0_MM(int i, int j, void *args_)
 {
     casimir_M_t *args = (casimir_M_t *)args_;
-    const int l1 = i+1, l2 = j+1, m = args->m;
+    const int lmin = args->lmin;
+    const int l1 = i+lmin, l2 = j+lmin, m = args->m;
     casimir_t *casimir = args->casimir;
 
     double MM;
@@ -994,9 +996,12 @@ void casimir_logdetD0(casimir_t *self, int m, double *logdet_EE, double *logdet_
         return;
     }
 
+    size_t lmin, lmax;
     unsigned int nLeaf = 100; /* XXX */
     int is_symmetric = 1;
     double tolerance = 1e-15;
+
+    casimir_estimate_lminmax(self, m, &lmin, &lmax);
 
     casimir_M_t args = {
         .casimir = self,
@@ -1004,11 +1009,13 @@ void casimir_logdetD0(casimir_t *self, int m, double *logdet_EE, double *logdet_
         .nT = 0,
         .integration = NULL,
         .al = NULL,
-        .bl = NULL
+        .bl = NULL,
+        .lmin = lmin
     };
 
     if(logdet_EE != NULL)
         *logdet_EE = hodlr_logdet(self->ldim, &casimir_kernel_M0_EE, &args, nLeaf, tolerance, is_symmetric);
+
     if(logdet_MM != NULL)
         *logdet_MM = hodlr_logdet(self->ldim, &casimir_kernel_M0_MM, &args, nLeaf, tolerance, is_symmetric);
 }
@@ -1036,11 +1043,15 @@ double casimir_kernel_M(int i, int j, void *args_)
 
 casimir_M_t *casimir_M_init(casimir_t *casimir, int m, double nT)
 {
+    size_t lmin, lmax;
     const int ldim = casimir->ldim;
     casimir_M_t *self = xmalloc(sizeof(casimir_M_t));
 
+    casimir_estimate_lminmax(casimir, m, &lmin, &lmax);
+
     self->casimir = casimir;
     self->m = m;
+    self->lmin = lmin; // XXX
     self->integration = casimir_integrate_init(casimir, nT, m, casimir->tolerance);
     self->nT = nT;
     self->al = xmalloc(ldim*sizeof(double));
@@ -1154,8 +1165,8 @@ void casimir_M_free(casimir_M_t *self)
 matrix_t *casimir_M(casimir_t *self, double nT, int m)
 {
     /* main contributions comes from l1≈l2 */
-    size_t lmin = 1, ldim = self->ldim;
-    //casimir_estimate_lminmax(self, m, &lmin, &lmax);
+    size_t lmin, lmax, ldim = self->ldim;
+    casimir_estimate_lminmax(self, m, &lmin, &lmax);
 
     casimir_M_t *obj = casimir_M_init(self, m, nT);
 
