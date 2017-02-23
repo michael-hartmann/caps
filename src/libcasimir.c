@@ -990,12 +990,14 @@ void casimir_logdetD0_dense(casimir_t *self, int m, double *logdet_EE, double *l
 
 void casimir_logdetD0(casimir_t *self, int m, double *logdet_EE, double *logdet_MM)
 {
-    if(self->detalg != DETALG_HODLR)
-    {
+    if(self->detalg == DETALG_HODLR)
+        casimir_logdetD0_hodlr(self, m, logdet_EE, logdet_MM);
+    else
         casimir_logdetD0_dense(self, m, logdet_EE, logdet_MM);
-        return;
-    }
+}
 
+void casimir_logdetD0_hodlr(casimir_t *self, int m, double *logdet_EE, double *logdet_MM)
+{
     size_t lmin, lmax;
     unsigned int nLeaf = 100; /* XXX */
     int is_symmetric = 1;
@@ -1268,9 +1270,14 @@ matrix_t *casimir_M(casimir_t *self, double nT, int m)
 
 double casimir_logdetD(casimir_t *self, double nT, int m)
 {
-    if(self->detalg != DETALG_HODLR)
+    if(self->detalg == DETALG_HODLR)
+        return casimir_logdetD_hodlr(self, nT, m);
+    else
         return casimir_logdetD_dense(self, nT, m);
+}
 
+double casimir_logdetD_hodlr(casimir_t *self, double nT, int m)
+{
     unsigned int nLeaf = 100; /* XXX */
     int is_symmetric = 1;
     double tolerance = 1e-15;
