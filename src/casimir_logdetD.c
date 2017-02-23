@@ -55,6 +55,9 @@ static void usage(FILE *stream)
 "    -D, --debug\n"
 "        Enable debugging information.\n"
 "\n"
+"    -d, --dense\n"
+"        Compute the dense matrix and use LU decomposition to calculate the determinant\n"
+"\n"
 "    -h,--help\n"
 "        Show this help.\n"
 "\n"
@@ -77,7 +80,7 @@ int main(int argc, char *argv[])
     int ldim = 0;
 
     /* flags */
-    bool debug = false, buffering = false;
+    bool debug = false, buffering = false, dense = false;
 
     while(1)
     {
@@ -85,6 +88,7 @@ int main(int argc, char *argv[])
             { "help",      no_argument,       0, 'h' },
             { "buffering", no_argument,       0, 'b' },
             { "debug",     no_argument,       0, 'D' },
+            { "dense",     no_argument,       0, 'd' },
 
             { "LbyR",      required_argument, 0, 'x' },
             { "nT",        required_argument, 0, 'T' },
@@ -98,7 +102,7 @@ int main(int argc, char *argv[])
 
         /* getopt_long stores the option index here. */
         int option_index = 0;
-        int c = getopt_long (argc, argv, "x:T:m:l:w:g:L:t:bhD", long_options, &option_index);
+        int c = getopt_long (argc, argv, "x:T:m:l:w:g:L:t:bdhD", long_options, &option_index);
 
         /* Detect the end of the options. */
         if(c == -1)
@@ -130,6 +134,9 @@ int main(int argc, char *argv[])
                 break;
             case 'b':
                 buffering = true;
+                break;
+            case 'd':
+                dense = true;
                 break;
             case 'D':
                 debug = true;
@@ -200,6 +207,9 @@ int main(int argc, char *argv[])
     }
 
     casimir_set_debug(casimir, debug);
+
+    if(dense)
+        casimir_set_detalg(casimir, DETALG_LU);
 
     casimir_info(casimir, stdout, "# ");
     printf("#\n");
