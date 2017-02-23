@@ -151,8 +151,18 @@ int casimir_verbose(casimir_t *self, const char *format, ...)
     return ret;
 }
 
-/*@}*/
 
+unsigned int casimir_get_nLeaf(casimir_t *self)
+{
+    return self->nLeaf;
+}
+
+void casimir_set_nLeaf(casimir_t *self, unsigned int nLeaf)
+{
+    self->nLeaf = nLeaf;
+}
+
+/*@}*/
 
 /**
 * @name various functions
@@ -336,6 +346,9 @@ casimir_t *casimir_init(double LbyR)
 
     /* integration error */
     self->tolerance = CASIMIR_TOLERANCE;
+
+    /* set nLeaf */
+    self->nLeaf = 100; /* XXX */
 
     /* set verbose flag */
     self->verbose = false;
@@ -999,7 +1012,7 @@ void casimir_logdetD0(casimir_t *self, int m, double *logdet_EE, double *logdet_
 void casimir_logdetD0_hodlr(casimir_t *self, int m, double *logdet_EE, double *logdet_MM)
 {
     size_t lmin, lmax;
-    unsigned int nLeaf = 100; /* XXX */
+    unsigned int nLeaf = self->nLeaf;
     int is_symmetric = 1;
     double tolerance = 1e-15;
 
@@ -1278,7 +1291,7 @@ double casimir_logdetD(casimir_t *self, double nT, int m)
 
 double casimir_logdetD_hodlr(casimir_t *self, double nT, int m)
 {
-    unsigned int nLeaf = 100; /* XXX */
+    unsigned int nLeaf = self->nLeaf;
     int is_symmetric = 1;
     double tolerance = 1e-15;
 

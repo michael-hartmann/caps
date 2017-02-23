@@ -72,10 +72,11 @@ typedef struct
      * @name accuracy and numerical parameters
      */
      /*@{*/
-    int ldim;         /**< truncation value for vector space \f$\ell_\mathrm{max}\f$ */
-    double threshold; /**< threshold for matrix elements */
-    double tolerance; /**< tolerance for integration */
-    detalg_t detalg;  /**< algorithm to calculate determinant */
+    int ldim;           /**< truncation value for vector space \f$\ell_\mathrm{max}\f$ */
+    double threshold;   /**< threshold for matrix elements */
+    double tolerance;   /**< tolerance for integration */
+    unsigned int nLeaf; /**< variable nLeaf for hodlr */
+    detalg_t detalg;    /**< algorithm to calculate determinant */
 
     bool verbose; /**< verbose flag */
 
@@ -127,6 +128,9 @@ void casimir_set_verbose(casimir_t *self, bool verbose);
 bool casimir_get_verbose(casimir_t *self);
 
 void casimir_set_epsilonm1(casimir_t *self, double (*epsilonm1)(double xi, void *userdata), void *userdata);
+
+void casimir_set_nLeaf(casimir_t *self, unsigned int nLeaf);
+unsigned int casimir_get_nLeaf(casimir_t *self);
 
 int casimir_get_ldim(casimir_t *self);
 int casimir_set_ldim(casimir_t *self, int ldim);
