@@ -149,8 +149,11 @@ double casimir_kernel_M0_MM(int i, int j, void *args);
 
 void casimir_M0_elem(casimir_t *self, int l1, int l2, int m, double *EE, double *MM);
 void casimir_M0(casimir_t *self, int m, matrix_t **EE, matrix_t **MM);
-void casimir_logdetD0_dense(casimir_t *self, int m, double *EE, double *MM);
+
+
 void casimir_logdetD0(casimir_t *self, int m, double *EE, double *MM);
+void casimir_logdetD0_dense(casimir_t *self, int m, double *EE, double *MM);
+void casimir_logdetD0_hodlr(casimir_t *self, int m, double *EE, double *MM);
 
 double casimir_kernel_M(int i, int j, void *args_);
 
@@ -158,8 +161,10 @@ casimir_M_t *casimir_M_init(casimir_t *self, int m, double nT);
 double casimir_M_elem(casimir_M_t *self, int l1, int l2, char p1, char p2);
 void casimir_M_free(casimir_M_t *self);
 matrix_t *casimir_M(casimir_t *self, double nT, int m);
+
 double casimir_logdetD(casimir_t *self, double nT, int m);
 double casimir_logdetD_dense(casimir_t *self, double nT, int m);
+double casimir_logdetD_hodlr(casimir_t *self, double nT, int m);
 
 void casimir_rp(casimir_t *self, double nT, double k, double *r_TE, double *r_TM);
 
