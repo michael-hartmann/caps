@@ -25,14 +25,14 @@ static double _Pl1(int l, double x)
     double sinhxi_m = 1; /* sinh(xi)**m */
     double expxi_m  = 1; /* exp(xi)**m */
     for(int m = 0; m < 18; m++)
-    {   
+    {
         //return exp(2*lgamma(m+0.5)+lgamma(l+1) - log(M_PI) - m*log(2) -lgamma(l+m+1.5) -lgamma(m+1));
         double Clm = exp( 2*lfac(2*m) - 3*lfac(m) + lfac(l) - lfac(2*(l+m+1)) - M_LOGPI/2 + (2*(l+1)-3*m)*log(2) + lfac(l+m+1)  );
 
         sum += Clm * (expxi_m+exp(-(m+2*l+1)*xi)) /sinhxi_m;
         sinhxi_m *= sinhxi;
         expxi_m  *= expxi;
-    }   
+    }
 
     return log(2/(M_PI*sinhxi))/2 + log(sum) + (l+0.5)*xi - log(2);
 }
@@ -177,10 +177,49 @@ double dPl(int l, double x)
     return log((l*x)/((x+1)*(x-1))) + lnPl + log1p( -exp(lnPlm-lnPl)/x );
 }
 
+/* Calculate fraction P_l^m/P_l^{m-1}
+ *
+ * The fraction is computed using a continued fraction, see http://dlmf.nist.gov/14.14.E1 .
+ *
+ * To evaluate the continued fraction, we use http://dlmf.nist.gov/1.12#E5 and
+ * http://dlmf.nist.gov/1.12#E6 .
+ */
+double _cf(int l, int m, double x)
+{
+    const double c = (x+1)*(x-1)/4;
+    double Amm = 1, Am = 0, Bmm = 0;
+    double last = 0;
+
+    for(int n = 0; n < 10000; n++)
+    {
+        double f, an,bn, A, B;
+
+        an = (l-m-n+1)*(l+m+n)*c;
+        bn = (m+n)*x;
+
+        A = Am*bn + Amm*an;
+        B = 1/(bn + Bmm*an);
+
+        f = A*B;
+
+        Amm = Am*B;
+        Am = A*B;
+
+        Bmm = B;
+
+        if(fabs(1-last/f) < 1e-16)
+            return 2*f/sqrt((x+1)*(x-1));
+
+        last = f;
+    }
+
+    return NAN;
+}
+
 
 /* Evaluate associated Legendre polynomial */
 double Plm2(int l, int m, double x)
-{   
+{
     if(l < 200 || ((double)m/l) > 0.01)
         return Plm(l,m,x,1,1);
 
@@ -193,20 +232,18 @@ double Plm2(int l, int m, double x)
     double v1 = -exp(dPl(l,x)-prefactor)/root;
 
     for(int mm = 1; mm < m; mm++)
-    {   
-        double a = (l+mm)*(l-mm+1)*v0;
-        double b = 2*mm*x*v1*root;
+    {
         double v = (l+mm)*(l-mm+1)*v0 + 2*mm*x*v1*root;
         v0 = v1;
         v1 = v;
 
         if(fabs(v) > 1e150)
-        {   
+        {
             prefactor += log(1e150);
             v0 /= 1e150;
             v1 /= 1e150;
         }
     }
-    
+
     return prefactor+log(fabs(v1));
 }
