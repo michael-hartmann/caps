@@ -27,6 +27,8 @@ OBJS = \
     cquadpack/src/dqk15i.c \
     cquadpack/src/dqk21.c \
     cquadpack/src/dqsort.c \
+    besselI.c \
+    plm.c \
     hash-table.c \
     lookup.c \
     integration.o \
