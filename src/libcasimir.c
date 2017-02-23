@@ -1025,7 +1025,8 @@ double casimir_kernel_M(int i, int j, void *args_)
     char p1 = 'E', p2 = 'E';
     casimir_M_t *args = (casimir_M_t *)args_;
     const int ldim = args->casimir->ldim;
-    int l1 = i+1, l2 = j+1;
+    const int lmin = args->lmin;
+    int l1 = i+lmin, l2 = j+lmin;
 
     if(i >= ldim)
     {
@@ -1066,17 +1067,18 @@ casimir_M_t *casimir_M_init(casimir_t *casimir, int m, double nT)
 double casimir_M_elem(casimir_M_t *self, int l1, int l2, char p1, char p2)
 {
     const double nT = self->nT;
+    const int lmin = self->lmin;
     casimir_t *casimir = self->casimir;
     integration_t *integration = self->integration;
 
-    if(isnan(self->al[l1-1]))
-        casimir_lnab(casimir, nT, l1, &self->al[l1-1], &self->bl[l1-1], NULL, NULL);
+    if(isnan(self->al[l1-lmin]))
+        casimir_lnab(casimir, nT, l1, &self->al[l1-lmin], &self->bl[l1-lmin], NULL, NULL);
 
-    if(isnan(self->al[l2-1]))
-        casimir_lnab(casimir, nT, l2, &self->al[l2-1], &self->bl[l2-1], NULL, NULL);
+    if(isnan(self->al[l2-lmin]))
+        casimir_lnab(casimir, nT, l2, &self->al[l2-lmin], &self->bl[l2-lmin], NULL, NULL);
 
-    const double al1 = self->al[l1-1], bl1 = self->bl[l1-1];
-    const double al2 = self->al[l2-1], bl2 = self->bl[l2-1];
+    const double al1 = self->al[l1-lmin], bl1 = self->bl[l1-lmin];
+    const double al2 = self->al[l2-lmin], bl2 = self->bl[l2-lmin];
 
     if(p1 == p2) /* EE or MM */
     {
