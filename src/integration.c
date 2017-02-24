@@ -103,7 +103,7 @@ static double log_k(double z, int nu, int m, double tau, double *factor)
         denom = 1;
     }
 
-    log_v = Plm2(nu,m_,1+z)-log(denom);
+    log_v = Plm(nu,m_,1+z)-log(denom);
     return log_v-tau*z;
 }
 
@@ -316,7 +316,7 @@ static double K_integrand(double z, void *args_)
         return 0;
     */
 
-    v = exp(-args->log_normalization + Plm2(nu,2*m,1+z)-tau*(z-args->zmax));
+    v = exp(-args->log_normalization + Plm(nu,2*m,1+z)-tau*(z-args->zmax));
 
     casimir_rp(args->casimir, xi, xi*sqrt(z2p2z), &rTE, &rTM);
 
