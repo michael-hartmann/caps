@@ -11,7 +11,6 @@
 
 #include "quadpack.h"
 
-#include "plm.h"
 #include "utils.h"
 #include "sfunc.h"
 #include "libcasimir.h"
