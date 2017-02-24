@@ -297,7 +297,7 @@ double ln_factorial2(unsigned int n)
  */
 double Plm(int l, int m, double x)
 {
-    if((l-m) <= 100)
+    if((l-m) <= 200)
         return Plm_upwards(l, m, x);
     else
         return Plm_downwards(l, m, x);
@@ -548,33 +548,36 @@ double dPl(int l, double x)
  */
 static double _cf(int l, int m, double x)
 {
+    const double eps = 1e-16;
     const double c = (x+1)*(x-1)/4;
     double Amm = 1, Am = 0, Bmm = 0;
     double last = 0;
 
-    for(int n = 0; n < 10000; n++)
+    for(int n = 0; n < 1000; n++)
     {
-        double f, an,bn, A, B;
+        double f, an, bn, A, B;
 
         /* do not change order; this order prevents integer overflows */
-        an = (l+1-m-n)*c*(l+m+n);
-        bn = (m+n)*x;
+        an = (l+1-m-n)*c*(l+m+n); /* coefficient an */
+        bn = (m+n)*x;             /* coefficient bn */
 
-        A = Am*bn + Amm*an;
-        B = 1/(bn + Bmm*an);
+        A = Am*bn + Amm*an;  /* An: same as in Abramowitz */
+        B = 1/(bn + Bmm*an); /* Bn: corresponds to 1/Bn in Abramowitz */
 
-        f = A*B;
+        f = A*B; /* current value of the continued fraction */
+
+        /* This is remarkably faster than fabs(1-last/f) because it avoids a division. */
+        if(fabs(f-last) < eps*fabs(f))
+            return 2*f/sqrt(4*c);
 
         Amm = Am*B;
-        Am = A*B;
-
+        Am = f;
         Bmm = B;
-
-        if(fabs(1-last/f) < 1e-16)
-            return 2*f/sqrt((x+1)*(x-1));
 
         last = f;
     }
+
+    TERMINATE(true, "l=%d, m=%d, x=%.15g", l,m,x);
 
     return NAN;
 }
@@ -606,7 +609,8 @@ double Plm_downwards(int l, int m, double x)
 
     for(int mm = m-2; mm >= 0; mm--)
     {
-        double v = (vp-(mm+1)*vm*c)/((l+1.+mm)*(l-mm));
+        /* prevent integer overflows in denominator */
+        double v = (vp-(mm+1)*vm*c)/((double)(l+1+mm)*(l-mm));
         vp = vm;
         vm = v;
 
