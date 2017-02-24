@@ -2,31 +2,31 @@ The Casimir effect
 ==================
 
 In 1984 Hendrik Casimir considered two parallel, perfectly conducting plates in
-vacuum at temperature T=0 and predicted an attracting force [1]. This force
-arises due to vacuum fluctuations and was experimentally verified in 1956 by
-Derjaguin, Abrikosova and Lifshitz [2], as well as in 1958 by Sparnaay [3].
+vacuum at temperature T=0 and predicted an attracting force. This force arises
+due to vacuum fluctuations and was experimentally verified in 1956 by
+Derjaguin, Abrikosova and Lifshitz, as well as in 1958 by Sparnaay.
 
 Since the Casimir effect is a manifestation of vacuum fluctuations in the
 mesoscopic world, it has relations to many open physical questions. As the
 Casimir force is the dominant force between electically neutral bodies at
 micron or sub-micron distances, the Casimir effect plays an important role in
-the search for new hypothetical forces predicted by unified theories [4]. The
+the search for new hypothetical forces predicted by unified theories. The
 Casimir effect is also linked to the theory geometry and the puzzle of the
 cosmological constant. All energy gravitates and thus zero point fluctuations
 are expected to contribute to the stress–energy tensor in Einstein's field
-equations [5]. In fact, several cosmological observations like the discovery
-that the universe expands in an increasing rate [6] suggest a non-zero energy
-density of vacuum. However, estimations of the cosmological constant and
-meassurements disagree by about 120 orders of magnitude.
+equations. In fact, several cosmological observations like the discovery that
+the universe expands in an increasing rate suggest a non-zero energy density of
+vacuum. However, estimations of the cosmological constant and meassurements
+disagree by about 120 orders of magnitude.
 
 Moreover, negative entropies are found for some geometries and parameters in
 the Casimir effect. Negative entropies, for example, occur in the plane–plane
 geometry for metals described by the Drude model. In addition, this effect also
 occurs in the plane–sphere geometry even for perfect reflectors, thus
-suggesting a geometrical origin of negative entropies [7,8]. This is in general
-not a problem, since the Casimir free energy is an interaction energy and does
-not describe the entire physical system. However, the origin of negative
-entropies is not understood very well.
+suggesting a geometrical origin of negative entropies. This is in general not a
+problem, since the Casimir free energy is an interaction energy and does not
+describe the entire physical system. However, the origin of negative entropies
+is not understood very well.
 
 
 libcasimir
@@ -34,18 +34,10 @@ libcasimir
 
 What is libcasimir?
 -------------------
-geometry libcasimir implements the numerics for the Casimir effect in the
-plane-sphere geometry with perfect spheres using a scattering approach [8, 9].
-We use the same approach, but derive slightly different formulas for the matrix
-element of the round-trip operator that don't need Wigned-d-symbols.
-
-A sphere of radius R is separated by a distance of L from a plane. The plane is
-infinite in the xy -direction and both plane and sphere are assumed to be
-perfect reflectors. The programs calculate the free energy F(T,R/L) in scaled
-quantities:
-F scaled = L+R ℏc F T scaled = 2π k (L+R) ℏc T
-Using this scaling the free energy only depends on the temperature T and the
-geometric ratio L/R .
+libcasimir implements the numerics for the Casimir effect in the plane-sphere
+geometry with perfect spheres using the scattering approach.  A sphere of
+radius R is separated by a distance of L from a plane. The plane is infinite in
+the xy-direction.
 
 Features
 --------
@@ -60,7 +52,7 @@ Installation
 If you use Linux or Unix, you need the gcc and development libraries and header
 files for the standard C library. On a Debian-like Linux the commands
 ```
-$ sudo apt-get install gcc libc6-dev make
+$ sudo apt-get install gcc libc6-dev make liblapack-doc libeigen3-dev
 $ cd src/
 $ make
 ```
@@ -91,12 +83,22 @@ For a full list, see CREDITS.
 The code is licensed under GPLv2, see LICENSE.
 
 Also, libcasimir uses some third-party software:
+ * [HODLR](https://github.com/sivaramambikasaran/HODLR) A fast direct solver
+   and determinant computation for dense linear systems. (MPL2)
+ * [libeigen](http://eigen.tuxfamily.org) HODLR depends on libeigen. However,
+   only header files are needed. (MPL2)
  * [cquadpack](https://github.com/ESSS/cquadpack) for integration. cquadpack is
    a a C port of the QUADPACK software originally written in Fortran for
    solving integrals. (public domain)
  * [hash-table](https://github.com/fragglet/c-algorithms) is an implementation
    of hash tables in C. The code was slightly modified for the use in
    libcasimir. (ISC license)
+ * [cephes](http://www.netlib.org/cephes/) is a software collection with
+   special functions. libcasimir uses the implementation for the modified
+   Bessel functions I0(x) and I1(x). (No license, probably BSD licensed.)
+ * [LAPACK](http://www.netlib.org/lapack/) Linear algebra library. LAPACK may
+   be used to calculate the determinant of the scattering matrices. However,
+   for small separations using HODLR is much faster. (Modified BSD)
 
 
 Publications
