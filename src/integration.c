@@ -1,7 +1,7 @@
 /**
  * @file   integration.c
  * @author Michael Hartmann <michael.hartmann@physik.uni-augsburg.de>
- * @date   December, 2016
+ * @date   February, 2017
  * @brief  Perform integration for arbitrary materials
  */
 
@@ -11,6 +11,7 @@
 
 #include "quadpack.h"
 
+#include "plm.h"
 #include "utils.h"
 #include "sfunc.h"
 #include "libcasimir.h"
@@ -22,7 +23,7 @@ typedef struct
 {
     int nu,m;
     polarization_t p; /* TE or TM */
-    double tau,zmax,normalization;
+    double tau,zmax,log_normalization;
     casimir_t *casimir;
 } integrand_t;
 
@@ -102,21 +103,8 @@ static double log_k(double z, int nu, int m, double tau, double *factor)
         denom = 1;
     }
 
-    for(int i = 0; i < 250; i++)
-    {
-        log_v = Plm(nu,m_,1+z,*factor,1)-log(denom);
-        //printf("z=%g, v=%g, factor=%g\n", z,v,*factor);
-        if(log_v < log(1e-200))
-            *factor = exp(log(*factor)+log(1e-150)/nu);
-        else if(!isinf(log_v) && !isnan(log_v))
-            return nu*log(*factor)+log_v-tau*z;
-        else if(isnan(log_v) || isinf(log_v))
-            *factor = exp(log(*factor)+log(1e150)/nu);
-    }
-
-    TERMINATE(true, "z=%g, nu=%d, m=%d, tau=%g, factor=%g", z, nu, m, tau, *factor);
-
-    return NAN;
+    log_v = Plm2(nu,m_,1+z)-log(denom);
+    return log_v-tau*z;
 }
 
 /* Estimate shape of integrand K assuming nu/tau >> 1.
@@ -313,29 +301,29 @@ static double K_estimate_zsmall(int nu, int m, double tau, double eps, double *a
 
 static double K_integrand(double z, void *args_)
 {
-    double v, rTE, rTM;
+    double v, rTE, rTM, z2p2z = z*(z+2);
     integrand_t *args = (integrand_t *)args_;
 
     const int nu = args->nu, m = args->m;
     const double tau = args->tau;
     const double xi = tau/2;
 
+    /*
     const double exp_function = exp(tau*(z-args->zmax)/nu);
     const double factor = args->normalization*exp_function;
 
     if(isinf(factor))
         return 0;
+    */
 
-    const double z2p2z = z*(z+2);
-
-    if(m)
-        v = Plm(nu,2*m,1+z,factor,0)/z2p2z;
-    else
-        v = Plm(nu,2,1+z,factor,0);
+    v = exp(-args->log_normalization + Plm2(nu,2*m,1+z)-tau*(z-args->zmax));
 
     casimir_rp(args->casimir, xi, xi*sqrt(z2p2z), &rTE, &rTM);
 
-    TERMINATE(isnan(v), "z=%g, nu=%d, m=%d, tau=%g, factor=%g, v=nan\n", z, nu, m, tau, factor);
+    TERMINATE(isnan(v), "z=%g, nu=%d, m=%d, tau=%g, v=nan\n", z, nu, m, tau);
+
+    if(m) /* m != 0 */
+        v /= z2p2z;
 
     if(args->p == TE)
         return rTE*v;
@@ -382,7 +370,7 @@ static double _casimir_integrate_K(integration_t *self, int nu, polarization_t p
     //printf("a=%g, b=%g, zmax=%g, log_normalization=%g\n", a, b, zmax, log_normalization);
 
     args.zmax = zmax;
-    args.normalization = exp(log_normalization);
+    args.log_normalization = nu*log_normalization;
 
     /* perform integrations in intervals [0,a], [a,b] and [b,∞] */
     int neval1 = 0, neval2 = 0, neval3 = 0, ier1 = 0, ier2 = 0, ier3 = 0;
