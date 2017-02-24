@@ -184,7 +184,7 @@ double dPl(int l, double x)
  * To evaluate the continued fraction, we use http://dlmf.nist.gov/1.12#E5 and
  * http://dlmf.nist.gov/1.12#E6 .
  */
-double _cf(int l, int m, double x)
+static double _cf(int l, int m, double x)
 {
     const double c = (x+1)*(x-1)/4;
     double Amm = 1, Am = 0, Bmm = 0;
@@ -194,7 +194,8 @@ double _cf(int l, int m, double x)
     {
         double f, an,bn, A, B;
 
-        an = (l-m-n+1)*(l+m+n)*c;
+        /* do not change order; this order prevents integer overflows */
+        an = (l+1-m-n)*c*(l+m+n);
         bn = (m+n)*x;
 
         A = Am*bn + Amm*an;
@@ -220,30 +221,30 @@ double _cf(int l, int m, double x)
 /* Evaluate associated Legendre polynomial */
 double Plm2(int l, int m, double x)
 {
-    if(l < 200 || ((double)m/l) > 0.01)
-        return Plm(l,m,x,1,1);
+    double vp,vm,c;
+    double prefactor = Pl(l,x); /* value of Pl(x) */
 
     if(m == 0)
-        return Pl(l,x);
+        return prefactor;
 
-    double root = 1/sqrt((x+1)*(x-1));
-    double prefactor = Pl(l,x);
-    double v0 = 1;
-    double v1 = -exp(dPl(l,x)-prefactor)/root;
+    c = 2*x/sqrt((x-1)*(x+1));
 
-    for(int mm = 1; mm < m; mm++)
+    vp = +1;
+    vm = -1/_cf(l,m,x);
+
+    for(int mm = m-2; mm >= 0; mm--)
     {
-        double v = (l+mm)*(l-mm+1)*v0 + 2*mm*x*v1*root;
-        v0 = v1;
-        v1 = v;
+        double v = (vp-(mm+1)*vm*c)/((l+1.+mm)*(l-mm));
+        vp = vm;
+        vm = v;
 
-        if(fabs(v) > 1e150)
+        if(fabs(vm) < 1e-100)
         {
-            prefactor += log(1e150);
-            v0 /= 1e150;
-            v1 /= 1e150;
+            vm *= 1e100;
+            vp *= 1e100;
+            prefactor += log(1e100);
         }
     }
 
-    return prefactor+log(fabs(v1));
+    return prefactor-log(fabs(vm));
 }
