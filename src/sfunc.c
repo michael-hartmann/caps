@@ -383,20 +383,23 @@ static double _Pl1(int l, double x)
     const double expxi = exp(xi);
     const double sinhxi = sqrt((x+1)*(x-1));
 
+    /* Cl0 */
+    double Clm = exp( lfac(l)-lfac(2*l+2)-M_LOGPI/2+(l+1)*log(4)+lfac(l+1) );
+
     double sum = 0;
     double sinhxi_m = 1; /* sinh(xi)**m */
     double expxi_m  = 1; /* exp(xi)**m */
-    for(int m = 0; m < 18; m++)
+    for(int m = 0; m < 17; m++)
     {
-        //return exp(2*lgamma(m+0.5)+lgamma(l+1) - log(M_PI) - m*log(2) -lgamma(l+m+1.5) -lgamma(m+1));
-        double Clm = exp( 2*lfac(2*m) - 3*lfac(m) + lfac(l) - lfac(2*(l+m+1)) - M_LOGPI/2 + (2*(l+1)-3*m)*log(2) + lfac(l+m+1)  );
+        sum += Clm*(expxi_m+exp(-(m+2*l+1)*xi))/sinhxi_m;
 
-        sum += Clm * (expxi_m+exp(-(m+2*l+1)*xi)) /sinhxi_m;
         sinhxi_m *= sinhxi;
         expxi_m  *= expxi;
+        Clm *= pow_2(m+0.5)/((2*m+2)*(l+1.5+m));
     }
+    sum += Clm*(expxi_m+exp(-(2*l+18)*xi))/sinhxi_m; /* m=17 */
 
-    return log(2/(M_PI*sinhxi))/2 + log(sum) + (l+0.5)*xi - log(2);
+    return -(M_LOG2+M_LOGPI)/2 - log(sinhxi)/2 + log(sum) + (l+0.5)*xi;
 }
 
 /* equations (3.27)-(3.31) */
