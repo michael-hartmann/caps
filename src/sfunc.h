@@ -48,6 +48,11 @@ void bessel_lnInuKnu(int nu, const double x, double *lnInu_p, double *lnKnu_p);
 double ln_factorial2(unsigned int n) __attribute__ ((pure));
 
 double Plm(int l, int m, double x) __attribute__ ((pure));
+double Plm_upwards(int l, int m, double x) __attribute__ ((pure));
+double Plm_downwards(int l, int m, double x) __attribute__ ((pure));
+
 double Plm_estimate(int l, int m, double x) __attribute__ ((pure));
+double Pl(int l, double x);
+double dPl(int l, double x);
 
 #endif
