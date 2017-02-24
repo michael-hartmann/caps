@@ -52,13 +52,9 @@ static void cache_entry_destroy(void *entry)
  * 2^31. This, however, exceeds the ressources available by orders of
  * magnitude. Other things will break earlier...
  */
-static uint64_t hash(int l1, int l2, polarization_t p)
+static uint64_t hash(uint64_t l1, uint64_t l2, uint64_t p)
 {
-    uint64_t l1_ = (uint64_t)l1;
-    uint64_t l2_ = (uint64_t)l2;
-    uint64_t p_  = (p == TM) ? 1 : 0;
-
-    return (l1_ << 32) | (l2_ << 1) | p_;
+    return (l1 << 32) | (l2 << 1) | p;
 }
 
 /* We want to solve
