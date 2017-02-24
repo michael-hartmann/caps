@@ -95,7 +95,9 @@ Also, libcasimir uses some third-party software:
    libcasimir. (ISC license)
  * [cephes](http://www.netlib.org/cephes/) is a software collection with
    special functions. libcasimir uses the implementation for the modified
-   Bessel functions I0(x) and I1(x). (No license, probably BSD licensed.)
+   Bessel functions [I0(x)](http://www.netlib.org/cephes/doubldoc.html#i0) and
+   [I1(x)](http://www.netlib.org/cephes/doubldoc.html#i1). Boths files have
+   been slightly modified, see besselI.c. (No license, probably BSD licensed.)
  * [LAPACK](http://www.netlib.org/lapack/) Linear algebra library. LAPACK may
    be used to calculate the determinant of the scattering matrices. However,
    for small separations using HODLR is much faster. (Modified BSD)
