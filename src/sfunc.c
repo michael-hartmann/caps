@@ -377,11 +377,11 @@ double Plm_estimate(int l, int m, double x)
  * O(1) computation of Legendre polynomials and Gauss-Legendre nodes and
  * weights for parallel computing, section 3.2.
  */
-static double _Pl1(int l, double x)
+static double _Pl1(int l, double x, double sinhxi)
 {
     const double xi = acosh(x);
-    const double expxi = exp(xi);
-    const double sinhxi = sqrt((x+1)*(x-1));
+    /* exp(xi) = exp(acosh(x)) = x+ sqrt((x+1)*(x-1)) */
+    const double expxi = x+sinhxi;
 
     /* Cl0 */
     double Clm = exp( lfac(l)-lfac(2*l+2)-M_LOGPI/2+(l+1)*log(4)+lfac(l+1) );
@@ -517,7 +517,7 @@ double Pl(int l, double x)
     const double sinhxi = sqrt((x+1)*(x-1));
     if((l+1)*sinhxi > 25)
         /* (l+1)*sinh(xi) >= 25. */
-        return _Pl1(l,x);
+        return _Pl1(l,x,sinhxi);
     else
         /* (l+1)*sinh(xi) < 25. */
         return _Pl2(l,x);
