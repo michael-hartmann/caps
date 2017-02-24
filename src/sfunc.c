@@ -310,46 +310,25 @@ double ln_factorial2(unsigned int n)
  * @param [in] factor scaling factor
  * @param [out] array array of values
  */
-double Plm(int l, int m, double x, double factor, int mode)
+double Plm(int l, int m, double x)
 {
     double array[l-m+1];
-    double log_prefactor = 0;
+    double log_prefactor = ln_factorial2(2*m-1) + m/2.*log((x+1)*(x-1));
 
     if(l == m)
-    {
-        double log_v = ln_factorial2(2*m-1) + m/2.*log((x+1)/factor*(x-1)/factor);
-        if(mode == 1)
-            return log_v;
-        else
-            return exp(log_v);
-    }
-
-    if(m > 0)
-        log_prefactor = ln_factorial2(2*m-1) + m/2.*log((x+1)*(x-1)) - m*log(factor);
+        return log_prefactor;
 
     array[0] = 1;
-    array[1] = x*(2*m+1)*array[0]/factor;
+    array[1] = x*(2*m+1)*array[0];
 
-    const double invfactor2 = 1/pow_2(factor);
-    const double y = factor*x;
-
-    if(array[1] == 0 || invfactor2 == 0)
-    {
-        if(mode == 1)
-            return -INFINITY;
-        else
-            return 0;
-    }
+    if(array[1] == 0)
+        return -INFINITY;
 
     for(int ll = 2; ll < l+1-m; ll++)
     {
         const double k = (2.*m-1.)/ll;
 
-        array[ll] = ((2+k)*y*array[ll-1] - (1+k)*array[ll-2])*invfactor2;
-
-        if(ll % 128 == 0)
-            if(isnan(array[ll]))
-                return NAN;
+        array[ll] = (2+k)*x*array[ll-1] - (1+k)*array[ll-2];
 
         const double elem = fabs(array[ll]);
         if(elem < 1e-100)
@@ -368,15 +347,8 @@ double Plm(int l, int m, double x, double factor, int mode)
 
     if(isnan(array[l-m]))
         return NAN;
-    else if(mode == 1)
-        return log_prefactor+log(fabs(array[l-m]));
-    else
-    {
-        if(fabs(log_prefactor) < log(1e300))
-            return exp(log_prefactor)*array[l-m];
-        else
-            return exp(log_prefactor+log(array[l-m]));
-    }
+
+    return log_prefactor+log(fabs(array[l-m]));
 }
 
 /** @brief Estimate value of Plm(x) for x >> 1
