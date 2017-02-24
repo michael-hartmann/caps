@@ -553,7 +553,7 @@ static double _cf(int l, int m, double x)
     double Amm = 1, Am = 0, Bmm = 0;
     double last = 0;
 
-    for(int n = 0; n < 1000; n++)
+    for(int n = 0; n < 10000; n++)
     {
         double f, an, bn, A, B;
 
