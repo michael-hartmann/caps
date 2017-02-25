@@ -302,16 +302,17 @@ static double K_integrand(double z, void *args_)
     const int nu = args->nu, m = args->m;
     const double log_normalization = args->log_normalization;
     const double tau = args->tau;
+    const double zmax = args->zmax;
     const double xi = tau/2;
 
-    v = exp(-log_normalization + Plm(nu,2*m,1+z)-tau*(z-args->zmax));
+    if(m)
+        v = exp(-log_normalization + Plm(nu,2*m,1+z)-tau*(z-zmax))/z2p2z;
+    else
+        v = exp(-log_normalization + Plm(nu,2,1+z)-tau*(z-zmax));
 
     casimir_rp(args->casimir, xi, xi*sqrt(z2p2z), &rTE, &rTM);
 
     TERMINATE(isnan(v), "z=%g, nu=%d, m=%d, tau=%g, v=nan\n", z, nu, m, tau);
-
-    if(m) /* m != 0 */
-        v /= z2p2z;
 
     if(args->p == TE)
         return rTE*v;
