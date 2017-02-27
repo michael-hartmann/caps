@@ -128,6 +128,61 @@ int casimir_mpi_retrieve(casimir_mpi_t *self, casimir_task_t **task_out)
     return 0;
 }
 
+double integrand(double xi, casimir_mpi_t *casimir_mpi)
+{
+    int m;
+    double terms[10000] = { NAN };
+    bool debug = false;
+    const double nmax = sizeof(terms)/sizeof(double);
+    const double precision = casimir_mpi->precision;
+
+    /* gather all data */
+    for(m = 0; m < nmax; m++)
+    {
+        while(1)
+        {
+            casimir_task_t *task = NULL;
+
+            /* send job */
+            if(casimir_mpi_submit(casimir_mpi, m, xi, m))
+                break;
+
+            /* retrieve jobs */
+            while(casimir_mpi_retrieve(casimir_mpi, &task))
+            {
+                double v = terms[task->m] = task->value;
+
+                if(debug)
+                    fprintf(stderr, "# m=%d, xi=%.12g, logdetD=%.12g\n", task->m, xi, task->value);
+
+                if(!isnan(terms[0]) && v/terms[0] < precision)
+                    goto done;
+            }
+
+            usleep(IDLE);
+        }
+    }
+
+    done:
+
+    /* retrieve all remaining running jobs */
+    while(casimir_mpi_get_running(casimir_mpi) > 0)
+    {
+        casimir_task_t *task = NULL;
+
+        while(casimir_mpi_retrieve(casimir_mpi, &task))
+        {
+            terms[task->m] = task->value;
+            if(debug)
+                fprintf(stderr, "# m=%d, xi=%.12g, logdetD=%.12g\n", task->m, xi, task->value);
+        }
+
+        usleep(IDLE);
+    }
+
+    terms[0] /= 2; /* m = 0 */
+    return kahan_sum(terms, m);
+}
 
 int main(int argc, char *argv[])
 {
@@ -152,12 +207,8 @@ int main(int argc, char *argv[])
 
 int master(int argc, char *argv[], int cores)
 {
-    bool debug = false;
     int order = ORDER, ldim = 0, ret = 0;
-    double F0;
-    double alpha, LbyR = -1, lfac = LFAC, precision = PRECISION;
-    double integral = 0, *xk, *ln_wk;
-    double **values = NULL;
+    double LbyR = -1, lfac = LFAC, precision = PRECISION;
     casimir_mpi_t casimir_mpi;
 
     #define EXIT(n) do { ret = n; goto out; } while(0)
@@ -168,7 +219,6 @@ int master(int argc, char *argv[], int cores)
         int c;
         struct option long_options[] = {
             { "help",      no_argument,       0, 'h' },
-            { "debug",     no_argument,       0, 'd' },
             { "LbyR",      required_argument, 0, 'x' },
             { "ldim",      required_argument, 0, 'L' },
             { "order",     required_argument, 0, 'N' },
@@ -206,9 +256,6 @@ int master(int argc, char *argv[], int cores)
                 break;
             case 'N':
                 order = atoi(optarg);
-                break;
-            case 'd':
-                debug = true;
                 break;
             case 'h':
                 usage(stdout);
@@ -273,12 +320,7 @@ int master(int argc, char *argv[], int cores)
     setvbuf(stdout, NULL, _IONBF, 0);
     setvbuf(stderr, NULL, _IONBF, 0);
 
-    /* estimate, cf. eq. (6.33) */
-    alpha = 2*LbyR/(1+LbyR);
-    order = gausslaguerre_nodes_weights(order, &xk, &ln_wk);
-
     printf("# LbyR  = %.15g\n", LbyR);
-    printf("# alpha = %.15g\n", alpha);
     printf("# order = %d\n", order);
     printf("# prec  = %g\n", precision);
     printf("# ldim  = %d\n", ldim);
@@ -287,104 +329,40 @@ int master(int argc, char *argv[], int cores)
 
     casimir_mpi_init(&casimir_mpi, LbyR, ldim, precision, cores);
 
-    /* allocate memory */
-    values = xmalloc(order*sizeof(double *));
-    for(int i = 0; i < order; i++)
+    if(true)
     {
-        values[i] = xmalloc(ldim*sizeof(double));
+        double *xk, *ln_wk;
+        /* estimate, cf. eq. (6.33) */
+        double alpha = 2*LbyR/(1+LbyR);
+        double integral = 0;
+        order = gausslaguerre_nodes_weights(order, &xk, &ln_wk);
 
-        for(int m = 0; m < ldim; m++)
-            values[i][m] = NAN;
-    }
-
-    /* gather all data */
-    for(int m = 0; m < ldim; m++)
-    {
-        for(int i = 0; i < order; i++)
+        for(int k = 0; k < order; k++)
         {
-            int k = 0;
+            double t0 = now();
+            double xi = xk[k]/alpha;
+            double v = integrand(xi, &casimir_mpi);
+            printf("# k=%d, xi=%g, logdetD=%.15g, t=%g\n", k, xi, v, now()-t0);
 
-            /* k is either 0 or the last value in the list that is non NAN */
-            while(k < (m-1) && !isnan(values[i][k+1]))
-                k++;
-
-            /* check if we still have to calculate this */
-            if(k <= 0 || values[i][k]/values[i][0] >= precision)
-                while(1)
-                {
-                    casimir_task_t *task = NULL;
-
-                    /* send job */
-                    if(casimir_mpi_submit(&casimir_mpi, i, xk[i]/alpha, m))
-                        break;
-
-                    /* retrieve jobs */
-                    while(casimir_mpi_retrieve(&casimir_mpi, &task))
-                    {
-                        values[task->index][task->m] = task->value;
-                        if(debug)
-                            fprintf(stderr, "# m=%d, xi=%.12g, logdetD=%.12g\n", task->m, xk[task->index]/alpha, task->value);
-                    }
-
-                    usleep(IDLE);
-                }
+            integral += exp(ln_wk[k]+xk[k])*v;
         }
 
-        printf("# m = %d\n", m);
-    }
+        /* free energy for T=0 */
+        double F0 = integral/alpha/M_PI;
 
-    /* retrieve all running jobs */
-    while(casimir_mpi_get_running(&casimir_mpi) > 0)
+        printf("#\n");
+        printf("# L/R, ldim, order, alpha, F(T=0)*(L+R)/(ħc)\n");
+        printf("%g, %d, %d, %.15g, %.12g\n", LbyR, ldim, order, alpha, F0);
+    }
+    else
     {
-        casimir_task_t *task = NULL;
 
-        while(casimir_mpi_retrieve(&casimir_mpi, &task))
-        {
-            values[task->index][task->m] = task->value;
-            if(debug)
-                fprintf(stderr, "# m=%d, xi=%.12g, logdetD=%.12g\n", task->m, xk[task->index]/alpha, task->value);
-        }
-
-        usleep(IDLE);
     }
+
 
     casimir_mpi_free(&casimir_mpi);
-
-    /* do Gauss-Legendre quadrature */
-    for(int i = 0; i < order; i++)
-    {
-        double value = 0;
-        for(int m = 0; m < ldim; m++)
-        {
-            if(isnan(values[i][m]))
-                break;
-
-            if(m == 0)
-                value = values[i][0]/2;
-            else
-                value += values[i][m];
-        }
-        printf("# k=%d, x=%.10g, logdetD(xi = x/alpha)=%.16g\n", i, xk[i], value);
-        integral += exp(ln_wk[i]+xk[i])*value;
-    }
-
-    /* free energy for T=0 */
-    F0 = integral/alpha/M_PI;
-
-    printf("#\n");
-    printf("# L/R, ldim, order, alpha, F(T=0)*(L+R)/(ħc)\n");
-    printf("%g, %d, %d, %.15g, %.12g\n", LbyR, ldim, order, alpha, F0);
-
-    /* free memory */
-    for(int i = 0; i < order; i++)
-    {
-        xfree(values[i]);
-        values[i] = NULL;
-    }
-    xfree(values);
-    values = NULL;
-
 out:
+
     return ret;
 }
 
