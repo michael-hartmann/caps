@@ -640,6 +640,7 @@ void casimir_lnab_perf(casimir_t *self, double nT, int l, double *lna, double *l
 {
     double lnKlp,lnKlm,lnIlm,lnIlp;
     const double chi = nT/(1+self->LbyR); /* xi*R/(R+L) = xi/(1+L/R) */
+    const double log_chi = log(nT)-log1p(self->LbyR);
 
     /* we could do both calculations together. but it doesn't cost much time -
      * so why bother?
@@ -651,30 +652,29 @@ void casimir_lnab_perf(casimir_t *self, double nT, int l, double *lna, double *l
     *lnb = M_LOGPI-M_LOG2+lnIlp-lnKlp;
 
     /* We want to calculate
-     * a_l(chi) = (-1)^(l+1)*pi/2 * ( l*Ip-chi*Im )/( l*Kp+chi*Km )
-     *          = (-1)^(l+1)*pi/2*Ip/Kp * ( l-chi*Im/Ip )/( l+chi*Km/Kp )
-     *            \--------/ \--------/   \-------------/ \-------------/
-     *               sign    |b_l(chi)|      numerator      denominator
      *
-     *          = b_l(chi) * numerator/denominator
+     * b_l(χ) = (-1)^(l+1)* π/2 * Ip/Im
+     * a_l(χ) = (-1)^l    * π/2 * ( χ*Ilm - l*Ilp )/( l*Kp + χ*Km )
+     *        = (-1)^l    * π/2 * Ilp * ( χ*Ilm/Ilp - l )/( l*Kp + χ*Km )
+     *                                      \-----/
+     *                                       ratio
      *
-     * Note that chi,Km,Kp>0 and thus denominator >= 1 (and it has positive
-     * sign). Also, sign_numerator is always -1 and thus the sign of al and bl
-     * are always different.
+     * where Ip = I_{l+1/2}(χ), Im = I_{l-1/2}(χ), and similar for Kp and Km.
+     *
+     * Also note that all terms in brackets are positive.
      */
 
     /* numerator and denominator to calculate al */
-    sign_t sign_numerator;
-    double log_chi = log(chi);
-    double numerator   = logadd_s(logi(l), +1, log_chi+lnIlm-lnIlp, -1, &sign_numerator);
-    double denominator = logadd(logi(l), log_chi+lnKlm-lnKlp);
+    double ratio = bessel_continued_fraction(l-1, chi);
+    double numerator = M_LOGPI-M_LOG2 + lnIlp + log(chi*ratio - l);
+    double denominator = logadd(logi(l)+lnKlp, log_chi+lnKlm);
 
-    *lna = *lnb+numerator-denominator;
+    *lna = numerator-denominator;
 
     if(sign_b != NULL)
         *sign_b = MPOW(l+1);
     if(sign_a != NULL)
-        *sign_a = MPOW(l+1)*sign_numerator;
+        *sign_a = MPOW(l);
 }
 
 /**
