@@ -1,5 +1,5 @@
 .PHONY: clean doc casimir casimir_logdetD casimir_hiT casimir_T0 casimir_tests dependencies dependencies_test
-all: casimir casimir_logdetD
+all: casimir_logdetD
 
 # Choose a compiler.
 # At the moment gcc, clang and icc are supported.
