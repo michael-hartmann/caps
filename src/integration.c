@@ -82,24 +82,13 @@ static double k_bisect_zlarge(double left, double right, int N, int nu, double t
 
 static double log_k(double z, int nu, int m, double tau, double *factor)
 {
-    double denom,log_v;
-    int m_;
     if(z == 0)
         return -INFINITY;
 
-    if(m > 0)
-    {
-        m_ = 2*m;
-        denom = z*(z+2);
-    }
+    if(m == 0)
+        return Plm(nu,2,1+z) - tau*z;
     else
-    {
-        m_ = 2;
-        denom = 1;
-    }
-
-    log_v = Plm(nu,m_,1+z)-log(denom);
-    return log_v-tau*z;
+        return Plm(nu,2*m,1+z)-log(z*(z+2)) - tau*z;
 }
 
 /* Estimate shape of integrand K assuming nu/tau >> 1.
