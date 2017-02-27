@@ -716,10 +716,8 @@ void casimir_lnab_perf(casimir_t *self, double nT, int l, double *lna, double *l
  */
 void casimir_lnab(casimir_t *self, double nT, int l, double *lna, double *lnb, sign_t *sign_a, sign_t *sign_b)
 {
-    sign_t sign;
-
     /* ξ = nT */
-    const double epsilonm1 = casimir_epsilonm1(self, nT);
+    const double epsilonm1 = casimir_epsilonm1(self, nT); /* n²-1 */
 
     if(isinf(epsilonm1))
     {
@@ -751,28 +749,23 @@ void casimir_lnab(casimir_t *self, double nT, int l, double *lna, double *lnb, s
     bessel_lnInuKnu(l,   n*chi, &lnIlp_nchi, &lnKlp_nchi); /* I_{l+0.5}(nχ), K_{l+0.5}(nχ) */
     bessel_lnInuKnu(l-1, n*chi, &lnIlm_nchi, &lnKlm_nchi); /* K_{l-0.5}(nχ), K_{l-0.5}(nχ) */
 
-    double ln_gammaA, ln_gammaB, ln_gammaC, ln_gammaD;
-    sign_t sign_gammaA, sign_gammaB;
+    double ratio   = bessel_continued_fraction(l-1,   chi);
+    double ratio_n = bessel_continued_fraction(l-1, n*chi);
 
-    ln_gammaA = log(epsilonm1)+lnIlp_nchi + logadd_s(ln_l+lnIlp, +1, ln_chi+lnIlm, -1, &sign_gammaA);
-    ln_gammaC = log(epsilonm1)+lnIlp_nchi + logadd(ln_chi+lnKlm, ln_l+lnKlp);
-    ln_gammaD = ln_chi + logadd(lnIlp_nchi+lnKlm, ln_n+lnKlp+lnIlm_nchi);
+    double ln_gammaB = lnIlp_nchi + lnIlp + ln_chi + log( n*ratio_n-ratio );
+    double ln_gammaC = log(epsilonm1)+lnIlp_nchi + logadd(ln_chi+lnKlm, ln_l+lnKlp);
+    double ln_gammaD = ln_chi + logadd(lnIlp_nchi+lnKlm, ln_n+lnKlp+lnIlm_nchi);
 
-    {
-        double ratio_chi  = bessel_continued_fraction(l-1,chi);
-        double ratio_nchi = bessel_continued_fraction(l-1,n*chi);
-        double c = n/ratio_chi-1/ratio_nchi;
-        ln_gammaB = ln_chi + lnIlm+lnIlm_nchi+log(fabs(c));
-        sign_gammaB = copysign(1,c);
-    }
+    /* ln_gammaA - ln_gammba_B */
+    double num = lnIlp_nchi + lnIlp + log( -l*epsilonm1 + n*chi*( n*ratio - ratio_n ) );
 
     *lnb = M_LOGPI-M_LOG2 + ln_gammaB-ln_gammaD;
-    *lna = M_LOGPI-M_LOG2 + logadd_s(ln_gammaA, sign_gammaA, ln_gammaB, sign_gammaB, &sign) - logadd(ln_gammaC, ln_gammaD);
+    *lna = M_LOGPI-M_LOG2 + num - logadd(ln_gammaC, ln_gammaD);
 
     if(sign_a != NULL)
-        *sign_a = sign*MPOW(l+1);
+        *sign_a = MPOW(l);
     if(sign_b != NULL)
-        *sign_b = MPOW(l+1)*sign_gammaB;
+        *sign_b = MPOW(l+1);
 }
 /*@}*/
 
