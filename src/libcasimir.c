@@ -1284,12 +1284,34 @@ double casimir_logdetD(casimir_t *self, double nT, int m)
 
 double casimir_logdetD_hodlr(casimir_t *self, double nT, int m)
 {
-    unsigned int nLeaf = self->nLeaf;
-    int is_symmetric = 1;
-    double tolerance = 1e-15;
+    const unsigned int nLeaf = self->nLeaf;
+    const int is_symmetric = 1;
+    const double tolerance = 1e-15;
+    const int dim = 2*self->ldim;
+    double diagonal[dim];
+    double logdet = 0, trace = 0;
 
     casimir_M_t *obj = casimir_M_init(self, m, nT);
-    double logdet = hodlr_logdet(2*self->ldim, &casimir_kernel_M, obj, nLeaf, tolerance, is_symmetric);
+
+    /* calculate diagonal elements */
+    for(int n = 0; n < dim; n++)
+        diagonal[n] = casimir_kernel_M(n,n,obj);
+
+    trace = kahan_sum(diagonal, dim);
+
+    /* XXX should be ok, but we need a justification here XXX */
+    /* use trace approximation to avoid cancellation */
+    if(fabs(trace) < 1e-8)
+        logdet = trace;
+    else
+    {
+        /* calculate log(det(D)) using HODLR approach */
+        logdet = hodlr_logdet_diagonal(dim, &casimir_kernel_M, obj, diagonal, nLeaf, tolerance, is_symmetric);
+
+        /* if |trace| > log(det(D)), then the trace result is more accurate */
+        if(fabs(trace) > fabs(logdet))
+            logdet = trace;
+    }
 
     casimir_M_free(obj);
 
