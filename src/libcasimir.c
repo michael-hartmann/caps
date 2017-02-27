@@ -1302,7 +1302,7 @@ double casimir_logdetD_hodlr(casimir_t *self, double nT, int m)
     /* XXX should be ok, but we need a justification here XXX */
     /* use trace approximation to avoid cancellation */
     if(fabs(trace) < 1e-8)
-        logdet = trace;
+        logdet = -trace;
     else
     {
         /* calculate log(det(D)) using HODLR approach */
@@ -1310,7 +1310,7 @@ double casimir_logdetD_hodlr(casimir_t *self, double nT, int m)
 
         /* if |trace| > log(det(D)), then the trace result is more accurate */
         if(fabs(trace) > fabs(logdet))
-            logdet = trace;
+            logdet = -trace;
     }
 
     casimir_M_free(obj);
