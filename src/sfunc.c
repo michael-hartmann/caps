@@ -204,8 +204,10 @@ double bessel_lnKnu(int nu, double x)
 void bessel_lnInuKnu(int nu, const double x, double *lnInu_p, double *lnKnu_p)
 {
     const double logx = log(x);
+    const double invx = 1/x;
+
     double lnKnu, lnKnup;
-    double Knu = 1, Knup = 1+1/x;
+    double Knu = 1, Knup = 1+invx;
     double prefactor = -x+0.5*(M_LOGPI-M_LOG2-logx);
 
     /* calculate Knu, Knup */
@@ -220,7 +222,7 @@ void bessel_lnInuKnu(int nu, const double x, double *lnInu_p, double *lnKnu_p)
         {
             for(int l = 2; l <= nu+1; l++)
             {
-                double Kn_new = (2*l-1)*Knup/x + Knu;
+                double Kn_new = (2*l-1)*Knup*invx + Knu;
                 Knu  = Knup;
                 Knup = Kn_new;
 
