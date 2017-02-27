@@ -26,6 +26,7 @@ int casimir_mpi_get_running(casimir_mpi_t *self);
 
 void usage(FILE *stream);
 
+double integrand(double xi, casimir_mpi_t *casimir_mpi);
 int master(int argc, char *argv[], int cores);
 int slave(MPI_Comm master_comm, int rank);
 
