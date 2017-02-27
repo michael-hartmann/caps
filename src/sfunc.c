@@ -160,6 +160,12 @@ double logadd_ms(log_t list[], const int len, sign_t *sign)
 */
 /*@{*/
 
+/* @brief Calculate I_{nu+1/2}/I_{nu+3/2}
+ *
+ * @param nu order
+ * @param x argument
+ * @retval ratio
+ */
 double bessel_continued_fraction(int nu, double x)
 {
     /* it's faster to calculate the inverse of x only once */
