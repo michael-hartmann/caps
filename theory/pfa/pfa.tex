@@ -1,0 +1,89 @@
+\documentclass[twocolumn,superscriptaddress,prb]{revtex4-1}
+
+\usepackage[english]{babel}
+\usepackage[utf8]{inputenc}
+\usepackage{amssymb,amsmath}
+\usepackage{prettyref}
+\usepackage{bbm}
+\usepackage{txfonts}
+
+\usepackage[babel]{csquotes}
+\usepackage[hidelinks]{hyperref}
+
+\newcommand{\imag}{i} % imaginary unit
+\newcommand{\e}{e}    % euler's number
+\newcommand{\sol}{\mathrm{c}} % speed of light
+\newcommand{\kb}{k_\mathrm{B}} % Boltzmann constant
+\DeclareMathOperator{\trace}{tr}
+
+% real/imaginary part
+\renewcommand{\Re}{\mathrm{Re}}
+\renewcommand{\Im}{\mathrm{Im}}
+
+% TE, TM
+\newcommand{\TE}{\mathrm{TE}}
+\newcommand{\TM}{\mathrm{TM}}
+
+\newcommand{\Plm}[2]{{\text{P}_{#1}^{#2}}}
+
+\newcommand{\lmax}{{\ell_\text{max}}}
+\newcommand{\tmax}{{\text{max}}}
+
+\renewcommand{\vec}[1]{{\mathbf{#1}}}
+
+
+\begin{document}
+
+\title{Proximity Force Approximation}
+
+\author{Michael Hartmann}
+\affiliation{Universität Augsburg, Institut für Physik, 86135 Augsburg, Germany}
+
+\date{\today}
+
+\begin{abstract}
+We briefly describe how to evaluate the proximity force approximation in the sphere-plane geometry.
+\end{abstract}
+
+\maketitle
+\section{Proximity Force Approximation}
+
+The free energy at finite temperature for arbitrary materials in the plane-plane geometry is given by\cite{hartmann}
+\begin{equation}
+\frac{\mathcal{F}_\text{PP}}{A} = \frac{\kb T}{2\pi} {\sum_{n=0}^\infty}^\prime \sum_p \int_{\xi_n/\sol}^\infty \mathrm{d}\kappa \, \kappa \log\left(1-\rho_p\right)
+\end{equation}
+where
+\begin{equation}
+\rho_p(\xi,\kappa) = r_p^2(\imag\xi_n,\kappa) \e^{-2\kappa d} \,.
+\end{equation}
+For zero temperature the sum over the Matsubara terms $n$ becomes dense and we
+replace it by an integration,
+\begin{equation}
+\kb T \sum_n^\prime \to \hbar \int_0^\infty \frac{\mathrm{d}\xi}{2\pi}
+\end{equation}
+and so the free energy becomes
+\begin{equation}
+\frac{E_\text{PP}}{A} = \frac{\hbar}{4\pi^2} \sum_p \int_0^\infty \mathrm{d}\xi \int_{\xi/\sol}^\infty \mathrm{d}\kappa \, \kappa \log\left(1-\rho_p\right)\,.
+\end{equation}
+
+The free energy in the plane-sphere geometry is given by
+\begin{equation}
+\mathcal{F}_\text{PFA} = 2\pi RL \int_1^{1+R/L} \mathrm{d}t \, \frac{\mathcal{F}_\text{PP}(Lt)}{A}
+\end{equation}
+and therefore for $T=0$
+\begin{equation}
+E_\text{PFA} = \frac{\hbar RL}{2\pi} \sum_p \int_1^{1+R/L} \mathrm{d}t \int_0^\infty \mathrm{d}\xi \int_{\xi/\sol}^\infty \mathrm{d}\kappa \, \kappa \log\left(1-r_p \e^{-2\kappa L t}\right)
+\end{equation}
+
+\addcontentsline{toc}{chapter}{Bibliography}
+
+
+\begin{thebibliography}{99}
+
+\bibitem{hartmann}
+  Michael Hartmann,
+  \emph{Negative Casimir entropies in the plane–sphere geometry}, master thesis, 2014
+
+\end{thebibliography}
+
+\end{document}
