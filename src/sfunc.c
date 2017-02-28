@@ -571,7 +571,6 @@ double dPl(int l, double x)
  */
 static double _cf(int l, int m, double x)
 {
-    const double eps = 1e-16;
     const double c = (x+1)*(x-1)/4;
     double Amm = 1, Am = 0, Bmm = 0;
     double last = 0;
@@ -584,14 +583,14 @@ static double _cf(int l, int m, double x)
         an = (l+1-m-n)*c*(l+m+n); /* coefficient an */
         bn = (m+n)*x;             /* coefficient bn */
 
-        A = Am*bn + Amm*an;  /* An: same as in Abramowitz */
-        B = 1/(bn + Bmm*an); /* Bn: corresponds to 1/Bn in Abramowitz */
+        A = Am*bn + Amm*an;  /* A: same as in Abramowitz */
+        B = 1/(bn + Bmm*an); /* B: corresponds to 1/Bn in Abramowitz */
 
         f = A*B; /* current value of the continued fraction */
 
         /* This is remarkably faster than fabs(1-last/f) because it avoids a division. */
-        if(fabs(f-last) < eps*fabs(f))
-            return 2*f/sqrt(4*c);
+        if(f == last)
+            return f/sqrt(c);
 
         Amm = Am*B;
         Am = f;
