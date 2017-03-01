@@ -1403,34 +1403,29 @@ double casimir_logdetD_dense(casimir_t *self, double nT, int m)
 /* integrand */
 static double _integrand1(double q, void *args)
 {
-    double LbyR, xi, t, kappa, k, rTE, rTM, exp_function;
+    double dbycalL, xi, k, rTE, rTM;
 
     casimir_pfa_t *pfa = (casimir_pfa_t *)args;
+    dbycalL = pfa->dbycalL;
+    xi = pfa->xi;
     casimir_t *casimir = pfa->casimir;
 
-    LbyR  = casimir->LbyR;
-    xi    = pfa->xi;
-    t     = pfa->t;
-
-    kappa = q/(LbyR*t);
-    k = sqrt(pow_2(kappa)-pow_2(xi));
+    k = sqrt(pow_2(q/(2*dbycalL))-pow_2(xi));
     casimir_rp(casimir, xi, k, &rTE, &rTM);
 
-    exp_function = exp(-2*q/(1+LbyR));
-    return q/pow_2(t)*( log1p(-pow_2(rTE)*exp_function) + log1p(-pow_2(rTM)*exp_function) );
+    return q*(log1p(-pow_2(rTE)*exp(-q)) + log1p(-pow_2(rTM)*exp(-q)));
 }
 
 static double _integrand2(double xi, void *args)
 {
     int ier, neval;
-    double LbyR, t, integral, abserr;
+    double dbycalL, integral, abserr;
 
     casimir_pfa_t *pfa = (casimir_pfa_t *)args;
-    LbyR = pfa->casimir->LbyR;
-    t    = pfa->t;
+    dbycalL = pfa->dbycalL;
     pfa->xi = xi;
 
-    integral = dqagi(_integrand1, xi*LbyR*t, 1, 1e-10, 1e-10, &abserr, &neval, &ier, args);
+    integral = dqagi(_integrand1, 2*xi*dbycalL, 1, 1e-10, 1e-10, &abserr, &neval, &ier, args);
 
     WARN(ier != 0, "ier=%d", ier);
 
@@ -1440,16 +1435,17 @@ static double _integrand2(double xi, void *args)
 static double _integrand3(double t, void *args)
 {
     casimir_pfa_t *pfa = (casimir_pfa_t *)args;
-    pfa->t = t;
+    pfa->dbycalL = 1/(1+1/pfa->casimir->LbyR)*t;
 
     if(pfa->T == 0)
     {
         double abserr, integral;
         int ier, neval;
+
         integral = dqagi(_integrand2, 0, 1, 1e-10, 1e-10, &abserr, &neval, &ier, args);
 
         WARN(ier != 0, "ier=%d", ier);
-        return integral;
+        return integral/(16*pow_2(M_PI))/pow_2(t);
     }
     else
     {
@@ -1476,14 +1472,12 @@ double casimir_pfa(casimir_t *casimir, double T)
     casimir_pfa_t pfa =
     {
         .casimir = casimir,
-        .t       = 0,
-        .xi      = 0,
         .T       = T
     };
 
     integral = dqags(_integrand3, 1, 1+1/LbyR, 1e-10, 1e-10, &abserr, &neval, &ier, &pfa);
 
-    return integral/(pow_2(1+LbyR)*(2*M_PI)*LbyR);
+    return 2*M_PI/LbyR*integral;
 }
 
 /*@}*/
