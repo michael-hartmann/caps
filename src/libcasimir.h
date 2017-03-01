@@ -107,6 +107,12 @@ typedef struct
     double *al, *bl;
 } casimir_M_t;
 
+typedef struct {
+    double t,xi;
+    double T;
+    casimir_t *casimir;
+} casimir_pfa_t;
+
 
 /* prototypes */
 int  casimir_compile_info(char *str, size_t size);
@@ -177,5 +183,7 @@ int casimir_estimate_lminmax(casimir_t *self, int m, size_t *lmin_p, size_t *lma
 double casimir_epsilonm1(casimir_t *self, double xi);
 double casimir_epsilonm1_perf(double xi, void *userdata);
 double casimir_epsilonm1_drude(double xi, void *userdata);
+
+double casimir_pfa(casimir_t *casimir, double T);
 
 #endif

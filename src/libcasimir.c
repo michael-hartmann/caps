@@ -14,6 +14,7 @@
 #include <unistd.h>
 #include <hodlr.h>
 
+#include "quadpack.h"
 #include "integration.h"
 #include "libcasimir.h"
 #include "matrix.h"
@@ -1390,6 +1391,99 @@ double casimir_logdetD_dense(casimir_t *self, double nT, int m)
     matrix_free(M);
 
     return logdet;
+}
+
+/*@}*/
+
+/**
+ * @name Proximity Force Approximation
+ */
+/*@{*/
+
+/* integrand */
+static double _integrand1(double q, void *args)
+{
+    double LbyR, xi, t, kappa, k, rTE, rTM, exp_function;
+
+    casimir_pfa_t *pfa = (casimir_pfa_t *)args;
+    casimir_t *casimir = pfa->casimir;
+
+    LbyR  = casimir->LbyR;
+    xi    = pfa->xi;
+    t     = pfa->t;
+
+    kappa = q/(LbyR*t);
+    k = sqrt(pow_2(kappa)-pow_2(xi));
+    casimir_rp(casimir, xi, k, &rTE, &rTM);
+
+    exp_function = exp(-2*q/(1+LbyR));
+    return q/pow_2(t)*( log1p(-pow_2(rTE)*exp_function) + log1p(-pow_2(rTM)*exp_function) );
+}
+
+static double _integrand2(double xi, void *args)
+{
+    int ier, neval;
+    double LbyR, t, integral, abserr;
+
+    casimir_pfa_t *pfa = (casimir_pfa_t *)args;
+    LbyR = pfa->casimir->LbyR;
+    t    = pfa->t;
+    pfa->xi = xi;
+
+    integral = dqagi(_integrand1, xi*LbyR*t, 1, 1e-10, 1e-10, &abserr, &neval, &ier, args);
+
+    WARN(ier != 0, "ier=%d", ier);
+
+    return integral;
+}
+
+static double _integrand3(double t, void *args)
+{
+    casimir_pfa_t *pfa = (casimir_pfa_t *)args;
+    pfa->t = t;
+
+    if(pfa->T == 0)
+    {
+        double abserr, integral;
+        int ier, neval;
+        integral = dqagi(_integrand2, 0, 1, 1e-10, 1e-10, &abserr, &neval, &ier, args);
+
+        WARN(ier != 0, "ier=%d", ier);
+        return integral;
+    }
+    else
+    {
+        /* do summation over Matsubara frequencies */
+        WARN(true, "Not implemented yet, sorry.");
+    }
+
+    return NAN;
+}
+
+/* @brief Compute PFA
+ *
+ * Compute free energy using the proximity force approximation.
+ *
+ * @param [in] casimir object
+ * @param [in] T temperature
+ * @param retval F free energy
+ */
+double casimir_pfa(casimir_t *casimir, double T)
+{
+    int ier, neval;
+    double abserr, integral, LbyR = casimir->LbyR;
+
+    casimir_pfa_t pfa =
+    {
+        .casimir = casimir,
+        .t       = 0,
+        .xi      = 0,
+        .T       = T
+    };
+
+    integral = dqags(_integrand3, 1, 1+1/LbyR, 1e-10, 1e-10, &abserr, &neval, &ier, &pfa);
+
+    return integral/(pow_2(1+LbyR)*(2*M_PI)*LbyR);
 }
 
 /*@}*/
