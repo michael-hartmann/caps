@@ -103,6 +103,9 @@ casimir: casimir.o $(OBJS) dependencies
 casimir_logdetD: casimir_logdetD.o $(OBJS) dependencies
 	$(CC) $(CFLAGS) $(OPT) casimir_logdetD.o $(OBJS) $(LDFLAGS) -o casimir_logdetD
 
+casimir_pfa: casimir_pfa.o $(OBJS) dependencies
+	$(CC) $(CFLAGS) $(OPT) casimir_pfa.o $(OBJS) $(LDFLAGS) -o casimir_pfa
+
 integrate_K: integrate_K.o $(OBJS) dependencies
 	$(CC) $(CFLAGS) $(OPT) integrate_K.o $(OBJS) $(LDFLAGS) -o integrate_K
 

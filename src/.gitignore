@@ -7,6 +7,5 @@ casimir_hiT
 casimir_logdetD
 casimir_tests
 integrate_K
-ld_drude
-pfa.pyc
 .depend
+casimir_pfa
