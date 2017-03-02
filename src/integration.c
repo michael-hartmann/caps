@@ -173,7 +173,7 @@ static double K_estimate_zlarge(int nu, int m, double tau, double eps, double *a
 static double K_estimate_zsmall(int nu, int m, double tau, double eps, double *a, double *b, double *log_normalization)
 {
     double left, right, middle, log_k_zmax, zmax, factor;
-    const double tol = 1e-3;
+    const double tol = 1e-4;
 
     /* estimate zmax and k(zmax) according to the z/τ << 1 limit */
     if(m > 0)
@@ -187,7 +187,7 @@ static double K_estimate_zsmall(int nu, int m, double tau, double eps, double *a
         factor = exp(log(zmax)/nu);
     }
 
-    TERMINATE(isnan(factor), "nu=%d, m=%d, tau=%g, eps=%g", nu, m, tau, eps);
+    TERMINATE(isnan(factor) || isinf(factor), "nu=%d, m=%d, tau=%g, eps=%g, factor=%g", nu, m, tau, eps, factor);
     *a = 0;
     *b = 4;
 
