@@ -301,7 +301,7 @@ static double K_integrand(double z, void *args_)
 
     casimir_rp(args->casimir, xi, xi*sqrt(z2p2z), &rTE, &rTM);
 
-    TERMINATE(isnan(v), "z=%g, nu=%d, m=%d, tau=%g, v=nan\n", z, nu, m, tau);
+    TERMINATE(isnan(v) || isinf(v), "z=%g, nu=%d, m=%d, tau=%g, v=%g", z, nu, m, tau, v);
 
     if(args->p == TE)
         return rTE*v;
