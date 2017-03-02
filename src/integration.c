@@ -80,7 +80,7 @@ static double k_bisect_zlarge(double left, double right, int N, int nu, double t
     return (left+right)/2;
 }
 
-static double log_k(double z, int nu, int m, double tau, double *factor)
+static double log_k(double z, int nu, int m, double tau)
 {
     if(z == 0)
         return -INFINITY;
@@ -172,29 +172,20 @@ static double K_estimate_zlarge(int nu, int m, double tau, double eps, double *a
 
 static double K_estimate_zsmall(int nu, int m, double tau, double eps, double *a, double *b, double *log_normalization)
 {
-    double left, right, middle, log_k_zmax, zmax, factor;
-    const double tol = 1e-4;
+    double left, right, middle, log_k_zmax, zmax;
+    const double tol = 1e-3;
 
     /* estimate zmax and k(zmax) according to the z/τ << 1 limit */
     if(m > 0)
-    {
         zmax = m/tau;
-        factor = exp((lfac(nu+2*m)-lfac(2*m)-lfac(nu-2*m)-m*M_LOG2-log(zmax*(zmax+2))+m*log(zmax))/nu);
-    }
     else
-    {
         zmax = 1/tau;
-        factor = exp(log(zmax)/nu);
-    }
 
-    TERMINATE(isnan(factor) || isinf(factor), "nu=%d, m=%d, tau=%g, eps=%g, factor=%g", nu, m, tau, eps, factor);
     *a = 0;
     *b = 4;
 
     /* Now, we search a good approximation for zmax using Golden section
-     * search. If the associated Legendre polynomial cannot be evaluated,
-     * because it becomes inf, we increase factor. This is handled in
-     * log_k.
+     * search.
      * The code for Golden section search is taken from Wikipedia:
      * https://en.wikipedia.org/wiki/Golden_section_search
      */
@@ -206,9 +197,9 @@ static double K_estimate_zsmall(int nu, int m, double tau, double eps, double *a
     {
         /* we only have to caclulate fc or fd if it is NAN */
         if(isnan(fc))
-            fc = log_k(c, nu, m, tau, &factor);
+            fc = log_k(c, nu, m, tau);
         if(isnan(fd))
-            fd = log_k(d, nu, m, tau, &factor);
+            fd = log_k(d, nu, m, tau);
 
         if(fc > fd)
         {
@@ -239,8 +230,7 @@ static double K_estimate_zsmall(int nu, int m, double tau, double eps, double *a
         log_k_zmax = fd;
 
     /* thus we can set log_normalization */
-    *log_normalization = (log_k_zmax+tau*zmax)/nu;
-    factor = exp(*log_normalization);
+    *log_normalization = log_k(zmax, nu,m,tau)/nu;
 
     /* now we are trying to estimate the interval [a,b] which gives the main
      * contributions to the integration; we are looking for a < zmax < b such
@@ -256,7 +246,7 @@ static double K_estimate_zsmall(int nu, int m, double tau, double eps, double *a
     for(int i = 0; i < N; i++)
     {
         middle = (left+right)/2;
-        double fm = log_k(middle, nu, m, tau, &factor);
+        double fm = log_k(middle, nu, m, tau);
 
         if((fm-log_k_zmax) < log(eps))
             left = middle;
@@ -271,7 +261,7 @@ static double K_estimate_zsmall(int nu, int m, double tau, double eps, double *a
     for(int i = 0; i < N; i++)
     {
         middle = (left+right)/2;
-        double fm = log_k(middle, nu, m, tau, &factor);
+        double fm = log_k(middle, nu, m, tau);
 
         if((fm-log_k_zmax) < log(eps))
             right = middle;
