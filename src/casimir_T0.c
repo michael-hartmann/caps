@@ -356,6 +356,7 @@ int master(int argc, char *argv[], int cores)
     }
     else
     {
+        TERMINATE(true, "Not implemented yet, sorry. :(");
 
     }
 
