@@ -50,11 +50,7 @@ We briefly describe how to evaluate the proximity force approximation in the sph
 
 The free energy at finite temperature for arbitrary materials in the plane-plane geometry is given by\cite{hartmann}
 \begin{equation}
-\frac{\mathcal{F}_\text{PP}}{A} = \frac{\kb T}{2\pi} {\sum_{n=0}^\infty}^\prime \sum_p \int_{\xi_n/\sol}^\infty \mathrm{d}\kappa \, \kappa \log\left(1-\rho_p\right)
-\end{equation}
-where
-\begin{equation}
-\rho_p(\xi,\kappa) = r_p^2(\imag\xi_n,\kappa) \e^{-2\kappa d} \,.
+\frac{\mathcal{F}_\text{PP}}{A} = \frac{\kb T}{2\pi} {\sum_{n=0}^\infty}^\prime \int_{\xi_n/\sol}^\infty \mathrm{d}\kappa \, \kappa \sum_p \log\left(1-r_p^2 \e^{-2\kappa d}\right) \,.
 \end{equation}
 For zero temperature the sum over the Matsubara terms $n$ becomes dense and we
 replace it by an integration,
