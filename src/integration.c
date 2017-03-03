@@ -22,7 +22,7 @@ typedef struct
 {
     int nu,m;
     polarization_t p; /* TE or TM */
-    double tau,zmax,log_normalization;
+    double tau,log_normalization;
     casimir_t *casimir;
 } integrand_t;
 
@@ -126,14 +126,14 @@ static double K_estimate_zlarge(int nu, int m, double tau, double eps, double *a
     if(m > 0)
     {
         zmax = (nu-2)/tau;
-        *log_normalization = Plm_estimate(nu,2*m,1+zmax)-log(zmax*(zmax+2));
+        *log_normalization = Plm_estimate(nu,2*m,1+zmax)-log(zmax*(zmax+2))-tau*zmax;
 
         nu -= 2;
     }
     else
     {
         zmax = nu/tau;
-        *log_normalization = Plm_estimate(nu,0,1+zmax);
+        *log_normalization = Plm_estimate(nu,0,1+zmax)-tau*zmax;
     }
 
     /* k(z) = z^ν*exp(-τz) */
@@ -230,7 +230,7 @@ static double K_estimate_zsmall(int nu, int m, double tau, double eps, double *a
         log_k_zmax = fd;
 
     /* thus we can set log_normalization */
-    *log_normalization = log_k(zmax, nu,m,tau)+tau*zmax;
+    *log_normalization = log_k(zmax, nu,m,tau);
 
     /* now we are trying to estimate the interval [a,b] which gives the main
      * contributions to the integration; we are looking for a < zmax < b such
@@ -287,13 +287,12 @@ static double K_integrand(double z, void *args_)
     const int nu = args->nu, m = args->m;
     const double log_normalization = args->log_normalization;
     const double tau = args->tau;
-    const double zmax = args->zmax;
     const double xi = tau/2;
 
     if(m)
-        v = exp(-log_normalization + Plm(nu,2*m,1+z)-tau*(z-zmax))/z2p2z;
+        v = exp(-log_normalization + Plm(nu,2*m,1+z)-tau*z)/z2p2z;
     else
-        v = exp(-log_normalization + Plm(nu,2,1+z)-tau*(z-zmax));
+        v = exp(-log_normalization + Plm(nu,2,1+z)-tau*z);
 
     casimir_rp(args->casimir, xi, xi*sqrt(z2p2z), &rTE, &rTM);
 
@@ -341,9 +340,9 @@ static double _casimir_integrate_K(integration_t *self, int nu, polarization_t p
         /* small z limit */
         zmax = K_estimate_zsmall(nu, m, tau, eps, &a, &b, &log_normalization);
 
-    //printf("a=%g, b=%g, zmax=%g, log_normalization=%g\n", a, b, zmax, log_normalization);
-
-    args.zmax = zmax;
+    /* log_normalization is the logarithm of the estimated maximum of the
+     * integrand K
+     */
     args.log_normalization = log_normalization;
 
     /* perform integrations in intervals [0,a], [a,b] and [b,∞] */
@@ -371,7 +370,7 @@ static double _casimir_integrate_K(integration_t *self, int nu, polarization_t p
     WARN(warn, "ier1=%d, ier2=%d, ier3=%d, nu=%d, m=%d, tau=%.20g, zmax=%g, a=%g, b=%g, I1=%g, I2=%g, I3=%g", ier1, ier2, ier3, nu,m,tau,zmax,a,b, I1, I2, I3);
 
     *sign = SGN(sum);
-    return log(fabs(sum))-tau*zmax + log_normalization;
+    return log(fabs(sum)) + log_normalization;
 }
 
 
