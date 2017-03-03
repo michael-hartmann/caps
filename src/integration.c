@@ -1,7 +1,7 @@
 /**
  * @file   integration.c
  * @author Michael Hartmann <michael.hartmann@physik.uni-augsburg.de>
- * @date   February, 2017
+ * @date   March, 2017
  * @brief  Perform integration for arbitrary materials
  */
 
