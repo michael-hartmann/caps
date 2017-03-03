@@ -11,12 +11,12 @@
 #include "casimir_T0.h"
 
 #include "gausslaguerre.h"
+#include "quadpack.h"
 #include "libcasimir.h"
 #include "sfunc.h"
 #include "utils.h"
 
 #define PRECISION 1e-12
-#define ORDER 50
 #define LFAC 6.
 #define IDLE 25
 
@@ -30,6 +30,8 @@ void casimir_mpi_init(casimir_mpi_t *self, double LbyR, int ldim, double precisi
     self->precision = precision;
     self->cores     = cores;
     self->tasks     = xmalloc(cores*sizeof(casimir_task_t *));
+    self->alpha     = 2*LbyR/(1+LbyR);
+    self->k         = 1;
 
     for(int i = 0; i < cores; i++)
     {
@@ -128,6 +130,12 @@ int casimir_mpi_retrieve(casimir_mpi_t *self, casimir_task_t **task_out)
     return 0;
 }
 
+static double wrapper_integrand(double xi, void *args)
+{
+    casimir_mpi_t *casimir_mpi = (casimir_mpi_t *)args;
+    return integrand(xi/casimir_mpi->alpha, casimir_mpi);
+}
+
 double integrand(double xi, casimir_mpi_t *casimir_mpi)
 {
     int m;
@@ -135,6 +143,7 @@ double integrand(double xi, casimir_mpi_t *casimir_mpi)
     bool debug = false;
     const double nmax = sizeof(terms)/sizeof(double);
     const double precision = casimir_mpi->precision;
+    const double t0 = now();
 
     /* gather all data */
     for(m = 0; m < nmax; m++)
@@ -155,7 +164,7 @@ double integrand(double xi, casimir_mpi_t *casimir_mpi)
                 if(debug)
                     fprintf(stderr, "# m=%d, xi=%.12g, logdetD=%.12g\n", task->m, xi, task->value);
 
-                if(!isnan(terms[0]) && v/terms[0] < precision)
+                if(v == 0 || v/terms[0] < precision)
                     goto done;
             }
 
@@ -181,7 +190,11 @@ double integrand(double xi, casimir_mpi_t *casimir_mpi)
     }
 
     terms[0] /= 2; /* m = 0 */
-    return kahan_sum(terms, m);
+    double logdetD = kahan_sum(terms, m);
+
+    printf("# k=%d, xi=%g, logdetD=%.15g, t=%g\n", casimir_mpi->k++, xi, logdetD, now()-t0);
+
+    return logdetD;
 }
 
 int main(int argc, char *argv[])
@@ -207,7 +220,7 @@ int main(int argc, char *argv[])
 
 int master(int argc, char *argv[], int cores)
 {
-    int order = ORDER, ldim = 0, ret = 0;
+    int order = -1, ldim = 0, ret = 0;
     double LbyR = -1, lfac = LFAC, precision = PRECISION;
     casimir_mpi_t casimir_mpi;
 
@@ -276,12 +289,6 @@ int master(int argc, char *argv[], int cores)
         usage(stderr);
         EXIT(1);
     }
-    if(order < 1)
-    {
-        fprintf(stderr, "order must be positive.\n\n");
-        usage(stderr);
-        EXIT(1);
-    }
     if(precision <= 0)
     {
         fprintf(stderr, "precision must be positive.\n\n");
@@ -321,45 +328,58 @@ int master(int argc, char *argv[], int cores)
     setvbuf(stderr, NULL, _IONBF, 0);
 
     printf("# LbyR  = %.15g\n", LbyR);
-    printf("# order = %d\n", order);
     printf("# prec  = %g\n", precision);
     printf("# ldim  = %d\n", ldim);
     printf("# cores = %d\n", cores);
-    printf("#\n");
 
     casimir_mpi_init(&casimir_mpi, LbyR, ldim, precision, cores);
 
-    if(true)
+    /* estimate, cf. eq. (6.33) */
+    const double alpha = 2*LbyR/(1+LbyR);
+    double F0 = 0;
+
+    if(order > 0)
     {
         double *xk, *ln_wk;
-        /* estimate, cf. eq. (6.33) */
-        double alpha = 2*LbyR/(1+LbyR);
         double integral = 0;
         order = gausslaguerre_nodes_weights(order, &xk, &ln_wk);
 
+        printf("# quadrature: Gauss-Laguerre (order = %d)\n", order);
+        printf("#\n");
+
         for(int k = 0; k < order; k++)
         {
-            double t0 = now();
             double xi = xk[k]/alpha;
             double v = integrand(xi, &casimir_mpi);
-            printf("# k=%d, xi=%g, logdetD=%.15g, t=%g\n", k, xi, v, now()-t0);
 
             integral += exp(ln_wk[k]+xk[k])*v;
         }
 
         /* free energy for T=0 */
-        double F0 = integral/alpha/M_PI;
-
-        printf("#\n");
-        printf("# L/R, ldim, order, alpha, F(T=0)*(L+R)/(ħc)\n");
-        printf("%g, %d, %d, %.15g, %.12g\n", LbyR, ldim, order, alpha, F0);
+        F0 = integral/alpha/M_PI;
     }
     else
     {
-        TERMINATE(true, "Not implemented yet, sorry. :(");
+        double integral, abserr;
+        int ier, neval;
 
+        printf("# quadrature: adaptive Gauss-Kronrod\n");
+        printf("#\n");
+
+        integral = dqagi(wrapper_integrand, 0, 1, 1e-6, 1e-6, &abserr, &neval, &ier, &casimir_mpi);
+
+        printf("#\n");
+        printf("# ier=%d, integral=%.15g, neval=%d, abserr=%g\n", ier, integral, neval, abserr);
+
+        WARN(ier != 0, "ier=%d", ier);
+
+        /* free energy for T=0 */
+        F0 = integral/alpha/M_PI;
     }
 
+    printf("#\n");
+    printf("# L/R, ldim, alpha, F(T=0)*(L+R)/(ħc)\n");
+    printf("%g, %d, %.15g, %.12g\n", LbyR, ldim, alpha, F0);
 
     casimir_mpi_free(&casimir_mpi);
 out:
@@ -434,9 +454,10 @@ void usage(FILE *stream)
 "        Set precision to given value (default: %g)\n"
 "\n"
 "    -N, --order\n"
-"        Order of Gauss-Laguerre integration (default: %d)\n"
+"        Order of Gauss-Laguerre integration. If not specified, use adaptive\n"
+"        Gauß-Kronrod quadrature.\n"
 "\n"
 "    -h,--help\n"
 "        Show this help\n",
-    LFAC, PRECISION, ORDER);
+    LFAC, PRECISION);
 }

@@ -13,8 +13,8 @@ typedef struct {
 } casimir_task_t;
 
 typedef struct {
-    double LbyR, precision;
-    int ldim, cores;
+    double LbyR, precision, alpha;
+    int k, ldim, cores;
     casimir_task_t **tasks;
 } casimir_mpi_t;
 
