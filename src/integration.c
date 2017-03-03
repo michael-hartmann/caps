@@ -126,14 +126,14 @@ static double K_estimate_zlarge(int nu, int m, double tau, double eps, double *a
     if(m > 0)
     {
         zmax = (nu-2)/tau;
-        *log_normalization = (Plm_estimate(nu,2*m,1+zmax)-log(zmax*(zmax+2)))/nu;
+        *log_normalization = Plm_estimate(nu,2*m,1+zmax)-log(zmax*(zmax+2));
 
         nu -= 2;
     }
     else
     {
         zmax = nu/tau;
-        *log_normalization = Plm_estimate(nu,0,1+zmax)/nu;
+        *log_normalization = Plm_estimate(nu,0,1+zmax);
     }
 
     /* k(z) = z^ν*exp(-τz) */
@@ -230,7 +230,7 @@ static double K_estimate_zsmall(int nu, int m, double tau, double eps, double *a
         log_k_zmax = fd;
 
     /* thus we can set log_normalization */
-    *log_normalization = log_k(zmax, nu,m,tau)/nu;
+    *log_normalization = log_k(zmax, nu,m,tau)+tau*zmax;
 
     /* now we are trying to estimate the interval [a,b] which gives the main
      * contributions to the integration; we are looking for a < zmax < b such
@@ -272,6 +272,9 @@ static double K_estimate_zsmall(int nu, int m, double tau, double eps, double *a
             left = middle;
     }
     *b = (left+right)/2;
+
+    //printf("a=%g (%g), zmax=%g (%g), b=%g (%g) (%g)\n", *a, log_k(*a,nu,m,tau), zmax, log_k(zmax,nu,m,tau), *b, log_k(*b,nu,m,tau), *log_normalization*nu);
+    //printf("log_k = %g\n", log_k(0.00258133,nu,m,tau));
 
     return zmax;
 }
@@ -341,7 +344,7 @@ static double _casimir_integrate_K(integration_t *self, int nu, polarization_t p
     //printf("a=%g, b=%g, zmax=%g, log_normalization=%g\n", a, b, zmax, log_normalization);
 
     args.zmax = zmax;
-    args.log_normalization = nu*log_normalization;
+    args.log_normalization = log_normalization;
 
     /* perform integrations in intervals [0,a], [a,b] and [b,∞] */
     int neval1 = 0, neval2 = 0, neval3 = 0, ier1 = 0, ier2 = 0, ier3 = 0;
@@ -368,7 +371,7 @@ static double _casimir_integrate_K(integration_t *self, int nu, polarization_t p
     WARN(warn, "ier1=%d, ier2=%d, ier3=%d, nu=%d, m=%d, tau=%.20g, zmax=%g, a=%g, b=%g, I1=%g, I2=%g, I3=%g", ier1, ier2, ier3, nu,m,tau,zmax,a,b, I1, I2, I3);
 
     *sign = SGN(sum);
-    return log(fabs(sum))-tau*zmax + log_normalization*nu;
+    return log(fabs(sum))-tau*zmax + log_normalization;
 }
 
 
