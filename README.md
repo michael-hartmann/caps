@@ -50,9 +50,10 @@ Features
 Installation
 ------------
 If you use Linux or Unix, you need the gcc and development libraries and header
-files for the standard C library. On a Debian-like Linux the commands
+files for the standard C library, LAPACK and MPI. On a Debian-like Linux the
+commands
 ```
-$ sudo apt-get install gcc libc6-dev make liblapack-doc libeigen3-dev
+$ sudo apt-get install gcc libc6-dev make liblapack-dev libopenmpi-dev openmpi-bin
 $ cd src/
 $ make
 ```
