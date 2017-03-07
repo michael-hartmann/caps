@@ -333,7 +333,7 @@ static double _casimir_integrate_K(integration_t *self, int nu, polarization_t p
         b = -log(eps)/tau; /* exp(-14) =~ 1e-6 */
         log_normalization = log(3);
     }
-    else if(nu/tau > 3)
+    else if(nu/tau > 4)
         /* large z limit */
         zmax = K_estimate_zlarge(nu, m, tau, eps, &a, &b, &log_normalization);
     else
