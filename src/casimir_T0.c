@@ -23,6 +23,23 @@
 #define STATE_RUNNING 1
 #define STATE_IDLE    0
 
+static double _pfa(double LbyR, double omegap, double gamma_)
+{
+    double userdata[2];
+    casimir_t *casimir = casimir_init(LbyR);
+    if(!isinf(omegap))
+    {
+        userdata[0] = omegap;
+        userdata[1] = gamma_;
+        casimir_set_epsilonm1(casimir, casimir_epsilonm1_drude, userdata);
+    }
+    double pfa = casimir_pfa(casimir, 0);
+
+    casimir_free(casimir);
+
+    return pfa;
+}
+
 void casimir_mpi_init(casimir_mpi_t *self, double LbyR, double omegap, double gamma_, int ldim, double precision, int cores)
 {
     self->LbyR      = LbyR;
@@ -82,14 +99,14 @@ int casimir_mpi_submit(casimir_mpi_t *self, int index, double xi, int m)
 
         if(task->state == STATE_IDLE)
         {
-            double buf[] = { xi, self->LbyR, m, self->ldim };
+            double buf[] = { xi, self->LbyR, self->omegap, self->gamma, m, self->ldim };
 
             task->index = index;
             task->xi    = xi;
             task->m     = m;
             task->state = STATE_RUNNING;
 
-            MPI_Send (buf,        4, MPI_DOUBLE, i, 0, MPI_COMM_WORLD);
+            MPI_Send (buf,        6, MPI_DOUBLE, i, 0, MPI_COMM_WORLD);
             MPI_Irecv(task->recv, 1, MPI_DOUBLE, i, 0, MPI_COMM_WORLD, &task->request);
 
             return 1;
@@ -194,7 +211,7 @@ double integrand(double xi, casimir_mpi_t *casimir_mpi)
     terms[0] /= 2; /* m = 0 */
     double logdetD = kahan_sum(terms, m);
 
-    printf("# k=%d, xi=%g, logdetD=%.15g, t=%g\n", casimir_mpi->k++, xi, logdetD, now()-t0);
+    printf("# k=%d, xi=%.12g, logdetD=%.15g, t=%g\n", casimir_mpi->k++, xi, logdetD, now()-t0);
 
     return logdetD;
 }
@@ -352,10 +369,18 @@ int master(int argc, char *argv[], int cores)
     setvbuf(stdout, NULL, _IONBF, 0);
     setvbuf(stderr, NULL, _IONBF, 0);
 
+    /* estimate, cf. eq. (6.33) */
+    const double alpha = 2*LbyR/(1+LbyR);
+
+    /* compute pfa */
+    double pfa = _pfa(LbyR, omegap, gamma_);
+
     printf("# LbyR   = %.15g\n", LbyR);
     printf("# prec   = %g\n", precision);
     printf("# ldim   = %d\n", ldim);
     printf("# cores  = %d\n", cores);
+    printf("# alpha  = %.15g\n", alpha);
+    printf("# F_PFA  = %.15g\n", pfa);
     if(!isinf(omegap))
     {
         printf("# omegap = %g\n", omegap);
@@ -363,9 +388,6 @@ int master(int argc, char *argv[], int cores)
     }
 
     casimir_mpi_init(&casimir_mpi, LbyR, omegap, gamma_, ldim, precision, cores);
-
-    /* estimate, cf. eq. (6.33) */
-    const double alpha = 2*LbyR/(1+LbyR);
     double F0 = 0;
 
     if(order > 0)
@@ -396,10 +418,10 @@ int master(int argc, char *argv[], int cores)
         printf("# quadrature: adaptive Gauss-Kronrod\n");
         printf("#\n");
 
-        integral = dqagi(wrapper_integrand, 0, 1, 1e-6, 1e-6, &abserr, &neval, &ier, &casimir_mpi);
+        integral = dqagi(wrapper_integrand, 0, 1, 0, 1e-8, &abserr, &neval, &ier, &casimir_mpi);
 
         printf("#\n");
-        printf("# ier=%d, integral=%.15g, neval=%d, abserr=%g\n", ier, integral, neval, abserr);
+        printf("# ier=%d, integral=%.15g, neval=%d, abserr=%g, absrel=%g\n", ier, integral, neval, abserr, fabs(abserr/integral));
 
         WARN(ier != 0, "ier=%d", ier);
 
@@ -408,8 +430,8 @@ int master(int argc, char *argv[], int cores)
     }
 
     printf("#\n");
-    printf("# L/R, ldim, alpha, F(T=0)*(L+R)/(ħc)\n");
-    printf("%g, %d, %.15g, %.12g\n", LbyR, ldim, alpha, F0);
+    printf("# L/R, ldim, F_PFA(T=0)*(L+R)/ħc), F(T=0)*(L+R)/(ħc), F/F_pfa\n");
+    printf("%g, %d, %.12g, %.12g, %.12g\n", LbyR, ldim, pfa, F0, F0/pfa);
 
     casimir_mpi_free(&casimir_mpi);
 out:
@@ -419,23 +441,32 @@ out:
 
 int slave(MPI_Comm master_comm, int rank)
 {
-    double buf[5];
+    double userdata[2], buf[6];
     MPI_Status status;
     MPI_Request request;
 
     while(1)
     {
-        MPI_Recv(buf, 5, MPI_DOUBLE, 0, 0, master_comm, &status);
+        MPI_Recv(buf, 6, MPI_DOUBLE, 0, 0, master_comm, &status);
 
-        const double xi   = buf[0];
-        const double LbyR = buf[1];
-        const int m    = (int)buf[2];
-        const int ldim = buf[3];
+        const double xi     = buf[0];
+        const double LbyR   = buf[1];
+        const double omegap = buf[2];
+        const double gamma_ = buf[3];
+        const int m         = buf[4];
+        const int ldim      = buf[5];
 
         if(xi < 0)
             break;
 
         casimir_t *casimir = casimir_init(LbyR);
+        if(!isinf(omegap))
+        {
+            userdata[0] = omegap;
+            userdata[1] = gamma_;
+            casimir_set_epsilonm1(casimir, casimir_epsilonm1_drude, userdata);
+        }
+
         casimir_set_ldim(casimir, ldim);
         double logdet = casimir_logdetD(casimir, xi, m);
         TERMINATE(isnan(logdet), "LbyR=%.10g, xi=%.10g, m=%d, ldim=%d", LbyR, xi, m, ldim);
