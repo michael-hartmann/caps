@@ -13,12 +13,12 @@ typedef struct {
 } casimir_task_t;
 
 typedef struct {
-    double LbyR, precision, alpha;
+    double LbyR, omegap, gamma, precision, alpha;
     int k, ldim, cores;
     casimir_task_t **tasks;
 } casimir_mpi_t;
 
-void casimir_mpi_init(casimir_mpi_t *self, double LbyR, int ldim, double precision, int cores);
+void casimir_mpi_init(casimir_mpi_t *self, double LbyR, double omegap, double gamma_, int ldim, double precision, int cores);
 void casimir_mpi_free(casimir_mpi_t *self);
 int casimir_mpi_submit(casimir_mpi_t *self, int index, double xi, int m);
 int casimir_mpi_retrieve(casimir_mpi_t *self, casimir_task_t **task_out);

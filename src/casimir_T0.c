@@ -23,9 +23,11 @@
 #define STATE_RUNNING 1
 #define STATE_IDLE    0
 
-void casimir_mpi_init(casimir_mpi_t *self, double LbyR, int ldim, double precision, int cores)
+void casimir_mpi_init(casimir_mpi_t *self, double LbyR, double omegap, double gamma_, int ldim, double precision, int cores)
 {
     self->LbyR      = LbyR;
+    self->omegap    = omegap;
+    self->gamma     = gamma_;
     self->ldim      = ldim;
     self->precision = precision;
     self->cores     = cores;
@@ -221,7 +223,7 @@ int main(int argc, char *argv[])
 int master(int argc, char *argv[], int cores)
 {
     int order = -1, ldim = 0, ret = 0;
-    double LbyR = -1, lfac = LFAC, precision = PRECISION;
+    double LbyR = -1, lfac = LFAC, precision = PRECISION, omegap = INFINITY, gamma_ = 0;
     casimir_mpi_t casimir_mpi;
 
     #define EXIT(n) do { ret = n; goto out; } while(0)
@@ -237,13 +239,15 @@ int master(int argc, char *argv[], int cores)
             { "order",     required_argument, 0, 'N' },
             { "lscale",    required_argument, 0, 'l' },
             { "precision", required_argument, 0, 'p' },
+            { "omegap",    required_argument, 0, 'w' },
+            { "gamma",     required_argument, 0, 'g' },
             { 0, 0, 0, 0 }
         };
 
         /* getopt_long stores the option index here. */
         int option_index = 0;
 
-        c = getopt_long (argc, argv, "x:L:N:l:c:p:dh", long_options, &option_index);
+        c = getopt_long (argc, argv, "x:L:N:l:c:p:w:g:dh", long_options, &option_index);
 
         /* Detect the end of the options. */
         if(c == -1)
@@ -269,6 +273,12 @@ int master(int argc, char *argv[], int cores)
                 break;
             case 'N':
                 order = atoi(optarg);
+                break;
+            case 'w':
+                omegap = atof(optarg);
+                break;
+            case 'g':
+                gamma_ = atof(optarg);
                 break;
             case 'h':
                 usage(stdout);
@@ -314,6 +324,21 @@ int master(int argc, char *argv[], int cores)
             EXIT(1);
         }
     }
+    if(!isinf(omegap))
+    {
+        if(omegap <= 0)
+        {
+            fprintf(stderr, "omegap must be positive\n\n");
+            usage(stderr);
+            EXIT(1);
+        }
+        if(gamma_ < 0)
+        {
+            fprintf(stderr, "gamma must be non-negative\n\n");
+            usage(stderr);
+            EXIT(1);
+        }
+    }
 
     if(cores < 2)
     {
@@ -327,12 +352,17 @@ int master(int argc, char *argv[], int cores)
     setvbuf(stdout, NULL, _IONBF, 0);
     setvbuf(stderr, NULL, _IONBF, 0);
 
-    printf("# LbyR  = %.15g\n", LbyR);
-    printf("# prec  = %g\n", precision);
-    printf("# ldim  = %d\n", ldim);
-    printf("# cores = %d\n", cores);
+    printf("# LbyR   = %.15g\n", LbyR);
+    printf("# prec   = %g\n", precision);
+    printf("# ldim   = %d\n", ldim);
+    printf("# cores  = %d\n", cores);
+    if(!isinf(omegap))
+    {
+        printf("# omegap = %g\n", omegap);
+        printf("# gamma  = %g\n", gamma_);
+    }
 
-    casimir_mpi_init(&casimir_mpi, LbyR, ldim, precision, cores);
+    casimir_mpi_init(&casimir_mpi, LbyR, omegap, gamma_, ldim, precision, cores);
 
     /* estimate, cf. eq. (6.33) */
     const double alpha = 2*LbyR/(1+LbyR);
@@ -431,8 +461,9 @@ void usage(FILE *stream)
 "\n"
 "The free eenergy at T=0 is calculated using integration:\n"
 "   F(L/R) = \\int_0^\\infty dξ logdet D(ξ)\n"
-"The integration is done using Gauss-Laguerre integration. The integrand\n"
-"decays exponentially, c.f. eq. (6.33) of [1].\n"
+"The integration is done using Gauss-Laguerre integration or adaptive\n"
+"Gauß-Kronrod quadrature. The integrand decays exponentially, c.f.\n"
+"Eq. (6.33) of [1].\n"
 "\n"
 "References:\n"
 "  [1] Hartmann, Negative Casimir entropies in the plane-sphere geometry, 2014\n"
@@ -448,7 +479,7 @@ void usage(FILE *stream)
 "        some value ldim. This program will use ldim=(R/L*lscale) (default: %g)\n"
 "\n"
 "    -L LDIM\n"
-"        Set ldim to the value LMAX. When -L is specified, -l will be ignored\n"
+"        Set ldim to the value LDIM. When -L is specified, -l will be ignored\n"
 "\n"
 "    -p, --precision\n"
 "        Set precision to given value (default: %g)\n"
@@ -456,6 +487,14 @@ void usage(FILE *stream)
 "    -N, --order\n"
 "        Order of Gauss-Laguerre integration. If not specified, use adaptive\n"
 "        Gauß-Kronrod quadrature.\n"
+"\n"
+"    --omegap OMEGAP\n"
+"        Model the metals using the Drude/Plasma model and set Plasma\n"
+"        frequency to OMEGAP. (DEFAULT: perfect conductors)\n"
+"\n"
+"    --gamma GAMMA\n"
+"        Set dissipation of Drude model to GAMMA. Ignored if no value for\n"
+"        --omegap is given. (DEFAULT: perfect conductors)\n"
 "\n"
 "    -h,--help\n"
 "        Show this help\n",
