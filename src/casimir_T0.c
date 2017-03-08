@@ -420,7 +420,7 @@ int slave(MPI_Comm master_comm, int rank)
 
 void usage(FILE *stream)
 {
-    fprintf(stderr,
+    fprintf(stream,
 "Usage: casimir_T0 [OPTIONS]\n\n"
 "This program will calculate the free Casimir energy F(T=0,L/R) for the\n"
 "plane-sphere geometry for given L/R and temperature T. The output is in\n"
