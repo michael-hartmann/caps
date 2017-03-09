@@ -418,7 +418,7 @@ int master(int argc, char *argv[], int cores)
         printf("# quadrature: adaptive Gauss-Kronrod\n");
         printf("#\n");
 
-        integral = dqagi(wrapper_integrand, 0, 1, 0, 1e-8, &abserr, &neval, &ier, &casimir_mpi);
+        integral = dqagi(wrapper_integrand, 0, 1, 1e-7*pfa, 1e-7, &abserr, &neval, &ier, &casimir_mpi);
 
         printf("#\n");
         printf("# ier=%d, integral=%.15g, neval=%d, abserr=%g, absrel=%g\n", ier, integral, neval, abserr, fabs(abserr/integral));
