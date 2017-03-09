@@ -1442,9 +1442,9 @@ static double _integrand3(double t, void *args)
         double abserr, integral;
         int ier, neval;
 
-        integral = dqagi(_integrand2, 0, 1, 1e-10, 1e-10, &abserr, &neval, &ier, args);
+        integral = dqagi(_integrand2, 0, 1, 1e-6, 1e-10, &abserr, &neval, &ier, args);
 
-        WARN(ier != 0, "ier=%d", ier);
+        WARN(ier != 0, "ier=%d, abserr=%g, neval=%d", ier, abserr, neval);
         return integral/(16*pow_2(M_PI))/pow_2(t);
     }
     else
