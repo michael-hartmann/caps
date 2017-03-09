@@ -330,7 +330,7 @@ double matrix_trace2(matrix_t *A)
 double matrix_norm_frobenius(matrix_t *A)
 {
     double norm = 0;
-    const double const *M = A->M;
+    double *M = A->M;
 
     for(size_t i = 0; i < A->dim2; i++)
         norm += pow_2(M[i]);
