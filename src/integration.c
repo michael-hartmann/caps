@@ -22,7 +22,7 @@ typedef struct
 {
     int nu,m;
     polarization_t p; /* TE or TM */
-    double tau,log_normalization;
+    double factor,tau,log_normalization;
     casimir_t *casimir;
 } integrand_t;
 
@@ -281,13 +281,16 @@ static double K_estimate_zsmall(int nu, int m, double tau, double eps, double *a
 
 static double K_integrand(double z, void *args_)
 {
-    double v, rTE, rTM, z2p2z = z*(z+2);
+    double v, rTE, rTM;
     integrand_t *args = (integrand_t *)args_;
+
+    z *= args->factor;
 
     const int nu = args->nu, m = args->m;
     const double log_normalization = args->log_normalization;
     const double tau = args->tau;
     const double xi = tau/2;
+    const double z2p2z = z*(z+2);
 
     if(m)
         v = exp(-log_normalization + Plm(nu,2*m,1+z)-tau*z)/z2p2z;
@@ -317,6 +320,7 @@ static double _casimir_integrate_K(integration_t *self, int nu, polarization_t p
         .m    = m,
         .p    = p,
         .tau  = tau,
+        .factor = 1,
         .casimir = self->casimir
     };
 
@@ -350,19 +354,26 @@ static double _casimir_integrate_K(integration_t *self, int nu, polarization_t p
     double abserr1 = 0, abserr2 = 0, abserr3 = 0, I1 = 0, I2 = 0, I3 = 0;
 
     /* I2: [a,b] */
-    I2 = dqags(K_integrand, a, b, 0, epsrel, &abserr1, &neval2, &ier2, &args);
+    I2 = dqags(K_integrand, a, b, 0, epsrel, &abserr2, &neval2, &ier2, &args);
 
-    /* I3: [b,∞] */
-    I3 = dqagi(K_integrand, b, 1, abserr1, epsrel, &abserr3, &neval3, &ier3, &args);
+    /* I1: [0,a] */
     if(a > 0)
     {
-        /* I1: [0,a]
-         * The contribution of this integral should be small, so use
+        /* The contribution of this integral should be small, so use
          * Gauss-Kronrod G_K 7-15 as integration rule.
          */
         int limit = 200;
-        I1 = dqage(K_integrand, 0, a, abserr1, epsrel, GK_7_15, &abserr2, &neval1, &ier1, &limit, &args);
+        I1 = dqage(K_integrand, 0, a, abserr2, epsrel, GK_7_15, &abserr1, &neval1, &ier1, &limit, &args);
     }
+
+    /* I3: [b,∞]
+     * Make a substitution for the integrand, i.e., we don't integrate over z
+     * but over t=z*τ. The integrand exponentially decays as exp(-z*τ), so
+     * after the substitution it decays as exp(-t). This makes life easier for
+     * the quadrature routine.
+     */
+    args.factor = 1/tau;
+    I3 = dqagi(K_integrand, b*tau, 1, abserr2*tau, epsrel, &abserr3, &neval3, &ier3, &args)/tau;
 
     const double sum = I1+I2+I3;
 
