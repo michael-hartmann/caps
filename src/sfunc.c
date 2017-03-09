@@ -569,18 +569,21 @@ double dPl(int l, double x)
  * To evaluate the continued fraction, we use http://dlmf.nist.gov/1.12#E5 and
  * http://dlmf.nist.gov/1.12#E6 .
  */
-static double _cf(int l, int m, double x)
+static inline double _cf(int l, int m, double x)
 {
     const double c = (x+1)*(x-1)/4;
     double Amm = 1, Am = 0, Bmm = 0;
     double last = 0;
 
-    for(int n = 0; n < 10000; n++)
+    /* it seems that it is faster to use a power of 2 here */
+    for(int n = 0; n < 16384; n++)
     {
         double f, an, bn, A, B;
 
-        /* do not change order; this order prevents integer overflows */
-        an = (l+1-m-n)*c*(l+m+n); /* coefficient an */
+        /* do not change order and keep the double in the middle; this order
+         * prevents integer overflows and for some reason this order is the
+         * fastest ordering */
+        an = (l+m+n)*c*(l+1-m-n); /* coefficient an */
         bn = (m+n)*x;             /* coefficient bn */
 
         A = Am*bn + Amm*an;  /* A: same as in Abramowitz */
