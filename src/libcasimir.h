@@ -108,7 +108,7 @@ typedef struct
 } casimir_M_t;
 
 typedef struct {
-    double dbycalL,xi;
+    double calLbyd,xi;
     double T;
     casimir_t *casimir;
 } casimir_pfa_t;
