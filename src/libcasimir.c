@@ -1403,62 +1403,78 @@ double casimir_logdetD_dense(casimir_t *self, double nT, int m)
 /* integrand */
 static double _integrand1(double q, void *args)
 {
-    double dbycalL, xi, k, rTE, rTM;
+    double calLbyd, xi, k, rTE, rTM;
 
     casimir_pfa_t *pfa = (casimir_pfa_t *)args;
-    dbycalL = pfa->dbycalL;
+    calLbyd = pfa->calLbyd;
     xi = pfa->xi;
     casimir_t *casimir = pfa->casimir;
 
-    k = sqrt(pow_2(q/(2*dbycalL))-pow_2(xi));
+    k = sqrt(pow_2(calLbyd*q/2)-pow_2(xi)); /* k scaled */
     casimir_rp(casimir, xi, k, &rTE, &rTM);
 
     return q*(log1p(-pow_2(rTE)*exp(-q)) + log1p(-pow_2(rTM)*exp(-q)));
 }
 
-static double _integrand2(double xi, void *args)
+static double _integrand_xi(double z, void *args)
 {
     int ier, neval;
-    double dbycalL, integral, abserr;
+    double integral, abserr;
 
     casimir_pfa_t *pfa = (casimir_pfa_t *)args;
-    dbycalL = pfa->dbycalL;
-    pfa->xi = xi;
+    pfa->xi = z*pfa->calLbyd; /* xi scaled */
 
-    integral = dqagi(_integrand1, 2*xi*dbycalL, 1, 1e-10, 1e-10, &abserr, &neval, &ier, args);
+    integral = dqagi(_integrand1, 2*z, 1, 1e-10, 1e-10, &abserr, &neval, &ier, args);
 
-    WARN(ier != 0, "ier=%d", ier);
+    WARN(ier != 0, "ier=%d, integral=%g, abserr=%g, abrel=%g, neval=%d", ier, integral, abserr, fabs(abserr/integral), neval);
 
     return integral;
 }
 
-static double _integrand3(double t, void *args)
+/* integrand of proximity force approximation */
+static double _casimir_pp(double t, void *args)
 {
     casimir_pfa_t *pfa = (casimir_pfa_t *)args;
-    pfa->dbycalL = 1/(1+1/pfa->casimir->LbyR)*t;
+    const double calLbyd = (1+1/pfa->casimir->LbyR)/t;
+    const double T = pfa->T;
 
-    if(pfa->T == 0)
+    pfa->calLbyd = calLbyd;
+
+    if(T == 0)
     {
         double abserr, integral;
         int ier, neval;
 
-        integral = dqagi(_integrand2, 0, 1, 1e-6, 1e-10, &abserr, &neval, &ier, args);
+        integral = dqagi(_integrand_xi, 0, 1, 1e-8, 1e-10, &abserr, &neval, &ier, args);
 
-        WARN(ier != 0, "ier=%d, abserr=%g, neval=%d", ier, abserr, neval);
-        return integral/(16*pow_2(M_PI))/pow_2(t);
+        WARN(ier != 0, "ier=%d, integral=%g, abserr=%g, abrel=%g, neval=%d", ier, integral, abserr, fabs(abserr/integral), neval);
+        return integral/(16*pow_2(M_PI)*pow_2(t))*calLbyd;
     }
     else
     {
         /* do summation over Matsubara frequencies */
-        WARN(true, "Not implemented yet, sorry.");
-    }
+        const double v0 = _integrand_xi(0, args);
+        double sum = v0/2;
 
-    return NAN;
+        for(int n = 1;; n++)
+        {
+            const double v = _integrand_xi(n*T/calLbyd, args);
+            sum += v;
+
+            if(v/v0 < 1e-15)
+                return T/pow_2(4*M_PI)*sum/pow_2(t);
+        }
+    }
 }
 
-/* @brief Compute PFA
+/* @brief Compute free energy using PFA
  *
- * Compute free energy using the proximity force approximation.
+ * Compute free energy using the proximity force approximation using
+ *      F_PFA = 2*pi*R*L*Int_1^(1+R/L) dt F_pp(Lt)/A
+ * where F_pp/A is the free energy per area for the plane-plane geometry.
+ *
+ * This function returns the free energy F in units of (L+R)/(hbar*c), i.e.,
+ * it returns (L+R)/(hbar*c)*F.
  *
  * @param [in] casimir object
  * @param [in] T temperature
@@ -1475,7 +1491,7 @@ double casimir_pfa(casimir_t *casimir, double T)
         .T       = T
     };
 
-    integral = dqags(_integrand3, 1, 1+1/LbyR, 1e-10, 1e-10, &abserr, &neval, &ier, &pfa);
+    integral = dqags(_casimir_pp, 1, 1+1/LbyR, 1e-10, 1e-10, &abserr, &neval, &ier, &pfa);
 
     return 2*M_PI/LbyR*integral;
 }
