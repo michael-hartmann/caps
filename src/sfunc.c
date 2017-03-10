@@ -569,7 +569,7 @@ double dPl(int l, double x)
  * To evaluate the continued fraction, we use http://dlmf.nist.gov/1.12#E5 and
  * http://dlmf.nist.gov/1.12#E6 .
  */
-static inline double _cf(int l, int m, double x)
+static inline double _cf(const int l, const int m, const double x)
 {
     const double c = (x+1)*(x-1)/4;
     double Amm = 1, Am = 0, Bmm = 0;
