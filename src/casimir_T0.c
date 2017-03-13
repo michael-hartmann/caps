@@ -326,12 +326,6 @@ int master(int argc, char *argv[], int cores)
         usage(stderr);
         EXIT(1);
     }
-    if(ldim <= 0)
-    {
-        fprintf(stderr, "ldim must be positive\n\n");
-        usage(stderr);
-        EXIT(1);
-    }
     if(!isinf(omegap))
     {
         if(omegap <= 0)
