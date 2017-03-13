@@ -16,7 +16,8 @@
 #include "sfunc.h"
 #include "utils.h"
 
-#define PRECISION 1e-12
+#define EPSREL 1e-6
+#define CUTOFF 1e-9
 #define ETA 7.
 #define IDLE 25
 
@@ -40,18 +41,18 @@ static double _pfa(double LbyR, double omegap, double gamma_)
     return pfa;
 }
 
-void casimir_mpi_init(casimir_mpi_t *self, double LbyR, double omegap, double gamma_, int ldim, double precision, int cores, bool verbose)
+void casimir_mpi_init(casimir_mpi_t *self, double LbyR, double omegap, double gamma_, int ldim, double cutoff, int cores, bool verbose)
 {
-    self->LbyR      = LbyR;
-    self->omegap    = omegap;
-    self->gamma     = gamma_;
-    self->ldim      = ldim;
-    self->precision = precision;
-    self->cores     = cores;
-    self->verbose   = verbose;
-    self->tasks     = xmalloc(cores*sizeof(casimir_task_t *));
-    self->alpha     = 2*LbyR/(1+LbyR);
-    self->k         = 1;
+    self->LbyR    = LbyR;
+    self->omegap  = omegap;
+    self->gamma   = gamma_;
+    self->ldim    = ldim;
+    self->cutoff  = cutoff;
+    self->cores   = cores;
+    self->verbose = verbose;
+    self->tasks   = xmalloc(cores*sizeof(casimir_task_t *));
+    self->alpha   = 2*LbyR/(1+LbyR);
+    self->k       = 1;
 
     for(int i = 0; i < cores; i++)
     {
@@ -162,7 +163,7 @@ double integrand(double xi, casimir_mpi_t *casimir_mpi)
     double terms[2048] = { NAN };
     bool verbose = casimir_mpi->verbose;
     const double nmax = sizeof(terms)/sizeof(double);
-    const double precision = casimir_mpi->precision;
+    const double cutoff = casimir_mpi->cutoff;
     const double t0 = now();
 
     /* gather all data */
@@ -184,7 +185,7 @@ double integrand(double xi, casimir_mpi_t *casimir_mpi)
                 if(verbose)
                     fprintf(stderr, "# m=%d, xi=%.12g, logdetD=%.12g\n", task->m, xi, task->value);
 
-                if(v == 0 || v/terms[0] < precision)
+                if(v == 0 || v/terms[0] < cutoff)
                     goto done;
             }
 
@@ -244,7 +245,7 @@ int master(int argc, char *argv[], int cores)
 {
     bool verbose = false;
     int order = -1, ldim = 0, ret = 0;
-    double LbyR = -1, precision = PRECISION, omegap = INFINITY, gamma_ = 0;
+    double LbyR = -1, cutoff = CUTOFF, epsrel = EPSREL, omegap = INFINITY, gamma_ = 0;
     casimir_mpi_t casimir_mpi;
 
     #define EXIT(n) do { ret = n; goto out; } while(0)
@@ -254,21 +255,22 @@ int master(int argc, char *argv[], int cores)
     {
         int c;
         struct option long_options[] = {
-            { "help",      no_argument,       0, 'h' },
-            { "verbose",   no_argument,       0, 'v' },
-            { "LbyR",      required_argument, 0, 'x' },
-            { "ldim",      required_argument, 0, 'L' },
-            { "order",     required_argument, 0, 'N' },
-            { "precision", required_argument, 0, 'p' },
-            { "omegap",    required_argument, 0, 'w' },
-            { "gamma",     required_argument, 0, 'g' },
+            { "help",    no_argument,       0, 'h' },
+            { "verbose", no_argument,       0, 'v' },
+            { "LbyR",    required_argument, 0, 'x' },
+            { "ldim",    required_argument, 0, 'L' },
+            { "order",   required_argument, 0, 'N' },
+            { "cutoff",  required_argument, 0, 'c' },
+            { "epsrel",  required_argument, 0, 'e' },
+            { "omegap",  required_argument, 0, 'w' },
+            { "gamma",   required_argument, 0, 'g' },
             { 0, 0, 0, 0 }
         };
 
         /* getopt_long stores the option index here. */
         int option_index = 0;
 
-        c = getopt_long(argc, argv, "x:L:N:c:p:w:g:dvh", long_options, &option_index);
+        c = getopt_long(argc, argv, "x:L:N:c:e:p:w:g:dvh", long_options, &option_index);
 
         /* Detect the end of the options. */
         if(c == -1)
@@ -286,8 +288,11 @@ int master(int argc, char *argv[], int cores)
             case 'L':
                 ldim = atoi(optarg);
                 break;
-            case 'p':
-                precision = atof(optarg);
+            case 'c':
+                cutoff = atof(optarg);
+                break;
+            case 'e':
+                epsrel = atof(optarg);
                 break;
             case 'N':
                 order = atoi(optarg);
@@ -320,9 +325,15 @@ int master(int argc, char *argv[], int cores)
         usage(stderr);
         EXIT(1);
     }
-    if(precision <= 0)
+    if(cutoff <= 0)
     {
-        fprintf(stderr, "precision must be positive.\n\n");
+        fprintf(stderr, "cutoff must be positive.\n\n");
+        usage(stderr);
+        EXIT(1);
+    }
+    if(epsrel <= 0)
+    {
+        fprintf(stderr, "epsrel must be positive.\n\n");
         usage(stderr);
         EXIT(1);
     }
@@ -365,7 +376,7 @@ int master(int argc, char *argv[], int cores)
     double pfa = _pfa(LbyR, omegap, gamma_);
 
     printf("# LbyR   = %.15g\n", LbyR);
-    printf("# prec   = %g\n", precision);
+    printf("# cutoff = %g\n", cutoff);
     printf("# ldim   = %d\n", ldim);
     printf("# cores  = %d\n", cores);
     printf("# alpha  = %.15g\n", alpha);
@@ -376,7 +387,7 @@ int master(int argc, char *argv[], int cores)
         printf("# gamma  = %g\n", gamma_);
     }
 
-    casimir_mpi_init(&casimir_mpi, LbyR, omegap, gamma_, ldim, precision, cores, verbose);
+    casimir_mpi_init(&casimir_mpi, LbyR, omegap, gamma_, ldim, cutoff, cores, verbose);
     double F0 = 0;
 
     if(order > 0)
@@ -404,10 +415,10 @@ int master(int argc, char *argv[], int cores)
         double integral, abserr;
         int ier, neval;
 
-        printf("# quadrature: adaptive Gauss-Kronrod\n");
+        printf("# quadrature: adaptive Gauss-Kronrod (epsrel = %g)\n", epsrel);
         printf("#\n");
 
-        integral = dqagi(wrapper_integrand, 0, 1, 1e-7*pfa, 1e-7, &abserr, &neval, &ier, &casimir_mpi);
+        integral = dqagi(wrapper_integrand, 0, 1, 0, epsrel, &abserr, &neval, &ier, &casimir_mpi);
 
         printf("#\n");
         printf("# ier=%d, integral=%.15g, neval=%d, abserr=%g, absrel=%g\n", ier, integral, neval, abserr, fabs(abserr/integral));
@@ -497,8 +508,14 @@ void usage(FILE *stream)
 "    -L LDIM\n"
 "        Set ldim to the value LDIM. (default: ldim=ceil(%g*R/L))\n"
 "\n"
-"    -p, --precision\n"
-"        Set precision to given value (default: %g)\n"
+"    -c, --cutoff CUTOFF\n"
+"        Stop summation over m for a given value of ξ if\n"
+"            logdet(D^m(ξ))/logdet(D^0(ξ) < CUTOFF\n"
+"        (default: %g)\n"
+"\n"
+"    -e, --epsrel\n"
+"       Request relative accuracy of EPSREL for Gauß-Kronrod integration\n"
+"       (default: %g)\n"
 "\n"
 "    -N, --order\n"
 "        Order of Gauss-Laguerre integration. If not specified, use adaptive\n"
@@ -517,5 +534,5 @@ void usage(FILE *stream)
 "\n"
 "    -h, --help\n"
 "        Show this help\n",
-    ETA, PRECISION);
+    ETA, EPSREL, CUTOFF);
 }
