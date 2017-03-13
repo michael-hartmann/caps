@@ -158,7 +158,7 @@ static double wrapper_integrand(double xi, void *args)
 double integrand(double xi, casimir_mpi_t *casimir_mpi)
 {
     int m;
-    double terms[10000] = { NAN };
+    double terms[2048] = { NAN };
     bool debug = false;
     const double nmax = sizeof(terms)/sizeof(double);
     const double precision = casimir_mpi->precision;
@@ -190,6 +190,8 @@ double integrand(double xi, casimir_mpi_t *casimir_mpi)
             usleep(IDLE);
         }
     }
+
+    TERMINATE(true, "sum did not converge, sorry. :(");
 
     done:
 
