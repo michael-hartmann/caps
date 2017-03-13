@@ -40,7 +40,7 @@ static double _pfa(double LbyR, double omegap, double gamma_)
     return pfa;
 }
 
-void casimir_mpi_init(casimir_mpi_t *self, double LbyR, double omegap, double gamma_, int ldim, double precision, int cores)
+void casimir_mpi_init(casimir_mpi_t *self, double LbyR, double omegap, double gamma_, int ldim, double precision, int cores, bool verbose)
 {
     self->LbyR      = LbyR;
     self->omegap    = omegap;
@@ -48,6 +48,7 @@ void casimir_mpi_init(casimir_mpi_t *self, double LbyR, double omegap, double ga
     self->ldim      = ldim;
     self->precision = precision;
     self->cores     = cores;
+    self->verbose   = verbose;
     self->tasks     = xmalloc(cores*sizeof(casimir_task_t *));
     self->alpha     = 2*LbyR/(1+LbyR);
     self->k         = 1;
@@ -159,7 +160,7 @@ double integrand(double xi, casimir_mpi_t *casimir_mpi)
 {
     int m;
     double terms[2048] = { NAN };
-    bool debug = false;
+    bool verbose = casimir_mpi->verbose;
     const double nmax = sizeof(terms)/sizeof(double);
     const double precision = casimir_mpi->precision;
     const double t0 = now();
@@ -180,7 +181,7 @@ double integrand(double xi, casimir_mpi_t *casimir_mpi)
             {
                 double v = terms[task->m] = task->value;
 
-                if(debug)
+                if(verbose)
                     fprintf(stderr, "# m=%d, xi=%.12g, logdetD=%.12g\n", task->m, xi, task->value);
 
                 if(v == 0 || v/terms[0] < precision)
@@ -203,7 +204,7 @@ double integrand(double xi, casimir_mpi_t *casimir_mpi)
         while(casimir_mpi_retrieve(casimir_mpi, &task))
         {
             terms[task->m] = task->value;
-            if(debug)
+            if(verbose)
                 fprintf(stderr, "# m=%d, xi=%.12g, logdetD=%.12g\n", task->m, xi, task->value);
         }
 
@@ -241,6 +242,7 @@ int main(int argc, char *argv[])
 
 int master(int argc, char *argv[], int cores)
 {
+    bool verbose = false;
     int order = -1, ldim = 0, ret = 0;
     double LbyR = -1, precision = PRECISION, omegap = INFINITY, gamma_ = 0;
     casimir_mpi_t casimir_mpi;
@@ -253,6 +255,7 @@ int master(int argc, char *argv[], int cores)
         int c;
         struct option long_options[] = {
             { "help",      no_argument,       0, 'h' },
+            { "verbose",   no_argument,       0, 'v' },
             { "LbyR",      required_argument, 0, 'x' },
             { "ldim",      required_argument, 0, 'L' },
             { "order",     required_argument, 0, 'N' },
@@ -265,7 +268,7 @@ int master(int argc, char *argv[], int cores)
         /* getopt_long stores the option index here. */
         int option_index = 0;
 
-        c = getopt_long(argc, argv, "x:L:N:c:p:w:g:dh", long_options, &option_index);
+        c = getopt_long(argc, argv, "x:L:N:c:p:w:g:dvh", long_options, &option_index);
 
         /* Detect the end of the options. */
         if(c == -1)
@@ -294,6 +297,9 @@ int master(int argc, char *argv[], int cores)
                 break;
             case 'g':
                 gamma_ = atof(optarg);
+                break;
+            case 'v':
+                verbose = true;
                 break;
             case 'h':
                 usage(stdout);
@@ -376,7 +382,7 @@ int master(int argc, char *argv[], int cores)
         printf("# gamma  = %g\n", gamma_);
     }
 
-    casimir_mpi_init(&casimir_mpi, LbyR, omegap, gamma_, ldim, precision, cores);
+    casimir_mpi_init(&casimir_mpi, LbyR, omegap, gamma_, ldim, precision, cores, verbose);
     double F0 = 0;
 
     if(order > 0)
@@ -512,7 +518,10 @@ void usage(FILE *stream)
 "        Set dissipation of Drude model to GAMMA. Ignored if no value for\n"
 "        --omegap is given. (DEFAULT: perfect conductors)\n"
 "\n"
-"    -h,--help\n"
+"    -v, --verbose\n"
+"        Also print results for each m\n"
+"\n"
+"    -h, --help\n"
 "        Show this help\n",
     ETA, PRECISION);
 }
