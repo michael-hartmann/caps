@@ -17,7 +17,7 @@
 #include "utils.h"
 
 #define PRECISION 1e-12
-#define LFAC 6.
+#define ETA 7.
 #define IDLE 25
 
 #define STATE_RUNNING 1
@@ -240,7 +240,7 @@ int main(int argc, char *argv[])
 int master(int argc, char *argv[], int cores)
 {
     int order = -1, ldim = 0, ret = 0;
-    double LbyR = -1, lfac = LFAC, precision = PRECISION, omegap = INFINITY, gamma_ = 0;
+    double LbyR = -1, precision = PRECISION, omegap = INFINITY, gamma_ = 0;
     casimir_mpi_t casimir_mpi;
 
     #define EXIT(n) do { ret = n; goto out; } while(0)
@@ -254,7 +254,6 @@ int master(int argc, char *argv[], int cores)
             { "LbyR",      required_argument, 0, 'x' },
             { "ldim",      required_argument, 0, 'L' },
             { "order",     required_argument, 0, 'N' },
-            { "lscale",    required_argument, 0, 'l' },
             { "precision", required_argument, 0, 'p' },
             { "omegap",    required_argument, 0, 'w' },
             { "gamma",     required_argument, 0, 'g' },
@@ -264,7 +263,7 @@ int master(int argc, char *argv[], int cores)
         /* getopt_long stores the option index here. */
         int option_index = 0;
 
-        c = getopt_long (argc, argv, "x:L:N:l:c:p:w:g:dh", long_options, &option_index);
+        c = getopt_long(argc, argv, "x:L:N:c:p:w:g:dh", long_options, &option_index);
 
         /* Detect the end of the options. */
         if(c == -1)
@@ -281,9 +280,6 @@ int master(int argc, char *argv[], int cores)
                 break;
             case 'L':
                 ldim = atoi(optarg);
-                break;
-            case 'l':
-                lfac = atof(optarg);
                 break;
             case 'p':
                 precision = atof(optarg);
@@ -324,22 +320,9 @@ int master(int argc, char *argv[], int cores)
     }
     if(ldim <= 0)
     {
-        if(lfac > 0)
-        {
-            ldim = lfac/LbyR;
-        }
-        else if(lfac < 0)
-        {
-            fprintf(stderr, "lfac must be positive\n\n");
-            usage(stderr);
-            EXIT(1);
-        }
-        else
-        {
-            fprintf(stderr, "ldim must be positive\n\n");
-            usage(stderr);
-            EXIT(1);
-        }
+        fprintf(stderr, "ldim must be positive\n\n");
+        usage(stderr);
+        EXIT(1);
     }
     if(!isinf(omegap))
     {
@@ -362,6 +345,10 @@ int master(int argc, char *argv[], int cores)
         fprintf(stderr, "need at least 2 cores\n");
         EXIT(1);
     }
+
+    /* if ldim was not set */
+    if(ldim <= 0)
+        ldim = ceil(ETA/LbyR);
 
     /* disable buffering */
     fflush(stdin);
@@ -505,12 +492,8 @@ void usage(FILE *stream)
 "        where L/R > 0.\n"
 "\n"
 "Further options:\n"
-"    -l, --lscale\n"
-"        Specify parameter lscale. The vector space has to be truncated for\n"
-"        some value ldim. This program will use ldim=(R/L*lscale) (default: %g)\n"
-"\n"
 "    -L LDIM\n"
-"        Set ldim to the value LDIM. When -L is specified, -l will be ignored\n"
+"        Set ldim to the value LDIM. (default: ldim=ceil(%g*R/L))\n"
 "\n"
 "    -p, --precision\n"
 "        Set precision to given value (default: %g)\n"
@@ -529,5 +512,5 @@ void usage(FILE *stream)
 "\n"
 "    -h,--help\n"
 "        Show this help\n",
-    LFAC, PRECISION);
+    ETA, PRECISION);
 }
