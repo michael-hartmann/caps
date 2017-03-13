@@ -1287,7 +1287,7 @@ double casimir_logdetD_hodlr(casimir_t *self, double nT, int m)
 {
     const unsigned int nLeaf = self->nLeaf;
     const int is_symmetric = 1;
-    const double tolerance = 1e-15;
+    const double tolerance = 1e-16;
     const int dim = 2*self->ldim;
     double diagonal[dim];
     double logdet = 0, trace = 0;
