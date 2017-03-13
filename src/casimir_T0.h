@@ -14,13 +14,13 @@ typedef struct {
 } casimir_task_t;
 
 typedef struct {
-    double LbyR, omegap, gamma, precision, alpha;
+    double LbyR, omegap, gamma, cutoff, alpha;
     int k, ldim, cores;
     bool verbose;
     casimir_task_t **tasks;
 } casimir_mpi_t;
 
-void casimir_mpi_init(casimir_mpi_t *self, double LbyR, double omegap, double gamma_, int ldim, double precision, int cores, bool verbose);
+void casimir_mpi_init(casimir_mpi_t *self, double LbyR, double omegap, double gamma_, int ldim, double cutoff, int cores, bool verbose);
 void casimir_mpi_free(casimir_mpi_t *self);
 int casimir_mpi_submit(casimir_mpi_t *self, int index, double xi, int m);
 int casimir_mpi_retrieve(casimir_mpi_t *self, casimir_task_t **task_out);
@@ -33,7 +33,7 @@ int master(int argc, char *argv[], int cores);
 int slave(MPI_Comm master_comm, int rank);
 
 void stop_process(int task);
-int submit_job(int process, MPI_Request *request, double *recv, int k, double xi, double LbyR, int ldim, double precision);
+int submit_job(int process, MPI_Request *request, double *recv, int k, double xi, double LbyR, int ldim, double cutoff);
 int retrieve_job(MPI_Request *request, double *buf, int *index, double *value);
 
 #endif
