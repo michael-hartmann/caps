@@ -1424,7 +1424,7 @@ static double _integrand_xi(double z, void *args)
     casimir_pfa_t *pfa = (casimir_pfa_t *)args;
     pfa->xi = z*pfa->calLbyd; /* xi scaled */
 
-    integral = dqagi(_integrand1, 2*z, 1, 1e-10, 1e-10, &abserr, &neval, &ier, args);
+    integral = dqagi(_integrand1, 2*z, 1, 0, 1e-12, &abserr, &neval, &ier, args);
 
     WARN(ier != 0, "ier=%d, integral=%g, abserr=%g, abrel=%g, neval=%d", ier, integral, abserr, fabs(abserr/integral), neval);
 
@@ -1445,7 +1445,7 @@ static double _casimir_pp(double t, void *args)
         double abserr, integral;
         int ier, neval;
 
-        integral = dqagi(_integrand_xi, 0, 1, 1e-8, 1e-10, &abserr, &neval, &ier, args);
+        integral = dqagi(_integrand_xi, 0, 1, 0, 1e-10, &abserr, &neval, &ier, args);
 
         WARN(ier != 0, "ier=%d, integral=%g, abserr=%g, abrel=%g, neval=%d", ier, integral, abserr, fabs(abserr/integral), neval);
         return integral/(16*pow_2(M_PI)*pow_2(t))*calLbyd;
@@ -1461,7 +1461,7 @@ static double _casimir_pp(double t, void *args)
             const double v = _integrand_xi(n*T/calLbyd, args);
             sum += v;
 
-            if(v/v0 < 1e-15)
+            if(v/v0)
                 return T/pow_2(4*M_PI)*sum/pow_2(t);
         }
     }
@@ -1491,7 +1491,7 @@ double casimir_pfa(casimir_t *casimir, double T)
         .T       = T
     };
 
-    integral = dqags(_casimir_pp, 1, 1+1/LbyR, 1e-10, 1e-10, &abserr, &neval, &ier, &pfa);
+    integral = dqags(_casimir_pp, 1, 1+1/LbyR, 0, 1e-10, &abserr, &neval, &ier, &pfa);
 
     return 2*M_PI/LbyR*integral;
 }
