@@ -1306,7 +1306,7 @@ double casimir_logdetD(casimir_t *self, double nT, int m)
             casimir_logdetD0(self, m, &logdet_EE, &logdet_MM);
         else
             /* assume Drude; r_TE = 0 */
-            casimir_logdetD0(self, m, NULL, &logdet_MM);
+            casimir_logdetD0(self, m, &logdet_EE, NULL);
 
         return logdet_EE + logdet_MM;
     }
