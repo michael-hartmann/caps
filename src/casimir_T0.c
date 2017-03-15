@@ -243,7 +243,7 @@ int main(int argc, char *argv[])
 
 int master(int argc, char *argv[], int cores)
 {
-    bool verbose = false;
+    bool verbose = false, zero = 0;
     int order = -1, ldim = 0, ret = 0;
     double LbyR = -1, cutoff = CUTOFF, epsrel = EPSREL, omegap = INFINITY, gamma_ = 0;
     casimir_mpi_t casimir_mpi;
@@ -257,6 +257,7 @@ int master(int argc, char *argv[], int cores)
         struct option long_options[] = {
             { "help",    no_argument,       0, 'h' },
             { "verbose", no_argument,       0, 'v' },
+            { "zero",    no_argument,       0, 'z' },
             { "LbyR",    required_argument, 0, 'x' },
             { "ldim",    required_argument, 0, 'L' },
             { "order",   required_argument, 0, 'N' },
@@ -270,7 +271,7 @@ int master(int argc, char *argv[], int cores)
         /* getopt_long stores the option index here. */
         int option_index = 0;
 
-        c = getopt_long(argc, argv, "x:L:N:c:e:p:w:g:dvh", long_options, &option_index);
+        c = getopt_long(argc, argv, "x:L:N:c:e:p:w:g:zdvh", long_options, &option_index);
 
         /* Detect the end of the options. */
         if(c == -1)
@@ -305,6 +306,9 @@ int master(int argc, char *argv[], int cores)
                 break;
             case 'v':
                 verbose = true;
+                break;
+            case 'z':
+                zero = true;
                 break;
             case 'h':
                 usage(stdout);
@@ -388,16 +392,19 @@ int master(int argc, char *argv[], int cores)
     }
 
     casimir_mpi_init(&casimir_mpi, LbyR, omegap, gamma_, ldim, cutoff, cores, verbose);
-    double F0 = 0;
+
+    double integral = 0;
 
     if(order > 0)
     {
         double *xk, *ln_wk;
-        double integral = 0;
         order = gausslaguerre_nodes_weights(order, &xk, &ln_wk);
 
         printf("# quadrature: Gauss-Laguerre (order = %d)\n", order);
         printf("#\n");
+
+        if(zero)
+            wrapper_integrand(0, &casimir_mpi);
 
         for(int k = 0; k < order; k++)
         {
@@ -406,17 +413,17 @@ int master(int argc, char *argv[], int cores)
 
             integral += exp(ln_wk[k]+xk[k])*v;
         }
-
-        /* free energy for T=0 */
-        F0 = integral/alpha/M_PI;
     }
     else
     {
-        double integral, abserr;
+        double abserr;
         int ier, neval;
 
         printf("# quadrature: adaptive Gauss-Kronrod (epsrel = %g)\n", epsrel);
         printf("#\n");
+
+        if(zero)
+            wrapper_integrand(0, &casimir_mpi);
 
         integral = dqagi(wrapper_integrand, 0, 1, 0, epsrel, &abserr, &neval, &ier, &casimir_mpi);
 
@@ -424,10 +431,10 @@ int master(int argc, char *argv[], int cores)
         printf("# ier=%d, integral=%.15g, neval=%d, abserr=%g, absrel=%g\n", ier, integral, neval, abserr, fabs(abserr/integral));
 
         WARN(ier != 0, "ier=%d", ier);
-
-        /* free energy for T=0 */
-        F0 = integral/alpha/M_PI;
     }
+
+    /* free energy for T=0 */
+    double F0 = integral/alpha/M_PI;
 
     printf("#\n");
     printf("# L/R, ldim, F_PFA(T=0)*(L+R)/ħc), F(T=0)*(L+R)/(ħc), F/F_pfa\n");
@@ -528,6 +535,9 @@ void usage(FILE *stream)
 "    --gamma GAMMA\n"
 "        Set dissipation of Drude model to GAMMA. Ignored if no value for\n"
 "        --omegap is given. (DEFAULT: perfect conductors)\n"
+"\n"
+"    -z, --zero\n"
+"        Also compute the term for xi=0; does only work for PC or Drude\n"
 "\n"
 "    -v, --verbose\n"
 "        Also print results for each m\n"
