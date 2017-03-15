@@ -387,8 +387,8 @@ int master(int argc, char *argv[], int cores)
     printf("# F_PFA  = %.15g\n", pfa);
     if(!isinf(omegap))
     {
-        printf("# omegap = %g\n", omegap);
-        printf("# gamma  = %g\n", gamma_);
+        printf("# omegap = %.15g\n", omegap);
+        printf("# gamma  = %.15g\n", gamma_);
     }
 
     casimir_mpi_init(&casimir_mpi, LbyR, omegap, gamma_, ldim, cutoff, cores, verbose);
