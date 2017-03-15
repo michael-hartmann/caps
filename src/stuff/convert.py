@@ -1,8 +1,9 @@
 def eV2scaled(R, LbyR, ωp, γ):
     ħ = 6.582119514e-16 # reduced Planck constant [eV/s]
+    c = 299792458 # speed of light
 
-    ωp_scaled = ωp/ħ*R*(1+LbyR)
-    γ_scaled  =  γ/ħ*R*(1+LbyR)
+    ωp_scaled = ωp/(ħ*c)*R*(1+LbyR)
+    γ_scaled  =  γ/(ħ*c)*R*(1+LbyR)
 
     return ωp_scaled, γ_scaled
 
