@@ -1275,8 +1275,42 @@ matrix_t *casimir_M(casimir_t *self, double nT, int m)
     return M;
 }
 
+
+/** @brief Compute log det D^m(xi)
+ *
+ * This function will compute the logarithm of the determinant of the
+ * scattering matrix for Matsubara frequency nT and quantum number m.
+ *
+ * Either LU decomposition (slow) or method for HODLR matrices (fast) will be
+ * used, see \ref casimir_set_detalg.
+ *
+ * For nT=0 some assumption about the material have to be made. The function
+ * will test if the metal is a perfect conductor (PC), i.e.
+ * epsilon(xi->inf)=inf. Otherwise it is assumed that the metal is described by
+ * the Drude model. If the metal is neither PC nor Drude, the result for xi=0
+ * will be wrong.
+ *
+ * @param self Casimir object
+ * @param nT Matsubara frequency
+ * @param m quantum number m
+ * @retval logdetD(xi,m)
+ */
 double casimir_logdetD(casimir_t *self, double nT, int m)
 {
+    if(nT == 0)
+    {
+        double logdet_EE = 0, logdet_MM = 0;
+
+        if(isinf(casimir_epsilonm1(self, INFINITY)))
+            /* perfect conductor */
+            casimir_logdetD0(self, m, &logdet_EE, &logdet_MM);
+        else
+            /* assume Drude; r_TE = 0 */
+            casimir_logdetD0(self, m, NULL, &logdet_MM);
+
+        return logdet_EE + logdet_MM;
+    }
+
     if(self->detalg == DETALG_HODLR)
         return casimir_logdetD_hodlr(self, nT, m);
     else
@@ -1337,21 +1371,6 @@ double casimir_logdetD_dense(casimir_t *self, double nT, int m)
 {
     double t0;
     double logdet = 0;
-
-    if(nT == 0)
-    {
-        double logdet_EE = 0, logdet_MM = 0;
-
-        /* XXX what happens for xi=0 XXX */
-        //if(self->epsilonm1 == NULL)
-            /* perfect reflector */
-            casimir_logdetD0(self, m, &logdet_EE, &logdet_MM);
-        //else
-        //    /* generic mirrors */
-        //    casimir_logdetD0(self, m, &logdet_EE, NULL);
-
-        return logdet_EE + logdet_MM;
-    }
 
     t0 = now();
     matrix_t *M = casimir_M(self, nT, m);
