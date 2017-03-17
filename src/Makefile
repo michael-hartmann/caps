@@ -1,4 +1,4 @@
-.PHONY: clean doc casimir casimir_logdetD casimir_hiT casimir_T0 casimir_tests dependencies dependencies_test
+.PHONY: clean doc casimir_logdetD casimir_hiT casimir casimir_tests dependencies dependencies_test
 all: casimir_logdetD
 
 HODLRDIR            = ../../hodlr_wrapper
@@ -98,11 +98,8 @@ dependencies_test: $(TESTS:.o=.c) dependencies
 %.o : %.c
 	$(CC) $(CFLAGS) $(OPT) -o $@ -c $<
 
-casimir_T0.o:
-	$(MPICC) $(CFLAGS) $(OPT) casimir_T0.c -o $@ -c $<
-
-casimir: casimir.o $(OBJS) dependencies
-	$(CC) $(CFLAGS) $(OPT) casimir.o $(OBJS) $(LDFLAGS) -o casimir
+casimir.o:
+	$(MPICC) $(CFLAGS) $(OPT) casimir.c -o $@ -c $<
 
 casimir_logdetD: casimir_logdetD.o $(OBJS) dependencies
 	$(CC) $(CFLAGS) $(OPT) casimir_logdetD.o $(OBJS) $(LDFLAGS) -o casimir_logdetD
@@ -120,11 +117,11 @@ casimir_tests: $(TESTS) $(OBJS) dependencies_test
 	$(CC) $(CFLAGS) $(OPT) $(TESTS) $(OBJS) $(LDFLAGS) -o casimir_tests
 	./casimir_tests
 
-casimir_T0: casimir_T0.o $(OBJS) dependencies
-	$(MPICC) $(CFLAGS) $(OPT) casimir_T0.o $(OBJS) $(LDFLAGS) -o casimir_T0
+casimir: casimir.o $(OBJS) dependencies
+	$(MPICC) $(CFLAGS) $(OPT) casimir.o $(OBJS) $(LDFLAGS) -o casimir
 
 clean:
-	rm -f casimir casimir_tests casimir_hiT casimir_logdetD casimir_T0 *.o tests/*.o $(DEPEND_FILE)
+	rm -f casimir_tests casimir_hiT casimir_logdetD casimir *.o tests/*.o $(DEPEND_FILE)
 	rm -rf doc
 
 doc:
