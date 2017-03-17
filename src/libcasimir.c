@@ -1061,7 +1061,7 @@ casimir_M_t *casimir_M_init(casimir_t *casimir, int m, double nT)
 
     self->casimir = casimir;
     self->m = m;
-    self->lmin = lmin; // XXX
+    self->lmin = lmin;
     self->integration = casimir_integrate_init(casimir, nT, m, casimir->tolerance);
     self->nT = nT;
     self->al = xmalloc(ldim*sizeof(double));
