@@ -35,7 +35,7 @@ if __name__ == "__main__":
     theta1,theta2 = 1./3 - 20/pi**2, -4.52
     bimonte = lambda x: 1+theta1*x+theta2*x**2*log(x)
 
-    data = slurp(glob("eta8/slurm-*.out"))
+    data = slurp(glob("pc/slurm-*.out"))
 
     attrs = [color.gradient.RedBlue]
 
