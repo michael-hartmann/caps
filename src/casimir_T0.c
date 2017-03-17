@@ -24,7 +24,7 @@
 #define STATE_RUNNING 1
 #define STATE_IDLE    0
 
-static double _pfa(double LbyR, double omegap, double gamma_)
+static double _pfa(double LbyR, double T, double omegap, double gamma_)
 {
     double userdata[2];
     casimir_t *casimir = casimir_init(LbyR);
@@ -34,7 +34,7 @@ static double _pfa(double LbyR, double omegap, double gamma_)
         userdata[1] = gamma_;
         casimir_set_epsilonm1(casimir, casimir_epsilonm1_drude, userdata);
     }
-    double pfa = casimir_pfa(casimir, 0);
+    double pfa = casimir_pfa(casimir, T);
 
     casimir_free(casimir);
 
@@ -245,7 +245,7 @@ int master(int argc, char *argv[], int cores)
 {
     bool verbose = false, zero = 0;
     int order = -1, ldim = 0, ret = 0;
-    double LbyR = -1, cutoff = CUTOFF, epsrel = EPSREL, omegap = INFINITY, gamma_ = 0;
+    double LbyR = -1, cutoff = CUTOFF, epsrel = EPSREL, omegap = INFINITY, gamma_ = 0, T = 0;
     casimir_mpi_t casimir_mpi;
 
     #define EXIT(n) do { ret = n; goto out; } while(0)
@@ -255,23 +255,25 @@ int master(int argc, char *argv[], int cores)
     {
         int c;
         struct option long_options[] = {
-            { "help",    no_argument,       0, 'h' },
-            { "verbose", no_argument,       0, 'v' },
-            { "zero",    no_argument,       0, 'z' },
-            { "LbyR",    required_argument, 0, 'x' },
-            { "ldim",    required_argument, 0, 'L' },
-            { "order",   required_argument, 0, 'N' },
-            { "cutoff",  required_argument, 0, 'c' },
-            { "epsrel",  required_argument, 0, 'e' },
-            { "omegap",  required_argument, 0, 'w' },
-            { "gamma",   required_argument, 0, 'g' },
+            { "help",        no_argument,       0, 'h' },
+            { "verbose",     no_argument,       0, 'v' },
+            { "zero",        no_argument,       0, 'z' },
+            { "zero",        no_argument,       0, 'z' },
+            { "LbyR",        required_argument, 0, 'x' },
+            { "temperature", required_argument, 0, 'T' },
+            { "ldim",        required_argument, 0, 'L' },
+            { "order",       required_argument, 0, 'N' },
+            { "cutoff",      required_argument, 0, 'c' },
+            { "epsrel",      required_argument, 0, 'e' },
+            { "omegap",      required_argument, 0, 'w' },
+            { "gamma",       required_argument, 0, 'g' },
             { 0, 0, 0, 0 }
         };
 
         /* getopt_long stores the option index here. */
         int option_index = 0;
 
-        c = getopt_long(argc, argv, "x:L:N:c:e:p:w:g:zdvh", long_options, &option_index);
+        c = getopt_long(argc, argv, "x:T:L:N:c:e:p:w:g:zdvh", long_options, &option_index);
 
         /* Detect the end of the options. */
         if(c == -1)
@@ -285,6 +287,9 @@ int master(int argc, char *argv[], int cores)
                     break;
             case 'x':
                 LbyR = atof(optarg);
+                break;
+            case 'T':
+                T = atof(optarg);
                 break;
             case 'L':
                 ldim = atoi(optarg);
@@ -326,6 +331,12 @@ int master(int argc, char *argv[], int cores)
     if(LbyR <= 0)
     {
         fprintf(stderr, "LbyR must be positive.\n\n");
+        usage(stderr);
+        EXIT(1);
+    }
+    if(T < 0)
+    {
+        fprintf(stderr, "Temperature must be non-negative.\n\n");
         usage(stderr);
         EXIT(1);
     }
@@ -377,9 +388,10 @@ int master(int argc, char *argv[], int cores)
     const double alpha = 2*LbyR/(1+LbyR);
 
     /* compute pfa */
-    double pfa = _pfa(LbyR, omegap, gamma_);
+    double pfa = _pfa(LbyR, T, omegap, gamma_);
 
     printf("# LbyR   = %.15g\n", LbyR);
+    printf("# T      = %.15g\n", T);
     printf("# cutoff = %g\n", cutoff);
     printf("# ldim   = %d\n", ldim);
     printf("# cores  = %d\n", cores);
@@ -393,52 +405,78 @@ int master(int argc, char *argv[], int cores)
 
     casimir_mpi_init(&casimir_mpi, LbyR, omegap, gamma_, ldim, cutoff, cores, verbose);
 
-    double integral = 0;
-
-    if(order > 0)
+    double F;
+    if(T == 0)
     {
-        double *xk, *ln_wk;
-        order = gausslaguerre_nodes_weights(order, &xk, &ln_wk);
+        double integral = 0;
 
-        printf("# quadrature: Gauss-Laguerre (order = %d)\n", order);
-        printf("#\n");
-
-        if(zero)
-            wrapper_integrand(0, &casimir_mpi);
-
-        for(int k = 0; k < order; k++)
+        if(order > 0)
         {
-            double xi = xk[k]/alpha;
-            double v = integrand(xi, &casimir_mpi);
+            double *xk, *ln_wk;
+            order = gausslaguerre_nodes_weights(order, &xk, &ln_wk);
 
-            integral += exp(ln_wk[k]+xk[k])*v;
+            printf("# quadrature: Gauss-Laguerre (order = %d)\n", order);
+            printf("#\n");
+
+            if(zero)
+                wrapper_integrand(0, &casimir_mpi);
+
+            for(int k = 0; k < order; k++)
+            {
+                double xi = xk[k]/alpha;
+                double v = integrand(xi, &casimir_mpi);
+
+                integral += exp(ln_wk[k]+xk[k])*v;
+            }
         }
+        else
+        {
+            double abserr;
+            int ier, neval;
+
+            printf("# quadrature: adaptive Gauss-Kronrod (epsrel = %g)\n", epsrel);
+            printf("#\n");
+
+            if(zero)
+                wrapper_integrand(0, &casimir_mpi);
+
+            integral = dqagi(wrapper_integrand, 0, 1, 0, epsrel, &abserr, &neval, &ier, &casimir_mpi);
+
+            printf("#\n");
+            printf("# ier=%d, integral=%.15g, neval=%d, abserr=%g, absrel=%g\n", ier, integral, neval, abserr, fabs(abserr/integral));
+
+            WARN(ier != 0, "ier=%d", ier);
+        }
+
+        /* free energy for T=0 */
+        F = integral/alpha/M_PI;
     }
     else
     {
-        double abserr;
-        int ier, neval;
+        /* fnite temperature */
+        double v[4096] = { 0 };
 
-        printf("# quadrature: adaptive Gauss-Kronrod (epsrel = %g)\n", epsrel);
-        printf("#\n");
+        F = NAN;
 
-        if(zero)
-            wrapper_integrand(0, &casimir_mpi);
+        for(size_t n = 0; n < sizeof(v)/sizeof(double); n++)
+        {
+            double xi = n*T;
+            v[n] = integrand(xi, &casimir_mpi);
 
-        integral = dqagi(wrapper_integrand, 0, 1, 0, epsrel, &abserr, &neval, &ier, &casimir_mpi);
+            if(fabs(v[n]/v[0]) < epsrel)
+            {
+                v[0] /= 2;
+                F = T/M_PI*kahan_sum(v, n+1);
+                break;
+            }
+        }
 
-        printf("#\n");
-        printf("# ier=%d, integral=%.15g, neval=%d, abserr=%g, absrel=%g\n", ier, integral, neval, abserr, fabs(abserr/integral));
-
-        WARN(ier != 0, "ier=%d", ier);
+        TERMINATE(isnan(F), "something went wrong: free energy is not a number");
     }
 
-    /* free energy for T=0 */
-    double F0 = integral/alpha/M_PI;
-
     printf("#\n");
-    printf("# L/R, ldim, F_PFA(T=0)*(L+R)/ħc), F(T=0)*(L+R)/(ħc), F/F_pfa\n");
-    printf("%g, %d, %.12g, %.12g, %.12g\n", LbyR, ldim, pfa, F0, F0/pfa);
+    printf("# L/R, T, ldim, F_PFA*(L+R)/(ħc), F*(L+R)/(ħc), F/F_pfa\n");
+    printf("%g, %.15g, %d, %.12g, %.12g, %.12g\n", LbyR, T, ldim, pfa, F, F/pfa);
 
     casimir_mpi_free(&casimir_mpi);
 out:
@@ -512,6 +550,9 @@ void usage(FILE *stream)
 "        where L/R > 0.\n"
 "\n"
 "Further options:\n"
+"    -T, --temperature TEMPERATURE\n"
+"        Set temperature to TEMPERATURE (default: 0)\n"
+"\n"
 "    -L LDIM\n"
 "        Set ldim to the value LDIM. (default: ldim=ceil(%g*R/L))\n"
 "\n"
