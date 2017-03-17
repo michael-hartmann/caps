@@ -283,6 +283,37 @@ one. So, a sufficient condition is that the Frobenius norm is smaller than $1$.
 \section{Fresnel coefficients}
 \section{Truncation of the vector space}
 
+\section{Numerical differentiation}
+
+In order to compute the first and second derivative of the free energy we use a
+finite difference formula \cite{finitediff} of order 4
+\begin{equation}
+\label{eq:finitediff1}
+f^\prime(x) \approx \frac{f(x-2h) -8f(x-h) + 8f(x+h)  -f(x+2h)}{12h}
+\end{equation}
+and
+\begin{equation}
+\label{eq:finitediff2}
+f^{\prime\prime}(x) \approx \frac{-f(x-2h) +16f(x-h) -30f(x) + 16f(x+h) -f(x+2h)}{12h^2}
+\end{equation}
+
+Using an argument from \cite{NumericalRecipes} for \eqref{eq:finitediff1} the truncation error
+is $\epsilon_t \sim h^4 f^{(5)}$ and the roundoff error is $\epsilon_r \sim \epsilon_F |f|/h$ where $\epsilon_F$
+is the fractional accuracy with which $f$ is calculated. We find the optimal value of $h$ by looking
+for the minimum of $\epsilon_t + \epsilon_r$ anf find:
+\begin{equation}
+h_\text{opt} \sim \left( \epsilon_F \frac{|f|}{4f^{(5)}} \right)^\frac{1}{5} .
+\end{equation}
+
+Assuming perfect reflectors, $T=0$ and that $L/R \ll 1$ so that PFA is valid, the free energy is approximately
+\begin{equation}
+\mathcal{F}_\text{PFA}^{T=0}\left(x=\frac{L}{R}\right) = -\frac{\pi^3}{720x^2}
+\end{equation}
+So, we find
+\begin{equation}
+h_\text{opt} \sim \frac{L}{R} \left(\frac{\epsilon_F}{720}\right)^\frac{1}{5} \,.
+\end{equation}
+
 \appendix
 
 \section{Formulae}
@@ -325,6 +356,14 @@ for $x\sim1$ they may be approximated by
 \bibitem{gaunt}
   Yu-lin Xu,
   \emph{Fast evaluation of Gaunt coefficients: recursive approach}, Journal of Computational and Applied Mathematics, 1997
+
+\bibitem{finitediff}
+  Bengt Fornberg,
+  \emph{Generation of Finite Difference Formulas on Arbitrarily Spaced Grids}, Mathematics of Computation \textbf{51} 184 (1988)
+
+\bibitem{NumericalRecipes}
+  William Press, Saul Teukolsky, William Vetterling and Brian Flannery
+  \emph{Numerical Recipes in C}, Camebridge University Press (2002)
 
 \end{thebibliography}
 
