@@ -1,11 +1,22 @@
-# dielectric function epsilon(i*xi) for Gold from measurements in the range
-# 1.519e+11 <= xi <= 1.519e+18.
+# Credit for this data goes to Diego Dalvit and Paulo Maia Neto.
+#
+# This file contains the dielectric function epsilon(i*xi) for Gold from
+# measurements in the range 1.519e+11 <= xi <= 1.519e+18. The approach
+# how to get this data is described in [1].
 #
 # For small values of xi the material behaves according the Drude model
 #       epsilon(i*xi) = 1 + omegap²/(xi*(xi+gamma))
 # with parameters
 #       omega_p = 9.1417944 eV
-#       gamma   = 0.030624646 eV
+#       gamma   = 0.030624646 eV.
+#
+# However, the actual Drude parameters used to create this data are
+#       omega_p = 9.0 eV
+#       gamma   = 0.03 eV.
+#
+# References:
+# [1] Astrid Lambrecht and Serge Reynaud, Casimir force between metallic
+# mirrors, http://link.springer.com/article/10.1007%2Fs100530050041
 #
 # xi in 1/s              epsilon(i*xi)
 151900000000.0000        27202177.31278406
