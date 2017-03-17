@@ -1,0 +1,11 @@
+# LbyR   = 0.00127427498570313
+# cutoff = 1e-09
+# ldim   = 6279
+# cores  = 28
+# alpha  = 0.00254530655093745
+# F_PFA  = -20000.5428087766
+# omegap = 6832.74992958243
+# gamma  = 27.4077721894486
+# quadrature: adaptive Gauss-Kronrod (epsrel = 3e-05)
+#
+# k=1, xi=0, logdetD=-117.365724746357, t=1.90513
