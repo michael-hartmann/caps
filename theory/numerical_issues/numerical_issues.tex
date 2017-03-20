@@ -287,23 +287,57 @@ one. So, a sufficient condition is that the Frobenius norm is smaller than $1$.
 
 In order to compute the first and second derivative of the free energy we use a
 finite difference formula \cite{finitediff} of order 4
+
+Those formulas can be derived by writing the functions $f(x\pm h)$ and $f(x\pm 2h)$ in a Taylor series
+\begin{align}
+f(x\pm h)  &= f(x) \pm hf^{(1)}(x) + \frac{h^2}{2}f^{(2)}(x) \pm \frac{h^3}{6} f^{(3)}(x) + \frac{h^4}{24} f^{(4)}(x) \pm \frac{h^5}{120} f^{(5)}(x) + \frac{h^6}{720} f^{(6)}(x) + \mathcal{O}\left(h^7\right) \\
+f(x\pm 2h) &= f(x) \pm 2hf^{(1)}(x) + 2h^2 f^{(2)}(x) \pm \frac{4h^3}{3} f^{(3)}(x) + \frac{2h^4}{3} f^{(4)}(x) \pm \frac{4h^5}{15} f^{(5)}(x) + \frac{4h^6}{45} f^{(6)}(x) + \mathcal{O}\left(h^7\right) \\
+\end{align}
+and calculating the differences
+\begin{align}
+f(x+h) -f(x-h)  &= 2hf^{(1)}(x) + \frac{h^3}{3}f^{(3)}(x) + \frac{h^5}{60} f^{(5)}(x) + \mathcal{O}\left(h^7\right) \\
+f(x+2h)-f(x-2h) &= 4hf^{(1)}(x) + \frac{8h^3}{3}f^{(3)}(x) + \frac{8h^5}{15} f^{(5)}(x) + \mathcal{O}\left(h^7\right)
+\end{align}
+as well as the sums
+\begin{align}
+f(x+h)  + f(x-h)  &= 2f(x) + h^2 f^{(2)}(x) + \frac{h^4}{12} f^{(4)}(x) + \frac{h^6}{360} f^{(6)}(x) + \mathcal{O}\left(h^7\right) \\
+f(x+2h) + f(x-2h) &= 2f(x) + 4h^2 f^{(2)}(x) + \frac{4h^4}{3} f^{(4)}(x) + \frac{8h^6}{45} f^{(6)}(x) + \mathcal{O}\left(h^7\right)
+\end{align}
+
+From this we find for the first derivative
 \begin{equation}
 \label{eq:finitediff1}
-f^\prime(x) \approx \frac{f(x-2h) -8f(x-h) + 8f(x+h)  -f(x+2h)}{12h}
+f^\prime(x) = \frac{f(x-2h) -8f(x-h) + 8f(x+h) -f(x+2h)}{12h} + \frac{h^4}{30} f^{(5)}(x) + \mathcal{O}\left(h^5\right) ,
 \end{equation}
-and
+and for the second derivative
 \begin{equation}
 \label{eq:finitediff2}
-f^{\prime\prime}(x) \approx \frac{-f(x-2h) +16f(x-h) -30f(x) + 16f(x+h) -f(x+2h)}{12h^2}
+f^{\prime\prime}(x) = \frac{-f(x-2h) +16f(x-h) -30f(x) + 16f(x+h) -f(x+2h)}{12h^2} + \frac{h^4}{90} f^{(6)}(x) + \mathcal{O}\left(h^5\right) \,.
 \end{equation}
 
-Using an argument from \cite{NumericalRecipes} for \eqref{eq:finitediff1} the truncation error
-is $\epsilon_t \sim h^4 f^{(5)}$ and the roundoff error is $\epsilon_r \sim \epsilon_F |f|/h$ where $\epsilon_F$
-is the fractional accuracy with which $f$ is calculated. We find the optimal value of $h$ by looking
-for the minimum of $\epsilon_t + \epsilon_r$ anf find:
-\begin{equation}
-h_\text{opt} \sim \left( \epsilon_F \frac{|f|}{4f^{(5)}} \right)^\frac{1}{5} .
-\end{equation}
+So, the truncation error for the first and second derivative is given by
+\begin{align}
+\epsilon_r^{(1)} &= \frac{h^4}{30} \left| f^{(5)}(x) \right|, \\
+\epsilon_r^{(2)} &= \frac{h^4}{90} \left| f^{(6)}(x) \right| \,.
+\end{align}
+The roundoff error is given by \cite{NumericalRecipes}
+\begin{align}
+\epsilon_t^{(1)} &= \epsilon_F \frac{|f(x)|}{h} \\
+\epsilon_t^{(2)} &= \epsilon_F \frac{|f(x)|}{h^2}
+\end{align}
+where $\epsilon_F$
+is the fractional accuracy with which $f$ is calculated.
+The total error is thus given by
+\begin{align}
+\epsilon^{(1)} &= \epsilon_r^{(1)} + \epsilon_t^{(1)} = \frac{h^4}{30}\left|f^{(5)}(x)\right| + \epsilon_F \frac{|f(x)|}{h} \\
+\epsilon^{(2)} &= \epsilon_r^{(2)} + \epsilon_t^{(2)} = \frac{h^4}{90}\left|f^{(6)}(x)\right| + \epsilon_F \frac{|f(x)|}{h^2}
+\end{align}
+We find the optimal value of $h$ by looking
+for the minimum of $\epsilon_t + \epsilon_r$ and find:
+\begin{align}
+h^{(1)}_\text{opt} &= \left( \frac{2}{15} \epsilon_F \left|\frac{f(x)}{f^{(5)}(x)}\right| \right)^{1/5} \\
+h^{(2)}_\text{opt} &= \left( 45 \epsilon_F \left|\frac{f(x)}{f^{(6)}(x)}\right| \right)^{1/6}
+\end{align}
 
 Assuming perfect reflectors, $T=0$ and that $L/R \ll 1$ so that PFA is valid, the free energy is approximately
 \begin{equation}
