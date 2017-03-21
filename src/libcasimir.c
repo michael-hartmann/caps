@@ -341,6 +341,7 @@ casimir_t *casimir_init(double LbyR)
     /* perfect reflectors */
     self->epsilonm1 = casimir_epsilonm1_perf;
     self->rp        = casimir_rp;
+    self->lnab      = casimir_lnab;
     self->userdata  = NULL;
 
     /* set threshold */
@@ -464,7 +465,13 @@ double casimir_get_tolerance(casimir_t *self)
  *
  * Set dielectric function of material.
  *
- * If epsilonm1 is NULL, assume perfect reflectors.
+ * The Fresnel coefficient and the Mie coefficient depend on the dielectric
+ * function epsilon(i*xi). By default, perfect reflectors with a dielectric
+ * function epsilon(i*xi)=inf are used.
+ *
+ * However, you can also specify an arbitrary function for epsilon(i*xi).
+ * userdata is an arbitrary pointer that will be given to the callback
+ * function.
  *
  * @param [in,out] self Casimir object
  * @param [in] epsilonm1  callback to the function that calculates epsilon(i*xi)-1
@@ -474,6 +481,16 @@ void casimir_set_epsilonm1(casimir_t *self, double (*epsilonm1)(double xi, void 
 {
     self->epsilonm1 = epsilonm1;
     self->userdata  = userdata;
+}
+
+void casimir_set_rp(casimir_t *self, void (*rp)(struct casimir *self, double nT, double k, double *r_TE, double *r_TM))
+{
+    self->rp = rp;
+}
+
+void casimir_set_lnab(casimir_t *self, void (*lnab)(struct casimir *self, double nT, int l, double *lna, double *lnb, sign_t *sign_a, sign_t *sign_b))
+{
+    self->lnab = lnab;
 }
 
 /**
@@ -1082,10 +1099,10 @@ double casimir_M_elem(casimir_M_t *self, int l1, int l2, char p1, char p2)
     integration_t *integration = self->integration;
 
     if(isnan(self->al[l1-lmin]))
-        casimir_lnab(casimir, nT, l1, &self->al[l1-lmin], &self->bl[l1-lmin], NULL, NULL);
+        casimir->lnab(casimir, nT, l1, &self->al[l1-lmin], &self->bl[l1-lmin], NULL, NULL);
 
     if(isnan(self->al[l2-lmin]))
-        casimir_lnab(casimir, nT, l2, &self->al[l2-lmin], &self->bl[l2-lmin], NULL, NULL);
+        casimir->lnab(casimir, nT, l2, &self->al[l2-lmin], &self->bl[l2-lmin], NULL, NULL);
 
     const double al1 = self->al[l1-lmin], bl1 = self->bl[l1-lmin];
     const double al2 = self->al[l2-lmin], bl2 = self->bl[l2-lmin];
