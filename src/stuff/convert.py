@@ -1,7 +1,7 @@
 from math import pi
 
 hbar    = 1.0545718e-34   # m² kg / s
-hbar_eV = 6.582119514e-16 # eV/s
+hbar_eV = 6.582119514e-16 # eV s
 kB      = 1.38064852e-23  # m² kg / ( K s² )
 c       = 299792458       # m/s
 
