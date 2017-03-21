@@ -68,6 +68,7 @@ typedef struct casimir
     void *userdata;
 
     void (*rp)(struct casimir *self, double nT, double k, double *r_TE, double *r_TM);
+    void (*lnab)(struct casimir *self, double nT, int l, double *lna, double *lnb, sign_t *sign_a, sign_t *sign_b);
     /*@}*/
 
     /**
@@ -136,6 +137,9 @@ void casimir_set_verbose(casimir_t *self, bool verbose);
 bool casimir_get_verbose(casimir_t *self);
 
 void casimir_set_epsilonm1(casimir_t *self, double (*epsilonm1)(double xi, void *userdata), void *userdata);
+
+void casimir_set_rp(casimir_t *self, void (*rp)(struct casimir *self, double nT, double k, double *r_TE, double *r_TM));
+void casimir_set_lnab(casimir_t *self, void (*lnab)(struct casimir *self, double nT, int l, double *lna, double *lnb, sign_t *sign_a, sign_t *sign_b));
 
 void casimir_set_nLeaf(casimir_t *self, unsigned int nLeaf);
 unsigned int casimir_get_nLeaf(casimir_t *self);
