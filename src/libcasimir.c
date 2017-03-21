@@ -1,7 +1,7 @@
 /**
  * @file   libcasimir.c
  * @author Michael Hartmann <michael.hartmann@physik.uni-augsburg.de>
- * @date   February, 2017
+ * @date   March, 2017
  * @brief  library to calculate the free Casimir energy in the plane-sphere geometry
  */
 
@@ -244,7 +244,7 @@ double casimir_epsilonm1_drude(double xi, void *userdata)
 /**
  * @brief Calculate Fresnel coefficients \f$r_{TE}\f$ and \f$r_{TM}\f$ for arbitrary metals
  *
- * This function calculates the Fresnel coefficients for TE and TM mode
+ * This function calculates the Fresnel coefficients for TE and TM mode.
  *
  * @param [in]     self  Casimir object
  * @param [in]     nT    \f$\xi=nT\f$ imaginary frequency
@@ -340,6 +340,7 @@ casimir_t *casimir_init(double LbyR)
 
     /* perfect reflectors */
     self->epsilonm1 = casimir_epsilonm1_perf;
+    self->rp        = casimir_rp;
     self->userdata  = NULL;
 
     /* set threshold */
@@ -1430,7 +1431,7 @@ static double _integrand1(double q, void *args)
     casimir_t *casimir = pfa->casimir;
 
     k = sqrt(pow_2(calLbyd*q/2)-pow_2(xi)); /* k scaled */
-    casimir_rp(casimir, xi, k, &rTE, &rTM);
+    casimir->rp(casimir, xi, k, &rTE, &rTM);
 
     return q*(log1p(-pow_2(rTE)*exp(-q)) + log1p(-pow_2(rTM)*exp(-q)));
 }
