@@ -283,6 +283,7 @@ static double K_integrand(double z, void *args_)
 {
     double v, rTE, rTM;
     integrand_t *args = (integrand_t *)args_;
+    casimir_t *casimir = args->casimir;
 
     z *= args->factor;
 
@@ -297,7 +298,7 @@ static double K_integrand(double z, void *args_)
     else
         v = exp(-log_normalization + Plm(nu,2,1+z)-tau*z);
 
-    casimir_rp(args->casimir, xi, xi*sqrt(z2p2z), &rTE, &rTM);
+    casimir->rp(casimir, xi, xi*sqrt(z2p2z), &rTE, &rTM);
 
     TERMINATE(isnan(v) || isinf(v), "z=%g, nu=%d, m=%d, tau=%g, v=%g", z, nu, m, tau, v);
 

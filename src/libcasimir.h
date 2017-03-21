@@ -50,7 +50,7 @@ typedef enum { DETALG_HODLR, DETALG_LU } detalg_t;
  *
  * Do not modify the attributes of the structure yourself!
  */
-typedef struct
+typedef struct casimir
 {
     /**
      * @name geometry
@@ -66,6 +66,8 @@ typedef struct
      /*@{*/
     double (*epsilonm1)(double xi, void *userdata);
     void *userdata;
+
+    void (*rp)(struct casimir *self, double nT, double k, double *r_TE, double *r_TM);
     /*@}*/
 
     /**
