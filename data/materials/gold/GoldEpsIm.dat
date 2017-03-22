@@ -18,6 +18,14 @@
 # [1] Astrid Lambrecht and Serge Reynaud, Casimir force between metallic
 # mirrors, http://link.springer.com/article/10.1007%2Fs100530050041
 #
+# Drude parameters for low frequencies
+# omegap_low = 9.0eV
+# gamma_low  = 0.03eV
+#
+# Drude parameters for high frequencies
+# omegap_high = 54.475279eV
+# gamma_high  = 211.48855eV
+#
 # xi in 1/s              epsilon(i*xi)
 151900000000.0000        27202177.31278406
 167090000000.0000        24722324.84701070
