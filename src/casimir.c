@@ -252,11 +252,9 @@ int master(int argc, char *argv[], int cores)
     /* parse command line options */
     while (1)
     {
-        int c;
         struct option long_options[] = {
             { "help",        no_argument,       0, 'h' },
             { "verbose",     no_argument,       0, 'v' },
-            { "zero",        no_argument,       0, 'z' },
             { "zero",        no_argument,       0, 'z' },
             { "LbyR",        required_argument, 0, 'x' },
             { "temperature", required_argument, 0, 'T' },
@@ -271,7 +269,7 @@ int master(int argc, char *argv[], int cores)
         /* getopt_long stores the option index here. */
         int option_index = 0;
 
-        c = getopt_long(argc, argv, "x:T:L:N:c:e:p:w:g:zdvh", long_options, &option_index);
+        int c = getopt_long(argc, argv, "x:T:L:c:e:w:g:zvh", long_options, &option_index);
 
         /* Detect the end of the options. */
         if(c == -1)
