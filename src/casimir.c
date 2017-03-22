@@ -388,6 +388,7 @@ int master(int argc, char *argv[], int cores)
     printf("# LbyR   = %.15g\n", LbyR);
     printf("# T      = %.15g\n", T);
     printf("# cutoff = %g\n", cutoff);
+    printf("# epsrel = %g\n", epsrel);
     printf("# ldim   = %d\n", ldim);
     printf("# cores  = %d\n", cores);
     printf("# alpha  = %.15g\n", alpha);
@@ -407,7 +408,7 @@ int master(int argc, char *argv[], int cores)
         double abserr;
         int ier, neval;
 
-        printf("# quadrature: adaptive Gauss-Kronrod (epsrel = %g)\n", epsrel);
+        printf("# quadrature: adaptive Gauss-Kronrod\n");
         printf("#\n");
 
         if(zero)
@@ -442,8 +443,6 @@ int master(int argc, char *argv[], int cores)
                 break;
             }
         }
-
-        TERMINATE(isnan(F), "something went wrong: free energy is not a number");
     }
 
     printf("#\n");
@@ -534,8 +533,13 @@ void usage(FILE *stream)
 "        (default: %g)\n"
 "\n"
 "    -e, --epsrel\n"
-"       Request relative accuracy of EPSREL for Gauß-Kronrod integration if T=0\n"
+"       Request relative accuracy of EPSREL for Gauß-Kronrod integration if\n"
+"       T=0, or stop criterion logdetD(n)/logdetD(n=0) < epsrel for T>0\n"
 "       (default: %g)\n"
+"\n"
+"    --material FILENAME\n"
+"        Filename of the material description file. If set, --omegap and\n"
+"        --gamma will be ignored."
 "\n"
 "    --omegap OMEGAP\n"
 "        Model the metals using the Drude/Plasma model and set Plasma\n"
