@@ -36,6 +36,7 @@ OBJS = \
     lookup.c \
     integration.o \
     libcasimir.o \
+    material.o \
     matrix.o \
     sfunc.o \
     gausslaguerre.c \
