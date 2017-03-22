@@ -10,7 +10,6 @@
 
 #include "casimir.h"
 
-#include "gausslaguerre.h"
 #include "quadpack.h"
 #include "libcasimir.h"
 #include "sfunc.h"
@@ -244,7 +243,7 @@ int main(int argc, char *argv[])
 int master(int argc, char *argv[], int cores)
 {
     bool verbose = false, zero = 0;
-    int order = -1, ldim = 0, ret = 0;
+    int ldim = 0, ret = 0;
     double LbyR = -1, cutoff = CUTOFF, epsrel = EPSREL, omegap = INFINITY, gamma_ = 0, T = 0;
     casimir_mpi_t casimir_mpi;
 
@@ -262,7 +261,6 @@ int master(int argc, char *argv[], int cores)
             { "LbyR",        required_argument, 0, 'x' },
             { "temperature", required_argument, 0, 'T' },
             { "ldim",        required_argument, 0, 'L' },
-            { "order",       required_argument, 0, 'N' },
             { "cutoff",      required_argument, 0, 'c' },
             { "epsrel",      required_argument, 0, 'e' },
             { "omegap",      required_argument, 0, 'w' },
@@ -299,9 +297,6 @@ int master(int argc, char *argv[], int cores)
                 break;
             case 'e':
                 epsrel = atof(optarg);
-                break;
-            case 'N':
-                order = atoi(optarg);
                 break;
             case 'w':
                 omegap = atof(optarg);
@@ -409,44 +404,21 @@ int master(int argc, char *argv[], int cores)
     if(T == 0)
     {
         double integral = 0;
+        double abserr;
+        int ier, neval;
 
-        if(order > 0)
-        {
-            double *xk, *ln_wk;
-            order = gausslaguerre_nodes_weights(order, &xk, &ln_wk);
+        printf("# quadrature: adaptive Gauss-Kronrod (epsrel = %g)\n", epsrel);
+        printf("#\n");
 
-            printf("# quadrature: Gauss-Laguerre (order = %d)\n", order);
-            printf("#\n");
+        if(zero)
+            wrapper_integrand(0, &casimir_mpi);
 
-            if(zero)
-                wrapper_integrand(0, &casimir_mpi);
+        integral = dqagi(wrapper_integrand, 0, 1, 0, epsrel, &abserr, &neval, &ier, &casimir_mpi);
 
-            for(int k = 0; k < order; k++)
-            {
-                double xi = xk[k]/alpha;
-                double v = integrand(xi, &casimir_mpi);
+        printf("#\n");
+        printf("# ier=%d, integral=%.15g, neval=%d, abserr=%g, absrel=%g\n", ier, integral, neval, abserr, fabs(abserr/integral));
 
-                integral += exp(ln_wk[k]+xk[k])*v;
-            }
-        }
-        else
-        {
-            double abserr;
-            int ier, neval;
-
-            printf("# quadrature: adaptive Gauss-Kronrod (epsrel = %g)\n", epsrel);
-            printf("#\n");
-
-            if(zero)
-                wrapper_integrand(0, &casimir_mpi);
-
-            integral = dqagi(wrapper_integrand, 0, 1, 0, epsrel, &abserr, &neval, &ier, &casimir_mpi);
-
-            printf("#\n");
-            printf("# ier=%d, integral=%.15g, neval=%d, abserr=%g, absrel=%g\n", ier, integral, neval, abserr, fabs(abserr/integral));
-
-            WARN(ier != 0, "ier=%d", ier);
-        }
+        WARN(ier != 0, "ier=%d", ier);
 
         /* free energy for T=0 */
         F = integral/alpha/M_PI;
@@ -562,12 +534,8 @@ void usage(FILE *stream)
 "        (default: %g)\n"
 "\n"
 "    -e, --epsrel\n"
-"       Request relative accuracy of EPSREL for Gauß-Kronrod integration\n"
+"       Request relative accuracy of EPSREL for Gauß-Kronrod integration if T=0\n"
 "       (default: %g)\n"
-"\n"
-"    -N, --order\n"
-"        Order of Gauss-Laguerre integration. If not specified, use adaptive\n"
-"        Gauß-Kronrod quadrature.\n"
 "\n"
 "    --omegap OMEGAP\n"
 "        Model the metals using the Drude/Plasma model and set Plasma\n"

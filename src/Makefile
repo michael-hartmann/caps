@@ -39,7 +39,6 @@ OBJS = \
     material.o \
     matrix.o \
     sfunc.o \
-    gausslaguerre.c \
     utils.o
 
 TESTS = \
