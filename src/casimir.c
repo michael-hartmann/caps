@@ -6,12 +6,14 @@
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <unistd.h>
 
 #include "casimir.h"
 
 #include "quadpack.h"
 #include "libcasimir.h"
+#include "material.h"
 #include "sfunc.h"
 #include "utils.h"
 
@@ -40,7 +42,7 @@ static double _pfa(double LbyR, double T, double omegap, double gamma_)
     return pfa;
 }
 
-void casimir_mpi_init(casimir_mpi_t *self, double LbyR, double omegap, double gamma_, int ldim, double cutoff, int cores, bool verbose)
+void casimir_mpi_init(casimir_mpi_t *self, double LbyR, char *filename, double omegap, double gamma_, int ldim, double cutoff, int cores, bool verbose)
 {
     self->LbyR    = LbyR;
     self->omegap  = omegap;
@@ -52,6 +54,11 @@ void casimir_mpi_init(casimir_mpi_t *self, double LbyR, double omegap, double ga
     self->tasks   = xmalloc(cores*sizeof(casimir_task_t *));
     self->alpha   = 2*LbyR/(1+LbyR);
     self->k       = 1;
+
+    TERMINATE(strlen(filename) > 511, "filename too long: %s", filename);
+
+    memset(self->filename, '\0', sizeof(self->filename));
+    strncpy(self->filename, filename, sizeof(self->filename)-sizeof(char));
 
     for(int i = 0; i < cores; i++)
     {
@@ -107,8 +114,9 @@ int casimir_mpi_submit(casimir_mpi_t *self, int index, double xi, int m)
             task->m     = m;
             task->state = STATE_RUNNING;
 
-            MPI_Send (buf,        6, MPI_DOUBLE, i, 0, MPI_COMM_WORLD);
-            MPI_Irecv(task->recv, 1, MPI_DOUBLE, i, 0, MPI_COMM_WORLD, &task->request);
+            MPI_Send (buf,            6,   MPI_DOUBLE, i, 0, MPI_COMM_WORLD);
+            MPI_Send (self->filename, 512, MPI_CHAR,   i, 0, MPI_COMM_WORLD);
+            MPI_Irecv(task->recv,     1,   MPI_DOUBLE, i, 0, MPI_COMM_WORLD, &task->request);
 
             return 1;
         }
@@ -243,6 +251,7 @@ int main(int argc, char *argv[])
 int master(int argc, char *argv[], int cores)
 {
     bool verbose = false, zero = 0;
+    char filename[512] = { 0 };
     int ldim = 0, ret = 0;
     double LbyR = -1, cutoff = CUTOFF, epsrel = EPSREL, omegap = INFINITY, gamma_ = 0, T = 0;
     casimir_mpi_t casimir_mpi;
@@ -261,6 +270,7 @@ int master(int argc, char *argv[], int cores)
             { "ldim",        required_argument, 0, 'L' },
             { "cutoff",      required_argument, 0, 'c' },
             { "epsrel",      required_argument, 0, 'e' },
+            { "material",    required_argument, 0, 'f' },
             { "omegap",      required_argument, 0, 'w' },
             { "gamma",       required_argument, 0, 'g' },
             { 0, 0, 0, 0 }
@@ -269,7 +279,7 @@ int master(int argc, char *argv[], int cores)
         /* getopt_long stores the option index here. */
         int option_index = 0;
 
-        int c = getopt_long(argc, argv, "x:T:L:c:e:w:g:zvh", long_options, &option_index);
+        int c = getopt_long(argc, argv, "x:T:L:c:e:f:w:g:zvh", long_options, &option_index);
 
         /* Detect the end of the options. */
         if(c == -1)
@@ -308,6 +318,9 @@ int master(int argc, char *argv[], int cores)
             case 'z':
                 zero = true;
                 break;
+            case 'f':
+                strncpy(filename, optarg, sizeof(filename)-sizeof(char));
+                break;
             case 'h':
                 usage(stdout);
                 EXIT(0);
@@ -344,6 +357,24 @@ int master(int argc, char *argv[], int cores)
         fprintf(stderr, "epsrel must be positive.\n\n");
         usage(stderr);
         EXIT(1);
+    }
+    if(strlen(filename))
+    {
+        material_t *material;
+        if(access(filename, R_OK) != 0)
+        {
+            fprintf(stderr, "file %s does not exist or is not readable.\n\n", filename);
+            usage(stderr);
+            EXIT(1);
+        }
+        material = material_init(filename);
+        if(material == NULL)
+        {
+            fprintf(stderr, "file %s has wrong format.\n\n", filename);
+            usage(stderr);
+            EXIT(1);
+        }
+        material_free(material);
     }
     if(!isinf(omegap))
     {
@@ -383,21 +414,23 @@ int master(int argc, char *argv[], int cores)
     /* compute pfa */
     double pfa = _pfa(LbyR, T, omegap, gamma_);
 
-    printf("# LbyR   = %.15g\n", LbyR);
-    printf("# T      = %.15g\n", T);
-    printf("# cutoff = %g\n", cutoff);
-    printf("# epsrel = %g\n", epsrel);
-    printf("# ldim   = %d\n", ldim);
-    printf("# cores  = %d\n", cores);
-    printf("# alpha  = %.15g\n", alpha);
-    printf("# F_PFA  = %.15g\n", pfa);
-    if(!isinf(omegap))
+    printf("# LbyR     = %.15g\n", LbyR);
+    printf("# T        = %.15g\n", T);
+    printf("# cutoff   = %g\n", cutoff);
+    printf("# epsrel   = %g\n", epsrel);
+    printf("# ldim     = %d\n", ldim);
+    printf("# cores    = %d\n", cores);
+    printf("# alpha    = %.15g\n", alpha);
+    printf("# F_PFA    = %.15g\n", pfa);
+    if(strlen(filename))
+        printf("# filename = %s\n", filename);
+    else if(!isinf(omegap))
     {
-        printf("# omegap = %.15g\n", omegap);
-        printf("# gamma  = %.15g\n", gamma_);
+        printf("# omegap   = %.15g\n", omegap);
+        printf("# gamma    = %.15g\n", gamma_);
     }
 
-    casimir_mpi_init(&casimir_mpi, LbyR, omegap, gamma_, ldim, cutoff, cores, verbose);
+    casimir_mpi_init(&casimir_mpi, LbyR, filename, omegap, gamma_, ldim, cutoff, cores, verbose);
 
     double F;
     if(T == 0)
@@ -406,7 +439,7 @@ int master(int argc, char *argv[], int cores)
         double abserr;
         int ier, neval;
 
-        printf("# quadrature: adaptive Gauss-Kronrod\n");
+        printf("# quad     = adaptive Gauss-Kronrod\n");
         printf("#\n");
 
         if(zero)
@@ -455,12 +488,15 @@ out:
 
 int slave(MPI_Comm master_comm, int rank)
 {
+    char filename[512];
     double userdata[2], buf[6];
     MPI_Status status;
     MPI_Request request;
 
     while(1)
     {
+        material_t *material = NULL;
+
         MPI_Recv(buf, 6, MPI_DOUBLE, 0, 0, master_comm, &status);
 
         const double xi     = buf[0];
@@ -473,8 +509,17 @@ int slave(MPI_Comm master_comm, int rank)
         if(xi < 0)
             break;
 
+        memset(filename, '\0', sizeof(filename));
+        MPI_Recv(filename, 512, MPI_CHAR, 0, 0, master_comm, &status);
+
         casimir_t *casimir = casimir_init(LbyR);
-        if(!isinf(omegap))
+        if(strlen(filename))
+        {
+            material = material_init(filename);
+            TERMINATE(material == NULL, "material_init failed");
+            casimir_set_epsilonm1(casimir, material_epsilonm1, material);
+        }
+        else if(!isinf(omegap))
         {
             userdata[0] = omegap;
             userdata[1] = gamma_;
@@ -488,6 +533,9 @@ int slave(MPI_Comm master_comm, int rank)
 
         MPI_Isend(&logdet, 1, MPI_DOUBLE, 0, 0, master_comm, &request);
         MPI_Wait(&request, &status);
+
+        if(material != NULL)
+            material_free(material);
     }
 
     return 0;
@@ -535,7 +583,7 @@ void usage(FILE *stream)
 "       T=0, or stop criterion logdetD(n)/logdetD(n=0) < epsrel for T>0\n"
 "       (default: %g)\n"
 "\n"
-"    --material FILENAME\n"
+"    -f, --material FILENAME\n"
 "        Filename of the material description file. If set, --omegap and\n"
 "        --gamma will be ignored."
 "\n"
