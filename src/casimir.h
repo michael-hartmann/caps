@@ -14,14 +14,14 @@ typedef struct {
 } casimir_task_t;
 
 typedef struct {
-    double LbyR, omegap, gamma, cutoff, alpha;
+    double L, R, omegap, gamma, cutoff, alpha;
     int k, ldim, cores;
     bool verbose;
     casimir_task_t **tasks;
     char filename[512];
 } casimir_mpi_t;
 
-void casimir_mpi_init(casimir_mpi_t *self, double LbyR, char filename[512], double omegap, double gamma_, int ldim, double cutoff, int cores, bool verbose);
+void casimir_mpi_init(casimir_mpi_t *self, double L, double R, char *filename, double omegap, double gamma_, int ldim, double cutoff, int cores, bool verbose);
 void casimir_mpi_free(casimir_mpi_t *self);
 int casimir_mpi_submit(casimir_mpi_t *self, int index, double xi, int m);
 int casimir_mpi_retrieve(casimir_mpi_t *self, casimir_task_t **task_out);
