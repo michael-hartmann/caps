@@ -38,6 +38,11 @@ typedef enum { DETALG_HODLR, DETALG_LU } detalg_t;
 #define M_GM 1.618033988749895 /**< golden mean, (1+√5)/2 */
 #endif
 
+#define CASIMIR_hbar    1.0545718e-34   /**< reduced Planck constant [m² kg / s] */
+#define CASIMIR hbar_eV 6.582119514e-16 /**< reduced Planck constant [eV s] */
+#define CASIMIR_kB      1.38064852e-23  /**< Boltzman constant [m² kg / ( K s² )] */
+#define CASIMIR_c       299792458       /**< speed of light [m/s] */
+
 /* default values */
 #define CASIMIR_MINIMUM_LDIM 20 /**< minimum value for lmax */
 #define CASIMIR_FACTOR_LDIM 5   /**< by default: lmax=ceil(5/LbyR) */
