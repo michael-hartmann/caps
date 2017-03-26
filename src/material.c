@@ -41,11 +41,10 @@ static bool _parse(const char *line, const char *key, const char separator, doub
  * dangerous to read untrusted files.
  *
  * @param [in] filename
- * @param [in] L separation of sphere in plane in m
- * @param [in] R radius of sphere in m
+ * @param [in] calL L+R, separation between plane and center of sphere
  * @retval material
  */
-material_t *material_init(const char *filename, double L, double R)
+material_t *material_init(const char *filename, double calL)
 {
     /* prototype for setenv to avoid gcc warning */
     int setenv(const char *name, const char *value, int overwrite);
@@ -61,8 +60,7 @@ material_t *material_init(const char *filename, double L, double R)
 
     material_t *material = xmalloc(sizeof(material_t));
 
-    material->L = L;
-    material->R = R;
+    material->calL = calL;
 
     memset(material->filename, '\0', sizeof(material->filename));
     strncpy(material->filename, filename, sizeof(material->filename)/sizeof(char)-sizeof(char));
@@ -158,8 +156,7 @@ void material_info(material_t *material, FILE *stream, const char *prefix)
 
     fprintf(stream, "%sfilename    = %s\n",    prefix, material->filename);
     fprintf(stream, "%spoints      = %zu\n",   prefix, material->points);
-    fprintf(stream, "%sL           = %gm\n",   prefix, material->L);
-    fprintf(stream, "%sR           = %gm\n",   prefix, material->R);
+    fprintf(stream, "%scalL        = %gm\n",   prefix, material->calL);
     fprintf(stream, "%sxi_min      = %g/m\n",  prefix, material->xi_min);
     fprintf(stream, "%sxi_max      = %g/m\n",  prefix, material->xi_max);
     fprintf(stream, "%somegap_high = %geV\n",  prefix, material->omegap_high);
@@ -173,7 +170,7 @@ double material_epsilonm1(double xi_scaled, void *args)
     material_t *self = (material_t *)args;
 
     /* factor to convert between scaled and SI units */
-    const double calLbyc = (self->R+self->L)/CASIMIR_c;
+    const double calLbyc = self->calL/CASIMIR_c;
 
     /* in SI units */
     const double xi = xi_scaled/calLbyc;
