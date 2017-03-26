@@ -376,7 +376,7 @@ int master(int argc, char *argv[], int cores)
             usage(stderr);
             EXIT(1);
         }
-        material = material_init(filename, L, R);
+        material = material_init(filename, L+R);
         if(material == NULL)
         {
             fprintf(stderr, "file %s has wrong format.\n\n", filename);
@@ -539,7 +539,7 @@ int slave(MPI_Comm master_comm, int rank)
         casimir_t *casimir = casimir_init(LbyR);
         if(strlen(filename))
         {
-            material = material_init(filename, L, R);
+            material = material_init(filename, L+R);
             TERMINATE(material == NULL, "material_init failed");
             casimir_set_epsilonm1(casimir, material_epsilonm1, material);
         }
