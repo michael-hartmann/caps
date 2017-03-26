@@ -42,9 +42,10 @@ static double _pfa(double LbyR, double T, double omegap, double gamma_)
     return pfa;
 }
 
-void casimir_mpi_init(casimir_mpi_t *self, double LbyR, char *filename, double omegap, double gamma_, int ldim, double cutoff, int cores, bool verbose)
+void casimir_mpi_init(casimir_mpi_t *self, double L, double R, char *filename, double omegap, double gamma_, int ldim, double cutoff, int cores, bool verbose)
 {
-    self->LbyR    = LbyR;
+    self->L       = L;
+    self->R       = R;
     self->omegap  = omegap;
     self->gamma   = gamma_;
     self->ldim    = ldim;
@@ -52,7 +53,7 @@ void casimir_mpi_init(casimir_mpi_t *self, double LbyR, char *filename, double o
     self->cores   = cores;
     self->verbose = verbose;
     self->tasks   = xmalloc(cores*sizeof(casimir_task_t *));
-    self->alpha   = 2*LbyR/(1+LbyR);
+    self->alpha   = 2*L/(L+R); /* L/(R+L) */
     self->k       = 1;
 
     TERMINATE(strlen(filename) > 511, "filename too long: %s", filename);
@@ -107,14 +108,14 @@ int casimir_mpi_submit(casimir_mpi_t *self, int index, double xi, int m)
 
         if(task->state == STATE_IDLE)
         {
-            double buf[] = { xi, self->LbyR, self->omegap, self->gamma, m, self->ldim };
+            double buf[] = { xi, self->L, self->R, self->omegap, self->gamma, m, self->ldim };
 
             task->index = index;
             task->xi    = xi;
             task->m     = m;
             task->state = STATE_RUNNING;
 
-            MPI_Send (buf,            6,   MPI_DOUBLE, i, 0, MPI_COMM_WORLD);
+            MPI_Send (buf,            7,   MPI_DOUBLE, i, 0, MPI_COMM_WORLD);
             MPI_Send (self->filename, 512, MPI_CHAR,   i, 0, MPI_COMM_WORLD);
             MPI_Irecv(task->recv,     1,   MPI_DOUBLE, i, 0, MPI_COMM_WORLD, &task->request);
 
@@ -253,7 +254,7 @@ int master(int argc, char *argv[], int cores)
     bool verbose = false, zero = 0;
     char filename[512] = { 0 };
     int ldim = 0, ret = 0;
-    double LbyR = -1, cutoff = CUTOFF, epsrel = EPSREL, omegap = INFINITY, gamma_ = 0, T = 0;
+    double L = 0, R = 0, cutoff = CUTOFF, epsrel = EPSREL, omegap = INFINITY, gamma_ = 0, T = 0;
     casimir_mpi_t casimir_mpi;
 
     #define EXIT(n) do { ret = n; goto out; } while(0)
@@ -265,9 +266,8 @@ int master(int argc, char *argv[], int cores)
             { "help",        no_argument,       0, 'h' },
             { "verbose",     no_argument,       0, 'v' },
             { "zero",        no_argument,       0, 'z' },
-            { "LbyR",        required_argument, 0, 'x' },
             { "temperature", required_argument, 0, 'T' },
-            { "ldim",        required_argument, 0, 'L' },
+            { "ldim",        required_argument, 0, 'l' },
             { "cutoff",      required_argument, 0, 'c' },
             { "epsrel",      required_argument, 0, 'e' },
             { "material",    required_argument, 0, 'f' },
@@ -279,7 +279,7 @@ int master(int argc, char *argv[], int cores)
         /* getopt_long stores the option index here. */
         int option_index = 0;
 
-        int c = getopt_long(argc, argv, "x:T:L:c:e:f:w:g:zvh", long_options, &option_index);
+        int c = getopt_long(argc, argv, "R:L:T:l:c:e:f:w:g:zvh", long_options, &option_index);
 
         /* Detect the end of the options. */
         if(c == -1)
@@ -291,13 +291,16 @@ int master(int argc, char *argv[], int cores)
                 /* If this option sets a flag, do nothing else now. */
                 if (long_options[option_index].flag != 0)
                     break;
-            case 'x':
-                LbyR = atof(optarg);
+            case 'L':
+                L = atof(optarg);
+                break;
+            case 'R':
+                R = atof(optarg);
                 break;
             case 'T':
                 T = atof(optarg);
                 break;
-            case 'L':
+            case 'l':
                 ldim = atoi(optarg);
                 break;
             case 'c':
@@ -334,15 +337,21 @@ int master(int argc, char *argv[], int cores)
         }
     }
 
-    if(LbyR <= 0)
+    if(L <= 0)
     {
-        fprintf(stderr, "LbyR must be positive.\n\n");
+        fprintf(stderr, "separation must be positive.\n\n");
+        usage(stderr);
+        EXIT(1);
+    }
+    if(R <= 0)
+    {
+        fprintf(stderr, "radius of sphere must be positive.\n\n");
         usage(stderr);
         EXIT(1);
     }
     if(T < 0)
     {
-        fprintf(stderr, "Temperature must be non-negative.\n\n");
+        fprintf(stderr, "temperature must be non-negative.\n\n");
         usage(stderr);
         EXIT(1);
     }
@@ -398,6 +407,8 @@ int master(int argc, char *argv[], int cores)
         EXIT(1);
     }
 
+    const double LbyR = L/R;
+
     /* if ldim was not set */
     if(ldim <= 0)
         ldim = ceil(ETA/LbyR);
@@ -414,6 +425,8 @@ int master(int argc, char *argv[], int cores)
     /* compute pfa */
     double pfa = _pfa(LbyR, T, omegap, gamma_);
 
+    printf("# L        = %.15g\n", L);
+    printf("# R        = %.15g\n", R);
     printf("# LbyR     = %.15g\n", LbyR);
     printf("# T        = %.15g\n", T);
     printf("# cutoff   = %g\n", cutoff);
@@ -430,7 +443,7 @@ int master(int argc, char *argv[], int cores)
         printf("# gamma    = %.15g\n", gamma_);
     }
 
-    casimir_mpi_init(&casimir_mpi, LbyR, filename, omegap, gamma_, ldim, cutoff, cores, verbose);
+    casimir_mpi_init(&casimir_mpi, L, R, filename, omegap, gamma_, ldim, cutoff, cores, verbose);
 
     double F;
     if(T == 0)
@@ -457,6 +470,7 @@ int master(int argc, char *argv[], int cores)
     }
     else
     {
+        const double T_scaled = 2*M_PI*CASIMIR_kB*(R+L)*T/(CASIMIR_hbar*CASIMIR_c);
         /* finite temperature */
         double v[4096] = { 0 };
 
@@ -464,7 +478,7 @@ int master(int argc, char *argv[], int cores)
 
         for(size_t n = 0; n < sizeof(v)/sizeof(double); n++)
         {
-            double xi = n*T;
+            double xi = n*T_scaled;
             v[n] = integrand(xi, &casimir_mpi);
 
             if(fabs(v[n]/v[0]) < epsrel)
@@ -477,8 +491,8 @@ int master(int argc, char *argv[], int cores)
     }
 
     printf("#\n");
-    printf("# L/R, T, ldim, F_PFA*(L+R)/(ħc), F*(L+R)/(ħc), F/F_pfa\n");
-    printf("%.16g, %.16g, %d, %.16g, %.16g, %.16g\n", LbyR, T, ldim, pfa, F, F/pfa);
+    printf("# L/R, L, R, T, ldim, F_PFA*(L+R)/(ħc), F*(L+R)/(ħc), F/F_pfa\n");
+    printf("%.16g, %.16g, %d, %.16g, %.16g, %.16g\n", LbyR, L, R, T, ldim, pfa, F, F/pfa);
 
     casimir_mpi_free(&casimir_mpi);
 out:
@@ -497,14 +511,24 @@ int slave(MPI_Comm master_comm, int rank)
     {
         material_t *material = NULL;
 
-        MPI_Recv(buf, 6, MPI_DOUBLE, 0, 0, master_comm, &status);
+        MPI_Recv(buf, 7, MPI_DOUBLE, 0, 0, master_comm, &status);
 
+        /* Matsubara frequency */
         const double xi     = buf[0];
-        const double LbyR   = buf[1];
-        const double omegap = buf[2];
-        const double gamma_ = buf[3];
-        const int m         = buf[4];
-        const int ldim      = buf[5];
+
+        /* geometry */
+        const double L      = buf[1]; /* in m  */;
+        const double R      = buf[2]; /* in m  */
+        const double LbyR = L/R;
+
+        /* material properties (scaled) */
+        const double omegap = buf[3]/(CASIMIR_hbar_eV*CASIMIR_c)*(L+R);
+        const double gamma_ = buf[4]/(CASIMIR_hbar_eV*CASIMIR_c)*(L+R);
+
+        const int m         = buf[5];
+        const int ldim      = buf[6];
+
+        /* ωp/(hbar_eV*c)*R*(1+LbyR) */
 
         if(xi < 0)
             break;
@@ -528,7 +552,7 @@ int slave(MPI_Comm master_comm, int rank)
 
         casimir_set_ldim(casimir, ldim);
         double logdet = casimir_logdetD(casimir, xi, m);
-        TERMINATE(isnan(logdet), "LbyR=%.10g, xi=%.10g, m=%d, ldim=%d", LbyR, xi, m, ldim);
+        TERMINATE(isnan(logdet), "L/R=%.10g, xi=%.10g, m=%d, ldim=%d", LbyR, xi, m, ldim);
         casimir_free(casimir);
 
         MPI_Isend(&logdet, 1, MPI_DOUBLE, 0, 0, master_comm, &request);
@@ -562,15 +586,17 @@ void usage(FILE *stream)
 "  [1] Hartmann, Negative Casimir entropies in the plane-sphere geometry, 2014\n"
 "\n"
 "Mandatory options:\n"
-"    -x, --LbyR L/R\n"
-"        Separation L between sphere and plane divided by radius of sphere,\n"
-"        where L/R > 0.\n"
+"    -L L\n"
+"        Separation L between sphere and plane, L>0 (in m).\n"
+"\n"
+"    -R R\n"
+"        Radius R of the sphere, R>0 (in m).\n"
 "\n"
 "Further options:\n"
 "    -T, --temperature TEMPERATURE\n"
-"        Set temperature to TEMPERATURE (default: 0)\n"
+"        Set temperature to TEMPERATURE (default: 0; in K)\n"
 "\n"
-"    -L LDIM\n"
+"    -l LDIM\n"
 "        Set ldim to the value LDIM. (default: ldim=ceil(%g*R/L))\n"
 "\n"
 "    -c, --cutoff CUTOFF\n"
@@ -589,14 +615,14 @@ void usage(FILE *stream)
 "\n"
 "    --omegap OMEGAP\n"
 "        Model the metals using the Drude/Plasma model and set Plasma\n"
-"        frequency to OMEGAP. (DEFAULT: perfect conductors)\n"
+"        frequency to OMEGAP. (DEFAULT: perfect conductors; in eV)\n"
 "\n"
 "    --gamma GAMMA\n"
 "        Set dissipation of Drude model to GAMMA. Ignored if no value for\n"
-"        --omegap is given. (DEFAULT: perfect conductors)\n"
+"        --omegap is given. (DEFAULT: perfect conductors; in eV)\n"
 "\n"
 "    -z, --zero\n"
-"        Also compute the term for xi=0; does only work for PC or Drude\n"
+"        Also compute the term for xi=0; only works for PC or Drude\n"
 "\n"
 "    -v, --verbose\n"
 "        Also print results for each m\n"
