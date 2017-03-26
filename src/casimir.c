@@ -503,7 +503,7 @@ out:
 int slave(MPI_Comm master_comm, int rank)
 {
     char filename[512];
-    double userdata[2], buf[6];
+    double userdata[2], buf[7];
     MPI_Status status;
     MPI_Request request;
 
