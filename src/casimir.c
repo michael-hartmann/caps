@@ -457,7 +457,7 @@ int master(int argc, char *argv[], int cores)
     }
     else
     {
-        /* fnite temperature */
+        /* finite temperature */
         double v[4096] = { 0 };
 
         F = NAN;
