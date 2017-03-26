@@ -492,7 +492,7 @@ int master(int argc, char *argv[], int cores)
 
     printf("#\n");
     printf("# L/R, L, R, T, ldim, F_PFA*(L+R)/(ħc), F*(L+R)/(ħc), F/F_pfa\n");
-    printf("%.16g, %.16g, %d, %.16g, %.16g, %.16g\n", LbyR, L, R, T, ldim, pfa, F, F/pfa);
+    printf("%.16g, %.16g, %.16g, %.16g, %d, %.16g, %.16g, %.16g\n", LbyR, L, R, T, ldim, pfa, F, F/pfa);
 
     casimir_mpi_free(&casimir_mpi);
 out:
