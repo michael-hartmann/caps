@@ -528,8 +528,6 @@ int slave(MPI_Comm master_comm, int rank)
         const int m         = buf[5];
         const int ldim      = buf[6];
 
-        /* ωp/(hbar_eV*c)*R*(1+LbyR) */
-
         if(xi < 0)
             break;
 
