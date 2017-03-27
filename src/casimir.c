@@ -237,7 +237,8 @@ int master(int argc, char *argv[], int cores)
     bool verbose = false, zero = 0;
     char filename[512] = { 0 };
     int ldim = 0, ret = 0;
-    double L = 0, R = 0, cutoff = CUTOFF, epsrel = EPSREL, omegap = INFINITY, gamma_ = 0, T = 0;
+    double L = 0, R = 0, T = 0, omegap = INFINITY, gamma_ = 0;
+    double cutoff = CUTOFF, epsrel = EPSREL, eta = ETA;
     casimir_mpi_t casimir_mpi;
 
     #define EXIT(n) do { ret = n; goto out; } while(0)
@@ -250,6 +251,7 @@ int master(int argc, char *argv[], int cores)
             { "verbose",     no_argument,       0, 'v' },
             { "zero",        no_argument,       0, 'z' },
             { "temperature", required_argument, 0, 'T' },
+            { "eta",         required_argument, 0, 'E' },
             { "ldim",        required_argument, 0, 'l' },
             { "cutoff",      required_argument, 0, 'c' },
             { "epsrel",      required_argument, 0, 'e' },
@@ -262,7 +264,7 @@ int master(int argc, char *argv[], int cores)
         /* getopt_long stores the option index here. */
         int option_index = 0;
 
-        int c = getopt_long(argc, argv, "R:L:T:l:c:e:f:w:g:zvh", long_options, &option_index);
+        int c = getopt_long(argc, argv, "R:L:T:l:c:e:E:f:w:g:zvh", long_options, &option_index);
 
         /* Detect the end of the options. */
         if(c == -1)
@@ -285,6 +287,9 @@ int master(int argc, char *argv[], int cores)
                 break;
             case 'l':
                 ldim = atoi(optarg);
+                break;
+            case 'E':
+                eta = atof(optarg);
                 break;
             case 'c':
                 cutoff = atof(optarg);
@@ -350,6 +355,12 @@ int master(int argc, char *argv[], int cores)
         usage(stderr);
         EXIT(1);
     }
+    if(eta <= 0)
+    {
+        fprintf(stderr, "eta must be positive.\n\n");
+        usage(stderr);
+        EXIT(1);
+    }
     if(strlen(filename))
     {
         material_t *material;
@@ -394,7 +405,7 @@ int master(int argc, char *argv[], int cores)
 
     /* if ldim was not set */
     if(ldim <= 0)
-        ldim = ceil(ETA/LbyR);
+        ldim = ceil(eta/LbyR);
 
     /* disable buffering */
     fflush(stdin);
@@ -418,8 +429,8 @@ int master(int argc, char *argv[], int cores)
         printf("# filename = %s\n", filename);
     else if(!isinf(omegap))
     {
-        printf("# omegap   = %.15g\n", omegap);
-        printf("# gamma    = %.15g\n", gamma_);
+        printf("# omegap = %.15g\n", omegap);
+        printf("# gamma  = %.15g\n", gamma_);
     }
 
     casimir_mpi_init(&casimir_mpi, L, R, filename, omegap, gamma_, ldim, cutoff, cores, verbose);
@@ -573,8 +584,12 @@ void usage(FILE *stream)
 "    -T, --temperature TEMPERATURE\n"
 "        Set temperature to TEMPERATURE (default: 0; in K)\n"
 "\n"
-"    -l LDIM\n"
-"        Set ldim to the value LDIM. (default: ldim=ceil(%g*R/L))\n"
+"    -l, --ldim LDIM\n"
+"        Set ldim to the value LDIM. (default: ldim=ceil(eta*R/L))\n"
+"\n"
+"    -- eta ETA\n"
+"        Set eta to the value ETA. eta is used to determine ldim if not set\n"
+"        by --ldim. (default: eta=%g)\n"
 "\n"
 "    -c, --cutoff CUTOFF\n"
 "        Stop summation over m for a given value of ξ if\n"
