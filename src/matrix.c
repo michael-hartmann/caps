@@ -170,7 +170,7 @@ int matrix_save_to_file(matrix_t *A, const char *filename)
  * format. The input matrix must be a square matrix.
  *
  * The function will rudimentary parse the description string and abort if an
- * error occured. However, do not use this function on untrusted data.
+ * error occures. Do not use this function on untrusted data.
  *
  * This function does not support matrix views at the moment.
  *
@@ -186,15 +186,23 @@ matrix_t *matrix_load_from_stream(FILE *stream)
     char header[8] = { 0 };
     char d_str[512] = { 0 };
     uint16_t len = 0;
+    size_t ret;
 
     /* check if header is correct */
-    fread(header, sizeof(char), 8, stream);
+    ret = fread(header, sizeof(char), 8, stream);
+    if(ret != 8)
+        return NULL;
     if(strcmp(header, "\x93NUMPY\x01\x00") != 0)
         return NULL;
 
-    /* read len and description */
-    fread(&len, sizeof(len), 1, stream);
-    fread(d_str, sizeof(char), len, stream);
+    /* read len */
+    ret = fread(&len, sizeof(len), 1, stream);
+    if(ret != 1)
+        return NULL;
+    /* read description */
+    ret = fread(d_str, sizeof(char), len, stream);
+    if(ret != len)
+        return NULL;
 
     if(len < 2)
         return NULL;
@@ -224,7 +232,10 @@ matrix_t *matrix_load_from_stream(FILE *stream)
         return NULL;
 
     A = matrix_alloc(dim1);
-    fread(A->M, sizeof(double), dim1*dim1, stream);
+    ret = fread(A->M, sizeof(double), dim1*dim1, stream);
+
+    if(ret != dim1*dim1)
+        return NULL;
 
     return A;
 }
