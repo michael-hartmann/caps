@@ -43,6 +43,8 @@ Features
 --------
  - Calculate the free energy F(T,L/R) for different separations and temperatures
  - Calculate the free energy F(T→∞,L/R) in the high temperature limit
+ - Full support for perfect conductors, Drude metals, and generic metals
+   described by a user-defined dielectric function
  - libcasimir is fast and reliable
  - ready to use programs: you don't have to modify the code
  - libcasimir is free software – you may use it or even modify it
@@ -61,6 +63,30 @@ should install all dependencies and compile the code.
 
 Usage
 -----
+To compute the Casimir free energy between a sphere of radius R=150µm and a
+plane separated by a distance L=2µm at room temperature T=300K, use the
+command:
+```
+mpirun -c 7 ./casimir -L 2e-6 -R 150e-6 -T 300
+# L      = 2e-06
+# R      = 0.00015
+# LbyR   = 0.0133333333333333
+# T      = 300
+# cutoff = 1e-09
+# epsrel = 1e-06
+# ldim   = 525
+# cores  = 7
+# alpha  = 0.0263157894736842
+# k=1, xi=0, logdetD=-20.5414371366319, t=0.893615
+# k=2, xi=125.121224504, logdetD=-0.697593023726068, t=47.042
+# k=3, xi=250.242449008, logdetD=-0.0258391836330834, t=47.5505
+# k=4, xi=375.363673512, logdetD=-0.000959951381331692, t=44.3509
+# k=5, xi=500.484898016, logdetD=-3.56248208858549e-05, t=39.9074
+# k=6, xi=625.60612252, logdetD=-1.31970422831906e-06, t=29.2294
+#
+# L/R, L, R, T, ldim, F*(L+R)/(ħc)
+0.01333333333333333, 2e-06, 0.00015, 300, 525, -1049.959261174529
+```
 
 Bugs, developing and contributing
 ---------------------------------
