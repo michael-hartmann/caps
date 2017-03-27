@@ -25,23 +25,6 @@
 #define STATE_RUNNING 1
 #define STATE_IDLE    0
 
-static double _pfa(double LbyR, double T, double omegap, double gamma_)
-{
-    double userdata[2];
-    casimir_t *casimir = casimir_init(LbyR);
-    if(!isinf(omegap))
-    {
-        userdata[0] = omegap;
-        userdata[1] = gamma_;
-        casimir_set_epsilonm1(casimir, casimir_epsilonm1_drude, userdata);
-    }
-    double pfa = casimir_pfa(casimir, T);
-
-    casimir_free(casimir);
-
-    return pfa;
-}
-
 void casimir_mpi_init(casimir_mpi_t *self, double L, double R, char *filename, double omegap, double gamma_, int ldim, double cutoff, int cores, bool verbose)
 {
     self->L       = L;
@@ -422,9 +405,6 @@ int master(int argc, char *argv[], int cores)
     /* estimate, cf. eq. (6.33) */
     const double alpha = 2*LbyR/(1+LbyR);
 
-    /* compute pfa */
-    double pfa = _pfa(LbyR, T, omegap, gamma_);
-
     printf("# L      = %.15g\n", L);
     printf("# R      = %.15g\n", R);
     printf("# LbyR   = %.15g\n", LbyR);
@@ -434,7 +414,6 @@ int master(int argc, char *argv[], int cores)
     printf("# ldim   = %d\n", ldim);
     printf("# cores  = %d\n", cores);
     printf("# alpha  = %.15g\n", alpha);
-    printf("# F_PFA  = %.15g\n", pfa);
     if(strlen(filename))
         printf("# filename = %s\n", filename);
     else if(!isinf(omegap))
@@ -491,8 +470,8 @@ int master(int argc, char *argv[], int cores)
     }
 
     printf("#\n");
-    printf("# L/R, L, R, T, ldim, F_PFA*(L+R)/(ħc), F*(L+R)/(ħc), F/F_pfa\n");
-    printf("%.16g, %.16g, %.16g, %.16g, %d, %.16g, %.16g, %.16g\n", LbyR, L, R, T, ldim, pfa, F, F/pfa);
+    printf("# L/R, L, R, T, ldim, F*(L+R)/(ħc)\n");
+    printf("%.16g, %.16g, %.16g, %.16g, %d, %.16g\n", LbyR, L, R, T, ldim, F);
 
     casimir_mpi_free(&casimir_mpi);
 out:
