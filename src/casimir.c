@@ -425,16 +425,16 @@ int master(int argc, char *argv[], int cores)
     /* compute pfa */
     double pfa = _pfa(LbyR, T, omegap, gamma_);
 
-    printf("# L        = %.15g\n", L);
-    printf("# R        = %.15g\n", R);
-    printf("# LbyR     = %.15g\n", LbyR);
-    printf("# T        = %.15g\n", T);
-    printf("# cutoff   = %g\n", cutoff);
-    printf("# epsrel   = %g\n", epsrel);
-    printf("# ldim     = %d\n", ldim);
-    printf("# cores    = %d\n", cores);
-    printf("# alpha    = %.15g\n", alpha);
-    printf("# F_PFA    = %.15g\n", pfa);
+    printf("# L      = %.15g\n", L);
+    printf("# R      = %.15g\n", R);
+    printf("# LbyR   = %.15g\n", LbyR);
+    printf("# T      = %.15g\n", T);
+    printf("# cutoff = %g\n", cutoff);
+    printf("# epsrel = %g\n", epsrel);
+    printf("# ldim   = %d\n", ldim);
+    printf("# cores  = %d\n", cores);
+    printf("# alpha  = %.15g\n", alpha);
+    printf("# F_PFA  = %.15g\n", pfa);
     if(strlen(filename))
         printf("# filename = %s\n", filename);
     else if(!isinf(omegap))
@@ -452,7 +452,7 @@ int master(int argc, char *argv[], int cores)
         double abserr;
         int ier, neval;
 
-        printf("# quad     = adaptive Gauss-Kronrod\n");
+        printf("# quad   = adaptive Gauss-Kronrod\n");
         printf("#\n");
 
         if(zero)
@@ -514,19 +514,19 @@ int slave(MPI_Comm master_comm, int rank)
         MPI_Recv(buf, 7, MPI_DOUBLE, 0, 0, master_comm, &status);
 
         /* Matsubara frequency */
-        const double xi     = buf[0];
+        const double xi = buf[0];
 
         /* geometry */
-        const double L      = buf[1]; /* in m  */;
-        const double R      = buf[2]; /* in m  */
+        const double L = buf[1]; /* in m  */;
+        const double R = buf[2]; /* in m  */
         const double LbyR = L/R;
 
         /* material properties (scaled) */
         const double omegap = buf[3]/(CASIMIR_hbar_eV*CASIMIR_c)*(L+R);
         const double gamma_ = buf[4]/(CASIMIR_hbar_eV*CASIMIR_c)*(L+R);
 
-        const int m         = buf[5];
-        const int ldim      = buf[6];
+        const int m    = buf[5];
+        const int ldim = buf[6];
 
         if(xi < 0)
             break;
