@@ -77,7 +77,7 @@ LDFLAGS += -lm -pthread -llapack -lblas -lgfortran -L ${HODLRDIR} -lhodlr
 
 # clang supports various runtime checks. This will slow down the program, but
 # it's a good and easy way to find bugs.
-#CFLAGS += -fsanitize=undefined,memory
+#CFLAGS += -fsanitize=undefined,memory -fno-omit-frame-pointer
 
 # optimize
 OPT = -O3 -msse
