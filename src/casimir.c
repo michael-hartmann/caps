@@ -492,13 +492,14 @@ out:
 
 int slave(MPI_Comm master_comm, int rank)
 {
-    char filename[512];
-    double userdata[2], buf[7];
     MPI_Status status;
     MPI_Request request;
 
     while(1)
     {
+        char filename[512] = { 0 };
+        double userdata[2] = { 0 };
+        double buf[7] = { 0 };
         material_t *material = NULL;
 
         MPI_Recv(buf, 7, MPI_DOUBLE, 0, 0, master_comm, &status);
@@ -518,8 +519,7 @@ int slave(MPI_Comm master_comm, int rank)
         const int m    = buf[5];
         const int ldim = buf[6];
 
-        if(xi < 0)
-            break;
+        TERMINATE(xi < 0, "invalid value for xi=%g", xi);
 
         memset(filename, '\0', sizeof(filename));
         MPI_Recv(filename, 512, MPI_CHAR, 0, 0, master_comm, &status);
