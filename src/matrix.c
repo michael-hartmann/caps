@@ -181,7 +181,7 @@ int matrix_save_to_file(matrix_t *A, const char *filename)
 matrix_t *matrix_load_from_stream(FILE *stream)
 {
     matrix_t *A = NULL;
-    int dim1, dim2;
+    size_t dim1, dim2;
     char *p = NULL;
     char header[8] = { 0 };
     char d_str[512] = { 0 };
