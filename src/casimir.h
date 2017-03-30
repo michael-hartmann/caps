@@ -7,7 +7,7 @@
 typedef struct {
     int index, m;
     double xi;
-    double recv[1];
+    double recv;
     double value;
     MPI_Request request;
     int state;

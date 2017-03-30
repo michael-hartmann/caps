@@ -44,7 +44,8 @@ void casimir_mpi_init(casimir_mpi_t *self, double L, double R, char *filename, d
     memset(self->filename, '\0', sizeof(self->filename));
     strncpy(self->filename, filename, sizeof(self->filename)-sizeof(char));
 
-    for(int i = 0; i < cores; i++)
+    self->tasks[0] = NULL;
+    for(int i = 1; i < cores; i++)
     {
         casimir_task_t *task = xmalloc(sizeof(casimir_task_t));
         task->index    = -1;
@@ -55,13 +56,13 @@ void casimir_mpi_init(casimir_mpi_t *self, double L, double R, char *filename, d
 
 void casimir_mpi_free(casimir_mpi_t *self)
 {
-    double buf[] = { -1, -1, -1, -1 };
+    double buf[] = { -1, -1, -1, -1, -1, -1, -1 };
 
     /* stop all remaining slaves */
     for(int i = 1; i < self->cores; i++)
-        MPI_Send(buf, 4, MPI_DOUBLE, i, 0, MPI_COMM_WORLD);
+        MPI_Send(buf, 7, MPI_DOUBLE, i, 0, MPI_COMM_WORLD);
 
-    for(int i = 0; i < self->cores; i++)
+    for(int i = 1; i < self->cores; i++)
     {
         xfree(self->tasks[i]);
         self->tasks[i] = NULL;
@@ -98,9 +99,9 @@ int casimir_mpi_submit(casimir_mpi_t *self, int index, double xi, int m)
             task->m     = m;
             task->state = STATE_RUNNING;
 
-            MPI_Send (buf,            7,   MPI_DOUBLE, i, 0, MPI_COMM_WORLD);
+            MPI_Send (buf,              7, MPI_DOUBLE, i, 0, MPI_COMM_WORLD);
             MPI_Send (self->filename, 512, MPI_CHAR,   i, 0, MPI_COMM_WORLD);
-            MPI_Irecv(task->recv,     1,   MPI_DOUBLE, i, 0, MPI_COMM_WORLD, &task->request);
+            MPI_Irecv(&task->recv,     1,  MPI_DOUBLE, i, 0, MPI_COMM_WORLD, &task->request);
 
             return 1;
         }
@@ -129,10 +130,10 @@ int casimir_mpi_retrieve(casimir_mpi_t *self, casimir_task_t **task_out)
             {
                 MPI_Wait(&task->request, &status);
 
-                task->value = task->recv[0];
+                task->value = task->recv;
                 task->state = STATE_IDLE;
 
-                *task_out = task;
+                *task_out = self->tasks[i];
 
                 return 1;
             }
@@ -151,14 +152,14 @@ static double wrapper_integrand(double xi, void *args)
 double integrand(double xi, casimir_mpi_t *casimir_mpi)
 {
     int m;
-    double terms[2048] = { NAN };
+    double terms[1024] = { NAN };
     bool verbose = casimir_mpi->verbose;
-    const double nmax = sizeof(terms)/sizeof(double);
+    const double mmax = sizeof(terms)/sizeof(double);
     const double cutoff = casimir_mpi->cutoff;
     const double t0 = now();
 
     /* gather all data */
-    for(m = 0; m < nmax; m++)
+    for(m = 0; m < mmax; m++)
     {
         while(1)
         {
@@ -462,7 +463,7 @@ int master(int argc, char *argv[], int cores)
     {
         const double T_scaled = 2*M_PI*CASIMIR_kB*(R+L)*T/(CASIMIR_hbar*CASIMIR_c);
         /* finite temperature */
-        double v[4096] = { 0 };
+        double v[1024] = { 0 };
 
         F = NAN;
 
@@ -492,39 +493,49 @@ out:
 
 int slave(MPI_Comm master_comm, int rank)
 {
+    char filename[512] = { 0 };
+    double userdata[2] = { 0 };
+    double buf[7] = { 0 };
+
     MPI_Status status;
     MPI_Request request;
 
     while(1)
     {
-        char filename[512] = { 0 };
-        double userdata[2] = { 0 };
-        double buf[7] = { 0 };
+        casimir_t  *casimir  = NULL;
         material_t *material = NULL;
 
+        memset(buf,      0, sizeof(buf));
+        memset(filename, 0, sizeof(filename));
+        memset(userdata, 0, sizeof(userdata));
+
         MPI_Recv(buf, 7, MPI_DOUBLE, 0, 0, master_comm, &status);
+        MPI_Recv(filename, 512, MPI_CHAR, 0, 0, master_comm, &status);
 
         /* Matsubara frequency */
         const double xi = buf[0];
 
+        /* signal to quit */
+        if(xi < 0)
+            break;
+
         /* geometry */
-        const double L = buf[1]; /* in m  */;
-        const double R = buf[2]; /* in m  */
+        const double L = buf[1]; /* in m */;
+        const double R = buf[2]; /* in m */
         const double LbyR = L/R;
 
         /* material properties (scaled) */
         const double omegap = buf[3]/(CASIMIR_hbar_eV*CASIMIR_c)*(L+R);
         const double gamma_ = buf[4]/(CASIMIR_hbar_eV*CASIMIR_c)*(L+R);
 
-        const int m    = buf[5];
-        const int ldim = buf[6];
+        const int m    = (int)buf[5];
+        const int ldim = (int)buf[6];
 
-        TERMINATE(xi < 0, "invalid value for xi=%g", xi);
+        casimir = casimir_init(LbyR);
+        TERMINATE(casimir == NULL, "casimir object is null");
+        casimir_set_ldim(casimir, ldim);
 
-        memset(filename, '\0', sizeof(filename));
-        MPI_Recv(filename, 512, MPI_CHAR, 0, 0, master_comm, &status);
-
-        casimir_t *casimir = casimir_init(LbyR);
+        /* set material properties */
         if(strlen(filename))
         {
             material = material_init(filename, L+R);
@@ -538,16 +549,15 @@ int slave(MPI_Comm master_comm, int rank)
             casimir_set_epsilonm1(casimir, casimir_epsilonm1_drude, userdata);
         }
 
-        casimir_set_ldim(casimir, ldim);
-        double logdet = casimir_logdetD(casimir, xi, m);
+        const double logdet = casimir_logdetD(casimir, xi, m);
         TERMINATE(isnan(logdet), "L/R=%.10g, xi=%.10g, m=%d, ldim=%d", LbyR, xi, m, ldim);
         casimir_free(casimir);
 
-        MPI_Isend(&logdet, 1, MPI_DOUBLE, 0, 0, master_comm, &request);
-        MPI_Wait(&request, &status);
-
         if(material != NULL)
             material_free(material);
+
+        MPI_Isend(&logdet, 1, MPI_DOUBLE, 0, 0, master_comm, &request);
+        MPI_Wait(&request, &status);
     }
 
     return 0;
