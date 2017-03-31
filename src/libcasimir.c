@@ -1462,7 +1462,7 @@ double casimir_logdetD_dense(casimir_t *self, double nT, int m)
 
 /*@}*/
 
-double casimir_F0_drude(casimir_t *casimir, double T)
+double casimir_logdetD0_drude(casimir_t *casimir)
 {
     const double x  = casimir->LbyR;
     const double x2 = pow_2(x);
@@ -1483,5 +1483,5 @@ double casimir_F0_drude(casimir_t *casimir, double T)
             break;
     }
 
-    return T/(4*M_PI)*(sum1 + log1p(-(1-Z*Z)*sum2));
+    return 0.5*(sum1 + log1p(-(1-pow_2(Z))*sum2));
 }
