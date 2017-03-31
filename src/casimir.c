@@ -549,7 +549,7 @@ int slave(MPI_Comm master_comm, int rank)
             casimir_set_epsilonm1(casimir, casimir_epsilonm1_drude, userdata);
         }
 
-        const double logdet = casimir_logdetD(casimir, xi, m);
+        double logdet = casimir_logdetD(casimir, xi, m);
         TERMINATE(isnan(logdet), "L/R=%.10g, xi=%.10g, m=%d, ldim=%d", LbyR, xi, m, ldim);
         casimir_free(casimir);
 
