@@ -1021,12 +1021,64 @@ void casimir_logdetD0(casimir_t *self, int m, double *logdet_EE, double *logdet_
         casimir_logdetD0_dense(self, m, logdet_EE, logdet_MM);
 }
 
+
+/** @brief Compute log det(Id-M) using HODLR approach
+ *
+ * This function computes the log det(Id-M) using the HODLR approach. The
+ * matrix M is given as a callback function. This callback accepts two
+ * integers, the row and column of the matrix entry (starting from 0), and a
+ * pointer to args.
+ *
+ * nLeaf is the size (number of rows of the matrix) of the smallest block at
+ * the leaf level. The number of levels in the tree is given by log_2(N/nLeaf).
+ *
+ * If the matrix elements of M are small, i.e. it trace is < 1e-8, the trace
+ * will used as approximation to prevent loss of significance. If the modulus
+ * of the trace is larger than the modulus of the value computed using HODLR,
+ * also the trace approximation is returned.
+ *
+ * @param [in] dim       dimension of matrix
+ * @param [in] M         callback that returns matrix elements of M
+ * @param [in] args      pointer given to callback M
+ * @param [in] nLeaf     size of smalles block at leaf level
+ * @param [in] tolerance accuracy of result
+ * @param [in] symmetric matrix symmetric / not symmetric
+ * @retval logdet log det(Id-M)
+ */
+double casmir_hodlr_logdet(int dim, double (*M)(int,int,void *), void *args, unsigned int nLeaf, double tolerance, int is_symmetric)
+{
+    double diagonal[dim];
+
+    /* calculate diagonal elements */
+    for(int n = 0; n < dim; n++)
+        diagonal[n] = M(n,n,args);
+
+    const double trace = kahan_sum(diagonal, dim);
+
+    /* XXX should be ok, but we need a justification here XXX */
+    /* use trace approximation to avoid cancellation */
+    if(fabs(trace) < 1e-8)
+        return -trace;
+    else
+    {
+        /* calculate log(det(D)) using HODLR approach */
+        const double logdet = hodlr_logdet_diagonal(dim, M, args, diagonal, nLeaf, tolerance, is_symmetric);
+
+        /* if |trace| > log(det(D)), then the trace result is more accurate */
+        if(fabs(trace) > fabs(logdet))
+            return -trace;
+
+        return logdet;
+    }
+}
+
+
 void casimir_logdetD0_hodlr(casimir_t *self, int m, double *logdet_EE, double *logdet_MM)
 {
     size_t lmin, lmax;
     unsigned int nLeaf = self->nLeaf;
-    int is_symmetric = 1;
-    double tolerance = 1e-15;
+    const int is_symmetric = 1;
+    const double tolerance = 1e-15;
 
     casimir_estimate_lminmax(self, m, &lmin, &lmax);
 
@@ -1041,10 +1093,10 @@ void casimir_logdetD0_hodlr(casimir_t *self, int m, double *logdet_EE, double *l
     };
 
     if(logdet_EE != NULL)
-        *logdet_EE = hodlr_logdet(self->ldim, &casimir_kernel_M0_EE, &args, nLeaf, tolerance, is_symmetric);
+        *logdet_EE = casmir_hodlr_logdet(self->ldim, &casimir_kernel_M0_EE, &args, nLeaf, tolerance, is_symmetric);
 
     if(logdet_MM != NULL)
-        *logdet_MM = hodlr_logdet(self->ldim, &casimir_kernel_M0_MM, &args, nLeaf, tolerance, is_symmetric);
+        *logdet_MM = casmir_hodlr_logdet(self->ldim, &casimir_kernel_M0_MM, &args, nLeaf, tolerance, is_symmetric);
 }
 
 double casimir_kernel_M(int i, int j, void *args_)
@@ -1341,32 +1393,10 @@ double casimir_logdetD_hodlr(casimir_t *self, double nT, int m)
     const int is_symmetric = 1;
     const double tolerance = 1e-16;
     const int dim = 2*self->ldim;
-    double diagonal[dim];
-    double logdet = 0, trace = 0;
 
-    casimir_M_t *obj = casimir_M_init(self, m, nT);
-
-    /* calculate diagonal elements */
-    for(int n = 0; n < dim; n++)
-        diagonal[n] = casimir_kernel_M(n,n,obj);
-
-    trace = kahan_sum(diagonal, dim);
-
-    /* XXX should be ok, but we need a justification here XXX */
-    /* use trace approximation to avoid cancellation */
-    if(fabs(trace) < 1e-8)
-        logdet = -trace;
-    else
-    {
-        /* calculate log(det(D)) using HODLR approach */
-        logdet = hodlr_logdet_diagonal(dim, &casimir_kernel_M, obj, diagonal, nLeaf, tolerance, is_symmetric);
-
-        /* if |trace| > log(det(D)), then the trace result is more accurate */
-        if(fabs(trace) > fabs(logdet))
-            logdet = -trace;
-    }
-
-    casimir_M_free(obj);
+    casimir_M_t *args = casimir_M_init(self, m, nT);
+    double logdet = casmir_hodlr_logdet(dim, &casimir_kernel_M, args, nLeaf, tolerance, is_symmetric);
+    casimir_M_free(args);
 
     return logdet;
 }
