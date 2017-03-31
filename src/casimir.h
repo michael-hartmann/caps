@@ -15,7 +15,7 @@ typedef struct {
 
 typedef struct {
     double L, R, omegap, gamma, cutoff, alpha;
-    int k, ldim, cores;
+    int ldim, cores;
     bool verbose;
     casimir_task_t **tasks;
     char filename[512];
