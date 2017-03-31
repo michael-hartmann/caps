@@ -37,7 +37,6 @@ void casimir_mpi_init(casimir_mpi_t *self, double L, double R, char *filename, d
     self->verbose = verbose;
     self->tasks   = xmalloc(cores*sizeof(casimir_task_t *));
     self->alpha   = 2*L/(L+R); /* L/(R+L) */
-    self->k       = 1;
 
     TERMINATE(strlen(filename) > 511, "filename too long: %s", filename);
 
@@ -143,10 +142,14 @@ int casimir_mpi_retrieve(casimir_mpi_t *self, casimir_task_t **task_out)
     return 0;
 }
 
-static double wrapper_integrand(double xi, void *args)
+static double wrapper_integrand(double xi_, void *args)
 {
+    const double t0 = now();
     casimir_mpi_t *casimir_mpi = (casimir_mpi_t *)args;
-    return integrand(xi/casimir_mpi->alpha, casimir_mpi);
+    const double xi = xi_/casimir_mpi->alpha;
+    const double v = integrand(xi, casimir_mpi);
+    printf("# xi=%.12g, logdetD=%.15g, t=%g\n", xi, v, now()-t0);
+    return v;
 }
 
 double integrand(double xi, casimir_mpi_t *casimir_mpi)
@@ -156,7 +159,6 @@ double integrand(double xi, casimir_mpi_t *casimir_mpi)
     bool verbose = casimir_mpi->verbose;
     const double mmax = sizeof(terms)/sizeof(double);
     const double cutoff = casimir_mpi->cutoff;
-    const double t0 = now();
 
     /* gather all data */
     for(m = 0; m < mmax; m++)
@@ -207,8 +209,6 @@ double integrand(double xi, casimir_mpi_t *casimir_mpi)
     terms[0] /= 2; /* m = 0 */
     double logdetD = kahan_sum(terms, m);
 
-    printf("# k=%d, xi=%.12g, logdetD=%.15g, t=%g\n", casimir_mpi->k++, xi, logdetD, now()-t0);
-
     return logdetD;
 }
 
@@ -235,7 +235,7 @@ int main(int argc, char *argv[])
 
 int master(int argc, char *argv[], int cores)
 {
-    bool verbose = false, zero = 0;
+    bool verbose = false;
     char filename[512] = { 0 };
     int ldim = 0, ret = 0;
     double L = 0, R = 0, T = 0, omegap = INFINITY, gamma_ = 0;
@@ -250,7 +250,6 @@ int master(int argc, char *argv[], int cores)
         struct option long_options[] = {
             { "help",        no_argument,       0, 'h' },
             { "verbose",     no_argument,       0, 'v' },
-            { "zero",        no_argument,       0, 'z' },
             { "temperature", required_argument, 0, 'T' },
             { "eta",         required_argument, 0, 'E' },
             { "ldim",        required_argument, 0, 'l' },
@@ -265,7 +264,7 @@ int master(int argc, char *argv[], int cores)
         /* getopt_long stores the option index here. */
         int option_index = 0;
 
-        int c = getopt_long(argc, argv, "R:L:T:l:c:e:E:f:w:g:zvh", long_options, &option_index);
+        int c = getopt_long(argc, argv, "R:L:T:l:c:e:E:f:w:g:vh", long_options, &option_index);
 
         /* Detect the end of the options. */
         if(c == -1)
@@ -306,9 +305,6 @@ int master(int argc, char *argv[], int cores)
                 break;
             case 'v':
                 verbose = true;
-                break;
-            case 'z':
-                zero = true;
                 break;
             case 'f':
                 strncpy(filename, optarg, sizeof(filename)-sizeof(char));
@@ -446,9 +442,6 @@ int master(int argc, char *argv[], int cores)
         printf("# quad   = adaptive Gauss-Kronrod\n");
         printf("#\n");
 
-        if(zero)
-            wrapper_integrand(0, &casimir_mpi);
-
         integral = dqagi(wrapper_integrand, 0, 1, 0, epsrel, &abserr, &neval, &ier, &casimir_mpi);
 
         printf("#\n");
@@ -467,10 +460,23 @@ int master(int argc, char *argv[], int cores)
 
         F = NAN;
 
-        for(size_t n = 0; n < sizeof(v)/sizeof(double); n++)
+        printf("#\n");
+
+        /* XXX at the moment assume Drude behavior for xi = 0 XXX */
         {
+            const double t0 = now();
+            casimir_t *casimir = casimir_init(LbyR);
+            v[0] = casimir_logdetD0_drude(casimir);
+            casimir_free(casimir);
+            printf("# xi=0, logdetD=%.15g, t=%g\n", v[0], now()-t0);
+        }
+
+        for(size_t n = 1; n < sizeof(v)/sizeof(double); n++)
+        {
+            const double t0 = now();
             double xi = n*T_scaled;
             v[n] = integrand(xi, &casimir_mpi);
+            printf("# xi=%.15g, logdetD=%.15g, t=%g\n", xi, v[n], now()-t0);
 
             if(fabs(v[n]/v[0]) < epsrel)
             {
@@ -622,9 +628,6 @@ void usage(FILE *stream)
 "    --gamma GAMMA\n"
 "        Set dissipation of Drude model to GAMMA. Ignored if no value for\n"
 "        --omegap is given. (DEFAULT: perfect conductors; in eV)\n"
-"\n"
-"    -z, --zero\n"
-"        Also compute the term for xi=0; only works for PC or Drude\n"
 "\n"
 "    -v, --verbose\n"
 "        Also print results for each m\n"
