@@ -1534,3 +1534,28 @@ double casimir_pfa(casimir_t *casimir, double T)
 }
 
 /*@}*/
+
+
+double casimir_F0_drude(casimir_t *casimir, double T)
+{
+    const double x  = casimir->LbyR;
+    const double x2 = pow_2(x);
+    const double Z  = (1+x)*(1-sqrt((x2+2*x)/(x2+2*x+1)));
+
+    double sum1 = 0, sum2 = 0;
+    for(int l = 1; true; l++)
+    {
+        const double a = pow(Z, 2*l); /* Z^(2l) */
+        const double b = a*Z;         /* Z^(2l+1) */
+        const double v1 = (2*l+1)*log1p(-b);
+        const double v2 = b*(1-a)/(1-b);
+
+        sum1 += v1;
+        sum2 += v2;
+
+        if(fabs(v1/sum1) < 1e-15 && fabs(v2/sum2) < 1e-15)
+            break;
+    }
+
+    return T/(4*M_PI)*(sum1 + log1p(-(1-Z*Z)*sum2));
+}

@@ -197,4 +197,5 @@ double casimir_epsilonm1_drude(double xi, void *userdata);
 
 double casimir_pfa(casimir_t *casimir, double T);
 
+double casimir_F0_drude(casimir_t *casimir, double T);
 #endif
