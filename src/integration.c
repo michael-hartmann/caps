@@ -175,12 +175,6 @@ static double K_estimate_zsmall(int nu, int m, double tau, double eps, double *a
     double left, right, middle, log_k_zmax, zmax;
     const double tol = 1e-4;
 
-    /* estimate zmax and k(zmax) according to the z/τ << 1 limit */
-    if(m > 0)
-        zmax = m/tau;
-    else
-        zmax = 1/tau;
-
     *a = 0;
     *b = 4;
 
