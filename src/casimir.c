@@ -516,7 +516,6 @@ int slave(MPI_Comm master_comm, int rank)
         memset(userdata, 0, sizeof(userdata));
 
         MPI_Recv(buf, 7, MPI_DOUBLE, 0, 0, master_comm, &status);
-        MPI_Recv(filename, 512, MPI_CHAR, 0, 0, master_comm, &status);
 
         /* Matsubara frequency */
         const double xi = buf[0];
@@ -536,6 +535,9 @@ int slave(MPI_Comm master_comm, int rank)
 
         const int m    = (int)buf[5];
         const int ldim = (int)buf[6];
+
+        /* get filename */
+        MPI_Recv(filename, 512, MPI_CHAR, 0, 0, master_comm, &status);
 
         casimir = casimir_init(LbyR);
         TERMINATE(casimir == NULL, "casimir object is null");
