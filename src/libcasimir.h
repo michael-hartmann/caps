@@ -190,6 +190,8 @@ double casimir_epsilonm1_perf(double xi, void *userdata);
 double casimir_epsilonm1_drude(double xi, void *userdata);
 
 double casimir_logdetD0_drude(casimir_t *casimir);
+double casimir_logdetD0_pc(casimir_t *casimir, double eps);
+double casimir_logdetD0_plasma(casimir_t *casimir);
 
 double casmir_hodlr_logdet(int dim, double (*M)(int,int,void *), void *args, unsigned int nLeaf, double tolerance, int is_symmetric);
 #endif
