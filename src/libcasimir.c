@@ -1092,37 +1092,6 @@ matrix_t *casimir_M(casimir_t *self, double nT, int m)
                 matrix_set(M, ldim+i,j, ME);
                 matrix_set(M, ldim+j,i, EM);
             }
-
-            #if 0
-            /* ME */
-            if(m != 0)
-            {
-                sign_t signC_TE, signC_TM, signD_TE, signD_TM;
-
-                const double log_C_TE = casimir_integrate_C(integration, l1, l2, TE, &signC_TE);
-                const double log_C_TM = casimir_integrate_C(integration, l1, l2, TM, &signC_TM);
-
-                const double log_D_TE = casimir_integrate_D(integration, l1, l2, TE, &signD_TE);
-                const double log_D_TM = casimir_integrate_D(integration, l1, l2, TM, &signD_TM);
-
-                const double mie1 = (ln_al1+ln_bl2)/2;
-                const double mie2 = (ln_bl1+ln_al2)/2;
-
-                /* C_TE + D_TM */
-                const double elem1 = exp(log_C_TE+mie1)*signC_TE+exp(log_D_TM+mie1)*signD_TM;
-
-                /* C_TM + D_TE */
-                const double elem2 = exp(log_C_TM+mie2)*signC_TM+exp(log_D_TE+mie2)*signD_TE;
-
-                /* M_EM */
-                matrix_set(M, i,ldim+j,  MPOW(l1)*elem1);
-                matrix_set(M, j,ldim+i, -MPOW(l1)*elem2);
-
-                /* M_ME */
-                matrix_set(M, ldim+i,j, -MPOW(l1)*elem2);
-                matrix_set(M, ldim+j,i,  MPOW(l1)*elem1);
-            }
-            #endif
         }
 
         if(md == 0)
