@@ -839,189 +839,6 @@ int casimir_estimate_lminmax(casimir_t *self, int m, size_t *lmin_p, size_t *lma
     return l;
 }
 
-/**
- * @brief Calculate matrix elements for xi=0
- *
- * This function calculates the matrix elements for <l1,m,E|M|l2,m,E> and
- * <l1,m,M|M|l2,m,M> in the high-temperature limit, i.e. xi=0.
- *
- * If EE or MM is NULL, it is not written. Otherwise the result is written to
- * memory pointed by EE and MM.
- *
- * @param [in]  self Casimir object
- * @param [in]  l1
- * @param [in]  l2
- * @param [in]  m
- * @param [out] EE
- * @param [out] MM
- */
-void casimir_M0_elem(casimir_t *self, int l1, int l2, int m, double *EE, double *MM)
-{
-    /* y = log(R/(R+L)/2) */
-    double y = self->y;
-
-    /* See thesis of Antoine, section 6.7:
-     * x = R/(R+L)
-     * M_EE_{l1,l2} = (x/2)^(l1+l2) * (l1+l2)! / sqrt( (l1+m)!*(l1-m)! * (l2+m)!*(l2-m)! )
-     * M_MM_{l1,l2} = M_EE_{l1,l2} * sqrt( l1/(l1+1) * l2/(l2+1) )
-     */
-    double _EE = exp( (l1+l2+1)*y + lfac(l1+l2) - 0.5*(lfac(l1+m)+lfac(l1-m) + lfac(l2+m)+lfac(l2-m)) );
-    if(EE != NULL)
-        *EE = _EE;
-    if(MM != NULL)
-        *MM = _EE*sqrt((l1*l2)/((l1+1.)*(l2+1.)));
-}
-
-double casimir_kernel_M0_EE(int i, int j, void *args_)
-{
-    casimir_M_t *args = (casimir_M_t *)args_;
-    const int lmin = args->lmin;
-    const int l1 = i+lmin, l2 = j+lmin, m = args->m;
-    casimir_t *casimir = args->casimir;
-
-    double EE;
-    casimir_M0_elem(casimir, l1, l2, m, &EE, NULL);
-    return EE;
-}
-
-double casimir_kernel_M0_MM(int i, int j, void *args_)
-{
-    casimir_M_t *args = (casimir_M_t *)args_;
-    const int lmin = args->lmin;
-    const int l1 = i+lmin, l2 = j+lmin, m = args->m;
-    casimir_t *casimir = args->casimir;
-
-    double MM;
-    casimir_M0_elem(casimir, l1, l2, m, NULL, &MM);
-    return MM;
-}
-
-/**
- * @brief Calculate round-trip matrices M for xi=nT=0
- *
- * For xi=0 the round-trip matrix M is block diagonal with block matrices EE,
- * MM. This function calculates the block matrices EE and MM.
- *
- * If EE is not NULL, create and calculate block matrix EE.
- * If MM is not NULL, create and calculate block matrix MM.
-
- * You have to free the matrices yourself using matrix_free.
- *
- * @param [in] self Casimir object
- * @param [out] EE pointer for block matrix EE
- * @param [out] MM pointer for block matrix MM
- */
-void casimir_M0(casimir_t *self, int m, matrix_t **EE, matrix_t **MM)
-{
-    /* main contributions comes from l1≈l2≈m */
-    size_t lmin,lmax,ldim = self->ldim;
-    casimir_estimate_lminmax(self, m, &lmin, &lmax);
-
-    /* nothing to do... */
-    if(EE == NULL && MM == NULL)
-        return;
-
-    if(EE != NULL)
-    {
-        *EE = matrix_alloc(ldim);
-        matrix_setall(*EE,0);
-    }
-    if(MM != NULL)
-    {
-        *MM = matrix_alloc(ldim);
-        matrix_setall(*MM,0);
-    }
-
-    double trace_diag = 0; /* sum of modulus of matrix elements of diagonal */
-
-    /* calculate matrix elements of M */
-
-    /* n-th minor diagonal */
-    for(size_t n = 0; n < ldim; n++)
-    {
-        /* sum of modulus of matrix elements of n-th minor diagonal */
-        double trace = 0;
-
-        for(size_t d = 0; d < ldim-n; d++)
-        {
-            double EE_ij, MM_ij;
-            const int l1 = d+lmin;
-            const int l2 = d+n+lmin;
-
-            /* i: row of matrix, j: column of matrix */
-            const size_t i = d, j = d+n;
-
-            casimir_M0_elem(self, l1, l2, m, &EE_ij, &MM_ij);
-
-            /* calculate trace of n-th minor diagonal */
-            trace += fabs(EE_ij);
-
-            /* The matrix M is symmetric. */
-            if(EE != NULL)
-            {
-                matrix_set(*EE, i,j, EE_ij);
-                matrix_set(*EE, j,i, EE_ij);
-            }
-            if(MM != NULL)
-            {
-                matrix_set(*MM, i,j, MM_ij);
-                matrix_set(*MM, j,i, MM_ij);
-            }
-        }
-
-        if(n == 0)
-            trace_diag = ldim-trace;
-        else if(trace/trace_diag <= self->threshold)
-            break;
-    }
-}
-
-/**
- * @brief Calculate \f$\log\det \mathcal{D}^{(m)}(\xi=0)\f$ for EE and MM
- *
- * This function calculates the logarithm of the determinant of the scattering
- * operator D for the Matsubara term \f$n=0\f$.
- *
- * This function is thread-safe as long you don't change ldim and aspect ratio.
- *
- * @param [in,out] self Casimir object
- * @param [in] m
- * @param [out] logdet_EE
- * @param [out] logdet_MM
- */
-void casimir_logdetD0_dense(casimir_t *self, int m, double *logdet_EE, double *logdet_MM)
-{
-    matrix_t *EE = NULL, *MM = NULL;
-
-    if(logdet_EE != NULL && logdet_MM != NULL)
-        casimir_M0(self, m, &EE, &MM);
-    else if(logdet_EE == NULL && logdet_MM != NULL)
-        casimir_M0(self, m, NULL, &MM);
-    else if(logdet_EE != NULL && logdet_MM == NULL)
-        casimir_M0(self, m, &EE, NULL);
-
-    /* Calculate logdet=log(det(Id-M)) and free space. */
-    if(EE != NULL)
-    {
-        *logdet_EE = matrix_logdet(EE, -1);
-        matrix_free(EE);
-    }
-    if(MM != NULL)
-    {
-        *logdet_MM = matrix_logdet(MM, -1);
-        matrix_free(MM);
-    }
-}
-
-void casimir_logdetD0(casimir_t *self, int m, double *logdet_EE, double *logdet_MM)
-{
-    if(self->detalg == DETALG_HODLR)
-        casimir_logdetD0_hodlr(self, m, logdet_EE, logdet_MM);
-    else
-        casimir_logdetD0_dense(self, m, logdet_EE, logdet_MM);
-}
-
-
 /** @brief Compute log det(Id-M) using HODLR approach
  *
  * This function computes the log det(Id-M) using the HODLR approach. The
@@ -1072,32 +889,6 @@ double casmir_hodlr_logdet(int dim, double (*M)(int,int,void *), void *args, uns
     }
 }
 
-
-void casimir_logdetD0_hodlr(casimir_t *self, int m, double *logdet_EE, double *logdet_MM)
-{
-    size_t lmin, lmax;
-    unsigned int nLeaf = self->nLeaf;
-    const int is_symmetric = 1;
-    const double tolerance = 1e-15;
-
-    casimir_estimate_lminmax(self, m, &lmin, &lmax);
-
-    casimir_M_t args = {
-        .casimir = self,
-        .m = m,
-        .nT = 0,
-        .integration = NULL,
-        .al = NULL,
-        .bl = NULL,
-        .lmin = lmin
-    };
-
-    if(logdet_EE != NULL)
-        *logdet_EE = casmir_hodlr_logdet(self->ldim, &casimir_kernel_M0_EE, &args, nLeaf, tolerance, is_symmetric);
-
-    if(logdet_MM != NULL)
-        *logdet_MM = casmir_hodlr_logdet(self->ldim, &casimir_kernel_M0_MM, &args, nLeaf, tolerance, is_symmetric);
-}
 
 double casimir_kernel_M(int i, int j, void *args_)
 {
@@ -1354,11 +1145,7 @@ matrix_t *casimir_M(casimir_t *self, double nT, int m)
  * Either LU decomposition (slow) or method for HODLR matrices (fast) will be
  * used, see \ref casimir_set_detalg.
  *
- * For nT=0 some assumption about the material have to be made. The function
- * will test if the metal is a perfect conductor (PC), i.e.
- * epsilon(xi->inf)=inf. Otherwise it is assumed that the metal is described by
- * the Drude model. If the metal is neither PC nor Drude, the result for xi=0
- * will be wrong.
+ * Please note that the scaled Matsubara frequency must be positive.
  *
  * @param self Casimir object
  * @param nT Matsubara frequency
@@ -1367,19 +1154,7 @@ matrix_t *casimir_M(casimir_t *self, double nT, int m)
  */
 double casimir_logdetD(casimir_t *self, double nT, int m)
 {
-    if(nT == 0)
-    {
-        double logdet_EE = 0, logdet_MM = 0;
-
-        if(isinf(casimir_epsilonm1(self, INFINITY)))
-            /* perfect conductor */
-            casimir_logdetD0(self, m, &logdet_EE, &logdet_MM);
-        else
-            /* assume Drude; r_TE = 0 */
-            casimir_logdetD0(self, m, &logdet_EE, NULL);
-
-        return logdet_EE + logdet_MM;
-    }
+    TERMINATE(nT <= 0, "Matsubara frequency must be positive");
 
     if(self->detalg == DETALG_HODLR)
         return casimir_logdetD_hodlr(self, nT, m);
@@ -1462,10 +1237,32 @@ double casimir_logdetD_dense(casimir_t *self, double nT, int m)
 
 /*@}*/
 
+
+/**
+ * @name Matsubara frequency nT=0
+ */
+/*@{*/
+
+/** @brief Compute logdet D(xi=0) for Drude metals
+ *
+ * For Drude metals the Fresnel coefficients become r_TM=1, r_TE=0 for xi->0,
+ * i.e. only the EE polarization block needs to be considered.
+ *
+ * For Drude the free energy for the xi=0 can be computed analytically. We use
+ * Eq. (8) from Ref. [1] to compute the contribution.
+ *
+ * References:
+ *  [1] Bimonte, Emig, "Exact results for classical Casimir interactions:
+ *  Dirichlet and Drude model in the sphere-sphere and sphere-plane geometry",
+ *  Phys. Rev. Lett. 109 (2012), https://doi.org/10.1103/PhysRevLett.109.160403
+ *
+ * @param [in] casimir Casimir object
+ * @retval logdetD log det D(xi=0) for Drude metals
+ */
 double casimir_logdetD0_drude(casimir_t *casimir)
 {
-    const double x  = casimir->LbyR;
-    const double x2 = pow_2(x);
+    const double x  = casimir->LbyR; /* L/R */
+    const double x2 = pow_2(x);      /* (L/R)² */
     const double Z  = (1+x)*(1-sqrt((x2+2*x)/(x2+2*x+1)));
 
     double sum1 = 0, sum2 = 0;
@@ -1485,3 +1282,307 @@ double casimir_logdetD0_drude(casimir_t *casimir)
 
     return 0.5*(sum1 + log1p(-(1-pow_2(Z))*sum2));
 }
+
+
+/** @brief Compute logdet D(xi=0) for perect conductors
+ *
+ * For Drude metals the Fresnel coefficients are r_TM=1, r_TE=-1. In the limit
+ * xi->0 only the polarization blocks EE and MM need to be considered.
+ * 
+ * The contribution for EE, i.e. Drude, can be computed analytically, see \ref
+ * casimir_logdetD0_drude. For the MM block we numerically compute the
+ * determinants of the m > 0 contributions until 
+ *      logdetD^m/logdetD^(m=0) < eps.
+ * We use Ref. [1] to compute the contribution for m = 0.
+ *
+ * References:
+ *  [1] Bimonte, Classical Casimir interaction of perfectly conducting sphere
+ *  and plate (2017), https://arxiv.org/abs/1701.06461
+ *
+ * @param [in] casimir Casimir object
+ * @param [in] eps accuracy
+ * @retval logdetD log det D(xi=0) for perfect conductors
+ */
+double casimir_logdetD0_pc(casimir_t *casimir, double eps)
+{
+    const double LbyR = casimir->LbyR;
+    const double EE = casimir_logdetD0_drude(casimir);
+
+    double MM = 0;
+
+    /* m = 0, see Ref. [1] */
+    const double Z = 1./(1+LbyR+sqrt(LbyR*(2+LbyR))); /* Eq. (7) */
+    for(int l = 0; true; l++)
+    {
+        const double v = 0.5*log1p(-pow(Z,2*l+3)); /* Eq. (17) */
+        MM += v;
+        if(fabs(v/MM) < eps)
+            break;
+    }
+    
+    for(int m = 1; true; m++)
+    {
+        double v;
+        casimir_logdetD0(casimir, m, NULL, &v);
+
+        MM += v;
+
+        if(fabs(v/MM) < eps)
+            return 0.5*(EE+MM);
+    }
+}
+
+
+/** @brief Compute logdetD for xi=0 for EE and/or MM contribution
+ *
+ * Compute numerically for a given value of m the contribution of the
+ * polarization block EE and/or MM. If logdet_EE or logdet_MM is NULL, the
+ * value is not computed.
+ *
+ * The EE block corresponds to Drude metals. For Drude metals there exists an
+ * analytical formula to compute logdetD, see \ref casimir_logdetD0_drude.
+ *
+ * @param [in]  self Casimir object
+ * @param [in]  m quantum number m
+ * @param [out] logdet_EE pointer to store contribution for EE block
+ * @param [out] logdet_MM pointer to store contribution for MM block
+ */
+void casimir_logdetD0(casimir_t *self, int m, double *logdet_EE, double *logdet_MM)
+{
+    if(self->detalg == DETALG_HODLR)
+        casimir_logdetD0_hodlr(self, m, logdet_EE, logdet_MM);
+    else
+        casimir_logdetD0_dense(self, m, logdet_EE, logdet_MM);
+}
+
+
+/**
+ * @brief Calculate \f$\log\det \mathcal{D}^{(m)}(\xi=0)\f$ for EE and MM
+ *
+ * This function calculates the logarithm of the determinant of the scattering
+ * operator D for the Matsubara term \f$n=0\f$.
+ *
+ * You probably want to use the function \ref casimir_logdetD0 instead.
+ *
+ * This function is thread-safe as long you don't change ldim and aspect ratio.
+ *
+ * @param [in,out] self Casimir object
+ * @param [in] m
+ * @param [out] logdet_EE
+ * @param [out] logdet_MM
+ */
+void casimir_logdetD0_dense(casimir_t *self, int m, double *logdet_EE, double *logdet_MM)
+{
+    matrix_t *EE = NULL, *MM = NULL;
+
+    if(logdet_EE != NULL && logdet_MM != NULL)
+        casimir_M0(self, m, &EE, &MM);
+    else if(logdet_EE == NULL && logdet_MM != NULL)
+        casimir_M0(self, m, NULL, &MM);
+    else if(logdet_EE != NULL && logdet_MM == NULL)
+        casimir_M0(self, m, &EE, NULL);
+
+    /* Calculate logdet=log(det(Id-M)) and free space. */
+    if(EE != NULL)
+    {
+        *logdet_EE = matrix_logdet(EE, -1);
+        matrix_free(EE);
+    }
+    if(MM != NULL)
+    {
+        *logdet_MM = matrix_logdet(MM, -1);
+        matrix_free(MM);
+    }
+}
+
+
+/** @brief Kernel for EE block
+ *
+ * Function that returns matrix elements of round-trip matrix M for xi=0 and
+ * polarization p1=p2=E.
+ *
+ * @param [in] i row (starting from 0)
+ * @param [in] j column (starting from 0)
+ * @param [in] args pointer to casimir_M_t object
+ */
+double casimir_kernel_M0_EE(int i, int j, void *args_)
+{
+    casimir_M_t *args = (casimir_M_t *)args_;
+    const int lmin = args->lmin;
+    const int l1 = i+lmin, l2 = j+lmin, m = args->m;
+    casimir_t *casimir = args->casimir;
+
+    double EE;
+    casimir_M0_elem(casimir, l1, l2, m, &EE, NULL);
+    return EE;
+}
+
+/** @brief Kernel for MM block
+ *
+ * Function that returns matrix elements of round-trip matrix M for xi=0 and
+ * polarization p1=p2=M.
+ *
+ * @param [in] i row (starting from 0)
+ * @param [in] j column (starting from 0)
+ * @param [in] args pointer to casimir_M_t object
+ */
+double casimir_kernel_M0_MM(int i, int j, void *args_)
+{
+    casimir_M_t *args = (casimir_M_t *)args_;
+    const int lmin = args->lmin;
+    const int l1 = i+lmin, l2 = j+lmin, m = args->m;
+    casimir_t *casimir = args->casimir;
+
+    double MM;
+    casimir_M0_elem(casimir, l1, l2, m, NULL, &MM);
+    return MM;
+}
+
+/**
+ * @brief Calculate matrix elements for xi=0
+ *
+ * This function calculates the matrix elements for <l1,m,E|M|l2,m,E> and
+ * <l1,m,M|M|l2,m,M> in the high-temperature limit, i.e. xi=0.
+ *
+ * If EE or MM is NULL, it is not written. Otherwise the result is written to
+ * the memory pointed by EE and MM.
+ *
+ * @param [in]  self Casimir object
+ * @param [in]  l1
+ * @param [in]  l2
+ * @param [in]  m
+ * @param [out] EE
+ * @param [out] MM
+ */
+void casimir_M0_elem(casimir_t *self, int l1, int l2, int m, double *EE, double *MM)
+{
+    /* y = log(R/(R+L)/2) */
+    double y = self->y;
+
+    /* See thesis of Antoine, section 6.7:
+     * x = R/(R+L)
+     * M_EE_{l1,l2} = (x/2)^(l1+l2) * (l1+l2)! / sqrt( (l1+m)!*(l1-m)! * (l2+m)!*(l2-m)! )
+     * M_MM_{l1,l2} = M_EE_{l1,l2} * sqrt( l1/(l1+1) * l2/(l2+1) )
+     */
+    double _EE = exp( (l1+l2+1)*y + lfac(l1+l2) - 0.5*(lfac(l1+m)+lfac(l1-m) + lfac(l2+m)+lfac(l2-m)) );
+    if(EE != NULL)
+        *EE = _EE;
+    if(MM != NULL)
+        *MM = _EE*sqrt((l1*l2)/((l1+1.)*(l2+1.)));
+}
+
+/**
+ * @brief Calculate round-trip matrices M for xi=nT=0
+ *
+ * For xi=0 the round-trip matrix M is block diagonal with block matrices EE,
+ * MM. This function calculates the block matrices EE and MM.
+ *
+ * If EE is not NULL, create and calculate block matrix EE.
+ * If MM is not NULL, create and calculate block matrix MM.
+
+ * You have to free the matrices yourself using matrix_free.
+ *
+ * @param [in] self Casimir object
+ * @param [out] EE pointer for block matrix EE
+ * @param [out] MM pointer for block matrix MM
+ */
+void casimir_M0(casimir_t *self, int m, matrix_t **EE, matrix_t **MM)
+{
+    /* main contributions comes from l1≈l2≈m */
+    size_t lmin,lmax,ldim = self->ldim;
+    casimir_estimate_lminmax(self, m, &lmin, &lmax);
+
+    /* nothing to do... */
+    if(EE == NULL && MM == NULL)
+        return;
+
+    if(EE != NULL)
+    {
+        *EE = matrix_alloc(ldim);
+        matrix_setall(*EE,0);
+    }
+    if(MM != NULL)
+    {
+        *MM = matrix_alloc(ldim);
+        matrix_setall(*MM,0);
+    }
+
+    double trace_diag = 0; /* sum of modulus of matrix elements of diagonal */
+
+    /* calculate matrix elements of M */
+
+    /* n-th minor diagonal */
+    for(size_t n = 0; n < ldim; n++)
+    {
+        /* sum of modulus of matrix elements of n-th minor diagonal */
+        double trace = 0;
+
+        for(size_t d = 0; d < ldim-n; d++)
+        {
+            double EE_ij, MM_ij;
+            const int l1 = d+lmin;
+            const int l2 = d+n+lmin;
+
+            /* i: row of matrix, j: column of matrix */
+            const size_t i = d, j = d+n;
+
+            casimir_M0_elem(self, l1, l2, m, &EE_ij, &MM_ij);
+
+            /* calculate trace of n-th minor diagonal */
+            trace += fabs(EE_ij);
+
+            /* The matrix M is symmetric. */
+            if(EE != NULL)
+            {
+                matrix_set(*EE, i,j, EE_ij);
+                matrix_set(*EE, j,i, EE_ij);
+            }
+            if(MM != NULL)
+            {
+                matrix_set(*MM, i,j, MM_ij);
+                matrix_set(*MM, j,i, MM_ij);
+            }
+        }
+
+        if(n == 0)
+            trace_diag = ldim-trace;
+        else if(trace/trace_diag <= self->threshold)
+            break;
+    }
+}
+
+
+void casimir_logdetD0_hodlr(casimir_t *self, int m, double *logdet_EE, double *logdet_MM)
+{
+    size_t lmin, lmax;
+    unsigned int nLeaf = self->nLeaf;
+    const int is_symmetric = 1;
+    const double tolerance = 1e-15;
+
+    casimir_estimate_lminmax(self, m, &lmin, &lmax);
+
+    casimir_M_t args = {
+        .casimir = self,
+        .m = m,
+        .nT = 0,
+        .integration = NULL,
+        .al = NULL,
+        .bl = NULL,
+        .lmin = lmin
+    };
+
+    if(logdet_EE != NULL)
+        *logdet_EE = casmir_hodlr_logdet(self->ldim, &casimir_kernel_M0_EE, &args, nLeaf, tolerance, is_symmetric);
+
+    if(logdet_MM != NULL)
+        *logdet_MM = casmir_hodlr_logdet(self->ldim, &casimir_kernel_M0_MM, &args, nLeaf, tolerance, is_symmetric);
+}
+
+
+double casimir_logdetD0_plasma(casimir_t *casimir)
+{
+    TERMINATE(true, "not implemented yet.");
+    return NAN;
+}
+
+/*@}*/
