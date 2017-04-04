@@ -30,8 +30,8 @@ int casimir_mpi_get_running(casimir_mpi_t *self);
 void usage(FILE *stream);
 
 double integrand(double xi, casimir_mpi_t *casimir_mpi);
-int master(int argc, char *argv[], int cores);
-int slave(MPI_Comm master_comm, int rank);
+void master(int argc, char *argv[], int cores);
+void slave(MPI_Comm master_comm, int rank);
 
 void stop_process(int task);
 int submit_job(int process, MPI_Request *request, double *recv, int k, double xi, double LbyR, int ldim, double cutoff);

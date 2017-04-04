@@ -53,13 +53,18 @@ void casimir_mpi_init(casimir_mpi_t *self, double L, double R, char *filename, d
     }
 }
 
-void casimir_mpi_free(casimir_mpi_t *self)
+static void _mpi_stop(int cores)
 {
     double buf[] = { -1, -1, -1, -1, -1, -1, -1 };
 
     /* stop all remaining slaves */
-    for(int i = 1; i < self->cores; i++)
+    for(int i = 1; i < cores; i++)
         MPI_Send(buf, 7, MPI_DOUBLE, i, 0, MPI_COMM_WORLD);
+}
+
+void casimir_mpi_free(casimir_mpi_t *self)
+{
+    _mpi_stop(self->cores);
 
     for(int i = 1; i < self->cores; i++)
     {
@@ -212,7 +217,7 @@ double integrand(double xi, casimir_mpi_t *casimir_mpi)
 
 int main(int argc, char *argv[])
 {
-    int cores, rank, ret;
+    int cores, rank;
     MPI_Comm new_comm;
 
     /* initialize MPI */
@@ -222,25 +227,25 @@ int main(int argc, char *argv[])
     MPI_Comm_size(MPI_COMM_WORLD, &cores);
 
     if(rank == 0)
-        ret = master(argc, argv, cores);
+        master(argc, argv, cores);
     else
-        ret = slave(MPI_COMM_WORLD, rank);
+        slave(MPI_COMM_WORLD, rank);
 
     MPI_Finalize();
 
-    return ret;
+    return 0;
 }
 
-int master(int argc, char *argv[], int cores)
+void master(int argc, char *argv[], const int cores)
 {
     bool verbose = false;
     char filename[512] = { 0 };
-    int ldim = 0, ret = 0;
+    int ldim = 0;
     double L = 0, R = 0, T = 0, omegap = INFINITY, gamma_ = 0;
     double cutoff = CUTOFF, epsrel = EPSREL, eta = ETA;
     casimir_mpi_t casimir_mpi;
 
-    #define EXIT(n) do { ret = n; goto out; } while(0)
+    #define EXIT() do { _mpi_stop(cores); return; } while(0)
 
     /* parse command line options */
     while (1)
@@ -309,7 +314,7 @@ int master(int argc, char *argv[], int cores)
                 break;
             case 'h':
                 usage(stdout);
-                EXIT(0);
+                EXIT();
 
             case '?':
                 /* getopt_long already printed an error message. */
@@ -324,37 +329,37 @@ int master(int argc, char *argv[], int cores)
     {
         fprintf(stderr, "separation must be positive.\n\n");
         usage(stderr);
-        EXIT(1);
+        EXIT();
     }
     if(R <= 0)
     {
         fprintf(stderr, "radius of sphere must be positive.\n\n");
         usage(stderr);
-        EXIT(1);
+        EXIT();
     }
     if(T < 0)
     {
         fprintf(stderr, "temperature must be non-negative.\n\n");
         usage(stderr);
-        EXIT(1);
+        EXIT();
     }
     if(cutoff <= 0)
     {
         fprintf(stderr, "cutoff must be positive.\n\n");
         usage(stderr);
-        EXIT(1);
+        EXIT();
     }
     if(epsrel <= 0)
     {
         fprintf(stderr, "epsrel must be positive.\n\n");
         usage(stderr);
-        EXIT(1);
+        EXIT();
     }
     if(eta <= 0)
     {
         fprintf(stderr, "eta must be positive.\n\n");
         usage(stderr);
-        EXIT(1);
+        EXIT();
     }
     if(strlen(filename))
     {
@@ -363,14 +368,14 @@ int master(int argc, char *argv[], int cores)
         {
             fprintf(stderr, "file %s does not exist or is not readable.\n\n", filename);
             usage(stderr);
-            EXIT(1);
+            EXIT();
         }
         material = material_init(filename, L+R);
         if(material == NULL)
         {
             fprintf(stderr, "file %s has wrong format.\n\n", filename);
             usage(stderr);
-            EXIT(1);
+            EXIT();
         }
         material_free(material);
     }
@@ -380,20 +385,20 @@ int master(int argc, char *argv[], int cores)
         {
             fprintf(stderr, "omegap must be positive\n\n");
             usage(stderr);
-            EXIT(1);
+            EXIT();
         }
         if(gamma_ < 0)
         {
             fprintf(stderr, "gamma must be non-negative\n\n");
             usage(stderr);
-            EXIT(1);
+            EXIT();
         }
     }
 
     if(cores < 2)
     {
         fprintf(stderr, "need at least 2 cores\n");
-        EXIT(1);
+        EXIT();
     }
 
     const double LbyR = L/R;
@@ -430,7 +435,7 @@ int master(int argc, char *argv[], int cores)
 
     casimir_mpi_init(&casimir_mpi, L, R, filename, omegap, gamma_, ldim, cutoff, cores, verbose);
 
-    double F;
+    double F = NAN;
     if(T == 0)
     {
         double integral = 0;
@@ -455,8 +460,6 @@ int master(int argc, char *argv[], int cores)
         const double T_scaled = 2*M_PI*CASIMIR_kB*(R+L)*T/(CASIMIR_hbar*CASIMIR_c);
         /* finite temperature */
         double v[1024] = { 0 };
-
-        F = NAN;
 
         printf("#\n");
 
@@ -490,12 +493,9 @@ int master(int argc, char *argv[], int cores)
     printf("%.16g, %.16g, %.16g, %.16g, %d, %.16g\n", LbyR, L, R, T, ldim, F);
 
     casimir_mpi_free(&casimir_mpi);
-out:
-
-    return ret;
 }
 
-int slave(MPI_Comm master_comm, int rank)
+void slave(MPI_Comm master_comm, int rank)
 {
     char filename[512] = { 0 };
     double userdata[2] = { 0 };
@@ -565,8 +565,6 @@ int slave(MPI_Comm master_comm, int rank)
         MPI_Isend(&logdet, 1, MPI_DOUBLE, 0, 0, master_comm, &request);
         MPI_Wait(&request, &status);
     }
-
-    return 0;
 }
 
 void usage(FILE *stream)
