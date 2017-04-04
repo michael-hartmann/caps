@@ -472,14 +472,14 @@ int master(int argc, char *argv[], int cores)
         for(size_t n = 1; n < sizeof(v)/sizeof(double); n++)
         {
             const double t0 = now();
-            double xi = n*T_scaled;
+            const double xi = n*T_scaled;
             v[n] = integrand(xi, &casimir_mpi);
             printf("# xi=%.15g, logdetD=%.15g, t=%g\n", xi, v[n], now()-t0);
 
             if(fabs(v[n]/v[0]) < epsrel)
             {
                 v[0] /= 2;
-                F = T/M_PI*kahan_sum(v, n+1);
+                F = T_scaled/M_PI*kahan_sum(v, n+1);
                 break;
             }
         }
