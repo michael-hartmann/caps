@@ -207,9 +207,7 @@ double integrand(double xi, casimir_mpi_t *casimir_mpi)
     }
 
     terms[0] /= 2; /* m = 0 */
-    double logdetD = kahan_sum(terms, m);
-
-    return logdetD;
+    return kahan_sum(terms, m);
 }
 
 int main(int argc, char *argv[])
