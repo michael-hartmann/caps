@@ -1087,10 +1087,8 @@ double casimir_logdetD_hodlr(casimir_t *self, double nT, int m)
  */
 double casimir_logdetD_dense(casimir_t *self, double nT, int m)
 {
-    double t0;
     double logdet = 0;
 
-    t0 = now();
     matrix_t *M = casimir_M(self, nT, m);
 
     #if 0
@@ -1108,7 +1106,6 @@ double casimir_logdetD_dense(casimir_t *self, double nT, int m)
         matrix_t *EE = matrix_view(M->M, ldim, dim);
         matrix_t *MM = matrix_view(&M->M[ldim*(dim+1)], ldim, dim);
 
-        t0 = now();
         logdet  = matrix_logdet(EE, -1);
         logdet += matrix_logdet(MM, -1);
 
@@ -1116,10 +1113,7 @@ double casimir_logdetD_dense(casimir_t *self, double nT, int m)
         matrix_free(MM);
     }
     else
-    {
-        t0 = now();
         logdet = matrix_logdet(M, -1);
-    }
 
     matrix_free(M);
 
