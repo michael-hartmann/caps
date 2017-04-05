@@ -1,7 +1,7 @@
 /**
  * @file   libcasimir.c
  * @author Michael Hartmann <michael.hartmann@physik.uni-augsburg.de>
- * @date   March, 2017
+ * @date   April, 2017
  * @brief  library to calculate the free Casimir energy in the plane-sphere geometry
  */
 
@@ -71,7 +71,6 @@ void casimir_info(casimir_t *self, FILE *stream, const char *prefix)
     fprintf(stream, "%sthreshold = %g\n", prefix, self->threshold);
     fprintf(stream, "%sdetalg    = %s\n", prefix, detalg_str);
     fprintf(stream, "%sverbose   = %s\n", prefix, self->verbose ? "true" : "false");
-    fprintf(stream, "%sdebug     = %s\n", prefix, self->debug ? "true" : "false");
 }
 
 
@@ -92,41 +91,6 @@ int casimir_vfprintf(casimir_t *self, FILE *stream, const char *format, va_list 
     pthread_mutex_lock(&self->mutex);
     int ret = vfprintf(stream, format, args);
     pthread_mutex_unlock(&self->mutex);
-
-    return ret;
-}
-
-/**
- * @brief Print debugging information
- *
- * Print debugging information to stderr if self->debug is set to true.
- *
- * A general note on debugging and error handling:
- *
- * 1) When a fatal error occures, e.g. allocating memory failed, the program
- * should terminate using the macro TERMINATE from utils.h.
- *
- * 2) If there was probably a problem the program should use the macro WARN.
- * This macro will print a warning to stderr, but it will not terminate the
- * program. For example, if there might be numerical instabilities or
- * convergence problems, the program should use WARN.
- *
- * 3) For debugging information / profiling information use casimir_debug.
- *
- * @param [in] self Casimir object
- * @param [in] format format string
- * @param [in] ... variables for for format string
- * @retval chars number of characters printed (see \ref casimir_vprintf)
- */
-int casimir_debug(casimir_t *self, const char *format, ...)
-{
-    if(!self->debug)
-        return 0;
-
-    va_list args;
-    va_start(args, format);
-    int ret = casimir_vfprintf(self, stderr, format, args);
-    va_end(args);
 
     return ret;
 }
@@ -347,9 +311,6 @@ casimir_t *casimir_init(double LbyR)
     /* initialize mutex for printf */
     pthread_mutex_init(&self->mutex, NULL);
 
-    /* set debug flag */
-    self->debug = false;
-
     /* use LU decomposition by default */
     self->detalg = DETALG_HODLR;
 
@@ -374,32 +335,9 @@ void casimir_free(casimir_t *self)
 }
 
 /**
- * @brief Enable/disable debugging information
- *
- * Enable/disable debugging information if flag debug is true/false.
- *
- * @param [in] self Casimir object
- * @param [in] debug flag, true to enable, false to disable debugging
- */
-void casimir_set_debug(casimir_t *self, bool debug)
-{
-    self->debug = debug;
-}
-
-/**
- * @brief Get debugging flag
- *
- * @retval debug true/false
- */
-bool casimir_get_debug(casimir_t *self)
-{
-    return self->debug;
-}
-
-/**
  * @brief Enable/disable verbose information
  *
- * Enable/disable verbose information if flag debug is true/false.
+ * Enable/disable verbose information if flag verbose is true/false.
  *
  * @param [in] self Casimir object
  * @param [in] verbose flag, true to enable, false to disable
@@ -1154,13 +1092,11 @@ double casimir_logdetD_dense(casimir_t *self, double nT, int m)
 
     t0 = now();
     matrix_t *M = casimir_M(self, nT, m);
-    casimir_debug(self, "# timing: matrix elements: %gs\n", now()-t0);
 
     #if 0
     /* dump matrix */
     t0 = now();
     matrix_save_to_file(M, "M.npy");
-    casimir_debug(self, "# dumped round-trip matrix M %g\n", now()-t0);
     #endif
 
     if(m == 0)
@@ -1175,7 +1111,6 @@ double casimir_logdetD_dense(casimir_t *self, double nT, int m)
         t0 = now();
         logdet  = matrix_logdet(EE, -1);
         logdet += matrix_logdet(MM, -1);
-        casimir_debug(self, "# timing: log(det(Id-EE)), log(det(Id-MM)): %gs\n", now()-t0);
 
         matrix_free(EE);
         matrix_free(MM);
@@ -1184,7 +1119,6 @@ double casimir_logdetD_dense(casimir_t *self, double nT, int m)
     {
         t0 = now();
         logdet = matrix_logdet(M, -1);
-        casimir_debug(self, "# timing: log(det(Id-M)): %gs\n", now()-t0);
     }
 
     matrix_free(M);

@@ -88,9 +88,6 @@ typedef struct casimir
 
     bool verbose; /**< verbose flag */
 
-    /* parameters that you usually do not want to change */
-    bool debug; /**< debug flag for more information */
-
     pthread_mutex_t mutex; /**< mutex for printing */
     /*@}*/
 } casimir_t;
@@ -121,16 +118,12 @@ int  casimir_compile_info(char *str, size_t size);
 void casimir_info(casimir_t *self, FILE *stream, const char *prefix);
 
 int casimir_vfprintf(casimir_t *self, FILE *stream, const char *format, va_list args);
-int casimir_debug(casimir_t *self, const char *format, ...);
 int casimir_verbose(casimir_t *self, const char *format, ...);
 
 double casimir_lnLambda(int l1, int l2, int m);
 
 casimir_t *casimir_init(double LbyR);
 void casimir_free(casimir_t *self);
-
-void casimir_set_debug(casimir_t *self, bool debug);
-bool casimir_get_debug(casimir_t *self);
 
 void casimir_set_verbose(casimir_t *self, bool verbose);
 bool casimir_get_verbose(casimir_t *self);
