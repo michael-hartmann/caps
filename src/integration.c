@@ -776,12 +776,7 @@ double casimir_integrate_plasma(integration_plasma_t *self, int l1, int l2, int 
 
     if(entry == NULL)
     {
-        double a,b;
-        double args[3];
-        const double tol = 1e-2;
-        const double eps = 1e-6;
         const double epsrel = self->epsrel;
-        const double LbyR = self->LbyR;
 
         /* compute integral
          *      prefactor * int_0^infty dz r_TM e^(-z) z^nu
@@ -789,16 +784,17 @@ double casimir_integrate_plasma(integration_plasma_t *self, int l1, int l2, int 
          *      prefactor = y^(l1+l2+1)/sqrt((l1+m)!*(l2+m)!)
          * and y = (R/(R+L))/2
          */
-        const double y = 0.5/(1+LbyR);
+        const double y = 0.5/(1+self->LbyR);
         const double log_prefactor = (1+nu)*log(y)-0.5*(lfac(l1+m)+lfac(l1-m)+lfac(l2+m)+lfac(l2-m));
 
-        /* x^ν*exp(-τx) = c, c>0 */
+        /* find left and right boundaries */
+        double a,b;
+        const double tol = 1e-2;
+        const double eps = 1e-6;
         _f_estimate(nu, 1, eps, tol, &a, &b);
 
         /* perform integrations in intervals [0,a], [a,b] and [b,∞] */
-        args[0] = nu;
-        args[1] = self->omegap;
-        args[2] = log_prefactor;
+        double args[] = { nu, self->omegap, log_prefactor };
 
         int neval1 = 0, neval2 = 0, neval3 = 0, ier1 = 0, ier2 = 0, ier3 = 0;
         double abserr1 = 0, abserr2 = 0, abserr3 = 0, I1 = 0, I2 = 0, I3 = 0;
@@ -824,11 +820,14 @@ double casimir_integrate_plasma(integration_plasma_t *self, int l1, int l2, int 
          */
         I3 = dqagi(_integrand_plasma, b, 1, abserr2, epsrel, &abserr3, &neval3, &ier3, &args);
 
-        double v = I1+I2+I3;
-        entry = cache_entry_create(v, +1);
+        const double sum = I1+I2+I3;
+        bool warn = ier1 != 0 || ier2 != 0 || ier3 != 0 || isnan(sum) || sum == 0;
+        WARN(warn, "ier1=%d, ier2=%d, ier3=%d, nu=%d, m=%d, a=%g, b=%g, I1=%g, I2=%g, I3=%g", ier1, ier2, ier3, nu,m,a,b, I1, I2, I3);
+
+        entry = cache_entry_create(sum, +1);
         hash_table_insert(self->cache, nu, entry);
 
-        return v;
+        return sum;
     }
 
     return entry->v;
