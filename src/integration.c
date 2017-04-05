@@ -763,15 +763,11 @@ static double _integrand_plasma(double z, void *args_)
 {
     integrand_plasma_t *args = (integrand_plasma_t *)args_;
 
-    const int nu               = args->nu;
-    const double omegap        = args->omegap;
-    const double log_prefactor = args->log_prefactor;
-
     const double k = 0.5*z;
-    const double betam1 = sqrtpm1(pow_2(omegap/k));
+    const double betam1 = sqrtpm1(pow_2(args->omegap/k));
     const double rTE = -betam1/(2+betam1);
 
-    return -rTE * exp(log_prefactor -z+nu*log(z));
+    return -rTE * exp(args->log_prefactor -z+args->nu*log(z));
 }
 
 double casimir_integrate_plasma(integration_plasma_t *self, double LbyR, int l1, int l2, int m)
