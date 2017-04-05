@@ -6,11 +6,6 @@
 #include "libcasimir.h"
 #include "integration.h"
 
-typedef struct {
-    double LbyR, omegap, epsrel;
-    HashTable *cache;
-} integration_plasma_t;
-
 integration_t *casimir_integrate_init(casimir_t *self, double xi, int m, double epsrel);
 void casimir_integrate_free(integration_t *integration);
 
