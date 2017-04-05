@@ -779,14 +779,11 @@ double casimir_integrate_plasma(integration_plasma_t *self, double LbyR, int l1,
 
     if(entry == NULL)
     {
-        const double epsrel = self->epsrel;
-
         /* compute integral
          *      1/prefactor * int_0^infty dz r_TE e^(-z) z^nu
          * with
          *      prefactor = nu!
          */
-        const double log_prefactor = -lfac(nu);
 
         /* find left and right boundaries */
         double a,b;
@@ -795,7 +792,8 @@ double casimir_integrate_plasma(integration_plasma_t *self, double LbyR, int l1,
         _f_estimate(nu, 1, eps, tol, &a, &b);
 
         /* perform integrations in intervals [0,a], [a,b] and [b,∞] */
-        integrand_plasma_t args = { .nu = nu, .omegap = self->omegap, .log_prefactor = log_prefactor };
+        const double epsrel = self->epsrel;
+        integrand_plasma_t args = { .nu = nu, .omegap = self->omegap, .log_prefactor = -lfac(nu) };
 
         int neval1 = 0, neval2 = 0, neval3 = 0, ier1 = 0, ier2 = 0, ier3 = 0;
         double abserr1 = 0, abserr2 = 0, abserr3 = 0, I1 = 0, I2 = 0, I3 = 0;
