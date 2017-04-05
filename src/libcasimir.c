@@ -273,8 +273,9 @@ void casimir_rp(casimir_t *self, double nT, double k, double *r_TE, double *r_TM
      * where
      *     x = ξ²/(ξ²+k²)*(ε-1).
      *
-     * We calculate x. If x is small, β≈1 and a loss of significance
-     * occures when calculating 1-β.
+     * We calculate x. If x is small, β≈1 and a loss of significance occures
+     * when calculating 1-β. For this reason we use sqrtpm1 which calculates
+     * β-1.
      *
      * For this reason we use the Taylor series
      *     sqrt(1+x) ≈ 1 + x/2 - x²/8 + x³/16 - 5*x^4/128 + ...
@@ -283,22 +284,9 @@ void casimir_rp(casimir_t *self, double nT, double k, double *r_TE, double *r_TM
      * Note: ξ=nT
      */
     const double x = pow_2(nT)/(pow_2(nT)+pow_2(k))*epsilonm1;
-
-    if(fabs(x) < 1e-5)
-    {
-        /* β-1 = sqrt(1+x)-1 = x/2 - x²/8 + x³/16 - 5*x^4/128 + O(x^5) */
-        const double betam1 = x/2 - pow_2(x)/8 + pow_3(x)/16 - 5*pow_4(x)/128;
-
-        *r_TE = -betam1/(2+betam1);
-        *r_TM = (epsilonm1-betam1)/(epsilonm1+2+betam1);
-    }
-    else
-    {
-        const double beta = sqrt(1+x);
-
-        *r_TE = (1-beta)/(1+beta);
-        *r_TM = (epsilonm1+1-beta)/(epsilonm1+1+beta);
-    }
+    const double betam1 = sqrtpm1(x); /* β-1 */
+    *r_TE = -betam1/(2+betam1);
+    *r_TM = (epsilonm1-betam1)/(epsilonm1+2+betam1);
 }
 
 /*@}*/
