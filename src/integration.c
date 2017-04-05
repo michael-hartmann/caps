@@ -89,7 +89,7 @@ static double _f_bisect(double left, double right, int N, int nu, double tau, do
     return (left+right)/2;
 }
 
-/** @brief Analyize function f(x) = x^ν*exp(-τx)
+/** @brief Analyze function f(x) = x^ν*exp(-τx)
  *
  * This function analyzes the function
  *      f(x) = x^ν*exp(-τx).
@@ -128,8 +128,8 @@ static double _f_estimate(int nu, double tau, double eps, double tol, double *le
     for(int i = 1; true; i++)
     {
         double x = (i+1)*x_max;
-
         double log_f = nu*log(x) - tau*x;
+
         if((log_f-log_f_max) < log(eps))
         {
             *right = _f_bisect(i*x_max, (i+1)*x_max, N, nu, tau, log_f_max+log(eps));
@@ -743,11 +743,10 @@ double casimir_integrate_D(integration_t *self, int l1, int l2, polarization_t p
     return log_C;
 }
 
-integration_plasma_t *casimir_integrate_plasma_init(double LbyR, double omegap, double epsrel)
+integration_plasma_t *casimir_integrate_plasma_init(double omegap, double epsrel)
 {
     integration_plasma_t *self;
     self = (integration_plasma_t *)xmalloc(sizeof(integration_plasma_t));
-    self->LbyR = LbyR;
     self->omegap = omegap;
     self->epsrel = epsrel;
     self->cache = hash_table_new(cache_entry_destroy);
@@ -766,12 +765,14 @@ static double _integrand_plasma(double z, void *args_)
     const double beta = sqrt(1+pow_2(omegap/k));
     const double rTE = (1-beta)/(1+beta);
 
-    return rTE * exp(log_prefactor -z+nu*log(z));
+    return -rTE * exp(log_prefactor -z+nu*log(z));
 }
 
-double casimir_integrate_plasma(integration_plasma_t *self, int l1, int l2, int m)
+double casimir_integrate_plasma(integration_plasma_t *self, double LbyR, int l1, int l2, int m)
 {
     const int nu = l1+l2;
+    const double y = -M_LOG2-log1p(LbyR);
+    double I;
     cache_entry_t *entry = hash_table_lookup(self->cache, nu);
 
     if(entry == NULL)
@@ -779,13 +780,11 @@ double casimir_integrate_plasma(integration_plasma_t *self, int l1, int l2, int 
         const double epsrel = self->epsrel;
 
         /* compute integral
-         *      prefactor * int_0^infty dz r_TM e^(-z) z^nu
+         *      1/prefactor * int_0^infty dz r_TE e^(-z) z^nu
          * with
-         *      prefactor = y^(l1+l2+1)/sqrt((l1+m)!*(l2+m)!)
-         * and y = (R/(R+L))/2
+         *      prefactor = nu!
          */
-        const double y = 0.5/(1+self->LbyR);
-        const double log_prefactor = (1+nu)*log(y)-0.5*(lfac(l1+m)+lfac(l1-m)+lfac(l2+m)+lfac(l2-m));
+        const double log_prefactor = -lfac(nu);
 
         /* find left and right boundaries */
         double a,b;
@@ -820,17 +819,17 @@ double casimir_integrate_plasma(integration_plasma_t *self, int l1, int l2, int 
          */
         I3 = dqagi(_integrand_plasma, b, 1, abserr2, epsrel, &abserr3, &neval3, &ier3, &args);
 
-        const double sum = I1+I2+I3;
-        bool warn = ier1 != 0 || ier2 != 0 || ier3 != 0 || isnan(sum) || sum == 0;
+        I = I1+I2+I3;
+        bool warn = ier1 != 0 || ier2 != 0 || ier3 != 0 || isnan(I) || I == 0;
         WARN(warn, "ier1=%d, ier2=%d, ier3=%d, nu=%d, m=%d, a=%g, b=%g, I1=%g, I2=%g, I3=%g", ier1, ier2, ier3, nu,m,a,b, I1, I2, I3);
 
-        entry = cache_entry_create(sum, +1);
+        entry = cache_entry_create(I, +1);
         hash_table_insert(self->cache, nu, entry);
-
-        return sum;
     }
+    else
+        I = entry->v;
 
-    return entry->v;
+    return exp( lfac(nu)-0.5*(lfac(l1+m)+lfac(l1-m)+lfac(l2+m)+lfac(l2-m)) + (nu+1)*y )*sqrt((l1*l2)/((l1+1.)*(l2+1.)))*I;
 }
 
 void casimir_integrate_plasma_free(integration_plasma_t *self)
