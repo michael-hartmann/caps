@@ -102,6 +102,11 @@ typedef struct {
     bool is_pc;
 } integration_t;
 
+typedef struct {
+    double LbyR, omegap, epsrel;
+    HashTable *cache;
+} integration_plasma_t;
+
 
 typedef struct
 {
