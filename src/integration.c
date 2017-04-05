@@ -57,34 +57,20 @@ static uint64_t hash(uint64_t l1, uint64_t l2, uint64_t p)
     return (l1 << 32) | (l2 << 1) | p;
 }
 
-/* We want to solve
- *      x^ν*exp(-τx) = c, c>0.
- * Taking the logarithm of both sides yields
- *      ν*log(x)-τx-log(c) = 0.
- * We find the solution using bisection method (N times).
- */
-static double k_bisect_zlarge(double left, double right, int N, int nu, double tau, double log_c)
-{
-    for(int i = 0; i < N; i++)
-    {
-        const double middle = (right+left)/2;
-        const double fl = nu*log(left)  -tau*left  -log_c;
-        const double fm = nu*log(middle)-tau*middle-log_c;
 
-        if(fl*fm < 0)
-            right = middle;
-        else
-            left = middle;
-    }
-
-    return (left+right)/2;
-}
-
-/* We want to solve
- *      x^ν*exp(-τx) = c, c>0.
- * Taking the logarithm of both sides yields
- *      ν*log(x)-τx-log(c) = 0.
- * We find the solution using bisection method (N times).
+/** @brief Bisect method for f(x) = c
+ *
+ * Apply the bisection method for
+ *      f(x) = x^ν*exp(-τx) -c = 0,
+ * where c = exp(log_c).
+ *
+ * @param [in] left left boundary
+ * @param [in] right right boundary
+ * @param [in] N number of times to apply bisection method
+ * @param [in] nu parameter nu
+ * @param [in] tau parameter tau
+ * @param [in] log_c logarithm of parameter c
+ * @retval x0 root of f(x)
  */
 static double _f_bisect(double left, double right, int N, int nu, double tau, double log_c)
 {
@@ -103,10 +89,35 @@ static double _f_bisect(double left, double right, int N, int nu, double tau, do
     return (left+right)/2;
 }
 
-static double _f_estimate(int nu, double tau, double eps, double *left, double *right)
+/** @brief Analyize function f(x) = x^ν*exp(-τx)
+ *
+ * This function analyzes the function
+ *      f(x) = x^ν*exp(-τx).
+ *
+ * At x=0 the function is zero,
+ *      f(0) = 0,
+ * then it increases up to the unique maximum at
+ *      x_max = ν/τ,
+ * and decreases for x > x_max.
+ *
+ * This function returns the logarithm of the maximum, i.e.
+ *      log(f(x_max)).
+ *
+ * There exist two values x* with
+ *      f(x*) = f(x_max)*eps.
+ * The value x* in (0,x_max) will be stored in left, the value x* in
+ * (x_max,infty) will be stored in right.
+ *
+ * @param [in] nu parameter nu
+ * @param [in] tau parameter tau
+ * @param [in] eps determines left and right boundaries (see description)
+ * @param [in] tol accuracy of left and right
+ * @param [out] left point in (0,x_max) with f(x_max)*eps = f(left)
+ * @param [out] right point in (x_max,infty) with f(x_max)*eps = f(right)
+ * @retval maximum logarithm of maximum, log(f(x_max))
+ */
+static double _f_estimate(int nu, double tau, double eps, double tol, double *left, double *right)
 {
-    const double tol = 1e-2;
-
     /* f(x) = x^ν*exp(-τx) */
     const double x_max = nu/tau;
     const double log_f_max = nu*log(x_max)-tau*x_max; /* log(f(x_max)) */
@@ -125,17 +136,6 @@ static double _f_estimate(int nu, double tau, double eps, double *left, double *
             return log_f_max;
         }
     }
-}
-
-static double log_k(double z, int nu, int m, double tau)
-{
-    if(z == 0)
-        return -INFINITY;
-
-    if(m == 0)
-        return Plm(nu,2,1+z) - tau*z;
-    else
-        return Plm(nu,2*m,1+z)-log(z*(z+2)) - tau*z;
 }
 
 /* Estimate shape of integrand K assuming nu/tau >> 1.
@@ -184,37 +184,20 @@ static double K_estimate_zlarge(int nu, int m, double tau, double eps, double *a
     }
 
     /* k(z) = z^ν*exp(-τz) */
-    const double log_c = log(eps)+nu*log(zmax)-tau*zmax;
-
-    /* a */
-    {
-        const double left = 0, right = zmax;
-        const int N = ceil((log(right-left)-log(tol))/M_LOG2);
-        *a = k_bisect_zlarge(left, right, N, nu, tau, log_c);
-    }
-
-    /* b */
-    {
-        for(int i = 1;; i++)
-        {
-            const double left = i*zmax, right = (i+1)*zmax;
-            const double kl   = nu*log(left) -tau*left -log_c;
-            const double kr   = nu*log(right)-tau*right-log_c;
-
-            /* if we found left and right, so that
-             *      k(left)/k(zmax) > eps > k(right)/k(zmax),
-             * we can use the bisection method.
-             */
-            if(kl*kr <= 0)
-            {
-                const int N = ceil((log(right-left)-log(tol))/M_LOG2);
-                *b = k_bisect_zlarge(left, right, N, nu, tau, log_c);
-                return zmax;
-            }
-        }
-    }
+    _f_estimate(nu, tau, eps, tol, a, b);
 
     return zmax;
+}
+
+static double log_k(double z, int nu, int m, double tau)
+{
+    if(z == 0)
+        return -INFINITY;
+
+    if(m == 0)
+        return Plm(nu,2,1+z) - tau*z;
+    else
+        return Plm(nu,2*m,1+z)-log(z*(z+2)) - tau*z;
 }
 
 static double K_estimate_zsmall(int nu, int m, double tau, double eps, double *a, double *b, double *log_normalization)
@@ -795,6 +778,7 @@ double casimir_integrate_plasma(integration_plasma_t *self, int l1, int l2, int 
     {
         double a,b;
         double args[3];
+        const double tol = 1e-2;
         const double eps = 1e-6;
         const double epsrel = self->epsrel;
         const double LbyR = self->LbyR;
@@ -809,7 +793,7 @@ double casimir_integrate_plasma(integration_plasma_t *self, int l1, int l2, int 
         const double log_prefactor = (1+nu)*log(y)-0.5*(lfac(l1+m)+lfac(l1-m)+lfac(l2+m)+lfac(l2-m));
 
         /* x^ν*exp(-τx) = c, c>0 */
-        _f_estimate(nu, 1, eps, &a, &b);
+        _f_estimate(nu, 1, eps, tol, &a, &b);
 
         /* perform integrations in intervals [0,a], [a,b] and [b,∞] */
         args[0] = nu;
