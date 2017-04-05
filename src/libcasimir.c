@@ -788,7 +788,7 @@ int casimir_estimate_lminmax(casimir_t *self, int m, size_t *lmin_p, size_t *lma
  * @param [in] symmetric matrix symmetric / not symmetric
  * @retval logdet log det(Id-M)
  */
-double casmir_hodlr_logdet(int dim, double (*M)(int,int,void *), void *args, unsigned int nLeaf, double tolerance, int is_symmetric)
+double casimir_hodlr_logdet(int dim, double (*M)(int,int,void *), void *args, unsigned int nLeaf, double tolerance, int is_symmetric)
 {
     double diagonal[dim];
 
@@ -1065,7 +1065,7 @@ double casimir_logdetD_hodlr(casimir_t *self, double nT, int m)
     const int dim = 2*self->ldim;
 
     casimir_M_t *args = casimir_M_init(self, m, nT);
-    double logdet = casmir_hodlr_logdet(dim, &casimir_kernel_M, args, nLeaf, tolerance, is_symmetric);
+    double logdet = casimir_hodlr_logdet(dim, &casimir_kernel_M, args, nLeaf, tolerance, is_symmetric);
     casimir_M_free(args);
 
     return logdet;
@@ -1457,10 +1457,10 @@ void casimir_logdetD0_hodlr(casimir_t *self, int m, double *logdet_EE, double *l
     };
 
     if(logdet_EE != NULL)
-        *logdet_EE = casmir_hodlr_logdet(self->ldim, &casimir_kernel_M0_EE, &args, nLeaf, tolerance, is_symmetric);
+        *logdet_EE = casimir_hodlr_logdet(self->ldim, &casimir_kernel_M0_EE, &args, nLeaf, tolerance, is_symmetric);
 
     if(logdet_MM != NULL)
-        *logdet_MM = casmir_hodlr_logdet(self->ldim, &casimir_kernel_M0_MM, &args, nLeaf, tolerance, is_symmetric);
+        *logdet_MM = casimir_hodlr_logdet(self->ldim, &casimir_kernel_M0_MM, &args, nLeaf, tolerance, is_symmetric);
 }
 
 
