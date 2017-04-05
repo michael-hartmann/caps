@@ -80,6 +80,53 @@ static double k_bisect_zlarge(double left, double right, int N, int nu, double t
     return (left+right)/2;
 }
 
+/* We want to solve
+ *      x^ν*exp(-τx) = c, c>0.
+ * Taking the logarithm of both sides yields
+ *      ν*log(x)-τx-log(c) = 0.
+ * We find the solution using bisection method (N times).
+ */
+static double _f_bisect(double left, double right, int N, int nu, double tau, double log_c)
+{
+    for(int i = 0; i < N; i++)
+    {
+        const double middle = (right+left)/2;
+        const double fl = nu*log(left)  -tau*left  -log_c;
+        const double fm = nu*log(middle)-tau*middle-log_c;
+
+        if(fl*fm < 0)
+            right = middle;
+        else
+            left = middle;
+    }
+
+    return (left+right)/2;
+}
+
+static double _f_estimate(int nu, double tau, double eps, double *left, double *right)
+{
+    const double tol = 1e-2;
+
+    /* f(x) = x^ν*exp(-τx) */
+    const double x_max = nu/tau;
+    const double log_f_max = nu*log(x_max)-tau*x_max; /* log(f(x_max)) */
+
+    const int N = ceil(-log(tol/x_max)/M_LOG2);
+    *left = _f_bisect(0, x_max, N, nu, tau, log_f_max+log(eps));
+
+    for(int i = 1; true; i++)
+    {
+        double x = (i+1)*x_max;
+
+        double log_f = nu*log(x) - tau*x;
+        if((log_f-log_f_max) < log(eps))
+        {
+            *right = _f_bisect(i*x_max, (i+1)*x_max, N, nu, tau, log_f_max+log(eps));
+            return log_f_max;
+        }
+    }
+}
+
 static double log_k(double z, int nu, int m, double tau)
 {
     if(z == 0)
@@ -728,8 +775,8 @@ integration_plasma_t *casimir_integrate_plasma_init(double LbyR, double omegap, 
 static double _integrand_plasma(double z, void *args_)
 {
     double *args = (double *)args_;
-    const int nu           = args[0];
-    const double omegap    = args[1];
+    const int nu               = args[0];
+    const double omegap        = args[1];
     const double log_prefactor = args[2];
 
     const double k = 0.5*z;
@@ -746,6 +793,7 @@ double casimir_integrate_plasma(integration_plasma_t *self, int l1, int l2, int 
 
     if(entry == NULL)
     {
+        double a,b;
         double args[3];
         const double eps = 1e-6;
         const double epsrel = self->epsrel;
@@ -759,25 +807,9 @@ double casimir_integrate_plasma(integration_plasma_t *self, int l1, int l2, int 
          */
         const double y = 0.5/(1+LbyR);
         const double log_prefactor = (1+nu)*log(y)-0.5*(lfac(l1+m)+lfac(l1-m)+lfac(l2+m)+lfac(l2-m));
-        double zmax = nu;
 
         /* x^ν*exp(-τx) = c, c>0 */
-        const int N = ceil(-log(eps/zmax)/M_LOG2);
-        const double log_max = nu*log(zmax)-zmax;
-        const double a = k_bisect_zlarge(0, zmax, N, nu, 1, log_max+log(eps));
-
-        double right;
-        for(int i = 1; true; i++)
-        {
-            right = (i+1)*zmax;
-
-            double log_right = nu*log(right)-right;
-            if((log_right-log_max) < log(eps))
-                break;
-        }
-        double left = right-zmax;
-
-        const double b = k_bisect_zlarge(left, right, N, nu, 1, log_max+log(eps));
+        _f_estimate(nu, 1, eps, &a, &b);
 
         /* perform integrations in intervals [0,a], [a,b] and [b,∞] */
         args[0] = nu;
