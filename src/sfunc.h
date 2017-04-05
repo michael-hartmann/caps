@@ -34,6 +34,8 @@ typedef struct
 double lfac(unsigned int n) __attribute__ ((pure));
 double logi(unsigned int x) __attribute__ ((pure));
 
+double sqrtpm1(double x) __attribute__ ((pure));
+
 double kahan_sum(double input[], size_t len);
 
 double logadd(const double a, const double b);
