@@ -1466,8 +1466,10 @@ void casimir_logdetD0_hodlr(casimir_t *self, int m, double *logdet_EE, double *l
 
 double casimir_logdetD0_plasma(casimir_t *casimir)
 {
+    const double EE = casimir_logdetD0_drude(casimir);
+    double MM = 0;
     TERMINATE(true, "not implemented yet.");
-    return NAN;
+    return EE+MM;
 }
 
 /*@}*/
