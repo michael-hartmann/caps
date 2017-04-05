@@ -186,5 +186,5 @@ double casimir_logdetD0_drude(casimir_t *casimir);
 double casimir_logdetD0_pc(casimir_t *casimir, double eps);
 double casimir_logdetD0_plasma(casimir_t *casimir);
 
-double casmir_hodlr_logdet(int dim, double (*M)(int,int,void *), void *args, unsigned int nLeaf, double tolerance, int is_symmetric);
+double casimir_hodlr_logdet(int dim, double (*M)(int,int,void *), void *args, unsigned int nLeaf, double tolerance, int is_symmetric);
 #endif
