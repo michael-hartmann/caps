@@ -1430,7 +1430,7 @@ void casimir_M0_elem(casimir_t *self, int l1, int l2, int m, double *EE, double 
 
     /* See thesis of Antoine, section 6.7:
      * x = R/(R+L)
-     * M_EE_{l1,l2} = (x/2)^(l1+l2) * (l1+l2)! / sqrt( (l1+m)!*(l1-m)! * (l2+m)!*(l2-m)! )
+     * M_EE_{l1,l2} = (x/2)^(l1+l2+1) * (l1+l2)! / sqrt( (l1+m)!*(l1-m)! * (l2+m)!*(l2-m)! )
      * M_MM_{l1,l2} = M_EE_{l1,l2} * sqrt( l1/(l1+1) * l2/(l2+1) )
      */
     double _EE = exp( (l1+l2+1)*y + lfac(l1+l2) - 0.5*(lfac(l1+m)+lfac(l1-m) + lfac(l2+m)+lfac(l2-m)) );
