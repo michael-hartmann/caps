@@ -52,9 +52,6 @@ static void usage(FILE *stream)
 "        Enable buffering. By default buffering for stderr and stdout is\n"
 "        disabled.\n"
 "\n"
-"    -D, --debug\n"
-"        Enable debugging information.\n"
-"\n"
 "    -d, --dense\n"
 "        Compute the dense matrix and use LU decomposition to calculate the determinant\n"
 "\n"
@@ -80,14 +77,13 @@ int main(int argc, char *argv[])
     int ldim = 0;
 
     /* flags */
-    bool debug = false, buffering = false, dense = false;
+    bool buffering = false, dense = false;
 
     while(1)
     {
         struct option long_options[] = {
             { "help",      no_argument,       0, 'h' },
             { "buffering", no_argument,       0, 'b' },
-            { "debug",     no_argument,       0, 'D' },
             { "dense",     no_argument,       0, 'd' },
 
             { "LbyR",      required_argument, 0, 'x' },
@@ -102,7 +98,7 @@ int main(int argc, char *argv[])
 
         /* getopt_long stores the option index here. */
         int option_index = 0;
-        int c = getopt_long (argc, argv, "x:T:m:l:w:g:L:t:bdhD", long_options, &option_index);
+        int c = getopt_long (argc, argv, "x:T:m:l:w:g:L:t:bdh", long_options, &option_index);
 
         /* Detect the end of the options. */
         if(c == -1)
@@ -137,9 +133,6 @@ int main(int argc, char *argv[])
                 break;
             case 'd':
                 dense = true;
-                break;
-            case 'D':
-                debug = true;
                 break;
             case 'h':
                 usage(stdout);
@@ -205,8 +198,6 @@ int main(int argc, char *argv[])
         userdata[1] = gamma_;
         casimir_set_epsilonm1(casimir, epsilonm1, userdata);
     }
-
-    casimir_set_debug(casimir, debug);
 
     if(dense)
         casimir_set_detalg(casimir, DETALG_LU);
