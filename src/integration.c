@@ -754,12 +754,18 @@ integration_plasma_t *casimir_integrate_plasma_init(double omegap, double epsrel
     return self;
 }
 
+typedef struct {
+    int nu;
+    double omegap, log_prefactor;
+} integrand_plasma_t;
+
 static double _integrand_plasma(double z, void *args_)
 {
-    double *args = (double *)args_;
-    const int nu               = args[0];
-    const double omegap        = args[1];
-    const double log_prefactor = args[2];
+    integrand_plasma_t *args = (integrand_plasma_t *)args_;
+
+    const int nu               = args->nu;
+    const double omegap        = args->omegap;
+    const double log_prefactor = args->log_prefactor;
 
     const double k = 0.5*z;
     const double beta = sqrt(1+pow_2(omegap/k));
@@ -793,13 +799,13 @@ double casimir_integrate_plasma(integration_plasma_t *self, double LbyR, int l1,
         _f_estimate(nu, 1, eps, tol, &a, &b);
 
         /* perform integrations in intervals [0,a], [a,b] and [b,∞] */
-        double args[] = { nu, self->omegap, log_prefactor };
+        integrand_plasma_t args = { .nu = nu, .omegap = self->omegap, .log_prefactor = log_prefactor };
 
         int neval1 = 0, neval2 = 0, neval3 = 0, ier1 = 0, ier2 = 0, ier3 = 0;
         double abserr1 = 0, abserr2 = 0, abserr3 = 0, I1 = 0, I2 = 0, I3 = 0;
 
         /* I2: [a,b] */
-        I2 = dqags(_integrand_plasma, a, b, 0, epsrel, &abserr2, &neval2, &ier2, args);
+        I2 = dqags(_integrand_plasma, a, b, 0, epsrel, &abserr2, &neval2, &ier2, &args);
 
         /* I1: [0,a] */
         if(a > 0)
@@ -808,15 +814,10 @@ double casimir_integrate_plasma(integration_plasma_t *self, double LbyR, int l1,
              * Gauss-Kronrod G_K 7-15 as integration rule.
              */
             int limit = 200;
-            I1 = dqage(_integrand_plasma, 0, a, abserr2, epsrel, GK_7_15, &abserr1, &neval1, &ier1, &limit, args);
+            I1 = dqage(_integrand_plasma, 0, a, abserr2, epsrel, GK_7_15, &abserr1, &neval1, &ier1, &limit, &args);
         }
 
-        /* I3: [b,∞]
-         * Make a substitution for the integrand, i.e., we don't integrate over z
-         * but over t=z*τ. The integrand exponentially decays as exp(-z*τ), so
-         * after the substitution it decays as exp(-t). This makes life easier for
-         * the quadrature routine.
-         */
+        /* I3: [b,∞] */
         I3 = dqagi(_integrand_plasma, b, 1, abserr2, epsrel, &abserr3, &neval3, &ier3, &args);
 
         I = I1+I2+I3;
