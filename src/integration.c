@@ -768,8 +768,8 @@ static double _integrand_plasma(double z, void *args_)
     const double log_prefactor = args->log_prefactor;
 
     const double k = 0.5*z;
-    const double beta = sqrt(1+pow_2(omegap/k));
-    const double rTE = (1-beta)/(1+beta);
+    const double betam1 = sqrtpm1(pow_2(omegap/k));
+    const double rTE = -betam1/(2+betam1);
 
     return -rTE * exp(log_prefactor -z+nu*log(z));
 }
