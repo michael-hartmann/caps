@@ -951,7 +951,7 @@ double casimir_logdetD0_drude(casimir_t *casimir)
 double casimir_logdetD0_pc(casimir_t *casimir, double eps)
 {
     const double LbyR = casimir->LbyR;
-    const double EE = casimir_logdetD0_drude(casimir);
+    const double drude = casimir_logdetD0_drude(casimir);
 
     double MM = 0;
 
@@ -973,7 +973,7 @@ double casimir_logdetD0_pc(casimir_t *casimir, double eps)
         MM += v;
 
         if(fabs(v/MM) < eps)
-            return 0.5*(EE+MM);
+            return drude+0.5*MM;
     }
 }
 
@@ -1082,7 +1082,7 @@ double casimir_kernel_M0_MM(int i, int j, void *args_)
 
 double casimir_logdetD0_plasma(casimir_t *casimir, double omegap, double eps)
 {
-    const double EE = casimir_logdetD0_drude(casimir);
+    const double drude = casimir_logdetD0_drude(casimir);
     double MM_plasma = 0;
 
     for(int m = 0; true; m++)
@@ -1096,7 +1096,7 @@ double casimir_logdetD0_plasma(casimir_t *casimir, double omegap, double eps)
             MM_plasma += v;
 
         if(fabs(v/MM_plasma) < eps)
-            return 0.5*(EE+MM_plasma);
+            return drude+0.5*MM_plasma;
     }
 }
 
