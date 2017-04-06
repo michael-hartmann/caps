@@ -139,6 +139,18 @@ out:
     return material;
 }
 
+void material_get_extrapolation(material_t *material, double *omegap_low, double *gamma_low, double *omegap_high, double *gamma_high)
+{
+    if(omegap_low != NULL)
+        *omegap_low = material->omegap_low;
+    if(gamma_low != NULL)
+        *gamma_low = material->gamma_low;
+    if(omegap_high != NULL)
+        *omegap_high = material->omegap_high;
+    if(gamma_high != NULL)
+        *gamma_high = material->gamma_high;
+}
+
 void material_free(material_t *material)
 {
     if(material != NULL)
