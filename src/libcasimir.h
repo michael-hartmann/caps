@@ -166,11 +166,11 @@ double casimir_epsilonm1_drude(double xi, void *userdata);
 
 double casimir_logdetD0_drude(casimir_t *casimir);
 double casimir_logdetD0_pc(casimir_t *casimir, double eps);
-double casimir_logdetD0_plasma(casimir_t *casimir);
+double casimir_logdetD0_plasma(casimir_t *casimir, double omegap, double eps);
 
 double casimir_kernel_M0_EE(int i, int j, void *args);
 double casimir_kernel_M0_MM(int i, int j, void *args);
-double casimir_kernel_M0_EE_plasma(int i, int j, void *args_);
+double casimir_kernel_M0_MM_plasma(int i, int j, void *args_);
 
 void casimir_logdetD0(casimir_t *self, int m, double omegap, double *EE, double *EE_plasma, double *MM);
 

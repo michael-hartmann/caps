@@ -1022,7 +1022,7 @@ void casimir_logdetD0(casimir_t *self, int m, double omegap, double *EE, double 
         *EE_plasma = 0;
 
         args.integration_plasma = casimir_integrate_plasma_init(omegap, self->tolerance);
-        *EE_plasma = kernel_logdet(ldim, &casimir_kernel_M0_EE_plasma, &args, is_symmetric, detalg);
+        *EE_plasma = kernel_logdet(ldim, &casimir_kernel_M0_MM_plasma, &args, is_symmetric, detalg);
         casimir_integrate_plasma_free(args.integration_plasma);
     }
 }
@@ -1046,7 +1046,7 @@ double casimir_kernel_M0_EE(int i, int j, void *args_)
     return exp( (l1+l2+1)*y + lfac(l1+l2) - 0.5*(lfac(l1+m)+lfac(l1-m) + lfac(l2+m)+lfac(l2-m)) );
 }
 
-double casimir_kernel_M0_EE_plasma(int i, int j, void *args_)
+double casimir_kernel_M0_MM_plasma(int i, int j, void *args_)
 {
     casimir_M_t *args = (casimir_M_t *)args_;
     const double y = args->casimir->y;
@@ -1079,12 +1079,22 @@ double casimir_kernel_M0_MM(int i, int j, void *args_)
     return exp( (l1+l2+1)*y + lfac(l1+l2) - 0.5*(lfac(l1+m)+lfac(l1-m) + lfac(l2+m)+lfac(l2-m)) )*sqrt((l1*l2)/((l1+1.)*(l2+1.)));
 }
 
-double casimir_logdetD0_plasma(casimir_t *casimir)
+
+double casimir_logdetD0_plasma(casimir_t *casimir, double omegap, double eps)
 {
     const double EE = casimir_logdetD0_drude(casimir);
-    double MM = 0;
-    TERMINATE(true, "not implemented yet.");
-    return EE+MM;
+    double MM_plasma = 0;
+
+    for(int m = 1; true; m++)
+    {
+        double v;
+        casimir_logdetD0(casimir, m, omegap, NULL, &v, NULL);
+
+        MM_plasma += v;
+
+        if(fabs(v/MM_plasma) < eps)
+            return 0.5*(EE+MM_plasma);
+    }
 }
 
 /*@}*/
