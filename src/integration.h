@@ -18,7 +18,7 @@ double casimir_integrate_C(integration_t *self, int l1, int l2, polarization_t p
 double casimir_integrate_D(integration_t *self, int l1, int l2, polarization_t p, sign_t *sign);
 
 integration_plasma_t *casimir_integrate_plasma_init(double omegap, double epsrel);
-double casimir_integrate_plasma(integration_plasma_t *self, double LbyR, int l1, int l2, int m);
+double casimir_integrate_plasma(integration_plasma_t *self, int l1, int l2, int m);
 void casimir_integrate_plasma_free(integration_plasma_t *self);
 
 #endif

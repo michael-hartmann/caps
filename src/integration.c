@@ -770,61 +770,58 @@ static double _integrand_plasma(double z, void *args_)
     return -rTE * exp(args->log_prefactor -z+args->nu*log(z));
 }
 
-double casimir_integrate_plasma(integration_plasma_t *self, double LbyR, int l1, int l2, int m)
+double casimir_integrate_plasma(integration_plasma_t *self, int l1, int l2, int m)
 {
     const int nu = l1+l2;
-    const double y = -M_LOG2-log1p(LbyR);
     double I;
     cache_entry_t *entry = hash_table_lookup(self->cache, nu);
 
-    if(entry == NULL)
+    if(entry)
+        return entry->v;
+
+    /* compute integral
+     *      1/prefactor * int_0^infty dz r_TE e^(-z) z^nu
+     * with
+     *      prefactor = nu!
+     */
+
+    /* find left and right boundaries */
+    double a,b;
+    const double tol = 1e-2;
+    const double eps = 1e-6;
+    _f_estimate(nu, 1, eps, tol, &a, &b);
+
+    /* perform integrations in intervals [0,a], [a,b] and [b,∞] */
+    const double epsrel = self->epsrel;
+    integrand_plasma_t args = { .nu = nu, .omegap = self->omegap, .log_prefactor = -lfac(nu) };
+
+    int neval1 = 0, neval2 = 0, neval3 = 0, ier1 = 0, ier2 = 0, ier3 = 0;
+    double abserr1 = 0, abserr2 = 0, abserr3 = 0, I1 = 0, I2 = 0, I3 = 0;
+
+    /* I2: [a,b] */
+    I2 = dqags(_integrand_plasma, a, b, 0, epsrel, &abserr2, &neval2, &ier2, &args);
+
+    /* I1: [0,a] */
+    if(a > 0)
     {
-        /* compute integral
-         *      1/prefactor * int_0^infty dz r_TE e^(-z) z^nu
-         * with
-         *      prefactor = nu!
+        /* The contribution of this integral should be small, so use
+         * Gauss-Kronrod G_K 7-15 as integration rule.
          */
-
-        /* find left and right boundaries */
-        double a,b;
-        const double tol = 1e-2;
-        const double eps = 1e-6;
-        _f_estimate(nu, 1, eps, tol, &a, &b);
-
-        /* perform integrations in intervals [0,a], [a,b] and [b,∞] */
-        const double epsrel = self->epsrel;
-        integrand_plasma_t args = { .nu = nu, .omegap = self->omegap, .log_prefactor = -lfac(nu) };
-
-        int neval1 = 0, neval2 = 0, neval3 = 0, ier1 = 0, ier2 = 0, ier3 = 0;
-        double abserr1 = 0, abserr2 = 0, abserr3 = 0, I1 = 0, I2 = 0, I3 = 0;
-
-        /* I2: [a,b] */
-        I2 = dqags(_integrand_plasma, a, b, 0, epsrel, &abserr2, &neval2, &ier2, &args);
-
-        /* I1: [0,a] */
-        if(a > 0)
-        {
-            /* The contribution of this integral should be small, so use
-             * Gauss-Kronrod G_K 7-15 as integration rule.
-             */
-            int limit = 200;
-            I1 = dqage(_integrand_plasma, 0, a, abserr2, epsrel, GK_7_15, &abserr1, &neval1, &ier1, &limit, &args);
-        }
-
-        /* I3: [b,∞] */
-        I3 = dqagi(_integrand_plasma, b, 1, abserr2, epsrel, &abserr3, &neval3, &ier3, &args);
-
-        I = I1+I2+I3;
-        bool warn = ier1 != 0 || ier2 != 0 || ier3 != 0 || isnan(I) || I == 0;
-        WARN(warn, "ier1=%d, ier2=%d, ier3=%d, nu=%d, m=%d, a=%g, b=%g, I1=%g, I2=%g, I3=%g", ier1, ier2, ier3, nu,m,a,b, I1, I2, I3);
-
-        entry = cache_entry_create(I, +1);
-        hash_table_insert(self->cache, nu, entry);
+        int limit = 200;
+        I1 = dqage(_integrand_plasma, 0, a, abserr2, epsrel, GK_7_15, &abserr1, &neval1, &ier1, &limit, &args);
     }
-    else
-        I = entry->v;
 
-    return exp( lfac(nu)-0.5*(lfac(l1+m)+lfac(l1-m)+lfac(l2+m)+lfac(l2-m)) + (nu+1)*y )*sqrt((l1*l2)/((l1+1.)*(l2+1.)))*I;
+    /* I3: [b,∞] */
+    I3 = dqagi(_integrand_plasma, b, 1, abserr2, epsrel, &abserr3, &neval3, &ier3, &args);
+
+    I = I1+I2+I3;
+    bool warn = ier1 != 0 || ier2 != 0 || ier3 != 0 || isnan(I) || I == 0;
+    WARN(warn, "ier1=%d, ier2=%d, ier3=%d, nu=%d, m=%d, a=%g, b=%g, I1=%g, I2=%g, I3=%g", ier1, ier2, ier3, nu,m,a,b, I1, I2, I3);
+
+    entry = cache_entry_create(I, +1);
+    hash_table_insert(self->cache, nu, entry);
+
+    return I;
 }
 
 void casimir_integrate_plasma_free(integration_plasma_t *self)
