@@ -117,16 +117,6 @@ int casimir_verbose(casimir_t *self, const char *format, ...)
 }
 
 
-unsigned int casimir_get_nLeaf(casimir_t *self)
-{
-    return self->nLeaf;
-}
-
-void casimir_set_nLeaf(casimir_t *self, unsigned int nLeaf)
-{
-    self->nLeaf = nLeaf;
-}
-
 /*@}*/
 
 /**
