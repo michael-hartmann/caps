@@ -112,6 +112,7 @@ typedef struct
     casimir_t *casimir;
     int m, lmin;
     integration_t *integration;
+    integration_plasma_t *integration_plasma;
     double nT;
     double *al, *bl;
 } casimir_M_t;
@@ -178,10 +179,10 @@ double casimir_logdetD0_plasma(casimir_t *casimir);
 
 double casimir_kernel_M0_EE(int i, int j, void *args);
 double casimir_kernel_M0_MM(int i, int j, void *args);
+double casimir_kernel_M0_EE_plasma(int i, int j, void *args_);
 
-
-void casimir_logdetD0(casimir_t *self, int m, double *EE, double *MM);
-void casimir_logdetD0_hodlr(casimir_t *self, int m, double *EE, double *MM);
+void casimir_logdetD0(casimir_t *self, int m, double omegap, double *EE, double *EE_plasma, double *MM);
+void casimir_logdetD0_hodlr(casimir_t *self, int m, double omegap, double *EE, double *EE_plasma, double *MM);
 
 double casimir_hodlr_logdet(int dim, double (*M)(int,int,void *), void *args, unsigned int nLeaf, double tolerance, int is_symmetric);
 #endif

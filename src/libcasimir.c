@@ -827,6 +827,8 @@ double casimir_kernel_M(int i, int j, void *args_)
 
 casimir_M_t *casimir_M_init(casimir_t *casimir, int m, double nT)
 {
+    TERMINATE(nT <= 0, "Matsubara frequency must be positive");
+
     size_t lmin, lmax;
     const int ldim = casimir->ldim;
     casimir_M_t *self = xmalloc(sizeof(casimir_M_t));
@@ -837,6 +839,7 @@ casimir_M_t *casimir_M_init(casimir_t *casimir, int m, double nT)
     self->m = m;
     self->lmin = lmin;
     self->integration = casimir_integrate_init(casimir, nT, m, casimir->tolerance);
+    self->integration_plasma = NULL;
     self->nT = nT;
     self->al = xmalloc(ldim*sizeof(double));
     self->bl = xmalloc(ldim*sizeof(double));
@@ -1195,7 +1198,7 @@ double casimir_logdetD0_pc(casimir_t *casimir, double eps)
     for(int m = 1; true; m++)
     {
         double v;
-        casimir_logdetD0(casimir, m, NULL, &v);
+        casimir_logdetD0(casimir, m, 0, NULL, NULL, &v);
 
         MM += v;
 
@@ -1216,13 +1219,13 @@ double casimir_logdetD0_pc(casimir_t *casimir, double eps)
  *
  * @param [in]  self Casimir object
  * @param [in]  m quantum number m
- * @param [out] logdet_EE pointer to store contribution for EE block
- * @param [out] logdet_MM pointer to store contribution for MM block
+ * @param [out] EE pointer to store contribution for EE block
+ * @param [out] MM pointer to store contribution for MM block
  */
-void casimir_logdetD0(casimir_t *self, int m, double *logdet_EE, double *logdet_MM)
+void casimir_logdetD0(casimir_t *self, int m, double omegap, double *EE, double *EE_plasma, double *MM)
 {
     /* XXX */
-    casimir_logdetD0_hodlr(self, m, logdet_EE, logdet_MM);
+    casimir_logdetD0_hodlr(self, m, omegap, EE, EE_plasma, MM);
 }
 
 /** @brief Kernel for EE block
@@ -1244,6 +1247,20 @@ double casimir_kernel_M0_EE(int i, int j, void *args_)
     return exp( (l1+l2+1)*y + lfac(l1+l2) - 0.5*(lfac(l1+m)+lfac(l1-m) + lfac(l2+m)+lfac(l2-m)) );
 }
 
+double casimir_kernel_M0_EE_plasma(int i, int j, void *args_)
+{
+    casimir_M_t *args = (casimir_M_t *)args_;
+    const double y = args->casimir->y;
+    integration_plasma_t *integration_plasma = args->integration_plasma;
+    const int lmin = args->lmin;
+    const int l1 = i+lmin, l2 = j+lmin, m = args->m;
+
+    const int nu = l1+l2;
+    double I = casimir_integrate_plasma(integration_plasma, l1, l2, m);
+
+    return exp( lfac(nu)-0.5*(lfac(l1+m)+lfac(l1-m)+lfac(l2+m)+lfac(l2-m)) + (nu+1)*y )*sqrt((l1*l2)/((l1+1.)*(l2+1.)))*I;
+}
+
 /** @brief Kernel for MM block
  *
  * Function that returns matrix elements of round-trip matrix M for xi=0 and
@@ -1263,11 +1280,11 @@ double casimir_kernel_M0_MM(int i, int j, void *args_)
     return exp( (l1+l2+1)*y + lfac(l1+l2) - 0.5*(lfac(l1+m)+lfac(l1-m) + lfac(l2+m)+lfac(l2-m)) )*sqrt((l1*l2)/((l1+1.)*(l2+1.)));
 }
 
-void casimir_logdetD0_hodlr(casimir_t *self, int m, double *logdet_EE, double *logdet_MM)
+void casimir_logdetD0_hodlr(casimir_t *self, int m, double omegap, double *EE, double *EE_plasma, double *MM)
 {
     size_t lmin, lmax;
     unsigned int nLeaf = 100; /* XXX */
-    const int is_symmetric = 1;
+    const int is_symmetric = 1, ldim = self->ldim;
     const double tolerance = 1e-15;
 
     casimir_estimate_lminmax(self, m, &lmin, &lmax);
@@ -1277,16 +1294,26 @@ void casimir_logdetD0_hodlr(casimir_t *self, int m, double *logdet_EE, double *l
         .m = m,
         .nT = 0,
         .integration = NULL,
+        .integration_plasma = NULL,
         .al = NULL,
         .bl = NULL,
         .lmin = lmin
     };
 
-    if(logdet_EE != NULL)
-        *logdet_EE = casimir_hodlr_logdet(self->ldim, &casimir_kernel_M0_EE, &args, nLeaf, tolerance, is_symmetric);
+    if(EE != NULL)
+        *EE = casimir_hodlr_logdet(ldim, &casimir_kernel_M0_EE, &args, nLeaf, tolerance, is_symmetric);
 
-    if(logdet_MM != NULL)
-        *logdet_MM = casimir_hodlr_logdet(self->ldim, &casimir_kernel_M0_MM, &args, nLeaf, tolerance, is_symmetric);
+    if(MM != NULL)
+        *MM = casimir_hodlr_logdet(ldim, &casimir_kernel_M0_MM, &args, nLeaf, tolerance, is_symmetric);
+
+    if(EE_plasma != NULL)
+    {
+        *EE_plasma = 0;
+
+        args.integration_plasma = casimir_integrate_plasma_init(omegap, self->tolerance);
+        *EE_plasma = casimir_hodlr_logdet(ldim, &casimir_kernel_M0_EE_plasma, &args, nLeaf, tolerance, is_symmetric);
+        casimir_integrate_plasma_free(args.integration_plasma);
+    }
 }
 
 
