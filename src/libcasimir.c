@@ -770,13 +770,13 @@ int casimir_estimate_lminmax(casimir_t *self, int m, size_t *lmin_p, size_t *lma
  * @param [in] dim       dimension of matrix
  * @param [in] M         callback that returns matrix elements of M
  * @param [in] args      pointer given to callback M
- * @param [in] nLeaf     size of smalles block at leaf level
- * @param [in] tolerance accuracy of result
  * @param [in] symmetric matrix symmetric / not symmetric
  * @retval logdet log det(Id-M)
  */
-double casimir_hodlr_logdet(int dim, double (*M)(int,int,void *), void *args, unsigned int nLeaf, double tolerance, int is_symmetric)
+double casimir_hodlr_logdet(int dim, double (*M)(int,int,void *), void *args, int is_symmetric)
 {
+    const unsigned int nLeaf = 100; /* XXX */
+    const double tolerance = 1e-15;
     double diagonal[dim];
 
     /* calculate diagonal elements */
@@ -1049,13 +1049,11 @@ double casimir_logdetD(casimir_t *self, double nT, int m)
 
 double casimir_logdetD_hodlr(casimir_t *self, double nT, int m)
 {
-    const unsigned int nLeaf = 100; /* XXX */
     const int is_symmetric = 1;
-    const double tolerance = 1e-16;
     const int dim = 2*self->ldim;
 
     casimir_M_t *args = casimir_M_init(self, m, nT);
-    double logdet = casimir_hodlr_logdet(dim, &casimir_kernel_M, args, nLeaf, tolerance, is_symmetric);
+    double logdet = casimir_hodlr_logdet(dim, &casimir_kernel_M, args, is_symmetric);
     casimir_M_free(args);
 
     return logdet;
@@ -1283,9 +1281,7 @@ double casimir_kernel_M0_MM(int i, int j, void *args_)
 void casimir_logdetD0_hodlr(casimir_t *self, int m, double omegap, double *EE, double *EE_plasma, double *MM)
 {
     size_t lmin, lmax;
-    unsigned int nLeaf = 100; /* XXX */
     const int is_symmetric = 1, ldim = self->ldim;
-    const double tolerance = 1e-15;
 
     casimir_estimate_lminmax(self, m, &lmin, &lmax);
 
@@ -1301,17 +1297,17 @@ void casimir_logdetD0_hodlr(casimir_t *self, int m, double omegap, double *EE, d
     };
 
     if(EE != NULL)
-        *EE = casimir_hodlr_logdet(ldim, &casimir_kernel_M0_EE, &args, nLeaf, tolerance, is_symmetric);
+        *EE = casimir_hodlr_logdet(ldim, &casimir_kernel_M0_EE, &args, is_symmetric);
 
     if(MM != NULL)
-        *MM = casimir_hodlr_logdet(ldim, &casimir_kernel_M0_MM, &args, nLeaf, tolerance, is_symmetric);
+        *MM = casimir_hodlr_logdet(ldim, &casimir_kernel_M0_MM, &args, is_symmetric);
 
     if(EE_plasma != NULL)
     {
         *EE_plasma = 0;
 
         args.integration_plasma = casimir_integrate_plasma_init(omegap, self->tolerance);
-        *EE_plasma = casimir_hodlr_logdet(ldim, &casimir_kernel_M0_EE_plasma, &args, nLeaf, tolerance, is_symmetric);
+        *EE_plasma = casimir_hodlr_logdet(ldim, &casimir_kernel_M0_EE_plasma, &args, is_symmetric);
         casimir_integrate_plasma_free(args.integration_plasma);
     }
 }
