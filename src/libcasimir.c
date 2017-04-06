@@ -1221,50 +1221,8 @@ double casimir_logdetD0_pc(casimir_t *casimir, double eps)
  */
 void casimir_logdetD0(casimir_t *self, int m, double *logdet_EE, double *logdet_MM)
 {
-    if(self->detalg == DETALG_HODLR)
-        casimir_logdetD0_hodlr(self, m, logdet_EE, logdet_MM);
-    else
-        casimir_logdetD0_dense(self, m, logdet_EE, logdet_MM);
-}
-
-
-/**
- * @brief Calculate \f$\log\det \mathcal{D}^{(m)}(\xi=0)\f$ for EE and MM
- *
- * This function calculates the logarithm of the determinant of the scattering
- * operator D for the Matsubara term \f$n=0\f$.
- *
- * You probably want to use the function \ref casimir_logdetD0 instead.
- *
- * This function is thread-safe as long you don't change ldim and aspect ratio.
- *
- * @param [in,out] self Casimir object
- * @param [in] m
- * @param [out] logdet_EE
- * @param [out] logdet_MM
- */
-void casimir_logdetD0_dense(casimir_t *self, int m, double *logdet_EE, double *logdet_MM)
-{
-    matrix_t *EE = NULL, *MM = NULL;
-
-    if(logdet_EE != NULL && logdet_MM != NULL)
-        casimir_M0(self, m, &EE, &MM);
-    else if(logdet_EE == NULL && logdet_MM != NULL)
-        casimir_M0(self, m, NULL, &MM);
-    else if(logdet_EE != NULL && logdet_MM == NULL)
-        casimir_M0(self, m, &EE, NULL);
-
-    /* Calculate logdet=log(det(Id-M)) and free space. */
-    if(EE != NULL)
-    {
-        *logdet_EE = matrix_logdet(EE, -1);
-        matrix_free(EE);
-    }
-    if(MM != NULL)
-    {
-        *logdet_MM = matrix_logdet(MM, -1);
-        matrix_free(MM);
-    }
+    /* XXX */
+    casimir_logdetD0_hodlr(self, m, logdet_EE, logdet_MM);
 }
 
 
@@ -1342,87 +1300,6 @@ void casimir_M0_elem(casimir_t *self, int l1, int l2, int m, double *EE, double 
     if(MM != NULL)
         *MM = _EE*sqrt((l1*l2)/((l1+1.)*(l2+1.)));
 }
-
-/**
- * @brief Calculate round-trip matrices M for xi=nT=0
- *
- * For xi=0 the round-trip matrix M is block diagonal with block matrices EE,
- * MM. This function calculates the block matrices EE and MM.
- *
- * If EE is not NULL, create and calculate block matrix EE.
- * If MM is not NULL, create and calculate block matrix MM.
-
- * You have to free the matrices yourself using matrix_free.
- *
- * @param [in] self Casimir object
- * @param [out] EE pointer for block matrix EE
- * @param [out] MM pointer for block matrix MM
- */
-void casimir_M0(casimir_t *self, int m, matrix_t **EE, matrix_t **MM)
-{
-    /* main contributions comes from l1≈l2≈m */
-    size_t lmin,lmax,ldim = self->ldim;
-    casimir_estimate_lminmax(self, m, &lmin, &lmax);
-
-    /* nothing to do... */
-    if(EE == NULL && MM == NULL)
-        return;
-
-    if(EE != NULL)
-    {
-        *EE = matrix_alloc(ldim);
-        matrix_setall(*EE,0);
-    }
-    if(MM != NULL)
-    {
-        *MM = matrix_alloc(ldim);
-        matrix_setall(*MM,0);
-    }
-
-    double trace_diag = 0; /* sum of modulus of matrix elements of diagonal */
-
-    /* calculate matrix elements of M */
-
-    /* n-th minor diagonal */
-    for(size_t n = 0; n < ldim; n++)
-    {
-        /* sum of modulus of matrix elements of n-th minor diagonal */
-        double trace = 0;
-
-        for(size_t d = 0; d < ldim-n; d++)
-        {
-            double EE_ij, MM_ij;
-            const int l1 = d+lmin;
-            const int l2 = d+n+lmin;
-
-            /* i: row of matrix, j: column of matrix */
-            const size_t i = d, j = d+n;
-
-            casimir_M0_elem(self, l1, l2, m, &EE_ij, &MM_ij);
-
-            /* calculate trace of n-th minor diagonal */
-            trace += fabs(EE_ij);
-
-            /* The matrix M is symmetric. */
-            if(EE != NULL)
-            {
-                matrix_set(*EE, i,j, EE_ij);
-                matrix_set(*EE, j,i, EE_ij);
-            }
-            if(MM != NULL)
-            {
-                matrix_set(*MM, i,j, MM_ij);
-                matrix_set(*MM, j,i, MM_ij);
-            }
-        }
-
-        if(n == 0)
-            trace_diag = ldim-trace;
-        else if(trace/trace_diag <= self->threshold)
-            break;
-    }
-}
-
 
 void casimir_logdetD0_hodlr(casimir_t *self, int m, double *logdet_EE, double *logdet_MM)
 {

@@ -153,17 +153,6 @@ void casimir_lnab0(int l, double *a0, sign_t *sign_a0, double *b0, sign_t *sign_
 void casimir_lnab(casimir_t *self, double nT, int l, double *lna, double *lnb, sign_t *sign_a, sign_t *sign_b);
 void casimir_lnab_perf(casimir_t *self, double nT, int l, double *lna, double *lnb, sign_t *sign_a, sign_t *sign_b);
 
-double casimir_kernel_M0_EE(int i, int j, void *args);
-double casimir_kernel_M0_MM(int i, int j, void *args);
-
-void casimir_M0_elem(casimir_t *self, int l1, int l2, int m, double *EE, double *MM);
-void casimir_M0(casimir_t *self, int m, matrix_t **EE, matrix_t **MM);
-
-
-void casimir_logdetD0(casimir_t *self, int m, double *EE, double *MM);
-void casimir_logdetD0_dense(casimir_t *self, int m, double *EE, double *MM);
-void casimir_logdetD0_hodlr(casimir_t *self, int m, double *EE, double *MM);
-
 double casimir_kernel_M(int i, int j, void *args_);
 
 casimir_M_t *casimir_M_init(casimir_t *self, int m, double nT);
@@ -186,6 +175,14 @@ double casimir_epsilonm1_drude(double xi, void *userdata);
 double casimir_logdetD0_drude(casimir_t *casimir);
 double casimir_logdetD0_pc(casimir_t *casimir, double eps);
 double casimir_logdetD0_plasma(casimir_t *casimir);
+
+double casimir_kernel_M0_EE(int i, int j, void *args);
+double casimir_kernel_M0_MM(int i, int j, void *args);
+
+void casimir_M0_elem(casimir_t *self, int l1, int l2, int m, double *EE, double *MM);
+
+void casimir_logdetD0(casimir_t *self, int m, double *EE, double *MM);
+void casimir_logdetD0_hodlr(casimir_t *self, int m, double *EE, double *MM);
 
 double casimir_hodlr_logdet(int dim, double (*M)(int,int,void *), void *args, unsigned int nLeaf, double tolerance, int is_symmetric);
 #endif
