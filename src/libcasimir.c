@@ -12,7 +12,6 @@
 #include <stdio.h>
 #include <string.h>
 #include <unistd.h>
-#include <hodlr.h>
 
 #include "quadpack.h"
 #include "integration.h"
@@ -752,57 +751,6 @@ int casimir_estimate_lminmax(casimir_t *self, int m, size_t *lmin_p, size_t *lma
     return l;
 }
 
-/** @brief Compute log det(Id-M) using HODLR approach
- *
- * This function computes the log det(Id-M) using the HODLR approach. The
- * matrix M is given as a callback function. This callback accepts two
- * integers, the row and column of the matrix entry (starting from 0), and a
- * pointer to args.
- *
- * nLeaf is the size (number of rows of the matrix) of the smallest block at
- * the leaf level. The number of levels in the tree is given by log_2(N/nLeaf).
- *
- * If the matrix elements of M are small, i.e. it trace is < 1e-8, the trace
- * will used as approximation to prevent loss of significance. If the modulus
- * of the trace is larger than the modulus of the value computed using HODLR,
- * also the trace approximation is returned.
- *
- * @param [in] dim       dimension of matrix
- * @param [in] M         callback that returns matrix elements of M
- * @param [in] args      pointer given to callback M
- * @param [in] symmetric matrix symmetric / not symmetric
- * @retval logdet log det(Id-M)
- */
-double casimir_hodlr_logdet(int dim, double (*M)(int,int,void *), void *args, int is_symmetric)
-{
-    const unsigned int nLeaf = 100; /* XXX */
-    const double tolerance = 1e-15;
-    double diagonal[dim];
-
-    /* calculate diagonal elements */
-    for(int n = 0; n < dim; n++)
-        diagonal[n] = M(n,n,args);
-
-    const double trace = kahan_sum(diagonal, dim);
-
-    /* XXX should be ok, but we need a justification here XXX */
-    /* use trace approximation to avoid cancellation */
-    if(fabs(trace) < 1e-8)
-        return -trace;
-    else
-    {
-        /* calculate log(det(D)) using HODLR approach */
-        const double logdet = hodlr_logdet_diagonal(dim, M, args, diagonal, nLeaf, tolerance, is_symmetric);
-
-        /* if |trace| > log(det(D)), then the trace result is more accurate */
-        if(fabs(trace) > fabs(logdet))
-            return -trace;
-
-        return logdet;
-    }
-}
-
-
 double casimir_kernel_M(int i, int j, void *args_)
 {
     char p1 = 'E', p2 = 'E';
@@ -937,90 +885,6 @@ void casimir_M_free(casimir_M_t *self)
     xfree(self);
 }
 
-/**
- * @brief Calculate round-trip matrix M
- *
- * Create the round-trip matrix M for Matsubara frequency xi=nT and angular
- * momentum number m.
- *
- * You have to free the matrix yourself using matrix_free.
- *
- * @param [in] self Casimir object
- * @param [in] nT Matsubara frequency
- * @param [in] m
- * @retval M round-trip matrix
- */
-matrix_t *casimir_M(casimir_t *self, double nT, int m)
-{
-    /* main contributions comes from l1≈l2 */
-    size_t lmin, lmax, ldim = self->ldim;
-    casimir_estimate_lminmax(self, m, &lmin, &lmax);
-
-    casimir_M_t *obj = casimir_M_init(self, m, nT);
-
-    /* allocate space for matrix M */
-    matrix_t *M = matrix_alloc(2*ldim);
-
-    /* set matrix elements to 0 */
-    matrix_setall(M, 0);
-
-    /* M_EE, -M_EM
-       M_ME,  M_MM */
-
-    double trace_diag = 0;
-
-    /* n-th minor diagonal */
-    for(size_t md = 0; md < ldim; md++)
-    {
-        double trace = 0;
-
-        for(size_t k = 0; k < ldim-md; k++)
-        {
-            const int l1 = k+lmin;
-            const int l2 = k+md+lmin;
-
-            /* i: row of matrix, j: column of matrix */
-            const size_t i = l1-lmin, j = l2-lmin;
-
-            /* EE */
-            double EE = casimir_M_elem(obj, l1, l2, 'E', 'E');
-            matrix_set(M, i,j, EE);
-            matrix_set(M, j,i, EE);
-
-            /* MM */
-            double MM = casimir_M_elem(obj, l1, l2, 'M', 'M');
-            matrix_set(M, i+ldim,j+ldim, MM);
-            matrix_set(M, j+ldim,i+ldim, MM);
-
-            trace += fabs(EE)+fabs(MM);
-
-            if(m)
-            {
-                /* non-diagonal blocks EM and ME */
-                double EM = casimir_M_elem(obj, l1, l2, 'E', 'M');
-                double ME = casimir_M_elem(obj, l1, l2, 'M', 'E');
-
-                /* EM */
-                matrix_set(M, i,ldim+j, EM);
-                matrix_set(M, j,ldim+i, ME);
-
-                /* ME */
-                matrix_set(M, ldim+i,j, ME);
-                matrix_set(M, ldim+j,i, EM);
-            }
-        }
-
-        if(md == 0)
-            trace_diag = 2*ldim - trace;
-        else if(trace/trace_diag <= self->threshold)
-            break;
-    }
-
-    casimir_M_free(obj);
-
-    return M;
-}
-
 
 /** @brief Compute log det D^m(xi)
  *
@@ -1041,69 +905,12 @@ double casimir_logdetD(casimir_t *self, double nT, int m)
 {
     TERMINATE(nT <= 0, "Matsubara frequency must be positive");
 
-    if(self->detalg == DETALG_HODLR)
-        return casimir_logdetD_hodlr(self, nT, m);
-    else
-        return casimir_logdetD_dense(self, nT, m);
-}
-
-double casimir_logdetD_hodlr(casimir_t *self, double nT, int m)
-{
     const int is_symmetric = 1;
     const int dim = 2*self->ldim;
 
     casimir_M_t *args = casimir_M_init(self, m, nT);
-    double logdet = casimir_hodlr_logdet(dim, &casimir_kernel_M, args, is_symmetric);
+    double logdet = kernel_logdet(dim, &casimir_kernel_M, args, is_symmetric);
     casimir_M_free(args);
-
-    return logdet;
-}
-
-/**
- * @brief Calculate \f$\log\det \mathcal{D}^{(m)}(\xi=nT)\f$
- *
- * This function calculates the logarithm of the determinant of the scattering
- * operator D for the Matsubara term \f$n\f$.
- *
- * This function is thread-safe - as long you don't change ldim, temperature,
- * aspect ratio, dielectric properties of sphere and plane, and integration.
- *
- * @param [in,out] self Casimir object
- * @param [in] nT Matsubara frequency
- * @param [in] m
- * @retval logdetD \f$\log \det \mathcal{D}^{(m)}(\xi=nT)\f$
- */
-double casimir_logdetD_dense(casimir_t *self, double nT, int m)
-{
-    double logdet = 0;
-
-    matrix_t *M = casimir_M(self, nT, m);
-
-    #if 0
-    /* dump matrix */
-    t0 = now();
-    matrix_save_to_file(M, "M.npy");
-    #endif
-
-    if(m == 0)
-    {
-        const size_t dim  = M->dim;
-        const size_t ldim = dim/2;
-
-        /* create a view of the block matrices EE and MM */
-        matrix_t *EE = matrix_view(M->M, ldim, dim);
-        matrix_t *MM = matrix_view(&M->M[ldim*(dim+1)], ldim, dim);
-
-        logdet  = matrix_logdet(EE, -1);
-        logdet += matrix_logdet(MM, -1);
-
-        matrix_free(EE);
-        matrix_free(MM);
-    }
-    else
-        logdet = matrix_logdet(M, -1);
-
-    matrix_free(M);
 
     return logdet;
 }
@@ -1222,8 +1029,36 @@ double casimir_logdetD0_pc(casimir_t *casimir, double eps)
  */
 void casimir_logdetD0(casimir_t *self, int m, double omegap, double *EE, double *EE_plasma, double *MM)
 {
-    /* XXX */
-    casimir_logdetD0_hodlr(self, m, omegap, EE, EE_plasma, MM);
+    size_t lmin, lmax;
+    const int is_symmetric = 1, ldim = self->ldim;
+
+    casimir_estimate_lminmax(self, m, &lmin, &lmax);
+
+    casimir_M_t args = {
+        .casimir = self,
+        .m = m,
+        .nT = 0,
+        .integration = NULL,
+        .integration_plasma = NULL,
+        .al = NULL,
+        .bl = NULL,
+        .lmin = lmin
+    };
+
+    if(EE != NULL)
+        *EE = kernel_logdet(ldim, &casimir_kernel_M0_EE, &args, is_symmetric);
+
+    if(MM != NULL)
+        *MM = kernel_logdet(ldim, &casimir_kernel_M0_MM, &args, is_symmetric);
+
+    if(EE_plasma != NULL)
+    {
+        *EE_plasma = 0;
+
+        args.integration_plasma = casimir_integrate_plasma_init(omegap, self->tolerance);
+        *EE_plasma = kernel_logdet(ldim, &casimir_kernel_M0_EE_plasma, &args, is_symmetric);
+        casimir_integrate_plasma_free(args.integration_plasma);
+    }
 }
 
 /** @brief Kernel for EE block
@@ -1277,41 +1112,6 @@ double casimir_kernel_M0_MM(int i, int j, void *args_)
 
     return exp( (l1+l2+1)*y + lfac(l1+l2) - 0.5*(lfac(l1+m)+lfac(l1-m) + lfac(l2+m)+lfac(l2-m)) )*sqrt((l1*l2)/((l1+1.)*(l2+1.)));
 }
-
-void casimir_logdetD0_hodlr(casimir_t *self, int m, double omegap, double *EE, double *EE_plasma, double *MM)
-{
-    size_t lmin, lmax;
-    const int is_symmetric = 1, ldim = self->ldim;
-
-    casimir_estimate_lminmax(self, m, &lmin, &lmax);
-
-    casimir_M_t args = {
-        .casimir = self,
-        .m = m,
-        .nT = 0,
-        .integration = NULL,
-        .integration_plasma = NULL,
-        .al = NULL,
-        .bl = NULL,
-        .lmin = lmin
-    };
-
-    if(EE != NULL)
-        *EE = casimir_hodlr_logdet(ldim, &casimir_kernel_M0_EE, &args, is_symmetric);
-
-    if(MM != NULL)
-        *MM = casimir_hodlr_logdet(ldim, &casimir_kernel_M0_MM, &args, is_symmetric);
-
-    if(EE_plasma != NULL)
-    {
-        *EE_plasma = 0;
-
-        args.integration_plasma = casimir_integrate_plasma_init(omegap, self->tolerance);
-        *EE_plasma = casimir_hodlr_logdet(ldim, &casimir_kernel_M0_EE_plasma, &args, is_symmetric);
-        casimir_integrate_plasma_free(args.integration_plasma);
-    }
-}
-
 
 double casimir_logdetD0_plasma(casimir_t *casimir)
 {
