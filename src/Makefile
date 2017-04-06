@@ -1,4 +1,4 @@
-.PHONY: clean doc casimir_logdetD casimir_hiT casimir casimir_tests dependencies dependencies_test
+.PHONY: clean doc casimir_logdetD casimir casimir_tests dependencies dependencies_test
 all: casimir_logdetD
 
 HODLRDIR            = ../../hodlr_wrapper
@@ -106,9 +106,6 @@ casimir_logdetD: casimir_logdetD.o $(OBJS) dependencies
 
 integrate_K: integrate_K.o $(OBJS) dependencies
 	$(CC) $(CFLAGS) $(OPT) integrate_K.o $(OBJS) $(LDFLAGS) -o integrate_K
-
-casimir_hiT: casimir_hiT.o $(OBJS) dependencies
-	$(CC) $(CFLAGS) $(OPT) casimir_hiT.o $(OBJS) $(LDFLAGS) -o casimir_hiT
 
 casimir_tests: $(TESTS) $(OBJS) dependencies_test
 	$(CC) $(CFLAGS) $(OPT) $(TESTS) $(OBJS) $(LDFLAGS) -o casimir_tests
