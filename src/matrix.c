@@ -1,7 +1,7 @@
 /**
  * @file   matrix.c
  * @author Michael Hartmann <michael.hartmann@physik.uni-augsburg.de>
- * @date   February, 2017
+ * @date   April, 2017
  * @brief  matrix functions
  */
 
@@ -11,11 +11,64 @@
 #include <string.h>
 #include <strings.h>
 
+#include <hodlr.h>
+
 #include "matrix.h"
 #include "sfunc.h"
 #include "utils.h"
 
 #include "clapack.h"
+
+
+/** @brief Compute log det(Id-M) using HODLR approach
+ *
+ * This function computes the log det(Id-M) using the HODLR approach. The
+ * matrix M is given as a callback function. This callback accepts two
+ * integers, the row and column of the matrix entry (starting from 0), and a
+ * pointer to args.
+ *
+ * nLeaf is the size (number of rows of the matrix) of the smallest block at
+ * the leaf level. The number of levels in the tree is given by log_2(N/nLeaf).
+ *
+ * If the matrix elements of M are small, i.e. it trace is < 1e-8, the trace
+ * will used as approximation to prevent loss of significance. If the modulus
+ * of the trace is larger than the modulus of the value computed using HODLR,
+ * also the trace approximation is returned.
+ *
+ * @param [in] dim       dimension of matrix
+ * @param [in] M         callback that returns matrix elements of M
+ * @param [in] args      pointer given to callback M
+ * @param [in] symmetric matrix symmetric / not symmetric
+ * @retval logdet log det(Id-M)
+ */
+double kernel_logdet(int dim, double (*M)(int,int,void *), void *args, int is_symmetric)
+{
+    const unsigned int nLeaf = 100; /* XXX */
+    const double tolerance = 1e-15;
+    double diagonal[dim];
+
+    /* calculate diagonal elements */
+    for(int n = 0; n < dim; n++)
+        diagonal[n] = M(n,n,args);
+
+    const double trace = kahan_sum(diagonal, dim);
+
+    /* XXX should be ok, but we need a justification here XXX */
+    /* use trace approximation to avoid cancellation */
+    if(fabs(trace) < 1e-8)
+        return -trace;
+    else
+    {
+        /* calculate log(det(D)) using HODLR approach */
+        const double logdet = hodlr_logdet_diagonal(dim, M, args, diagonal, nLeaf, tolerance, is_symmetric);
+
+        /* if |trace| > log(det(D)), then the trace result is more accurate */
+        if(fabs(trace) > fabs(logdet))
+            return -trace;
+
+        return logdet;
+    }
+}
 
 /**
  * @brief Create new matrix object
@@ -381,7 +434,7 @@ double matrix_logdet_triangular(matrix_t *A)
  * @param [in]     z factor z in log(det(Id+z*M))
  * @retval logdet  \f$\log\det(\mathrm{Id}+z*M)\f$
  */
-double matrix_logdet(matrix_t *A, double z)
+double matrix_logdet_dense(matrix_t *A, double z)
 {
     /* ||zA|| = |z| ||A|| */
     const double norm = fabs(z)*matrix_norm_frobenius(A);
