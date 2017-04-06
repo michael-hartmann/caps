@@ -31,8 +31,8 @@
  * compiler.
  *
  * @param [out] str buffer for string
- * @param [in]  len length of string
- * @retval success bytes written if successful
+ * @param [in]  size length of str
+ * @retval retval bytes written if successful
  */
 int casimir_compile_info(char *str, size_t size)
 {
@@ -64,11 +64,11 @@ void casimir_info(casimir_t *self, FILE *stream, const char *prefix)
         default:           detalg_str = "unknown";
     }
 
-    fprintf(stream, "%sL/R       = %.8g\n", prefix, self->LbyR);
-    fprintf(stream, "%sldim      = %d\n", prefix, self->ldim);
-    fprintf(stream, "%stolerance = %g\n", prefix, self->tolerance);
-    fprintf(stream, "%sdetalg    = %s\n", prefix, detalg_str);
-    fprintf(stream, "%sverbose   = %s\n", prefix, self->verbose ? "true" : "false");
+    fprintf(stream, "%sL/R       = %.16g\n", prefix, self->LbyR);
+    fprintf(stream, "%sldim      = %d\n",    prefix, self->ldim);
+    fprintf(stream, "%stolerance = %g\n",    prefix, self->tolerance);
+    fprintf(stream, "%sdetalg    = %s\n",    prefix, detalg_str);
+    fprintf(stream, "%sverbose   = %s\n",    prefix, self->verbose ? "true" : "false");
 }
 
 
