@@ -64,11 +64,11 @@ void casimir_info(casimir_t *self, FILE *stream, const char *prefix)
         default:           detalg_str = "unknown";
     }
 
-    fprintf(stream, "%sL/R       = %.16g\n", prefix, self->LbyR);
-    fprintf(stream, "%sldim      = %d\n",    prefix, self->ldim);
-    fprintf(stream, "%stolerance = %g\n",    prefix, self->tolerance);
-    fprintf(stream, "%sdetalg    = %s\n",    prefix, detalg_str);
-    fprintf(stream, "%sverbose   = %s\n",    prefix, self->verbose ? "true" : "false");
+    fprintf(stream, "%sL/R     = %.16g\n", prefix, self->LbyR);
+    fprintf(stream, "%sldim    = %d\n",    prefix, self->ldim);
+    fprintf(stream, "%sepsrel  = %g\n",    prefix, self->epsrel);
+    fprintf(stream, "%sdetalg  = %s\n",    prefix, detalg_str);
+    fprintf(stream, "%sverbose = %s\n",    prefix, self->verbose ? "true" : "false");
 }
 
 
@@ -284,8 +284,8 @@ casimir_t *casimir_init(double LbyR)
     self->lnab      = casimir_lnab;
     self->userdata  = NULL;
 
-    /* integration error */
-    self->tolerance = CASIMIR_TOLERANCE;
+    /* relative error for integration */
+    self->epsrel = CASIMIR_EPSREL;
 
     /* set verbose flag */
     self->verbose = false;
@@ -340,32 +340,32 @@ bool casimir_get_verbose(casimir_t *self)
 }
 
 /**
- * @brief Set tolerance for numerical integration
+ * @brief Set relative rror for numerical integration
  *
- * Set relative tolerance for numerical integration.
+ * Set relative error for numerical integration.
  *
  * @param [in] self Casimir object
- * @param [in] tolerance relative tolerance
+ * @param [in] epsrel relative error
  * @retval 0 if an error occured
  * @retval 1 on success
  */
-int casimir_set_tolerance(casimir_t *self, double tolerance)
+int casimir_set_epsrel(casimir_t *self, double epsrel)
 {
-    if(tolerance <= 0)
+    if(epsrel <= 0)
         return 0;
 
-    self->tolerance = tolerance;
+    self->epsrel = epsrel;
     return 1;
 }
 
 /**
- * @brief Get relative tolerance for numerical integration
+ * @brief Get relative error for numerical integration
  *
- * @retval tolerance numerical tolerance
+ * @retval epsrel relative error
  */
-double casimir_get_tolerance(casimir_t *self)
+double casimir_get_epsrel(casimir_t *self)
 {
-    return self->tolerance;
+    return self->epsrel;
 }
 
 /**
@@ -751,7 +751,7 @@ casimir_M_t *casimir_M_init(casimir_t *casimir, int m, double nT)
     self->casimir = casimir;
     self->m = m;
     self->lmin = lmin;
-    self->integration = casimir_integrate_init(casimir, nT, m, casimir->tolerance);
+    self->integration = casimir_integrate_init(casimir, nT, m, casimir->epsrel);
     self->integration_plasma = NULL;
     self->nT = nT;
     self->al = xmalloc(ldim*sizeof(double));
@@ -1021,7 +1021,7 @@ void casimir_logdetD0(casimir_t *self, int m, double omegap, double *EE, double 
     {
         *EE_plasma = 0;
 
-        args.integration_plasma = casimir_integrate_plasma_init(omegap, self->tolerance);
+        args.integration_plasma = casimir_integrate_plasma_init(omegap, self->epsrel);
         *EE_plasma = kernel_logdet(ldim, &casimir_kernel_M0_MM_plasma, &args, is_symmetric, detalg);
         casimir_integrate_plasma_free(args.integration_plasma);
     }
