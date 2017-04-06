@@ -46,7 +46,6 @@ typedef enum { DETALG_HODLR, DETALG_LU } detalg_t;
 /* default values */
 #define CASIMIR_MINIMUM_LDIM 20 /**< minimum value for lmax */
 #define CASIMIR_FACTOR_LDIM 5   /**< by default: lmax=ceil(5/LbyR) */
-#define CASIMIR_THRESHOLD 1e-16 /**< default value of threshold */
 #define CASIMIR_TOLERANCE 1e-8  /**< default tolerance for integration */
 
 /**
@@ -81,7 +80,6 @@ typedef struct casimir
      */
      /*@{*/
     int ldim;           /**< truncation value for vector space \f$\ell_\mathrm{max}\f$ */
-    double threshold;   /**< threshold for matrix elements */
     double tolerance;   /**< tolerance for integration */
     detalg_t detalg;    /**< algorithm to calculate determinant */
 
@@ -143,9 +141,6 @@ int casimir_set_ldim(casimir_t *self, int ldim);
 
 detalg_t casimir_get_detalg(casimir_t *self);
 void casimir_set_detalg(casimir_t *self, detalg_t detalg);
-
-double casimir_get_threshold(casimir_t *self);
-int    casimir_set_threshold(casimir_t *self, double threshold);
 
 double casimir_get_tolerance(casimir_t *self);
 int    casimir_set_tolerance(casimir_t *self, double tolerance);

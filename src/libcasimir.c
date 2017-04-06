@@ -67,7 +67,6 @@ void casimir_info(casimir_t *self, FILE *stream, const char *prefix)
     fprintf(stream, "%sL/R       = %.8g\n", prefix, self->LbyR);
     fprintf(stream, "%sldim      = %d\n", prefix, self->ldim);
     fprintf(stream, "%stolerance = %g\n", prefix, self->tolerance);
-    fprintf(stream, "%sthreshold = %g\n", prefix, self->threshold);
     fprintf(stream, "%sdetalg    = %s\n", prefix, detalg_str);
     fprintf(stream, "%sverbose   = %s\n", prefix, self->verbose ? "true" : "false");
 }
@@ -285,9 +284,6 @@ casimir_t *casimir_init(double LbyR)
     self->lnab      = casimir_lnab;
     self->userdata  = NULL;
 
-    /* set threshold */
-    self->threshold = CASIMIR_THRESHOLD;
-
     /* integration error */
     self->tolerance = CASIMIR_TOLERANCE;
 
@@ -473,37 +469,6 @@ int casimir_set_ldim(casimir_t *self, int ldim)
 int casimir_get_ldim(casimir_t *self)
 {
     return self->ldim;
-}
-
-
-/**
- * @brief Get threshold
- *
- * See \ref casimir_set_threshold.
- *
- * @param [in,out] self Casimir object
- * @retval threshold
- */
-double casimir_get_threshold(casimir_t *self)
-{
-    return self->threshold;
-}
-
-/**
- * @brief Set thresold
- *
- * @param [in,out] self Casimir object
- * @param [in] threshold
- * @retval 0 if threshold <= 0
- * @retval 1 if successful
- */
-int casimir_set_threshold(casimir_t *self, double threshold)
-{
-    if(threshold < 0)
-        return 0;
-
-    self->threshold = threshold;
-    return 1;
 }
 
 /*@}*/
