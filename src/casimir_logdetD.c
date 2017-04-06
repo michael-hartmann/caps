@@ -215,7 +215,7 @@ int main(int argc, char *argv[])
     else /* nT == 0 */
     {
         double logdet_EE, logdet_MM;
-        casimir_logdetD0(casimir, m, 0, &logdet_EE, NULL, &logdet_MM);
+        casimir_logdetD0(casimir, m, 0, &logdet_EE, &logdet_MM, NULL);
 
         printf("# L/R, ξ*(L+R)/c, m, logdet(Id-EE), logdet(Id-MM), lmax, time\n");
         printf("%g, 0, %d, %.16g, %.16g, %d, %g\n", LbyR, m, logdet_EE, logdet_MM, casimir_get_ldim(casimir), now()-start_time);
