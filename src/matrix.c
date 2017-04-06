@@ -20,28 +20,26 @@
 #include "clapack.h"
 
 
-/** @brief Compute log det(Id-M) using HODLR approach
+/** @brief Compute log det(Id-M)
  *
- * This function computes the log det(Id-M) using the HODLR approach. The
- * matrix M is given as a callback function. This callback accepts two
- * integers, the row and column of the matrix entry (starting from 0), and a
- * pointer to args.
+ * This function computes the log det(Id-M) using either the HODLR approach or
+ * LU decomposition. The matrix M is given as a callback function. This
+ * callback accepts two integers, the row and the column of the matrix entry
+ * (starting from 0), and a pointer to args.
  *
- * nLeaf is the size (number of rows of the matrix) of the smallest block at
- * the leaf level. The number of levels in the tree is given by log_2(N/nLeaf).
- *
- * If the matrix elements of M are small, i.e. it trace is < 1e-8, the trace
- * will used as approximation to prevent loss of significance. If the modulus
- * of the trace is larger than the modulus of the value computed using HODLR,
- * also the trace approximation is returned.
+ * If the matrix elements of M are small, i.e. if the modulus of the trace is
+ * smaller than 1e-8, the trace will be used as an approximation to prevent a
+ * loss of significance. If the modulus of the trace is larger than the modulus
+ * of the value computed using HODLR, the trace approximation is returned.
  *
  * @param [in] dim       dimension of matrix
- * @param [in] M         callback that returns matrix elements of M
- * @param [in] args      pointer given to callback M
+ * @param [in] kernel    callback function that returns matrix elements of M
+ * @param [in] args      pointer given to callback function kernel
  * @param [in] symmetric matrix symmetric / not symmetric
+ * @param [in] detalg    algorithm to use (LU or HODLR)
  * @retval logdet log det(Id-M)
  */
-double kernel_logdet(int dim, double (*kernel)(int,int,void *), void *args, int is_symmetric, detalg_t detalg)
+double kernel_logdet(int dim, double (*kernel)(int,int,void *), void *args, int symmetric, detalg_t detalg)
 {
     double logdet = NAN;
     double diagonal[dim];
@@ -87,11 +85,15 @@ double kernel_logdet(int dim, double (*kernel)(int,int,void *), void *args, int 
     else
     {
         /* HODLR */
+        /* nLeaf is the size (number of rows of the matrix) of the smallest
+         * block at the leaf level. The number of levels in the tree is given
+         * by log_2(N/nLeaf).
+         */
         const unsigned int nLeaf = 100; /* XXX */
         const double tolerance = 1e-15;
 
         /* calculate log(det(D)) using HODLR approach */
-        logdet = hodlr_logdet_diagonal(dim, kernel, args, diagonal, nLeaf, tolerance, is_symmetric);
+        logdet = hodlr_logdet_diagonal(dim, kernel, args, diagonal, nLeaf, tolerance, symmetric);
 
         /* if |trace| > log(det(D)), then the trace result is more accurate */
         if(fabs(trace) > fabs(logdet))

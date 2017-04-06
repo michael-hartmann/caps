@@ -43,7 +43,7 @@ double matrix_trace2(matrix_t *A);
 
 double matrix_norm_frobenius(matrix_t *A);
 
-double kernel_logdet(int dim, double (*M)(int,int,void *), void *args, int is_symmetric, detalg_t detalg);
+double kernel_logdet(int dim, double (*M)(int,int,void *), void *args, int symmetric, detalg_t detalg);
 
 double matrix_logdet_triangular(matrix_t *A);
 double matrix_logdet_dense(matrix_t *A, double z);
