@@ -243,6 +243,7 @@ void master(int argc, char *argv[], const int cores)
     int ldim = 0;
     double L = 0, R = 0, T = 0, omegap = INFINITY, gamma_ = 0;
     double cutoff = CUTOFF, epsrel = EPSREL, eta = ETA;
+    material_t *material = NULL;
     casimir_mpi_t casimir_mpi;
 
     #define EXIT() do { _mpi_stop(cores); return; } while(0)
@@ -363,7 +364,6 @@ void master(int argc, char *argv[], const int cores)
     }
     if(strlen(filename))
     {
-        material_t *material;
         if(access(filename, R_OK) != 0)
         {
             fprintf(stderr, "file %s does not exist or is not readable.\n\n", filename);
@@ -377,7 +377,6 @@ void master(int argc, char *argv[], const int cores)
             usage(stderr);
             EXIT();
         }
-        material_free(material);
     }
     if(!isinf(omegap))
     {
@@ -461,16 +460,55 @@ void master(int argc, char *argv[], const int cores)
         /* finite temperature */
         double v[1024] = { 0 };
 
-        printf("#\n");
-
-        /* XXX at the moment assume Drude behavior for xi = 0 XXX */
+        /* xi = 0 */
         {
             const double t0 = now();
+
             casimir_t *casimir = casimir_init(LbyR);
-            v[0] = casimir_logdetD0_drude(casimir);
+            casimir_set_ldim(casimir, ldim);
+
+            if(material == NULL && isinf(omegap) && gamma_ == 0)
+            {
+                printf("# modell = perfect conductors\n");
+                v[0] = casimir_logdetD0_pc(casimir, cutoff);
+            }
+            else if(material == NULL && gamma_ == 0)
+            {
+                printf("# modell = plasma\n");
+                v[0] = casimir_logdetD0_plasma(casimir, omegap, cutoff);
+            }
+            else if(material == NULL)
+            {
+                printf("# modell = drude\n");
+                v[0] = casimir_logdetD0_drude(casimir);
+            }
+            else
+            {
+                double omegap_low, gamma_low;
+                material_get_extrapolation(material, &omegap_low, &gamma_low, NULL, NULL);
+
+                double omegap_scaled = omegap_low*(L+R)/(CASIMIR_hbar_eV*CASIMIR_c);
+
+                if(gamma_low == 0)
+                {
+                    printf("# modell = optical data (xi=0: Plasma)\n");
+                    v[0] = casimir_logdetD0_plasma(casimir, omegap_scaled, cutoff);
+                }
+                else
+                {
+                    printf("# modell = optical data (xi=0: Drude)\n");
+                    printf("# plasma = %.15g (logdetD(xi=0) for plasma model with omegap=%geV)\n", casimir_logdetD0_plasma(casimir, omegap_scaled, cutoff), omegap_low);
+
+                    v[0] = casimir_logdetD0_drude(casimir);
+                }
+            }
+
             casimir_free(casimir);
+
+            printf("#\n");
             printf("# xi=0, logdetD=%.15g, t=%g\n", v[0], now()-t0);
         }
+
 
         for(size_t n = 1; n < sizeof(v)/sizeof(double); n++)
         {
@@ -491,6 +529,9 @@ void master(int argc, char *argv[], const int cores)
     printf("#\n");
     printf("# L/R, L, R, T, ldim, F*(L+R)/(ħc)\n");
     printf("%.16g, %.16g, %.16g, %.16g, %d, %.16g\n", LbyR, L, R, T, ldim, F);
+
+    if(material != NULL)
+        material_free(material);
 
     casimir_mpi_free(&casimir_mpi);
 }
