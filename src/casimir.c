@@ -469,17 +469,17 @@ void master(int argc, char *argv[], const int cores)
 
             if(material == NULL && isinf(omegap) && gamma_ == 0)
             {
-                printf("# modell = perfect conductors\n");
+                printf("# model  = perfect conductors\n");
                 v[0] = casimir_logdetD0_pc(casimir, cutoff);
             }
             else if(material == NULL && gamma_ == 0)
             {
-                printf("# modell = plasma\n");
+                printf("# model  = plasma\n");
                 v[0] = casimir_logdetD0_plasma(casimir, omegap, cutoff);
             }
             else if(material == NULL)
             {
-                printf("# modell = drude\n");
+                printf("# model  = drude\n");
                 v[0] = casimir_logdetD0_drude(casimir);
             }
             else
@@ -491,12 +491,12 @@ void master(int argc, char *argv[], const int cores)
 
                 if(gamma_low == 0)
                 {
-                    printf("# modell = optical data (xi=0: Plasma)\n");
+                    printf("# model  = optical data (xi=0: Plasma)\n");
                     v[0] = casimir_logdetD0_plasma(casimir, omegap_scaled, cutoff);
                 }
                 else
                 {
-                    printf("# modell = optical data (xi=0: Drude)\n");
+                    printf("# model  = optical data (xi=0: Drude)\n");
                     printf("# plasma = %.15g (logdetD(xi=0) for plasma model with omegap=%geV)\n", casimir_logdetD0_plasma(casimir, omegap_scaled, cutoff), omegap_low);
 
                     v[0] = casimir_logdetD0_drude(casimir);
