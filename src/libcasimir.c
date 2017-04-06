@@ -933,10 +933,10 @@ double casimir_logdetD0_drude(casimir_t *casimir)
  *
  * For Drude metals the Fresnel coefficients are r_TM=1, r_TE=-1. In the limit
  * xi->0 only the polarization blocks EE and MM need to be considered.
- * 
+ *
  * The contribution for EE, i.e. Drude, can be computed analytically, see \ref
  * casimir_logdetD0_drude. For the MM block we numerically compute the
- * determinants of the m > 0 contributions until 
+ * determinants of the m > 0 contributions until
  *      logdetD^m/logdetD^(m=0) < eps.
  * We use Ref. [1] to compute the contribution for m = 0.
  *
@@ -964,7 +964,7 @@ double casimir_logdetD0_pc(casimir_t *casimir, double eps)
         if(fabs(v/MM) < eps)
             break;
     }
-    
+
     for(int m = 1; true; m++)
     {
         double v;
@@ -1092,7 +1092,7 @@ double casimir_logdetD0_plasma(casimir_t *casimir, double omegap, double eps)
 
         if(m == 0)
             MM_plasma += v/2;
-        else 
+        else
             MM_plasma += v;
 
         if(fabs(v/MM_plasma) < eps)
