@@ -529,6 +529,8 @@ double matrix_logdet_lu(matrix_t *A)
 {
     int info = 0;
     int dim = (int)A->dim;
+    if(dim <= 0)
+        return NAN;
     int lda = (int)A->lda;
     int ipiv[dim];
     double *a = A->M;
