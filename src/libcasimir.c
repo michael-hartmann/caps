@@ -1085,12 +1085,15 @@ double casimir_logdetD0_plasma(casimir_t *casimir, double omegap, double eps)
     const double EE = casimir_logdetD0_drude(casimir);
     double MM_plasma = 0;
 
-    for(int m = 1; true; m++)
+    for(int m = 0; true; m++)
     {
         double v;
         casimir_logdetD0(casimir, m, omegap, NULL, &v, NULL);
 
-        MM_plasma += v;
+        if(m == 0)
+            MM_plasma += v/2;
+        else 
+            MM_plasma += v;
 
         if(fabs(v/MM_plasma) < eps)
             return 0.5*(EE+MM_plasma);
