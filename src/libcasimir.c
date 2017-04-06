@@ -68,7 +68,6 @@ void casimir_info(casimir_t *self, FILE *stream, const char *prefix)
     fprintf(stream, "%sldim    = %d\n",    prefix, self->ldim);
     fprintf(stream, "%sepsrel  = %g\n",    prefix, self->epsrel);
     fprintf(stream, "%sdetalg  = %s\n",    prefix, detalg_str);
-    fprintf(stream, "%sverbose = %s\n",    prefix, self->verbose ? "true" : "false");
 }
 
 
@@ -94,21 +93,21 @@ int casimir_vfprintf(casimir_t *self, FILE *stream, const char *format, va_list 
 }
 
 /**
- * @brief Print to stdout if flag verbose is set
+ * @brief Print to stdout
+ *
+ * This function is a wrapper to fprintf, but it uses locks to make the call to
+ * fprintf thread-safe.
  *
  * @param [in] self Casimir object
  * @param [in] format format string
  * @param [in] ... variables for for format string
  * @retval chars number of characters printed (see \ref casimir_vprintf)
  */
-int casimir_verbose(casimir_t *self, const char *format, ...)
+int casimir_fprintf(casimir_t *self, FILE *stream, const char *format, ...)
 {
-    if(!self->verbose)
-        return 0;
-
     va_list args;
     va_start(args, format);
-    int ret = casimir_vfprintf(self, stdout, format, args);
+    int ret = casimir_vfprintf(self, stream, format, args);
     va_end(args);
 
     return ret;
@@ -283,9 +282,6 @@ casimir_t *casimir_init(double LbyR)
     /* relative error for integration */
     self->epsrel = CASIMIR_EPSREL;
 
-    /* set verbose flag */
-    self->verbose = false;
-
     /* initialize mutex for printf */
     pthread_mutex_init(&self->mutex, NULL);
 
@@ -310,29 +306,6 @@ void casimir_free(casimir_t *self)
         pthread_mutex_destroy(&self->mutex);
         xfree(self);
     }
-}
-
-/**
- * @brief Enable/disable verbose information
- *
- * Enable/disable verbose information if flag verbose is true/false.
- *
- * @param [in] self Casimir object
- * @param [in] verbose flag, true to enable, false to disable
- */
-void casimir_set_verbose(casimir_t *self, bool verbose)
-{
-    self->verbose = verbose;
-}
-
-/**
- * @brief Get verbose flag
- *
- * @retval verbose true/false
- */
-bool casimir_get_verbose(casimir_t *self)
-{
-    return self->verbose;
 }
 
 /**
