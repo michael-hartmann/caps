@@ -83,7 +83,6 @@ typedef struct casimir
     int ldim;           /**< truncation value for vector space \f$\ell_\mathrm{max}\f$ */
     double threshold;   /**< threshold for matrix elements */
     double tolerance;   /**< tolerance for integration */
-    unsigned int nLeaf; /**< variable nLeaf for hodlr */
     detalg_t detalg;    /**< algorithm to calculate determinant */
 
     bool verbose; /**< verbose flag */
