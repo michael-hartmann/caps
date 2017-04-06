@@ -292,9 +292,6 @@ casimir_t *casimir_init(double LbyR)
     /* integration error */
     self->tolerance = CASIMIR_TOLERANCE;
 
-    /* set nLeaf */
-    self->nLeaf = 100; /* XXX */
-
     /* set verbose flag */
     self->verbose = false;
 
@@ -1049,7 +1046,7 @@ double casimir_logdetD(casimir_t *self, double nT, int m)
 
 double casimir_logdetD_hodlr(casimir_t *self, double nT, int m)
 {
-    const unsigned int nLeaf = self->nLeaf;
+    const unsigned int nLeaf = 100; /* XXX */
     const int is_symmetric = 1;
     const double tolerance = 1e-16;
     const int dim = 2*self->ldim;
@@ -1430,7 +1427,7 @@ void casimir_M0(casimir_t *self, int m, matrix_t **EE, matrix_t **MM)
 void casimir_logdetD0_hodlr(casimir_t *self, int m, double *logdet_EE, double *logdet_MM)
 {
     size_t lmin, lmax;
-    unsigned int nLeaf = self->nLeaf;
+    unsigned int nLeaf = 100; /* XXX */
     const int is_symmetric = 1;
     const double tolerance = 1e-15;
 
