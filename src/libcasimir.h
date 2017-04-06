@@ -162,8 +162,6 @@ void casimir_M_free(casimir_M_t *self);
 matrix_t *casimir_M(casimir_t *self, double nT, int m);
 
 double casimir_logdetD(casimir_t *self, double nT, int m);
-double casimir_logdetD_dense(casimir_t *self, double nT, int m);
-double casimir_logdetD_hodlr(casimir_t *self, double nT, int m);
 
 void casimir_rp(casimir_t *self, double nT, double k, double *r_TE, double *r_TM);
 
@@ -182,7 +180,5 @@ double casimir_kernel_M0_MM(int i, int j, void *args);
 double casimir_kernel_M0_EE_plasma(int i, int j, void *args_);
 
 void casimir_logdetD0(casimir_t *self, int m, double omegap, double *EE, double *EE_plasma, double *MM);
-void casimir_logdetD0_hodlr(casimir_t *self, int m, double omegap, double *EE, double *EE_plasma, double *MM);
 
-double casimir_hodlr_logdet(int dim, double (*M)(int,int,void *), void *args, int is_symmetric);
 #endif
