@@ -55,7 +55,6 @@ double dqags(dq_function_type f,double a,double b,double epsabs,
     if (*ier == 6) return result;
 
 /* First approximation to the integral. */
-    ierro = 0;
     result = G_K21(f,a,b,abserr,&defabs,&resabs, user_data);
 
 /* Test on accuracy. */

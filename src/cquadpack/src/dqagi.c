@@ -72,7 +72,6 @@ double dqagi(dq_function_type f,double bound,int inf,double epsabs,
     result = G_K15I(f,boun,inf,0.0,1.0,abserr,&defabs,&resabs, user_data);
 
 /* Test on accuracy. */
-    last = 0;
     rlist[0] = result;
     elist[0] = *abserr;
     iord[0] = 0;
