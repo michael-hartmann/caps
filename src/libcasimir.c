@@ -988,8 +988,6 @@ void casimir_logdetD0(casimir_t *self, int m, double omegap, double *EE, double 
 
     if(MM_plasma != NULL)
     {
-        *MM_plasma = 0;
-
         args.integration_plasma = casimir_integrate_plasma_init(omegap, self->epsrel);
         *MM_plasma = kernel_logdet(ldim, &casimir_kernel_M0_MM_plasma, &args, is_symmetric, detalg);
         casimir_integrate_plasma_free(args.integration_plasma);
