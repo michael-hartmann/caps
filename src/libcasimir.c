@@ -229,10 +229,6 @@ void casimir_rp(casimir_t *self, double nT, double k, double *r_TE, double *r_TM
      * when calculating 1-β. For this reason we use sqrtpm1 which calculates
      * β-1.
      *
-     * For this reason we use the Taylor series
-     *     sqrt(1+x) ≈ 1 + x/2 - x²/8 + x³/16 - 5*x^4/128 + ...
-     * to avoid a loss of significance if x is small.
-     *
      * Note: ξ=nT
      */
     const double x = pow_2(nT)/(pow_2(nT)+pow_2(k))*epsilonm1;
@@ -273,7 +269,7 @@ casimir_t *casimir_init(double LbyR)
 
     /* geometry */
     self->LbyR = LbyR;
-    self->y = -M_LOG2-log1p(LbyR);
+    self->y = -M_LOG2-log1p(LbyR); /* log( (R/(L+R))/2 ) */
 
     /* dimension of vector space */
     self->ldim = ceil(MAX(CASIMIR_MINIMUM_LDIM, CASIMIR_FACTOR_LDIM/LbyR));
