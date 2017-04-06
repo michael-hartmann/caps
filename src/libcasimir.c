@@ -874,7 +874,7 @@ double casimir_logdetD(casimir_t *self, double nT, int m)
     const int dim = 2*self->ldim;
 
     casimir_M_t *args = casimir_M_init(self, m, nT);
-    double logdet = kernel_logdet(dim, &casimir_kernel_M, args, is_symmetric);
+    double logdet = kernel_logdet(dim, &casimir_kernel_M, args, is_symmetric, self->detalg);
     casimir_M_free(args);
 
     return logdet;
@@ -996,6 +996,7 @@ void casimir_logdetD0(casimir_t *self, int m, double omegap, double *EE, double 
 {
     size_t lmin, lmax;
     const int is_symmetric = 1, ldim = self->ldim;
+    detalg_t detalg = self->detalg;
 
     casimir_estimate_lminmax(self, m, &lmin, &lmax);
 
@@ -1011,17 +1012,17 @@ void casimir_logdetD0(casimir_t *self, int m, double omegap, double *EE, double 
     };
 
     if(EE != NULL)
-        *EE = kernel_logdet(ldim, &casimir_kernel_M0_EE, &args, is_symmetric);
+        *EE = kernel_logdet(ldim, &casimir_kernel_M0_EE, &args, is_symmetric, detalg);
 
     if(MM != NULL)
-        *MM = kernel_logdet(ldim, &casimir_kernel_M0_MM, &args, is_symmetric);
+        *MM = kernel_logdet(ldim, &casimir_kernel_M0_MM, &args, is_symmetric, detalg);
 
     if(EE_plasma != NULL)
     {
         *EE_plasma = 0;
 
         args.integration_plasma = casimir_integrate_plasma_init(omegap, self->tolerance);
-        *EE_plasma = kernel_logdet(ldim, &casimir_kernel_M0_EE_plasma, &args, is_symmetric);
+        *EE_plasma = kernel_logdet(ldim, &casimir_kernel_M0_EE_plasma, &args, is_symmetric, detalg);
         casimir_integrate_plasma_free(args.integration_plasma);
     }
 }
