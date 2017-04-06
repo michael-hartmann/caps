@@ -1225,7 +1225,6 @@ void casimir_logdetD0(casimir_t *self, int m, double *logdet_EE, double *logdet_
     casimir_logdetD0_hodlr(self, m, logdet_EE, logdet_MM);
 }
 
-
 /** @brief Kernel for EE block
  *
  * Function that returns matrix elements of round-trip matrix M for xi=0 and
@@ -1238,13 +1237,11 @@ void casimir_logdetD0(casimir_t *self, int m, double *logdet_EE, double *logdet_
 double casimir_kernel_M0_EE(int i, int j, void *args_)
 {
     casimir_M_t *args = (casimir_M_t *)args_;
+    const double y = args->casimir->y;
     const int lmin = args->lmin;
     const int l1 = i+lmin, l2 = j+lmin, m = args->m;
-    casimir_t *casimir = args->casimir;
 
-    double EE;
-    casimir_M0_elem(casimir, l1, l2, m, &EE, NULL);
-    return EE;
+    return exp( (l1+l2+1)*y + lfac(l1+l2) - 0.5*(lfac(l1+m)+lfac(l1-m) + lfac(l2+m)+lfac(l2-m)) );
 }
 
 /** @brief Kernel for MM block
@@ -1259,46 +1256,11 @@ double casimir_kernel_M0_EE(int i, int j, void *args_)
 double casimir_kernel_M0_MM(int i, int j, void *args_)
 {
     casimir_M_t *args = (casimir_M_t *)args_;
+    const double y = args->casimir->y;
     const int lmin = args->lmin;
     const int l1 = i+lmin, l2 = j+lmin, m = args->m;
-    casimir_t *casimir = args->casimir;
 
-    double MM;
-    casimir_M0_elem(casimir, l1, l2, m, NULL, &MM);
-    return MM;
-}
-
-/**
- * @brief Calculate matrix elements for xi=0
- *
- * This function calculates the matrix elements for <l1,m,E|M|l2,m,E> and
- * <l1,m,M|M|l2,m,M> in the high-temperature limit, i.e. xi=0.
- *
- * If EE or MM is NULL, it is not written. Otherwise the result is written to
- * the memory pointed by EE and MM.
- *
- * @param [in]  self Casimir object
- * @param [in]  l1
- * @param [in]  l2
- * @param [in]  m
- * @param [out] EE
- * @param [out] MM
- */
-void casimir_M0_elem(casimir_t *self, int l1, int l2, int m, double *EE, double *MM)
-{
-    /* y = log(R/(R+L)/2) */
-    double y = self->y;
-
-    /* See thesis of Antoine, section 6.7:
-     * x = R/(R+L)
-     * M_EE_{l1,l2} = (x/2)^(l1+l2+1) * (l1+l2)! / sqrt( (l1+m)!*(l1-m)! * (l2+m)!*(l2-m)! )
-     * M_MM_{l1,l2} = M_EE_{l1,l2} * sqrt( l1/(l1+1) * l2/(l2+1) )
-     */
-    double _EE = exp( (l1+l2+1)*y + lfac(l1+l2) - 0.5*(lfac(l1+m)+lfac(l1-m) + lfac(l2+m)+lfac(l2-m)) );
-    if(EE != NULL)
-        *EE = _EE;
-    if(MM != NULL)
-        *MM = _EE*sqrt((l1*l2)/((l1+1.)*(l2+1.)));
+    return exp( (l1+l2+1)*y + lfac(l1+l2) - 0.5*(lfac(l1+m)+lfac(l1-m) + lfac(l2+m)+lfac(l2-m)) )*sqrt((l1*l2)/((l1+1.)*(l2+1.)));
 }
 
 void casimir_logdetD0_hodlr(casimir_t *self, int m, double *logdet_EE, double *logdet_MM)

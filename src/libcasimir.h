@@ -179,7 +179,6 @@ double casimir_logdetD0_plasma(casimir_t *casimir);
 double casimir_kernel_M0_EE(int i, int j, void *args);
 double casimir_kernel_M0_MM(int i, int j, void *args);
 
-void casimir_M0_elem(casimir_t *self, int l1, int l2, int m, double *EE, double *MM);
 
 void casimir_logdetD0(casimir_t *self, int m, double *EE, double *MM);
 void casimir_logdetD0_hodlr(casimir_t *self, int m, double *EE, double *MM);
