@@ -12,8 +12,6 @@ typedef signed char sign_t;
  */
 typedef enum { TE, TM } polarization_t;
 
-typedef enum { DETALG_HODLR, DETALG_LU } detalg_t;
-
 #include <pthread.h>
 #include <stdarg.h>
 #include <stdbool.h>
