@@ -167,6 +167,6 @@ double casimir_kernel_M0_EE(int i, int j, void *args);
 double casimir_kernel_M0_MM(int i, int j, void *args);
 double casimir_kernel_M0_MM_plasma(int i, int j, void *args_);
 
-void casimir_logdetD0(casimir_t *self, int m, double omegap, double *EE, double *EE_plasma, double *MM);
+void casimir_logdetD0(casimir_t *self, int m, double omegap, double *EE, double *MM, double *MM_plasma);
 
 #endif

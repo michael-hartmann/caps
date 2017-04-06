@@ -937,7 +937,7 @@ double casimir_logdetD0_pc(casimir_t *casimir, double eps)
     for(int m = 1; true; m++)
     {
         double v;
-        casimir_logdetD0(casimir, m, 0, NULL, NULL, &v);
+        casimir_logdetD0(casimir, m, 0, NULL, &v, NULL);
 
         MM += v;
 
@@ -961,7 +961,7 @@ double casimir_logdetD0_pc(casimir_t *casimir, double eps)
  * @param [out] EE pointer to store contribution for EE block
  * @param [out] MM pointer to store contribution for MM block
  */
-void casimir_logdetD0(casimir_t *self, int m, double omegap, double *EE, double *EE_plasma, double *MM)
+void casimir_logdetD0(casimir_t *self, int m, double omegap, double *EE, double *MM, double *MM_plasma)
 {
     size_t lmin, lmax;
     const int is_symmetric = 1, ldim = self->ldim;
@@ -986,12 +986,12 @@ void casimir_logdetD0(casimir_t *self, int m, double omegap, double *EE, double 
     if(MM != NULL)
         *MM = kernel_logdet(ldim, &casimir_kernel_M0_MM, &args, is_symmetric, detalg);
 
-    if(EE_plasma != NULL)
+    if(MM_plasma != NULL)
     {
-        *EE_plasma = 0;
+        *MM_plasma = 0;
 
         args.integration_plasma = casimir_integrate_plasma_init(omegap, self->epsrel);
-        *EE_plasma = kernel_logdet(ldim, &casimir_kernel_M0_MM_plasma, &args, is_symmetric, detalg);
+        *MM_plasma = kernel_logdet(ldim, &casimir_kernel_M0_MM_plasma, &args, is_symmetric, detalg);
         casimir_integrate_plasma_free(args.integration_plasma);
     }
 }
@@ -1057,7 +1057,7 @@ double casimir_logdetD0_plasma(casimir_t *casimir, double omegap, double eps)
     for(int m = 0; true; m++)
     {
         double v;
-        casimir_logdetD0(casimir, m, omegap, NULL, &v, NULL);
+        casimir_logdetD0(casimir, m, omegap, NULL, NULL, &v);
 
         if(m == 0)
             MM_plasma += v/2;
