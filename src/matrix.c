@@ -41,15 +41,14 @@
  * @param [in] symmetric matrix symmetric / not symmetric
  * @retval logdet log det(Id-M)
  */
-double kernel_logdet(int dim, double (*M)(int,int,void *), void *args, int is_symmetric)
+double kernel_logdet(int dim, double (*kernel)(int,int,void *), void *args, int is_symmetric, detalg_t detalg)
 {
-    const unsigned int nLeaf = 100; /* XXX */
-    const double tolerance = 1e-15;
+    double logdet = NAN;
     double diagonal[dim];
 
     /* calculate diagonal elements */
     for(int n = 0; n < dim; n++)
-        diagonal[n] = M(n,n,args);
+        diagonal[n] = kernel(n,n,args);
 
     const double trace = kahan_sum(diagonal, dim);
 
@@ -57,10 +56,42 @@ double kernel_logdet(int dim, double (*M)(int,int,void *), void *args, int is_sy
     /* use trace approximation to avoid cancellation */
     if(fabs(trace) < 1e-8)
         return -trace;
+
+    if(detalg == DETALG_LU)
+    {
+        /* allocate space for matrix M */
+        matrix_t *M = matrix_alloc(dim);
+
+        /* set matrix elements to 0 */
+        matrix_setall(M, 0);
+
+        /* copy diagonal */
+        for(size_t k = 0; k < (size_t)dim; k++)
+            matrix_set(M, k,k, diagonal[k]);
+
+        /* n-th minor diagonal */
+        for(size_t md = 1; md < (size_t)dim; md++)
+            for(size_t k = 0; k < (size_t)dim-md; k++)
+            {
+                matrix_set(M, k,md+k, kernel(k,md+k,args));
+                matrix_set(M, md+k,k, kernel(md+k,k,args));
+            }
+
+        /* compute logdet */
+        logdet = matrix_logdet_dense(M, -1);
+
+        matrix_free(M);
+
+        return logdet;
+    }
     else
     {
+        /* HODLR */
+        const unsigned int nLeaf = 100; /* XXX */
+        const double tolerance = 1e-15;
+
         /* calculate log(det(D)) using HODLR approach */
-        const double logdet = hodlr_logdet_diagonal(dim, M, args, diagonal, nLeaf, tolerance, is_symmetric);
+        logdet = hodlr_logdet_diagonal(dim, kernel, args, diagonal, nLeaf, tolerance, is_symmetric);
 
         /* if |trace| > log(det(D)), then the trace result is more accurate */
         if(fabs(trace) > fabs(logdet))
