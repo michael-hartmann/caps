@@ -17,8 +17,8 @@ attrs = [color.gradient.RedBlue]
 g = graph.graphxy(
     width = 12,
     key = graph.key.key(pos="br"),
-    x = graph.axis.lin(title="$L$ (nm)", min=280, max=750),
-    y = graph.axis.lin(title="$P$ (mPa)", max=0, min=-130)
+    x = graph.axis.lin(title="$L$ (nm)", min=270, max=750),
+    y = graph.axis.lin(title="$P$ (mPa)", max=0, min=-155)
 )
 
 g.plot([

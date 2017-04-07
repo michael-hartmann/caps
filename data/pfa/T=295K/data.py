@@ -45,7 +45,7 @@ def slurp(filenames):
                 data[i,3] = T
                 data[i,4] = ldim
                 data[i,5] = F
-                data[i,6] = F + (plasma-drude/2)/2*T_scaled/pi
+                data[i,6] = F + (plasma-drude)/2*T_scaled/pi
 
     return data
 
