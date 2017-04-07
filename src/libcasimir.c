@@ -942,7 +942,7 @@ double casimir_logdetD0_pc(casimir_t *casimir, double eps)
         MM += v;
 
         if(fabs(v/MM) < eps)
-            return drude+0.5*MM;
+            return drude+MM;
     }
 }
 
@@ -1063,7 +1063,7 @@ double casimir_logdetD0_plasma(casimir_t *casimir, double omegap, double eps)
             MM_plasma += v;
 
         if(fabs(v/MM_plasma) < eps)
-            return drude+0.5*MM_plasma;
+            return drude+MM_plasma;
     }
 }
 
