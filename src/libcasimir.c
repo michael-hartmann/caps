@@ -1016,15 +1016,31 @@ double casimir_kernel_M0_EE(int i, int j, void *args_)
 double casimir_kernel_M0_MM_plasma(int i, int j, void *args_)
 {
     casimir_M_t *args = (casimir_M_t *)args_;
+
+    /* geometry */
     const double y = args->casimir->y;
+    const double LbyR = args->casimir->LbyR;
+
     integration_plasma_t *integration_plasma = args->integration_plasma;
     const int lmin = args->lmin;
     const int l1 = i+lmin, l2 = j+lmin, m = args->m;
 
-    const int nu = l1+l2;
+    /* value of integral */
     double I = casimir_integrate_plasma(integration_plasma, l1, l2, m);
 
-    return exp( lfac(nu)-0.5*(lfac(l1+m)+lfac(l1-m)+lfac(l2+m)+lfac(l2-m)) + (nu+1)*y )*sqrt((l1*l2)/((l1+1.)*(l2+1.)))*I;
+    const double omegap = integration_plasma->omegap;
+    const double alpha = omegap/(1+LbyR);
+
+    /* this can be optimized if necessary*/
+    /* ratio1 = I_{l1-1/2}/I_{l1+1/2} ; ratio2 = I_{l2-1/2}/I_{l2+1/2} */
+    const double ratio1 = bessel_continued_fraction(l1-1, alpha);
+    const double ratio2 = bessel_continued_fraction(l2-1, alpha);
+
+    const double factor1 = 1-(2*l1+1.)/(alpha*ratio1);
+    const double factor2 = 1-(2*l2+1.)/(alpha*ratio2);
+    const double factor = sqrt(l1*factor1/(l1+1.) * l2*factor2/(l2+1.)) ;
+
+    return factor*exp( lfac(l1+l2)-0.5*(lfac(l1+m)+lfac(l1-m)+lfac(l2+m)+lfac(l2-m)) + (l1+l2+1)*y )*I;
 }
 
 /** @brief Kernel for MM block
