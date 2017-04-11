@@ -5,6 +5,8 @@ HODLRDIR            = ../../hodlr_wrapper
 HODLRINCLUDEDIR     = ../../hodlr_wrapper/include
 CQUADPACKINCLUDEDIR = cquadpack/include
 
+SUPPORT_LAPACK = FALSE
+
 # Choose a compiler.
 # At the moment gcc, clang and icc are supported.
 ifeq ($(CC),)
@@ -73,7 +75,12 @@ endif
 #CFLAGS += -pg
 
 # ldflags
-LDFLAGS += -lm -pthread -llapack -lblas -lgfortran -L ${HODLRDIR} -lhodlr
+LDFLAGS += -lm -pthread -lgfortran -L ${HODLRDIR} -lhodlr
+
+ifeq ($(SUPPORT_LAPACK),TRUE)
+    LDFLAGS += -lblas -llapack
+    CFLAGS  += -DSUPPORT_LAPACK
+endif
 
 # clang supports various runtime checks. This will slow down the program, but
 # it's a good and easy way to find bugs.
@@ -103,6 +110,9 @@ casimir.o:
 
 casimir_logdetD: casimir_logdetD.o $(OBJS) dependencies
 	$(CC) $(CFLAGS) $(OPT) casimir_logdetD.o $(OBJS) $(LDFLAGS) -o casimir_logdetD
+
+test: test.o $(OBJS) dependencies
+	$(CC) $(CFLAGS) $(OPT) test.o $(OBJS) $(LDFLAGS) -o test
 
 integrate_K: integrate_K.o $(OBJS) dependencies
 	$(CC) $(CFLAGS) $(OPT) integrate_K.o $(OBJS) $(LDFLAGS) -o integrate_K
