@@ -1,0 +1,41 @@
+# starting on alcc121 at Mon Apr 10 15:13:23 CEST 2017
+# /alcc/gpfs1/home/u/hartmmic/libcasimir-dev/src/casimir -R 0.0001513 -L 650e-9 -T 295 --material /alcc/gpfs1/home/theo1/hartmmic/libcasimir-dev/data/materials/GoldEpsIm.dat --cutoff 1e-12 --epsrel 1e-09 --eta 8
+
+# L      = 6.5e-07
+# R      = 0.0001513
+# LbyR   = 0.00429610046265697
+# T      = 295
+# cutoff = 1e-12
+# epsrel = 1e-09
+# ldim   = 1863
+# cores  = 16
+# alpha  = 0.00855544587035209
+# filename = /alcc/gpfs1/home/theo1/hartmmic/libcasimir-dev/data/materials/GoldEpsIm.dat
+# model  = optical data (xi=0: Drude)
+# plasma = -64.9734804066758 (logdetD(xi=0) for plasma model with omegap=9eV)
+#
+# xi=0, logdetD=-34.4763588140285, t=10.8465
+# xi=122.995398436404, logdetD=-19.238787089537, t=92.8391
+# xi=245.990796872809, logdetD=-6.12318338588046, t=107.832
+# xi=368.986195309213, logdetD=-1.98629868133136, t=120.111
+# xi=491.981593745618, logdetD=-0.648436342636908, t=123.491
+# xi=614.976992182022, logdetD=-0.212278509392094, t=124.841
+# xi=737.972390618427, logdetD=-0.069617792276482, t=122.361
+# xi=860.967789054831, logdetD=-0.0228818583129024, t=122.258
+# xi=983.963187491236, logdetD=-0.007527244449121, t=120.182
+# xi=1106.95858592764, logdetD=-0.00247977504226086, t=116.608
+# xi=1229.95398436404, logdetD=-0.000817451575939404, t=114.219
+# xi=1352.94938280045, logdetD=-0.000270224788238683, t=109.286
+# xi=1475.94478123685, logdetD=-8.93665683006055e-05, t=105.329
+# xi=1598.94017967326, logdetD=-2.96071095474235e-05, t=99.1597
+# xi=1721.93557810966, logdetD=-9.8212145008561e-06, t=93.7675
+# xi=1844.93097654607, logdetD=-3.26045094463639e-06, t=87.5589
+# xi=1967.92637498247, logdetD=-1.0844530716515e-06, t=80.9516
+# xi=2090.92177341888, logdetD=-3.60893007443618e-07, t=72.1916
+# xi=2213.91717185528, logdetD=-1.20258127056345e-07, t=63.8153
+# xi=2336.91257029168, logdetD=-4.01098816335891e-08, t=60.3048
+# xi=2459.90796872809, logdetD=-1.33866026599604e-08, t=59.7839
+#
+# L/R, L, R, T, ldim, F*(L+R)/(ħc)
+0.004296100462656973, 6.5e-07, 0.0001513, 295, 1863, -1783.3470660132
+# finished at Mon Apr 10 15:46:51 CEST 2017

@@ -1,0 +1,40 @@
+# starting on alcc115 at Mon Apr 10 14:50:20 CEST 2017
+# /alcc/gpfs1/home/u/hartmmic/libcasimir-dev/src/casimir -R 0.0001513 -L 680e-9 -T 295 --material /alcc/gpfs1/home/theo1/hartmmic/libcasimir-dev/data/materials/GoldEpsIm.dat --cutoff 1e-12 --epsrel 1e-09 --eta 8
+
+# L      = 6.8e-07
+# R      = 0.0001513
+# LbyR   = 0.00449438202247191
+# T      = 295
+# cutoff = 1e-12
+# epsrel = 1e-09
+# ldim   = 1781
+# cores  = 16
+# alpha  = 0.00894854586129754
+# filename = /alcc/gpfs1/home/theo1/hartmmic/libcasimir-dev/data/materials/GoldEpsIm.dat
+# model  = optical data (xi=0: Drude)
+# plasma = -62.1055281741646 (logdetD(xi=0) for plasma model with omegap=9eV)
+#
+# xi=0, logdetD=-32.9354591353181, t=9.97682
+# xi=123.01968183195, logdetD=-17.4965958750547, t=85.7418
+# xi=246.039363663899, logdetD=-5.30852240406035, t=100.223
+# xi=369.059045495849, logdetD=-1.6412400900602, t=110.849
+# xi=492.078727327799, logdetD=-0.51050136874482, t=112.074
+# xi=615.098409159748, logdetD=-0.159208886391356, t=112.376
+# xi=738.118090991698, logdetD=-0.0497374543235747, t=111.137
+# xi=861.137772823648, logdetD=-0.0155720699293374, t=110.897
+# xi=984.157454655597, logdetD=-0.00487955495546267, t=108.464
+# xi=1107.17713648755, logdetD=-0.00153124673811952, t=105.726
+# xi=1230.1968183195, logdetD=-0.000480820692525696, t=103.243
+# xi=1353.21650015145, logdetD=-0.000151402595835526, t=98.029
+# xi=1476.2361819834, logdetD=-4.76944455206268e-05, t=94.2409
+# xi=1599.25586381535, logdetD=-1.50511529613264e-05, t=89.6655
+# xi=1722.2755456473, logdetD=-4.7557092347204e-06, t=83.4167
+# xi=1845.29522747925, logdetD=-1.50382903971648e-06, t=76.8663
+# xi=1968.31490931119, logdetD=-4.76426124738084e-07, t=68.8977
+# xi=2091.33459114314, logdetD=-1.51014938061466e-07, t=59.9429
+# xi=2214.35427297509, logdetD=-4.79297270023662e-08, t=56.246
+# xi=2337.37395480704, logdetD=-1.52259087366375e-08, t=53.3392
+#
+# L/R, L, R, T, ldim, F*(L+R)/(ħc)
+0.00449438202247191, 6.8e-07, 0.0001513, 295, 1781, -1631.190147652701
+# finished at Mon Apr 10 15:19:33 CEST 2017

@@ -1,0 +1,40 @@
+# starting on alcc116 at Mon Apr 10 15:12:05 CEST 2017
+# /alcc/gpfs1/home/u/hartmmic/libcasimir-dev/src/casimir -R 0.0001513 -L 655e-9 -T 295 --material /alcc/gpfs1/home/theo1/hartmmic/libcasimir-dev/data/materials/GoldEpsIm.dat --cutoff 1e-12 --epsrel 1e-09 --eta 8
+
+# L      = 6.55e-07
+# R      = 0.0001513
+# LbyR   = 0.0043291473892928
+# T      = 295
+# cutoff = 1e-12
+# epsrel = 1e-09
+# ldim   = 1848
+# cores  = 16
+# alpha  = 0.0086209733144681
+# filename = /alcc/gpfs1/home/theo1/hartmmic/libcasimir-dev/data/materials/GoldEpsIm.dat
+# model  = optical data (xi=0: Drude)
+# plasma = -64.4776892805221 (logdetD(xi=0) for plasma model with omegap=9eV)
+#
+# xi=0, logdetD=-34.2097320073193, t=10.5974
+# xi=122.999445668995, logdetD=-18.9340720494735, t=91.2619
+# xi=245.998891337991, logdetD=-5.97832776425863, t=107.057
+# xi=368.998337006986, logdetD=-1.92384338995362, t=118.266
+# xi=491.997782675981, logdetD=-0.62300805791769, t=121.387
+# xi=614.997228344977, logdetD=-0.202311895944456, t=122.355
+# xi=737.996674013972, logdetD=-0.0658141785244934, t=120.761
+# xi=860.996119682967, logdetD=-0.0214571703916845, t=119.164
+# xi=983.995565351963, logdetD=-0.00700162099833012, t=118.414
+# xi=1106.99501102096, logdetD=-0.00228800078419771, t=115.475
+# xi=1229.99445668995, logdetD=-0.000748147314413547, t=110.542
+# xi=1352.99390235895, logdetD=-0.000245319035912468, t=108.016
+# xi=1475.99334802794, logdetD=-8.04751295523419e-05, t=103.644
+# xi=1598.99279369694, logdetD=-2.64461532060207e-05, t=98.3003
+# xi=1721.99223936593, logdetD=-8.70183352402457e-06, t=92.1609
+# xi=1844.99168503493, logdetD=-2.86550586545984e-06, t=86.1367
+# xi=1967.99113070393, logdetD=-9.45390562878106e-07, t=78.7693
+# xi=2090.99057637292, logdetD=-3.12071635250659e-07, t=69.9305
+# xi=2213.99002204192, logdetD=-1.03148980994014e-07, t=62.512
+# xi=2336.98946771091, logdetD=-3.41251272436529e-08, t=59.4357
+#
+# L/R, L, R, T, ldim, F*(L+R)/(ħc)
+0.004329147389292796, 6.55e-07, 0.0001513, 295, 1848, -1756.516667547451
+# finished at Mon Apr 10 15:44:00 CEST 2017

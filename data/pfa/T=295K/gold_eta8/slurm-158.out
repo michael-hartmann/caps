@@ -1,0 +1,41 @@
+# starting on alcc114 at Mon Apr 10 15:15:25 CEST 2017
+# /alcc/gpfs1/home/u/hartmmic/libcasimir-dev/src/casimir -R 0.0001513 -L 625e-9 -T 295 --material /alcc/gpfs1/home/theo1/hartmmic/libcasimir-dev/data/materials/GoldEpsIm.dat --cutoff 1e-12 --epsrel 1e-09 --eta 8
+
+# L      = 6.25e-07
+# R      = 0.0001513
+# LbyR   = 0.00413086582947786
+# T      = 295
+# cutoff = 1e-12
+# epsrel = 1e-09
+# ldim   = 1937
+# cores  = 16
+# alpha  = 0.00822774395260819
+# filename = /alcc/gpfs1/home/theo1/hartmmic/libcasimir-dev/data/materials/GoldEpsIm.dat
+# model  = optical data (xi=0: Drude)
+# plasma = -67.5683691409621 (logdetD(xi=0) for plasma model with omegap=9eV)
+#
+# xi=0, logdetD=-35.8735349587125, t=11.4396
+# xi=122.97516227345, logdetD=-20.8566617531383, t=100.17
+# xi=245.9503245469, logdetD=-6.90825664757458, t=117.553
+# xi=368.92548682035, logdetD=-2.33247647719591, t=129.694
+# xi=491.900649093801, logdetD=-0.792736897600114, t=133.558
+# xi=614.875811367251, logdetD=-0.270221092604342, t=132.196
+# xi=737.850973640701, logdetD=-0.0922811426930475, t=133.199
+# xi=860.826135914151, logdetD=-0.0315844924839153, t=131.096
+# xi=983.801298187601, logdetD=-0.0108196051066866, t=128.906
+# xi=1106.77646046105, logdetD=-0.00371176856460537, t=127.573
+# xi=1229.7516227345, logdetD=-0.00127415999874865, t=124.667
+# xi=1352.72678500795, logdetD=-0.000438612441492357, t=118.868
+# xi=1475.7019472814, logdetD=-0.000151051873604981, t=115.803
+# xi=1598.67710955485, logdetD=-5.21128192798731e-05, t=111.292
+# xi=1721.6522718283, logdetD=-1.80017410621507e-05, t=105.231
+# xi=1844.62743410175, logdetD=-6.22345792287429e-06, t=98.8833
+# xi=1967.6025963752, logdetD=-2.15563083160829e-06, t=91.913
+# xi=2090.57775864865, logdetD=-7.4706260080837e-07, t=84.1872
+# xi=2213.5529209221, logdetD=-2.59247086871007e-07, t=75.304
+# xi=2336.52808319555, logdetD=-9.00487407888608e-08, t=67.0744
+# xi=2459.503245469, logdetD=-3.12989628242808e-08, t=64.0629
+#
+# L/R, L, R, T, ldim, F*(L+R)/(ħc)
+0.004130865829477859, 6.25e-07, 0.0001513, 295, 1937, -1927.361500903735
+# finished at Mon Apr 10 15:52:09 CEST 2017

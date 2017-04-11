@@ -1,0 +1,39 @@
+# starting on alcc115 at Mon Apr 10 14:48:32 CEST 2017
+# /alcc/gpfs1/home/u/hartmmic/libcasimir-dev/src/casimir -R 0.0001513 -L 700e-9 -T 295 --material /alcc/gpfs1/home/theo1/hartmmic/libcasimir-dev/data/materials/GoldEpsIm.dat --cutoff 1e-12 --epsrel 1e-09 --eta 8
+
+# L      = 7e-07
+# R      = 0.0001513
+# LbyR   = 0.0046265697290152
+# T      = 295
+# cutoff = 1e-12
+# epsrel = 1e-09
+# ldim   = 1730
+# cores  = 16
+# alpha  = 0.00921052631578948
+# filename = /alcc/gpfs1/home/theo1/hartmmic/libcasimir-dev/data/materials/GoldEpsIm.dat
+# model  = optical data (xi=0: Drude)
+# plasma = -60.3270251830339 (logdetD(xi=0) for plasma model with omegap=9eV)
+#
+# xi=0, logdetD=-31.9816279090768, t=9.68252
+# xi=123.035870762313, logdetD=-16.4419582597065, t=81.1362
+# xi=246.071741524626, logdetD=-4.831976811421, t=95.2612
+# xi=369.107612286939, logdetD=-1.44678462050714, t=105.059
+# xi=492.143483049253, logdetD=-0.435736206430106, t=106.918
+# xi=615.179353811566, logdetD=-0.131566419561428, t=106.171
+# xi=738.215224573879, logdetD=-0.039791906037735, t=105.084
+# xi=861.251095336192, logdetD=-0.0120610537284091, t=102.985
+# xi=984.286966098505, logdetD=-0.00365885738412535, t=101.736
+# xi=1107.32283686082, logdetD=-0.00111156911628399, t=98.9221
+# xi=1230.35870762313, logdetD=-0.000337909102388168, t=96.3074
+# xi=1353.39457838544, logdetD=-0.000103008796282284, t=90.9473
+# xi=1476.43044914776, logdetD=-3.14145577066664e-05, t=87.273
+# xi=1599.46631991007, logdetD=-9.59736913046703e-06, t=80.9652
+# xi=1722.50219067238, logdetD=-2.93571120329963e-06, t=75.1403
+# xi=1845.5380614347, logdetD=-8.98685348591932e-07, t=68.6132
+# xi=1968.57393219701, logdetD=-2.75620426698283e-07, t=61.4871
+# xi=2091.60980295932, logdetD=-8.45739460025511e-08, t=54.124
+# xi=2214.64567372164, logdetD=-2.59846722890454e-08, t=51.3132
+#
+# L/R, L, R, T, ldim, F*(L+R)/(ħc)
+0.004626569729015202, 7e-07, 0.0001513, 295, 1730, -1540.534651848846
+# finished at Mon Apr 10 15:14:52 CEST 2017

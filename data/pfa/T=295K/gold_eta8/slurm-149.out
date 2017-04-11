@@ -1,0 +1,40 @@
+# starting on alcc119 at Mon Apr 10 15:09:48 CEST 2017
+# /alcc/gpfs1/home/u/hartmmic/libcasimir-dev/src/casimir -R 0.0001513 -L 670e-9 -T 295 --material /alcc/gpfs1/home/theo1/hartmmic/libcasimir-dev/data/materials/GoldEpsIm.dat --cutoff 1e-12 --epsrel 1e-09 --eta 8
+
+# L      = 6.7e-07
+# R      = 0.0001513
+# LbyR   = 0.00442828816920026
+# T      = 295
+# cutoff = 1e-12
+# epsrel = 1e-09
+# ldim   = 1807
+# cores  = 16
+# alpha  = 0.00881752977561361
+# filename = /alcc/gpfs1/home/theo1/hartmmic/libcasimir-dev/data/materials/GoldEpsIm.dat
+# model  = optical data (xi=0: Drude)
+# plasma = -63.0336548325904 (logdetD(xi=0) for plasma model with omegap=9eV)
+#
+# xi=0, logdetD=-33.4337475384855, t=10.2699
+# xi=123.011587366768, logdetD=-18.0549224177695, t=88.2075
+# xi=246.023174733536, logdetD=-5.56597513030485, t=103.28
+# xi=369.034762100304, logdetD=-1.74862772059219, t=113.423
+# xi=492.046349467072, logdetD=-0.552742411019268, t=116.613
+# xi=615.05793683384, logdetD=-0.175192965929349, t=115.811
+# xi=738.069524200608, logdetD=-0.0556244622704309, t=115.795
+# xi=861.081111567376, logdetD=-0.0176996509648841, t=114.003
+# xi=984.092698934143, logdetD=-0.00563683621869345, t=111.158
+# xi=1107.10428630091, logdetD=-0.00179778330644475, t=109.56
+# xi=1230.11587366768, logdetD=-0.000573736457130316, t=105.964
+# xi=1353.12746103445, logdetD=-0.000183611625353884, t=101.984
+# xi=1476.13904840122, logdetD=-5.87858822135534e-05, t=97.024
+# xi=1599.15063576798, logdetD=-1.88544819428619e-05, t=92.3115
+# xi=1722.16222313475, logdetD=-6.05482107630318e-06, t=85.9892
+# xi=1845.17381050152, logdetD=-1.94593129372952e-06, t=80.9125
+# xi=1968.18539786829, logdetD=-6.26570508669195e-07, t=72.4533
+# xi=2091.19698523505, logdetD=-2.01856194806501e-07, t=64.3975
+# xi=2214.20857260182, logdetD=-6.51144160261953e-08, t=57.6307
+# xi=2337.22015996859, logdetD=-2.10236559437442e-08, t=57.1419
+#
+# L/R, L, R, T, ldim, F*(L+R)/(ħc)
+0.004428288169200265, 6.7e-07, 0.0001513, 295, 1807, -1679.624919623481
+# finished at Mon Apr 10 15:40:03 CEST 2017
