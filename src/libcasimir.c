@@ -988,7 +988,7 @@ void casimir_logdetD0(casimir_t *self, int m, double omegap, double *EE, double 
 
     if(MM_plasma != NULL)
     {
-        args.integration_plasma = casimir_integrate_plasma_init(omegap, self->epsrel);
+        args.integration_plasma = casimir_integrate_plasma_init(self, omegap, self->epsrel);
         *MM_plasma = kernel_logdet(ldim, &casimir_kernel_M0_MM_plasma, &args, is_symmetric, detalg);
         casimir_integrate_plasma_free(args.integration_plasma);
     }
@@ -1019,26 +1019,20 @@ double casimir_kernel_M0_MM_plasma(int i, int j, void *args_)
 
     /* geometry */
     const double y = args->casimir->y;
-    const double LbyR = args->casimir->LbyR;
 
     integration_plasma_t *integration_plasma = args->integration_plasma;
     const int lmin = args->lmin;
     const int l1 = i+lmin, l2 = j+lmin, m = args->m;
 
     /* value of integral */
-    double I = casimir_integrate_plasma(integration_plasma, l1, l2, m);
-
-    const double omegap = integration_plasma->omegap;
-    const double alpha = omegap/(1+LbyR);
-
-    /* this can be optimized if necessary*/
     /* ratio1 = I_{l1-1/2}/I_{l1+1/2} ; ratio2 = I_{l2-1/2}/I_{l2+1/2} */
-    const double ratio1 = bessel_continued_fraction(l1-1, alpha);
-    const double ratio2 = bessel_continued_fraction(l2-1, alpha);
+    double ratio1,ratio2;
+    double I = casimir_integrate_plasma(integration_plasma, l1, l2, m, &ratio1, &ratio2);
 
-    const double factor1 = 1-(2*l1+1.)/(alpha*ratio1);
-    const double factor2 = 1-(2*l2+1.)/(alpha*ratio2);
-    const double factor = sqrt(l1*factor1/(l1+1.) * l2*factor2/(l2+1.)) ;
+    double alpha = integration_plasma->alpha;
+    double factor1 = 1-(2*l1+1.)/(alpha*ratio1);
+    double factor2 = 1-(2*l2+1.)/(alpha*ratio2);
+    double factor = sqrt(l1*factor1/(l1+1.) * l2*factor2/(l2+1.)) ;
 
     return factor*exp( lfac(l1+l2)-0.5*(lfac(l1+m)+lfac(l1-m)+lfac(l2+m)+lfac(l2-m)) + (l1+l2+1)*y )*I;
 }
@@ -1072,6 +1066,8 @@ double casimir_logdetD0_plasma(casimir_t *casimir, double omegap, double eps)
     {
         double v;
         casimir_logdetD0(casimir, m, omegap, NULL, NULL, &v);
+
+        printf("m=%d, v=%.15g\n", m, v);
 
         if(m == 0)
             MM_plasma += v/2;

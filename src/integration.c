@@ -743,13 +743,16 @@ double casimir_integrate_D(integration_t *self, int l1, int l2, polarization_t p
     return log_C;
 }
 
-integration_plasma_t *casimir_integrate_plasma_init(double omegap, double epsrel)
+integration_plasma_t *casimir_integrate_plasma_init(casimir_t *casimir, double omegap, double epsrel)
 {
     integration_plasma_t *self;
     self = (integration_plasma_t *)xmalloc(sizeof(integration_plasma_t));
+    self->LbyR   = casimir->LbyR;
     self->omegap = omegap;
+    self->alpha  = omegap/(1+casimir->LbyR);
     self->epsrel = epsrel;
-    self->cache = hash_table_new(cache_entry_destroy);
+    self->cache  = hash_table_new(cache_entry_destroy);
+    self->cache_ratio = hash_table_new(cache_entry_destroy);
 
     return self;
 }
@@ -759,23 +762,45 @@ typedef struct {
     double omegap, log_prefactor;
 } integrand_plasma_t;
 
-static double _integrand_plasma(double z, void *args_)
+static double _integrand_plasma(double t, void *args_)
 {
     integrand_plasma_t *args = (integrand_plasma_t *)args_;
 
-    const double k = 0.5*z;
-    const double betam1 = sqrtpm1(pow_2(args->omegap/k));
+    const double betam1 = sqrtpm1(pow_2(2*args->omegap/t));
     const double rTE = -betam1/(2+betam1);
 
-    return -rTE * exp(args->log_prefactor -z+args->nu*log(z));
+    return -rTE * exp(args->log_prefactor -t+args->nu*log(t));
 }
 
-double casimir_integrate_plasma(integration_plasma_t *self, int l1, int l2, int m)
+double casimir_integrate_plasma(integration_plasma_t *self, int l1, int l2, int m, double *ratio1, double *ratio2)
 {
     const int nu = l1+l2;
     double I;
-    cache_entry_t *entry = hash_table_lookup(self->cache, nu);
+    cache_entry_t *entry;
 
+    /* ratio1 */
+    entry = hash_table_lookup(self->cache_ratio, l1);
+    if(entry)
+        *ratio1 = entry->v;
+    else
+    {
+        *ratio1 = bessel_continued_fraction(l1-1, self->alpha);
+        entry = cache_entry_create(*ratio1, +1);
+        hash_table_insert(self->cache_ratio, l1, entry);
+    }
+
+    /* ratio2 */
+    entry = hash_table_lookup(self->cache_ratio, l2);
+    if(entry)
+        *ratio2 = entry->v;
+    else
+    {
+        *ratio2 = bessel_continued_fraction(l2-1, self->alpha);
+        entry = cache_entry_create(*ratio2, +1);
+        hash_table_insert(self->cache_ratio, l2, entry);
+    }
+
+    entry = hash_table_lookup(self->cache, nu);
     if(entry)
         return entry->v;
 
@@ -827,5 +852,6 @@ double casimir_integrate_plasma(integration_plasma_t *self, int l1, int l2, int 
 void casimir_integrate_plasma_free(integration_plasma_t *self)
 {
     hash_table_free(self->cache);
+    hash_table_free(self->cache_ratio);
     xfree(self);
 }

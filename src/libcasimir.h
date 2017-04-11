@@ -96,8 +96,9 @@ typedef struct {
 } integration_t;
 
 typedef struct {
-    double LbyR, omegap, epsrel;
+    double LbyR, alpha, omegap, epsrel;
     HashTable *cache;
+    HashTable *cache_ratio;
 } integration_plasma_t;
 
 
