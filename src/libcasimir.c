@@ -1072,8 +1072,6 @@ double casimir_logdetD0_plasma(casimir_t *casimir, double omegap, double eps)
         double v;
         casimir_logdetD0(casimir, m, omegap, NULL, NULL, &v);
 
-        printf("m=%d, v=%.15g\n", m, v);
-
         if(m == 0)
             MM_plasma += v/2;
         else
