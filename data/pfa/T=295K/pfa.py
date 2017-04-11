@@ -52,10 +52,10 @@ class PFA:
         terms = []
         while True:
             xi_n = 2*pi*n*kB*self.T/hbar
-            I,err = quad(f, xi_n*L/c, np.inf, args=(xi_n,), epsabs=0, epsrel=1e-10)
+            I,err = quad(f, xi_n*L/c, np.inf, args=(xi_n,), epsabs=0, epsrel=1e-12)
             terms.append(I)
 
-            if abs(I/terms[0]) < 1e-8:
+            if abs(I/terms[0]) < 1e-10:
                 break
 
             n += 1
