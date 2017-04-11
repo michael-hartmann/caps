@@ -69,6 +69,14 @@ def deriv(x,y, deriv=1, accuracy=2):
 
 
 if __name__ == "__main__":
+    from sys import argv
+
+    accuracy = 6
+    try:
+        accuracy = int(argv[1])
+    except:
+        pass
+
     R = 151.3e-6
 
     d = {}
@@ -76,18 +84,19 @@ if __name__ == "__main__":
     for i,L in enumerate(pfa[:,0]):
         d[L] = (pfa[i,1], pfa[i,2])
 
-    data = slurp(sorted(glob("gold_eta8/slurm*.out"), reverse=True))
+    data = slurp(sorted(glob("gold_eta7/gold*.out"), reverse=True))
     L = data[:,0]
     E_drude  = data[:,4]/(L+R)*(hbar*c)
     E_plasma = data[:,5]/(L+R)*(hbar*c)
 
-    dx, dF_drude  = deriv(L, E_drude,  deriv=2, accuracy=2)
-    dx, dF_plasma = deriv(L, E_plasma, deriv=2, accuracy=2)
+    dx, dF_drude  = deriv(L, E_drude,  deriv=2, accuracy=accuracy)
+    dx, dF_plasma = deriv(L, E_plasma, deriv=2, accuracy=accuracy)
 
     dx *= 1e9
     P_drude  = 1/(2*pi*R)*dF_drude *1000
     P_plasma = 1/(2*pi*R)*dF_plasma*1000
 
+    print("# accuracy=%d" % accuracy)
     print("# L (nm), P (Drude, mPa), P (Plasma, mPa), P (Drude, PFA), P (Plasma, PFA), ratio (Drude), ratio (Plasma)")
     for i,x in enumerate(dx):
         index = int(round(x,8))
