@@ -1,35 +1,37 @@
 import numpy as np
 from pyx import *
 
-pfa = np.loadtxt("data_pfa", delimiter=",")
-pfa_L        = pfa[:,0]
-pfa_P_drude  = pfa[:,1]
-pfa_P_plasma = pfa[:,2]
+data = np.loadtxt("out", delimiter=",")
 
+text.set(text.LatexRunner)
 
-numerics = np.loadtxt("data_numerics", delimiter=",")
-numerics_L        = numerics[:,0]
-numerics_P_drude  = numerics[:,1]
-numerics_P_plasma = numerics[:,2]
+L = data[:,0]
+P_drude      = data[:,1]
+P_plasma     = data[:,2]
+P_drude_pfa  = data[:,3]
+P_plasma_pfa = data[:,4]
+ratio_drude  = data[:,5]
+ratio_plasma = data[:,6]
 
 attrs = [color.gradient.RedBlue]
 
+
+x = L/151300
+y_drude  = 1-ratio_drude
+y_plasma = 1-ratio_plasma
+
 g = graph.graphxy(
-    width = 12,
-    key = graph.key.key(pos="br"),
-    x = graph.axis.lin(title="$L$ (nm)", min=270, max=750),
-    y = graph.axis.lin(title="$P$ (mPa)", max=0, min=-155)
+    width = 8,
+    key = graph.key.key(pos="tl"),
+    x = graph.axis.lin(title=r"$d/R$"),
+    y = graph.axis.lin(title=r"$1-F^\prime/F^\prime_\mathrm{PFA}$")
 )
 
 g.plot([
-    graph.data.values(x=numerics_L, y=numerics_P_drude, title="Drude"),
-    graph.data.values(x=numerics_L, y=numerics_P_plasma, title="Plasma")
-    ], [graph.style.symbol(graph.style.symbol.changecircle, symbolattrs=attrs, size=0.1)])
+    graph.data.values(x=x, y=y_drude, title="Drude"),
+    graph.data.values(x=x, y=y_plasma, title="Plasma")
+    ], [graph.style.symbol(graph.style.symbol.changecircle, symbolattrs=attrs, size=0.02)])
 
-g.plot([
-    graph.data.values(x=pfa_L, y=pfa_P_drude, title="Drude (PFA)"),
-    graph.data.values(x=pfa_L, y=pfa_P_plasma, title="Plasma (PFA)")
-    ], [graph.style.line(attrs)])
-
+g.plot(graph.data.function("y(x)=0.4*x"))
 
 g.writePDFfile()
