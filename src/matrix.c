@@ -55,6 +55,7 @@ double kernel_logdet(int dim, double (*kernel)(int,int,void *), void *args, int 
     if(fabs(trace) < 1e-8)
         return -trace;
 
+#ifdef SUPPORT_LAPACK
     if(detalg == DETALG_LU)
     {
         /* allocate space for matrix M */
@@ -83,6 +84,7 @@ double kernel_logdet(int dim, double (*kernel)(int,int,void *), void *args, int 
         return logdet;
     }
     else
+#endif
     {
         /* HODLR */
         /* nLeaf is the size (number of rows of the matrix) of the smallest
@@ -103,6 +105,7 @@ double kernel_logdet(int dim, double (*kernel)(int,int,void *), void *args, int 
     }
 }
 
+#ifdef SUPPORT_LAPACK
 /**
  * @brief Create new matrix object
  *
@@ -659,3 +662,4 @@ double matrix_logdetIdmM_eig(matrix_t *A, double z)
 
     return kahan_sum(logdet, dim);
 }
+#endif

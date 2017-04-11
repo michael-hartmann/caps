@@ -377,14 +377,19 @@ void casimir_set_lnab(casimir_t *self, void (*lnab)(struct casimir *self, double
  * algorithm, otherwise the computation will print a warning on runtime and
  * default to DETALG_LU.
  *
- * detalg may be: DETALG_LU, DETALG_QR, DETALG_EIG
+ * detalg may be: DETALG_LU, DETALG_HODLR
  *
  * @param [in,out] self Casimir object
  * @param [in] detalg algorithm to compute determinant
  */
 void casimir_set_detalg(casimir_t *self, detalg_t detalg)
 {
-    self->detalg = detalg;
+    if(detalg != DETALG_LU)
+        self->detalg = detalg;
+#ifdef SUPPORT_LAPACK
+    else
+        self->detalg = detalg;
+#endif
 }
 
 /**
