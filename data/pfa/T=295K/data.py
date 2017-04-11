@@ -84,7 +84,7 @@ if __name__ == "__main__":
     for i,L in enumerate(pfa[:,0]):
         d[L] = (pfa[i,1], pfa[i,2])
 
-    data = slurp(sorted(glob("gold_eta7/gold*.out"), reverse=True))
+    data = slurp(sorted(glob("gold_eta8/slurm*.out"), reverse=True))
     L = data[:,0]
     E_drude  = data[:,4]/(L+R)*(hbar*c)
     E_plasma = data[:,5]/(L+R)*(hbar*c)
