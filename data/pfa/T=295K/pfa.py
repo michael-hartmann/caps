@@ -87,6 +87,20 @@ def get_epsilonm1(filename, omega_p, gamma):
 
 
 
+def pressure(L,R,T):
+    omegap = 9/hbar_eV    # plasma frequency 9eV
+    gamma  = 0.03/hbar_eV # dissipation 0.03
+    filename = "../../materials/GoldEpsIm.dat"
+
+    pfa = PFA(R,T,get_epsilonm1(filename, omegap, gamma))
+    P_drude = pfa.P(L)*1000 # in mPa
+    
+    pfa = PFA(R,T,get_epsilonm1(filename, omegap, gamma), omegap=omegap)
+    P_plasma = pfa.P(L)*1000 # in mPa
+
+    return P_drude, P_plasma
+
+
 if __name__ == "__main__":
     from sys import argv
 
