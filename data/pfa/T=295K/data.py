@@ -1,10 +1,12 @@
 import numpy as np
 from glob import glob
 from math import pi
+from pfa import pressure
 
 # constants
 kB   = 1.38064852e-23 # m² kg 1/s² 1/K
 hbar = 1.0545718e-34  # m² kg / s
+hbar_eV = 6.582119514e-16 # hbar [eV s]
 c    = 299792458      # m/s
 
 def slurp(filenames):
@@ -72,19 +74,15 @@ if __name__ == "__main__":
     from sys import argv
 
     accuracy = 6
-    try:
-        accuracy = int(argv[1])
-    except:
-        pass
 
-    R = 151.3e-6
+    omegap = 9/hbar_eV    # plasma frequency 9eV
+    gamma  = 0.03/hbar_eV # dissipation 0.03
+    filename = "../../materials/GoldEpsIm.dat"
 
-    d = {}
-    pfa = np.loadtxt("data_pfa", delimiter=",")
-    for i,L in enumerate(pfa[:,0]):
-        d[L] = (pfa[i,1], pfa[i,2])
+    data = slurp(argv[1:])
+    R = data[0,1]
+    T = data[0,2]
 
-    data = slurp(sorted(glob("gold_eta8/slurm*.out"), reverse=True))
     L = data[:,0]
     E_drude  = data[:,4]/(L+R)*(hbar*c)
     E_plasma = data[:,5]/(L+R)*(hbar*c)
@@ -92,12 +90,11 @@ if __name__ == "__main__":
     dx, dF_drude  = deriv(L, E_drude,  deriv=2, accuracy=accuracy)
     dx, dF_plasma = deriv(L, E_plasma, deriv=2, accuracy=accuracy)
 
-    dx *= 1e9
     P_drude  = 1/(2*pi*R)*dF_drude *1000
     P_plasma = 1/(2*pi*R)*dF_plasma*1000
 
-    print("# accuracy=%d" % accuracy)
-    print("# L (nm), P (Drude, mPa), P (Plasma, mPa), P (Drude, PFA), P (Plasma, PFA), ratio (Drude), ratio (Plasma)")
-    for i,x in enumerate(dx):
-        index = int(round(x,8))
-        print("%.15g, %.15g, %.15g, %.15g, %.15g, %.15g, %.15g" % (x, P_drude[i], P_plasma[i], d[index][0], d[index][1], P_drude[i]/d[index][0], P_plasma[i]/d[index][1]))
+    print("# L (m), R (m), T (K), P_Drude (mPa), P_Plasma (mPa), P_PFA_Drude (mPa), P_PFA_Plasma (mPa)")
+    for i,L in enumerate(dx):
+        pfa_drude, pfa_plasma = pressure(L,R,T)
+
+        print("%.12g, %.12g, %.12g, %.12g, %.12g, %.12g, %.12g" % (L, R, T, P_drude[i], P_plasma[i], pfa_drude, pfa_plasma))
