@@ -94,7 +94,7 @@ if __name__ == "__main__":
     F_plasma *= -1
 
     print("# L (m), R (m), T (K), F_Drude, F_Plasma, F_PFA_Drude, F_PFA_Plasma, "
-          "F_Drude/F_PFA_Drude, F_Plasma/_P_PFA_Plasma")
+          "F_Drude/F_PFA_Drude, F_Plasma/F_PFA_Plasma")
     for i,L in enumerate(dx):
         pfa_drude, pfa_plasma = force(L,R,T)
         ratio_drude  = F_drude[i]/pfa_drude
