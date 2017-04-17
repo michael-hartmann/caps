@@ -93,8 +93,12 @@ if __name__ == "__main__":
     P_drude  = 1/(2*pi*R)*dF_drude *1000
     P_plasma = 1/(2*pi*R)*dF_plasma*1000
 
-    print("# L (m), R (m), T (K), P_Drude (mPa), P_Plasma (mPa), P_PFA_Drude (mPa), P_PFA_Plasma (mPa)")
+    print("# L (m), R (m), T (K), P_Drude (mPa), P_Plasma (mPa), P_PFA_Drude (mPa), P_PFA_Plasma (mPa), "
+          "P_Drude/P_PFA_Drude, P_Plasma/P_PFA_Plasma")
     for i,L in enumerate(dx):
         pfa_drude, pfa_plasma = pressure(L,R,T)
+        ratio_drude  = P_drude[i]/pfa_drude
+        ratio_plasma = P_plasma[i]/pfa_plasma
 
-        print("%.12g, %.12g, %.12g, %.12g, %.12g, %.12g, %.12g" % (L, R, T, P_drude[i], P_plasma[i], pfa_drude, pfa_plasma))
+        print("%.12g, %.12g, %.12g, %.12g, %.12g, %.12g, %.12g, %g, %g"
+              % (L, R, T, P_drude[i], P_plasma[i], pfa_drude, pfa_plasma, ratio_drude, ratio_plasma))
