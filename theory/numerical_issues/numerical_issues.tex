@@ -13,6 +13,7 @@
 \newcommand{\imag}{i} % imaginary unit
 \newcommand{\e}{e}    % euler's number
 \newcommand{\sol}{\mathrm{c}} % speed of light
+\newcommand{\Id}{\mathbbm{1}} % identity
 \DeclareMathOperator{\trace}{tr}
 
 % real/imaginary part
@@ -153,6 +154,20 @@ integrand at $z_\tmax$ is approximately
 k(z_\tmax) \approx \frac{(\nu+2m)!}{(2m)! \, (\nu-2m)!} \frac{\e^{-\tau z_\tmax}}{z^2+2z} \left(\frac{z}{2}\right)^m \,.
 \end{equation}
 
+
+\subsection{Estimate of errors}
+
+The integration is not exact, but instead of $\mathcal{M}$ we actually compute
+a matrix $\mathcal{M}+E$, where $||E|| \ll ||\mathcal{M}||$. To be more precise,
+we compute the integrals up to an accuracy of $\epsilon$, so $E\sim \epsilon \mathcal{M}$.
+
+\begin{equation}
+\trace\log\left(\Id-\mathcal{M}-E\right) = - \sum_{k=1}^\infty \frac{1}{k} \trace\left(\mathcal{M}+E\right)^k
+\approx
+- \sum_{k=1}^\infty \frac{1}{k} \trace\left(\mathcal{M}^k+E\mathcal{M}^{k-1}\right)
+\sim \trace\log\mathcal{D} + \epsilon\trace\log\mathcal{D}
+\end{equation}
+Here we used that $E^2\approx0$.
 
 \section{Mie coefficients}
 
