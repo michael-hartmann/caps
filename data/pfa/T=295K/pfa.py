@@ -1,5 +1,5 @@
 import numpy as np
-from math import exp, fsum, pi, sqrt
+from math import exp, fsum, pi, sqrt, log1p
 from scipy.integrate import quad
 from scipy import interpolate
 
@@ -21,7 +21,7 @@ class PFA:
 
     def rp(self, xi, kappa):
         if xi == 0:
-            # plasma    
+            # plasma
             if self.omegap:
                 beta = sqrt(1+(self.omegap/(c*kappa))**2)
                 rTE = (1-beta)/(1+beta)
@@ -39,7 +39,7 @@ class PFA:
         return rTE, rTM
 
 
-    def P(self, L):
+    def P_xi(self, L, xi, epsabs=0, epsrel=1e-10):
         def f(t,xi):
             """Integrand \sum_p t² rp² e^(-2t)/(1-rp² e^(-2t))"""
             kappa = t/L
@@ -48,11 +48,15 @@ class PFA:
             exp_f = exp(-2*t)
             return t**2*exp_f*( rTE2/(1-rTE2*exp_f) + rTM2/(1-rTM2*exp_f) )
 
+        I,err = quad(f, xi*L/c, np.inf, args=(xi,), epsabs=epsabs, epsrel=epsrel)
+        return I
+
+    def P(self, L):
         n = 0
         terms = []
         while True:
             xi_n = 2*pi*n*kB*self.T/hbar
-            I,err = quad(f, xi_n*L/c, np.inf, args=(xi_n,), epsabs=0, epsrel=1e-12)
+            I = self.P_xi(L, xi_n)
             terms.append(I)
 
             if abs(I/terms[0]) < 1e-10:
@@ -62,6 +66,35 @@ class PFA:
 
         terms[0] /= 2
         return -(kB*self.T)/(2*pi)/L**3*2*fsum(terms)
+
+
+    def F_xi(self, L, xi, epsabs=0, epsrel=1e-10):
+        def f(t,xi):
+            """Integrand \sum_p t² rp² e^(-2t)/(1-rp² e^(-2t))"""
+            kappa = t/L
+            rTE, rTM = self.rp(xi,kappa)
+            exp_f = exp(-2*t)
+            return t*(log1p(-rTE**2*exp_f)+log1p(-rTM**2*exp_f))
+
+        I,err = quad(f, xi*L/c, np.inf, args=(xi,), epsabs=epsabs, epsrel=epsrel)
+        return I
+
+    def F(self, L):
+        T = self.T
+        n = 0
+        terms = []
+        while True:
+            xi_n = 2*pi*n*kB*T/hbar
+            I = self.F_xi(L, xi_n)
+            terms.append(I)
+
+            if abs(I/terms[0]) < 1e-10:
+                break
+
+            n += 1
+
+        terms[0] /= 2
+        return (kB*T*self.R/L**2)*fsum(terms)
 
 
 def get_epsilonm1(filename, omega_p, gamma):
@@ -76,7 +109,7 @@ def get_epsilonm1(filename, omega_p, gamma):
     def epsilonm1(xi,args):
         if xi < xi_min:
             return omega_p**2/(xi*(xi+gamma))
-     
+
         if xi > xi_max:
             # XXX
             return 0
@@ -94,11 +127,25 @@ def pressure(L,R,T):
 
     pfa = PFA(R,T,get_epsilonm1(filename, omegap, gamma))
     P_drude = pfa.P(L)*1000 # in mPa
-    
+
     pfa = PFA(R,T,get_epsilonm1(filename, omegap, gamma), omegap=omegap)
     P_plasma = pfa.P(L)*1000 # in mPa
 
     return P_drude, P_plasma
+
+
+def force(L,R,T):
+    omegap = 9/hbar_eV    # plasma frequency 9eV
+    gamma  = 0.03/hbar_eV # dissipation 0.03
+    filename = "../../materials/GoldEpsIm.dat"
+
+    pfa = PFA(R,T,get_epsilonm1(filename, omegap, gamma))
+    F_drude = pfa.F(L)
+
+    pfa = PFA(R,T,get_epsilonm1(filename, omegap, gamma), omegap=omegap)
+    F_plasma = pfa.F(L)
+
+    return F_drude, F_plasma
 
 
 if __name__ == "__main__":
