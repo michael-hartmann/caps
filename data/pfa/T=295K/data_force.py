@@ -1,44 +1,5 @@
 import numpy as np
-from glob import glob
-from math import pi
-from pfa import pressure,force
-
-# constants
-kB   = 1.38064852e-23 # m² kg 1/s² 1/K
-hbar = 1.0545718e-34  # m² kg / s
-hbar_eV = 6.582119514e-16 # hbar [eV s]
-c    = 299792458      # m/s
-
-def slurp(filenames):
-    data = []
-
-    for i,filename in enumerate(filenames):
-        with open(filename, "r") as f:
-            drude = plasma = 0
-            for line in f:
-                line = line.strip()
-                if "# plasma" in line:
-                    _,line = line.split("=", 1)
-
-                    line = line.strip()
-                    plasma = float(line[:line.find(" ")])
-                    continue
-                if "# xi=0" in line:
-                    line = line[16:]
-                    line = line[:line.find(",")]
-                    drude = float(line)
-                    continue
-                if line == "" or line[0] == "#":
-                    continue
-
-                # L/R, L, R, T, ldim, F*(L+R)/(ħc)
-                LbyR, L, R, T, ldim, F_drude = map(float, line.split(","))
-                T_scaled = 2*pi*kB*(L+R)/(hbar*c)*T
-                F_plasma = F_drude + (plasma-drude)/2*T_scaled/pi
-
-                data.append((L,R,T,ldim,F_drude,F_plasma))
-
-    return np.array(sorted(data))
+import casimir
 
 
 def deriv(x,y, deriv=1, accuracy=2):
@@ -73,19 +34,16 @@ def deriv(x,y, deriv=1, accuracy=2):
 if __name__ == "__main__":
     from sys import argv
 
+    hbarc = casimir.hbar*casimir.c
     accuracy = 6
 
-    omegap = 9/hbar_eV    # plasma frequency 9eV
-    gamma  = 0.03/hbar_eV # dissipation 0.03
-    filename = "../../materials/GoldEpsIm.dat"
-
-    data = slurp(argv[1:])
+    data = casimir.slurp(argv[1:])
     R = data[0,1]
     T = data[0,2]
 
     L = data[:,0]
-    E_drude  = data[:,4]/(L+R)*(hbar*c)
-    E_plasma = data[:,5]/(L+R)*(hbar*c)
+    E_drude  = data[:,4]/(L+R)*hbarc
+    E_plasma = data[:,5]/(L+R)*hbarc
 
     dx, F_drude  = deriv(L, E_drude,  accuracy=accuracy)
     dx, F_plasma = deriv(L, E_plasma, accuracy=accuracy)
@@ -96,7 +54,7 @@ if __name__ == "__main__":
     print("# L (m), R (m), T (K), F_Drude, F_Plasma, F_PFA_Drude, F_PFA_Plasma, "
           "F_Drude/F_PFA_Drude, F_Plasma/F_PFA_Plasma")
     for i,L in enumerate(dx):
-        pfa_drude, pfa_plasma = force(L,R,T)
+        pfa_drude, pfa_plasma = casimir.force(L,R,T)
         ratio_drude  = F_drude[i]/pfa_drude
         ratio_plasma = F_plasma[i]/pfa_plasma
 

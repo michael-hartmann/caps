@@ -1,104 +1,74 @@
 import numpy as np
 from glob import glob
 from math import pi
-from pfa import pressure
+import casimir
+from deriv import get_spacing, deriv2_central
 
-# constants
-kB   = 1.38064852e-23 # m² kg 1/s² 1/K
-hbar = 1.0545718e-34  # m² kg / s
-hbar_eV = 6.582119514e-16 # hbar [eV s]
-c    = 299792458      # m/s
+def deriv2(x,y,step=lambda x: 1):
+    """compute the second derivative. The stepsize dependent on x is given as a
+    callback function"""
+    d2x = []
+    d2y = []
 
-def slurp(filenames):
-    data = []
+    h,npts = get_spacing(x)
 
-    for i,filename in enumerate(filenames):
-        with open(filename, "r") as f:
-            drude = plasma = 0
-            for line in f:
-                line = line.strip()
-                if "# plasma" in line:
-                    _,line = line.split("=", 1)
+    for i in range(npts):
+        try:
+            fpp = deriv2_central(y,h,i,step(x[i]))
+            d2x.append(x[i])
+            d2y.append(fpp)
+        except IndexError:
+            pass
 
-                    line = line.strip()
-                    plasma = float(line[:line.find(" ")])
-                    continue
-                if "# xi=0" in line:
-                    line = line[16:]
-                    line = line[:line.find(",")]
-                    drude = float(line)
-                    continue
-                if line == "" or line[0] == "#":
-                    continue
-
-                # L/R, L, R, T, ldim, F*(L+R)/(ħc)
-                LbyR, L, R, T, ldim, F_drude = map(float, line.split(","))
-                T_scaled = 2*pi*kB*(L+R)/(hbar*c)*T
-                F_plasma = F_drude + (plasma-drude)/2*T_scaled/pi
-
-                data.append((L,R,T,ldim,F_drude,F_plasma))
-
-    return np.array(sorted(data))
+    return np.array(d2x), np.array(d2y)
 
 
-def deriv(x,y, deriv=1, accuracy=2):
-    coefficients = {
-        (1,2): (-1/2, 0, 1/2),
-        (1,4): (1/12, -2/3, 0, 2/3, -1/12),
-        (1,6): (-1/60, 3/20, -3/4, 0, 3/4, -3/20, 1/60),
-        (1,8): (1/280, -4/105, 1/5, -4/5, 0, 4/5, -1/5, 4/105, -1/280),
+def stepsize(R):
+    """This gives the step size dependent on separation for different radii.
+    The values are hand-chosen."""
 
-        (2,2): (1, -2, 1),
-        (2,4): (-1/12, 4/3, -5/2, 4/3, -1/12),
-        (2,6): (1/90, -3/20, 3/2, -49/18, 3/2, -3/20, 1/90),
-        (2,8): (-1/560, 8/315, -1/5, 8/5, -205/72, 8/5, -1/5, 8/315, -1/560)
+    stepsizes = {
+        # radius
+        151: { 300e-9: 2, 400e-9: 3, 500e-9: 4, 600e-9: 5 }
     }
 
-    npts = len(x)
-    h = (x[-1]-x[0])/(npts-1)
+    key = int(R*1e6)
+    if key not in stepsizes:
+        return lambda x: 6
+    d = stepsizes[int(R*1e6)]
 
-    c = coefficients[(deriv, accuracy)]
-    p = len(c)//2
-
-    dy = np.zeros(npts-2*p)
-    for i in range(npts-2*p):
-        for j in range(len(c)):
-            dy[i] += c[j]*y[i+j]
-
-    dy /= h**deriv
-    return np.copy(x[p:-p]), dy
-
+    def f(x):
+        for key in reversed(sorted(d.keys())):
+            if x > key:
+                return d[key]
+        return 1
+    return f
 
 
 if __name__ == "__main__":
     from sys import argv
 
-    accuracy = 6
-
-    omegap = 9/hbar_eV    # plasma frequency 9eV
-    gamma  = 0.03/hbar_eV # dissipation 0.03
-    filename = "../../materials/GoldEpsIm.dat"
-
-    data = slurp(argv[1:])
+    data = casimir.slurp(argv[1:])
     R = data[0,1]
     T = data[0,2]
 
+    hbarc = casimir.hbar*casimir.c
     L = data[:,0]
-    E_drude  = data[:,4]/(L+R)*(hbar*c)
-    E_plasma = data[:,5]/(L+R)*(hbar*c)
+    E_drude  = data[:,4]/(L+R)*hbarc
+    E_plasma = data[:,5]/(L+R)*hbarc
 
-    dx, dF_drude  = deriv(L, E_drude,  deriv=2, accuracy=accuracy)
-    dx, dF_plasma = deriv(L, E_plasma, deriv=2, accuracy=accuracy)
+    dx, dF_drude  = deriv2(L, E_drude,  step=stepsize(R))
+    dx, dF_plasma = deriv2(L, E_plasma, step=stepsize(R))
 
-    P_drude  = 1/(2*pi*R)*dF_drude *1000
-    P_plasma = 1/(2*pi*R)*dF_plasma*1000
+    P_drude  = 1000/(2*pi*R)*dF_drude
+    P_plasma = 1000/(2*pi*R)*dF_plasma
 
     print("# L (m), R (m), T (K), P_Drude (mPa), P_Plasma (mPa), P_PFA_Drude (mPa), P_PFA_Plasma (mPa), "
           "P_Drude/P_PFA_Drude, P_Plasma/P_PFA_Plasma")
     for i,L in enumerate(dx):
-        pfa_drude, pfa_plasma = pressure(L,R,T)
+        pfa_drude, pfa_plasma = casimir.pressure(L,R,T)
         ratio_drude  = P_drude[i]/pfa_drude
         ratio_plasma = P_plasma[i]/pfa_plasma
 
-        print("%.12g, %.12g, %.12g, %.12g, %.12g, %.12g, %.12g, %g, %g"
+        print("%.12g, %.12g, %.12g, %.12g, %.12g, %.12g, %.12g, %.12g, %.12g"
               % (L, R, T, P_drude[i], P_plasma[i], pfa_drude, pfa_plasma, ratio_drude, ratio_plasma))
