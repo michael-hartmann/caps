@@ -12,7 +12,7 @@
 # alpha  = 0.00665327229010902
 # filename = /alcc/gpfs1/home/theo1/hartmmic/libcasimir-dev/data/materials/GoldEpsIm.dat
 # model  = optical data (xi=0: Drude)
-# plasma = -83.4853703877364 (logdetD(xi=0) for plasma model with omegap=9eV)
+# plasma = -83.4853705828411 (logdetD(xi=0) for plasma model with omegap=9eV)
 #
 # xi=0, logdetD=-44.5071815281254, t=16.7942
 # xi=122.878028691269, logdetD=-31.5105073397407, t=148.878
