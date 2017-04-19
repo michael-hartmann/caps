@@ -13,8 +13,14 @@ def slurp(filenames):
                 empty = line == ""
                 comment = line.startswith("#")
                 if not(empty or comment):
-                    # L/R, lmax, order, alpha, F(T=0)
-                    LbyR,lmax,order,alpha,F = map(float, line.split(","))
+                    # support old and new format
+                    try:
+                        # L/R, lmax, order, alpha, F(T=0)
+                        LbyR,lmax,order,alpha,F = map(float, line.split(","))
+                    except ValueError:
+                        # L/R, L, R, T, ldim, F*(L+R)/(ħc)
+                        LbyR,L,R,T,ldim,F = map(float, line.split(","))
+
                     ratio = F/pfa(LbyR)
                     data.append((LbyR, F, ratio, ratio/bimonte(LbyR)))
 
@@ -35,7 +41,7 @@ if __name__ == "__main__":
     theta1,theta2 = 1./3 - 20/pi**2, -4.52
     bimonte = lambda x: 1+theta1*x+theta2*x**2*log(x)
 
-    data = slurp(glob("pc/slurm-*.out"))
+    data = slurp(glob("pc_gk/slurm-*.out"))
 
     attrs = [color.gradient.RedBlue]
 
