@@ -662,4 +662,32 @@ double matrix_logdetIdmM_eig(matrix_t *A, double z)
 
     return kahan_sum(logdet, dim);
 }
+
+
+/**
+ * @brief Check if matrix A is diagonal dominant
+ *
+ * @param [in] A matrix
+ * @retval true if matrix is diagonal dominant
+ * @retval true if matrix is not diagonal dominant
+ */
+bool matrix_check_diagonal_dominant(matrix_t *A)
+{
+    int dim = A->dim;
+
+    for(int i = 0; i < dim; i++)
+    {
+        double sum = 0;
+        for(int j = 0; j < dim; j++)
+        {
+            if(i != j)
+                sum += fabs(matrix_get(A,i,j));
+        }
+
+        if(sum >= fabs(matrix_get(A,i,i))
+            return false;
+    }
+
+    return true;
+}
 #endif

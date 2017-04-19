@@ -51,5 +51,6 @@ double matrix_logdet_lu(matrix_t *A);
 double matrix_logdet_qr(matrix_t *A);
 double matrix_logdetIdmM_eig(matrix_t *A, double z);
 
+bool matrix_check_diagonal_dominant(matrix_t *A);
 
 #endif
