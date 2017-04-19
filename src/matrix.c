@@ -684,7 +684,7 @@ bool matrix_check_diagonal_dominant(matrix_t *A)
                 sum += fabs(matrix_get(A,i,j));
         }
 
-        if(sum >= fabs(matrix_get(A,i,i))
+        if(sum >= fabs(matrix_get(A,i,i)))
             return false;
     }
 
