@@ -9,6 +9,37 @@ kB      = 1.38064852e-23  # Boltzmann constant [m² kg / (s² K)]
 hbar    = 1.0545718e-34   # hbar [J s]
 hbar_eV = 6.582119514e-16 # hbar [eV s]
 
+def slurp(filenames):
+    data = []
+
+    for i,filename in enumerate(filenames):
+        with open(filename, "r") as f:
+            drude = plasma = 0
+            for line in f:
+                line = line.strip()
+                if "# plasma" in line:
+                    _,line = line.split("=", 1)
+
+                    line = line.strip()
+                    plasma = float(line[:line.find(" ")])
+                    continue
+                if "# xi=0" in line:
+                    line = line[16:]
+                    line = line[:line.find(",")]
+                    drude = float(line)
+                    continue
+                if line == "" or line[0] == "#":
+                    continue
+
+                # L/R, L, R, T, ldim, F*(L+R)/(ħc)
+                LbyR, L, R, T, ldim, F_drude = map(float, line.split(","))
+                T_scaled = 2*pi*kB*(L+R)/(hbar*c)*T
+                F_plasma = F_drude + (plasma-drude)/2*T_scaled/pi
+
+                data.append((L,R,T,ldim,F_drude,F_plasma))
+
+    return np.array(sorted(data))
+
 
 def get_epsilonm1(filename):
     data = np.loadtxt(filename)
