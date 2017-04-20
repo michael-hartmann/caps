@@ -34,7 +34,7 @@ def stepsize(R):
 
     key = int(R*1e6)
     if key not in stepsizes:
-        return lambda x: 6
+        return lambda x: 1
     d = stepsizes[int(R*1e6)]
 
     def f(x):
