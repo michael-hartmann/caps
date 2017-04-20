@@ -1,0 +1,24 @@
+# starting on alcc114 at Di 18. Apr 09:30:46 CEST 2017
+
+# L      = 1.45e-07
+# R      = 0.000125
+# LbyR   = 0.00116
+# T      = 295
+# cutoff = 1e-12
+# epsrel = 1e-09
+# ldim   = 6897
+# cores  = 29
+# alpha  = 0.00231731191817492
+# filename = /alcc/gpfs1/home/u/hartmmic/libcasimir-dev/data/materials/GoldEpsIm.dat
+# model  = optical data (xi=0: Drude)
+# plasma = -225.330703688133 (logdetD(xi=0) for plasma model with omegap=9eV)
+#
+# xi=0, logdetD=-128.978450327421, t=106.189
+# xi=101.298184516774, logdetD=-159.990232677416, t=653.959
+# xi=202.596369033548, logdetD=-116.385902337612, t=664.815
+# xi=303.894553550323, logdetD=-85.2377678668478, t=697.114
+# xi=405.192738067097, logdetD=-62.7653068375892, t=761.485
+# xi=506.490922583871, logdetD=-46.4068029664557, t=819.841
+# xi=607.789107100645, logdetD=-34.421507091155, t=869.853
+# xi=709.087291617419, logdetD=-25.6158660377917, t=905.419
+# xi=810.385476134194, logdetD=-19.0931994916391, t=939.397
