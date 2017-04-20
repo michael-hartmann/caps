@@ -59,22 +59,21 @@ def get_epsilonm1(filename):
 
 
 class PFA:
-    def __init__(self, R, T, filename=None, omegap=0, args=None):
-        """R in m, T in K, omegap and gamma in eV"""
+    def __init__(self, R, T, filename=None, args=None):
+        """R in m, T in K"""
         if filename == None:
             filename = dirname(__file__) + "/../../materials/GoldEpsIm.dat"
-        self.omegap = omegap
         self.R = R
         self.T = T
         self.epsilonm1 = get_epsilonm1(filename)
         self.args = args
 
 
-    def rp(self, xi, kappa):
+    def rp(self, xi, kappa, omegap):
         if xi == 0:
             # plasma
-            if self.omegap:
-                beta = sqrt(1+(self.omegap/(c*kappa))**2)
+            if omegap > 0:
+                beta = sqrt(1+(omegap/(c*kappa))**2)
                 rTE = (1-beta)/(1+beta)
                 return rTE,1
             else:
@@ -90,11 +89,11 @@ class PFA:
         return rTE, rTM
 
 
-    def P_xi(self, L, xi, epsabs=0, epsrel=1e-10):
+    def P_xi(self, L, xi, omegap=0, epsabs=0, epsrel=1e-10):
         def f(t,xi):
             """Integrand \sum_p t² rp² e^(-2t)/(1-rp² e^(-2t))"""
             kappa = t/L
-            rTE, rTM = self.rp(xi,kappa)
+            rTE, rTM = self.rp(xi,kappa,omegap)
             rTE2, rTM2 = rTE**2, rTM**2
             exp_f = exp(-2*t)
             return t**2*exp_f*( rTE2/(1-rTE2*exp_f) + rTM2/(1-rTM2*exp_f) )
@@ -102,9 +101,11 @@ class PFA:
         I,err = quad(f, xi*L/c, np.inf, args=(xi,), epsabs=epsabs, epsrel=epsrel)
         return I
 
-    def P(self, L):
-        n = 0
+    def P(self, L, omegap):
+        plasma_xi0 = self.P_xi(L,0,omegap=omegap)
+
         terms = []
+        n = 0
         while True:
             xi_n = 2*pi*n*kB*self.T/hbar
             I = self.P_xi(L, xi_n)
@@ -116,20 +117,27 @@ class PFA:
             n += 1
 
         terms[0] /= 2
-        return -(kB*self.T)/(2*pi)/L**3*2*fsum(terms)
+        drude = -(kB*self.T)/(2*pi)/L**3*2*fsum(terms)
 
-    def F_xi(self, L, xi, epsabs=0, epsrel=1e-10):
+        terms[0] = plasma_xi0/2
+        plasma = -(kB*self.T)/(2*pi)/L**3*2*fsum(terms)
+        return drude,plasma
+
+
+    def F_xi(self, L, xi, omegap=0, epsabs=0, epsrel=1e-10):
         def f(t,xi):
             """Integrand \sum_p t² rp² e^(-2t)/(1-rp² e^(-2t))"""
             kappa = t/L
-            rTE, rTM = self.rp(xi,kappa)
+            rTE, rTM = self.rp(xi,kappa,omegap)
             exp_f = exp(-2*t)
             return t*(log1p(-rTE**2*exp_f)+log1p(-rTM**2*exp_f))
 
         I,err = quad(f, xi*L/c, np.inf, args=(xi,), epsabs=epsabs, epsrel=epsrel)
         return I
 
-    def F(self, L):
+    def F(self, L, omegap):
+        plasma_xi0 = self.F_xi(L,0,omegap=omegap)
+
         T = self.T
         n = 0
         terms = []
@@ -144,7 +152,11 @@ class PFA:
             n += 1
 
         terms[0] /= 2
-        return (kB*T*self.R/L**2)*fsum(terms)
+        drude = (kB*T*self.R/L**2)*fsum(terms)
+
+        terms[0] = plasma_xi0/2
+        plasma = (kB*T*self.R/L**2)*fsum(terms)
+        return drude,plasma
 
 
 
@@ -152,21 +164,13 @@ def pressure(L,R,T):
     omegap = 9/hbar_eV # plasma frequency 9eV
 
     pfa = PFA(R,T)
-    P_drude = pfa.P(L)*1000 # in mPa
+    P_drude, P_plasma = pfa.P(L,omegap) # in Pa
 
-    pfa = PFA(R,T, omegap=omegap)
-    P_plasma = pfa.P(L)*1000 # in mPa
-
-    return P_drude, P_plasma
+    return P_drude*1000, P_plasma*1000
 
 
 def force(L,R,T):
     omegap = 9/hbar_eV # plasma frequency 9eV
 
     pfa = PFA(R,T)
-    F_drude = pfa.F(L)
-
-    pfa = PFA(R,T, omegap=omegap)
-    F_plasma = pfa.F(L)
-
-    return F_drude, F_plasma
+    return pfa.F(L,omegap)
