@@ -16,7 +16,7 @@ xi      = data[:,0]
 epsilon = data[:,1]
 
 # fit small
-npts = 50 # use first npts points for fit
+npts = 200 # use first npts points for fit
 xdata = xi[:npts]
 ydata = epsilon[:npts]
 popt, pcov = curve_fit(epsilon_drude, xdata, ydata, p0=(9/hbar, 0.035/hbar))
