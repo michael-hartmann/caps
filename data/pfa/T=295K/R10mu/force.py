@@ -40,5 +40,5 @@ if __name__ == "__main__":
         ratio_drude  = F_drude[i]/pfa_drude
         ratio_plasma = F_plasma[i]/pfa_plasma
 
-        print("%.12g, %.12g, %.12g, %.12g, %.12g, %.12g, %.12g, %g, %g"
+        print("%.12g, %.12g, %.12g, %.12g, %.12g, %.12g, %.12g, %.12g, %.12g"
                % (L, R, T, F_drude[i], F_plasma[i], pfa_drude, pfa_plasma, ratio_drude, ratio_plasma))
