@@ -2,6 +2,7 @@ import numpy as np
 from math import exp, fsum, pi, sqrt, log1p
 from scipy.integrate import quad
 from scipy import interpolate
+from os.path import dirname
 
 # constants
 c       = 299792458       # speed of light [m/s]
@@ -58,8 +59,10 @@ def get_epsilonm1(filename):
 
 
 class PFA:
-    def __init__(self, R, T, filename="../../materials/GoldEpsIm.dat", omegap=0, args=None):
+    def __init__(self, R, T, filename=None, omegap=0, args=None):
         """R in m, T in K, omegap and gamma in eV"""
+        if filename == None:
+            filename = dirname(__file__) + "/../../materials/GoldEpsIm.dat"
         self.omegap = omegap
         self.R = R
         self.T = T
