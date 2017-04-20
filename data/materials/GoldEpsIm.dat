@@ -5,12 +5,12 @@
 # how to get this data is described in [1].
 #
 # For small values of xi the material behaves according the Drude model
-#       epsilon(i*xi) = 1 + omegap²/(xi*(xi+gamma))
-# with parameters
-#       omega_p = 9.1417944 eV
-#       gamma   = 0.030624646 eV.
-#
-# However, the actual Drude parameters used to create this data are
+#       epsilon(i*xi) = 1 + omegap²/(xi*(xi+gamma)).
+# From a fit of the optical data one finds for small values of xi
+#       omega_p = 9.0227003 eV
+#       gamma   = 0.029826516 eV.
+# There parameters are actually quite close to the ones used to create this
+# data:
 #       omega_p = 9.0 eV
 #       gamma   = 0.03 eV.
 #
@@ -26,7 +26,7 @@
 # omegap_high = 54.475279eV
 # gamma_high  = 211.48855eV
 #
-# xi in 1/s              epsilon(i*xi)
+# xi in rad/s            epsilon(i*xi)
 151900000000.0000        27202177.31278406
 167090000000.0000        24722324.84701070
 182280000000.0000        22655566.74077545
