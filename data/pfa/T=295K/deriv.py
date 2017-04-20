@@ -17,7 +17,7 @@ def get_spacing(x, epsrel=1e-12):
     return h,npts
 
 
-def deriv2_central(y,h,i,step=1):
+def deriv_central(y, h, i, deriv=1, accuracy=6, step=1):
     """Compute the 2nd derivative of a function that is given by a vector y on
     an aequidistant grid of spacing h using central difference formula of order
     6 with stepsize step.
@@ -25,29 +25,38 @@ def deriv2_central(y,h,i,step=1):
 
     npts = len(y)
 
-    if i-3*step < 0 or i+3*step >= npts:
+    coeffs = {
+        (1,2): (-1/2, 0, 1/2),
+        (1,4): (1/12, -2/3, 0, 2/3, -1/12),
+        (1,6): (-1/60, 3/20, -3/4, 0, 3/4, -3/20, 1/60),
+        (1,8): (1/280, -4/105, 1/5, -4/5, 0, 4/5, -1/5, 4/105, -1/280),
+
+        (2,2): (1, -2, 1),
+        (2,4): (-1/12, 4/3, -5/2, 4/3, -1/12),
+        (2,6): (1/90, -3/20, 3/2, -49/18, 3/2, -3/20, 1/90),
+        (2,8): (-1/560, 8/315, -1/5, 8/5, -205/72, 8/5, -1/5, 8/315, -1/560)
+    }
+
+    c = coeffs[(deriv,accuracy)]
+    p = len(c)//2
+
+    if i-p*step < 0 or i+p*step >= npts:
         raise IndexError("Out of bounds")
 
-    c = (1/90, -3/20, 3/2, -49/18, 3/2, -3/20, 1/90)
+    terms = []
+    for j in range(len(c)):
+        terms.append( c[j]*y[i+(j-p)*step] )
 
-    terms = (
-        c[0]*y[i-3*step],
-        c[1]*y[i-2*step],
-        c[2]*y[i-step],
-        c[3]*y[i],
-        c[4]*y[i+step],
-        c[5]*y[i+2*step],
-        c[6]*y[i+3*step]
-    )
-
-    return fsum(terms)/(step*h)**2
+    return fsum(terms)/(step*h)**deriv
 
 
-def deriv2_forward(y,h,i,step=1):
+def deriv_forward(y, h, i, accuracy=6, step=1):
     """Compute the 2nd derivative of a function that is given by a vector y on
     an aequidistant grid of spacing h using central difference formula of order
     6 with stepsize step.
     """
+
+    raise NotImplemented("not properly implemented yet")
 
     npts = len(y)
 
@@ -69,11 +78,13 @@ def deriv2_forward(y,h,i,step=1):
     return fsum(terms)/(step*h)**2
 
 
-def deriv2_backward(y,h,i,step=1):
+def deriv_backward(y, h, i, accuracy=6, step=1):
     """Compute the 2nd derivative of a function that is given by a vector y on
     an aequidistant grid of spacing h using central difference formula of order
     4 with stepsize step.
     """
+
+    raise NotImplemented("not properly implemented yet")
 
     npts = len(y)
 
@@ -94,54 +105,23 @@ def deriv2_backward(y,h,i,step=1):
     return fsum(terms)/(step*h)**2
 
 
-def deriv2(x,y, maxstep=10, epsrel=1e-12):
-    """order 4"""
+def deriv(x,y, method="central", deriv=1, accuracy=6, step=lambda x: 1):
+    """compute the second derivative. The stepsize dependent on x is given as a
+    callback function"""
+    d2x = []
+    d2y = []
 
-    assert len(x) == len(y)
+    h,npts = get_spacing(x)
 
-    # spacing of grid
-    h = get_spacing(x, epsrel)
+    methods = { "forward": deriv_forward, "backward": deriv_backward, "central": deriv_central }
+    _deriv = methods[method]
 
-    # check if grid is aequidistand and ascending
-    for i in range(npts-1):
-        dx = x[i+1]-x[i]
-        if dx < 0 or abs(1-dx/h) > epsrel:
-            raise BaseException("grid must be aequidistant and ascending")
+    for i in range(npts):
+        try:
+            fpp = _deriv(y,h,i, deriv=deriv, accuracy=accuracy, step=step(x[i]))
+            d2x.append(x[i])
+            d2y.append(fpp)
+        except IndexError:
+            pass
 
-
-    def _d2f(f,i):
-        Dk = []
-        for j in range(maxstep):
-            s = maxstep-j
-            d = f(y,h,i,step=s)
-            Dk.append( d )
-
-        print(x[i], Dk)
-        for j in range(2,maxstep):
-                if abs(Dk[-3]-Dk[-2]) > abs(Dk[-2]-Dk[-1]):
-                    print(s)
-                    return d
-        return None
-
-    dx  = []
-    dy = []
-
-#   for i in range(npts-2*maxstep,npts):
-#       d2f = _d2f(deriv2_backward,i)
-#       if d2f != None:
-#           dx.append(x[i])
-#           dy.append(d2f)
-
-#   for i in range(2*maxstep):
-#       d2f = _d2f(deriv2_forward,i)
-#       if d2f != None:
-#           dx.append(x[i])
-#           dy.append(d2f)
-
-    for i in range(2*maxstep,npts-2*maxstep):
-        d2f = deriv2_central(y,h,i,maxstep)
-        dx.append(x[i])
-        dy.append(d2f)
-        
- 
-    return np.array(dx), np.array(dy)
+    return np.array(d2x), np.array(d2y)
