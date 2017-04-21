@@ -9,6 +9,8 @@ import casimir
 from deriv import deriv
 
 def stepsize(R):
+    if R > 550e-9:
+        return 4
     if R > 400e-9:
         return 3
     if R > 200e-9:
