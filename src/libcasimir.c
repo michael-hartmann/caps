@@ -6,7 +6,6 @@
  */
 
 #include <math.h>
-#include <pthread.h>
 #include <stdarg.h>
 #include <stdbool.h>
 #include <stdio.h>
@@ -69,51 +68,6 @@ void casimir_info(casimir_t *self, FILE *stream, const char *prefix)
     fprintf(stream, "%sepsrel  = %g\n",    prefix, self->epsrel);
     fprintf(stream, "%sdetalg  = %s\n",    prefix, detalg_str);
 }
-
-
-/**
- * @brief Thread safe wrapper to vfprintf
- *
- * This function is a wrapper to vfprintf and will print to stream, but it uses
- * locks to make this function thread-safe.
- *
- * @param [in] self Casimir object
- * @param [in] stream stream to print
- * @param [in] format format string
- * @param [in] args arguments for format string
- * @retval chars number of characters printed
- */
-int casimir_vfprintf(casimir_t *self, FILE *stream, const char *format, va_list args)
-{
-    pthread_mutex_lock(&self->mutex);
-    int ret = vfprintf(stream, format, args);
-    pthread_mutex_unlock(&self->mutex);
-
-    return ret;
-}
-
-/**
- * @brief Print to stdout
- *
- * This function is a wrapper to fprintf, but it uses locks to make the call to
- * fprintf thread-safe.
- *
- * @param [in] self Casimir object
- * @param [in] format format string
- * @param [in] ... variables for for format string
- * @retval chars number of characters printed (see \ref casimir_vprintf)
- */
-int casimir_fprintf(casimir_t *self, FILE *stream, const char *format, ...)
-{
-    va_list args;
-    va_start(args, format);
-    int ret = casimir_vfprintf(self, stream, format, args);
-    va_end(args);
-
-    return ret;
-}
-
-
 /*@}*/
 
 /**
@@ -282,9 +236,6 @@ casimir_t *casimir_init(double LbyR)
     /* relative error for integration */
     self->epsrel = CASIMIR_EPSREL;
 
-    /* initialize mutex for printf */
-    pthread_mutex_init(&self->mutex, NULL);
-
     /* use LU decomposition by default */
     self->detalg = DETALG_HODLR;
 
@@ -301,11 +252,7 @@ casimir_t *casimir_init(double LbyR)
  */
 void casimir_free(casimir_t *self)
 {
-    if(self != NULL)
-    {
-        pthread_mutex_destroy(&self->mutex);
-        xfree(self);
-    }
+    xfree(self);
 }
 
 /**
