@@ -12,7 +12,6 @@ typedef signed char sign_t;
  */
 typedef enum { TE, TM } polarization_t;
 
-#include <pthread.h>
 #include <stdarg.h>
 #include <stdbool.h>
 #include <stdio.h>
@@ -80,8 +79,6 @@ typedef struct casimir
     int ldim;        /**< truncation value for vector space \f$\ell_\mathrm{max}\f$ */
     double epsrel;   /**< relative error for integration */
     detalg_t detalg; /**< algorithm to calculate determinant */
-
-    pthread_mutex_t mutex; /**< mutex for printing */
     /*@}*/
 } casimir_t;
 
@@ -116,9 +113,6 @@ typedef struct
 /* prototypes */
 int  casimir_compile_info(char *str, size_t size);
 void casimir_info(casimir_t *self, FILE *stream, const char *prefix);
-
-int casimir_vfprintf(casimir_t *self, FILE *stream, const char *format, va_list args);
-int casimir_fprintf(casimir_t *self, FILE *stream, const char *format, ...);
 
 double casimir_lnLambda(int l1, int l2, int m);
 
