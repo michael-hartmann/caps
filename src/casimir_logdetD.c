@@ -26,14 +26,6 @@ static void usage(FILE *stream)
 "    -m          value of m\n"
 "\n"
 "Further options:\n"
-"    -w, --omegap OMEGAP\n"
-"       Set value of Plasma frequency omega_p of Drude metals in units of\n"
-"       c/(L+R). If omitted, omegap = INFINITY.\n"
-"\n"
-"    -g, --gamma GAMMA\n"
-"       Set value of relaxation frequency gamma of Drude metals in units of\n"
-"       c/(L+R). If omitted, gamma = 0.\n"
-"\n"
 "    -L, --ldim LDIM\n"
 "        Set ldim to LDIM. When -L is used, -l will be ignored.\n"
 "\n"
@@ -58,10 +50,6 @@ int main(int argc, char *argv[])
     double LbyR = -1, nT = -1;
     int m = -1;
 
-    /* material properties, by default: perfect reflectors */
-    double userdata[2];
-    double gamma_ = 0, omegap = INFINITY;
-
     /* numerical parameters */
     int ldim = 0;
 
@@ -79,15 +67,13 @@ int main(int argc, char *argv[])
             { "nT",        required_argument, 0, 'T' },
             { "ldim",      required_argument, 0, 'L' },
             { "lscale",    required_argument, 0, 'l' },
-            { "omegap",    required_argument, 0, 'w' },
-            { "gamma",     required_argument, 0, 'g' },
 
             { 0, 0, 0, 0 }
         };
 
         /* getopt_long stores the option index here. */
         int option_index = 0;
-        int c = getopt_long (argc, argv, "x:T:m:l:w:g:L:t:bdh", long_options, &option_index);
+        int c = getopt_long (argc, argv, "x:T:m:l:L:t:bdh", long_options, &option_index);
 
         /* Detect the end of the options. */
         if(c == -1)
@@ -104,12 +90,6 @@ int main(int argc, char *argv[])
                 break;
             case 'T':
                 nT = atof(optarg);
-                break;
-            case 'w':
-                omegap = atof(optarg);
-                break;
-            case 'g':
-                gamma_ = atof(optarg);
                 break;
             case 'L':
                 ldim = atoi(optarg);
@@ -153,10 +133,6 @@ int main(int argc, char *argv[])
             fprintf(stderr, "--nT must be non-negative value.");
         else if(m < 0)
             fprintf(stderr, "m >= 0\n\n");
-        else if(omegap < 0)
-            fprintf(stderr, "--omegap, -w must be non negative.");
-        else if(gamma_ < 0)
-            fprintf(stderr, "--gamma, -g must be non negative.");
         else
             /* everything ok */
             break;
@@ -180,14 +156,6 @@ int main(int argc, char *argv[])
     if(ldim)
         casimir_set_ldim(casimir, ldim);
 
-    /* set parameters for Drude/Plasma */
-    if(gamma_ >= 0 && isfinite(omegap))
-    {
-        userdata[0] = omegap;
-        userdata[1] = gamma_;
-        casimir_set_epsilonm1(casimir, casimir_epsilonm1_drude, userdata);
-    }
-
     if(dense)
         casimir_set_detalg(casimir, DETALG_LU);
 
@@ -198,8 +166,8 @@ int main(int argc, char *argv[])
     {
         double logdet = casimir_logdetD(casimir, nT, m);
 
-        printf("# L/R, ξ*(L+R)/c, ωp*(L+R)/c, γ*(L+R)/c, m, logdet(Id-M), ldim, time\n");
-        printf("%g, %g, %g, %g, %d, %.16g, %d, %g\n", LbyR, nT, omegap, gamma_, m, logdet, casimir_get_ldim(casimir), now()-start_time);
+        printf("# L/R, ξ*(L+R)/c, m, logdet(Id-M), ldim, time\n");
+        printf("%g, %g, %d, %.16g, %d, %g\n", LbyR, nT, m, logdet, casimir_get_ldim(casimir), now()-start_time);
     }
     else /* nT == 0 */
     {
