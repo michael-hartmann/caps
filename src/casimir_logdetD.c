@@ -8,17 +8,6 @@
 #include "sfunc.h"
 #include "utils.h"
 
-/* Dielectric function epsilon(xi)-1 for Drude and/or Plasma metals. userdata
- * is a pointer to an double array with two entries, the first entry
- * corresponds to omegap, the second to gamma.
- */
-static double epsilonm1(double xi, void *userdata)
-{
-    double omegap_ = ((double *)userdata)[0];
-    double gamma_  = ((double *)userdata)[1];
-
-    return pow_2(omegap_)/(xi*(xi+gamma_));
-}
 
 /* print usage */
 static void usage(FILE *stream)
@@ -196,7 +185,7 @@ int main(int argc, char *argv[])
     {
         userdata[0] = omegap;
         userdata[1] = gamma_;
-        casimir_set_epsilonm1(casimir, epsilonm1, userdata);
+        casimir_set_epsilonm1(casimir, casimir_epsilonm1_drude, userdata);
     }
 
     if(dense)
