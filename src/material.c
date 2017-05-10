@@ -128,6 +128,12 @@ material_t *material_init(const char *filename, double calL)
     material->xi_max = material->xi[points-1];
     material->points = points;
 
+    /* convert from eV to rad/s */
+    material->omegap_low  /= CASIMIR_hbar_eV;
+    material->omegap_high /= CASIMIR_hbar_eV;
+    material->gamma_low   /= CASIMIR_hbar_eV;
+    material->gamma_high  /= CASIMIR_hbar_eV;
+
 out:
     /* restore environment value of LC_NUMERIC */
     if(strlen(backup_lc_numeric))
@@ -171,10 +177,10 @@ void material_info(material_t *material, FILE *stream, const char *prefix)
     fprintf(stream, "%scalL        = %gm\n",   prefix, material->calL);
     fprintf(stream, "%sxi_min      = %g/m\n",  prefix, material->xi_min);
     fprintf(stream, "%sxi_max      = %g/m\n",  prefix, material->xi_max);
-    fprintf(stream, "%somegap_high = %geV\n",  prefix, material->omegap_high);
-    fprintf(stream, "%sgamma_high  = %geV\n",  prefix, material->gamma_high);
-    fprintf(stream, "%sgamma_low   = %geV\n",  prefix, material->gamma_low);
-    fprintf(stream, "%somegap_low  = %geV\n",  prefix, material->omegap_low);
+    fprintf(stream, "%somegap_high = %geV\n",  prefix, CASIMIR_hbar_eV*material->omegap_high);
+    fprintf(stream, "%sgamma_high  = %geV\n",  prefix, CASIMIR_hbar_eV*material->gamma_high);
+    fprintf(stream, "%sgamma_low   = %geV\n",  prefix, CASIMIR_hbar_eV*material->gamma_low);
+    fprintf(stream, "%somegap_low  = %geV\n",  prefix, CASIMIR_hbar_eV*material->omegap_low);
 }
 
 double material_epsilonm1(double xi_scaled, void *args)
@@ -192,7 +198,7 @@ double material_epsilonm1(double xi_scaled, void *args)
     {
         /* in scaled units */
         double omegap = self->omegap_low*calLbyc;
-        double gamma_ = self->gamma_low*calLbyc;
+        double gamma_ = self->gamma_low *calLbyc;
 
         return pow_2(omegap)/(xi_scaled*(xi_scaled+gamma_));
     }
