@@ -3,6 +3,7 @@
 \usepackage[english]{babel}
 \usepackage[utf8]{inputenc}
 \usepackage{amssymb,amsmath}
+\usepackage{braket}
 \usepackage{prettyref}
 \usepackage{bbm}
 \usepackage{txfonts}
@@ -392,6 +393,42 @@ for $x\sim1$ they may be approximated by
 \label{appendix:Plm_1}
 \Plm{\ell}{m}(x) \approx \frac{(\ell+m)!}{m! \, (\ell-m)!} \left(\frac{x-1}{2}\right)^{m/2} \,.
 \end{equation}
+
+\newpage
+
+\section{Symmetrization}
+
+The round-trip operator is given as
+\begin{equation}
+{\cal M} = {\cal R}_S {\cal T}_{S\leftarrow P} {\cal R}_P {\cal T}_{P\leftarrow S} \,.
+\end{equation}
+Due to Sylvester's determinant theorem the free energy is invariant under
+cyclic permutations of the operators. We choose
+\begin{equation}
+{\cal M} = \underbrace{\sqrt{{\cal R}_S} {\cal T}_{S\leftarrow P} \sqrt{{\cal R}_P}}_{=\cal A} \underbrace{\sqrt{{\cal R}_P} {\cal T}_{P\leftarrow S} \sqrt{{\cal R}_S}}_{=\cal B} \,.
+\end{equation}
+The relfection operator at the sphere ${\cal R}_S$ and the reflection operator
+at the plane ${\cal R}_P$ are diagonal in the multipole or the plane-wave
+basis, respectively. Therefore, a matrix square root exists and we are allowed
+to write the round-trip operator in this way. In a strict sense, this is no
+longer the same round-trip operator, but the two operators are connected by a
+similarity transformation.
+We now want to derive the matrix elements of $\cal A$ and $\cal B$.
+
+We start with $\cal A$:
+\begin{align}
+\braket{\ell_1 m P_1 | {\cal A} | \ell_2 m P_2} &= \braket{\ell_1 m P_1 | \sqrt{{\cal R}_S} {\cal T}_{S\leftarrow P} \sqrt{{\cal R}_P} | \ell_2 m P_2} \\
+&= \sum_{p,\phi} \int\mathrm{d}^2\vec k \, \braket{\ell_1 m P_1 | \sqrt{{\cal R}_S} {\cal T}_{S\leftarrow P} \sqrt{{\cal R}_P} | \vec k,p,\phi} \braket{\vec k, p, \phi | \ell_2 m P_2} \\
+&= \sum_p \int\mathrm{d}^2\vec k \, \sqrt{r_p} \e^{-\kappa\cal L} \sqrt{\braket{\ell_1 m P_1 | {\cal R}_S | \ell_1 m P_1}} \braket{\ell_1 m P_1 | \vec k,p,+} \braket{\vec k, p,- | \ell_2 m P_2} \\
+\end{align}
+
+And for $\cal B$:
+\begin{align}
+\braket{\ell_1 m P_1 | {\cal B} | \ell_2 m P_2} &= \braket{\ell_1 m P_1 | \sqrt{{\cal R}_P} {\cal T}_{P\leftarrow S} \sqrt{{\cal R}_S} | \ell_2 m P_2} \\
+&= \braket{\ell_1 m P_1 | \sqrt{{\cal R}_P} {\cal T}_{P\leftarrow S} | \ell_2 m P_2} \sqrt{\braket{\ell_2 m P_2 | {\cal R}_S | \ell_2 m P_2}} \\
+&= \sum_{p,\phi} \int\mathrm{d}^2\vec k \, \braket{\ell_1 m P_1 | \sqrt{{\cal R}_P} {\cal T}_{P\leftarrow S} | \vec k,p,\phi} \braket{\vec k,p,\phi | \ell_2 m P_2} \sqrt{\braket{\ell_2 m P_2 | {\cal R}_S | \ell_2 m P_2}} \\
+&= \sum_p \int\mathrm{d}^2\vec k \, \sqrt{r_p} \e^{-\kappa\cal L} \braket{\ell_1 m P_1 | \vec k, p,+} \braket{\vec k,p,- | \ell_2 m P_2} \sqrt{\braket{\ell_2 m P_2 | {\cal R}_S | \ell_2 m P_2}}
+\end{align}
 
 \addcontentsline{toc}{chapter}{Bibliography}
 
