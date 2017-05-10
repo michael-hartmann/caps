@@ -26,7 +26,7 @@ def stepsize_gradient(L):
     return 1
 
 if __name__ == "__main__":
-    files = glob("gold_eta8/slurm-*.out")
+    files = glob("gold_eta9/slurm-*.out")
 
     f_force    = open("force_151300.csv", "w")
     print_force(files, stepsize_force, f=f_force)
