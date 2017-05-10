@@ -591,38 +591,54 @@ double dPl(int l, double x)
  *
  * To evaluate the continued fraction, we use http://dlmf.nist.gov/1.12#E5 and
  * http://dlmf.nist.gov/1.12#E6 .
+ * See also Numerical Recipes in C, ch. 5.2, Evaluation of Continued Fractions
+ *
+ * @param [in] l degree
+ * @param [in] m order
+ * @param [in] x argument
+ * @retval Plm(l,m,x)/Plm(l,m-1,x)
  */
-static inline double _cf(const int l, const int m, const double x)
+static double _cf(const int l, const int m, const double x)
 {
-    const double c = (x+1)*(x-1)/4;
-    double Amm = 1, Am = 0, Bmm = 0;
-    double last = 0;
+    const double alpha = (1-1/(x*x))/4;
 
-    /* it seems that it is faster to use a power of 2 here */
-    for(int n = 0; n < 16384; n++)
+    /* initial values for recrrence */
+    double A,B, Amm = 0, Bmm = 1;
+    double Am = x*(l-m+1)*(l+m)*alpha; /* a0 */
+    double Bm = m;                     /* b0 */
+
+    int j = 1;
+    for(int i = 1; i < 2048; i++)
     {
-        double f, an, bn, A, B;
+        /* do 8 iterations */
+        for(int k = 0; k < 8; k++)
+        {
+            const double aj = (l-m+1-j)*alpha*(l+m+j);
+            const double bj = m+j;
 
-        /* do not change order and keep the double in the middle; this order
-         * prevents integer overflows and for some reason this order is the
-         * fastest ordering */
-        an = (l+m+n)*c*(l+1-m-n); /* coefficient an */
-        bn = (m+n)*x;             /* coefficient bn */
+            A = bj*Am + aj*Amm;
+            B = bj*Bm + aj*Bmm;
 
-        A = Am*bn + Amm*an;  /* A: same as in Abramowitz */
-        B = 1/(bn + Bmm*an); /* B: corresponds to 1/Bn in Abramowitz */
+            Amm = Am;
+            Am  = A;
+            Bmm = Bm;
+            Bm  = B;
 
-        f = A*B; /* current value of the continued fraction */
+            j++;
+        }
 
-        /* This is remarkably faster than fabs(1-last/f) because it avoids a division. */
-        if(f == last)
-            return f/sqrt(c);
+        /* compute last and current continued fraction */
+        double f1 = Amm/Bmm, f2 = Am/Bm;
 
-        Amm = Am*B;
-        Am = f;
-        Bmm = B;
+        /* if they are identical, we're done */
+        if(f1 == f2)
+            return 2*f1/sqrt((x+1)*(x-1));
 
-        last = f;
+        /* rescale */
+        Amm /= Bm;
+        Am  /= Bm;
+        Bmm /= Bm;
+        Bm   = 1;
     }
 
     TERMINATE(true, "l=%d, m=%d, x=%.15g", l,m,x);
