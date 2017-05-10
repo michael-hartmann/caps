@@ -1,7 +1,7 @@
 /**
  * @file   sfunc.c
  * @author Michael Hartmann <michael.hartmann@physik.uni-augsburg.de>
- * @date   October, 2016
+ * @date   May, 2017
  * @brief  various functions implementing mostly special functions
  */
 
