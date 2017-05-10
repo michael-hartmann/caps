@@ -1,6 +1,7 @@
 #!/usr/bin/python3
 
 from pyx import *
+import numpy as np
 from glob import glob
 from math import pi,log,exp
 
@@ -24,12 +25,12 @@ def slurp(filenames):
                     ratio = F/pfa(LbyR)
                     data.append((LbyR, F, ratio, ratio/bimonte(LbyR)))
 
-    return sorted(data, key=lambda x: x[0])
+    return np.array(sorted(data, key=lambda x: x[0]))
 
 
 if __name__ == "__main__":
     plotPFA     = True
-    plotBimonte = True
+    plotBimonte = False
 
     # use LaTeX for Pyx
     text.set(text.LatexRunner)
@@ -47,36 +48,38 @@ if __name__ == "__main__":
 
     if plotPFA:
         # plot F/F_PFA and Bimonte
+        x = data[:,0]
+        y = (1-data[:,2])/x
         g = graph.graphxy(
             width = 10,
-            x = graph.axis.log(title=r"$x=L/R$", max=0.02, min=0.00045),
-            y = graph.axis.lin(title=r"$\mathcal{F}/\mathcal{F}_\mathrm{PFA}(T=0)$", min=0.97),
+            x = graph.axis.log(title=r"$x=L/R$", min=4e-4),
+            y = graph.axis.lin(title=r"$\mathcal{F}/\mathcal{F}_\mathrm{PFA}(T=0)$"),
             key=graph.key.key(pos="tr", dist=0.1)
         )
 
-        g2 = g.insert(graph.graphxy(
-            width = 4,
-            xpos = 1.7,
-            ypos = 1,
-            x = graph.axis.lin(max=0.0045, min=0.00045),
-            y = graph.axis.lin(max=0.9998, min=0.9925)
-        ))
+        #g2 = g.insert(graph.graphxy(
+        #    width = 4,
+        #    xpos = 1.7,
+        #    ypos = 1,
+        #    x = graph.axis.lin(max=0.0045, min=0.00045),
+        #    y = graph.axis.lin(max=0.9998, min=0.9925)
+        #))
 
 
         g.plot(
-            graph.data.points(data, x=1, y=3, title="numerisch"),
+            graph.data.values(x=x, y=y, title="numerisch"),
             [graph.style.symbol(graph.style.symbol.circle, size=0.04, symbolattrs=attrs)]
         )
 
-        f = "y(x)=1+%.15g*x+%.15g*x**2*log(x)" % (theta1,theta2)
-        g.plot(graph.data.function(f, title="Bimonte et al."))
+        #f = "y(x)=1+%.15g*x+%.15g*x**2*log(x)" % (theta1,theta2)
+        #g.plot(graph.data.function(f, title="Bimonte et al."))
 
-        g2.plot(
-            graph.data.points(data, x=1, y=3, title="numerisch"),
-            [graph.style.symbol(graph.style.symbol.circle, size=0.04, symbolattrs=attrs)]
-        )
+        #g2.plot(
+        #    graph.data.points(data, x=1, y=3, title="numerisch"),
+        #    [graph.style.symbol(graph.style.symbol.circle, size=0.04, symbolattrs=attrs)]
+        #)
 
-        g2.plot(graph.data.function(f))
+        #g2.plot(graph.data.function(f))
 
         g.writePDFfile("pfaT0.pdf")
 
