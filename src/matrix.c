@@ -91,8 +91,8 @@ double kernel_logdet(int dim, double (*kernel)(int,int,void *), void *args, int 
          * block at the leaf level. The number of levels in the tree is given
          * by log_2(N/nLeaf).
          */
-        const unsigned int nLeaf = 100; /* XXX */
-        const double tolerance = 1e-15;
+        const unsigned int nLeaf = 100;       /* XXX */
+        const double tolerance = trace*1e-15; /* XXX */
 
         /* calculate log(det(D)) using HODLR approach */
         logdet = hodlr_logdet_diagonal(dim, kernel, args, diagonal, nLeaf, tolerance, symmetric);
