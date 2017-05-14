@@ -53,7 +53,7 @@ if __name__ == "__main__":
         g = graph.graphxy(
             width = 10,
             x = graph.axis.log(title=r"$x=L/R$", min=4e-4),
-            y = graph.axis.lin(title=r"$\mathcal{F}/\mathcal{F}_\mathrm{PFA}(T=0)$"),
+            y = graph.axis.lin(title=r"$(R/L)(1-\mathcal{F}/\mathcal{F}_\mathrm{PFA}(T=0))$"),
             key=graph.key.key(pos="tr", dist=0.1)
         )
 
