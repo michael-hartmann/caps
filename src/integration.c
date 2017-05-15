@@ -324,7 +324,7 @@ static double K_integrand(double z, void *args_)
 
     casimir->rp(casimir, xi, xi*sqrt(z2p2z), &rTE, &rTM);
 
-    TERMINATE(isnan(v) || isinf(v), "z=%g, nu=%d, m=%d, tau=%g, v=%g", z, nu, m, tau, v);
+    TERMINATE(isnan(v) || isinf(v), "z=%g, nu=%d, m=%d, tau=%g, v=%g, log_normalization=%g", z, nu, m, tau, v, log_normalization);
 
     if(args->p == TE)
         return rTE*v;
@@ -362,7 +362,7 @@ static double _casimir_integrate_K(integration_t *self, int nu, polarization_t p
         b = -log(eps)/tau; /* exp(-14) =~ 1e-6 */
         log_normalization = log(3);
     }
-    else if(nu/tau > 4)
+    else if(nu/tau > 5)
         /* large z limit */
         zmax = K_estimate_zlarge(nu, m, tau, eps, &a, &b, &log_normalization);
     else
