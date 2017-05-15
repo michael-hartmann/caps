@@ -133,10 +133,14 @@ Also, libcasimir uses some third-party software:
 Publications
 ------------
 
+ * [Plasma vs Drude modelling of the Casimir force: beyond the proximity force approximation](https://arxiv.org/abs/1705.04196) (on [arxiv](https://arxiv.org/abs/1705.04196))  
+   Michael Hartmann, Gert-Ludwig Ingold, and Paulo A. Maia Neto,  
+   preprint on arxiv (2017)
+
  * [Disentangling geometric and dissipative origins of negative Casimir entropies](http://dx.doi.org/10.1103/PhysRevE.92.042125) (on [arxiv](http://arxiv.org/abs/1507.05891))  
    Stefan Umrath, Michael Hartmann, Gert-Ludwig Ingold, and Paulo A. Maia Neto,  
    Phys. Rev. E 92, 042125 (2015)
 
  * [Geometric origin of negative Casimir entropies: A scattering-channel analysis](http://dx.doi.org/10.1103/PhysRevE.91.033203) (on [arxiv](http://arxiv.org/abs/1411.1866))  
    Gert-Ludwig Ingold, Stefan Umrath, Michael Hartmann, Romain Guérout, Astrid Lambrecht, Serge Reynaud, and Kimball A. Milton,  
-   Phys. Rev. E 91, 033203 (2015) 
+   Phys. Rev. E 91, 033203 (2015)
