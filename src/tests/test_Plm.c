@@ -1091,5 +1091,146 @@ int test_Plm()
     AssertAlmostEqual(&test, Plm(50000,100,1000),   381121.0069832949);
     AssertAlmostEqual(&test, Plm(50000,100,1e+06),  726508.7834323190);
 
+
+    AssertAlmostEqual(&test, Plm(75000,0,1.0001), 1056.2562443029821729);
+    AssertAlmostEqual(&test, Plm(75000,0,1.001),  3348.8668802341118374);
+    AssertAlmostEqual(&test, Plm(75000,0,1.01),   10592.298570485370834);
+    AssertAlmostEqual(&test, Plm(75000,0,1.1),    33261.699465385799352);
+    AssertAlmostEqual(&test, Plm(75000,0,1.5),    72175.667623551024016);
+    AssertAlmostEqual(&test, Plm(75000,0,2),      98765.694533599254180);
+    AssertAlmostEqual(&test, Plm(75000,0,5),      171926.19535760375774);
+    AssertAlmostEqual(&test, Plm(75000,0,10),     224485.52972905136274);
+    AssertAlmostEqual(&test, Plm(75000,0,50),     345374.07788556377347);
+    AssertAlmostEqual(&test, Plm(75000,0,100),    397365.74244498135836);
+    AssertAlmostEqual(&test, Plm(75000,0,500),    518075.38593574193265);
+    AssertAlmostEqual(&test, Plm(75000,0,1000),   570061.48072746829618);
+    AssertAlmostEqual(&test, Plm(75000,0,1e+06),  1.0881431454009918555e6);
+
+    AssertAlmostEqual(&test, Plm(75000,1,1.0001), 1067.48102270298990312);
+    AssertAlmostEqual(&test, Plm(75000,1,1.001),  3360.0919810890515396);
+    AssertAlmostEqual(&test, Plm(75000,1,1.01),   10603.5237730493453263);
+    AssertAlmostEqual(&test, Plm(75000,1,1.1),    33272.924699442189778);
+    AssertAlmostEqual(&test, Plm(75000,1,1.5),    72186.892864665916849);
+    AssertAlmostEqual(&test, Plm(75000,1,2),      98776.919775960427766);
+    AssertAlmostEqual(&test, Plm(75000,1,5),      171937.42060085880374);
+    AssertAlmostEqual(&test, Plm(75000,1,10),     224496.75497241029553);
+    AssertAlmostEqual(&test, Plm(75000,1,50),     345385.30312895495818);
+    AssertAlmostEqual(&test, Plm(75000,1,100),    397376.96768837354345);
+    AssertAlmostEqual(&test, Plm(75000,1,500),    518086.61117913443776);
+    AssertAlmostEqual(&test, Plm(75000,1,1000),   570072.70597086081129);
+    AssertAlmostEqual(&test, Plm(75000,1,1e+06),  1.08815437064438437400e6);
+
+    AssertAlmostEqual(&test, Plm(75000,2,1.0001), 1078.7048577849740266);
+    AssertAlmostEqual(&test, Plm(75000,2,1.001),  3371.3167835354247431);
+    AssertAlmostEqual(&test, Plm(75000,2,1.01),   10614.748880622810089);
+    AssertAlmostEqual(&test, Plm(75000,2,1.1),    33284.149901492901948);
+    AssertAlmostEqual(&test, Plm(75000,2,1.5),    72198.118087892136228);
+    AssertAlmostEqual(&test, Plm(75000,2,2),      98788.145002925489405);
+    AssertAlmostEqual(&test, Plm(75000,2,5),      171948.64583050548263);
+    AssertAlmostEqual(&test, Plm(75000,2,10),     224507.98020236863477);
+    AssertAlmostEqual(&test, Plm(75000,2,50),     345396.52835901005317);
+    AssertAlmostEqual(&test, Plm(75000,2,100),    397388.19291843163959);
+    AssertAlmostEqual(&test, Plm(75000,2,500),    518097.83640919349399);
+    AssertAlmostEqual(&test, Plm(75000,2,1000),   570083.93120091989752);
+    AssertAlmostEqual(&test, Plm(75000,2,1e+06),  1.0881655958744434702e6);
+
+    AssertAlmostEqual(&test, Plm(75000,5,1.0001), 1112.37070313780882094);
+    AssertAlmostEqual(&test, Plm(75000,5,1.001),  3404.9894004218961120);
+    AssertAlmostEqual(&test, Plm(75000,5,1.01),   10648.4236333983843843);
+    AssertAlmostEqual(&test, Plm(75000,5,1.1),    33317.825315609191482);
+    AssertAlmostEqual(&test, Plm(75000,5,1.5),    72231.793650236975820);
+    AssertAlmostEqual(&test, Plm(75000,5,2),      98821.820591442224797);
+    AssertAlmostEqual(&test, Plm(75000,5,5),      171982.32143779353882);
+    AssertAlmostEqual(&test, Plm(75000,5,10),     224541.65581183831339);
+    AssertAlmostEqual(&test, Plm(75000,5,50),     345430.20396915702207);
+    AssertAlmostEqual(&test, Plm(75000,5,100),    397421.86852859961650);
+    AssertAlmostEqual(&test, Plm(75000,5,500),    518131.51201936819147);
+    AssertAlmostEqual(&test, Plm(75000,5,1000),   570117.60681109480500);
+    AssertAlmostEqual(&test, Plm(75000,5,1e+06),  1.08819927148461844771e6);
+
+    AssertAlmostEqual(&test, Plm(75000,10,1.0001), 1168.4615792982929800);
+    AssertAlmostEqual(&test, Plm(75000,10,1.001),  3461.1044603869891883);
+    AssertAlmostEqual(&test, Plm(75000,10,1.01),   10704.546321531159476);
+    AssertAlmostEqual(&test, Plm(75000,10,1.1),    33373.950365672855172);
+    AssertAlmostEqual(&test, Plm(75000,10,1.5),    72287.919229688312429);
+    AssertAlmostEqual(&test, Plm(75000,10,2),      98877.946264364617612);
+    AssertAlmostEqual(&test, Plm(75000,10,5),      172038.44717775636297);
+    AssertAlmostEqual(&test, Plm(75000,10,10),     224597.78155959264627);
+    AssertAlmostEqual(&test, Plm(75000,10,50),     345486.32971933024878);
+    AssertAlmostEqual(&test, Plm(75000,10,100),    397477.99427884787185);
+    AssertAlmostEqual(&test, Plm(75000,10,500),    518187.63776964044884);
+    AssertAlmostEqual(&test, Plm(75000,10,1000),   570173.73256136781238);
+    AssertAlmostEqual(&test, Plm(75000,10,1e+06),  1.0882553972348917051e6);
+
+    AssertAlmostEqual(&test, Plm(75000,100,1.0001), 2174.0681199890990549);
+    AssertAlmostEqual(&test, Plm(75000,100,1.001),  4469.8999245770047975);
+    AssertAlmostEqual(&test, Plm(75000,100,1.01),   11714.348598471648648);
+    AssertAlmostEqual(&test, Plm(75000,100,1.1),    34384.064414236615788);
+    AssertAlmostEqual(&test, Plm(75000,100,1.5),    73298.103157344527652);
+    AssertAlmostEqual(&test, Plm(75000,100,2),      99888.142530197184100);
+    AssertAlmostEqual(&test, Plm(75000,100,5),      173048.65229292514195);
+    AssertAlmostEqual(&test, Plm(75000,100,10),     225607.98770324056521);
+    AssertAlmostEqual(&test, Plm(75000,100,50),     346496.53618227215253);
+    AssertAlmostEqual(&test, Plm(75000,100,100),    398488.20075169355544);
+    AssertAlmostEqual(&test, Plm(75000,100,500),    519197.84424565440068);
+    AssertAlmostEqual(&test, Plm(75000,100,1000),   571183.93903748076526);
+    AssertAlmostEqual(&test, Plm(75000,100,1e+06),  1.0892656037110376582e6);
+
+    AssertAlmostEqual(&test, Plm(75000,200,1.0001), 3282.4950687710595882);
+    AssertAlmostEqual(&test, Plm(75000,200,1.001),  5587.9502467546125885);
+    AssertAlmostEqual(&test, Plm(75000,200,1.01),   12835.448592402100855);
+    AssertAlmostEqual(&test, Plm(75000,200,1.1),    35506.109131223440216);
+    AssertAlmostEqual(&test, Plm(75000,200,1.5),    74420.359628182792717);
+    AssertAlmostEqual(&test, Plm(75000,200,2),      101010.43638941144849);
+    AssertAlmostEqual(&test, Plm(75000,200,5),      174170.97296830097308);
+    AssertAlmostEqual(&test, Plm(75000,200,10),     226730.31149521970792);
+    AssertAlmostEqual(&test, Plm(75000,200,50),     347618.86094180881597);
+    AssertAlmostEqual(&test, Plm(75000,200,100),    399610.52554124167293);
+    AssertAlmostEqual(&test, Plm(75000,200,500),    520320.16904480333104);
+    AssertAlmostEqual(&test, Plm(75000,200,1000),   572306.26383692969874);
+    AssertAlmostEqual(&test, Plm(75000,200,1e+06),  1.0903879285105865923e6);
+
+    AssertAlmostEqual(&test, Plm(75000,500,1.0001), 6553.0171877392128906);
+    AssertAlmostEqual(&test, Plm(75000,500,1.001),  8924.2555162069185627);
+    AssertAlmostEqual(&test, Plm(75000,500,1.01),   16193.048203842688019);
+    AssertAlmostEqual(&test, Plm(75000,500,1.1),    38870.320144630927554);
+    AssertAlmostEqual(&test, Plm(75000,500,1.5),    77786.052877535110642);
+    AssertAlmostEqual(&test, Plm(75000,500,2),      104376.39135583004231);
+    AssertAlmostEqual(&test, Plm(75000,500,5),      177537.11564748109764);
+    AssertAlmostEqual(&test, Plm(75000,500,10),     230096.47599061699948);
+    AssertAlmostEqual(&test, Plm(75000,500,50),     350985.03221010837358);
+    AssertAlmostEqual(&test, Plm(75000,500,100),    402976.69701962140832);
+    AssertAlmostEqual(&test, Plm(75000,500,500),    523686.34059038875649);
+    AssertAlmostEqual(&test, Plm(75000,500,1000),   575672.43538461514606);
+    AssertAlmostEqual(&test, Plm(75000,500,1e+06),  1.0937541000589720441e6);
+
+    AssertAlmostEqual(&test, Plm(75000,1000,1.0001), 11838.001644446660402);
+    AssertAlmostEqual(&test, Plm(75000,1000,1.001),  14425.955855471896173);
+    AssertAlmostEqual(&test, Plm(75000,1000,1.01),   21770.057349513594473);
+    AssertAlmostEqual(&test, Plm(75000,1000,1.1),    44470.917798114660375);
+    AssertAlmostEqual(&test, Plm(75000,1000,1.5),    83391.943645049457989);
+    AssertAlmostEqual(&test, Plm(75000,1000,2),      109983.21680478626551);
+    AssertAlmostEqual(&test, Plm(75000,1000,5),      183144.61149387951368);
+    AssertAlmostEqual(&test, Plm(75000,1000,10),     235704.04975199081104);
+    AssertAlmostEqual(&test, Plm(75000,1000,50),     356592.63016041343460);
+    AssertAlmostEqual(&test, Plm(75000,1000,100),    408584.29572021281054);
+    AssertAlmostEqual(&test, Plm(75000,1000,500),    529293.93953100047980);
+    AssertAlmostEqual(&test, Plm(75000,1000,1000),   581280.03433272694749);
+    AssertAlmostEqual(&test, Plm(75000,1000,1e+06),  1.0993616990095838616e6);
+
+    AssertAlmostEqual(&test, Plm(75000,2000,1.0001), 21926.495584945399670);
+    AssertAlmostEqual(&test, Plm(75000,2000,1.001),  25218.298642875314583);
+    AssertAlmostEqual(&test, Plm(75000,2000,1.01),   32853.112947693695766);
+    AssertAlmostEqual(&test, Plm(75000,2000,1.1),    55647.961960671341498);
+    AssertAlmostEqual(&test, Plm(75000,2000,1.5),    94590.151121010607337);
+    AssertAlmostEqual(&test, Plm(75000,2000,2),      121185.16265711518168);
+    AssertAlmostEqual(&test, Plm(75000,2000,5),      194349.23885352179963);
+    AssertAlmostEqual(&test, Plm(75000,2000,10),     246908.98877019226855);
+    AssertAlmostEqual(&test, Plm(75000,2000,50),     367797.66593425528009);
+    AssertAlmostEqual(&test, Plm(75000,2000,100),    419789.33449519989577);
+    AssertAlmostEqual(&test, Plm(75000,2000,500),    540498.97926606884106);
+    AssertAlmostEqual(&test, Plm(75000,2000,1000),   592485.07409779562124);
+    AssertAlmostEqual(&test, Plm(75000,2000,1e+06),  1.1105667387846525995e6);
+
     return test_results(&test, stderr);
 }
