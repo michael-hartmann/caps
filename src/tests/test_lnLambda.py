@@ -5,9 +5,8 @@ from mpmath import *
 
 mp.dps = 100
 
-def prettyprint(x, length=40):
-    s = str(x)
-    return s[:length]
+def prettyprint(x, length=20):
+    return str(x)[:length]
 
 
 def lnLambda(l1,l2,m):
@@ -15,50 +14,16 @@ def lnLambda(l1,l2,m):
 
 
 if __name__ == "__main__":
-    print prettyprint(lnLambda(1,1,0))
-    print prettyprint(lnLambda(1,1,1))
+    l = []
 
-    print prettyprint(lnLambda(2,1,1))
-    print prettyprint(lnLambda(4,5,3))
-    print prettyprint(lnLambda(5,7,3))
-    print prettyprint(lnLambda(16,6,4))
+    for l1 in (1,2,3,5,10,50,100,200,500,1000,2000,5000,7000,10000,20000,50000,75000,100000):
+        for l2 in (1,2,3,5,10,50,100,200,500,1000,2000,5000,7000,10000,20000,50000,75000,100000):
+            if l1 >= l2:
+                for m in (0,1,2,5,10,20,50,100,20,500,1000,2000,5000):
+                    if l2 >= m:
+                        l.append((l1,l2,m))
 
-    print prettyprint(lnLambda(50,50,0))
-    print prettyprint(lnLambda(50,50,1))
-    print prettyprint(lnLambda(50,50,50))
-    print prettyprint(lnLambda(50,20,10))
 
-    print prettyprint(lnLambda(100,1,0))
-    print prettyprint(lnLambda(100,1,1))
-    print prettyprint(lnLambda(100,6,4))
-    print prettyprint(lnLambda(100,33,17))
-    print prettyprint(lnLambda(100,100,0))
-    print prettyprint(lnLambda(100,100,50))
-    print prettyprint(lnLambda(100,201,10))
-
-    print prettyprint(lnLambda(200,200,0))
-    print prettyprint(lnLambda(200,100,70))
-    print prettyprint(lnLambda(500,500,0))
-
-    print prettyprint(lnLambda(1000,1000,0))
-    print prettyprint(lnLambda(1000,1000,1))
-    print prettyprint(lnLambda(1000,1000,2))
-    print prettyprint(lnLambda(1000,1000,3))
-    print prettyprint(lnLambda(1000,1000,10))
-    print prettyprint(lnLambda(1000,1000,20))
-    print prettyprint(lnLambda(1000,1000,50))
-    print prettyprint(lnLambda(1000,1000,100))
-    print prettyprint(lnLambda(1000,1000,499))
-    print prettyprint(lnLambda(1000,1000,500))
-    print prettyprint(lnLambda(1000,1000,501))
-    print prettyprint(lnLambda(1000,1000,999))
-    print prettyprint(lnLambda(1000,1000,1000))
-
-    print prettyprint(lnLambda(1500,1500,0))
-    print prettyprint(lnLambda(1500,1500,1))
-    print prettyprint(lnLambda(1500,1500,2))
-    print prettyprint(lnLambda(1500,1500,500))
-    print prettyprint(lnLambda(1500,1500,1000))
-    print prettyprint(lnLambda(1500,1500,1500))
-
-    print prettyprint(lnLambda(1500,1,0))
+    for l1,l2,m in l:
+        s = prettyprint(lnLambda(l1,l2,m))
+        print("AssertAlmostEqual(&test, casimir_lnLambda(%d,%d,%d), %s);" % (l1,l2,m,s))
