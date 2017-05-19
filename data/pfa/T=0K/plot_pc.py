@@ -52,7 +52,7 @@ if __name__ == "__main__":
         width = 10,
         key   = graph.key.key(pos="tl", dist=0.1),
         x     = graph.axis.log(title=r"$x=L/R$", min=3e-4),
-        y     = graph.axis.log(title=r"$1-\mathcal{F}/\mathcal{F}_\mathrm{PFA}-\theta_1 R/L$")
+        y     = graph.axis.log(title=r"$1-\mathcal{F}/\mathcal{F}_\mathrm{PFA}-\theta_1 L/R$")
     )
 
     g.plot(
