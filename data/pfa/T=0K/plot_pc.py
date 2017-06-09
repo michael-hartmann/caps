@@ -42,11 +42,11 @@ if __name__ == "__main__":
     # use LaTeX for Pyx
     text.set(text.LatexRunner)
 
-    data = slurp(glob("pc_gk/slurm-*.out"))
+    data_eta8  = slurp(glob("pc_gk/eta8/slurm-*.out"))
+    data_eta10 = slurp(glob("pc_gk/eta10/slurm-*.out"))
 
     attrs = [color.gradient.RedBlue]
 
-    x,y = data[:,0], data[:,4]
 
     g = graph.graphxy(
         width = 10,
@@ -56,9 +56,14 @@ if __name__ == "__main__":
     )
 
     g.plot(
-        graph.data.values(x=x, y=y, title=None),
-        [graph.style.symbol(graph.style.symbol.circle, size=0.04, symbolattrs=attrs)]
+        [
+        graph.data.points(data_eta8,  x=1, y=5, title=r"$\eta=8$"),
+        graph.data.points(data_eta10, x=1, y=5, title=r"$\eta=10$")
+        ],
+        [graph.style.symbol(graph.style.symbol.changecircle, size=0.04, symbolattrs=attrs)]
     )
+
+    x,y = data_eta8[:,0], data_eta8[:,4]
 
     fit_left, fit_right = 2e-3, 8e-3
     fitx, fity = [], []
