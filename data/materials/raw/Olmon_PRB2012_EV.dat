@@ -1,6 +1,11 @@
-# measured optical dielectric function eps_r = eps1 + i*eps2 for evaporated
-# gold.
+# Description: Measured optical dielectric function eps_r = eps1 + i*eps2 for
+# evaporated gold.
+#
+# Preparation: 200nm thick film deposited by evaporation onto a soda-lime glass
+# substrate.
+#
 # https://journals.aps.org/prb/abstract/10.1103/PhysRevB.86.235147
+#
 # E (eV)      lambda (µm)   eps1           eps2          n             k
 4.133E+00,    3.000E-07,    -1.019E+00,    6.027E+00,    1.596E+00,    1.888E+00
 3.999E+00,    3.100E-07,    -8.733E-01,    6.251E+00,    1.649E+00,    1.895E+00
