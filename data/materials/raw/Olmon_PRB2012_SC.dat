@@ -1,4 +1,4 @@
-# measured optical dielectric function eps_r = eps1 + i*eps2 for evaporated
+# measured optical dielectric function eps_r = eps1 + i*eps2 for single-crystal
 # gold.
 # https://journals.aps.org/prb/abstract/10.1103/PhysRevB.86.235147
 # E (eV)      lambda (µm)   eps1           eps2          n             k
