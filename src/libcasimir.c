@@ -1005,7 +1005,7 @@ double casimir_kernel_M0_MM(int i, int j, void *args_)
     const int lmin = args->lmin;
     const int l1 = i+lmin, l2 = j+lmin, m = args->m;
 
-    return exp( (l1+l2+1)*y + lfac(l1+l2) - 0.5*(lfac(l1+m)+lfac(l1-m) + lfac(l2+m)+lfac(l2-m)) )*sqrt((l1*l2)/((l1+1.)*(l2+1.)));
+    return exp( (l1+l2+1)*y + lfac(l1+l2) - 0.5*(lfac(l1+m)+lfac(l1-m) + lfac(l2+m)+lfac(l2-m)) )*sqrt(((double)l1*(double)l2)/((l1+1.)*(l2+1.)));
 }
 
 
