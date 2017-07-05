@@ -2,11 +2,12 @@
 #include <math.h>
 #include "unittest.h"
 
-void unittest_init(unittest_t *test, const char *func, const char *desc)
+void unittest_init(unittest_t *test, const char *func, const char *desc, double eps)
 {
     test->passed = test->failed = 0;
     test->func = func;
     test->desc = desc;
+    test->eps  = eps;
 }
 
 int test_results(unittest_t *test, FILE *stream)
