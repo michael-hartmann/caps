@@ -3,10 +3,9 @@
 
 #include <stdio.h>
 
-#define EPS 1e-10
 #define Assert(t,boolean) _Assert(__LINE__, (t), (boolean))
 #define AssertEqual(t,x,y) _AssertEqual(__LINE__, (t), (x), (y))
-#define AssertAlmostEqual(t,x,y) _AssertAlmostEqual(__LINE__, (t), (x), (y), EPS)
+#define AssertAlmostEqual(t,x,y) _AssertAlmostEqual(__LINE__, (t), (x), (y), (t)->eps)
 
 #define KNRM  "\x1B[0m"
 #define KRED  "\x1B[31m"
@@ -22,9 +21,10 @@ typedef struct {
     int failed;
     const char *func;
     const char *desc;
+    double eps;
 } unittest_t;
 
-void unittest_init(unittest_t *test, const char *func, const char *desc);
+void unittest_init(unittest_t *test, const char *func, const char *desc, double eps);
 int test_results(unittest_t *test, FILE *stream);
 int _Assert(int line, unittest_t *test, int boolean);
 int _AssertAlmostEqual(int line, unittest_t *test, double x, double y, double eps);
