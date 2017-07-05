@@ -9,7 +9,7 @@ int test_mie(void)
     sign_t sign_a, sign_b;
     double lna, lnb;
     unittest_t test;
-    unittest_init(&test, "Mie", "Test Mie functions al,bl for various parameters");
+    unittest_init(&test, "Mie", "Test Mie functions al,bl for various parameters", 1e-10);
 
     casimir_t *self = casimir_init(1);
 

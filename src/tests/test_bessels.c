@@ -6,7 +6,7 @@
 int test_besselI()
 {
     unittest_t test;
-    unittest_init(&test, "Bessel function I_nu", "Test modified Bessel function I_nu");
+    unittest_init(&test, "Bessel function I_nu", "Test modified Bessel function I_nu", 1e-10);
 
     AssertAlmostEqual(&test, bessel_lnInu(0,1e-6), -7.133546631626697);
     AssertAlmostEqual(&test, bessel_lnInu(0,1e-5), -5.982254085113174);
@@ -245,7 +245,7 @@ int test_besselI()
 int test_besselK()
 {
     unittest_t test;
-    unittest_init(&test, "Bessel function K_nu", "Test modified Bessel function K_nu");
+    unittest_init(&test, "Bessel function K_nu", "Test modified Bessel function K_nu", 1e-10);
 
     AssertAlmostEqual(&test, bessel_lnKnu(0,1e-6), 7.133545631626864);
     AssertAlmostEqual(&test, bessel_lnKnu(0,1e-5), 5.9822440851298415);

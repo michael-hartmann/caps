@@ -19,7 +19,7 @@ int test_fresnel()
     double r_TE, r_TM;
     double userdata[2];
 
-    unittest_init(&test, "Fresnel", "Test Fresnel coefficients");
+    unittest_init(&test, "Fresnel", "Test Fresnel coefficients", 1e-10);
 
     casimir = casimir_init(1); /* L/R doesn't matter */
 

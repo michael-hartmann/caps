@@ -9,7 +9,7 @@ int test_Plm()
 {
     unittest_t test;
 
-    unittest_init(&test, "Plm", "Test associated Legendre polynomials");
+    unittest_init(&test, "Plm", "Test associated Legendre polynomials", 1e-10);
 
     AssertAlmostEqual(&test, Plm(1,0,1.01), 0.00995033085316809);
     AssertAlmostEqual(&test, Plm(1,0,1.1), 0.09531017980432493);

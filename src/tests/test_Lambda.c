@@ -6,7 +6,7 @@
 int test_Lambda(void)
 {
     unittest_t test;
-    unittest_init(&test, "Lambda", "Test Lambda function for various parameters");
+    unittest_init(&test, "Lambda", "Test Lambda function for various parameters", 1e-10);
 
     AssertAlmostEqual(&test, casimir_lnLambda(1,1,0), 0.405465108108164381);
     AssertAlmostEqual(&test, casimir_lnLambda(1,1,1), -0.28768207245178092);
