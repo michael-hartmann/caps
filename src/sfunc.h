@@ -55,6 +55,5 @@ double Plm_downwards(int l, int m, double x) __attribute__ ((pure));
 
 double Plm_estimate(int l, int m, double x) __attribute__ ((pure));
 double Pl(int l, double x);
-double dPl(int l, double x);
 
 #endif

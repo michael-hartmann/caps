@@ -1,7 +1,7 @@
 /**
  * @file   sfunc.c
  * @author Michael Hartmann <michael.hartmann@physik.uni-augsburg.de>
- * @date   May, 2017
+ * @date   July, 2017
  * @brief  various functions implementing mostly special functions
  */
 
@@ -564,25 +564,6 @@ double Pl(int l, double x)
     else
         /* (l+1)*sinh(xi) < 25. */
         return _Pl2(l,x);
-}
-
-
-/* @brief Derivative of Legendre polynomial Pl
- *
- * Evaluation of dPl(x) for x>=1.
- *
- * Function returns log(dPl(x)).
- *
- * @param [in] l degree
- * @param [in] x argument
- * @retval log(dPl(x))
- */
-double dPl(int l, double x)
-{
-    double lnPl  = Pl(l,x);   /* P_l */
-    double lnPlm = Pl(l-1,x); /* P_{l-1} */
-
-    return log((l*x)/((x+1)*(x-1))) + lnPl + log1p( -exp(lnPlm-lnPl)/x );
 }
 
 /* Calculate fraction P_l^m/P_l^{m-1}
