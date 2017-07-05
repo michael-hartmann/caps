@@ -11,7 +11,7 @@ int test_mie_drude(void)
     casimir_t *casimir;
     unittest_t test;
 
-    unittest_init(&test, "Mie (Drude)", "Test Mie coefficients for various parameters");
+    unittest_init(&test, "Mie (Drude)", "Test Mie coefficients for various parameters", 1e-10);
 
     casimir = casimir_init(1);
     userdata[0] = 50000; userdata[1] = 1;
