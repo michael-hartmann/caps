@@ -50,7 +50,6 @@ TESTS = \
     tests/tests.o \
     tests/unittest.o \
     tests/test_bessels.o \
-    tests/test_doublefact.o \
     tests/test_fresnel.o \
     tests/test_mie.o \
     tests/test_Plm.o \
