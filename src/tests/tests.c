@@ -2,6 +2,8 @@
 
 #include "unittest.h"
 
+#include "test_lfac.h"
+#include "test_logi.h"
 #include "test_bessels.h"
 #include "test_casimirF.h"
 #include "test_doublefact.h"
@@ -17,6 +19,8 @@
 
 int main(int argc, char *argv[])
 {
+    test_lfac();
+    test_logi();
     test_Lambda();
 
     test_fresnel();
@@ -29,13 +33,6 @@ int main(int argc, char *argv[])
     test_mie_drude();
 
     test_Plm();
-
-
-    //test_integration_perf();
-    //test_integration_drude();
-
-    //test_logdet_HT();
-    //test_logdet();
 
 	return 0;
 }

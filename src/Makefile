@@ -44,6 +44,8 @@ OBJS = \
     utils.o
 
 TESTS = \
+    tests/test_lfac.o \
+    tests/test_logi.o \
     tests/test_Lambda.o \
     tests/tests.o \
     tests/unittest.o \
