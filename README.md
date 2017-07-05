@@ -19,15 +19,6 @@ the universe expands in an increasing rate suggest a non-zero energy density of
 vacuum. However, estimations of the cosmological constant and meassurements
 disagree by about 120 orders of magnitude.
 
-Moreover, negative entropies are found for some geometries and parameters in
-the Casimir effect. Negative entropies, for example, occur in the plane–plane
-geometry for metals described by the Drude model. In addition, this effect also
-occurs in the plane–sphere geometry even for perfect reflectors, thus
-suggesting a geometrical origin of negative entropies. This is in general not a
-problem, since the Casimir free energy is an interaction energy and does not
-describe the entire physical system. However, the origin of negative entropies
-is not understood very well.
-
 
 libcasimir
 ==========
@@ -35,14 +26,14 @@ libcasimir
 What is libcasimir?
 -------------------
 libcasimir implements the numerics for the Casimir effect in the plane-sphere
-geometry with perfect spheres using the scattering approach.  A sphere of
-radius R is separated by a distance of L from a plane. The plane is infinite in
-the xy-direction.
+geometry for arbitrary materials at zero and finite temperature using the
+scattering approach. A sphere of radius R is separated by a distance of L from
+a plane. The plane is infinite in the xy-direction.
 
 Features
 --------
- - Calculate the free energy F(T,L/R) for different separations and temperatures
- - Calculate the free energy F(T→∞,L/R) in the high temperature limit
+ - Calculate the free energy F(T,L,R) for different separations and temperatures
+ - Calculate the free energy F(T→∞,L,R) in the high temperature limit
  - Full support for perfect conductors, Drude metals, and generic metals
    described by a user-defined dielectric function
  - libcasimir is fast and reliable
