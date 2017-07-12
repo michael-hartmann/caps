@@ -1,7 +1,7 @@
 from math import log,lgamma
 
 max_logi = 32768
-max_lfac = 32768
+max_lfac = 16*32768
 
 header = """/* created by lookup.py */
 #ifndef LOOKUP_H
@@ -42,7 +42,7 @@ double lookup_logi[] = { /* %g kb */
     print("\n", file=f)
 
 
-    print("double lookup_lfac[] = { /* %g kb */ " % (max_lfac*8/1024), file=f)
+    print("double lookup_lfac[] = { /* %g kb */" % (max_lfac*8/1024), file=f)
 
     for i in range(max_lfac-1):
         print("    %.20e, /* lgamma(1+%d) */" % (lgamma(1+i),i), file=f)
