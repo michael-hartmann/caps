@@ -1,7 +1,8 @@
 import numpy as np
-from math import atan, pi, log, e
+from math import atan, pi, log10
 from scipy.integrate import simps
-import matplotlib.pyplot as plt
+
+hbar_eV = 6.582119514e-16 # eV s
 
 class Gold:
     def __init__(self, omega, eps2, omegap=8.45, gamma=0.047):
@@ -32,79 +33,44 @@ class Gold:
 
 
 if __name__ == "__main__":
-    # olmon_EV
-    data_olmonEV = np.loadtxt("Olmon_PRB2012_EV.dat", delimiter=",", usecols=(0,3))
-    omega_olmonEV = data_olmonEV[:,0]
-    eps2_olmonEV = data_olmonEV[:,1]
-    gold_olmonEV = Gold(omega_olmonEV, eps2_olmonEV, omegap=8.45, gamma=0.047)
+    from argparse import ArgumentParser
 
-    # olmon_SC
-    data_olmonSC = np.loadtxt("Olmon_PRB2012_SC.dat", delimiter=",", usecols=(0,3))
-    omega_olmonSC = data_olmonSC[:,0]
-    eps2_olmonSC = data_olmonSC[:,1]
-    gold_olmonSC = Gold(omega_olmonSC, eps2_olmonSC, omegap=8.45, gamma=0.047)
+    parser = ArgumentParser(description="Rotate optical data to imaginary axis")
 
-    # olmon_TS
-    data_olmonTS = np.loadtxt("Olmon_PRB2012_TS.dat", delimiter=",", usecols=(0,3))
-    omega_olmonTS = data_olmonTS[:,0]
-    eps2_olmonTS = data_olmonTS[:,1]
-    gold_olmonTS = Gold(omega_olmonTS, eps2_olmonTS, omegap=8.45, gamma=0.047)
+    # required argument
+    parser.add_argument("filename", type=str, help="input filename")
 
-    # palik
-    data_palik = np.loadtxt("palik.csv", delimiter=",", usecols=(0,3))
-    omega_palik = data_palik[:,0]
-    eps2_palik = data_palik[:,1]
-    gold_palik = Gold(omega_palik, eps2_palik, omegap=9, gamma=0.0342)
+    # optional arguments
+    parser.add_argument("--start",  action="store", dest="start", type=float, default=1e11, help="omega start (in rad/s)")
+    parser.add_argument("--stop",   action="store", dest="stop",  type=float, default=1e19, help="omega stop (in rad/s)")
+    parser.add_argument("--points", action="store", dest="N",     type=int,   default=800,  help="number of points")
 
-    # brandli
-    data_brandli = np.loadtxt("brandli.csv", delimiter=",", usecols=(0,3))
-    omega_brandli = data_brandli[:,0]
-    eps2_brandli = data_brandli[:,1]
+    parser.add_argument("--omegap_low",  action="store", dest="omegap_low", type=float, default=8.45,  help="omegap low (in eV)")
+    parser.add_argument("--gamma_low",   action="store", dest="gamma_low",  type=float, default=0.047, help="gamma low (in eV)")
 
-    # dft
-    data_dft = np.loadtxt("Werner.csv", delimiter=",", usecols=(0,3))
-    omega_dft = data_dft[:,0]
-    eps2_dft = data_dft[:,1]
+    parser.add_argument("--omegap_high", action="store", dest="omegap_high", type=float, default=0, help="omegap high (in eV)")
+    parser.add_argument("--gamma_high",  action="store", dest="gamma_high",  type=float, default=0, help="gamma high (in eV)")
 
-    # Hagemann
-    data_hagemann = np.loadtxt("Hagemann.csv", delimiter=",", usecols=(0,3))
-    omega_hagemann = data_hagemann[:,0]*1e6
-    eps2_hagemann = data_hagemann[:,1]
+    args = parser.parse_args()
 
-    # merged
-    data_merged = np.loadtxt("mixed.csv", delimiter=",", usecols=(0,3))
-    omega_merged = data_merged[:,0]
-    eps2_merged = data_merged[:,1]
-    gold_merged = Gold(omega_merged, eps2_merged, omegap=8.45, gamma=0.047)
+    data = np.loadtxt(args.filename, delimiter=",", usecols=(0,3))
+    gold = Gold(data[:,0], data[:,1], omegap=args.omegap_low, gamma=args.gamma_low)
 
+    omega = np.logspace(log10(args.start), log10(args.stop), args.N)
+    eps2  = 1+gold.epsm1(omega*hbar_eV)
 
-    # olmon + palik
-    omega = np.logspace(log(0.0001), log(1000), 1000, base=e)
-    eps_olmon  = gold_olmonEV.epsm1(omega)
-    eps_palik  = gold_palik.epsm1(omega)
-    eps_merged = gold_merged.epsm1(omega)
+    print("# This file contains the dielectric function epsilon(i*xi) for Gold")
+    print("# input filename: %s" % args.filename)
+    print("#")
+    print("# Drude parameters for low frequencies:")
+    print("# omegap_low = %geV" % args.omegap_low)
+    print("# gamma_low = %geV"  % args.gamma_low)
+    print("#")
+    print("# Drude parameters for high frequencies:")
+    print("# omegap_high = %geV" % args.omegap_high)
+    print("# gamma_high = %geV"  % args.gamma_high)
+    print("#")
+    print("# xi in rad/s            epsilon(i*xi)")
 
-
-    #plt.loglog(omega_palik, eps2_palik, "x", label="Palik")
-    plt.loglog(omega_olmonEV, eps2_olmonEV, "o", label="Olmon EV")
-    plt.loglog(omega_olmonSC, eps2_olmonSC, "x", label="Olmon SC")
-    plt.loglog(omega_olmonTS, eps2_olmonTS, "d", label="Olmon TS")
-    plt.loglog(omega_dft, eps2_dft, "+", label="DFT")
-    plt.loglog(omega_palik, eps2_palik, "+", label="Palik")
-    #plt.loglog(omega_hagemann, eps2_hagemann, "d", label="Hagemann")
-    plt.xlabel("omega [eV]")
-    plt.ylabel("eps''(omega)")
-    plt.legend()
-    plt.show()
-
-    dalvit = np.loadtxt("../GoldEpsIm.dat")
-    dalvit[:,0] /= 1.519e15
-    dalvit[:,1] -= 1
-
-    plt.loglog(omega, eps_palik, label="Palik")
-    plt.loglog(omega, eps_merged, label="Olmon EV + Palik")
-    plt.loglog(dalvit[:,0], dalvit[:,1], label="Diego")
-    plt.xlabel("omega [eV]")
-    plt.ylabel("eps(i*omega)-1")
-    plt.legend()
-    plt.show()
+    for i,omega_ in enumerate(omega):
+        print("%.6e\t%.6e" % (omega_, eps2[i]))
