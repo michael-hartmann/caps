@@ -1,56 +1,24 @@
-from math import log,e
 import numpy as np
-import matplotlib.pyplot as plt
-from scipy.optimize import curve_fit
+from pyx import *
 
 hbar = 6.582119514e-16 # eV/s
 
-def epsilon_drude(xi, omegap, gamma):
-    """Fit function for Drude model"""
-    return 1+omegap**2/(xi*(xi+gamma))
-
-
 # read data of gold
-data = np.loadtxt("GoldEpsIm.dat")
-xi      = data[:,0]
-epsilon = data[:,1]
+dalvit = np.loadtxt("GoldDalvit.dat")
+palik  = np.loadtxt("GoldPalik.dat")
+mixed  = np.loadtxt("GoldMixed.dat")
 
-# fit small
-npts = 200 # use first npts points for fit
-xdata = xi[:npts]
-ydata = epsilon[:npts]
-popt, pcov = curve_fit(epsilon_drude, xdata, ydata, p0=(9/hbar, 0.035/hbar))
-omega_p, gamma = popt
+g = graph.graphxy(
+    width = 8,
+    key   = graph.key.key(),
+    x     = graph.axis.log(title=r"$\omega$ (eV)", min=1e-4, max=1e3),
+    y     = graph.axis.log(title=r"$\epsilon(i\omega)$")
+)
 
-# fit small
-npts = 50 # use first npts points for fit
-xdata = xi[-npts:]
-ydata = epsilon[-npts:]
-popt, pcov = curve_fit(epsilon_drude, xdata, ydata, p0=(9/hbar, 0.035/hbar))
-omega_p2, gamma2 = popt
+g.plot([
+    graph.data.values(x=dalvit[:,0]*hbar, y=dalvit[:,1], title="Dalvit"),
+    graph.data.values(x=palik[:,0]*hbar, y=palik[:,1], title="Palik"),
+    graph.data.values(x=mixed[:,0]*hbar, y=mixed[:,1], title="Olmon + Palik")
+], [graph.style.line([color.gradient.RedBlue])])
 
-
-print("xi small")
-print("ωp = %.8g eV" % (omega_p*hbar))
-print("γ  = %.8g eV" % (gamma*hbar))
-print()
-
-print("xi large")
-print("ωp = %.8g eV" % (omega_p2*hbar))
-print("γ  = %.8g eV" % (gamma2*hbar))
-
-
-# plot
-xi = np.logspace(log(1e11), log(1e19), 1000, base=e)
-drude = (omega_p)**2/(xi*(xi+gamma))
-
-drude2 = (omega_p2)**2/(xi*(xi+gamma2))
-
-plt.plot(data[:,0], data[:,1]-1)
-plt.plot(xi, drude)
-plt.plot(xi, drude2)
-plt.xlabel("xi")
-plt.ylabel("epsilon(i*xi)")
-plt.xscale('log')
-plt.yscale('log')
-plt.show()
+g.writePDFfile()
