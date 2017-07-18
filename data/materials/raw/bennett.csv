@@ -1,6 +1,9 @@
-# H. E. Bennett and J. M. Bennett, Optical Properties and Electronic Structure
-# of Metals and Alloys edited by F. Abeles (North-Holland, Amsterdam, 1966), p.
-# 175
+# G. Brandli and A. J. Sievers, Phys. Rev. B 5, 3550 (1972)
+#
+# data can be found in:
+# Ordal, Long, Bell, Bell, Bell, Alexander, Ward, Ward,
+# Optical properties of the metals Al, Co, Cu, Au, Fe, Pb, Ni, Pd, Pt, Ag, Ti,
+# and W in the infrared and far infrared
 
 # E (eV)      lambda (m)    eps1           eps2          n             k
 3.890e-03,    3.187e-04,    -8.620e+04,    6.230e+05,    5.209e+02,    5.980e+02
