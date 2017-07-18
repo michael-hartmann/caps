@@ -7,7 +7,7 @@ olmonEV  = np.loadtxt("olmon_EV.csv", delimiter=",", usecols=(0,3))
 olmonSC  = np.loadtxt("olmon_SC.csv", delimiter=",", usecols=(0,3))
 olmonTS  = np.loadtxt("olmon_TS.csv", delimiter=",", usecols=(0,3))
 palik    = np.loadtxt("palik.csv",    delimiter=",", usecols=(0,3))
-bennett  = np.loadtxt("bennett.csv",  delimiter=",", usecols=(0,3))
+brandli  = np.loadtxt("brandli.csv",  delimiter=",", usecols=(0,3))
 
 xmin, xmax = 2e-3, 1e4
 g = graph.graphxy(
@@ -22,7 +22,7 @@ g.plot(graph.data.points(palik, x=1, y=2, title="Palik"),
     [graph.style.symbol(size=0.07, symbolattrs=[color.cmyk.Peach])]
 )
 
-g.plot(graph.data.points(bennett, x=1, y=2, title="Bennett"),
+g.plot(graph.data.points(brandli, x=1, y=2, title="Brandli"),
     [graph.style.symbol(size=0.07, symbolattrs=[color.cmyk.OliveGreen])]
 )
 
