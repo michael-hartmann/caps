@@ -1,4 +1,6 @@
-# Table 3 from G. Brandli and A. J. Sievers, Phy. Rev. B 5, 3550 (1972) page 9
+# H. E. Bennett and J. M. Bennett, Optical Properties and Electronic Structure
+# of Metals and Alloys edited by F. Abeles (North-Holland, Amsterdam, 1966), p.
+# 175
 
 # E (eV)      lambda (m)    eps1           eps2          n             k
 3.890e-03,    3.187e-04,    -8.620e+04,    6.230e+05,    5.209e+02,    5.980e+02
