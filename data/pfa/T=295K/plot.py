@@ -1,10 +1,10 @@
 import numpy as np
 from pyx import *
 
-data_R10 = np.loadtxt("R=10e-6/data.csv", delimiter=",")
-data_R30 = np.loadtxt("R=30e-6/data.csv", delimiter=",")
-data_R50 = np.loadtxt("R=50e-6/data.csv", delimiter=",")
-data_R151 = np.loadtxt("R=151.3e-6/data.csv", delimiter=",")
+data_R10  = np.loadtxt("R10mu/data.csv", delimiter=",")
+data_R30  = np.loadtxt("R30mu/data.csv", delimiter=",")
+data_R50  = np.loadtxt("R50mu/data.csv", delimiter=",")
+data_R151 = np.loadtxt("R151.3mu/data.csv", delimiter=",")
 
 x_R10        = data_R10[:,0]
 y_R10_drude  = data_R10[0,1]*(1-data_R10[:,3]/data_R10[:,5])
