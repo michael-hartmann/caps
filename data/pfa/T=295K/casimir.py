@@ -75,7 +75,7 @@ class PFA:
     def __init__(self, R, T, filename=None, args=None):
         """R in m, T in K"""
         if filename == None:
-            filename = dirname(__file__) + "/../../materials/GoldEpsIm.dat"
+            filename = dirname(__file__) + "/../../materials/GoldDalvit.dat"
         self.R = R
         self.T = T
         self.epsilonm1 = get_epsilonm1(filename)
