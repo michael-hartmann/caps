@@ -12,7 +12,6 @@
 
 \DeclareMathOperator{\atan}{atan}
 
-
 \begin{document}
 
 \title{Casimir force between metallic mirrors}
@@ -33,42 +32,42 @@ rotated to the imaginary axis.
 \section{Introduction}
 
 The Casimir free energy in the plane-plane geometry is a function of the
-separation $L$ between the two plates, the temperature $T$ and the optical
+separation $L$ between the two plates, the temperature $T$, and the optical
 properties of the plates
 \begin{equation}
 {\cal F} = {\cal F}\left(L,T,\epsilon(i\omega)\right) \,.
 \end{equation}
-Due to the Wick rotation, the dielectric function is evaluated for imaginary
-frequencies. The dielectric function on the imaginary axis is connected with
-the imaginary part of the dielectric function by the Kramers-Kronig relations.
+Due to the Wick rotation, the dielectric function is evaluated at imaginary
+frequencies.
 
-Here, we show how to compute the dielectric function on the imaginary axis from
-optical data, and discuss problems related to the extrapolation of the
-experimental data for small frequencies. The general idea was discussed in
-\cite{Lambrecht2000}, a more detailed analysis about the dependence of the
-optical properties on the preparation and the variation of the Casimir force
-calculated with the use of different optical data can be found in
-\cite{Pirozhenko2006}.
+Here, we derive a relation between the dielectric function at imaginary
+frequencies and the imaginary part of the dielectric function at real
+frequencies.  The general idea has been discussed in \cite{Lambrecht2000}, a
+detailed analysis of the dependence of the optical properties on the
+preparation and the variation of the Casimir force calculated with the use of
+different optical data can be found in \cite{Pirozhenko2006}.
 
 \section{Kramers-Kronig relations}
 
 \begin{figure}
-\includegraphics[width=0.5\columnwidth]{img/contour.eps}
-\caption{Contour $\cal C$ used to derive the Kramers-Kronig relations.}
+\includegraphics[width=0.9\columnwidth]{img/contour.pdf}
+\caption{a) Contour ${\cal C}_1$ used to derive the Kramers-Kronig relations, b)
+contour ${\cal C}_2$ used to derive the dielectric function for imaginary
+frequencies.}
 \label{fig:contour}
 \end{figure}
 
 The Kramers-Kronig relations connect the real and imaginary parts of a complex
 function that is analytic in the upper half-plane. Let $\chi=\chi'+i\chi''$ be
 analytic in the closed upper half-space, $\chi'$ and $\chi''$ are real, and
-$\chi(x)$ vanishes faster than $|x|^{-1}$ as $x\to\infty$. Then the line
-integral with the contour $\cal C$ sketched in Fig. \ref{fig:contour} vanishes,
+$\chi(x)$ vanishes faster than $|x|^{-1}$ as $|x|\to\infty$. Then the line
+integral with the contour ${\cal C}_1$ sketched in Fig. \ref{fig:contour}a vanishes,
 \begin{equation}
-\oint_{\cal C} \mathrm{d}x \frac{\chi(x)}{x-\omega} = \lim_{\epsilon\to0^+} \int_{-\infty}^\infty \mathrm{d}x \frac{\chi(x)}{x-\omega+i\epsilon} = 0 \,.
+\oint_{{\cal C}_1} \mathrm{d}x \frac{\chi(x)}{x-\omega} = \lim_{\epsilon\to0^+} \int_{-\infty}^\infty \mathrm{d}x \frac{\chi(x)}{x-\omega+i\epsilon} = 0 \,.
 \end{equation}
 Substituting $z=x-\omega$ and separating real and imaginary parts, we find
 \begin{equation}
-0 = \lim_{\epsilon\to0^+}\int_{-\infty}^\infty \mathrm{d}z \frac{z \chi(z+\omega)}{z^2+\epsilon^2} - i\pi \lim_{\epsilon\to0^+} \int_{-\infty}^\infty \mathrm{d}z \frac{\epsilon \chi(z+\omega)}{\pi(z^2+\omega^2)} \,.
+0 = \lim_{\epsilon\to0^+}\int_{-\infty}^\infty \mathrm{d}z \frac{z \chi(z+\omega)}{z^2+\epsilon^2} - i\pi \lim_{\epsilon\to0^+} \int_{-\infty}^\infty \mathrm{d}z \frac{\epsilon \chi(z+\omega)}{\pi(z^2+\epsilon^2)} \,.
 \end{equation}
 The first term on the right-hand side corresponds to a principal value, while
 the second term in the limit $\epsilon\to0^+$ becomes a Dirac delta function,
@@ -91,31 +90,32 @@ Here, we focus on the dielectric function
 \begin{equation}
 \epsilon(\omega)=\chi(\omega)+1 \,.
 \end{equation}
-In the time-domain, the dielectric function $\epsilon(t)$ is real, which implies the symmetry $\epsilon(-\omega) = \epsilon^*(\omega)$ in the
-frequency-domain. For this reason,
-$\epsilon'(\omega)$ is an even function while $\epsilon''(\omega)$ is an odd
-function. Using the Kramers-Kronig relation \eqref{eq:KK2}, we find that the
-imaginary part of $\epsilon(i\omega)$ vanishes, because the integrand is odd
-with respect to $x$,
+In the time-domain, the dielectric function $\epsilon(t)$ is real, which
+implies the symmetry $\epsilon(-\omega) = \epsilon^*(\omega)$ in the
+frequency-domain, so $\epsilon'(\omega)$ is an even function while
+$\epsilon''(\omega)$ is an odd function.
+
+We consider the closed integration contour ${\cal C}_2$ as sketched in Fig.
+\ref{fig:contour}b. The half-circle does not contribute to the integral, so we
+find
 \begin{equation}
-\epsilon''(i\omega) = - \frac{1}{\pi} \int_{-\infty}^\infty \mathrm{d}x \frac{\epsilon'(x)-1}{x-i\omega} = 0 \,.
+\oint_{{\cal C}_2} \mathrm{d}x \frac{x\chi(x)}{x^2+\omega^2} = \int_{-\infty}^\infty\mathrm{d}x \frac{x \chi(x)}{x^2+\omega^2} = i\pi \chi(i\omega) \,.
 \end{equation}
-The real part is readily evaluated using \eqref{eq:KK1}
+The residuum of the integrand is $\chi(i\omega)/2$. The dielectric function for imaginary frequencies
+is given by
 \begin{equation}
-\epsilon'(i\omega)-1 = \frac{1}{\pi} \int_{-\infty}^\infty \mathrm{d}x \frac{x\epsilon''(x)}{x^2+\omega^2} + \frac{i\omega}{\pi} \int_{-\infty}^\infty \mathrm{d}x \frac{\epsilon''(x)}{x^2+\omega^2} \,. 
+\epsilon(i\omega)-1 = \frac{1}{i\pi} \int_{-\infty}^\infty\mathrm{d}x \frac{x \left[\epsilon'(x)-1 + i\epsilon''(x)\right]}{x^2+\omega^2} \,.
 \end{equation}
-The integrand of the first integral on the right-hand side is even, and the
-second integral vanishes, because its integrand is odd. Thus, we find
+As $\epsilon'(x)-1$ is an even function, only the imaginary part $\epsilon''(x)$ contributes to the integral and we arrive at
 \begin{equation}
-\epsilon(i\omega)-1 = \frac{2}{\pi} \int_0^\infty \mathrm{d}x \frac{x\epsilon''(x)}{x^2+\omega^2}
+\epsilon(i\omega)-1 = \frac{2}{\pi} \int_0^\infty\mathrm{d}x \frac{x \epsilon''(x)}{x^2+\omega^2} \,.
 \end{equation}
-for the dielectric function on the imaginary axis.
 
 So, the dielectric function on the imaginary axis $\epsilon(i\omega)$ can be
 computed from the imaginary part of $\epsilon''(\omega)$. However,
 $\epsilon''(\omega)$ is only available in a finite interval
 $\omega_\mathrm{min} \le \omega \le \omega_\mathrm{max}$. Typical values are $\omega_\mathrm{min} \sim 0.05\,$eV
-and $\omega_\mathrm{max} \sim 10^4\,$eV, where $1\,\mathrm{eV}=1.519\,$rad/s.
+and $\omega_\mathrm{max} \sim 10^4\,$eV, where $1\,\mathrm{eV}=1.519\cdot10^{15}\,$rad/s.
 We split up the
 integral in three contributions and discuss each integral separately:
 \begin{align}
@@ -131,7 +131,7 @@ integral in three contributions and discuss each integral separately:
 from $\epsilon_3$ is negligible.
 \item The integral $\epsilon_2$ can be evaluated using numerical quadrature.
 Typically, in this domain many points are available and the integration causes
-no problems. Here, we use Simpson quadrature to evaluate the integral.
+no problems. Here, we use Simpson quadrature.
 \item No data is available for small frequencies and the computation of
 $\epsilon_1$ relies on an extrapolation of the optical data. Metals like
 gold are well described by the Drude model
@@ -140,9 +140,9 @@ gold are well described by the Drude model
 \epsilon^D(\omega) = 1 - \frac{\omega_P^2}{\omega(\omega+i\gamma)},
 \end{equation}
 where $\omega_P \sim 9\,$eV is the Plasma frequency and $\gamma \sim 35\,$meV
-is related to dissipation. Using the Drude model, the integral becomes
+is the relaxation frequency. Using the Drude model, the integral becomes
 \begin{equation}
-\epsilon_3 = \frac{2}{\pi} \frac{\omega_P^2}{\omega^2-\gamma^2} \left[ \atan\left(\frac{\omega_\mathrm{min}}{\gamma}\right) - \frac{\gamma}{\omega} \atan\left(\frac{\omega_\mathrm{min}}{\omega}\right)\right] \,.
+\epsilon_1 = \frac{2}{\pi} \frac{\omega_P^2}{\omega^2-\gamma^2} \left[ \atan\left(\frac{\omega_\mathrm{min}}{\gamma}\right) - \frac{\gamma}{\omega} \atan\left(\frac{\omega_\mathrm{min}}{\omega}\right)\right] \,.
 \end{equation}
 The value of $\epsilon_1$ depends sensitively on the plasma frequency
 $\omega_P$.
@@ -204,7 +204,7 @@ $\epsilon_1+\epsilon_2$. The contribution of $\epsilon_3$ is negligibly small. P
 
 \begin{figure}
 \includegraphics[width=0.7\columnwidth]{img/diff.pdf}
-\caption{Ratio of the force (PFA) for $R=100\,\mu$m and $T=300\,$K using the optical data from Palik \cite{Palik1995} and Olmon \cite{Olmon2012}.}
+\caption{Ratio of the force (PFA) for $R=100\,\mu$m and $T=300\,$K using the optical data from Palik \cite{Palik1995} and Olmon (SC) \cite{Olmon2012}.}
 \label{fig:diff}
 \end{figure}
 
@@ -220,7 +220,7 @@ gold films prepared by Au deposition on cleaned (100) Si or mica substrate with
 varying thickness \cite{Svetovoy2008}.
 
 The imaginary part of the dielectric function $\epsilon''(\omega)$ by Palik
-\cite{Palik1995}, and the experiments by Olmon et al.\ \cite{Olmon2012} and
+\cite{Palik1995}, and the experiments by Olmon et al.\ \cite{Olmon2012}, and
 Br\"andli et al.\ \cite{Brandli1972} are shown in Fig.  \ref{fig:eps}. The
 resulting dielectric function for imaginary frequencies $\epsilon(i\omega)$ is
 plotted in Fig. \ref{fig:eps_imag}. The computed dielectric functions for
@@ -235,14 +235,14 @@ value of $\epsilon_1$ depends sensitively on the value of the plasma frequency, 
 accuracy in Casimir experiments requires a precise knowledge of the plasma
 frequency. In particular, low Matsubara frequencies depend strongly on the
 extrapolation, because for frequencies $\omega \lesssim 3\,$eV the contribution
-of $\epsilon_1$ is dominant, as can be seen in Fig. \ref{fig:ratio}. In
+of $\epsilon_1$ is dominant, as depicted in Fig. \ref{fig:ratio}. In
 contrast, the dependence of the dielectric function and the Casimir force on
 $\gamma$ is typically weak.
 
 The Casimir force may vary up to about $5\%$ at shortest distances depending
 on the optical data used \cite{Pirozhenko2006}.
 In Fig. \ref{fig:diff} we plot the ratio
-of thethe  Casimir force for radius $R=100\,\mu$m at room-temperature $T=300\,$K
+of the Casimir force for radius $R=100\,\mu$m at room-temperature $T=300\,$K
 using the dielectric function obtained by Palik, and a combination of Olmon for
 small and Palik for high frequencies. The difference of both dielectric
 functions is quite big, because the plasma frequency for Palik is
