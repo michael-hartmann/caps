@@ -22,7 +22,7 @@ g.plot(graph.data.points(palik, x=1, y=2, title="Palik"),
     [graph.style.symbol(size=0.07, symbolattrs=[color.cmyk.Peach])]
 )
 
-g.plot(graph.data.points(brandli, x=1, y=2, title="Brandli"),
+g.plot(graph.data.points(brandli, x=1, y=2, title=r"Br\"andli"),
     [graph.style.symbol(size=0.07, symbolattrs=[color.cmyk.OliveGreen])]
 )
 
