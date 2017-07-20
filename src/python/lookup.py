@@ -1,7 +1,16 @@
-from math import log,lgamma
+import mpmath as mp
 
-max_logi = 32768
-max_lfac = 16*32768
+# set working precision
+mp.dps = 30
+
+def log(i,digits=18):
+    return mp.nstr(mp.log(i), digits)
+
+def lgamma(i,digits=18):
+    return mp.nstr(mp.loggamma(i), digits)
+
+max_logi = 2**16
+max_lfac = 2**16
 
 header = """/* created by lookup.py */
 #ifndef LOOKUP_H
@@ -31,9 +40,9 @@ double lookup_logi[] = { /* %g kb */
     -INFINITY, /* log(0) */""" % (max_logi*8/1024), file=f)
 
     for i in range(1,max_logi-1):
-        print("    %.20g, /* log(%d) */" % (log(i),i), file=f)
+        print("    %s, /* log(%d) */" % (log(i),i), file=f)
 
-    print("    %.20g /* log(%d) */" % (log(max_logi-1),max_logi-1), file=f)
+    print("    %s /* log(%d) */" % (log(max_logi-1),max_logi-1), file=f)
     print("};\n", file=f);
 
     print("size_t lookup_logi_elems = sizeof(lookup_logi)/sizeof(lookup_logi[0]);", file=f)
@@ -45,9 +54,9 @@ double lookup_logi[] = { /* %g kb */
     print("double lookup_lfac[] = { /* %g kb */" % (max_lfac*8/1024), file=f)
 
     for i in range(max_lfac-1):
-        print("    %.20e, /* lgamma(1+%d) */" % (lgamma(1+i),i), file=f)
+        print("    %s, /* lgamma(1+%d) */" % (lgamma(1+i),i), file=f)
 
-    print("    %.20e /* lgamma(1+%d) */" % (lgamma(1+max_lfac-1),max_lfac-1), file=f)
+    print("    %s /* lgamma(1+%d) */" % (lgamma(1+max_lfac-1),max_lfac-1), file=f)
     print("};\n", file=f);
 
     print("size_t lookup_lfac_elems = sizeof(lookup_lfac)/sizeof(lookup_lfac[0]);", file=f)
