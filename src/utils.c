@@ -93,12 +93,3 @@ double now(void)
 
     return tv.tv_sec + tv.tv_usec*1e-6;
 }
-
-
-/* swap integer a and b */
-void swap(int *a, int *b)
-{
-    int t = *a;
-    *a = *b;
-    *b = t;
-}

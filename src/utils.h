@@ -26,6 +26,4 @@ void *xrealloc(void *p, size_t size);
 void *xcalloc(size_t nmemb, size_t size);
 void _xfree(void *p);
 
-void swap(int *a, int *b);
-
 #endif
