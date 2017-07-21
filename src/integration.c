@@ -572,7 +572,11 @@ double casimir_integrate_I(integration_t *self, int l1, int l2, polarization_t p
      * Make sure that l1 >= l2
      */
     if(l1 < l2)
-        swap(&l1, &l2);
+    {
+        int temp = l1;
+        l1 = l2;
+        l2 = temp;
+    }
 
     HashTable *hash_table = self->hash_table_I;
     const uint64_t key = hash(l1,l2,p);
