@@ -206,7 +206,6 @@ void bessel_lnInuKnu(int nu, const double x, double *lnInu_p, double *lnKnu_p)
 
     /* calculate Knu, Knup */
     {
-
         if(nu == 0)
         {
             lnKnu  = prefactor+log(Knu);
