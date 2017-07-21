@@ -124,41 +124,6 @@ double logadd(const double log_a, const double log_b)
 }
 
 
-/**
- * @brief Add two numbers given by their logarithms, respecting signs
- *
- * @param [in]  log_a number
- * @param [in]  sign_a sign of a
- * @param [in]  log_b number
- * @param [in]  sign_b sign of b
- * @param [out] sign sign of result
- * @return log_sum \f$\log{\left( \mathrm{sign\_a}\cdot\exp{(\mathrm{log\_a})}+\mathrm{sign\_b} \cdot \exp{(log\_b)} \right)}\f$
- */
-double logadd_s(const double log_a, const sign_t sign_a, const double log_b, const sign_t sign_b, sign_t *sign)
-{
-    if(isinf(log_a) && log_a < 0)
-    {
-        *sign = sign_b;
-        return log_b;
-    }
-    else if(isinf(log_b) && log_b < 0)
-    {
-        *sign = sign_a;
-        return log_a;
-    }
-
-    if(log_a > log_b)
-    {
-        *sign = sign_a;
-        return log_a + log1p(sign_a*sign_b*exp(log_b-log_a));
-    }
-    else
-    {
-        *sign = sign_b;
-        return log_b + log1p(sign_a*sign_b*exp(log_a-log_b));
-    }
-}
-
 double logadd_ms(log_t list[], const int len, sign_t *sign)
 {
     double max = list[0].v;
