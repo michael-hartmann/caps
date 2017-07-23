@@ -102,8 +102,6 @@ double lfac(unsigned int n)
  */
 double ln_factorial2(unsigned int n)
 {
-    const double log2 = 0.6931471805599453;
-
     /* see e.g. http://en.wikipedia.org/wiki/Double_factorial */
     if(n == 0 || n == 1) /* 0!! = 1!! = 0 */
         return 0;
@@ -111,12 +109,12 @@ double ln_factorial2(unsigned int n)
     if(n % 2 == 0) /* even */
     {
         int k = n/2;
-        return k*log2 + lfac(k);
+        return k*log(2) + lfac(k);
     }
     else /* odd */
     {
         int k = (n+1)/2;
-        return lfac(2*k) - k*log2 - lfac(k);
+        return lfac(2*k) - k*log(2) - lfac(k);
     }
 }
 """, file=f)
