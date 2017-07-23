@@ -227,7 +227,7 @@ void bessel_lnInuKnu(int nu, const double x, double *lnInu_p, double *lnKnu_p)
  * This function calculates associated Legendre functions for m >= 0 and x > 0.
  *
  * Associated Legendre polynomials are defined as follows:
- *     Plm(x) = (-1)^m (1-x^2)^(m/2) D^m/Dx^m  Pl(x)
+ *     Plm(x) = (-1)^m (1-x^2)^(m/2) D^m/Dx^m Pl(x)
  * where Pl(x) denotes a Legendre polynomial.
  *
  * As Pl(x) are ordinary polynomials, the only problem is the term
@@ -259,8 +259,8 @@ double Plm(int l, int m, double x)
 /* @brief Associated Legendre polynomials using upwards recurrence relation
  *
  * The values of Plm are calculated from Plm(l=m,m=m,x) to Plm(l=lmax,m=m,x).
- * The associated Legendre polynomials are calculated using a recurrence
- * relation http://dlmf.nist.gov/14.10.E3 .
+ * The associated Legendre polynomials are calculated using the recurrence
+ * relation http://dlmf.nist.gov/14.10.E3 with .
  *
  * @param [in] l degree
  * @param [in] m order
@@ -269,7 +269,7 @@ double Plm(int l, int m, double x)
 double Plm_upwards(int l, int m, double x)
 {
     double array[l-m+1];
-    double log_prefactor = ln_factorial2(2*m-1) + m/2.*log((x+1)*(x-1));
+    double log_prefactor = lfac(2*m)-m*log(2)-lfac(m) + m/2.*log((x+1)*(x-1));
 
     if(l == m)
         return log_prefactor;
