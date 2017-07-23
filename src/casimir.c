@@ -1,4 +1,4 @@
-#define _BSD_SOURCE /* make usleep work */
+#define _DEFAULT_SOURCE /* make usleep work */
 
 #include <ctype.h>
 #include <getopt.h>
