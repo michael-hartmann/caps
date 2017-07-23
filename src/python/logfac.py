@@ -19,8 +19,6 @@ header = """/* created by logfac.py */
 double lfac(unsigned int n) __attribute__ ((pure));
 double logi(unsigned int x) __attribute__ ((pure));
 
-double ln_factorial2(unsigned int n) __attribute__ ((pure));
-
 #endif"""
 
 includes = """/* created by logfac.py */
@@ -92,29 +90,4 @@ double lfac(unsigned int n)
         return lookup_lfac[n];
     else
         return lgamma(1+n);
-}
-
-/**
- * @brief Calculate double factorial \f$n!!\f$
- *
- * @param n non-negative integer
- * @return doublefactorial \f$n!!\f$
- */
-double ln_factorial2(unsigned int n)
-{
-    /* see e.g. http://en.wikipedia.org/wiki/Double_factorial */
-    if(n == 0 || n == 1) /* 0!! = 1!! = 0 */
-        return 0;
-
-    if(n % 2 == 0) /* even */
-    {
-        int k = n/2;
-        return k*log(2) + lfac(k);
-    }
-    else /* odd */
-    {
-        int k = (n+1)/2;
-        return lfac(2*k) - k*log(2) - lfac(k);
-    }
-}
-""", file=f)
+}""", file=f)
