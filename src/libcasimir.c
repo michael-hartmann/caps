@@ -1,7 +1,7 @@
 /**
  * @file   libcasimir.c
  * @author Michael Hartmann <michael.hartmann@physik.uni-augsburg.de>
- * @date   April, 2017
+ * @date   July, 2017
  * @brief  library to calculate the free Casimir energy in the plane-sphere geometry
  */
 
@@ -400,39 +400,6 @@ int casimir_get_ldim(casimir_t *self)
  * @name Mie coefficients
  */
 /*@{*/
-
-/**
- * @brief Return logarithm of prefactors \f$a_{\ell,0}^\mathrm{perf}\f$, \f$b_{\ell,0}^\mathrm{perf}\f$ and their signs
- *
- * For small frequencies \f$\chi = \frac{\xi R}{c} \ll 1\f$ the Mie
- * coeffiecients scale like
- * \f[
- * a_{\ell}^\mathrm{perf} = a_{\ell,0}^\mathrm{perf} \left(\frac{\chi}{2}\right)^{2\ell+1} \\
- * \f]
- * \f[
- * b_{\ell}^\mathrm{perf} = b_{\ell,0}^\mathrm{perf} \left(\frac{\chi}{2}\right)^{2\ell+1}
- * \f]
- * This function returns the logarithm of the prefactors
- * \f$a_{\ell,0}^\mathrm{perf}\f$, \f$b_{\ell,0}^\mathrm{perf}\f$ and their
- * signs.
- *
- * The Mie coefficients are evaluated at \f$\chi = nTR/(R+L)\f$.
- *
- * The pointers a0, sign_a0, b0 and sign_b0 must not be NULL.
- *
- * @param [in] l \f$\ell\f$
- * @param [out] a0 coefficient \f$a_{\ell,0}^\mathrm{perf}\f$
- * @param [out] sign_a0 sign of \f$a_{\ell,0}^\mathrm{perf}\f$
- * @param [out] b0 coefficient \f$b_{\ell,0}^\mathrm{perf}\f$
- * @param [out] sign_b0 sign of \f$b_{\ell,0}^\mathrm{perf}\f$
- */
-void casimir_lnab0(int l, double *a0, sign_t *sign_a0, double *b0, sign_t *sign_b0)
-{
-    *sign_a0 = MPOW(l);
-    *sign_b0 = MPOW(l+1);
-    *b0 = M_LOGPI-lgamma(l+0.5)-lgamma(l+1.5);
-    *a0 = *b0+log1p(1.0/l);
-}
 
 /**
  * @brief Calculate Mie coefficients for perfect reflectors

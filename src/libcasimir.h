@@ -133,7 +133,6 @@ void casimir_set_detalg(casimir_t *self, detalg_t detalg);
 double casimir_get_epsrel(casimir_t *self);
 int    casimir_set_epsrel(casimir_t *self, double epsrel);
 
-void casimir_lnab0(int l, double *a0, sign_t *sign_a0, double *b0, sign_t *sign_b0);
 void casimir_lnab(casimir_t *self, double nT, int l, double *lna, double *lnb, sign_t *sign_a, sign_t *sign_b);
 void casimir_lnab_perf(casimir_t *self, double nT, int l, double *lna, double *lnb, sign_t *sign_a, sign_t *sign_b);
 
