@@ -16,6 +16,7 @@
 #include "integration.h"
 #include "libcasimir.h"
 #include "matrix.h"
+#include "logfac.h"
 #include "sfunc.h"
 #include "utils.h"
 
