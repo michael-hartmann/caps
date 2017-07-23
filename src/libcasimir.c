@@ -555,6 +555,7 @@ void casimir_lnab(casimir_t *self, double nT, int l, double *lna, double *lnb, s
 /*@}*/
 
 
+/* XXX simplify XXX */
 /** @brief Estimate lmin and lmax for given m and dim
  *
  * Estimate the vector space. The main contributions come from l1≈l2≈X and only
