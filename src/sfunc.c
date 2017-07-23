@@ -176,37 +176,35 @@ void bessel_lnInuKnu(int nu, const double x, double *lnInu_p, double *lnKnu_p)
     double prefactor = -x+0.5*(M_LOGPI-M_LOG2-logx);
 
     /* calculate Knu, Knup */
+    if(nu == 0)
     {
-        if(nu == 0)
-        {
-            lnKnu  = prefactor+log(Knu);
-            lnKnup = prefactor+log(Knup);
-        }
-        else
-        {
-            for(int l = 2; l <= nu+1; l++)
-            {
-                double Kn_new = (2*l-1)*Knup*invx + Knu;
-                Knu  = Knup;
-                Knup = Kn_new;
-
-                if(Knu > 1e100)
-                {
-                    Knu  *=  1e-100;
-                    Knup *=  1e-100;
-                    prefactor += log(1e100);
-                }
-            }
-
-            lnKnup = prefactor+log(Knup);
-            lnKnu  = prefactor+log(Knu);
-        }
-
-        TERMINATE(!isfinite(lnKnup), "Couldn't calculate Bessel functions, nu=%d, x=%g\n", nu, x);
-
-        if(lnKnu_p != NULL)
-            *lnKnu_p = lnKnu;
+        lnKnu  = prefactor+log(Knu);
+        lnKnup = prefactor+log(Knup);
     }
+    else
+    {
+        for(int l = 2; l <= nu+1; l++)
+        {
+            double Kn_new = (2*l-1)*Knup*invx + Knu;
+            Knu  = Knup;
+            Knup = Kn_new;
+
+            if(Knu > 1e100)
+            {
+                Knu  *= 1e-100;
+                Knup *= 1e-100;
+                prefactor += log(1e100);
+            }
+        }
+
+        lnKnup = prefactor+log(Knup);
+        lnKnu  = prefactor+log(Knu);
+    }
+
+    TERMINATE(!isfinite(lnKnup), "Couldn't calculate Bessel functions, nu=%d, x=%g\n", nu, x);
+
+    if(lnKnu_p != NULL)
+        *lnKnu_p = lnKnu;
 
     if(lnInu_p != NULL)
     {
