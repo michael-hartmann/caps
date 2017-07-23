@@ -64,7 +64,7 @@ static double lookup_logi[] = { /* %g kb */
     print("static size_t lookup_lfac_elems = sizeof(lookup_lfac)/sizeof(lookup_lfac[0]);", file=f)
 
 
-    print("""
+    print(r"""
 /** @brief Calculate log(x) for x integer
  *
  * This function uses a lookup table to avoid calling log() for n "small".
