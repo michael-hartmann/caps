@@ -419,7 +419,7 @@ static double _Pl2(int l, double x)
 /* Legendre polynomial Pl
  *
  * Evaluation of Pl(x) for x>=1 using the recurrence relation
- *      (n+1) P_{n+1}(x) = (2n+1) x P_n(x) - x P_{n-1}(x).
+ *      (n+1) P_{n+1}(x) = (2n+1) x P_n(x) - n P_{n-1}(x).
  */
 static double _Pl3(int l, double x)
 {
