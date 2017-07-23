@@ -9,39 +9,10 @@
 #include <math.h>
 
 #include "besselI.h"
-#include "lookup.h"
+#include "logfac.h"
 #include "sfunc.h"
 #include "utils.h"
 
-
-/** @brief Calculate log(x) for x integer
- *
- * This function uses a lookup table to avoid calling log() for n "small".
- *
- * @param [in] n integer
- * @retval log log(n)
- */
-double logi(unsigned int n)
-{
-    if(n < lookup_logi_elems)
-        return lookup_logi[n];
-    else
-        return log(n);
-}
-
-
-/** @brief Calculate log(n!) = log(Γ(n+1))
- *
- * @param [in] n integer
- * @retval lfac log(n!) = log(Γ(n+1))
- */
-double lfac(unsigned int n)
-{
-    if(n < lookup_lfac_elems)
-        return lookup_lfac[n];
-    else
-        return lgamma(1+n);
-}
 
 /**
  * @brief Sum elements in array
@@ -246,29 +217,6 @@ void bessel_lnInuKnu(int nu, const double x, double *lnInu_p, double *lnKnu_p)
 
 /*@}*/
 
-/**
- * @brief Calculate double factorial \f$n!!\f$
- *
- * @param n non-negative integer
- * @return doublefactorial \f$n!!\f$
- */
-double ln_factorial2(unsigned int n)
-{
-    /* see e.g. http://en.wikipedia.org/wiki/Double_factorial */
-    if(n == 0 || n == 1) /* 0!! = 1!! = 0 */
-        return 0;
-
-    if(n % 2 == 0) /* even */
-    {
-        int k = n/2;
-        return k*M_LOG2 + lfac(k);
-    }
-    else /* odd */
-    {
-        int k = (n+1)/2;
-        return lfac(2*k) - k*M_LOG2 - lfac(k);
-    }
-}
 
 /**
 * @name Associated Legendre polynomials
