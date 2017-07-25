@@ -31,9 +31,6 @@ typedef struct
     double v;
 } log_t;
 
-double lfac(unsigned int n) __attribute__ ((pure));
-double logi(unsigned int x) __attribute__ ((pure));
-
 double sqrtpm1(double x) __attribute__ ((pure));
 
 double kahan_sum(double input[], size_t len);
@@ -45,8 +42,6 @@ double bessel_continued_fraction(int nu, double x);
 double bessel_lnInu(int nu, double x);
 double bessel_lnKnu(int nu, double x);
 void bessel_lnInuKnu(int nu, const double x, double *lnInu_p, double *lnKnu_p);
-
-double ln_factorial2(unsigned int n) __attribute__ ((pure));
 
 double Plm(int l, int m, double x) __attribute__ ((pure));
 double Plm_upwards(int l, int m, double x) __attribute__ ((pure));

@@ -1,4 +1,6 @@
-#include "sfunc.h"
+#include <math.h>
+
+#include "logfac.h"
 #include "unittest.h"
 
 #include "test_lfac.h"

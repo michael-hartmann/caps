@@ -9,39 +9,10 @@
 #include <math.h>
 
 #include "besselI.h"
-#include "lookup.h"
+#include "logfac.h"
 #include "sfunc.h"
 #include "utils.h"
 
-
-/** @brief Calculate log(x) for x integer
- *
- * This function uses a lookup table to avoid calling log() for n "small".
- *
- * @param [in] n integer
- * @retval log log(n)
- */
-double logi(unsigned int n)
-{
-    if(n < lookup_logi_elems)
-        return lookup_logi[n];
-    else
-        return log(n);
-}
-
-
-/** @brief Calculate log(n!) = log(Γ(n+1))
- *
- * @param [in] n integer
- * @retval lfac log(n!) = log(Γ(n+1))
- */
-double lfac(unsigned int n)
-{
-    if(n < lookup_lfac_elems)
-        return lookup_lfac[n];
-    else
-        return lgamma(1+n);
-}
 
 /**
  * @brief Sum elements in array
@@ -205,37 +176,35 @@ void bessel_lnInuKnu(int nu, const double x, double *lnInu_p, double *lnKnu_p)
     double prefactor = -x+0.5*(M_LOGPI-M_LOG2-logx);
 
     /* calculate Knu, Knup */
+    if(nu == 0)
     {
-        if(nu == 0)
-        {
-            lnKnu  = prefactor+log(Knu);
-            lnKnup = prefactor+log(Knup);
-        }
-        else
-        {
-            for(int l = 2; l <= nu+1; l++)
-            {
-                double Kn_new = (2*l-1)*Knup*invx + Knu;
-                Knu  = Knup;
-                Knup = Kn_new;
-
-                if(Knu > 1e100)
-                {
-                    Knu  *=  1e-100;
-                    Knup *=  1e-100;
-                    prefactor += log(1e100);
-                }
-            }
-
-            lnKnup = prefactor+log(Knup);
-            lnKnu  = prefactor+log(Knu);
-        }
-
-        TERMINATE(!isfinite(lnKnup), "Couldn't calculate Bessel functions, nu=%d, x=%g\n", nu, x);
-
-        if(lnKnu_p != NULL)
-            *lnKnu_p = lnKnu;
+        lnKnu  = prefactor+log(Knu);
+        lnKnup = prefactor+log(Knup);
     }
+    else
+    {
+        for(int l = 2; l <= nu+1; l++)
+        {
+            double Kn_new = (2*l-1)*Knup*invx + Knu;
+            Knu  = Knup;
+            Knup = Kn_new;
+
+            if(Knu > 1e100)
+            {
+                Knu  *= 1e-100;
+                Knup *= 1e-100;
+                prefactor += log(1e100);
+            }
+        }
+
+        lnKnup = prefactor+log(Knup);
+        lnKnu  = prefactor+log(Knu);
+    }
+
+    TERMINATE(!isfinite(lnKnup), "Couldn't calculate Bessel functions, nu=%d, x=%g\n", nu, x);
+
+    if(lnKnu_p != NULL)
+        *lnKnu_p = lnKnu;
 
     if(lnInu_p != NULL)
     {
@@ -246,29 +215,6 @@ void bessel_lnInuKnu(int nu, const double x, double *lnInu_p, double *lnKnu_p)
 
 /*@}*/
 
-/**
- * @brief Calculate double factorial \f$n!!\f$
- *
- * @param n non-negative integer
- * @return doublefactorial \f$n!!\f$
- */
-double ln_factorial2(unsigned int n)
-{
-    /* see e.g. http://en.wikipedia.org/wiki/Double_factorial */
-    if(n == 0 || n == 1) /* 0!! = 1!! = 0 */
-        return 0;
-
-    if(n % 2 == 0) /* even */
-    {
-        int k = n/2;
-        return k*M_LOG2 + lfac(k);
-    }
-    else /* odd */
-    {
-        int k = (n+1)/2;
-        return lfac(2*k) - k*M_LOG2 - lfac(k);
-    }
-}
 
 /**
 * @name Associated Legendre polynomials
@@ -281,7 +227,7 @@ double ln_factorial2(unsigned int n)
  * This function calculates associated Legendre functions for m >= 0 and x > 0.
  *
  * Associated Legendre polynomials are defined as follows:
- *     Plm(x) = (-1)^m (1-x^2)^(m/2) D^m/Dx^m  Pl(x)
+ *     Plm(x) = (-1)^m (1-x^2)^(m/2) D^m/Dx^m Pl(x)
  * where Pl(x) denotes a Legendre polynomial.
  *
  * As Pl(x) are ordinary polynomials, the only problem is the term
@@ -313,8 +259,8 @@ double Plm(int l, int m, double x)
 /* @brief Associated Legendre polynomials using upwards recurrence relation
  *
  * The values of Plm are calculated from Plm(l=m,m=m,x) to Plm(l=lmax,m=m,x).
- * The associated Legendre polynomials are calculated using a recurrence
- * relation http://dlmf.nist.gov/14.10.E3 .
+ * The associated Legendre polynomials are calculated using the recurrence
+ * relation http://dlmf.nist.gov/14.10.E3 with .
  *
  * @param [in] l degree
  * @param [in] m order
@@ -323,7 +269,7 @@ double Plm(int l, int m, double x)
 double Plm_upwards(int l, int m, double x)
 {
     double array[l-m+1];
-    double log_prefactor = ln_factorial2(2*m-1) + m/2.*log((x+1)*(x-1));
+    double log_prefactor = lfac(2*m)-m*log(2)-lfac(m) + m/2.*log((x+1)*(x-1));
 
     if(l == m)
         return log_prefactor;
@@ -473,7 +419,7 @@ static double _Pl2(int l, double x)
 /* Legendre polynomial Pl
  *
  * Evaluation of Pl(x) for x>=1 using the recurrence relation
- *      (n+1) P_{n+1}(x) = (2n+1) x P_n(x) - x P_{n-1}(x).
+ *      (n+1) P_{n+1}(x) = (2n+1) x P_n(x) - n P_{n-1}(x).
  */
 static double _Pl3(int l, double x)
 {
