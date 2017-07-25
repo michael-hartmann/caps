@@ -35,7 +35,7 @@ OBJS = \
     cquadpack/src/dqsort.c \
     besselI.c \
     hash-table.c \
-    lookup.c \
+    logfac.c \
     integration.o \
     libcasimir.o \
     material.o \

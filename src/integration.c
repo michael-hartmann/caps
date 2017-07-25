@@ -14,6 +14,7 @@
 #include "utils.h"
 #include "sfunc.h"
 #include "libcasimir.h"
+#include "logfac.h"
 #include "integration.h"
 #include "hash-table.h"
 
