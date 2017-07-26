@@ -1,5 +1,6 @@
 #include <math.h>
 
+#include "constants.h"
 #include "plm.h"
 #include "logfac.h"
 #include "sfunc.h"
