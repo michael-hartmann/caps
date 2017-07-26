@@ -1,6 +1,6 @@
 #include <math.h>
 #include "unittest.h"
-#include "sfunc.h"
+#include "plm.h"
 #include "libcasimir.h"
 
 #include "test_Plm.h"
