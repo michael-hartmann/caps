@@ -2,12 +2,6 @@
 #define __LIBCASIMIR_H
 
 /**
- * define sign_t as a signed char, because "char can be either signed or
- * unsigned depending on the implementation"
- */
-typedef signed char sign_t;
-
-/**
  * define fresnel_t as either TE or TM.
  */
 typedef enum { TE, TM } polarization_t;
@@ -18,6 +12,7 @@ typedef enum { TE, TM } polarization_t;
 
 #include "hash-table.h"
 #include "matrix.h"
+#include "constants.h"
 
 
 /* default values */
