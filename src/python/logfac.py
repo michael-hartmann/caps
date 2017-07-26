@@ -69,7 +69,7 @@ double logi(unsigned int x) __attribute__ ((pure));
         print("};\n", file=f);
 
         print(r"""
-/** @brief Calculate log(n) for integer n
+/** @brief Calculate \f$\log(n)\f$ for integer n
  *
  * This function uses a lookup table to avoid calling log() for n <= %d
  *
@@ -87,12 +87,12 @@ double logi(unsigned int n)
 }
 
 
-/** @brief Calculate log(n!) = log(Γ(n+1))
+/** @brief Calculate \f$\log(n!) = \log(\Gamma(n+1))\f$
  *
  * This function computes the logarithm of the factorial n!. This function uses a loogup table for n >= %d
  *
  * @param [in] n integer
- * @retval lfac log(n!) = log(Γ(n+1))
+ * @retval lfac \f$\log(n!)\f$
  */
 double lfac(unsigned int n)
 {
