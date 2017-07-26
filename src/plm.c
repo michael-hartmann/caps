@@ -4,7 +4,7 @@
 #include "constants.h"
 #include "plm.h"
 #include "logfac.h"
-#include "sfunc.h"
+#include "misc.h"
 #include "bessel.h"
 #include "utils.h"
 

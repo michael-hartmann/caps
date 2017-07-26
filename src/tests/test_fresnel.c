@@ -1,5 +1,5 @@
 #include "libcasimir.h"
-#include "sfunc.h"
+#include "misc.h"
 #include "unittest.h"
 
 #include "test_fresnel.h"

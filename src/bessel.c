@@ -9,7 +9,7 @@
 #include <stdlib.h>
 #include <math.h>
 
-#include "sfunc.h"
+#include "misc.h"
 #include "constants.h"
 #include "bessel.h"
 

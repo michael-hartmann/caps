@@ -15,7 +15,7 @@
 #include "bessel.h"
 #include "plm.h"
 #include "utils.h"
-#include "sfunc.h"
+#include "misc.h"
 #include "libcasimir.h"
 #include "logfac.h"
 #include "integration.h"

@@ -14,7 +14,7 @@
 #include "quadpack.h"
 #include "libcasimir.h"
 #include "material.h"
-#include "sfunc.h"
+#include "misc.h"
 #include "utils.h"
 
 #define EPSREL 1e-6

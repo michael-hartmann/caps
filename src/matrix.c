@@ -14,7 +14,7 @@
 #include <hodlr.h>
 
 #include "matrix.h"
-#include "sfunc.h"
+#include "misc.h"
 #include "utils.h"
 
 #include "clapack.h"
