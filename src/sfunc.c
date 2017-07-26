@@ -9,7 +9,6 @@
 #include <math.h>
 
 #include "sfunc.h"
-#include "utils.h"
 
 /**
  * @brief Sum elements in array
