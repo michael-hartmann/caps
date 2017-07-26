@@ -22,12 +22,12 @@
 
 /** @brief Compute log det(Id-M)
  *
- * This function computes the log det(Id-M) using either the HODLR approach or
+ * This function computes \f$\log \det(1-M)\f$ using either the HODLR approach or
  * LU decomposition. The matrix M is given as a callback function. This
  * callback accepts two integers, the row and the column of the matrix entry
  * (starting from 0), and a pointer to args.
  *
- * If the matrix elements of M are small, i.e. if the modulus of the trace is
+ * If the matrix elements of M are small, i.e., if the modulus of the trace is
  * smaller than 1e-8, the trace will be used as an approximation to prevent a
  * loss of significance. If the modulus of the trace is larger than the modulus
  * of the value computed using HODLR, the trace approximation is returned.
@@ -37,7 +37,7 @@
  * @param [in] args      pointer given to callback function kernel
  * @param [in] symmetric matrix symmetric / not symmetric
  * @param [in] detalg    algorithm to use (LU or HODLR)
- * @retval logdet log det(Id-M)
+ * @retval logdet \f$\log \det(1-M)\f$
  */
 double kernel_logdet(int dim, double (*kernel)(int,int,void *), void *args, int symmetric, detalg_t detalg)
 {
