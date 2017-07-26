@@ -34,6 +34,7 @@ OBJS = \
     cquadpack/src/dqk21.c \
     cquadpack/src/dqsort.c \
     bessel.c \
+    plm.c \
     hash-table.c \
     logfac.c \
     integration.o \
