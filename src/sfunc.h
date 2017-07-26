@@ -4,23 +4,7 @@
 #include <stdlib.h>
 #include <math.h>
 
-#include "libcasimir.h"
-
-#define pow_2(x) ((x)*(x))
-#define pow_3(x) ((x)*(x)*(x))
-#define pow_4(x) ((x)*(x)*(x)*(x))
-
-/* calculate pow(-1,a) = -1**a */
-#define MPOW(a) (1-2*((signed char)(a) & 1))
-
-#ifndef MIN
-#define MIN(a,b) (((a)<(b))?(a):(b))
-#endif
-#ifndef MAX
-#define MAX(a,b) ((((a))>((b)))?((a)):((b)))
-#endif
-
-#define SGN(val) ((0 < (val)) - ((val) < 0))
+#include "constants.h"
 
 typedef struct
 {
