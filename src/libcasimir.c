@@ -79,21 +79,21 @@ void casimir_info(casimir_t *self, FILE *stream, const char *prefix)
 /*@{*/
 
 /**
- * @brief Calculate logarithm \f$-\Lambda_{\ell_1 \ell_2}^{(m)}\f$
+ * @brief Calculate logarithm \f$\Lambda_{\ell_1 \ell_2}^{(m)}\f$
  *
- * This function returns the logarithm of \f$-\Lambda_{\ell_1 \ell_2}^{(m)}\f$ for
- * \f$\ell_1,\ell_2,m\f$. This prefactor is defined by (cf Eq. (5.19))
+ * This function returns the logarithm of \f$\Lambda_{\ell_1 \ell_2}^{(m)}\f$ for
+ * \f$\ell_1,\ell_2,m\f$.
  * \f[
- *      \Lambda_{\ell_1,\ell_2}^{(m)} = -\frac{2 N_{\ell_1,m} N_{\ell_2,m}}{\sqrt{\ell_1 (\ell_1+1) \ell_2 (\ell_2+1)}}
+ *      \Lambda_{\ell_1,\ell_2}^{(m)} = \frac{2 N_{\ell_1,m} N_{\ell_2,m}}{\sqrt{\ell_1 (\ell_1+1) \ell_2 (\ell_2+1)}}
  * \f]
  *
  * The values are computed using the lgamma function to avoid overflows.
  *
  * Symmetries: \f$\Lambda_{\ell_1,\ell_2}^{(m)} = \Lambda_{\ell_2,\ell_1}^{(m)}\f$
  *
- * @param [in]  l1 \f$\ell_1\f$, l1>0
- * @param [in]  l2 \f$\ell_2\f$, l2>0
- * @param [in]  m  \f$m\f$, MIN(l1,l2)>=m>=0
+ * @param [in]  l1 l1>0
+ * @param [in]  l2 l2>0
+ * @param [in]  m  m <= l1 and m <= l2
  * @retval lnLambda \f$\log{\Lambda_{\ell_1,\ell_2}^{(m)}}\f$
  */
 double casimir_lnLambda(int l1, int l2, int m)
