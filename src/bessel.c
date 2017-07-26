@@ -206,20 +206,15 @@ static double chbevl(double x, double array[], int n)
 
 /** @brief Modified Bessel function of order zero
  *
- * Returns modified Bessel function of order zero of the argument.
+ * Returns modified Bessel function of order zero of the argument \f$x\f$.
  *
- * The function is defined as i0(x) = j0(ix).
+ * The function is defined as \f$I_0(x) = J_0(ix)\f$.
  *
- * The range is partitioned into the two intervals [0,8] and (8, infinity).
+ * The range is partitioned into the two intervals \f$[0,8]\f$ and \f$(8, \infty)\f$.
  * Chebyshev polynomial expansions are employed in each interval.
  *
- *                      Relative error:
- * arithmetic   domain     # trials      peak         rms
- *    DEC       0,30         6000       8.2e-17     1.9e-17
- *    IEEE      0,30        30000       5.8e-16     1.4e-16
- *
  * @param [in] x argument
- * @retval I0(x)
+ * @retval I0 \f$I_0(x)\f$
  */
 double besselI0(double x)
 {
@@ -239,18 +234,14 @@ double besselI0(double x)
 /** @brief Modified Bessel function of order zero, exponentially scaled
  *
  * Returns exponentially scaled modified Bessel function of order zero of the
- * argument.
+ * argument \f$x\f$.
  *
- * The function is defined as i0e(x) = exp(-|x|) j0( ix ).
+ * The function is defined as \f$\tilde I_0(x) = \exp(-|x|) J_0(ix)\f$.
  *
- *                      Relative error:
- * arithmetic   domain     # trials      peak         rms
- *    IEEE      0,30        30000       5.4e-16     1.2e-16
- *
- * See besselI0.
+ * See \ref besselI0.
  *
  * @param [in] x argument
- * @reval exp(-|x|)*I0(x)
+ * @retval I0exp \f$\exp(-|x|) I_0(x)\f$
  */
 double besselI0e(double x)
 {
@@ -269,20 +260,15 @@ double besselI0e(double x)
 
 /** @brief Modified Bessel function of order one
  *
- * Returns modified Bessel function of order one of the argument.
+ * Returns modified Bessel function of order one of the argument \f$x\f$.
  *
- * The function is defined as i1(x) = -i j1( ix ).
+ * The function is defined as \f$I_1(x) = -i J_1(ix)\f$.
  *
- * The range is partitioned into the two intervals [0,8] and (8, infinity).
+ * The range is partitioned into the two intervals \f$[0,8]\f$ and \f$(8, \infty)\f$.
  * Chebyshev polynomial expansions are employed in each interval.
  *
- *                      Relative error:
- * arithmetic   domain     # trials      peak         rms
- *    DEC       0, 30        3400       1.2e-16     2.3e-17
- *    IEEE      0, 30       30000       1.9e-15     2.1e-16
- *
  * @param [in] x argument
- * @reval I1(x)
+ * @retval I1 \f$I_1(x)\f$
  */
 double besselI1(double x)
 { 
@@ -304,19 +290,15 @@ double besselI1(double x)
 
 /** @brief Modified Bessel function of order one, exponentially scaled
  *
- * Returns exponentially scaled modified Bessel function * of order one of the
- * argument.
+ * Returns exponentially scaled modified Bessel function of order one of the
+ * argument \f$x\f$.
  *
- * The function is defined as i1(x) = -i exp(-|x|) j1( ix ).
+ * The function is defined as \f$\tilde I_1(x) = -i \exp(-|x|) J_1(ix)\f$.
  *
- *                      Relative error:
- * arithmetic   domain     # trials      peak         rms
- *    IEEE      0, 30       30000       2.0e-15     2.0e-16
- *
- * See besselI1.
+ * See \ref besselI1.
  *
  * @param [in] x argument
- * @reval exp(-|x|)*I1(x)
+ * @retval I1e \f$\exp(-|x|) I_1(x)\f$
  */
 double besselI1e(double x)
 { 
@@ -342,15 +324,17 @@ double besselI1e(double x)
 
 /** @brief Modified Bessel function of integer order
  *
- * Returns modified Bessel function of order n for the argument x.
+ * Returns modified Bessel function of order \f$n\f$ for the argument \f$x\f$.
  *
- * The function is defined as in(x) = jn( ix ).
+ * The function is defined as \f$I_n(x) = i^{-n} J_n(ix)\f$.
+ *
+ * For \f$n<0\f$ NAN is returned.
  *
  * The algorithm is taken from Numerical Recipes in C.
  *
  * @param [in] n order
  * @param [in] x argument
- * @retval In(x)
+ * @retval In \f$I_n(x)\f$
  */
 double besselI(int n, double x)
 {
@@ -388,10 +372,11 @@ double besselI(int n, double x)
     return x < 0.0 && (n & 1) ? -ans : ans;
 }
 
-/* @brief Calculate I_{nu+1/2}/I_{nu+3/2}
+/**
+ * @brief Calculate \f$I_{\nu+1/2}(x)/I_{\nu+3/2}(x)\f$
  *
  * Compute the ratio of the modified Bessel functions of the first kind
- * I_{nu+1/2}(x)/I_{nu+3/2}(x) using a continued fraction.
+ * \f$I_{\nu+1/2}(x)/I_{\nu+3/2}(x)\f$ using a continued fraction.
  *
  * @param nu order
  * @param x argument
@@ -424,14 +409,14 @@ double bessel_continued_fraction(int nu, double x)
     }
 }
 
-/** @brief Compute log I_{nu+1/2}(x)
+/** @brief Compute \f$\log I_{\nu+1/2}(x)\f$
  *
  * Compute logarithm of modified Bessel function of the first kind
- * I_{nu+1/2}(x).
+ * \f$I_{\nu+1/2}(x)\f$.
  *
  * @param [in] nu order
  * @param [in] x argument
- * @retval log I_{nu+1/2}(x)
+ * @retval logI \f$\log I_{\nu+1/2}(x)\f$
  */
 double bessel_lnInu(int nu, double x)
 {
@@ -440,14 +425,14 @@ double bessel_lnInu(int nu, double x)
     return lnInu;
 }
 
-/** @brief Compute log K_{nu+1/2}(x)
+/** @brief Compute \f$\log K_{\nu+1/2}(x)\f$
  *
  * Compute logarithm of modified Bessel function of the second kind
- * K_{nu+1/2}(x).
+ * \f$K_{\nu+1/2}(x)\f$.
  *
  * @param [in] nu order
  * @param [in] x argument
- * @retval log K_{nu+1/2}(x)
+ * @retval logK \f$K_{\nu+1/2}(x)\f$
  */
 double bessel_lnKnu(int nu, double x)
 {
@@ -459,8 +444,8 @@ double bessel_lnKnu(int nu, double x)
 /** @brief Compute modified Bessel functions of first and second kind
  *
  * This function computes the logarithm of the modified Bessel functions
- * I_{nu+1/2}(x) and K_{nu+1/2}(x). The values are saved in lnInu_p and
- * lnKnu_p.
+ * \f$I_{\nu+1/2}(x)\f$ and \f$K_{\nu+1/2}(x)\f$. The results are saved in
+ * lnInu_p and lnKnu_p.
  *
  * If lnInu_p or lnKnu_p is NULL, the pointer is not accessed.
  *
