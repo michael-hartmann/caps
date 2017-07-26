@@ -6,9 +6,11 @@
  * @brief  Computation of Bessel functions
  */
 
+#include <stdlib.h>
 #include <math.h>
 
 #include "sfunc.h"
+#include "constants.h"
 #include "bessel.h"
 
 /* Chebyshev coefficients for exp(-x) I0(x)
