@@ -28,6 +28,9 @@
  *     Plm(x) = (x^2-1)^(m/2) D^m/Dx^m  Pl(x) .
  * Note that we don't include the factor i^m in our calculuation.
  *
+ * For (l-m) <= 200 we use an upwards recurrence relation, otherwise we use a
+ * downwards recurrence relation.
+ *
  * See also https://en.wikipedia.org/wiki/Associated_Legendre_polynomials .
  *
  * @param [in] l degree
@@ -43,7 +46,8 @@ double Plm(int l, int m, double x)
         return Plm_downwards(l, m, x);
 }
 
-/* @brief Associated Legendre polynomials using upwards recurrence relation
+/**
+ * @brief Associated Legendre polynomials using upwards recurrence relation
  *
  * The values of Plm are calculated from Plm(l=m,m=m,x) to Plm(l=lmax,m=m,x).
  * The associated Legendre polynomials are calculated using the recurrence
@@ -56,6 +60,7 @@ double Plm(int l, int m, double x)
 double Plm_upwards(int l, int m, double x)
 {
     double array[l-m+1];
+    /* P_m^m = (2m)!/(2^m*m!) (1-x²)^(m/2), http://dlmf.nist.gov/14.7.E15 */
     double log_prefactor = lfac(2*m)-m*log(2)-lfac(m) + m/2.*log((x+1)*(x-1));
 
     if(l == m)
@@ -94,7 +99,8 @@ double Plm_upwards(int l, int m, double x)
     return log_prefactor+log(fabs(array[l-m]));
 }
 
-/** @brief Estimate value of Plm(x) for x >> 1
+/**
+ * @brief Estimate value of Plm(x) for x >> 1
  *
  * This function computes the value of Plm(x) using an approximation for large
  * arguments x >> 1 and returns the logarithm of the estimate.
