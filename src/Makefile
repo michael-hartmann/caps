@@ -33,7 +33,7 @@ OBJS = \
     cquadpack/src/dqk15i.c \
     cquadpack/src/dqk21.c \
     cquadpack/src/dqsort.c \
-    besselI.c \
+    bessel.c \
     hash-table.c \
     logfac.c \
     integration.o \
