@@ -8,7 +8,8 @@
 
 #include <math.h>
 
-#include "besselI.h"
+#include "sfunc.h"
+#include "bessel.h"
 
 /* Chebyshev coefficients for exp(-x) I0(x)
  * in the interval [0,8].
@@ -383,4 +384,130 @@ double besselI(int n, double x)
 
     ans *= besselI0(x)/bi;
     return x < 0.0 && (n & 1) ? -ans : ans;
+}
+
+/* @brief Calculate I_{nu+1/2}/I_{nu+3/2}
+ *
+ * Compute the ratio of the modified Bessel functions of the first kind
+ * I_{nu+1/2}(x)/I_{nu+3/2}(x) using a continued fraction.
+ *
+ * @param nu order
+ * @param x argument
+ * @retval ratio
+ */
+double bessel_continued_fraction(int nu, double x)
+{
+    /* it's faster to calculate the inverse of x only once */
+    const double invx = 1/x;
+
+    const double a1 = (2*(nu+1)+1)*invx;
+    const double a2 = (2*(nu+2)+1)*invx;
+
+    double num   = a2+1/a1;
+    double denom = a2;
+    double ratio = a1*num/denom;
+    double ratio_last = 0;
+
+    for(int l = 3; 1; l++)
+    {
+        const double an = (2*nu+1+2*l)*invx;
+        num   = an+1/num;
+        denom = an+1/denom;
+        ratio *= num/denom;
+
+        if(ratio == ratio_last)
+            return ratio;
+
+        ratio_last = ratio;
+    }
+}
+
+/** @brief Compute log I_{nu+1/2}(x)
+ *
+ * Compute logarithm of modified Bessel function of the first kind
+ * I_{nu+1/2}(x).
+ *
+ * @param [in] nu order
+ * @param [in] x argument
+ * @retval log I_{nu+1/2}(x)
+ */
+double bessel_lnInu(int nu, double x)
+{
+    double lnInu;
+    bessel_lnInuKnu(nu, x, &lnInu, NULL);
+    return lnInu;
+}
+
+/** @brief Compute log K_{nu+1/2}(x)
+ *
+ * Compute logarithm of modified Bessel function of the second kind
+ * K_{nu+1/2}(x).
+ *
+ * @param [in] nu order
+ * @param [in] x argument
+ * @retval log K_{nu+1/2}(x)
+ */
+double bessel_lnKnu(int nu, double x)
+{
+    double lnKnu;
+    bessel_lnInuKnu(nu, x, NULL, &lnKnu);
+    return lnKnu;
+}
+
+/** @brief Compute modified Bessel functions of first and second kind
+ *
+ * This function computes the logarithm of the modified Bessel functions
+ * I_{nu+1/2}(x) and K_{nu+1/2}(x). The values are saved in lnInu_p and
+ * lnKnu_p.
+ *
+ * If lnInu_p or lnKnu_p is NULL, the pointer is not accessed.
+ *
+ * @param [in] nu order
+ * @param [in] x argument
+ * @param [out] lnInu_p pointer for log I_{nu+1/2}(x)
+ * @param [out] lnKnu_p pointer for log K_{nu+1/2}(x)
+ */
+void bessel_lnInuKnu(int nu, const double x, double *lnInu_p, double *lnKnu_p)
+{
+    const double logx = log(x);
+    const double invx = 1/x;
+
+    double lnKnu, lnKnup;
+    double Knu = 1, Knup = 1+invx;
+    double prefactor = -x+0.5*(M_LOGPI-M_LOG2-logx);
+
+    /* calculate Knu, Knup */
+    if(nu == 0)
+    {
+        lnKnu  = prefactor+log(Knu);
+        lnKnup = prefactor+log(Knup);
+    }
+    else
+    {
+        for(int l = 2; l <= nu+1; l++)
+        {
+            double Kn_new = (2*l-1)*Knup*invx + Knu;
+            Knu  = Knup;
+            Knup = Kn_new;
+
+            if(Knu > 1e100)
+            {
+                Knu  *= 1e-100;
+                Knup *= 1e-100;
+                prefactor += log(1e100);
+            }
+        }
+
+        lnKnup = prefactor+log(Knup);
+        lnKnu  = prefactor+log(Knu);
+    }
+
+    if(lnKnu_p != NULL)
+        *lnKnu_p = lnKnu;
+
+    if(lnInu_p != NULL)
+    {
+        double ratio = bessel_continued_fraction(nu,x);
+        *lnInu_p = -logx-logadd(lnKnup, lnKnu-log(ratio));
+    }
 }
