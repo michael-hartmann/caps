@@ -6,7 +6,7 @@
 
 #include "material.h"
 #include "libcasimir.h"
-#include "sfunc.h"
+#include "misc.h"
 #include "utils.h"
 
 

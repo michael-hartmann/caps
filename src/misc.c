@@ -8,7 +8,7 @@
 #include <stdlib.h>
 #include <math.h>
 
-#include "sfunc.h"
+#include "misc.h"
 
 /**
  * @brief Sum elements in array

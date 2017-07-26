@@ -2,7 +2,7 @@
 #include <stdio.h>
 
 #include "libcasimir.h"
-#include "sfunc.h"
+#include "misc.h"
 
 void usage(const char self[], FILE *stream);
 

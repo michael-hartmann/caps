@@ -7,7 +7,7 @@
 #include "constants.h"
 #include "material.h"
 #include "utils.h"
-#include "sfunc.h"
+#include "misc.h"
 
 /* Parse a string in the form of:
  *      key separator value

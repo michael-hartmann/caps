@@ -41,7 +41,7 @@ OBJS = \
     libcasimir.o \
     material.o \
     matrix.o \
-    sfunc.o \
+    misc.o \
     utils.o
 
 TESTS = \

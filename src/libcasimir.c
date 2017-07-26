@@ -19,7 +19,7 @@
 #include "libcasimir.h"
 #include "matrix.h"
 #include "logfac.h"
-#include "sfunc.h"
+#include "misc.h"
 #include "utils.h"
 
 /**
