@@ -8,13 +8,6 @@
 #ifndef __CONSTANTS_H
 #define __CONSTANTS_H
 
-#define pow_2(x) ((x)*(x))
-#define pow_3(x) ((x)*(x)*(x))
-#define pow_4(x) ((x)*(x)*(x)*(x))
-
-/*! calculate pow(-1,a) = -1**a */
-#define MPOW(a) (1-2*((signed char)(a) & 1))
-
 /**
  * define sign_t as a signed char, because "char can be either signed or
  * unsigned depending on the implementation"
@@ -45,12 +38,6 @@ typedef signed char sign_t;
 
 /* calculate pow(-1,a) = -1**a */
 #define MPOW(a) (1-2*((signed char)(a) & 1))
-
-/**
- * define sign_t as a signed char, because "char can be either signed or
- * unsigned depending on the implementation"
- */
-typedef signed char sign_t;
 
 #ifndef M_PI
 #define M_PI 3.14159265358979323846 /**< value for π=3.141592... */
