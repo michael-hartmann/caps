@@ -97,12 +97,12 @@ double logadd_ms(log_t list[], const int N, sign_t *sign)
 {
     double max = list[0].v;
 
-    for(int i = 1; i < len; i++)
+    for(int i = 1; i < N; i++)
         if(list[i].v > max)
             max = list[i].v;
 
     double sum = list[0].s*exp(list[0].v-max);
-    for(int i = 1; i < len; i++)
+    for(int i = 1; i < N; i++)
         sum += list[i].s*exp(list[i].v-max);
 
     *sign = SGN(sum);
