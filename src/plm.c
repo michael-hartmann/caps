@@ -1,3 +1,10 @@
+/**
+ * @file   plm.c
+ * @author Michael Hartmann <michael.hartmann@physik.uni-augsburg.de>
+ * @date   July, 2017
+ * @brief  computation of Legendre and associated Legendre polynomials
+ */
+
 #include <math.h>
 #include <stdbool.h>
 
@@ -14,22 +21,26 @@
  * This function calculates associated Legendre functions for m >= 0 and x > 0.
  *
  * Associated Legendre polynomials are defined as follows:
- *     Plm(x) = (-1)^m (1-x^2)^(m/2) D^m/Dx^m Pl(x)
- * where Pl(x) denotes a Legendre polynomial.
+ * \f[
+ *  P_l^m(x) = (-1)^m (1-x^2)^{m/2} \frac{d}{dx^m} P_l(x)
+ * \f]
+ * where \f$P_l(x)\f$ denotes a Legendre polynomial.
  *
- * As Pl(x) are ordinary polynomials, the only problem is the term
- * (1-x^2)^(m/2) when extending the domain to values of x > 1. We will use the
- * convention sqrt(-x) = +i sqrt(x).
+ * As \f$P_l(x)\f$ are ordinary polynomials, the only problem is the term
+ * \f$(1-x^2)^{m/2}\f$ when extending the domain to values of x > 1. We will use the
+ * convention \f$\sqrt{-x} = +i \sqrt{x}\f$.
  *
  * Note: Products of associated legendre polynomials with common m are
- * unambiguous, because (+i)^2 = (-i)^2 = -1.
+ * unambiguous, because \f$(+i)^2 = (-i)^2 = -1\f$.
  *
  * What this functions actually computes:
- *     Plm(x) = (x^2-1)^(m/2) D^m/Dx^m  Pl(x) .
- * Note that we don't include the factor i^m in our calculuation.
+ * \f[
+ *     P_l^m(x) = (x^2-1)^{m/2} \frac{d}{dx^m} P_l(x) .
+ * \f]
+ * Note that we don't include the factor \f$i^m\f$ in our calculuation.
  *
- * For (l-m) <= 200 we use an upwards recurrence relation, otherwise we use a
- * downwards recurrence relation.
+ * For (l-m) <= 200 we use an upwards recurrence relation, see \ref Plm_upwards, otherwise we use a
+ * downwards recurrence relation, see Plm_downwards .
  *
  * See also https://en.wikipedia.org/wiki/Associated_Legendre_polynomials .
  *
@@ -49,13 +60,18 @@ double Plm(int l, int m, double x)
 /**
  * @brief Associated Legendre polynomials using upwards recurrence relation
  *
- * The values of Plm are calculated from Plm(l=m,m=m,x) to Plm(l=lmax,m=m,x).
+ * The values of Plm are calculated from \f$P_m^m(x)\f$ to \f$P_l^m(x)\f$.
  * The associated Legendre polynomials are calculated using the recurrence
- * relation http://dlmf.nist.gov/14.10.E3 with .
+ * relation http://dlmf.nist.gov/14.10.E3 with 
+ * \f[ 
+ *      P_m^m(x) = \frac{(2m)!}{2^m m!} (x^2-1)^{m/2}
+ * \f]
+ * (http://dlmf.nist.gov/14.7.E15).
  *
  * @param [in] l degree
  * @param [in] m order
  * @param [in] x argument
+ * @retval logPlm \f$\log P_l^m(x)\f$
  */
 double Plm_upwards(int l, int m, double x)
 {
@@ -100,15 +116,15 @@ double Plm_upwards(int l, int m, double x)
 }
 
 /**
- * @brief Estimate value of Plm(x) for x >> 1
+ * @brief Estimate value of \f$P_l^m(x)\f$ for \f$x \gg 1\f$
  *
- * This function computes the value of Plm(x) using an approximation for large
- * arguments x >> 1 and returns the logarithm of the estimate.
+ * This function computes the value of \f$P_l^m(x)\f$ using an approximation
+ * for large arguments \f$x \gg 1\f$ and returns the logarithm of the estimate.
  *
  * @param [in] l l
  * @param [in] m m
  * @param [in] x argument
- * @retval estimate, ≈log(Plm(x))
+ * @retval estimate \f$ \approx \log(P_l^m(x))\f$
  */
 double Plm_estimate(int l, int m, double x)
 {
@@ -242,18 +258,19 @@ static double _Pl3(int l, double x)
 }
 
 
-/* @brief Legendre polynomial Pl
+/**
+ * @brief Compute Legendre polynomial \f$P_l(x)\f$
  *
- * Evaluation of Pl(x) for x>=1.
+ * Evaluation of \f$P_l(x)\f$ for x>=1.
  *
  * For l < 100 a recurrence relation is used (see _Pl3), otherwise asymptotic
  * expansions are used (see _Pl1 and _Pl2).
  *
- * Function returns log(Pl(x)).
+ * The function returns \f$\log P_l(x)\f$.
  *
  * @param [in] l degree
  * @param [in] x argument
- * @retval log(Pl(x))
+ * @retval logPl \f$\log P_l(x)\f$
  */
 double Pl(int l, double x)
 {
@@ -269,18 +286,20 @@ double Pl(int l, double x)
         return _Pl2(l,x);
 }
 
-/* Calculate fraction P_l^m/P_l^{m-1}
+/**
+ * @brief Calculate fraction \f$P_l^m(x)/P_l^{m-1}(x)\f$
  *
  * The fraction is computed using a continued fraction, see http://dlmf.nist.gov/14.14.E1 .
  *
  * To evaluate the continued fraction, we use http://dlmf.nist.gov/1.12#E5 and
  * http://dlmf.nist.gov/1.12#E6 .
+ *
  * See also Numerical Recipes in C, ch. 5.2, Evaluation of Continued Fractions
  *
  * @param [in] l degree
  * @param [in] m order
  * @param [in] x argument
- * @retval Plm(l,m,x)/Plm(l,m-1,x)
+ * @retval ratio \f$P_l^m(x)/P_l^{m-1}(x)\f$
  */
 double plm_continued_fraction(const int l, const int m, const double x)
 {
@@ -331,16 +350,19 @@ double plm_continued_fraction(const int l, const int m, const double x)
 }
 
 
-/* @brief Associated Legendre polynomials using downwards recurrence relation
+/**
+ * @brief Compute associated Legendre polynomials using downwards recurrence relation
  *
- * First, the fraction Plm(l,m,x)/Plm(l,m-1,x) is computed using a continued
- * fraction, see plm_continued_fraction. Then the downwards recurrence relation
- * http://dlmf.nist.gov/14.10.E1 is used from Plm(l,m,x) to Plm(l,0,x).
- * Together with Pl(x) one has the solution.
+ * First, the fraction \f$P_l^m(x)/P_l^{m-1}(x)\f$ is computed using \ref plm_continued_fraction.
+ * Then the downwards recurrence relation http://dlmf.nist.gov/14.10.E1 is used
+ * from \f$P_l^m(x)\f$ to \f$P_l^0(x)\f$. Together with \f$P_l(x)\f$ (see \ref Pl) one has the solution.
+ *
+ * This routine is efficient if \f$l \gg m\f$.
  *
  * @param [in] l degree
  * @param [in] m order
  * @param [in] x argument
+ * @retval logPlm \f$\log P_l^m(x)\f$
  */
 double Plm_downwards(int l, int m, double x)
 {
