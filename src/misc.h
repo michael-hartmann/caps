@@ -1,5 +1,5 @@
-#ifndef __SFUNC_H
-#define __SFUNC_H
+#ifndef __MISC_H
+#define __MISC_H
 
 #include <stdlib.h>
 #include <math.h>
