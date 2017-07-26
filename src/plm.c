@@ -282,7 +282,7 @@ double Pl(int l, double x)
  * @param [in] x argument
  * @retval Plm(l,m,x)/Plm(l,m-1,x)
  */
-static double _cf(const int l, const int m, const double x)
+double plm_continued_fraction(const int l, const int m, const double x)
 {
     const double alpha = (1-1/(x*x))/4;
 
@@ -334,7 +334,7 @@ static double _cf(const int l, const int m, const double x)
 /* @brief Associated Legendre polynomials using downwards recurrence relation
  *
  * First, the fraction Plm(l,m,x)/Plm(l,m-1,x) is computed using a continued
- * fraction, see _cf. Then the downwards recurrence relation
+ * fraction, see plm_continued_fraction. Then the downwards recurrence relation
  * http://dlmf.nist.gov/14.10.E1 is used from Plm(l,m,x) to Plm(l,0,x).
  * Together with Pl(x) one has the solution.
  *
@@ -353,7 +353,7 @@ double Plm_downwards(int l, int m, double x)
     c = 2*x/sqrt((x-1)*(x+1));
 
     vp = +1;
-    vm = -1/_cf(l,m,x);
+    vm = -1/plm_continued_fraction(l,m,x);
 
     for(int mm = m-2; mm >= 0; mm--)
     {
