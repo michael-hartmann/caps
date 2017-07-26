@@ -1,3 +1,4 @@
+#include "libcasimir.h"
 #include "sfunc.h"
 #include "unittest.h"
 

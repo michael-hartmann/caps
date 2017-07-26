@@ -1,10 +1,12 @@
 #include <math.h>
+#include <stdbool.h>
 
 #include "constants.h"
 #include "plm.h"
 #include "logfac.h"
 #include "sfunc.h"
 #include "bessel.h"
+#include "utils.h"
 
 /**
  * @brief Associated Legendre polynomials for argument x > 1
