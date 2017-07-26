@@ -8,7 +8,7 @@
 #include <stdlib.h>
 #include <math.h>
 
-#include "besselI.h"
+#include "bessel.h"
 #include "logfac.h"
 #include "sfunc.h"
 #include "utils.h"
@@ -109,108 +109,6 @@ double logadd_ms(log_t list[], const int len, sign_t *sign)
 
     *sign = SGN(sum);
     return max + log(fabs(sum));
-}
-
-/*@}*/
-
-
-/**
-* @name Bessel functions
-*/
-/*@{*/
-
-/* @brief Calculate I_{nu+1/2}/I_{nu+3/2}
- *
- * @param nu order
- * @param x argument
- * @retval ratio
- */
-double bessel_continued_fraction(int nu, double x)
-{
-    /* it's faster to calculate the inverse of x only once */
-    const double invx = 1/x;
-
-    const double a1 = (2*(nu+1)+1)*invx;
-    const double a2 = (2*(nu+2)+1)*invx;
-
-    double num   = a2+1/a1;
-    double denom = a2;
-    double ratio = a1*num/denom;
-    double ratio_last = 0;
-
-    for(int l = 3; 1; l++)
-    {
-        const double an = (2*nu+1+2*l)*invx;
-        num   = an+1/num;
-        denom = an+1/denom;
-        ratio *= num/denom;
-
-        if(ratio == ratio_last)
-            return ratio;
-
-        ratio_last = ratio;
-    }
-}
-
-double bessel_lnInu(int nu, double x)
-{
-    double lnInu;
-    bessel_lnInuKnu(nu, x, &lnInu, NULL);
-    return lnInu;
-}
-
-double bessel_lnKnu(int nu, double x)
-{
-    double lnKnu;
-    bessel_lnInuKnu(nu, x, NULL, &lnKnu);
-    return lnKnu;
-}
-
-void bessel_lnInuKnu(int nu, const double x, double *lnInu_p, double *lnKnu_p)
-{
-    const double logx = log(x);
-    const double invx = 1/x;
-
-    double lnKnu, lnKnup;
-    double Knu = 1, Knup = 1+invx;
-    double prefactor = -x+0.5*(M_LOGPI-M_LOG2-logx);
-
-    /* calculate Knu, Knup */
-    if(nu == 0)
-    {
-        lnKnu  = prefactor+log(Knu);
-        lnKnup = prefactor+log(Knup);
-    }
-    else
-    {
-        for(int l = 2; l <= nu+1; l++)
-        {
-            double Kn_new = (2*l-1)*Knup*invx + Knu;
-            Knu  = Knup;
-            Knup = Kn_new;
-
-            if(Knu > 1e100)
-            {
-                Knu  *= 1e-100;
-                Knup *= 1e-100;
-                prefactor += log(1e100);
-            }
-        }
-
-        lnKnup = prefactor+log(Knup);
-        lnKnu  = prefactor+log(Knu);
-    }
-
-    TERMINATE(!isfinite(lnKnup), "Couldn't calculate Bessel functions, nu=%d, x=%g\n", nu, x);
-
-    if(lnKnu_p != NULL)
-        *lnKnu_p = lnKnu;
-
-    if(lnInu_p != NULL)
-    {
-        double ratio = bessel_continued_fraction(nu,x);
-        *lnInu_p = -logx-logadd(lnKnup, lnKnu-log(ratio));
-    }
 }
 
 /*@}*/

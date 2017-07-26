@@ -38,11 +38,6 @@ double kahan_sum(double input[], size_t len);
 double logadd(const double a, const double b);
 double logadd_ms(log_t list[], const int len, sign_t *sign);
 
-double bessel_continued_fraction(int nu, double x);
-double bessel_lnInu(int nu, double x);
-double bessel_lnKnu(int nu, double x);
-void bessel_lnInuKnu(int nu, const double x, double *lnInu_p, double *lnKnu_p);
-
 double Plm(int l, int m, double x) __attribute__ ((pure));
 double Plm_upwards(int l, int m, double x) __attribute__ ((pure));
 double Plm_downwards(int l, int m, double x) __attribute__ ((pure));
