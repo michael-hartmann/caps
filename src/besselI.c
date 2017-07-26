@@ -1,7 +1,10 @@
-/*
-    Cephes Math Library Release 2.8:  June, 2000
-    Copyright 1984, 1987, 2000 by Stephen L. Moshier
-*/
+/**
+ * @file   bessel.c
+ * @author Stephen L. Moshier, Cephes Math Library Release 2.8, June 2000
+ * @author Michael Hartmann <michael.hartmann@physik.uni-augsburg.de>
+ * @date   July, 2017
+ * @brief  Computation of Bessel functions
+ */
 
 #include <math.h>
 
@@ -46,7 +49,6 @@ static double A0[] =
      6.76795274409476084995E-1
 };
 
-
 /* Chebyshev coefficients for exp(-x) sqrt(x) I0(x)
  * in the inverted interval [8,infinity].
  *
@@ -86,7 +88,6 @@ static double B0[] =
  *
  * lim(x->0){ exp(-x) I1(x) / x } = 1/2.
  */
-
 static double A1[] =
 {
      2.77791411276104639959E-18,
@@ -154,58 +155,57 @@ static double B1[] =
      7.78576235018280120474E-1
 };
 
-/* @brief Evaluate Chebyshev series
+/** @brief Evaluate Chebyshev series
  *
  * Evaluates the series
  *      y = Sum( coef[i] * T_i(x/2), from i=0 to N-1)
  * of Chebyshev polynomials Ti at argument x/2.
  *
- * Coefficients are stored in reverse order, i.e. the zero
- * order term is last in the array.  Note N is the number of
- * coefficients, not the order.
+ * Coefficients are stored in reverse order, i.e. the zero order term is last
+ * in the array.
+ * Note: n is the number of coefficients, not the order.
  *
- * If coefficients are for the interval a to b, x must
- * have been transformed to x -> 2(2x - b - a)/(b-a) before
- * entering the routine.  This maps x from (a, b) to (-1, 1),
- * over which the Chebyshev polynomials are defined.
+ * If coefficients are for the interval a to b, x must have been transformed to
+ * x->2(2x-b-a)/(b-a) before entering the routine. This maps x from (a, b) to
+ * (-1, 1), over which the Chebyshev polynomials are defined.
  *
- * If the coefficients are for the inverted interval, in
- * which (a, b) is mapped to (1/b, 1/a), the transformation
- * required is x -> 2(2ab/x - b - a)/(b-a).  If b is infinity,
- * this becomes x -> 4a/x - 1.
+ * If the coefficients are for the inverted interval, in which (a, b) is mapped
+ * to (1/b, 1/a), the transformation required is x->2(2ab/x-b-a)/(b-a). If b is
+ * infinity, this becomes x->4a/x-1.
  *
  * SPEED:
  * Taking advantage of the recurrence properties of the
  * Chebyshev polynomials, the routine requires one more
  * addition per loop than evaluating a nested polynomial of
  * the same degree.
+ *
+ * @param [in] x Chebyshev series is evaluated at this point
+ * @param [in] array Chebyshev coefficients
+ * @param [in] n number of Chebyshev coefficients, number of elements of array
+ * @retval Chebychev series evaluated at x
  */
 static double chbevl(double x, double array[], int n)
 {
-    double b0, b1, b2, *p;
-    int i;
-
-    p = array;
-    b0 = *p++;
-    b1 = 0.0;
-    i = n - 1;
+    double *p = array;
+    double b0 = *p++, b1 = 0.0, b2;
+    int i = n-1;
 
     do
     {
         b2 = b1;
         b1 = b0;
-        b0 = x * b1  -  b2  + *p++;
+        b0 = x*b1-b2+*p++;
     }
     while(--i);
 
     return 0.5*(b0-b2);
 }
 
-/* @brief Modified Bessel function of order zero
+/** @brief Modified Bessel function of order zero
  *
  * Returns modified Bessel function of order zero of the argument.
  *
- * The function is defined as i0(x) = j0( ix ).
+ * The function is defined as i0(x) = j0(ix).
  *
  * The range is partitioned into the two intervals [0,8] and (8, infinity).
  * Chebyshev polynomial expansions are employed in each interval.
@@ -233,7 +233,7 @@ double besselI0(double x)
 }
 
 
-/* @brief Modified Bessel function of order zero, exponentially scaled
+/** @brief Modified Bessel function of order zero, exponentially scaled
  *
  * Returns exponentially scaled modified Bessel function of order zero of the
  * argument.
@@ -264,7 +264,7 @@ double besselI0e(double x)
 }
 
 
-/*  @brief Modified Bessel function of order one
+/** @brief Modified Bessel function of order one
  *
  * Returns modified Bessel function of order one of the argument.
  *
@@ -283,12 +283,11 @@ double besselI0e(double x)
  */
 double besselI1(double x)
 { 
-    double y, z;
+    double z = fabs(x);
 
-    z = fabs(x);
     if(z <= 8.0)
     {
-        y = (z/2.0)-2.0;
+        double y = (z/2.0)-2.0;
         z = chbevl(y,A1,29)*z*exp(z);
     }
     else
@@ -300,7 +299,7 @@ double besselI1(double x)
     return z;
 }
 
-/*  @brief Modified Bessel function of order one, exponentially scaled
+/** @brief Modified Bessel function of order one, exponentially scaled
  *
  * Returns exponentially scaled modified Bessel function * of order one of the
  * argument.
@@ -338,9 +337,9 @@ double besselI1e(double x)
 #define BIGNO 1e10
 #define BIGNI 1e-10
 
-/* @brief Modified Bessel function of integer order
+/** @brief Modified Bessel function of integer order
  *
- * Returns modified Bessel function of order n of the argument x.
+ * Returns modified Bessel function of order n for the argument x.
  *
  * The function is defined as in(x) = jn( ix ).
  *
@@ -380,7 +379,6 @@ double besselI(int n, double x)
 
         if(j == n)
             ans = bip;
-
     }
 
     ans *= besselI0(x)/bi;
