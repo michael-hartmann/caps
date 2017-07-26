@@ -1,8 +1,8 @@
 /**
- * @file   sfunc.c
+ * @file   misc.c
  * @author Michael Hartmann <michael.hartmann@physik.uni-augsburg.de>
  * @date   July, 2017
- * @brief  various functions implementing mostly special functions
+ * @brief  various mathematical functions
  */
 
 #include <stdlib.h>
@@ -82,8 +82,18 @@ double logadd(const double log_a, const double log_b)
         return log_b + log1p(exp(log_a-log_b));
 }
 
-
-double logadd_ms(log_t list[], const int len, sign_t *sign)
+/**
+ * @brief Add N numbers given by their logarithms.
+ *
+ * The logarithm and the sign of the N numbers are given by list. The numbers
+ * of elements of list must be N, the sign of the result will be stored in
+ * sign.
+ *
+ * @param [in] list list of numbers given by logarithm and sign
+ * @param [in] N number of elements of list
+ * @return logsum log(sum_i list_i)
+ */
+double logadd_ms(log_t list[], const int N, sign_t *sign)
 {
     double max = list[0].v;
 
