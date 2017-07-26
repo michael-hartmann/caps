@@ -11,6 +11,7 @@
 
 #include "quadpack.h"
 
+#include "bessel.h"
 #include "utils.h"
 #include "sfunc.h"
 #include "libcasimir.h"
