@@ -50,7 +50,7 @@ double logi(unsigned int x) __attribute__ ((pure));
     with open("../logfac.c", "w") as f:
         print(includes, file=f)
 
-        print("""double lookup_logi[] = { /* %g kb */
+        print("""static double lookup_logi[] = { /* %g kb */
     -INFINITY, /* log(0) */""" % (max_logi*8/1024), file=f)
 
         for i in range(1,max_logi-1):
@@ -60,7 +60,7 @@ double logi(unsigned int x) __attribute__ ((pure));
         print("};\n\n", file=f);
 
 
-        print("double lookup_lfac[] = { /* %g kb */" % (max_lfac*8/1024), file=f)
+        print("static double lookup_lfac[] = { /* %g kb */" % (max_lfac*8/1024), file=f)
 
         for i in range(max_lfac-1):
             print("    %s, /* lgamma(1+%d) */" % (lgamma(1+i),i), file=f)
