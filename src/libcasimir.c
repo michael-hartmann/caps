@@ -13,6 +13,7 @@
 #include <unistd.h>
 
 #include "quadpack.h"
+#include "constants.h"
 #include "bessel.h"
 #include "integration.h"
 #include "libcasimir.h"

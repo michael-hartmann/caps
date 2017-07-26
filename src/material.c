@@ -4,6 +4,7 @@
 #include <string.h>
 #include <stdlib.h>
 
+#include "constants.h"
 #include "material.h"
 #include "utils.h"
 #include "sfunc.h"
