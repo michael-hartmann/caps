@@ -38,11 +38,4 @@ double kahan_sum(double input[], size_t len);
 double logadd(const double a, const double b);
 double logadd_ms(log_t list[], const int len, sign_t *sign);
 
-double Plm(int l, int m, double x) __attribute__ ((pure));
-double Plm_upwards(int l, int m, double x) __attribute__ ((pure));
-double Plm_downwards(int l, int m, double x) __attribute__ ((pure));
-
-double Plm_estimate(int l, int m, double x) __attribute__ ((pure));
-double Pl(int l, double x);
-
 #endif
