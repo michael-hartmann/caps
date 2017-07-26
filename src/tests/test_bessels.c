@@ -1,4 +1,4 @@
-#include "sfunc.h"
+#include "bessel.h"
 #include "unittest.h"
 
 #include "test_bessels.h"
