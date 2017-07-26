@@ -2,6 +2,7 @@
 #define __UTILS_H
 
 #include <stdlib.h>
+#include <stdio.h>
 
 #if defined(__clang__)
     #define COMPILER "clang/llvm"
