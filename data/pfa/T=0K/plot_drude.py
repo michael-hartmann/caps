@@ -14,7 +14,7 @@ if __name__ == "__main__":
         width = 8,
         key   = graph.key.key(pos="tl"),
         x     = graph.axis.log(title=r"$L/R$", min=3e-4, max=1e-1),
-        y     = graph.axis.log(title=r"$1-\mathcal{F}/\mathcal{F}_\mathrm{PFA}$")
+        y     = graph.axis.log(title=r"$1-\mathcal{F}/\mathcal{F}_\mathrm{PFA}$", min=3e-4, max=2e-1)
     )
 
     LbyR_drude  = drude[:,0]
