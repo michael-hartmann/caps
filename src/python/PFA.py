@@ -1,6 +1,7 @@
 import numpy as np
 from math import exp, fsum, pi, sqrt, log1p, isinf
 from scipy.integrate import quad
+from spence import Li2
 
 # constants
 c       = 299792458       # speed of light [m/s]
@@ -8,7 +9,8 @@ kB      = 1.38064852e-23  # Boltzmann constant [m² kg / (s² K)]
 hbar    = 1.0545718e-34   # hbar [J s]
 hbar_eV = 6.582119514e-16 # hbar [eV s / rad]
 
-def psum(f, L, T, epsrel=1e-10):
+
+def psum(f, L, T, epsrel=1e-9):
     """Evaluate the primed sum
          k_B T \sum_n^\prime f(L,xi_n)
     where
@@ -77,8 +79,8 @@ class PFA:
         return rTE, rTM
 
 
-    def dF_xi(self, L, xi, epsabs=0, epsrel=1e-10):
-        def f(t,xi):
+    def dF_xi(self, L, xi, epsabs=0, epsrel=1e-12):
+        def f(t):
             """Integrand \sum_p t² rp² e^(-2t)/(1-rp² e^(-2t))"""
             kappa = t/L
             rTE, rTM = self.rp(xi,kappa)
@@ -86,24 +88,24 @@ class PFA:
             exp_f = exp(-2*t)
             return t**2*exp_f*( rTE2/(1-rTE2*exp_f) + rTM2/(1-rTM2*exp_f) )
 
-        I,err = quad(f, xi*L/c, np.inf, args=(xi,), epsabs=epsabs, epsrel=epsrel)
+        I,err = quad(f, xi*L/c, np.inf, epsabs=epsabs, epsrel=epsrel)
         return I
 
 
     def dF(self, L):
         """ dF = dF/dL = - d²F/dL²"""
-        return self.R/L**3*2*psum(self.dF_xi, L, self.T)
+        return 2*self.R/L**3*psum(self.dF_xi, L, self.T)
 
 
-    def F_xi(self, L, xi, epsabs=0, epsrel=1e-10):
-        def f(t,xi):
+    def F_xi(self, L, xi, epsabs=0, epsrel=1e-12):
+        def f(t):
             """Integrand \sum_p t² rp² e^(-2t)/(1-rp² e^(-2t))"""
             kappa = t/L
             rTE, rTM = self.rp(xi,kappa)
             exp_f = exp(-2*t)
             return t*(log1p(-rTE**2*exp_f)+log1p(-rTM**2*exp_f))
 
-        I,err = quad(f, xi*L/c, np.inf, args=(xi,), epsabs=epsabs, epsrel=epsrel)
+        I,err = quad(f, xi*L/c, np.inf, epsabs=epsabs, epsrel=epsrel)
         return I
 
 
@@ -112,17 +114,16 @@ class PFA:
         return self.R/L**2*psum(self.F_xi, L, self.T)
 
 
-    def E_xi(self, L, xi, epsabs=0, epsrel=1e-10):
-        def f(t,xi):
+    def E_xi(self, L, xi, epsabs=0, epsrel=1e-12):
+        def f(t):
             kappa = t/L
             rTE, rTM = self.rp(xi,kappa)
             exp_f = exp(-2*t)
-            return (log1p(-rTE**2*exp_f)+log1p(-rTM**2*exp_f))*(t-xi*L/c)
+            return Li2(rTE**2*exp_f)+Li2(rTM**2*exp_f)
 
-        I,err = quad(f, xi*L/c, np.inf, args=(xi,), epsabs=epsabs, epsrel=epsrel)
+        I,err = quad(f, xi*L/c, np.inf, epsabs=epsabs, epsrel=epsrel)
         return I
 
-
     def E(self,L):
-        """Casimir free energy E"""
-        return self.R/L*psum(self.E_xi, L, self.T)
+        """Casimir free energy, E"""
+        return -0.5*self.R/L*psum(self.E_xi, L, self.T)
