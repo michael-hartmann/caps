@@ -451,8 +451,8 @@ double bessel_lnKnu(int nu, double x)
  *
  * @param [in] nu order
  * @param [in] x argument
- * @param [out] lnInu_p pointer for log I_{nu+1/2}(x)
- * @param [out] lnKnu_p pointer for log K_{nu+1/2}(x)
+ * @param [out] lnInu_p pointer for \f$\log I_{\nu+1/2}(x)\f$
+ * @param [out] lnKnu_p pointer for \f$\log K_{\nu+1/2}(x)\f$
  */
 void bessel_lnInuKnu(int nu, const double x, double *lnInu_p, double *lnKnu_p)
 {
