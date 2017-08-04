@@ -36,7 +36,7 @@ typedef signed char sign_t;
 /*! compute x^4 */
 #define pow_4(x) ((x)*(x)*(x)*(x))
 
-/* calculate pow(-1,a) = -1**a */
+/*! calculate pow(-1,a) = -1^a where a is an integer */
 #define MPOW(a) (1-2*((signed char)(a) & 1))
 
 #ifndef M_PI
