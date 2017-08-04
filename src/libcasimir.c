@@ -472,26 +472,23 @@ void casimir_lnab_perf(casimir_t *self, double nT, int l, double *lna, double *l
  *
  * lna, lnb, sign_a and sign_b must be valid pointers and must not be NULL.
  *
- * For generic metals we calculate the Mie coefficients al(iξ) und bl(iξ) using
+ * For generic metals we calculate the Mie coefficients \f$a_\ell(i\xi)\f$ und \f$b_\ell(i\xi)\f$ using
  * the expressions taken from [1]. Ref. [1] is the erratum to [2]. Please note
  * that the equations (3.30) and (3.31) in [3] are wrong.
  *
  * Note: If sla =~ slb or slc =~ sld, there is a loss of significance when
  * calculating sla-slb or slc-sld.
  *
- * This function is thread safe - as long you don't change temperature, aspect
- * ratio and dielectric properties of sphere.
- *
- * The signs are given by sign_al = (-1)^l, sign_bl = (-1)^(l+1).
+ * The signs are given by \f$\mathrm{sgn}(a_\ell) = (-1)^\ell\f$, \f$\mathrm{sgn}(b_\ell) = (-1)^{\ell+1}\f$.
  *
  * References:
- * [1] Erratum: Thermal Casimir effect for Drude metals in the plane-sphere
- * geometry, Canaguier-Durand, Neto, Lambrecht, Reynaud (2010)
- * http://journals.aps.org/pra/abstract/10.1103/PhysRevA.83.039905
- * [2] Thermal Casimir effect for Drude metals in the plane-sphere geometry,
- * Canaguier-Durand, Neto, Lambrecht, Reynaud (2010),
- * http://journals.aps.org/pra/abstract/10.1103/PhysRevA.82.012511
- * [3] Negative Casimir entropies in the plane-sphere geometry, Hartmann, 2014
+ * - [1] Erratum: Thermal Casimir effect for Drude metals in the plane-sphere
+ *       geometry, Canaguier-Durand, Neto, Lambrecht, Reynaud (2010)
+ *       http://journals.aps.org/pra/abstract/10.1103/PhysRevA.83.039905
+ * - [2] Thermal Casimir effect for Drude metals in the plane-sphere geometry,
+ *       Canaguier-Durand, Neto, Lambrecht, Reynaud (2010),
+ *       http://journals.aps.org/pra/abstract/10.1103/PhysRevA.82.012511
+ * - [3] Negative Casimir entropies in the plane-sphere geometry, Hartmann, 2014
  *
  * @param [in,out] self Casimir object
  * @param [in] nT Matsubara frequency
@@ -520,8 +517,7 @@ void casimir_lnab(casimir_t *self, double nT, int l, double *lna, double *lnb, s
     const double ln_chi = log(nT)-log1p(self->LbyR);
     const double ln_l   = logi(l);
 
-    /**
-     * Note: n is the refraction index, n_mat the Matsubara index
+    /* Note: n is the refraction index, n_mat the Matsubara index
      * n    = sqrt(ε(ξ,ω_p,γ))
      * ln_n = ln(sqrt(ε)) = ln(ε)/2 = ln(1+(ε-1))/2 = log1p(ε-1)/2
      */
