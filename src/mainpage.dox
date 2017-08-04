@@ -4,31 +4,22 @@
 \section casimireffect The Casimir Effect
 
 In 1984 Hendrik Casimir considered two parallel, perfectly conducting plates in
-vacuum at temperature \f$T=0\f$ and predicted an attracting force [1]. This
-force arises due to vacuum fluctuations and was experimentally verified in 1956
-by Derjaguin, Abrikosova and Lifshitz [2], as well as in 1958 by Sparnaay [3].
+vacuum at temperature T=0 and predicted an attracting force. This force arises
+due to vacuum fluctuations and was experimentally verified in 1956 by
+Derjaguin, Abrikosova and Lifshitz, as well as in 1958 by Sparnaay.
 
 Since the Casimir effect is a manifestation of vacuum fluctuations in the
 mesoscopic world, it has relations to many open physical questions. As the
 Casimir force is the dominant force between electically neutral bodies at
 micron or sub-micron distances, the Casimir effect plays an important role in
-the search for new hypothetical forces predicted by unified theories [4]. The
+the search for new hypothetical forces predicted by unified theories. The
 Casimir effect is also linked to the theory geometry and the puzzle of the
 cosmological constant. All energy gravitates and thus zero point fluctuations
 are expected to contribute to the stress–energy tensor in Einstein's field
-equations [5]. In fact, several cosmological observations like the discovery
-that the universe expands in an increasing rate [6] suggest a non-zero energy
-density of vacuum. However, estimations of the cosmological constant and
-meassurements disagree by about 120 orders of magnitude.
-
-Moreover, negative entropies are found for some geometries and parameters in
-the Casimir effect. Negative entropies, for example, occur in the plane–plane
-geometry for metals described by the Drude model. In addition, this effect also
-occurs in the plane–sphere geometry even for perfect reflectors, thus
-suggesting a geometrical origin of negative entropies [7,8]. This is in general
-not a problem, since the Casimir free energy is an interaction energy and does
-not describe the entire physical system. However, the origin of negative
-entropies is not understood very well.
+equations. In fact, several cosmological observations like the discovery that
+the universe expands in an increasing rate suggest a non-zero energy density of
+vacuum. However, estimations of the cosmological constant and meassurements
+disagree by about 120 orders of magnitude.
 
 
 \section whatislibcasimir What is libcasimir?
@@ -37,132 +28,99 @@ entropies is not understood very well.
 \image latex geometry.png
 
 libcasimir implements the numerics for the Casimir effect in the plane-sphere
-geometry with perfect spheres using a scattering approach [8, 9]. We use the
-same approach, but derive slightly different formulas for the matrix element of
-the round-trip operator that don't need Wigned-d-symbols.
-
-A sphere of radius R is separated by a distance of L from a plane. The plane is
-infinite in the xy -direction and both plane and sphere are assumed to be
-perfect reflectors. The programs calculate the free energy
-\f$\mathcal{F}(T,R/L)\f$ in scaled quantities: 
-\f[
-\mathcal{F}^\mathrm{scaled} = \frac{L+R}{\hbar c}
-\f]
-\f[
-T^\mathrm{scaled} = \frac{2\pi k_B (L+R)}{\hbar c} T
-\f]
-Using this scaling
-the free energy only depends on the temperature T and the geometric ratio \f$L/R\f$.
-
-This code is part of my master thesis. This thesis is also a good reference for
-libcasimir. It costed much time and much work to write a stable and a fast
-implementation. So, if you find this piece of code useful and you use it for
-plots, please consider to cite libcasimir.
+geometry for arbitrary materials at zero and finite temperature using the
+scattering approach. A sphere of radius R is separated by a distance of L from
+a plane. The plane is infinite in the xy-direction.
 
 \subsection features Features
 
- - Calculate the free energy \f$F(T,L/R)\f$ for different separations and temperatures
- - Calculate the free energy \f$F(T\to\infty,L/R)\f$ in the high temperature limit
- - Support for 80-bit extended floating point precision and quadrupole precision
+
+ - Calculate the free energy F(T,L,R) for different separations and temperatures
+ - Calculate the free energy F(T→∞,L,R) in the high temperature limit
+ - Full support for perfect conductors, Drude metals, and generic metals described by a user-defined dielectric function
  - libcasimir is fast and reliable
  - ready to use programs: you don't have to modify the code
- - libcasimir is free software – you may use it and modify it
+ - libcasimir is free software – you may use it or even modify it
+
 
 \subsection installation Installation
 
 If you use Linux or Unix, you need the gcc and development libraries and header
 files for the standard C library. On a Debian-like Linux the commands
 
-    $ sudo apt-get install gcc libc6-dev make
+    $ sudo apt-get install gcc libc6-dev make liblapack-dev libopenmpi-dev openmpi-bin
     $ cd src/
     $ make
 
-should install all dependencies and compile the code. If you want to change the
-floating point precision (80-bit extended precision or quadrupole precision),
-options, or if you like to use icc (Intel C-Compiler) instead of gcc, have a
-look at the Makefile.
+should install all dependencies and compile the code.
 
 \subsection usage Usage
 
-If you want to calculate the free energy \f$\mathcal{F}(T,L/R)\f$ , you can use
-the program casimir. Mandatory options are -T for temperature and -x for the
-aspect ratio \f$L/R\f$.
+To compute the Casimir free energy between a sphere of radius R=150µm and a
+plane separated by a distance L=2µm at room temperature T=300K, use the
+command:
 
-Example: Calculate \f$F(T=1,L/R=1/2)\f$
-
-    user@machine:~/git/libcasimir/src$ ./casimir -T 1 -x 0.5
-    # Compiled on Apr  2 2015 at 00:28:08 with gcc, using long double, no lapack support
+    mpirun -c 7 ./casimir -L 2e-6 -R 150e-6 -T 300
+    # L      = 2e-06
+    # R      = 0.00015
+    # LbyR   = 0.0133333333333333
+    # T      = 300
+    # cutoff = 1e-09
+    # epsrel = 1e-06
+    # ldim   = 525
+    # cores  = 7
+    # alpha  = 0.0263157894736842
+    # k=1, xi=0, logdetD=-20.5414371366319, t=0.893615
+    # k=2, xi=125.121224504, logdetD=-0.697593023726068, t=47.042
+    # k=3, xi=250.242449008, logdetD=-0.0258391836330834, t=47.5505
+    # k=4, xi=375.363673512, logdetD=-0.000959951381331692, t=44.3509
+    # k=5, xi=500.484898016, logdetD=-3.56248208858549e-05, t=39.9074
+    # k=6, xi=625.60612252, logdetD=-1.31970422831906e-06, t=29.2294
     #
-    # R/(R+L) = 0.666667
-    # L/R     = 0.5
-    # R/L     = 2
-    # T       = 1
-    # omegap_sphere = inf
-    # omegap_plane  = inf
-    # gamma_sphere  = 0
-    # gamma_plane   = 0
-    # integration   = analytic (perfect mirrors)
-    # lmax      = 10
-    # verbose   = 0
-    # cores     = 1
-    # precision = 1e-10
-    #
-    # LbyR, T, F, lmax, nmax, time
-    0.5, 1, -0.160753879276811, 10, 35, 0.250783
-    # 100.00%, L/R=0.5, T=1
-
-There are more programs available. Every program outputs a description and a
-usage text when called with the flag -h.
+    # L/R, L, R, T, ldim, F*(L+R)/(ħc)
+    0.01333333333333333, 2e-06, 0.00015, 300, 525, -1049.959261174529
 
 
-\section citing Citing
+\section bugs Bugs, developing and contributing
 
-You may cite this software, see: http://dx.doi.org/10.5281/zenodo.12476
-
-Bibtex:
-
-    @article{Hartmann:12476,
-          author        = "Hartmann, Michael and Ingold, Gert-Ludwig",
-          title         = "{Casimir: libcasimir 0.1}",
-          month         = "Oct",
-          year          = "2014",
-          doi           = "{10.5281/zenodo.12476}",
-          url           = "{http://dx.doi.org/10.5281/zenodo.12476}",
-    }
+The latest version if libcasimir is available at github. If you find a bug,
+please create an issue. If you have improvements, create a pull request.
 
 
-\section authors Authors and License
+\section authors Authors, license and credits
 
-libcasimir is developed by Michael Hartmann. It is free software and licensed
-under GPLv2. This means that you may study, modify and distribute the original
-software and the adapted versions.
+ - Michael Hartmann, michael.hartmann@physik.uni-augsburg.de
+   main developer
+
+ - Gert-Ludwig Ingold, gert.ingold@physik.uni-augsburg.de
+   contributions to documentation, speedup of PFA calculation, bugfixes
+
+For a full list, see CREDITS.
+
+The code is licensed under GPLv2, see LICENSE.
+
+Also, libcasimir uses some third-party software:
 
 
-\section acknowledgements Acknowledgement
-
-I want to thank Gert-Ludwig Ingold for the excellent supervision during the
-time of my master thesis.
+ - HODLR A fast direct solver and determinant computation for dense linear systems. (MPL2)
+ - libeigen HODLR depends on libeigen. However, only header files are needed. (MPL2)
+ - cquadpack for integration. cquadpack is a a C port of the QUADPACK software originally written in Fortran for solving integrals. (public domain)
+ - hash-table is an implementation of hash tables in C. The code was slightly modified for the use in libcasimir. (ISC license)
+ - cephes is a software collection with special functions. libcasimir uses the implementation for the modified Bessel functions I0(x) and I1(x). Boths files have been slightly modified, see besselI.c. (No license, probably BSD licensed.)
+ - LAPACK Linear algebra library. LAPACK may be used to calculate the determinant of the scattering matrices. However, for small separations using HODLR is much faster. (Modified BSD)
 
 
 \section publications Publications related to libcasimir
 
- - Hartmann, "Negative Casimir entropies in the plane–sphere geometry", master thesis, 2014
+ - Plasma vs Drude modelling of the Casimir force: beyond the proximity force approximation, <br>
+   Michael Hartmann, Gert-Ludwig Ingold, and Paulo A. Maia Neto, <br>
+   Phys. Rev. Lett. 119, 043901 (2017)
 
-   libcasimir was orignally developed for this master thesis.
+ - Disentangling geometric and dissipative origins of negative Casimir entropies, <br>
+   Stefan Umrath, Michael Hartmann, Gert-Ludwig Ingold, and Paulo A. Maia Neto, <br>
+   Phys. Rev. E 92, 042125 (2015)
 
- - Ingold et al, Geometric origin of negative Casimir entropies: A scattering-channel analysis, Phys. Rev. E 91, 033203 (2015) 
-
-   Fig. 2 and Fig. 3 were created using libcasimir.
-
-\section bibliography Bibliography
-
- -# Casimir, "On the attraction between two perfectly conducting plates", Indag.Math. 10, 1984
- -# Derjaguin, Abrikosova, Lifshits, "Direct meassurement of molecular attraction between solids separated by a narrow gap", Q. Rev. Chem. Soc. 10, 1956
- -# Sparnaay, "Meassurements of attractive forces between flat plates", Physica 24, 1958
- -# Onofrio, "Casimir forces and non-Newtonian gravitation", New Journal of Physics 8, 2006
- -# Jaffe, "The Casimir Effect and the Quantum Vacuum", Phys. Rev. D 72, 2005
- -# Riess et al., "Observational Evidence from Supernovae for an Accelerating Universe and a Cosmological Constant", The Astronomical Journal, Volume 116, Issue 3, 1998
- -# Milton et al., "Negative Casimir Entropies in Nanoparticle Interactions", arxiv preprint
- -# Canaguier-Durand et al., "Thermal Casimir effect for Drude metals in the plane-sphere geometry", Phys Rev A 82, 2010
- -# Hartmann, "Negative Casimir entropies in the plane–sphere geometry", master thesis, 2014
+ - Geometric origin of negative Casimir entropies: A scattering-channel analysis, <br>
+   Gert-Ludwig Ingold, Stefan Umrath, Michael Hartmann, Romain Guérout, Astrid Lambrecht, Serge Reynaud, and Kimball A. Milton, <br>
+   Phys. Rev. E 91, 033203 (2015)
 */
