@@ -1,7 +1,7 @@
 /**
  * @file   libcasimir.c
  * @author Michael Hartmann <michael.hartmann@physik.uni-augsburg.de>
- * @date   July, 2017
+ * @date   August, 2017
  * @brief  library to calculate the free Casimir energy in the plane-sphere geometry
  */
 
@@ -785,9 +785,9 @@ double casimir_logdetD(casimir_t *self, double nT, int m)
  * Eq. (8) from Ref. [1] to compute the contribution.
  *
  * References:
- *  [1] Bimonte, Emig, "Exact results for classical Casimir interactions:
- *  Dirichlet and Drude model in the sphere-sphere and sphere-plane geometry",
- *  Phys. Rev. Lett. 109 (2012), https://doi.org/10.1103/PhysRevLett.109.160403
+ *  - [1] Bimonte, Emig, "Exact results for classical Casimir interactions:
+ *    Dirichlet and Drude model in the sphere-sphere and sphere-plane geometry",
+ *    Phys. Rev. Lett. 109 (2012), https://doi.org/10.1103/PhysRevLett.109.160403
  *
  * @param [in] casimir Casimir object
  * @retval logdetD log det D(xi=0) for Drude metals
@@ -829,8 +829,8 @@ double casimir_logdetD0_drude(casimir_t *casimir)
  * We use Ref. [1] to compute the contribution for m = 0.
  *
  * References:
- *  [1] Bimonte, Classical Casimir interaction of perfectly conducting sphere
- *  and plate (2017), https://arxiv.org/abs/1701.06461
+ *  - [1] Bimonte, Classical Casimir interaction of perfectly conducting sphere
+ *    and plate (2017), https://arxiv.org/abs/1701.06461
  *
  * @param [in] casimir Casimir object
  * @param [in] eps accuracy
