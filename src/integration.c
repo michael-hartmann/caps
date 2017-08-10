@@ -53,7 +53,7 @@ static void cache_entry_destroy(void *entry)
 }
 
 /* Create a hash from l1, l2 and p. The hash function breaks if l1 or l2 >
- * 2^31. This, however, exceeds the ressources available by orders of
+ * 2^31. This, however, exceeds the resources available by orders of
  * magnitude. Other things will break earlier...
  */
 static uint64_t hash(uint64_t l1, uint64_t l2, uint64_t p)
@@ -414,6 +414,27 @@ static double _casimir_integrate_K(integration_t *self, int nu, polarization_t p
 }
 
 
+/** @brief Compute integral \f$\mathcal{K}_{\nu,p}^{(m)}(\tau)\f$
+ *
+ * This function solves for \f$m>0\f$ the integral
+ * \f[
+ *   \mathcal{K}_{\nu,p}^{(m)}(\tau) = \int_0^\infty \mathrm{d}z \, r_p \frac{e^{-\tau z}}{z^2+2z} P_\nu^{2m}(1+z)
+ * \f]
+ * and for \f$m=0\f$ the integral
+ * \f[
+ *   \mathcal{K}_{\nu,p}^{(0)}(\tau) = \int_0^\infty \mathrm{d}z \, r_p e^{-\tau z} P_\nu^{2}(1+z) \,.
+ * \f]
+ *
+ * The function returns the logarithm of the value of the integral and its sign.
+ *
+ * The projection of the wavevector onto the \f$xy\f$-plane is given by \f$k=\frac{\xi}{c}\sqrt{z^2+2z}\f$
+ *
+ * @param [in] self integration object
+ * @param [in] nu parameter
+ * @param [in] p polarization, either TE or TM
+ * @param [out] sign sign of \f$\mathcal{K}_{\nu,p}^{(m)}(\tau)\f$
+ * @retval logK \f$\log\left|\mathcal{K}_{\nu,p}^{(m)}(\tau)\right|\f$
+ */
 double casimir_integrate_K(integration_t *self, int nu, polarization_t p, sign_t *sign)
 {
     HashTable *hash_table = self->hash_table_K;
@@ -554,6 +575,22 @@ static double _casimir_integrate_I(integration_t *self, int l1, int l2, polariza
     return log_I;
 }
 
+/** @brief Compute integral \f$\mathcal{I}_{\ell_1,\ell_2,p}^{(m)}(\tau)\f$
+ *
+ * Compute the integral
+ * \f[
+ * \mathcal{I}_{\ell_1,\ell_2,p}^{(m)}(\tau) = \int_0^\infty \mathrm{d}z \, r_p \frac{e^{-\tau z}}{z^2+2z} P_{\ell_1}^m(1+z) P_{\ell_2}^m(1+z)
+ * \f]
+ *
+ * This function returns the sign of the integral and its logarithmic value.
+ *
+ * @param [in] self integration object
+ * @param [in] l1 parameter
+ * @param [in] l2 parameter
+ * @param [in] p polarization; either TE or TM
+ * @param [out] sign sign of integral \f$\mathrm{sgn}\left(\mathcal{I}_{\ell_1,\ell_2,p}^{(m)}(\tau)\right)\f$
+ * @retval logI \f$\log\left| \mathcal{I}_{\ell_1,\ell_2,p}^{(m)}(\tau) \right|\f$
+ */
 double casimir_integrate_I(integration_t *self, int l1, int l2, polarization_t p, sign_t *sign)
 {
     const int m = self->m;
@@ -611,7 +648,7 @@ double casimir_integrate_I(integration_t *self, int l1, int l2, polarization_t p
  * epsrel.
  *
  * This function returns an object in order to compute the actual integrals.
- * This memory of this object has to be freed after use by a call to \ref
+ * The memory of this object has to be freed after use by a call to \ref
  * casimir_integrate_free.
  *
  * @param [in] casimir Casimir object
@@ -658,7 +695,20 @@ void casimir_integrate_free(integration_t *integration)
     }
 }
 
-
+/** Compute integral \f$A_{\ell_1,\ell_2,p}^{(m)}(\tau)\f$
+ *
+ * Compute the integral
+ * \f[
+ * A_{\ell_1,\ell_2,p}^{(m)}(\tau) = \Lambda_{\ell_1,\ell_2}^{(m)} \frac{m^2 \xi}{c} \int_0^\infty  \mathrm{d}k \frac{r_p}{k\kappa} e^{-2\kappa\mathcal{L}} P_{\ell_1}^m\left(\frac{\kappa c}{\xi}\right) P_{\ell_2}^m\left(\frac{\kappa c}{\xi}\right)
+ * \f]
+ *
+ * @param [in] self integration object
+ * @param [in] l1 parameter
+ * @param [in] l2 parameter
+ * @param [in] p polarization; either TE or TM
+ * @param [out] sign sign of integral \f$\mathrm{sgn}\left(A_{\ell_1,\ell_2,p}^{(m)}(\tau)\right)\f$
+ * @retval logA \f$\log\left|A_{\ell_1,\ell_2,p}^{(m)}(\tau)\right|\f$
+ */
 double casimir_integrate_A(integration_t *self, int l1, int l2, polarization_t p, sign_t *sign)
 {
     const int m = self->m;
@@ -677,6 +727,20 @@ double casimir_integrate_A(integration_t *self, int l1, int l2, polarization_t p
     return A;
 }
 
+/** Compute integral \f$B_{\ell_1,\ell_2,p}^{(m)}(\tau)\f$
+ *
+ * Compute the integral
+ * \f[
+ * B_{\ell_1,\ell_2,p}^{(m)}(\tau) = \Lambda_{\ell_1,\ell_2}^{(m)} \frac{c^3}{\xi^3} \int_0^\infty  \mathrm{d}k \frac{k^3}{\kappa} r_p e^{-2\kappa\mathcal{L}} {P_{\ell_1}^m}^\prime\left(\frac{\kappa c}{\xi}\right) {P_{\ell_2}^m}^\prime\left(\frac{\kappa c}{\xi}\right)
+ * \f]
+ *
+ * @param [in] self integration object
+ * @param [in] l1 parameter
+ * @param [in] l2 parameter
+ * @param [in] p polarization; either TE or TM
+ * @param [out] sign sign of integral \f$\mathrm{sgn}\left(B_{\ell_1,\ell_2,p}^{(m)}(\tau)\right)\f$
+ * @retval logB \f$\log\left|B_{\ell_1,\ell_2,p}^{(m)}(\tau)\right|\f$
+ */
 double casimir_integrate_B(integration_t *self, int l1, int l2, polarization_t p, sign_t *sign)
 {
     const int m = self->m;
@@ -713,6 +777,20 @@ double casimir_integrate_B(integration_t *self, int l1, int l2, polarization_t p
     return B;
 }
 
+/** Compute integral \f$C_{\ell_1,\ell_2,p}^{(m)}(\tau)\f$
+ *
+ * Compute the integral
+ * \f[
+ * C_{\ell_1,\ell_2,p}^{(m)}(\tau) = \Lambda_{\ell_1,\ell_2}^{(m)} \frac{mc}{\xi} \int_0^\infty \mathrm{d}k \frac{k}{\kappa} r_p e^{-2\kappa\mathcal{L}} P_{\ell_1}^m\left(\frac{\kappa c}{\xi}\right) {P_{\ell_2}^m}^\prime\left(\frac{\kappa c}{\xi}\right)
+ * \f]
+ *
+ * @param [in] self integration object
+ * @param [in] l1 parameter
+ * @param [in] l2 parameter
+ * @param [in] p polarization; either TE or TM
+ * @param [out] sign sign of integral \f$\mathrm{sgn}\left(C_{\ell_1,\ell_2,p}^{(m)}(\tau)\right)\f$
+ * @retval logC \f$\log\left|C_{\ell_1,\ell_2,p}^{(m)}(\tau)\right|\f$
+ */
 double casimir_integrate_C(integration_t *self, int l1, int l2, polarization_t p, sign_t *sign)
 {
     const int m = self->m;
@@ -740,6 +818,22 @@ double casimir_integrate_C(integration_t *self, int l1, int l2, polarization_t p
     return C;
 }
 
+/** Compute integral \f$D_{\ell_1,\ell_2,p}^{(m)}(\tau)\f$
+ *
+ * Compute
+ * \f[
+ * D_{\ell_1,\ell_2,p}^{(m)}(\tau) = C_{\ell_2,\ell_2,1}^{(m)}(\tau)
+ * \f]
+ *
+ * This function calls \ref casimir_integrate_C.
+ *
+ * @param [in] self integration object
+ * @param [in] l1 parameter
+ * @param [in] l2 parameter
+ * @param [in] p polarization; either TE or TM
+ * @param [out] sign sign of integral \f$\mathrm{sgn}\left(D_{\ell_1,\ell_2,p}^{(m)}(\tau)\right)\f$
+ * @retval logD \f$\log\left|D_{\ell_1,\ell_2,p}^{(m)}(\tau)\right|\f$
+ */
 double casimir_integrate_D(integration_t *self, int l1, int l2, polarization_t p, sign_t *sign)
 {
     return casimir_integrate_C(self, l2, l1, p, sign);
