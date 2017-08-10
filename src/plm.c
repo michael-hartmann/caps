@@ -51,7 +51,9 @@
  */
 double Plm(int l, int m, double x)
 {
-    if((l-m) <= 200)
+    if(m == 0)
+        return Pl(l, x);
+    else if((l-m) <= 200)
         return Plm_upwards(l, m, x);
     else
         return Plm_downwards(l, m, x);
