@@ -1,7 +1,7 @@
 /**
  * @file   integration.c
  * @author Michael Hartmann <michael.hartmann@physik.uni-augsburg.de>
- * @date   April, 2017
+ * @date   August, 2017
  * @brief  Perform integration for arbitrary materials
  */
 
@@ -672,8 +672,6 @@ double casimir_integrate_A(integration_t *self, int l1, int l2, polarization_t p
     const double I1 = casimir_integrate_I(self, l1, l2, p, sign);
     const double A0 = 2*logi(m)+casimir_lnLambda(l1,l2,m)-self->tau;
 
-    *sign *= -MPOW(l2);
-
     const double A = A0+I1;
     TERMINATE(!isfinite(A), "l1=%d, l2=%d, m=%d, p=%d, I1=%g, A0=%g, A=%g", l1,l2,m,p, I1, A0, A);
     return A;
@@ -692,8 +690,6 @@ double casimir_integrate_B(integration_t *self, int l1, int l2, polarization_t p
 
         TERMINATE(!isfinite(B), "l1=%d, l2=%d, m=%d, p=%d, I=%g, B0=%g, B=%g", l1,l2,m,p, I, B0, B);
 
-        *sign *= -MPOW(l2+1);
-
         return B;
     }
 
@@ -710,7 +706,7 @@ double casimir_integrate_B(integration_t *self, int l1, int l2, polarization_t p
     I -=   (l1+1.)*(l1+m)*l2*(l2-m+1.)/denom*sign3*exp(I3-I4);
     I +=     l1*(l1-m+1.)*l2*(l2-m+1.)/denom*sign4;
 
-    *sign = -MPOW(l2+1)*SGN(I);
+    *sign = SGN(I);
 
     const double B = B0+I4+log(fabs(I));
     TERMINATE(!isfinite(B), "l1=%d, l2=%d, m=%d, p=%d, I1=%g, I2=%g, I3=%g, I4=%g, B0=%g, B=%g", l1,l2,m,p, I1,I2,I3,I4, B0, B);
@@ -737,7 +733,7 @@ double casimir_integrate_C(integration_t *self, int l1, int l2, polarization_t p
     I  = -(l2+1.)*(l2+m)/denom*sign1*exp(I1-I2);
     I += l2*(l2-m+1.)/denom*sign2;
 
-    *sign = -MPOW(l2)*SGN(I);
+    *sign = SGN(I);
 
     const double C = C0+I2+log(fabs(I));
     TERMINATE(!isfinite(C), "l1=%d, l2=%d, m=%d, p=%d, I1=%g, I2=%g, C0=%g, C=%g", l1,l2,m,p, I1,I2, C0, C);
@@ -746,9 +742,7 @@ double casimir_integrate_C(integration_t *self, int l1, int l2, polarization_t p
 
 double casimir_integrate_D(integration_t *self, int l1, int l2, polarization_t p, sign_t *sign)
 {
-    double log_C = casimir_integrate_C(self, l2, l1, p, sign);
-    *sign *= MPOW(l1+l2+1);
-    return log_C;
+    return casimir_integrate_C(self, l2, l1, p, sign);
 }
 
 integration_plasma_t *casimir_integrate_plasma_init(casimir_t *casimir, double omegap, double epsrel)
