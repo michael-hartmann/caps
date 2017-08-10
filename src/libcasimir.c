@@ -315,7 +315,7 @@ void casimir_set_rp(casimir_t *self, void (*rp)(struct casimir *self, double nT,
     self->rp = rp;
 }
 
-void casimir_set_lnab(casimir_t *self, void (*lnab)(struct casimir *self, double nT, int l, double *lna, double *lnb, sign_t *sign_a, sign_t *sign_b))
+void casimir_set_lnab(casimir_t *self, void (*lnab)(struct casimir *self, double nT, int l, double *lna, double *lnb))
 {
     self->lnab = lnab;
 }
@@ -407,11 +407,12 @@ int casimir_get_ldim(casimir_t *self)
  * @brief Calculate Mie coefficients for perfect reflectors
  *
  * This function calculates the logarithms of the Mie coefficients
- * \f$a_\ell(i\chi)\f$ and \f$b_\ell(i\chi)\f$ for perfect reflectors and their
- * signs. The Mie coefficients are evaluated at the argument
- * \f$\chi=nT R/(R+L)\f$.
+ * \f$a_\ell(i\chi)\f$ and \f$b_\ell(i\chi)\f$ for perfect reflectors. The Mie
+ * coefficients are evaluated at the argument \f$\chi=nT R/(R+L)\f$.
  *
- * lna, lnb, sign_a and sign_b must be valid pointers and must not be NULL.
+ * The signs are sgn(a_l)= (-1)^l and sgn(b_l) = (-1)^(l+1).
+ *
+ * lna and lnb must be valid pointers and must not be NULL.
  *
  * Restrictions: \f$\ell \ge 1\f$, \f$\ell \ge 0\f$
  *
@@ -419,11 +420,9 @@ int casimir_get_ldim(casimir_t *self)
  * @param [in] nT Matsubara frequency
  * @param [in] l angular momentum \f$\ell\f$
  * @param [out] ln_a logarithm of \f$a_\ell\f$
- * @param [out] sign sign of \f$a_\ell\f$
  * @param [out] ln_b logarithm of \f$b_\ell\f$
- * @param [out] sign sign of \f$b_\ell\f$
  */
-void casimir_lnab_perf(casimir_t *self, double nT, int l, double *lna, double *lnb, sign_t *sign_a, sign_t *sign_b)
+void casimir_lnab_perf(casimir_t *self, double nT, int l, double *lna, double *lnb)
 {
     double lnKlp,lnKlm,lnIlm,lnIlp;
     const double chi = nT/(1+self->LbyR); /* xi*R/(R+L) = xi/(1+L/R) */
@@ -435,7 +434,7 @@ void casimir_lnab_perf(casimir_t *self, double nT, int l, double *lna, double *l
     bessel_lnInuKnu(l-1, chi, &lnIlm, &lnKlm);
     bessel_lnInuKnu(l,   chi, &lnIlp, &lnKlp);
 
-    /* Calculate b_l(chi), i.e. lnb and sign_b */
+    /* Calculate b_l(chi), i.e. lnb */
     *lnb = M_LOGPI-M_LOG2+lnIlp-lnKlp;
 
     /* We want to calculate
@@ -457,11 +456,6 @@ void casimir_lnab_perf(casimir_t *self, double nT, int l, double *lna, double *l
     double denominator = logadd(logi(l)+lnKlp, log_chi+lnKlm);
 
     *lna = numerator-denominator;
-
-    if(sign_b != NULL)
-        *sign_b = MPOW(l+1);
-    if(sign_a != NULL)
-        *sign_a = MPOW(l);
 }
 
 /**
@@ -495,10 +489,8 @@ void casimir_lnab_perf(casimir_t *self, double nT, int l, double *lna, double *l
  * @param [in] l angular momentum \f$\ell\f$
  * @param [out] lna logarithm of Mie coefficient \f$a_\ell\f$
  * @param [out] lnb logarithm of Mie coefficient \f$b_\ell\f$
- * @param [out] sign_a sign of Mie coefficient \f$a_\ell\f$
- * @param [out] sign_b sign of Mie coefficient \f$b_\ell\f$
  */
-void casimir_lnab(casimir_t *self, double nT, int l, double *lna, double *lnb, sign_t *sign_a, sign_t *sign_b)
+void casimir_lnab(casimir_t *self, double nT, int l, double *lna, double *lnb)
 {
     /* ξ = nT */
     const double epsilonm1 = casimir_epsilonm1(self, nT); /* n²-1 */
@@ -506,7 +498,7 @@ void casimir_lnab(casimir_t *self, double nT, int l, double *lna, double *lnb, s
     if(isinf(epsilonm1))
     {
         /* Mie coefficients for perfect reflectors */
-        casimir_lnab_perf(self, nT, l, lna, lnb, sign_a, sign_b);
+        casimir_lnab_perf(self, nT, l, lna, lnb);
         return;
     }
 
@@ -544,11 +536,6 @@ void casimir_lnab(casimir_t *self, double nT, int l, double *lna, double *lnb, s
 
     *lnb = M_LOGPI-M_LOG2 + ln_gammaB-ln_gammaD;
     *lna = M_LOGPI-M_LOG2 + num - logadd(ln_gammaC, ln_gammaD);
-
-    if(sign_a != NULL)
-        *sign_a = MPOW(l);
-    if(sign_b != NULL)
-        *sign_b = MPOW(l+1);
 }
 /*@}*/
 
@@ -659,10 +646,10 @@ double casimir_M_elem(casimir_M_t *self, int l1, int l2, char p1, char p2)
     integration_t *integration = self->integration;
 
     if(isnan(self->al[l1-lmin]))
-        casimir->lnab(casimir, nT, l1, &self->al[l1-lmin], &self->bl[l1-lmin], NULL, NULL);
+        casimir->lnab(casimir, nT, l1, &self->al[l1-lmin], &self->bl[l1-lmin]);
 
     if(isnan(self->al[l2-lmin]))
-        casimir->lnab(casimir, nT, l2, &self->al[l2-lmin], &self->bl[l2-lmin], NULL, NULL);
+        casimir->lnab(casimir, nT, l2, &self->al[l2-lmin], &self->bl[l2-lmin]);
 
     const double al1 = self->al[l1-lmin], bl1 = self->bl[l1-lmin];
     const double al2 = self->al[l2-lmin], bl2 = self->bl[l2-lmin];
