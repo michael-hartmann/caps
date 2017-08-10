@@ -410,7 +410,7 @@ int casimir_get_ldim(casimir_t *self)
  * \f$a_\ell(i\chi)\f$ and \f$b_\ell(i\chi)\f$ for perfect reflectors. The Mie
  * coefficients are evaluated at the argument \f$\chi=nT R/(R+L)\f$.
  *
- * The signs are sgn(a_l)= (-1)^l and sgn(b_l) = (-1)^(l+1).
+ * The signs are given by \f$\mathrm{sgn}(a_\ell) = (-1)^\ell\f$, \f$\mathrm{sgn}(b_\ell) = (-1)^{\ell+1}\f$.
  *
  * lna and lnb must be valid pointers and must not be NULL.
  *
