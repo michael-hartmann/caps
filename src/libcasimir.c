@@ -315,7 +315,7 @@ void casimir_set_rp(casimir_t *self, void (*rp)(struct casimir *self, double nT,
     self->rp = rp;
 }
 
-void casimir_set_lnab(casimir_t *self, void (*lnab)(struct casimir *self, double nT, int l, double *lna, double *lnb, sign_t *sign_a, sign_t *sign_b))
+void casimir_set_lnab(casimir_t *self, void (*lnab)(struct casimir *self, double nT, int l, double *lna, double *lnb))
 {
     self->lnab = lnab;
 }
@@ -407,11 +407,12 @@ int casimir_get_ldim(casimir_t *self)
  * @brief Calculate Mie coefficients for perfect reflectors
  *
  * This function calculates the logarithms of the Mie coefficients
- * \f$a_\ell(i\chi)\f$ and \f$b_\ell(i\chi)\f$ for perfect reflectors and their
- * signs. The Mie coefficients are evaluated at the argument
- * \f$\chi=nT R/(R+L)\f$.
+ * \f$a_\ell(i\chi)\f$ and \f$b_\ell(i\chi)\f$ for perfect reflectors. The Mie
+ * coefficients are evaluated at the argument \f$\chi=nT R/(R+L)\f$.
  *
- * lna, lnb, sign_a and sign_b must be valid pointers and must not be NULL.
+ * The signs are given by \f$\mathrm{sgn}(a_\ell) = (-1)^\ell\f$, \f$\mathrm{sgn}(b_\ell) = (-1)^{\ell+1}\f$.
+ *
+ * lna and lnb must be valid pointers and must not be NULL.
  *
  * Restrictions: \f$\ell \ge 1\f$, \f$\ell \ge 0\f$
  *
@@ -419,11 +420,9 @@ int casimir_get_ldim(casimir_t *self)
  * @param [in] nT Matsubara frequency
  * @param [in] l angular momentum \f$\ell\f$
  * @param [out] ln_a logarithm of \f$a_\ell\f$
- * @param [out] sign sign of \f$a_\ell\f$
  * @param [out] ln_b logarithm of \f$b_\ell\f$
- * @param [out] sign sign of \f$b_\ell\f$
  */
-void casimir_lnab_perf(casimir_t *self, double nT, int l, double *lna, double *lnb, sign_t *sign_a, sign_t *sign_b)
+void casimir_lnab_perf(casimir_t *self, double nT, int l, double *lna, double *lnb)
 {
     double lnKlp,lnKlm,lnIlm,lnIlp;
     const double chi = nT/(1+self->LbyR); /* xi*R/(R+L) = xi/(1+L/R) */
@@ -435,7 +434,7 @@ void casimir_lnab_perf(casimir_t *self, double nT, int l, double *lna, double *l
     bessel_lnInuKnu(l-1, chi, &lnIlm, &lnKlm);
     bessel_lnInuKnu(l,   chi, &lnIlp, &lnKlp);
 
-    /* Calculate b_l(chi), i.e. lnb and sign_b */
+    /* Calculate b_l(chi), i.e. lnb */
     *lnb = M_LOGPI-M_LOG2+lnIlp-lnKlp;
 
     /* We want to calculate
@@ -457,11 +456,6 @@ void casimir_lnab_perf(casimir_t *self, double nT, int l, double *lna, double *l
     double denominator = logadd(logi(l)+lnKlp, log_chi+lnKlm);
 
     *lna = numerator-denominator;
-
-    if(sign_b != NULL)
-        *sign_b = MPOW(l+1);
-    if(sign_a != NULL)
-        *sign_a = MPOW(l);
 }
 
 /**
@@ -495,10 +489,8 @@ void casimir_lnab_perf(casimir_t *self, double nT, int l, double *lna, double *l
  * @param [in] l angular momentum \f$\ell\f$
  * @param [out] lna logarithm of Mie coefficient \f$a_\ell\f$
  * @param [out] lnb logarithm of Mie coefficient \f$b_\ell\f$
- * @param [out] sign_a sign of Mie coefficient \f$a_\ell\f$
- * @param [out] sign_b sign of Mie coefficient \f$b_\ell\f$
  */
-void casimir_lnab(casimir_t *self, double nT, int l, double *lna, double *lnb, sign_t *sign_a, sign_t *sign_b)
+void casimir_lnab(casimir_t *self, double nT, int l, double *lna, double *lnb)
 {
     /* ξ = nT */
     const double epsilonm1 = casimir_epsilonm1(self, nT); /* n²-1 */
@@ -506,7 +498,7 @@ void casimir_lnab(casimir_t *self, double nT, int l, double *lna, double *lnb, s
     if(isinf(epsilonm1))
     {
         /* Mie coefficients for perfect reflectors */
-        casimir_lnab_perf(self, nT, l, lna, lnb, sign_a, sign_b);
+        casimir_lnab_perf(self, nT, l, lna, lnb);
         return;
     }
 
@@ -544,11 +536,6 @@ void casimir_lnab(casimir_t *self, double nT, int l, double *lna, double *lnb, s
 
     *lnb = M_LOGPI-M_LOG2 + ln_gammaB-ln_gammaD;
     *lna = M_LOGPI-M_LOG2 + num - logadd(ln_gammaC, ln_gammaD);
-
-    if(sign_a != NULL)
-        *sign_a = MPOW(l);
-    if(sign_b != NULL)
-        *sign_b = MPOW(l+1);
 }
 /*@}*/
 
@@ -659,10 +646,10 @@ double casimir_M_elem(casimir_M_t *self, int l1, int l2, char p1, char p2)
     integration_t *integration = self->integration;
 
     if(isnan(self->al[l1-lmin]))
-        casimir->lnab(casimir, nT, l1, &self->al[l1-lmin], &self->bl[l1-lmin], NULL, NULL);
+        casimir->lnab(casimir, nT, l1, &self->al[l1-lmin], &self->bl[l1-lmin]);
 
     if(isnan(self->al[l2-lmin]))
-        casimir->lnab(casimir, nT, l2, &self->al[l2-lmin], &self->bl[l2-lmin], NULL, NULL);
+        casimir->lnab(casimir, nT, l2, &self->al[l2-lmin], &self->bl[l2-lmin]);
 
     const double al1 = self->al[l1-lmin], bl1 = self->bl[l1-lmin];
     const double al2 = self->al[l2-lmin], bl2 = self->bl[l2-lmin];
@@ -675,11 +662,9 @@ double casimir_M_elem(casimir_M_t *self, int l1, int l2, char p1, char p2)
             double log_A_TE = casimir_integrate_A(integration, l1, l2, TE, &signA_TE);
             double log_B_TM = casimir_integrate_B(integration, l1, l2, TM, &signB_TM);
 
-            /* √(a_l1*a_l2)*(A_TE + B_TM) */
-            const double mie = (al1+al2)/2;
-            const double elem = exp(log_A_TE+mie)*signA_TE+exp(log_B_TM+mie)*signB_TM;
-
-            return MPOW(l1)*elem;
+            /* √(a_l1*a_l2)*(B_TM - A_TE) */
+            double mie = (al1+al2)/2;
+            return exp(log_B_TM+mie)*signB_TM-exp(log_A_TE+mie)*signA_TE;
         }
         else /* MM */
         {
@@ -687,11 +672,9 @@ double casimir_M_elem(casimir_M_t *self, int l1, int l2, char p1, char p2)
             double log_A_TM = casimir_integrate_A(integration, l1, l2, TM, &signA_TM);
             double log_B_TE = casimir_integrate_B(integration, l1, l2, TE, &signB_TE);
 
-            /* √(b_l1*b_l2)*(A_TM + B_TE) */
-            const double mie = (bl1+bl2)/2;
-            const double elem = exp(log_A_TM+mie)*signA_TM+exp(log_B_TE+mie)*signB_TE;
-
-            return MPOW(l1+1)*elem;
+            /* √(b_l1*b_l2)*(A_TM - B_TE) */
+            double mie = (bl1+bl2)/2;
+            return exp(log_A_TM+mie)*signA_TM-exp(log_B_TE+mie)*signB_TE;
         }
     }
     else /* EM or ME */
@@ -708,11 +691,9 @@ double casimir_M_elem(casimir_M_t *self, int l1, int l2, char p1, char p2)
             double log_C_TE = casimir_integrate_C(integration, l1, l2, TE, &signC_TE);
             double log_D_TM = casimir_integrate_D(integration, l1, l2, TM, &signD_TM);
 
-            /* C_TE + D_TM */
+            /* D_TM - C_TE */
             double mie1 = (al1+bl2)/2;
-            double elem1 = exp(log_C_TE+mie1)*signC_TE+exp(log_D_TM+mie1)*signD_TM;
-
-            return MPOW(l1)*elem1;
+            return exp(log_D_TM+mie1)*signD_TM-exp(log_C_TE+mie1)*signC_TE;
         }
         else /* ME */
         {
@@ -721,11 +702,9 @@ double casimir_M_elem(casimir_M_t *self, int l1, int l2, char p1, char p2)
             double log_C_TM = casimir_integrate_C(integration, l1, l2, TM, &signC_TM);
             double log_D_TE = casimir_integrate_D(integration, l1, l2, TE, &signD_TE);
 
-            /* C_TM + D_TE */
+            /* C_TM - D_TE */
             const double mie2 = (bl1+al2)/2;
-            const double elem2 = exp(log_C_TM+mie2)*signC_TM+exp(log_D_TE+mie2)*signD_TE;
-
-            return -MPOW(l1)*elem2;
+            return exp(log_C_TM+mie2)*signC_TM-exp(log_D_TE+mie2)*signD_TE;
         }
     }
 }
