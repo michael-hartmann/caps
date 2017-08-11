@@ -44,7 +44,7 @@ typedef struct casimir
     void *userdata;
 
     void (*rp)(struct casimir *self, double nT, double k, double *r_TE, double *r_TM);
-    void (*lnab)(struct casimir *self, double nT, int l, double *lna, double *lnb, sign_t *sign_a, sign_t *sign_b);
+    void (*lnab)(struct casimir *self, double nT, int l, double *lna, double *lnb);
     /*@}*/
 
     /**
@@ -97,7 +97,7 @@ void casimir_free(casimir_t *self);
 void casimir_set_epsilonm1(casimir_t *self, double (*epsilonm1)(double xi, void *userdata), void *userdata);
 
 void casimir_set_rp(casimir_t *self, void (*rp)(struct casimir *self, double nT, double k, double *r_TE, double *r_TM));
-void casimir_set_lnab(casimir_t *self, void (*lnab)(struct casimir *self, double nT, int l, double *lna, double *lnb, sign_t *sign_a, sign_t *sign_b));
+void casimir_set_lnab(casimir_t *self, void (*lnab)(struct casimir *self, double nT, int l, double *lna, double *lnb));
 
 int casimir_get_ldim(casimir_t *self);
 int casimir_set_ldim(casimir_t *self, int ldim);
@@ -108,8 +108,8 @@ void casimir_set_detalg(casimir_t *self, detalg_t detalg);
 double casimir_get_epsrel(casimir_t *self);
 int    casimir_set_epsrel(casimir_t *self, double epsrel);
 
-void casimir_lnab(casimir_t *self, double nT, int l, double *lna, double *lnb, sign_t *sign_a, sign_t *sign_b);
-void casimir_lnab_perf(casimir_t *self, double nT, int l, double *lna, double *lnb, sign_t *sign_a, sign_t *sign_b);
+void casimir_lnab(casimir_t *self, double nT, int l, double *lna, double *lnb);
+void casimir_lnab_perf(casimir_t *self, double nT, int l, double *lna, double *lnb);
 
 double casimir_kernel_M(int i, int j, void *args_);
 
