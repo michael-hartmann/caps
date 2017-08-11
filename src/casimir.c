@@ -487,7 +487,7 @@ void master(int argc, char *argv[], const int cores)
                 double omegap_low, gamma_low;
                 material_get_extrapolation(material, &omegap_low, &gamma_low, NULL, NULL);
 
-                double omegap_scaled = omegap_low*(L+R)/(CASIMIR_hbar_eV*CASIMIR_c);
+                double omegap_scaled = omegap_low*(L+R)/CASIMIR_c;
 
                 if(gamma_low == 0)
                 {
