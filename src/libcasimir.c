@@ -651,6 +651,7 @@ double casimir_M_elem(casimir_M_t *self, int l1, int l2, char p1, char p2)
     if(isnan(self->al[l2-lmin]))
         casimir->lnab(casimir, nT, l2, &self->al[l2-lmin], &self->bl[l2-lmin]);
 
+    const double lnLambda = casimir_lnLambda(l1,l2,self->m);
     const double al1 = self->al[l1-lmin], bl1 = self->bl[l1-lmin];
     const double al2 = self->al[l2-lmin], bl2 = self->bl[l2-lmin];
 
@@ -664,7 +665,7 @@ double casimir_M_elem(casimir_M_t *self, int l1, int l2, char p1, char p2)
 
             /* √(a_l1*a_l2)*(B_TM - A_TE) */
             double mie = (al1+al2)/2;
-            return exp(log_B_TM+mie)*signB_TM-exp(log_A_TE+mie)*signA_TE;
+            return exp(log_B_TM+mie+lnLambda)*signB_TM-exp(log_A_TE+mie+lnLambda)*signA_TE;
         }
         else /* MM */
         {
@@ -674,7 +675,7 @@ double casimir_M_elem(casimir_M_t *self, int l1, int l2, char p1, char p2)
 
             /* √(b_l1*b_l2)*(A_TM - B_TE) */
             double mie = (bl1+bl2)/2;
-            return exp(log_A_TM+mie)*signA_TM-exp(log_B_TE+mie)*signB_TE;
+            return exp(log_A_TM+mie+lnLambda)*signA_TM-exp(log_B_TE+mie+lnLambda)*signB_TE;
         }
     }
     else /* EM or ME */
@@ -693,7 +694,7 @@ double casimir_M_elem(casimir_M_t *self, int l1, int l2, char p1, char p2)
 
             /* D_TM - C_TE */
             double mie1 = (al1+bl2)/2;
-            return exp(log_D_TM+mie1)*signD_TM-exp(log_C_TE+mie1)*signC_TE;
+            return exp(log_D_TM+mie1+lnLambda)*signD_TM-exp(log_C_TE+mie1+lnLambda)*signC_TE;
         }
         else /* ME */
         {
@@ -704,7 +705,7 @@ double casimir_M_elem(casimir_M_t *self, int l1, int l2, char p1, char p2)
 
             /* C_TM - D_TE */
             const double mie2 = (bl1+al2)/2;
-            return exp(log_C_TM+mie2)*signC_TM-exp(log_D_TE+mie2)*signD_TE;
+            return exp(log_C_TM+mie2+lnLambda)*signC_TM-exp(log_D_TE+mie2+lnLambda)*signD_TE;
         }
     }
 }
