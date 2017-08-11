@@ -699,7 +699,7 @@ void casimir_integrate_free(integration_t *integration)
  *
  * Compute the integral
  * \f[
- * A_{\ell_1,\ell_2,p}^{(m)}(\tau) = \Lambda_{\ell_1,\ell_2}^{(m)} \frac{m^2 \xi}{c} \int_0^\infty  \mathrm{d}k \frac{r_p}{k\kappa} e^{-2\kappa\mathcal{L}} P_{\ell_1}^m\left(\frac{\kappa c}{\xi}\right) P_{\ell_2}^m\left(\frac{\kappa c}{\xi}\right)
+ * A_{\ell_1,\ell_2,p}^{(m)}(\tau) = \frac{m^2 \xi}{c} \int_0^\infty  \mathrm{d}k \frac{r_p}{k\kappa} e^{-2\kappa\mathcal{L}} P_{\ell_1}^m\left(\frac{\kappa c}{\xi}\right) P_{\ell_2}^m\left(\frac{\kappa c}{\xi}\right)
  * \f]
  *
  * @param [in] self integration object
@@ -720,7 +720,7 @@ double casimir_integrate_A(integration_t *self, int l1, int l2, polarization_t p
     }
 
     const double I1 = casimir_integrate_I(self, l1, l2, p, sign);
-    const double A0 = 2*logi(m)+casimir_lnLambda(l1,l2,m)-self->tau;
+    const double A0 = 2*logi(m)-self->tau;
 
     const double A = A0+I1;
     TERMINATE(!isfinite(A), "l1=%d, l2=%d, m=%d, p=%d, I1=%g, A0=%g, A=%g", l1,l2,m,p, I1, A0, A);
@@ -731,7 +731,7 @@ double casimir_integrate_A(integration_t *self, int l1, int l2, polarization_t p
  *
  * Compute the integral
  * \f[
- * B_{\ell_1,\ell_2,p}^{(m)}(\tau) = \Lambda_{\ell_1,\ell_2}^{(m)} \frac{c^3}{\xi^3} \int_0^\infty  \mathrm{d}k \frac{k^3}{\kappa} r_p e^{-2\kappa\mathcal{L}} {P_{\ell_1}^m}^\prime\left(\frac{\kappa c}{\xi}\right) {P_{\ell_2}^m}^\prime\left(\frac{\kappa c}{\xi}\right)
+ * B_{\ell_1,\ell_2,p}^{(m)}(\tau) = \frac{c^3}{\xi^3} \int_0^\infty  \mathrm{d}k \frac{k^3}{\kappa} r_p e^{-2\kappa\mathcal{L}} {P_{\ell_1}^m}^\prime\left(\frac{\kappa c}{\xi}\right) {P_{\ell_2}^m}^\prime\left(\frac{\kappa c}{\xi}\right)
  * \f]
  *
  * @param [in] self integration object
@@ -745,7 +745,7 @@ double casimir_integrate_B(integration_t *self, int l1, int l2, polarization_t p
 {
     const int m = self->m;
 
-    const double B0 = casimir_lnLambda(l1,l2,m)-self->tau;
+    const double B0 = -self->tau;
 
     if(m == 0)
     {
@@ -781,7 +781,7 @@ double casimir_integrate_B(integration_t *self, int l1, int l2, polarization_t p
  *
  * Compute the integral
  * \f[
- * C_{\ell_1,\ell_2,p}^{(m)}(\tau) = \Lambda_{\ell_1,\ell_2}^{(m)} \frac{mc}{\xi} \int_0^\infty \mathrm{d}k \frac{k}{\kappa} r_p e^{-2\kappa\mathcal{L}} P_{\ell_1}^m\left(\frac{\kappa c}{\xi}\right) {P_{\ell_2}^m}^\prime\left(\frac{\kappa c}{\xi}\right)
+ * C_{\ell_1,\ell_2,p}^{(m)}(\tau) = \frac{mc}{\xi} \int_0^\infty \mathrm{d}k \frac{k}{\kappa} r_p e^{-2\kappa\mathcal{L}} P_{\ell_1}^m\left(\frac{\kappa c}{\xi}\right) {P_{\ell_2}^m}^\prime\left(\frac{\kappa c}{\xi}\right)
  * \f]
  *
  * @param [in] self integration object
@@ -800,7 +800,7 @@ double casimir_integrate_C(integration_t *self, int l1, int l2, polarization_t p
         return -INFINITY;
     }
 
-    const double C0 = logi(m)+casimir_lnLambda(l1,l2,m)-self->tau;
+    const double C0 = logi(m)-self->tau;
 
     sign_t sign1, sign2;
     const double I1 = casimir_integrate_I(self, l1, l2-1, p, &sign1);
