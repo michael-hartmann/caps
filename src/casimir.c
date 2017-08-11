@@ -25,10 +25,13 @@
 #define STATE_RUNNING 1
 #define STATE_IDLE    0
 
-void casimir_mpi_init(casimir_mpi_t *self, double L, double R, char *filename, double omegap, double gamma_, int ldim, double cutoff, int cores, bool verbose)
+casimir_mpi_t *casimir_mpi_init(double L, double R, double T, char *filename, double omegap, double gamma_, int ldim, double cutoff, int cores, bool verbose)
 {
+    casimir_mpi_t *self = xmalloc(sizeof(casimir_mpi_t));
+
     self->L       = L;
     self->R       = R;
+    self->T       = T;
     self->omegap  = omegap;
     self->gamma   = gamma_;
     self->ldim    = ldim;
@@ -51,6 +54,8 @@ void casimir_mpi_init(casimir_mpi_t *self, double L, double R, char *filename, d
         task->state    = STATE_IDLE;
         self->tasks[i] = task;
     }
+
+    return self;
 }
 
 static void _mpi_stop(int cores)
@@ -74,6 +79,8 @@ void casimir_mpi_free(casimir_mpi_t *self)
 
     xfree(self->tasks);
     self->tasks = NULL;
+
+    xfree(self);
 }
 
 
@@ -244,7 +251,6 @@ void master(int argc, char *argv[], const int cores)
     double L = 0, R = 0, T = 0, omegap = INFINITY, gamma_ = 0;
     double cutoff = CUTOFF, epsrel = EPSREL, eta = ETA;
     material_t *material = NULL;
-    casimir_mpi_t casimir_mpi;
 
     #define EXIT() do { _mpi_stop(cores); return; } while(0)
 
@@ -412,6 +418,8 @@ void master(int argc, char *argv[], const int cores)
     setvbuf(stdout, NULL, _IONBF, 0);
     setvbuf(stderr, NULL, _IONBF, 0);
 
+    casimir_mpi_t *casimir_mpi = casimir_mpi_init(L, R, T, filename, omegap, gamma_, ldim, cutoff, cores, verbose);
+
     /* estimate, cf. eq. (6.33) */
     const double alpha = 2*LbyR/(1+LbyR);
 
@@ -432,7 +440,6 @@ void master(int argc, char *argv[], const int cores)
         printf("# gamma  = %.15g\n", gamma_);
     }
 
-    casimir_mpi_init(&casimir_mpi, L, R, filename, omegap, gamma_, ldim, cutoff, cores, verbose);
 
     double F = NAN;
     if(T == 0)
@@ -514,7 +521,7 @@ void master(int argc, char *argv[], const int cores)
         {
             const double t0 = now();
             const double xi = n*T_scaled;
-            v[n] = integrand(xi, &casimir_mpi);
+            v[n] = integrand(xi, casimir_mpi);
             printf("# xi=%.15g, logdetD=%.15g, t=%g\n", xi, v[n], now()-t0);
 
             if(fabs(v[n]/v[0]) < epsrel)
@@ -533,7 +540,7 @@ void master(int argc, char *argv[], const int cores)
     if(material != NULL)
         material_free(material);
 
-    casimir_mpi_free(&casimir_mpi);
+    casimir_mpi_free(casimir_mpi);
 }
 
 void slave(MPI_Comm master_comm, int rank)
@@ -621,9 +628,8 @@ void usage(FILE *stream)
 "\n"
 "The free eenergy at T=0 is calculated using integration:\n"
 "   F(L/R) = \\int_0^\\infty dξ logdet D(ξ)\n"
-"The integration is done using Gauss-Laguerre integration or adaptive\n"
-"Gauß-Kronrod quadrature. The integrand decays exponentially, c.f.\n"
-"Eq. (6.33) of [1].\n"
+"The integration is done using an adaptive Gauß-Kronrod quadrature. The\n"
+"integrand decays exponentially, c.f. Eq. (6.33) of [1].\n"
 "\n"
 "References:\n"
 "  [1] Hartmann, Negative Casimir entropies in the plane-sphere geometry, 2014\n"
