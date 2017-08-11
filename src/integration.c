@@ -642,31 +642,31 @@ double casimir_integrate_I(integration_t *self, int l1, int l2, polarization_t p
 
 /** @brief Initialize integration
  *
- * Initialize integration for (scaled) Matsubara frequency xi and quantum
- * number m. The aspect ratio L/R and the dielectric function of the metals is
- * taken from casimir. The integration is performed to a relative accuracy of
- * epsrel.
+ * Initialize integration for \f$nT=\xi\mathcal{L}/c\f$ and quantum number
+ * \f$m\f$. The aspect ratio L/R and the dielectric function of the metals
+ * \f$\epsilon(i\xi)\f$ are taken from the casimir object. The integration is
+ * performed to a relative accuracy of epsrel.
  *
  * This function returns an object in order to compute the actual integrals.
  * The memory of this object has to be freed after use by a call to \ref
  * casimir_integrate_free.
  *
  * @param [in] casimir Casimir object
- * @param [in] xi (scaled) Matsubara frequency
- * @param [in] m quantum number
+ * @param [in] nT \f$\xi\mathcal{L}/c\f$
+ * @param [in] m azimuthal quantum number
  * @param [in] epsrel relative accuracy of integration
  * @retval integration object
  */
-integration_t *casimir_integrate_init(casimir_t *casimir, double xi, int m, double epsrel)
+integration_t *casimir_integrate_init(casimir_t *casimir, double nT, int m, double epsrel)
 {
-    if(xi < 0 || m < 0 || epsrel <= 0)
+    if(nT < 0 || m < 0 || epsrel <= 0)
         return NULL;
 
     integration_t *self = (integration_t *)xmalloc(sizeof(integration_t));
 
     self->casimir = casimir;
     self->m = m;
-    self->tau = 2*xi;
+    self->tau = 2*nT;
     self->epsrel = epsrel;
 
     self->hash_table_I = hash_table_new(cache_entry_destroy);
