@@ -82,7 +82,7 @@ mpirun -c 7 ./casimir -L 2e-6 -R 150e-6 -T 300
 Bugs, developing and contributing
 ---------------------------------
 
-The latest version if libcasimir is available at
+The latest version of libcasimir is available at
 [github](https://github.com/michael-hartmann/libcasimir-dev). If you find a bug, please
 create an [issue](https://github.com/michael-hartmann/libcasimir-dev/issues). If you have
 improvements, create a pull request.
