@@ -23,40 +23,6 @@
 #include "utils.h"
 
 /**
-* @name Information on compilation and Casimir objects
-*/
-/*@{*/
-
-/** @brief Print object information to stream
- *
- * Print information about the object self to stream.
- *
- * @param self Casimir object
- * @param stream where to print the string
- * @param prefix if prefix != NULL: start every line with the string contained
- * in prefix
- */
-void casimir_info(casimir_t *self, FILE *stream, const char *prefix)
-{
-    const char *detalg_str;
-    if(prefix == NULL)
-        prefix = "";
-
-    switch(self->detalg)
-    {
-        case DETALG_HODLR: detalg_str = "HODLR"; break;
-        case DETALG_LU:    detalg_str = "LU";    break;
-        default:           detalg_str = "unknown";
-    }
-
-    fprintf(stream, "%sL/R    = %.16g\n", prefix, self->LbyR);
-    fprintf(stream, "%sldim   = %d\n",    prefix, self->ldim);
-    fprintf(stream, "%sepsrel = %g\n",    prefix, self->epsrel);
-    fprintf(stream, "%sdetalg = %s\n",    prefix, detalg_str);
-}
-/*@}*/
-
-/**
 * @name various functions
 */
 /*@{*/
@@ -239,6 +205,35 @@ casimir_t *casimir_init(double LbyR)
 void casimir_free(casimir_t *self)
 {
     xfree(self);
+}
+
+
+/** @brief Print object information to stream
+ *
+ * Print information about the object self to stream.
+ *
+ * @param self Casimir object
+ * @param stream where to print the string
+ * @param prefix if prefix != NULL: start every line with the string contained
+ * in prefix
+ */
+void casimir_info(casimir_t *self, FILE *stream, const char *prefix)
+{
+    const char *detalg_str;
+    if(prefix == NULL)
+        prefix = "";
+
+    switch(self->detalg)
+    {
+        case DETALG_HODLR: detalg_str = "HODLR"; break;
+        case DETALG_LU:    detalg_str = "LU";    break;
+        default:           detalg_str = "unknown";
+    }
+
+    fprintf(stream, "%sL/R    = %.16g\n", prefix, self->LbyR);
+    fprintf(stream, "%sldim   = %d\n",    prefix, self->ldim);
+    fprintf(stream, "%sepsrel = %g\n",    prefix, self->epsrel);
+    fprintf(stream, "%sdetalg = %s\n",    prefix, detalg_str);
 }
 
 /**
