@@ -117,7 +117,7 @@ double casimir_M_elem(casimir_M_t *self, int l1, int l2, char p1, char p2);
 void casimir_M_free(casimir_M_t *self);
 matrix_t *casimir_M(casimir_t *self, double nT, int m);
 
-double casimir_logdetD(casimir_t *self, double nT, int m);
+double casimir_logdetD(casimir_t *self, double xi_, int m);
 
 void casimir_rp(casimir_t *self, double nT, double k, double *r_TE, double *r_TM);
 

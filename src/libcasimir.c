@@ -697,29 +697,30 @@ void casimir_M_free(casimir_M_t *self)
 }
 
 
-/** @brief Compute log det D^m(xi)
+/** @brief Compute \f$\log\det\mathcal{D}^m\left(\frac{\xi\mathcal{L}}{\mathrm{c}}\right)\f$
  *
  * This function will compute the logarithm of the determinant of the
- * scattering matrix for Matsubara frequency nT and quantum number m.
+ * scattering matrix for Matsubara frequency \f$\xi\mathcal{L}/\mathrm{c}\f$
+ * and quantum number \f$m\f$.
  *
  * Either LU decomposition (slow) or method for HODLR matrices (fast) will be
  * used, see \ref casimir_set_detalg.
  *
- * Please note that the scaled Matsubara frequency must be positive.
+ * For \f$\xi=0\f$ see \ref casimir_logdetD0.
  *
  * @param self Casimir object
- * @param nT Matsubara frequency
- * @param m quantum number m
- * @retval logdetD(xi,m)
+ * @param xi_ \f$\xi\mathcal{L}/\mathrm{c} > 0\f$
+ * @param m quantum number \f$m\f$
+ * @retval logdetD
  */
-double casimir_logdetD(casimir_t *self, double nT, int m)
+double casimir_logdetD(casimir_t *self, double xi_, int m)
 {
-    TERMINATE(nT <= 0, "Matsubara frequency must be positive");
+    TERMINATE(xi_ <= 0, "Matsubara frequency must be positive");
 
     const int is_symmetric = 1;
     const int dim = 2*self->ldim;
 
-    casimir_M_t *args = casimir_M_init(self, m, nT);
+    casimir_M_t *args = casimir_M_init(self, m, xi_);
     double logdet = kernel_logdet(dim, &casimir_kernel_M, args, is_symmetric, self->detalg);
     casimir_M_free(args);
 
