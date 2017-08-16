@@ -13,9 +13,6 @@
 /* print usage */
 static void usage(FILE *stream)
 {
-    char info[1024] = { 0 };
-    casimir_compile_info(info, sizeof(info));
-
     fprintf(stream,
 "Usage: casimir_logdetD [OPTIONS]\n\n"
 "This program will calculate the free Casimir energy for the plane-sphere\n"
@@ -43,8 +40,7 @@ static void usage(FILE *stream)
 "\n"
 "    -h,--help\n"
 "        Show this help.\n"
-"\n"
-"%s\n", info);
+"\n");
 }
 
 int main(int argc, char *argv[])
