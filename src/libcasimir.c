@@ -53,15 +53,15 @@ double casimir_lnLambda(int l1, int l2, int m)
 /**
  * @brief Evaluate dielectric function
  *
- * The dielectrict function set by casimir_set_epsilonm1 will be called.
+ * The dielectrict function set by \ref casimir_set_epsilonm1 will be called.
  *
  * @param [in] self Casimir object
- * @param [in] xi
- * @retval epsilon-1, epsilon(xi)-1
+ * @param [in] xi_ \f$\xi\mathcal{L}/\mathrm{c}\f$
+ * @retval epsm1 \f$\epsilon(\xi)-1\f$
  */
-double casimir_epsilonm1(casimir_t *self, double xi)
+double casimir_epsilonm1(casimir_t *self, double xi_)
 {
-    return self->epsilonm1(xi, self->userdata);
+    return self->epsilonm1(xi_, self->userdata);
 }
 
 /**
@@ -69,7 +69,7 @@ double casimir_epsilonm1(casimir_t *self, double xi)
  *
  * @param [in] xi ignored
  * @param [in] userdata ignored
- * @retval INFINITY epsilon(xi) = INFINITY
+ * @retval INFINITY \f$\epsilon(\xi) = \infty\f$
  */
 double casimir_epsilonm1_perf(__attribute__((unused)) double xi, __attribute__((unused)) void *userdata)
 {
@@ -80,38 +80,41 @@ double casimir_epsilonm1_perf(__attribute__((unused)) double xi, __attribute__((
  * @brief Dielectric function for Drude reflectors
  *
  * Dielectric function for Drude
- *      epsilon(ξ) = ωp²/(ξ*(ξ+γ))
+ * \f[
+ *      \epsilon(\xi)-1 = \frac{\omega_P^2}{\xi(\xi+\gamma)}
+ * \f]
  *
- * The parameters ωp and γ must be provided by userdata:
- *      omegap = userdata[0]
- *      gamma_ = userdata[1]
+ * The parameters \f$\omega_P\f$ and \f$\gamma\f$ must be provided by userdata:
+ *  - userdata[0] = \f$\omega_P\mathcal{L}/\mathrm{c}\f$
+ *  - userdata[1] = \f$\gamma\mathcal{L}/\mathrm{c}\f$
  *
- * @param [in] xi dielectric function
+ * @param [in] xi_ \f$\xi\mathcal{L}/\mathrm{c}\f$
  * @param [in] userdata userdata
  * @retval epsilon epsilon(xi)
  */
-double casimir_epsilonm1_drude(double xi, void *userdata)
+double casimir_epsilonm1_drude(double xi_, void *userdata)
 {
     double *ptr = (double *)userdata;
     double omegap = ptr[0], gamma_ = ptr[1];
 
-    return pow_2(omegap)/(xi*(xi+gamma_));
+    return pow_2(omegap)/(xi_*(xi_+gamma_));
 }
 
 /**
  * @brief Calculate Fresnel coefficients \f$r_{TE}\f$ and \f$r_{TM}\f$ for arbitrary metals
  *
- * This function calculates the Fresnel coefficients for TE and TM mode.
+ * This function calculates the Fresnel coefficients \f$r_p = r_p(i\xi, k)\f$
+ * for \f$p=\mathrm{TE},\mathrm{TM}\f$.
  *
  * @param [in]     self  Casimir object
- * @param [in]     nT    \f$\xi=nT\f$ imaginary frequency
- * @param [in]     k     xy projection of wavevector
+ * @param [in]     xi_   \f$\xi\mathcal{L}/\mathrm{c}\f$
+ * @param [in]     k     \f$k\mathcal{L}\f$
  * @param [in,out] r_TE  Fresnel coefficient for TE mode
  * @param [in,out] r_TM  Fresnel coefficient for TM mode
  */
-void casimir_rp(casimir_t *self, double nT, double k, double *r_TE, double *r_TM)
+void casimir_rp(casimir_t *self, double xi_, double k_, double *r_TE, double *r_TM)
 {
-    const double epsilonm1 = casimir_epsilonm1(self, nT);
+    const double epsilonm1 = casimir_epsilonm1(self, xi_);
 
     if(isinf(epsilonm1))
     {
@@ -126,17 +129,15 @@ void casimir_rp(casimir_t *self, double nT, double k, double *r_TE, double *r_TM
     /* Arbitrary metals
      *
      * In scaled units
-     *     β = sqrt( 1 + ξ²/(ξ²+k²)*(ε-1) ) = sqrt(1+x),
+     *     β = sqrt( 1 + xi_²/(xi_²+k_²)*(ε-1) ) = sqrt(1+x),
      * where
-     *     x = ξ²/(ξ²+k²)*(ε-1).
+     *     x = xi_²/(xi_²+k_²)*(ε-1).
      *
      * We calculate x. If x is small, β≈1 and a loss of significance occures
      * when calculating 1-β. For this reason we use sqrtpm1 which calculates
      * β-1.
-     *
-     * Note: ξ=nT
      */
-    const double x = pow_2(nT)/(pow_2(nT)+pow_2(k))*epsilonm1;
+    const double x = pow_2(xi_)/(pow_2(xi_)+pow_2(k))*epsilonm1;
     const double betam1 = sqrtpm1(x); /* β-1 */
     *r_TE = -betam1/(2+betam1);
     *r_TM = (epsilonm1-betam1)/(epsilonm1+2+betam1);
@@ -158,10 +159,10 @@ void casimir_rp(casimir_t *self, double nT, double k, double *r_TE, double *r_TM
  * By default, the value of ldim is chosen by:
  * ldim = ceil(max(CASIMIR_MINIMUM_LDIM, CASIMIR_FACTOR_LDIM/LbyR))
  *
- * Restrictions: \f$\frac{L}{R} > 0\f$
+ * Restrictions: \f$L/R > 0\f$
  *
  * @param [out] self Casimir object
- * @param [in]  LbyR \f$\frac{L}{R}\f$, LbyR > 0
+ * @param [in]  LbyR \f$L/R > 0\f$
  * @retval object Casimir object if successful
  * @retval NULL   an error occured
  */
@@ -293,7 +294,7 @@ void casimir_set_rp(casimir_t *self, void (*rp)(struct casimir *self, double nT,
     self->rp = rp;
 }
 
-void casimir_set_lnab(casimir_t *self, void (*lnab)(struct casimir *self, double nT, int l, double *lna, double *lnb))
+void casimir_set_lnab(casimir_t *self, void (*lnab)(struct casimir *self, double xi_, int l, double *lna, double *lnb))
 {
     self->lnab = lnab;
 }
@@ -382,29 +383,30 @@ int casimir_get_ldim(casimir_t *self)
 /*@{*/
 
 /**
- * @brief Calculate Mie coefficients for perfect reflectors
+ * @brief Calculate Mie coefficients \f$a_\ell\f$, \f$b_\ell\f$ for perfect reflectors
  *
  * This function calculates the logarithms of the Mie coefficients
  * \f$a_\ell(i\chi)\f$ and \f$b_\ell(i\chi)\f$ for perfect reflectors. The Mie
- * coefficients are evaluated at the argument \f$\chi=nT R/(R+L)\f$.
+ * coefficients are evaluated at the argument \f$\chi=\xi R/\mathrm{c}\f$.
  *
  * The signs are given by \f$\mathrm{sgn}(a_\ell) = (-1)^\ell\f$, \f$\mathrm{sgn}(b_\ell) = (-1)^{\ell+1}\f$.
  *
  * lna and lnb must be valid pointers and must not be NULL.
  *
- * Restrictions: \f$\ell \ge 1\f$, \f$\ell \ge 0\f$
+ * Restrictions: \f$\ell \ge 1\f$, \f$\xi \ge 0\f$
  *
  * @param [in,out] self Casimir object
- * @param [in] nT Matsubara frequency
+ * @param [in] xi_ \f$\xi\mathcal{L}/\mathrm{c}\f$
  * @param [in] l angular momentum \f$\ell\f$
  * @param [out] ln_a logarithm of \f$a_\ell\f$
  * @param [out] ln_b logarithm of \f$b_\ell\f$
  */
-void casimir_lnab_perf(casimir_t *self, double nT, int l, double *lna, double *lnb)
+void casimir_lnab_perf(casimir_t *self, double xi_, int l, double *lna, double *lnb)
 {
     double lnKlp,lnKlm,lnIlm,lnIlp;
-    const double chi = nT/(1+self->LbyR); /* xi*R/(R+L) = xi/(1+L/R) */
-    const double log_chi = log(nT)-log1p(self->LbyR);
+    /* χ = ξR/c = ξ(R+L)/c * R/(R+L) = xi_ 1/(1+L/R) */
+    const double chi = xi_/(1+self->LbyR);
+    const double log_chi = log(xi_)-log1p(self->LbyR);
 
     /* we could do both calculations together. but it doesn't cost much time -
      * so why bother?
@@ -442,11 +444,11 @@ void casimir_lnab_perf(casimir_t *self, double nT, int l, double *lna, double *l
  * For \f$\omega_\mathrm{P} = \infty\f$ the Mie coefficient for perfect
  * reflectors are returned (see \ref casimir_lnab_perf).
  *
- * lna, lnb, sign_a and sign_b must be valid pointers and must not be NULL.
+ * lna and lnb must be valid pointers.
  *
- * For generic metals we calculate the Mie coefficients \f$a_\ell(i\xi)\f$ und \f$b_\ell(i\xi)\f$ using
- * the expressions taken from [1]. Ref. [1] is the erratum to [2]. Please note
- * that the equations (3.30) and (3.31) in [3] are wrong.
+ * For generic metals we calculate the Mie coefficients \f$a_\ell\f$ und
+ * \f$b_\ell\f$ using the expressions taken from [1]. Ref. [1] is the erratum
+ * to [2]. Please note that the equations (3.30) and (3.31) in [3] are wrong.
  *
  * Note: If sla =~ slb or slc =~ sld, there is a loss of significance when
  * calculating sla-slb or slc-sld.
@@ -463,28 +465,28 @@ void casimir_lnab_perf(casimir_t *self, double nT, int l, double *lna, double *l
  * - [3] Negative Casimir entropies in the plane-sphere geometry, Hartmann, 2014
  *
  * @param [in,out] self Casimir object
- * @param [in] nT Matsubara frequency
+ * @param [in] xi_ \f$\xi\mathcal{L}/\mathrm{c}\f$
  * @param [in] l angular momentum \f$\ell\f$
  * @param [out] lna logarithm of Mie coefficient \f$a_\ell\f$
  * @param [out] lnb logarithm of Mie coefficient \f$b_\ell\f$
  */
-void casimir_lnab(casimir_t *self, double nT, int l, double *lna, double *lnb)
+void casimir_lnab(casimir_t *self, double xi_, int l, double *lna, double *lnb)
 {
     /* ξ = nT */
-    const double epsilonm1 = casimir_epsilonm1(self, nT); /* n²-1 */
+    const double epsilonm1 = casimir_epsilonm1(self, xi_); /* n²-1 */
 
     if(isinf(epsilonm1))
     {
         /* Mie coefficients for perfect reflectors */
-        casimir_lnab_perf(self, nT, l, lna, lnb);
+        casimir_lnab_perf(self, xi_, l, lna, lnb);
         return;
     }
 
     /* Mie coefficients for arbitrary metals */
 
     /* χ = ξ*R/(R+L) = ξ/(1+L/R) */
-    const double chi    = nT/(1+self->LbyR);
-    const double ln_chi = log(nT)-log1p(self->LbyR);
+    const double chi    = xi_/(1+self->LbyR);
+    const double ln_chi = log(xi_)-log1p(self->LbyR);
     const double ln_l   = logi(l);
 
     /* Note: n is the refraction index, n_mat the Matsubara index
@@ -731,17 +733,18 @@ double casimir_logdetD(casimir_t *self, double xi_, int m)
 
 
 /**
- * @name Matsubara frequency nT=0
+ * @name Matsubara frequency xi=0
  */
 /*@{*/
 
-/** @brief Compute logdet D(xi=0) for Drude metals
+/** @brief Compute \f$\log\det\mathcal{D}(\xi=0)\f$ for Drude metals
  *
- * For Drude metals the Fresnel coefficients become r_TM=1, r_TE=0 for xi->0,
- * i.e. only the EE polarization block needs to be considered.
+ * For Drude metals the Fresnel coefficients become \f$r_\mathrm{TM}=1\f$,
+ * \f$r_\mathrm{TE}=0\f$ for \f$\xi\to 0\f$, i.e. only the EE polarization
+ * block needs to be considered.
  *
- * For Drude the free energy for the xi=0 can be computed analytically. We use
- * Eq. (8) from Ref. [1] to compute the contribution.
+ * For Drude the free energy for \f$\xi=0\f$ can be computed analytically. We
+ * use Eq. (8) from Ref. [1] to compute the contribution.
  *
  * References:
  *  - [1] Bimonte, Emig, "Exact results for classical Casimir interactions:
@@ -749,7 +752,7 @@ double casimir_logdetD(casimir_t *self, double xi_, int m)
  *    Phys. Rev. Lett. 109 (2012), https://doi.org/10.1103/PhysRevLett.109.160403
  *
  * @param [in] casimir Casimir object
- * @retval logdetD log det D(xi=0) for Drude metals
+ * @retval logdetD \f$\log\det\mathcal{D}(\xi=0)\f$ for Drude metals
  */
 double casimir_logdetD0_drude(casimir_t *casimir)
 {
@@ -776,24 +779,27 @@ double casimir_logdetD0_drude(casimir_t *casimir)
 }
 
 
-/** @brief Compute logdet D(xi=0) for perect conductors
+/** @brief Compute \f$\log\det\mathcal{D}(\xi=0)\f$ for perect conductors
  *
- * For Drude metals the Fresnel coefficients are r_TM=1, r_TE=-1. In the limit
- * xi->0 only the polarization blocks EE and MM need to be considered.
+ * For Drude metals the Fresnel coefficients are \f$r_\mathrm{TM}=1\f$,
+ * \f$r_\mathrm{TE}=-1\f$. In the limit \f$\xi\to 0\f$ only the polarization
+ * blocks EE and MM need to be considered.
  *
  * The contribution for EE, i.e. Drude, can be computed analytically, see \ref
  * casimir_logdetD0_drude. For the MM block we numerically compute the
- * determinants of the m > 0 contributions until
- *      logdetD^m/logdetD^(m=0) < eps.
- * We use Ref. [1] to compute the contribution for m = 0.
+ * determinants up to \f$m = M\f$ until
+ * \f[
+ *      \frac{\log\det\mathcal{D}^{(M)}(0)}{{\sum_{m=0}^M}^\prime \log\det\mathcal{D}^{(m)}(0)} < \epsilon \,.
+ * \f]
+ * We use Ref. [1] to compute the contribution for \f$m = 0\f$.
  *
  * References:
  *  - [1] Bimonte, Classical Casimir interaction of perfectly conducting sphere
  *    and plate (2017), https://arxiv.org/abs/1701.06461
  *
  * @param [in] casimir Casimir object
- * @param [in] eps accuracy
- * @retval logdetD log det D(xi=0) for perfect conductors
+ * @param [in] eps \f$\epsilon\f$ abort criterion
+ * @retval logdetD \f$\log\det\mathcal{D}(\xi=0)\f$ for perfect conductors
  */
 double casimir_logdetD0_pc(casimir_t *casimir, double eps)
 {
@@ -825,7 +831,7 @@ double casimir_logdetD0_pc(casimir_t *casimir, double eps)
 }
 
 
-/** @brief Compute logdetD for xi=0 for EE and/or MM contribution
+/** @brief Compute \f$\log\det\mathcal{D}(\xi=0)\f$ for EE and/or MM contribution
  *
  * Compute numerically for a given value of m the contribution of the
  * polarization block EE and/or MM. If logdet_EE or logdet_MM is NULL, the
@@ -835,9 +841,11 @@ double casimir_logdetD0_pc(casimir_t *casimir, double eps)
  * analytical formula to compute logdetD, see \ref casimir_logdetD0_drude.
  *
  * @param [in]  self Casimir object
- * @param [in]  m quantum number m
+ * @param [in]  m quantum number \f$m\f$
+ * @param [in]  omegap
  * @param [out] EE pointer to store contribution for EE block
  * @param [out] MM pointer to store contribution for MM block
+ * @param [out] MM_plasma
  */
 void casimir_logdetD0(casimir_t *self, int m, double omegap, double *EE, double *MM, double *MM_plasma)
 {
