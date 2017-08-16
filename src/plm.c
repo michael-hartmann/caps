@@ -303,50 +303,49 @@ double Pl(int l, double x)
  * @param [in] x argument
  * @retval ratio \f$P_l^m(x)/P_l^{m-1}(x)\f$
  */
-double plm_continued_fraction(const int l, const int m, const double x)
+double plm_continued_fraction(const long l, const long m, const double x)
 {
     const double alpha = (1-1/(x*x))/4;
 
-    /* initial values for recrrence */
-    double A,B, Amm = 0, Bmm = 1;
-    double Am = x*(l-m+1)*(l+m)*alpha; /* a0 */
-    double Bm = m;                     /* b0 */
+    /* initial values for recurrence */
+    double Am = 0, Bm = 1;
+    double A = x*(l-m+1)*(l+m)*alpha; /* a0 */
+    double B = m;                     /* b0 */
 
-    int j = 1;
+    int j = 1+m;
     for(int i = 1; i < 2048; i++)
     {
         /* do 8 iterations */
-        for(int k = 0; k < 8; k++)
+        int k = j+8;
+        for(; j < k; j++)
         {
-            const double aj = (l-m+1-j)*alpha*(l+m+j);
-            const double bj = m+j;
+            const double aj = (l+1-j)*(l+j)*alpha;
 
-            A = bj*Am + aj*Amm;
-            B = bj*Bm + aj*Bmm;
+            double A_ = j*A + aj*Am;
+            Am = A;
+            A  = A_;
 
-            Amm = Am;
-            Am  = A;
-            Bmm = Bm;
-            Bm  = B;
-
-            j++;
+            double B_ = j*B + aj*Bm;
+            Bm = B;
+            B  = B_;
         }
 
-        /* compute last and current continued fraction */
-        double f1 = Amm/Bmm, f2 = Am/Bm;
-
-        /* if they are identical, we're done */
-        if(f1 == f2)
-            return 2*f1/sqrt((x+1)*(x-1));
+        /* check if current and last approximation of continued fraction are
+         * identical:       A/B ?= Am/Bm     <=>     A*Bm ?= Am*B
+         * if they are identical, we're done
+         */
+        if(A*Bm == Am*B)
+            return 2*A/(B*sqrt((x+1)*(x-1)));
 
         /* rescale */
-        Amm /= Bm;
-        Am  /= Bm;
-        Bmm /= Bm;
-        Bm   = 1;
+        const double invB = 1/B;
+        Am *= invB;
+        A  *= invB;
+        Bm *= invB;
+        B   = 1;
     }
 
-    TERMINATE(true, "l=%d, m=%d, x=%.15g", l,m,x);
+    TERMINATE(true, "l=%ld, m=%ld, x=%.15g", l,m,x);
 
     return NAN;
 }
