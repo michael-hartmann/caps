@@ -27,23 +27,6 @@
 */
 /*@{*/
 
-/** @brief Return string with information about compilation
- *
- * The string contains date and time of compilation, and the name of the
- * compiler.
- *
- * @param [out] str buffer for string
- * @param [in]  size length of str
- * @retval retval bytes written if successful
- */
-int casimir_compile_info(char *str, size_t size)
-{
-    /* snprintf() writes at most size bytes (including the terminating null
-     * byte \0) to str. */
-    return snprintf(str, size, "Compiled on %s at %s with %s", __DATE__, __TIME__, COMPILER);
-}
-
-
 /** @brief Print object information to stream
  *
  * Print information about the object self to stream.
