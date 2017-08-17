@@ -289,7 +289,7 @@ double Pl(int l, double x)
 }
 
 /**
- * @brief Calculate fraction \f$P_l^m(x)/P_l^{m-1}(x)\f$
+ * @brief Calculate fraction \f$P_l^{m-1}(x)/P_l^m(x)\f$
  *
  * The fraction is computed using a continued fraction, see http://dlmf.nist.gov/14.14.E1 .
  *
@@ -301,7 +301,7 @@ double Pl(int l, double x)
  * @param [in] l degree
  * @param [in] m order
  * @param [in] x argument
- * @retval ratio \f$P_l^m(x)/P_l^{m-1}(x)\f$
+ * @retval ratio \f$P_l^{m-1}(x)/P_l^m(x)\f$
  */
 double plm_continued_fraction(const long l, const long m, const double x)
 {
@@ -335,7 +335,7 @@ double plm_continued_fraction(const long l, const long m, const double x)
          * if they are identical, we're done
          */
         if(A*Bm == Am*B)
-            return 2*A/(B*sqrt((x+1)*(x-1)));
+            return (B*x*sqrt(1-1/(x*x)))/(2*A);
 
         /* rescale */
         const double invB = 1/B;
@@ -376,7 +376,7 @@ double Plm_downwards(int l, int m, double x)
     c = 2*x/sqrt((x-1)*(x+1));
 
     vp = +1;
-    vm = -1/plm_continued_fraction(l,m,x);
+    vm = -plm_continued_fraction(l,m,x);
 
     for(int mm = m-2; mm >= 0; mm--)
     {
