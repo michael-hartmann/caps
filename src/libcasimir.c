@@ -198,8 +198,6 @@ casimir_t *casimir_init(double LbyR)
 
     /* perfect reflectors */
     self->epsilonm1 = casimir_epsilonm1_perf;
-    self->rp        = casimir_rp;
-    self->lnab      = casimir_lnab;
     self->userdata  = NULL;
 
     /* relative error for integration */
@@ -299,20 +297,10 @@ double casimir_get_epsrel(casimir_t *self)
  * @param [in] epsilonm1  callback to the function that calculates epsilon(i*xi)-1
  * @param [in] userdata   arbitrary pointer to data that is passwd to epsilonm1 whenever the function is called
  */
-void casimir_set_epsilonm1(casimir_t *self, double (*epsilonm1)(double xi, void *userdata), void *userdata)
+void casimir_set_epsilonm1(casimir_t *self, double (*epsilonm1)(double xi_, void *userdata), void *userdata)
 {
     self->epsilonm1 = epsilonm1;
     self->userdata  = userdata;
-}
-
-void casimir_set_rp(casimir_t *self, void (*rp)(struct casimir *self, double nT, double k, double *r_TE, double *r_TM))
-{
-    self->rp = rp;
-}
-
-void casimir_set_lnab(casimir_t *self, void (*lnab)(struct casimir *self, double xi_, int l, double *lna, double *lnb))
-{
-    self->lnab = lnab;
 }
 
 /**
@@ -403,11 +391,9 @@ int casimir_get_ldim(casimir_t *self)
  *
  * lna and lnb must be valid pointers and must not be NULL.
  *
- * Restrictions: \f$\ell \ge 1\f$, \f$\xi \ge 0\f$
- *
  * @param [in,out] self Casimir object
- * @param [in] xi_ \f$\xi\mathcal{L}/\mathrm{c}\f$
- * @param [in] l angular momentum \f$\ell\f$
+ * @param [in] xi_ \f$\xi\mathcal{L}/\mathrm{c} > 0\f$
+ * @param [in] l angular momentum \f$\ell > 0\f$
  * @param [out] ln_a logarithm of \f$a_\ell\f$
  * @param [out] ln_b logarithm of \f$b_\ell\f$
  */
@@ -682,10 +668,10 @@ double casimir_M_elem(casimir_M_t *self, int l1, int l2, char p1, char p2)
     integration_t *integration = self->integration;
 
     if(isnan(self->al[l1-lmin]))
-        casimir->lnab(casimir, nT, l1, &self->al[l1-lmin], &self->bl[l1-lmin]);
+        casimir_lnab(casimir, nT, l1, &self->al[l1-lmin], &self->bl[l1-lmin]);
 
     if(isnan(self->al[l2-lmin]))
-        casimir->lnab(casimir, nT, l2, &self->al[l2-lmin], &self->bl[l2-lmin]);
+        casimir_lnab(casimir, nT, l2, &self->al[l2-lmin], &self->bl[l2-lmin]);
 
     const double lnLambda = casimir_lnLambda(l1,l2,self->m);
     const double al1 = self->al[l1-lmin], bl1 = self->bl[l1-lmin];
