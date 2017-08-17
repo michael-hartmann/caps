@@ -50,6 +50,65 @@ double casimir_lnLambda(int l1, int l2, int m)
     return (logi(2*l1+1)+logi(2*l2+1)-logi(l1)-logi(l1+1)-logi(l2)-logi(l2+1)+lfac(l1-m)+lfac(l2-m)-lfac(l1+m)-lfac(l2+m))/2.0;
 }
 
+/* XXX simplify XXX */
+/** @brief Estimate lmin and lmax for given m and dim
+ *
+ * Estimate the vector space. The main contributions come from l1≈l2≈X and only
+ * depends on geometry, L/R, and the quantum number m. This function calculates
+ * X using the formula in the high-temperature limit and calculates lmin, lmax.
+ *
+ * @param [in] self Casimir object
+ * @param [in] m quantum number
+ * @param [out] lmin_p minimum value of l
+ * @param [out] lmax_p maximum value of l
+ * @retval X
+ */
+int casimir_estimate_lminmax(casimir_t *self, int m, size_t *lmin_p, size_t *lmax_p)
+{
+    const size_t dim = self->ldim;
+
+    if(m == 0)
+    {
+        *lmin_p = 1;
+        *lmax_p = 1+dim;
+        return 0;
+    }
+
+    int l;
+    const double x = 1/(1+self->LbyR);
+
+    /* find maximum, i.e., main contributions */
+    double last = 2*m*log(x/2);
+    for(l = m+1; 1; l++)
+    {
+        double f = lfac(2*l)-lfac(l+m)-lfac(l-m)+2*l*log(x/2);
+        if(f < last)
+        {
+            l--;
+            break;
+        }
+
+        last = f;
+    }
+
+    int lmin = l-dim/2;
+    if(lmin < m)
+        lmin = m;
+
+    *lmin_p = lmin;
+    *lmax_p = lmin + dim;
+
+    return l;
+}
+
+
+/*@}*/
+
+/**
+* @name Dielectric functions
+*/
+/*@{*/
+
 /**
  * @brief Evaluate dielectric function
  *
@@ -98,49 +157,6 @@ double casimir_epsilonm1_drude(double xi_, void *userdata)
     double omegap = ptr[0], gamma_ = ptr[1];
 
     return pow_2(omegap)/(xi_*(xi_+gamma_));
-}
-
-/**
- * @brief Calculate Fresnel coefficients \f$r_\mathrm{TE}\f$ and \f$r_\mathrm{TM}\f$ for arbitrary metals
- *
- * This function calculates the Fresnel coefficients \f$r_p = r_p(i\xi, k)\f$
- * for \f$p=\mathrm{TE},\mathrm{TM}\f$.
- *
- * @param [in]     self  Casimir object
- * @param [in]     xi_   \f$\xi\mathcal{L}/\mathrm{c}\f$
- * @param [in]     k     \f$k\mathcal{L}\f$
- * @param [in,out] r_TE  Fresnel coefficient for TE mode
- * @param [in,out] r_TM  Fresnel coefficient for TM mode
- */
-void casimir_rp(casimir_t *self, double xi_, double k_, double *r_TE, double *r_TM)
-{
-    const double epsilonm1 = casimir_epsilonm1(self, xi_);
-
-    if(isinf(epsilonm1))
-    {
-        /* perfect reflectors */
-        *r_TM = 1.0;
-        *r_TE = -1.0;
-
-        /* get us out of here */
-        return;
-    }
-
-    /* Arbitrary metals
-     *
-     * In scaled units
-     *     β = sqrt( 1 + xi_²/(xi_²+k_²)*(ε-1) ) = sqrt(1+x),
-     * where
-     *     x = xi_²/(xi_²+k_²)*(ε-1).
-     *
-     * We calculate x. If x is small, β≈1 and a loss of significance occures
-     * when calculating 1-β. For this reason we use sqrtpm1 which calculates
-     * β-1.
-     */
-    const double x = pow_2(xi_)/(pow_2(xi_)+pow_2(k_))*epsilonm1;
-    const double betam1 = sqrtpm1(x); /* β-1 */
-    *r_TE = -betam1/(2+betam1);
-    *r_TM = (epsilonm1-betam1)/(epsilonm1+2+betam1);
 }
 
 /*@}*/
@@ -372,7 +388,7 @@ int casimir_get_ldim(casimir_t *self)
 
 
 /**
- * @name Mie coefficients
+ * @name Mie and Fresnell coefficients
  */
 /*@{*/
 
@@ -511,59 +527,60 @@ void casimir_lnab(casimir_t *self, double xi_, int l, double *lna, double *lnb)
     *lnb = M_LOGPI-M_LOG2 + ln_gammaB-ln_gammaD;
     *lna = M_LOGPI-M_LOG2 + num - logadd(ln_gammaC, ln_gammaD);
 }
+
+/**
+ * @brief Calculate Fresnel coefficients \f$r_\mathrm{TE}\f$ and \f$r_\mathrm{TM}\f$ for arbitrary metals
+ *
+ * This function calculates the Fresnel coefficients \f$r_p = r_p(i\xi, k)\f$
+ * for \f$p=\mathrm{TE},\mathrm{TM}\f$.
+ *
+ * @param [in]     self  Casimir object
+ * @param [in]     xi_   \f$\xi\mathcal{L}/\mathrm{c}\f$
+ * @param [in]     k     \f$k\mathcal{L}\f$
+ * @param [in,out] r_TE  Fresnel coefficient for TE mode
+ * @param [in,out] r_TM  Fresnel coefficient for TM mode
+ */
+void casimir_rp(casimir_t *self, double xi_, double k_, double *r_TE, double *r_TM)
+{
+    const double epsilonm1 = casimir_epsilonm1(self, xi_);
+
+    if(isinf(epsilonm1))
+    {
+        /* perfect reflectors */
+        *r_TM = 1.0;
+        *r_TE = -1.0;
+
+        /* get us out of here */
+        return;
+    }
+
+    /* Arbitrary metals
+     *
+     * In scaled units
+     *     β = sqrt( 1 + xi_²/(xi_²+k_²)*(ε-1) ) = sqrt(1+x),
+     * where
+     *     x = xi_²/(xi_²+k_²)*(ε-1).
+     *
+     * We calculate x. If x is small, β≈1 and a loss of significance occures
+     * when calculating 1-β. For this reason we use sqrtpm1 which calculates
+     * β-1.
+     */
+    const double x = pow_2(xi_)/(pow_2(xi_)+pow_2(k_))*epsilonm1;
+    const double betam1 = sqrtpm1(x); /* β-1 */
+    *r_TE = -betam1/(2+betam1);
+    *r_TM = (epsilonm1-betam1)/(epsilonm1+2+betam1);
+}
+
 /*@}*/
 
 
-/* XXX simplify XXX */
-/** @brief Estimate lmin and lmax for given m and dim
- *
- * Estimate the vector space. The main contributions come from l1≈l2≈X and only
- * depends on geometry, L/R, and the quantum number m. This function calculates
- * X using the formula in the high-temperature limit and calculates lmin, lmax.
- *
- * @param [in] self Casimir object
- * @param [in] m quantum number
- * @param [out] lmin_p minimum value of l
- * @param [out] lmax_p maximum value of l
- * @retval X
- */
-int casimir_estimate_lminmax(casimir_t *self, int m, size_t *lmin_p, size_t *lmax_p)
-{
-    const size_t dim = self->ldim;
+/*@}*/
 
-    if(m == 0)
-    {
-        *lmin_p = 1;
-        *lmax_p = 1+dim;
-        return 0;
-    }
 
-    int l;
-    const double x = 1/(1+self->LbyR);
-
-    /* find maximum, i.e., main contributions */
-    double last = 2*m*log(x/2);
-    for(l = m+1; 1; l++)
-    {
-        double f = lfac(2*l)-lfac(l+m)-lfac(l-m)+2*l*log(x/2);
-        if(f < last)
-        {
-            l--;
-            break;
-        }
-
-        last = f;
-    }
-
-    int lmin = l-dim/2;
-    if(lmin < m)
-        lmin = m;
-
-    *lmin_p = lmin;
-    *lmax_p = lmin + dim;
-
-    return l;
-}
+/**
+* @name Kernels
+*/
+/*@{*/
 
 /**
  * @brief Initialize casimir_M_t object
@@ -744,6 +761,83 @@ void casimir_M_free(casimir_M_t *self)
     xfree(self);
 }
 
+/** @brief Kernel for EE block
+ *
+ * Function that returns matrix elements of round-trip matrix M for \f$\xi=0\f$
+ * and polarization p1=p2=E.
+ *
+ * @param [in] i row (starting from 0)
+ * @param [in] j column (starting from 0)
+ * @param [in] args pointer to casimir_M_t object
+ */
+double casimir_kernel_M0_EE(int i, int j, void *args_)
+{
+    casimir_M_t *args = (casimir_M_t *)args_;
+    const double y = args->casimir->y;
+    const int lmin = args->lmin;
+    const int l1 = i+lmin, l2 = j+lmin, m = args->m;
+
+    return exp( (l1+l2+1)*y + lfac(l1+l2) - 0.5*(lfac(l1+m)+lfac(l1-m) + lfac(l2+m)+lfac(l2-m)) );
+}
+
+/** @brief Kernel for MM block (plasma model)
+ *
+ * Function that returns matrix elements of round-trip matrix M for \f$\xi=0\f$
+ * and polarization p1=p2=M (plasma model).
+ *
+ * @param [in] i row (starting from 0)
+ * @param [in] j column (starting from 0)
+ * @param [in] args pointer to casimir_M_t object
+ */
+double casimir_kernel_M0_MM_plasma(int i, int j, void *args_)
+{
+    casimir_M_t *args = (casimir_M_t *)args_;
+
+    /* geometry */
+    const double y = args->casimir->y;
+
+    integration_plasma_t *integration_plasma = args->integration_plasma;
+    const int lmin = args->lmin;
+    const int l1 = i+lmin, l2 = j+lmin, m = args->m;
+
+    /* value of integral */
+    /* ratio1 = I_{l1-1/2}/I_{l1+1/2} ; ratio2 = I_{l2-1/2}/I_{l2+1/2} */
+    double ratio1,ratio2;
+    double I = casimir_integrate_plasma(integration_plasma, l1, l2, m, &ratio1, &ratio2);
+
+    double alpha = integration_plasma->alpha;
+    double factor1 = 1-(2*l1+1.)/(alpha*ratio1);
+    double factor2 = 1-(2*l2+1.)/(alpha*ratio2);
+    double factor = sqrt(l1*factor1/(l1+1.) * l2*factor2/(l2+1.)) ;
+
+    return factor*exp( lfac(l1+l2)-0.5*(lfac(l1+m)+lfac(l1-m)+lfac(l2+m)+lfac(l2-m)) + (l1+l2+1)*y )*I;
+}
+
+/** @brief Kernel for MM block
+ *
+ * Function that returns matrix elements of round-trip matrix M for \f$\xi=0\f$
+ * and polarization p1=p2=M.
+ *
+ * @param [in] i row (starting from 0)
+ * @param [in] j column (starting from 0)
+ * @param [in] args pointer to casimir_M_t object
+ */
+double casimir_kernel_M0_MM(int i, int j, void *args_)
+{
+    casimir_M_t *args = (casimir_M_t *)args_;
+    const double y = args->casimir->y;
+    const int lmin = args->lmin;
+    const int l1 = i+lmin, l2 = j+lmin, m = args->m;
+
+    return exp( (l1+l2+1)*y + lfac(l1+l2) - 0.5*(lfac(l1+m)+lfac(l1-m) + lfac(l2+m)+lfac(l2-m)) )*sqrt(((double)l1*(double)l2)/((l1+1.)*(l2+1.)));
+}
+
+/*@}*/
+
+/**
+ * @name Compute determinants
+ */
+/*@{*/
 
 /** @brief Compute \f$\log\det\mathcal{D}^m\left(\frac{\xi\mathcal{L}}{\mathrm{c}}\right)\f$
  *
@@ -771,14 +865,6 @@ double casimir_logdetD(casimir_t *self, double xi_, int m)
 
     return logdet;
 }
-
-/*@}*/
-
-
-/**
- * @name Matsubara frequency xi=0
- */
-/*@{*/
 
 /** @brief Compute \f$\log\det\mathcal{D}(\xi=0)\f$ for Drude metals
  *
@@ -954,77 +1040,6 @@ void casimir_logdetD0(casimir_t *self, int m, double omegap, double *EE, double 
         *MM_plasma = kernel_logdet(ldim, &casimir_kernel_M0_MM_plasma, &args, is_symmetric, detalg);
         casimir_integrate_plasma_free(args.integration_plasma);
     }
-}
-
-/** @brief Kernel for EE block
- *
- * Function that returns matrix elements of round-trip matrix M for \f$\xi=0\f$
- * and polarization p1=p2=E.
- *
- * @param [in] i row (starting from 0)
- * @param [in] j column (starting from 0)
- * @param [in] args pointer to casimir_M_t object
- */
-double casimir_kernel_M0_EE(int i, int j, void *args_)
-{
-    casimir_M_t *args = (casimir_M_t *)args_;
-    const double y = args->casimir->y;
-    const int lmin = args->lmin;
-    const int l1 = i+lmin, l2 = j+lmin, m = args->m;
-
-    return exp( (l1+l2+1)*y + lfac(l1+l2) - 0.5*(lfac(l1+m)+lfac(l1-m) + lfac(l2+m)+lfac(l2-m)) );
-}
-
-/** @brief Kernel for MM block (plasma model)
- *
- * Function that returns matrix elements of round-trip matrix M for \f$\xi=0\f$
- * and polarization p1=p2=M (plasma model).
- *
- * @param [in] i row (starting from 0)
- * @param [in] j column (starting from 0)
- * @param [in] args pointer to casimir_M_t object
- */
-double casimir_kernel_M0_MM_plasma(int i, int j, void *args_)
-{
-    casimir_M_t *args = (casimir_M_t *)args_;
-
-    /* geometry */
-    const double y = args->casimir->y;
-
-    integration_plasma_t *integration_plasma = args->integration_plasma;
-    const int lmin = args->lmin;
-    const int l1 = i+lmin, l2 = j+lmin, m = args->m;
-
-    /* value of integral */
-    /* ratio1 = I_{l1-1/2}/I_{l1+1/2} ; ratio2 = I_{l2-1/2}/I_{l2+1/2} */
-    double ratio1,ratio2;
-    double I = casimir_integrate_plasma(integration_plasma, l1, l2, m, &ratio1, &ratio2);
-
-    double alpha = integration_plasma->alpha;
-    double factor1 = 1-(2*l1+1.)/(alpha*ratio1);
-    double factor2 = 1-(2*l2+1.)/(alpha*ratio2);
-    double factor = sqrt(l1*factor1/(l1+1.) * l2*factor2/(l2+1.)) ;
-
-    return factor*exp( lfac(l1+l2)-0.5*(lfac(l1+m)+lfac(l1-m)+lfac(l2+m)+lfac(l2-m)) + (l1+l2+1)*y )*I;
-}
-
-/** @brief Kernel for MM block
- *
- * Function that returns matrix elements of round-trip matrix M for \f$\xi=0\f$
- * and polarization p1=p2=M.
- *
- * @param [in] i row (starting from 0)
- * @param [in] j column (starting from 0)
- * @param [in] args pointer to casimir_M_t object
- */
-double casimir_kernel_M0_MM(int i, int j, void *args_)
-{
-    casimir_M_t *args = (casimir_M_t *)args_;
-    const double y = args->casimir->y;
-    const int lmin = args->lmin;
-    const int l1 = i+lmin, l2 = j+lmin, m = args->m;
-
-    return exp( (l1+l2+1)*y + lfac(l1+l2) - 0.5*(lfac(l1+m)+lfac(l1-m) + lfac(l2+m)+lfac(l2-m)) )*sqrt(((double)l1*(double)l2)/((l1+1.)*(l2+1.)));
 }
 
 /*@}*/
