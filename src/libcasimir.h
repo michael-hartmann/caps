@@ -128,7 +128,7 @@ double casimir_epsilonm1_perf(double xi_, void *userdata);
 double casimir_epsilonm1_drude(double xi_, void *userdata);
 
 double casimir_logdetD0_drude(casimir_t *casimir);
-double casimir_logdetD0_pc(casimir_t *casimir, double eps);
+double casimir_logdetD0_perf(casimir_t *casimir, double eps);
 double casimir_logdetD0_plasma(casimir_t *casimir, double omegap, double eps);
 
 double casimir_kernel_M0_EE(int i, int j, void *args);

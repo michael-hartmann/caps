@@ -477,7 +477,7 @@ void master(int argc, char *argv[], const int cores)
             if(material == NULL && isinf(omegap) && gamma_ == 0)
             {
                 printf("# model  = perfect conductors\n");
-                v[0] = casimir_logdetD0_pc(casimir, cutoff);
+                v[0] = casimir_logdetD0_perf(casimir, cutoff);
             }
             else if(material == NULL && gamma_ == 0)
             {
