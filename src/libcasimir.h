@@ -77,7 +77,7 @@ typedef struct
     int m, lmin;
     integration_t *integration;
     integration_plasma_t *integration_plasma;
-    double nT;
+    double xi_;
     double *al, *bl;
 } casimir_M_t;
 
@@ -106,10 +106,9 @@ void casimir_lnab_perf(casimir_t *self, double xi_, int l, double *lna, double *
 
 double casimir_kernel_M(int i, int j, void *args_);
 
-casimir_M_t *casimir_M_init(casimir_t *self, int m, double nT);
+casimir_M_t *casimir_M_init(casimir_t *self, int m, double xi_);
 double casimir_M_elem(casimir_M_t *self, int l1, int l2, char p1, char p2);
 void casimir_M_free(casimir_M_t *self);
-matrix_t *casimir_M(casimir_t *self, double nT, int m);
 
 double casimir_logdetD(casimir_t *self, double xi_, int m);
 

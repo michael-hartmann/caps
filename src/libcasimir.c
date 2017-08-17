@@ -468,7 +468,6 @@ void casimir_lnab_perf(casimir_t *self, double xi_, int l, double *lna, double *
  */
 void casimir_lnab(casimir_t *self, double xi_, int l, double *lna, double *lnb)
 {
-    /* ξ = nT */
     const double epsilonm1 = casimir_epsilonm1(self, xi_); /* n²-1 */
 
     if(isinf(epsilonm1))
@@ -598,7 +597,7 @@ casimir_M_t *casimir_M_init(casimir_t *casimir, int m, double xi_)
     self->lmin = lmin;
     self->integration = casimir_integrate_init(casimir, xi_, m, casimir->epsrel);
     self->integration_plasma = NULL;
-    self->nT = xi_;
+    self->xi_ = xi_;
     self->al = xmalloc(ldim*sizeof(double));
     self->bl = xmalloc(ldim*sizeof(double));
 
@@ -662,16 +661,16 @@ double casimir_kernel_M(int i, int j, void *args_)
  */
 double casimir_M_elem(casimir_M_t *self, int l1, int l2, char p1, char p2)
 {
-    const double nT = self->nT;
+    const double xi_ = self->xi_; /* xi_ = xi*(L+R)/c */
     const int lmin = self->lmin;
     casimir_t *casimir = self->casimir;
     integration_t *integration = self->integration;
 
     if(isnan(self->al[l1-lmin]))
-        casimir_lnab(casimir, nT, l1, &self->al[l1-lmin], &self->bl[l1-lmin]);
+        casimir_lnab(casimir, xi_, l1, &self->al[l1-lmin], &self->bl[l1-lmin]);
 
     if(isnan(self->al[l2-lmin]))
-        casimir_lnab(casimir, nT, l2, &self->al[l2-lmin], &self->bl[l2-lmin]);
+        casimir_lnab(casimir, xi_, l2, &self->al[l2-lmin], &self->bl[l2-lmin]);
 
     const double lnLambda = casimir_lnLambda(l1,l2,self->m);
     const double al1 = self->al[l1-lmin], bl1 = self->bl[l1-lmin];
@@ -1006,7 +1005,7 @@ void casimir_logdetD0(casimir_t *self, int m, double omegap, double *EE, double 
     casimir_M_t args = {
         .casimir = self,
         .m = m,
-        .nT = 0,
+        .xi_ = 0,
         .integration = NULL,
         .integration_plasma = NULL,
         .al = NULL,
