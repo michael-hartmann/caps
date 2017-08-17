@@ -427,7 +427,8 @@ static double _casimir_integrate_K(integration_t *self, int nu, polarization_t p
  *
  * The function returns the logarithm of the value of the integral and its sign.
  *
- * The projection of the wavevector onto the \f$xy\f$-plane is given by \f$k=\frac{\xi}{c}\sqrt{z^2+2z}\f$
+ * The projection of the wavevector onto the \f$xy\f$-plane is given by
+ * \f$k=\frac{\xi}{c}\sqrt{z^2+2z}\f$ and \f$\tau=2\xi\mathcal{L}/c\f$.
  *
  * @param [in] self integration object
  * @param [in] nu parameter
