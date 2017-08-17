@@ -42,9 +42,6 @@ typedef struct casimir
      /*@{*/
     double (*epsilonm1)(double xi_, void *userdata);
     void *userdata;
-
-    void (*rp)(struct casimir *self, double nT, double k, double *r_TE, double *r_TM);
-    void (*lnab)(struct casimir *self, double nT, int l, double *lna, double *lnb);
     /*@}*/
 
     /**
@@ -94,9 +91,6 @@ casimir_t *casimir_init(double LbyR);
 void casimir_free(casimir_t *self);
 
 void casimir_set_epsilonm1(casimir_t *self, double (*epsilonm1)(double xi_, void *userdata), void *userdata);
-
-void casimir_set_rp(casimir_t *self, void (*rp)(struct casimir *self, double xi_, double k, double *r_TE, double *r_TM));
-void casimir_set_lnab(casimir_t *self, void (*lnab)(struct casimir *self, double xi_, int l, double *lna, double *lnb));
 
 int casimir_get_ldim(casimir_t *self);
 int casimir_set_ldim(casimir_t *self, int ldim);
