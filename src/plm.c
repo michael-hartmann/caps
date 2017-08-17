@@ -315,7 +315,7 @@ double plm_continued_fraction(const long l, const long m, const double x)
     int j = 1+m;
     for(int i = 1; i < 2048; i++)
     {
-        /* do 8 iterations */
+        /* do 16 iterations */
         int k = j+16;
         for(; j < k; j++)
         {
