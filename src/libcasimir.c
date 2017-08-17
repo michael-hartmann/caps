@@ -67,11 +67,11 @@ double casimir_epsilonm1(casimir_t *self, double xi_)
 /**
  * @brief Dielectric function for perfect reflectors
  *
- * @param [in] xi ignored
+ * @param [in] xi_ ignored
  * @param [in] userdata ignored
- * @retval INFINITY \f$\epsilon(\xi) = \infty\f$
+ * @retval inf \f$\epsilon(\xi) = \infty\f$
  */
-double casimir_epsilonm1_perf(__attribute__((unused)) double xi, __attribute__((unused)) void *userdata)
+double casimir_epsilonm1_perf(__attribute__((unused)) double xi_, __attribute__((unused)) void *userdata)
 {
     return INFINITY;
 }
@@ -101,7 +101,7 @@ double casimir_epsilonm1_drude(double xi_, void *userdata)
 }
 
 /**
- * @brief Calculate Fresnel coefficients \f$r_{TE}\f$ and \f$r_{TM}\f$ for arbitrary metals
+ * @brief Calculate Fresnel coefficients \f$r_\mathrm{TE}\f$ and \f$r_\mathrm{TM}\f$ for arbitrary metals
  *
  * This function calculates the Fresnel coefficients \f$r_p = r_p(i\xi, k)\f$
  * for \f$p=\mathrm{TE},\mathrm{TM}\f$.
@@ -137,7 +137,7 @@ void casimir_rp(casimir_t *self, double xi_, double k_, double *r_TE, double *r_
      * when calculating 1-β. For this reason we use sqrtpm1 which calculates
      * β-1.
      */
-    const double x = pow_2(xi_)/(pow_2(xi_)+pow_2(k))*epsilonm1;
+    const double x = pow_2(xi_)/(pow_2(xi_)+pow_2(k_))*epsilonm1;
     const double betam1 = sqrtpm1(x); /* β-1 */
     *r_TE = -betam1/(2+betam1);
     *r_TM = (epsilonm1-betam1)/(epsilonm1+2+betam1);
@@ -302,11 +302,10 @@ void casimir_set_lnab(casimir_t *self, void (*lnab)(struct casimir *self, double
 /**
  * @brief Set algorithm to calculate deterimant
  *
- * The algorithm is given by detalg. Make sure that detalg contains a valid
- * algorithm, otherwise the computation will print a warning on runtime and
- * default to DETALG_LU.
+ * The algorithm is given by detalg. Usually you don't want to change the
+ * algorithm to compute the determinant.
  *
- * detalg may be: DETALG_LU, DETALG_HODLR
+ * detalg may be: DETALG_HODLR, DETALG_LU (needs LAPACK support)
  *
  * @param [in,out] self Casimir object
  * @param [in] detalg algorithm to compute determinant
@@ -324,12 +323,8 @@ void casimir_set_detalg(casimir_t *self, detalg_t detalg)
 /**
  * @brief Get algorithm to calculate determinant
  *
- * The string is stored in detalg.
- *
- * This function is not thread-safe.
- *
- * @param [in,out] self Casimir object
- * @param [out] detalg buffer
+ * @param [in]  self Casimir object
+ * @param [out] detalg algorithm to compute determinant
  * @retval 1
  */
 detalg_t casimir_get_detalg(casimir_t *self)
@@ -341,13 +336,12 @@ detalg_t casimir_get_detalg(casimir_t *self)
  * @brief Set dimension of vector space
  *
  * The round trip matrices are infinite. For a numerical evaluation the
- * dimension has to be limited to a finite value. The accuracy of the result
+ * dimension has to be truncated to a finite value. The accuracy of the result
  * depends on the truncation of the vector space. ldim determines the dimension
- * in the angular momenta l that is used. The main contributions come from l1≈l2≈X.
- * X can be determined using \ref casimir_estimate_lminmax.
+ * in the angular momentum \f$\ell\f$ that is used.
  *
  * @param [in,out] self Casimir object
- * @param [in] ldim dimension in angular momenta l
+ * @param [in] ldim dimension in angular momentum \f$\ell\f$
  * @retval 1 if successful
  * @retval 0 if ldim < 1
  */
@@ -571,6 +565,64 @@ int casimir_estimate_lminmax(casimir_t *self, int m, size_t *lmin_p, size_t *lma
     return l;
 }
 
+/**
+ * @brief Initialize casimir_M_t object
+ *
+ * This object contains all information necessary to compute the matrix
+ * elements of the round-trip operator \f$\mathcal{M}^{(m)}(\xi)\f$. It also
+ * contains a cache for the Mie coefficients.
+ *
+ * The returned object can be given to \ref casimir_kernel_M to compute the
+ * matrix elements of the round-trip operator.
+ *
+ * @param [in] casimir Casimir object
+ * @param [in] m azimuthal quantum number \f$m\f$
+ * @param [in] xi_ \f$\xi\mathcal{L}/c\f$
+ * @param obj casimir_M_t object that can be given to \ref casimir_kernel_M
+ */
+casimir_M_t *casimir_M_init(casimir_t *casimir, int m, double xi_)
+{
+    TERMINATE(xi_ <= 0, "Matsubara frequency must be positive");
+
+    size_t lmin, lmax;
+    const int ldim = casimir->ldim;
+    casimir_M_t *self = xmalloc(sizeof(casimir_M_t));
+
+    casimir_estimate_lminmax(casimir, m, &lmin, &lmax);
+
+    self->casimir = casimir;
+    self->m = m;
+    self->lmin = lmin;
+    self->integration = casimir_integrate_init(casimir, xi_, m, casimir->epsrel);
+    self->integration_plasma = NULL;
+    self->nT = xi_;
+    self->al = xmalloc(ldim*sizeof(double));
+    self->bl = xmalloc(ldim*sizeof(double));
+
+    for(int j = 0; j < ldim; j++)
+        self->al[j] = self->bl[j] = NAN;
+
+    return self;
+}
+
+/**
+ * @brief Kernel of round-trip matrix
+ *
+ * This function returns the matrix elements of the round-trip operator
+ * \f$\mathcal{M}^{(m)}\f$.
+ *
+ * The round-trip matrix is a \f$2\ell_\mathrm{dim} \times 2\ell_\mathrm{dim}\f$
+ * matrix, the matrix elements start at 0, i.e. \f$0 \le i,j < 2\ell_\mathrm{dim}\f$.
+ *
+ * This function is intended to be passed as a callback to \ref kernel_logdet. If you
+ * want to compute matrix elements of the round-trip operator, it is probably simpler
+ * to use \ref casimir_M_elem.
+ *
+ * @param [in] i row
+ * @param [in] j column
+ * @param [in] args_ casimir_M_t object, see \ref casimir_M_init
+ * @retval Mij \f$\mathcal{M}^{(m)}_{ij}(\xi)\f$
+ */
 double casimir_kernel_M(int i, int j, void *args_)
 {
     char p1 = 'E', p2 = 'E';
@@ -593,31 +645,18 @@ double casimir_kernel_M(int i, int j, void *args_)
     return casimir_M_elem(args, l1, l2, p1, p2);
 }
 
-casimir_M_t *casimir_M_init(casimir_t *casimir, int m, double nT)
-{
-    TERMINATE(nT <= 0, "Matsubara frequency must be positive");
-
-    size_t lmin, lmax;
-    const int ldim = casimir->ldim;
-    casimir_M_t *self = xmalloc(sizeof(casimir_M_t));
-
-    casimir_estimate_lminmax(casimir, m, &lmin, &lmax);
-
-    self->casimir = casimir;
-    self->m = m;
-    self->lmin = lmin;
-    self->integration = casimir_integrate_init(casimir, nT, m, casimir->epsrel);
-    self->integration_plasma = NULL;
-    self->nT = nT;
-    self->al = xmalloc(ldim*sizeof(double));
-    self->bl = xmalloc(ldim*sizeof(double));
-
-    for(int j = 0; j < ldim; j++)
-        self->al[j] = self->bl[j] = NAN;
-
-    return self;
-}
-
+/**
+ * @brief Compute matrix elements of round-trip operator
+ *
+ * This function computes matrix elements of the round-trip operator.
+ *
+ * @param [in] self casimir_M_t object, see \ref casimir_M_init
+ * @param [in] l1 angular momentum \f$\ell_1\f$
+ * @param [in] l2 angular momentum \f$\ell_2\f$
+ * @param [in] p1 polarization \f$p_1\f$ (E or M)
+ * @param [in] p2 polarization \f$p_2\f$ (E or M)
+ * @retval elem \f$\mathcal{M}^{(m)}_{\ell_1,\ell_2}(p_1,p_2)\f$
+ */
 double casimir_M_elem(casimir_M_t *self, int l1, int l2, char p1, char p2)
 {
     const double nT = self->nT;
@@ -690,6 +729,13 @@ double casimir_M_elem(casimir_M_t *self, int l1, int l2, char p1, char p2)
     }
 }
 
+/**
+ * @brief Free casimir_M_t object
+ *
+ * Frees memory allocated by \ref casimir_M_init.
+ *
+ * @param [in,out] self casimir_M_t object
+ */
 void casimir_M_free(casimir_M_t *self)
 {
     xfree(self->al);
@@ -701,12 +747,9 @@ void casimir_M_free(casimir_M_t *self)
 
 /** @brief Compute \f$\log\det\mathcal{D}^m\left(\frac{\xi\mathcal{L}}{\mathrm{c}}\right)\f$
  *
- * This function will compute the logarithm of the determinant of the
- * scattering matrix for Matsubara frequency \f$\xi\mathcal{L}/\mathrm{c}\f$
- * and quantum number \f$m\f$.
- *
- * Either LU decomposition (slow) or method for HODLR matrices (fast) will be
- * used, see \ref casimir_set_detalg.
+ * This function computes the logarithm of the determinant of the scattering
+ * matrix for Matsubara frequency \f$\xi\mathcal{L}/\mathrm{c}\f$ and quantum
+ * number \f$m\f$.
  *
  * For \f$\xi=0\f$ see \ref casimir_logdetD0.
  *
@@ -779,11 +822,11 @@ double casimir_logdetD0_drude(casimir_t *casimir)
 }
 
 
-/** @brief Compute \f$\log\det\mathcal{D}(\xi=0)\f$ for perect conductors
+/** @brief Compute \f$\log\det\mathcal{D}(\xi=0)\f$ for perfect reflectors
  *
- * For Drude metals the Fresnel coefficients are \f$r_\mathrm{TM}=1\f$,
- * \f$r_\mathrm{TE}=-1\f$. In the limit \f$\xi\to 0\f$ only the polarization
- * blocks EE and MM need to be considered.
+ * For perfect reflectors the Fresnel coefficients become
+ * \f$r_\mathrm{TM}=1\f$, \f$r_\mathrm{TE}=-1\f$ in the limit \f$\xi\to 0\f$,
+ * and only the polarization blocks EE and MM need to be considered.
  *
  * The contribution for EE, i.e. Drude, can be computed analytically, see \ref
  * casimir_logdetD0_drude. For the MM block we numerically compute the
@@ -801,7 +844,7 @@ double casimir_logdetD0_drude(casimir_t *casimir)
  * @param [in] eps \f$\epsilon\f$ abort criterion
  * @retval logdetD \f$\log\det\mathcal{D}(\xi=0)\f$ for perfect conductors
  */
-double casimir_logdetD0_pc(casimir_t *casimir, double eps)
+double casimir_logdetD0_perf(casimir_t *casimir, double eps)
 {
     const double LbyR = casimir->LbyR;
     const double drude = casimir_logdetD0_drude(casimir);
@@ -830,22 +873,55 @@ double casimir_logdetD0_pc(casimir_t *casimir, double eps)
     }
 }
 
+/** @brief Compute \f$\log\det\mathcal{D}(\xi=0)\f$ for plasma model
+ *
+ * The abort criterion eps is the same as in \ref casimir_logdetD0_perf.
+ *
+ * @param [in] casimir Casimir object
+ * @param [in] omegap plasma frequency \f$\omega_P\f$ in rad/s
+ * @param [in] eps abort criterion
+ * @retval logdetD \f$\log\det\mathcal{D}(\xi=0)\f$ for plasma model
+ */
+double casimir_logdetD0_plasma(casimir_t *casimir, double omegap, double eps)
+{
+    const double drude = casimir_logdetD0_drude(casimir);
+    double MM_plasma = 0;
+
+    for(int m = 0; true; m++)
+    {
+        double v;
+        casimir_logdetD0(casimir, m, omegap, NULL, NULL, &v);
+
+        if(m == 0)
+            MM_plasma += v/2;
+        else
+            MM_plasma += v;
+
+        if(fabs(v/MM_plasma) < eps)
+            return drude+MM_plasma;
+    }
+}
+
 
 /** @brief Compute \f$\log\det\mathcal{D}(\xi=0)\f$ for EE and/or MM contribution
  *
- * Compute numerically for a given value of m the contribution of the
- * polarization block EE and/or MM. If logdet_EE or logdet_MM is NULL, the
- * value is not computed.
+ * Compute numerically for a given value of \f$m\f$ the contribution of the
+ * polarization block EE and/or MM. If EE, MM or MM_plasma is NULL, the value
+ * will not be computed.
  *
- * The EE block corresponds to Drude metals. For Drude metals there exists an
- * analytical formula to compute logdetD, see \ref casimir_logdetD0_drude.
+ * For Drude metals there exists an analytical formula to compute logdetD, see
+ * \ref casimir_logdetD0_drude.
+ *
+ * For perfect reflectors see \ref casimir_logdetD0_perf.
+ *
+ * For the Plasma model see \ref casimir_logdetD0_plasma.
  *
  * @param [in]  self Casimir object
  * @param [in]  m quantum number \f$m\f$
- * @param [in]  omegap
+ * @param [in]  omegap Plasma frequency \f$\omega_P\f$ in rad/s (only used to compute MM_plasma)
  * @param [out] EE pointer to store contribution for EE block
  * @param [out] MM pointer to store contribution for MM block
- * @param [out] MM_plasma
+ * @param [out] MM_plasma pointer to store contribution for MM block (Plasma model)
  */
 void casimir_logdetD0(casimir_t *self, int m, double omegap, double *EE, double *MM, double *MM_plasma)
 {
@@ -882,8 +958,8 @@ void casimir_logdetD0(casimir_t *self, int m, double omegap, double *EE, double 
 
 /** @brief Kernel for EE block
  *
- * Function that returns matrix elements of round-trip matrix M for xi=0 and
- * polarization p1=p2=E.
+ * Function that returns matrix elements of round-trip matrix M for \f$\xi=0\f$
+ * and polarization p1=p2=E.
  *
  * @param [in] i row (starting from 0)
  * @param [in] j column (starting from 0)
@@ -899,6 +975,15 @@ double casimir_kernel_M0_EE(int i, int j, void *args_)
     return exp( (l1+l2+1)*y + lfac(l1+l2) - 0.5*(lfac(l1+m)+lfac(l1-m) + lfac(l2+m)+lfac(l2-m)) );
 }
 
+/** @brief Kernel for MM block (plasma model)
+ *
+ * Function that returns matrix elements of round-trip matrix M for \f$\xi=0\f$
+ * and polarization p1=p2=M (plasma model).
+ *
+ * @param [in] i row (starting from 0)
+ * @param [in] j column (starting from 0)
+ * @param [in] args pointer to casimir_M_t object
+ */
 double casimir_kernel_M0_MM_plasma(int i, int j, void *args_)
 {
     casimir_M_t *args = (casimir_M_t *)args_;
@@ -925,8 +1010,8 @@ double casimir_kernel_M0_MM_plasma(int i, int j, void *args_)
 
 /** @brief Kernel for MM block
  *
- * Function that returns matrix elements of round-trip matrix M for xi=0 and
- * polarization p1=p2=M.
+ * Function that returns matrix elements of round-trip matrix M for \f$\xi=0\f$
+ * and polarization p1=p2=M.
  *
  * @param [in] i row (starting from 0)
  * @param [in] j column (starting from 0)
@@ -940,27 +1025,6 @@ double casimir_kernel_M0_MM(int i, int j, void *args_)
     const int l1 = i+lmin, l2 = j+lmin, m = args->m;
 
     return exp( (l1+l2+1)*y + lfac(l1+l2) - 0.5*(lfac(l1+m)+lfac(l1-m) + lfac(l2+m)+lfac(l2-m)) )*sqrt(((double)l1*(double)l2)/((l1+1.)*(l2+1.)));
-}
-
-
-double casimir_logdetD0_plasma(casimir_t *casimir, double omegap, double eps)
-{
-    const double drude = casimir_logdetD0_drude(casimir);
-    double MM_plasma = 0;
-
-    for(int m = 0; true; m++)
-    {
-        double v;
-        casimir_logdetD0(casimir, m, omegap, NULL, NULL, &v);
-
-        if(m == 0)
-            MM_plasma += v/2;
-        else
-            MM_plasma += v;
-
-        if(fabs(v/MM_plasma) < eps)
-            return drude+MM_plasma;
-    }
 }
 
 /*@}*/
