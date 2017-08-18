@@ -1,5 +1,4 @@
 import numpy as np
-from glob import glob
 import sys
 
 sys.path.append("../../../../src/python/")
@@ -7,7 +6,7 @@ sys.path.append("../../../../src/python/")
 from PFA import PFA, hbar, hbar_eV, c
 
 data = []
-filenames = sorted(glob("eta10/slurm-*.out"))
+filenames = sorted(sys.argv[1:])
 for filename in filenames:
     omegap,gamma = np.nan, np.nan
     with open(filename, "r") as f:
