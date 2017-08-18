@@ -19,10 +19,10 @@ if __name__ == "__main__":
     )
 
     LbyR_drude10  = drudeR10[:,0]
-    ratio_drude10 = 1-drudeR10[:,7]
+    ratio_drude10 = 1-drudeR10[:,8]
 
     LbyR_drude100  = drudeR100[:,0]
-    ratio_drude100 = 1-drudeR100[:,7]
+    ratio_drude100 = 1-drudeR100[:,8]
 
     LbyR_pc  = pc[:,0]
     ratio_pc = 1-pc[:,5]

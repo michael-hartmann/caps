@@ -24,9 +24,9 @@ for filename in filenames:
                 pfa = PFA(R,T,epsm1)
                 Epfa = pfa.E(L) * (L+R)/(hbar*c)
 
-                data.append((LbyR, T, omegap, gamma, ldim, E, Epfa, E/Epfa))
+                data.append((LbyR, R, T, omegap, gamma, ldim, E, Epfa, E/Epfa))
 
 
-print("# LbyR, T [K], omegap [eV], gamma [eV], ldim, E*(L+R)/(hbar*c), E_PFA*(L+R)/(hbar*c), E/E_PFA")
+print("# LbyR, R [m], T [K], omegap [eV], gamma [eV], ldim, E*(L+R)/(hbar*c), E_PFA*(L+R)/(hbar*c), E/E_PFA")
 for p in sorted(data, reverse=True):
-    print("%.12g, %g, %g, %g, %d, %.12g, %.12g, %.12g" % p)
+    print("%.12g, %g, %g, %g, %g, %d, %.12g, %.12g, %.12g" % p)
