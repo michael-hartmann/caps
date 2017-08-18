@@ -49,6 +49,8 @@ class PFA:
         R:     radius of sphere in m
         T:     temperature in Kelvin
         epsm1: dielectric function minus 1, epsm1(xi) = eps-1
+
+        The value of xi is given in rad/s.
         """
         self.R = R
         self.T = T
