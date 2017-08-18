@@ -61,7 +61,7 @@ TESTS = \
 # tests/test_integration_drude.o
 
 # use C99 standard
-CFLAGS = -std=c99 -mfma -mfma4
+CFLAGS = -std=c99
 
 # use traditional GNU semantics for inline
 #CFLAGS += -fgnu89-inline
