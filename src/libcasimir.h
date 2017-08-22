@@ -10,7 +10,7 @@ typedef enum { TE, TM } polarization_t;
 #include <stdbool.h>
 #include <stdio.h>
 
-#include "hash-table.h"
+#include "cache.h"
 #include "matrix.h"
 #include "constants.h"
 
@@ -59,15 +59,15 @@ typedef struct {
     casimir_t *casimir;
     int m;
     double tau,epsrel;
-    HashTable *hash_table_I;
-    HashTable *hash_table_K;
+    cache_t *cache_I;
+    cache_t *cache_K;
     bool is_pc;
 } integration_t;
 
 typedef struct {
     double LbyR, alpha, omegap, epsrel;
-    HashTable *cache;
-    HashTable *cache_ratio;
+    cache_t *cache;
+    cache_t *cache_ratio;
 } integration_plasma_t;
 
 
