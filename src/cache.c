@@ -4,9 +4,25 @@
 #include "utils.h"
 #include "cache.h"
 
-
+/**
+ * @brief Create a new cache
+ *
+ * Create a new cache instance. This cache is quite specific. You specifiy the
+ * maximum number of entries and a filling level. The cache is implemented as a
+ * hash map that maps keys (uint64_t) to doubles.
+ *
+ * If the cache cannot contain more elements, the oldest entry will be thrown
+ * away, similar to a FIFO. There is no logic to detect collisions. If there is
+ * a collision, the old value will be overwritten. You can specifiy a filling
+ * level (0 < filling < 1).
+ *
+ * @param entries maximum number of entries the cache can store
+ * @param filling filling level
+ * @retval cache cache_t instance
+ */
 cache_t *cache_new(int entries, double filling)
 {
+    /* http://planetmath.org/goodhashtableprimes */
     const int primes[] = {
         1543, 3079, 6151, 12289, 24593, 49157, 98317, 196613, 393241, 786433,
         1572869, 3145739, 6291469, 12582917, 25165843, 50331653, 100663319,
@@ -37,6 +53,11 @@ cache_t *cache_new(int entries, double filling)
     return cache;
 }
 
+/**
+ * @brief Free cache instance
+ *
+ * @param cache cache instance
+ */
 void cache_free(cache_t *cache)
 {
     xfree(cache->values);
@@ -45,6 +66,15 @@ void cache_free(cache_t *cache)
     xfree(cache);
 }
 
+/**
+ * @brief Insert element into cache
+ *
+ * Insert the element value with key key to the cache.
+ *
+ * @param cache cache instance
+ * @param key key
+ * @param value value
+ */
 void cache_insert(cache_t *cache, uint64_t key, double value)
 {
     const int head = cache->head, tail = cache->tail;
@@ -64,6 +94,14 @@ void cache_insert(cache_t *cache, uint64_t key, double value)
     table[   key % num_lookup] = tail;
 }
 
+/**
+ * @brief Find element corresponding to key key
+ *
+ * @param cache cache instance
+ * @param key key
+ * @retval element if found
+ * @retval NAN otherwise
+ */
 double cache_lookup(cache_t *cache, uint64_t key)
 {
     const int index = cache->table[key % cache->num_lookup];
