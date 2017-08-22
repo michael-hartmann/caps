@@ -81,15 +81,6 @@ typedef struct _HashTablePair{
 } HashTablePair;
 
 /**
- * Definition of a @ref HashTableIterator.
- */
-struct _HashTableIterator {
-    HashTable *hash_table;
-    HashTableEntry *next_entry;
-    uint64_t next_chain;
-};
-
-/**
  * Type of function used to free values when entries are removed from a
  * hash table.
  */
@@ -152,41 +143,6 @@ int hash_table_remove(HashTable *hash_table, uint64_t key);
  * @return                    The number of entries in the hash table.
  */
 uint64_t hash_table_num_entries(HashTable *hash_table);
-
-/**
- * Initialise a @ref HashTableIterator to iterate over a hash table.
- *
- * @param hash_table          The hash table.
- * @param iter                Pointer to an iterator structure to
- *                            initialise.
- */
-
-void hash_table_iterate(HashTable *hash_table, HashTableIterator *iter);
-/**
- * Determine if there are more keys in the hash table to iterate
- * over.
- *
- * @param iterator            The hash table iterator.
- * @return                    Zero if there are no more values to iterate
- *                            over, non-zero if there are more values to
- *                            iterate over.
- */
-
-int hash_table_iter_has_more(HashTableIterator *iterator);
-/**
- * Using a hash table iterator, retrieve the next @ref HashTablePair.
- *
- * Note: To avoid @ref HashTableEntry internal @ref HashTablePair
- *       from being tampered with, and potentially messing with
- *       internal table structure, the function returns a copy
- *       of @ref HashTablePair stored internally.
- *
- * @param iterator            The hash table iterator.
- * @return                    The next @ref HashTablePair from the hash
- *                            table, or NULL of Key and Value if there are no
- *                            more keys to iterate over.
- */
-HashTablePair hash_table_iter_next(HashTableIterator *iterator);
 
 #ifdef __cplusplus
 }
