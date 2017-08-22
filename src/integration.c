@@ -408,6 +408,7 @@ static double _casimir_integrate_K(integration_t *self, int nu, polarization_t p
 
     bool warn = ier1 != 0 || ier2 != 0 || ier3 != 0 || isnan(sum) || sum == 0;
     WARN(warn, "ier1=%d, ier2=%d, ier3=%d, nu=%d, m=%d, tau=%.20g, zmax=%g, a=%g, b=%g, I1=%g, I2=%g, I3=%g", ier1, ier2, ier3, nu,m,tau,zmax,a,b, I1, I2, I3);
+    TERMINATE((*sign == 1 && p != TM) || (*sign==-1 && p != TE), "nu=%d, p=%d, sign=%d, sum=%g", nu, p, *sign, sum);
 
     *sign = SGN(sum);
     return log(fabs(sum)) + log_normalization;
@@ -565,7 +566,7 @@ static double _casimir_integrate_I(integration_t *self, int l1, int l2, polariza
         array[q].s = SGN(aq[q])*s;
         array[q].v = log_scaling+K+log(fabs(aq[q]));
 
-        if((array[q].v - array[0].v) < -75)
+        if(q > 15 && (array[q].v - array[0].v) < -75)
             break;
     }
 
@@ -573,6 +574,8 @@ static double _casimir_integrate_I(integration_t *self, int l1, int l2, polariza
     done:
     log_I = log_a0+logadd_ms(array, MIN(q,qmax)+1, sign);
     TERMINATE(!isfinite(log_I), "l1=%d, l2=%d, p=%d, log_I=%g", l1, l2, p_, log_I);
+    TERMINATE((*sign == 1 && p_ != TM) || (*sign==-1 && p_ != TE), "l1=%d, l2=%d, p=%d, sign=%d, log_I=%g, q=%d", l1, l2, p_, *sign, log_I, q);
+
     return log_I;
 }
 
