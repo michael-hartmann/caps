@@ -29,6 +29,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdint.h>
+#include <math.h>
 
 #include "utils.h"
 #include "hash-table.h"
@@ -87,11 +88,6 @@ static int hash_table_allocate_table(HashTable *hash_table)
 static void hash_table_free_entry(HashTable *hash_table, HashTableEntry *entry)
 {
     HashTablePair *pair = &(entry->pair);
-
-    /* If there is a function registered for freeing values, use it to free the
-     * value */
-    if(hash_table->value_free_func != NULL)
-        hash_table->value_free_func(pair->value);
 
     /* Free the data structure */
     xfree(entry);
@@ -192,7 +188,7 @@ static int hash_table_enlarge(HashTable *hash_table)
     return 1;
 }
 
-int hash_table_insert(HashTable *hash_table, uint64_t key, HashTableValue value)
+int hash_table_insert(HashTable *hash_table, uint64_t key, double value)
 {
     /* If there are too many items in the table with respect to the table
      * size, the number of hash collisions increases and performance
@@ -222,11 +218,6 @@ int hash_table_insert(HashTable *hash_table, uint64_t key, HashTableValue value)
         {
             /* Same key: overwrite this entry with new data */
 
-            /* If there is a value free function, free the old data
-             * before adding in the new data */
-            if(hash_table->value_free_func != NULL)
-                hash_table->value_free_func(pair->value);
-
             pair->key = key;
             pair->value = value;
 
@@ -254,7 +245,7 @@ int hash_table_insert(HashTable *hash_table, uint64_t key, HashTableValue value)
     return 1;
 }
 
-HashTableValue hash_table_lookup(HashTable *hash_table, uint64_t key)
+double hash_table_lookup(HashTable *hash_table, uint64_t key)
 {
     /* Generate the hash of the key and hence the index into the table */
     uint64_t index = key % hash_table->table_size;
@@ -275,7 +266,7 @@ HashTableValue hash_table_lookup(HashTable *hash_table, uint64_t key)
     }
 
     /* Not found */
-    return NULL;
+    return NAN;
 }
 
 int hash_table_remove(HashTable *hash_table, uint64_t key)

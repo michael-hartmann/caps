@@ -30,26 +30,6 @@ typedef struct
     casimir_t *casimir;
 } integrand_t;
 
-/* entry of cache consists of value of integral and sign: sign*exp(v) */
-typedef struct
-{
-    double v;    /**< logarithmic value of integral */
-} cache_entry_t;
-
-/* allocate memory and create new cache entry */
-static cache_entry_t *cache_entry_create(double v)
-{
-    cache_entry_t *entry = xmalloc(sizeof(cache_entry_t));
-    entry->v = v;
-    return entry;
-}
-
-/* free memory for cache entry */
-static void cache_entry_destroy(void *entry)
-{
-    xfree(entry);
-}
-
 /* Create a hash from l1, l2 and p. The hash function breaks if l1 or l2 >
  * 2^31. This, however, exceeds the resources available by orders of
  * magnitude. Other things will break earlier...
@@ -439,27 +419,21 @@ double casimir_integrate_K(integration_t *self, int nu, polarization_t p, sign_t
 {
     HashTable *hash_table = self->hash_table_K;
     const uint64_t key = hash(0,nu,p);
-    cache_entry_t *entry = hash_table_lookup(hash_table, key);
+    double K = hash_table_lookup(hash_table, key);
 
     if(p == TM)
         *sign = 1;
     else
         *sign = -1;
 
-    if(entry)
-    {
-        /* lookup successful */
-        //*sign = entry->sign;
-        return entry->v;
-    }
-    else
+    if(isnan(K))
     {
         /* compute and save integral */
-        double K = _casimir_integrate_K(self, nu, p, sign);
-        entry = cache_entry_create(K);
-        hash_table_insert(hash_table, key, entry);
-        return K;
+        K = _casimir_integrate_K(self, nu, p, sign);
+        hash_table_insert(hash_table, key, K);
     }
+
+    return K;
 }
 
 /* eq. (3) */
@@ -633,19 +607,16 @@ double casimir_integrate_I(integration_t *self, int l1, int l2, polarization_t p
 
     HashTable *hash_table = self->hash_table_I;
     const uint64_t key = hash(l1,l2,p);
-    cache_entry_t *entry = hash_table_lookup(hash_table, key);
+    double I = hash_table_lookup(hash_table, key);
 
-    if(entry)
-        /* lookup successful */
-        return entry->v;
-    else
+    if(isnan(I))
     {
         /* compute and save integral */
-        double I = _casimir_integrate_I(self, l1, l2, p, sign);
-        entry = cache_entry_create(I);
-        hash_table_insert(hash_table, key, entry);
-        return I;
+        I = _casimir_integrate_I(self, l1, l2, p, sign);
+        hash_table_insert(hash_table, key, I);
     }
+
+    return I;
 }
 
 
@@ -677,8 +648,8 @@ integration_t *casimir_integrate_init(casimir_t *casimir, double xi_, int m, dou
     self->tau = 2*xi_;
     self->epsrel = epsrel;
 
-    self->hash_table_I = hash_table_new(cache_entry_destroy);
-    self->hash_table_K = hash_table_new(cache_entry_destroy);
+    self->hash_table_I = hash_table_new(free);
+    self->hash_table_K = hash_table_new(free);
 
     if(isinf(casimir_epsilonm1(casimir, INFINITY)))
         self->is_pc = true;
@@ -855,8 +826,8 @@ integration_plasma_t *casimir_integrate_plasma_init(casimir_t *casimir, double o
     self->omegap = omegap;
     self->alpha  = omegap/(1+casimir->LbyR);
     self->epsrel = epsrel;
-    self->cache  = hash_table_new(cache_entry_destroy);
-    self->cache_ratio = hash_table_new(cache_entry_destroy);
+    self->cache  = hash_table_new(free);
+    self->cache_ratio = hash_table_new(free);
 
     return self;
 }
@@ -879,34 +850,26 @@ static double _integrand_plasma(double t, void *args_)
 double casimir_integrate_plasma(integration_plasma_t *self, int l1, int l2, int m, double *ratio1, double *ratio2)
 {
     const int nu = l1+l2;
-    double I;
-    cache_entry_t *entry;
 
     /* ratio1 */
-    entry = hash_table_lookup(self->cache_ratio, l1);
-    if(entry)
-        *ratio1 = entry->v;
-    else
+    *ratio1 = hash_table_lookup(self->cache_ratio, l1);
+    if(isnan(*ratio1))
     {
         *ratio1 = bessel_continued_fraction(l1-1, self->alpha);
-        entry = cache_entry_create(*ratio1);
-        hash_table_insert(self->cache_ratio, l1, entry);
+        hash_table_insert(self->cache_ratio, l1, *ratio1);
     }
 
     /* ratio2 */
-    entry = hash_table_lookup(self->cache_ratio, l2);
-    if(entry)
-        *ratio2 = entry->v;
-    else
+    *ratio2 = hash_table_lookup(self->cache_ratio, l2);
+    if(isnan(*ratio2))
     {
         *ratio2 = bessel_continued_fraction(l2-1, self->alpha);
-        entry = cache_entry_create(*ratio2);
-        hash_table_insert(self->cache_ratio, l2, entry);
+        hash_table_insert(self->cache_ratio, l2, *ratio2);
     }
 
-    entry = hash_table_lookup(self->cache, nu);
-    if(entry)
-        return entry->v;
+    double I = hash_table_lookup(self->cache, nu);
+    if(!isnan(I))
+        return I;
 
     /* compute integral
      *      1/prefactor * int_0^infty dz r_TE e^(-z) z^nu
@@ -947,8 +910,7 @@ double casimir_integrate_plasma(integration_plasma_t *self, int l1, int l2, int 
     bool warn = ier1 != 0 || ier2 != 0 || ier3 != 0 || isnan(I) || I == 0;
     WARN(warn, "ier1=%d, ier2=%d, ier3=%d, nu=%d, m=%d, a=%g, b=%g, I1=%g, I2=%g, I3=%g", ier1, ier2, ier3, nu,m,a,b, I1, I2, I3);
 
-    entry = cache_entry_create(I);
-    hash_table_insert(self->cache, nu, entry);
+    hash_table_insert(self->cache, nu, I);
 
     return I;
 }
