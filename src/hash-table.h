@@ -57,11 +57,6 @@ extern "C" {
 typedef struct _HashTable HashTable;
 
 /**
- * Structure used to iterate over a hash table.
- */
-typedef struct _HashTableIterator HashTableIterator;
-
-/**
  * Internal structure representing an entry in a hash table.
  */
 typedef struct _HashTableEntry HashTableEntry;
@@ -81,20 +76,13 @@ typedef struct _HashTablePair{
 } HashTablePair;
 
 /**
- * Type of function used to free values when entries are removed from a
- * hash table.
- */
-typedef void (*HashTableValueFreeFunc)(HashTableValue value);
-
-/**
  * Create a new hash table.
  *
- * @param value_free_func      Function used to free values.
  * @return                     A new hash table structure, or NULL if it
  *                             was not possible to allocate the new hash
  *                             table.
  */
-HashTable *hash_table_new(HashTableValueFreeFunc value_free_func);
+HashTable *hash_table_new(void);
 
 /**
  * Destroy a hash table.

@@ -42,7 +42,6 @@ struct _HashTableEntry {
 struct _HashTable {
     HashTableEntry **table;
     uint64_t table_size;
-    HashTableValueFreeFunc value_free_func;
     uint64_t entries;
     uint64_t prime_index;
 };
@@ -87,18 +86,15 @@ static int hash_table_allocate_table(HashTable *hash_table)
 /* Free an entry, calling the free functions if there are any registered */
 static void hash_table_free_entry(HashTable *hash_table, HashTableEntry *entry)
 {
-    HashTablePair *pair = &(entry->pair);
-
     /* Free the data structure */
     xfree(entry);
 }
 
-HashTable *hash_table_new(HashTableValueFreeFunc value_free_func)
+HashTable *hash_table_new(void)
 {
     /* Allocate a new hash table structure */
     HashTable *hash_table = (HashTable *)xmalloc(sizeof(HashTable));
 
-    hash_table->value_free_func = value_free_func;
     hash_table->entries = 0;
     hash_table->prime_index = 0;
 

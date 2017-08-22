@@ -648,8 +648,8 @@ integration_t *casimir_integrate_init(casimir_t *casimir, double xi_, int m, dou
     self->tau = 2*xi_;
     self->epsrel = epsrel;
 
-    self->hash_table_I = hash_table_new(free);
-    self->hash_table_K = hash_table_new(free);
+    self->hash_table_I = hash_table_new();
+    self->hash_table_K = hash_table_new();
 
     if(isinf(casimir_epsilonm1(casimir, INFINITY)))
         self->is_pc = true;
@@ -826,8 +826,8 @@ integration_plasma_t *casimir_integrate_plasma_init(casimir_t *casimir, double o
     self->omegap = omegap;
     self->alpha  = omegap/(1+casimir->LbyR);
     self->epsrel = epsrel;
-    self->cache  = hash_table_new(free);
-    self->cache_ratio = hash_table_new(free);
+    self->cache  = hash_table_new();
+    self->cache_ratio = hash_table_new();
 
     return self;
 }
