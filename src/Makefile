@@ -89,7 +89,7 @@ endif
 #CFLAGS += -fsanitize=undefined,memory -fno-omit-frame-pointer
 
 # optimize
-OPT = -O3 -msse
+OPT = -O3 -msse -msse2
 
 # link time optimization
 #OPT += -flto

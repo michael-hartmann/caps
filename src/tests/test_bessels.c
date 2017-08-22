@@ -239,6 +239,31 @@ int test_besselI()
     AssertAlmostEqual(&test, bessel_lnInu(40000,1e6),  999192.25952732985895);
     AssertAlmostEqual(&test, bessel_lnInu(40000,1e10), 9.9999999874881340018e9);
 
+    AssertAlmostEqual(&test, bessel_lnInu(45000,1e-6), -1.09005728552281e6);
+    AssertAlmostEqual(&test, bessel_lnInu(45000,1e-5), -986439.805045528);
+    AssertAlmostEqual(&test, bessel_lnInu(45000,1e-4), -882822.324568250);
+    AssertAlmostEqual(&test, bessel_lnInu(45000,1e-3), -779204.844090971);
+    AssertAlmostEqual(&test, bessel_lnInu(45000,1e-2), -675587.363613692);
+    AssertAlmostEqual(&test, bessel_lnInu(45000,1e-1), -571969.883136358);
+    AssertAlmostEqual(&test, bessel_lnInu(45000,0.5),  -499544.372356535);
+    AssertAlmostEqual(&test, bessel_lnInu(45000,1),    -468352.402653580);
+    AssertAlmostEqual(&test, bessel_lnInu(45000,2),    -437160.432938126);
+    AssertAlmostEqual(&test, bessel_lnInu(45000,3),    -418914.300312928);
+    AssertAlmostEqual(&test, bessel_lnInu(45000,5),    -395926.891741760);
+    AssertAlmostEqual(&test, bessel_lnInu(45000,10),   -364734.921626320);
+    AssertAlmostEqual(&test, bessel_lnInu(45000,100),  -261117.386150909);
+    AssertAlmostEqual(&test, bessel_lnInu(45000,1e3),  -157494.406199760);
+    AssertAlmostEqual(&test, bessel_lnInu(45000,1e4),  -53330.3174826237);
+    AssertAlmostEqual(&test, bessel_lnInu(45000,2e4),  -20519.915350151194);
+    AssertAlmostEqual(&test, bessel_lnInu(45000,2.5e4), -9298.7012300491606);
+    AssertAlmostEqual(&test, bessel_lnInu(45000,2.98e4), -49.434341147809384);
+    AssertAlmostEqual(&test, bessel_lnInu(45000,2.985e4), 41.071387705541099);
+    AssertAlmostEqual(&test, bessel_lnInu(45000,3e4),  311.95888730566566);
+    AssertAlmostEqual(&test, bessel_lnInu(45000,4e4),  16683.384232795321);
+    AssertAlmostEqual(&test, bessel_lnInu(45000,5e4),  30862.226534266592);
+    AssertAlmostEqual(&test, bessel_lnInu(45000,1e5),  90029.3863709419);
+    AssertAlmostEqual(&test, bessel_lnInu(45000,1e6),  998979.821063697);
+
     return test_results(&test, stderr);
 }
 
@@ -465,6 +490,34 @@ int test_besselK()
     AssertAlmostEqual(&test, bessel_lnKnu(40000,1e5),  -92107.2561111780);
     AssertAlmostEqual(&test, bessel_lnKnu(40000,1e6),  -999206.768984449);
     AssertAlmostEqual(&test, bessel_lnKnu(40000,1e10), -1.0000000011207132112e10);
+
+    AssertAlmostEqual(&test, bessel_lnKnu(45000,1e-6), 1.09004587794675E6);
+    AssertAlmostEqual(&test, bessel_lnKnu(45000,1e-5), 986428.397469468);
+    AssertAlmostEqual(&test, bessel_lnKnu(45000,1e-4), 882810.916992189);
+    AssertAlmostEqual(&test, bessel_lnKnu(45000,1e-3), 779193.436514911);
+    AssertAlmostEqual(&test, bessel_lnKnu(45000,1e-2), 675575.956037632);
+    AssertAlmostEqual(&test, bessel_lnKnu(45000,1e-1), 571958.475560298);
+    AssertAlmostEqual(&test, bessel_lnKnu(45000,0.5),  499532.964780474);
+    AssertAlmostEqual(&test, bessel_lnKnu(45000,1),    468340.995077519);
+    AssertAlmostEqual(&test, bessel_lnKnu(45000,2),    437149.025362065);
+    AssertAlmostEqual(&test, bessel_lnKnu(45000,3),    418902.892736865);
+    AssertAlmostEqual(&test, bessel_lnKnu(45000,5),    395915.484165694);
+    AssertAlmostEqual(&test, bessel_lnKnu(45000,10),   364723.514050235);
+    AssertAlmostEqual(&test, bessel_lnKnu(45000,100),  261105.978572379);
+    AssertAlmostEqual(&test, bessel_lnKnu(45000,1e3),  157482.998376853);
+    AssertAlmostEqual(&test, bessel_lnKnu(45000,2e3),  126274.3669669763);
+    AssertAlmostEqual(&test, bessel_lnKnu(45000,3e3),  108000.478537718);
+    AssertAlmostEqual(&test, bessel_lnKnu(45000,4e3),  95015.8119430876);
+    AssertAlmostEqual(&test, bessel_lnKnu(45000,5e3),  84924.365910172593);
+    AssertAlmostEqual(&test, bessel_lnKnu(45000,6e3),  76658.921290801678);
+    AssertAlmostEqual(&test, bessel_lnKnu(45000,7e3),  69650.215607884471);
+    AssertAlmostEqual(&test, bessel_lnKnu(45000,8e3),  63558.47520617838);
+    AssertAlmostEqual(&test, bessel_lnKnu(45000,9e3),  58164.564730422659);
+    AssertAlmostEqual(&test, bessel_lnKnu(45000,1e4),  53318.885806035316);
+    AssertAlmostEqual(&test, bessel_lnKnu(45000,2e4),  20508.417645011621);
+    AssertAlmostEqual(&test, bessel_lnKnu(45000,3e4),  -323.55032233736438);
+    AssertAlmostEqual(&test, bessel_lnKnu(45000,1e5),  -90041.6846468200);
+    AssertAlmostEqual(&test, bessel_lnKnu(45000,1e6),  -998994.330732934);
 
     return test_results(&test, stderr);
 }
