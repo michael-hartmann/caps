@@ -77,10 +77,10 @@ endif
 #CFLAGS += -pg
 
 # ldflags
-LDFLAGS += -lm -lgfortran -L ${HODLRDIR} -lhodlr
+LDFLAGS += -lm -L ${HODLRDIR} -lhodlr
 
 ifeq ($(SUPPORT_LAPACK),TRUE)
-    LDFLAGS += -lblas -llapack
+    LDFLAGS += -lgfortran -lblas -llapack
     CFLAGS  += -DSUPPORT_LAPACK
 endif
 
