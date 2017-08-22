@@ -40,11 +40,8 @@ typedef struct casimir
      * @name reflection properties of the mirrors
      */
      /*@{*/
-    double (*epsilonm1)(double xi, void *userdata);
+    double (*epsilonm1)(double xi_, void *userdata);
     void *userdata;
-
-    void (*rp)(struct casimir *self, double nT, double k, double *r_TE, double *r_TM);
-    void (*lnab)(struct casimir *self, double nT, int l, double *lna, double *lnb, sign_t *sign_a, sign_t *sign_b);
     /*@}*/
 
     /**
@@ -80,13 +77,12 @@ typedef struct
     int m, lmin;
     integration_t *integration;
     integration_plasma_t *integration_plasma;
-    double nT;
+    double xi_;
     double *al, *bl;
 } casimir_M_t;
 
 
 /* prototypes */
-int  casimir_compile_info(char *str, size_t size);
 void casimir_info(casimir_t *self, FILE *stream, const char *prefix);
 
 double casimir_lnLambda(int l1, int l2, int m);
@@ -94,10 +90,7 @@ double casimir_lnLambda(int l1, int l2, int m);
 casimir_t *casimir_init(double LbyR);
 void casimir_free(casimir_t *self);
 
-void casimir_set_epsilonm1(casimir_t *self, double (*epsilonm1)(double xi, void *userdata), void *userdata);
-
-void casimir_set_rp(casimir_t *self, void (*rp)(struct casimir *self, double nT, double k, double *r_TE, double *r_TM));
-void casimir_set_lnab(casimir_t *self, void (*lnab)(struct casimir *self, double nT, int l, double *lna, double *lnb, sign_t *sign_a, sign_t *sign_b));
+void casimir_set_epsilonm1(casimir_t *self, double (*epsilonm1)(double xi_, void *userdata), void *userdata);
 
 int casimir_get_ldim(casimir_t *self);
 int casimir_set_ldim(casimir_t *self, int ldim);
@@ -108,28 +101,27 @@ void casimir_set_detalg(casimir_t *self, detalg_t detalg);
 double casimir_get_epsrel(casimir_t *self);
 int    casimir_set_epsrel(casimir_t *self, double epsrel);
 
-void casimir_lnab(casimir_t *self, double nT, int l, double *lna, double *lnb, sign_t *sign_a, sign_t *sign_b);
-void casimir_lnab_perf(casimir_t *self, double nT, int l, double *lna, double *lnb, sign_t *sign_a, sign_t *sign_b);
+void casimir_lnab(casimir_t *self, double xi_, int l, double *lna, double *lnb);
+void casimir_lnab_perf(casimir_t *self, double xi_, int l, double *lna, double *lnb);
 
 double casimir_kernel_M(int i, int j, void *args_);
 
-casimir_M_t *casimir_M_init(casimir_t *self, int m, double nT);
+casimir_M_t *casimir_M_init(casimir_t *self, int m, double xi_);
 double casimir_M_elem(casimir_M_t *self, int l1, int l2, char p1, char p2);
 void casimir_M_free(casimir_M_t *self);
-matrix_t *casimir_M(casimir_t *self, double nT, int m);
 
-double casimir_logdetD(casimir_t *self, double nT, int m);
+double casimir_logdetD(casimir_t *self, double xi_, int m);
 
-void casimir_rp(casimir_t *self, double nT, double k, double *r_TE, double *r_TM);
+void casimir_rp(casimir_t *self, double xi_, double k, double *r_TE, double *r_TM);
 
 int casimir_estimate_lminmax(casimir_t *self, int m, size_t *lmin_p, size_t *lmax_p);
 
-double casimir_epsilonm1(casimir_t *self, double xi);
-double casimir_epsilonm1_perf(double xi, void *userdata);
-double casimir_epsilonm1_drude(double xi, void *userdata);
+double casimir_epsilonm1(casimir_t *self, double xi_);
+double casimir_epsilonm1_perf(double xi_, void *userdata);
+double casimir_epsilonm1_drude(double xi_, void *userdata);
 
 double casimir_logdetD0_drude(casimir_t *casimir);
-double casimir_logdetD0_pc(casimir_t *casimir, double eps);
+double casimir_logdetD0_perf(casimir_t *casimir, double eps);
 double casimir_logdetD0_plasma(casimir_t *casimir, double omegap, double eps);
 
 double casimir_kernel_M0_EE(int i, int j, void *args);

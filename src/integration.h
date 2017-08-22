@@ -6,7 +6,7 @@
 #include "libcasimir.h"
 #include "integration.h"
 
-integration_t *casimir_integrate_init(casimir_t *self, double xi, int m, double epsrel);
+integration_t *casimir_integrate_init(casimir_t *self, double xi_, int m, double epsrel);
 void casimir_integrate_free(integration_t *integration);
 
 double casimir_integrate_I(integration_t *self, int l1, int l2, polarization_t p, sign_t *sign);
