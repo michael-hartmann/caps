@@ -77,7 +77,7 @@ typedef void *HashTableValue;
  */
 typedef struct _HashTablePair{
     uint64_t key;
-    HashTableValue value;
+    double value;
 } HashTablePair;
 
 /**
@@ -114,7 +114,7 @@ void hash_table_free(HashTable *hash_table);
  *                             or zero if it was not possible to allocate
  *                             memory for the new entry.
  */
-int hash_table_insert(HashTable *hash_table, uint64_t key, HashTableValue value);
+int hash_table_insert(HashTable *hash_table, uint64_t key, double value);
 
 /**
  * Look up a value in a hash table by key.
@@ -124,7 +124,7 @@ int hash_table_insert(HashTable *hash_table, uint64_t key, HashTableValue value)
  * @return                    The value, or NULL if there is no value with that
  *                            key in the hash table.
  */
-HashTableValue hash_table_lookup(HashTable *hash_table, uint64_t key);
+double hash_table_lookup(HashTable *hash_table, uint64_t key);
 
 /**
  * Remove a value from a hash table.
