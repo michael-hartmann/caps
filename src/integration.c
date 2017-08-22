@@ -19,7 +19,6 @@
 #include "libcasimir.h"
 #include "logfac.h"
 #include "integration.h"
-#include "hash-table.h"
 
 /* arguments for integrand in function K_integrand */
 typedef struct
@@ -417,9 +416,8 @@ static double _casimir_integrate_K(integration_t *self, int nu, polarization_t p
  */
 double casimir_integrate_K(integration_t *self, int nu, polarization_t p, sign_t *sign)
 {
-    HashTable *hash_table = self->hash_table_K;
     const uint64_t key = hash(0,nu,p);
-    double K = hash_table_lookup(hash_table, key);
+    double K = cache_lookup(self->cache_K, key);
 
     if(p == TM)
         *sign = 1;
@@ -430,7 +428,7 @@ double casimir_integrate_K(integration_t *self, int nu, polarization_t p, sign_t
     {
         /* compute and save integral */
         K = _casimir_integrate_K(self, nu, p, sign);
-        hash_table_insert(hash_table, key, K);
+        cache_insert(self->cache_K, key, K);
     }
 
     return K;
@@ -605,15 +603,14 @@ double casimir_integrate_I(integration_t *self, int l1, int l2, polarization_t p
     else
         *sign = -1;
 
-    HashTable *hash_table = self->hash_table_I;
     const uint64_t key = hash(l1,l2,p);
-    double I = hash_table_lookup(hash_table, key);
+    double I = cache_lookup(self->cache_I, key);
 
     if(isnan(I))
     {
         /* compute and save integral */
         I = _casimir_integrate_I(self, l1, l2, p, sign);
-        hash_table_insert(hash_table, key, I);
+        cache_insert(self->cache_I, key, I);
     }
 
     return I;
@@ -648,8 +645,9 @@ integration_t *casimir_integrate_init(casimir_t *casimir, double xi_, int m, dou
     self->tau = 2*xi_;
     self->epsrel = epsrel;
 
-    self->hash_table_I = hash_table_new();
-    self->hash_table_K = hash_table_new();
+    const int ldim = casimir->ldim;
+    self->cache_I = cache_new(1000000, 1e-2);
+    self->cache_K = cache_new(5*ldim, 0.3);
 
     if(isinf(casimir_epsilonm1(casimir, INFINITY)))
         self->is_pc = true;
@@ -668,8 +666,8 @@ void casimir_integrate_free(integration_t *integration)
 {
     if(integration != NULL)
     {
-        hash_table_free(integration->hash_table_I);
-        hash_table_free(integration->hash_table_K);
+        cache_free(integration->cache_I);
+        cache_free(integration->cache_K);
         xfree(integration);
     }
 }
@@ -821,13 +819,16 @@ double casimir_integrate_D(integration_t *self, int l1, int l2, polarization_t p
 integration_plasma_t *casimir_integrate_plasma_init(casimir_t *casimir, double omegap, double epsrel)
 {
     integration_plasma_t *self;
+
     self = (integration_plasma_t *)xmalloc(sizeof(integration_plasma_t));
     self->LbyR   = casimir->LbyR;
     self->omegap = omegap;
     self->alpha  = omegap/(1+casimir->LbyR);
     self->epsrel = epsrel;
-    self->cache  = hash_table_new();
-    self->cache_ratio = hash_table_new();
+
+    const int ldim = casimir->ldim;
+    self->cache       = cache_new(3*ldim, 0.3);
+    self->cache_ratio = cache_new(3*ldim, 0.3);
 
     return self;
 }
@@ -852,22 +853,22 @@ double casimir_integrate_plasma(integration_plasma_t *self, int l1, int l2, int 
     const int nu = l1+l2;
 
     /* ratio1 */
-    *ratio1 = hash_table_lookup(self->cache_ratio, l1);
+    *ratio1 = cache_lookup(self->cache_ratio, l1);
     if(isnan(*ratio1))
     {
         *ratio1 = bessel_continued_fraction(l1-1, self->alpha);
-        hash_table_insert(self->cache_ratio, l1, *ratio1);
+        cache_insert(self->cache_ratio, l1, *ratio1);
     }
 
     /* ratio2 */
-    *ratio2 = hash_table_lookup(self->cache_ratio, l2);
+    *ratio2 = cache_lookup(self->cache_ratio, l2);
     if(isnan(*ratio2))
     {
         *ratio2 = bessel_continued_fraction(l2-1, self->alpha);
-        hash_table_insert(self->cache_ratio, l2, *ratio2);
+        cache_insert(self->cache_ratio, l2, *ratio2);
     }
 
-    double I = hash_table_lookup(self->cache, nu);
+    double I = cache_lookup(self->cache, nu);
     if(!isnan(I))
         return I;
 
@@ -910,14 +911,14 @@ double casimir_integrate_plasma(integration_plasma_t *self, int l1, int l2, int 
     bool warn = ier1 != 0 || ier2 != 0 || ier3 != 0 || isnan(I) || I == 0;
     WARN(warn, "ier1=%d, ier2=%d, ier3=%d, nu=%d, m=%d, a=%g, b=%g, I1=%g, I2=%g, I3=%g", ier1, ier2, ier3, nu,m,a,b, I1, I2, I3);
 
-    hash_table_insert(self->cache, nu, I);
+    cache_insert(self->cache, nu, I);
 
     return I;
 }
 
 void casimir_integrate_plasma_free(integration_plasma_t *self)
 {
-    hash_table_free(self->cache);
-    hash_table_free(self->cache_ratio);
+    cache_free(self->cache);
+    cache_free(self->cache_ratio);
     xfree(self);
 }
