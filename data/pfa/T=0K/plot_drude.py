@@ -4,8 +4,8 @@ from pyx import *
 
 if __name__ == "__main__":
     # read data
-    drudeR10  = np.loadtxt("drude/data_R10mu.csv", delimiter=",")
-    drudeR100 = np.loadtxt("drude/data_R100mu.csv", delimiter=",")
+    drudeR10  = np.loadtxt("drude/R10mu_gamma35meV.csv", delimiter=",")
+    drudeR100 = np.loadtxt("drude/R100mu_gamma35meV.csv", delimiter=",")
     pc    = np.loadtxt("pc/data_eta10.csv", delimiter=",")
 
     # use LaTeX for Pyx
