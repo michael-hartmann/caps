@@ -65,7 +65,7 @@ double casimir_lnLambda(int l1, int l2, int m)
  */
 int casimir_estimate_lminmax(casimir_t *self, int m, size_t *lmin_p, size_t *lmax_p)
 {
-    const size_t dim = self->ldim;
+    const int dim = self->ldim;
 
     if(m == 0)
     {
