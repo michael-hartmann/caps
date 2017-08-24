@@ -21,22 +21,22 @@ endif
 
 
 OBJS = \
-    cquadpack/src/dqagi.c \
-    cquadpack/src/dqk15.c \
-    cquadpack/src/dqk61.c \
-    cquadpack/src/dqk51.c \
-    cquadpack/src/dqk41.c \
-    cquadpack/src/dqk31.c \
-    cquadpack/src/dqage.c \
-    cquadpack/src/dqags.c \
-    cquadpack/src/dqext.c \
-    cquadpack/src/dqk15i.c \
-    cquadpack/src/dqk21.c \
-    cquadpack/src/dqsort.c \
-    bessel.c \
-    plm.c \
-    hash-table.c \
-    logfac.c \
+    cquadpack/src/dqagi.o \
+    cquadpack/src/dqk15.o \
+    cquadpack/src/dqk61.o \
+    cquadpack/src/dqk51.o \
+    cquadpack/src/dqk41.o \
+    cquadpack/src/dqk31.o \
+    cquadpack/src/dqage.o \
+    cquadpack/src/dqags.o \
+    cquadpack/src/dqext.o \
+    cquadpack/src/dqk15i.o \
+    cquadpack/src/dqk21.o \
+    cquadpack/src/dqsort.o \
+    bessel.o \
+    plm.o \
+    hash-table.o \
+    logfac.o \
     integration.o \
     libcasimir.o \
     material.o \
