@@ -86,6 +86,7 @@ endif
 
 # clang supports various runtime checks. This will slow down the program, but
 # it's a good and easy way to find bugs.
+# https://clang.llvm.org/docs/UndefinedBehaviorSanitizer.html
 #CFLAGS += -fsanitize=undefined,memory -fno-omit-frame-pointer
 
 # optimize
