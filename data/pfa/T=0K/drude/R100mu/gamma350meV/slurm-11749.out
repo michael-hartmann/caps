@@ -1,0 +1,15 @@
+# starting on alcc93 at Thu Aug 24 08:20:02 CEST 2017
+
+# L      = 2.33281e-07
+# R      = 0.0001
+# LbyR   = 0.00233281
+# T      = 0
+# cutoff = 1e-12
+# epsrel = 2e-07
+# ldim   = 4287
+# cores  = 19
+# alpha  = 0.00465476132623056
+# omegap = 9
+# gamma  = 0.35
+# quad   = adaptive Gauss-Kronrod
+#
