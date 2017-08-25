@@ -451,7 +451,7 @@ void master(int argc, char *argv[], const int cores)
         printf("# quad   = adaptive Gauss-Kronrod\n");
         printf("#\n");
 
-        integral = dqagi(wrapper_integrand, 0, 1, 0, epsrel, &abserr, &neval, &ier, &casimir_mpi);
+        integral = dqagi(wrapper_integrand, 0, 1, 0, epsrel, &abserr, &neval, &ier, casimir_mpi);
 
         printf("#\n");
         printf("# ier=%d, integral=%.15g, neval=%d, abserr=%g, absrel=%g\n", ier, integral, neval, abserr, fabs(abserr/integral));
