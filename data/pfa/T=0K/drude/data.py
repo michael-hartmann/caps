@@ -27,6 +27,6 @@ for filename in filenames:
                 data.append((LbyR, R, T, omegap, gamma, ldim, E, Epfa, E/Epfa))
 
 
-print("# LbyR, R [m], T [K], omegap [eV], gamma [eV], ldim, E*(L+R)/(hbar*c), E_PFA*(L+R)/(hbar*c), E/E_PFA")
+print("# L/R, R [m], T [K], omegap [eV], gamma [eV], ldim, E*(L+R)/(hbar*c), E_PFA*(L+R)/(hbar*c), E/E_PFA")
 for p in sorted(data, reverse=True):
     print("%.12g, %g, %g, %g, %g, %d, %.12g, %.12g, %.12g" % p)
