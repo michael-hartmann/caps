@@ -234,11 +234,23 @@ void casimir_free(casimir_t *self)
  */
 void casimir_build(FILE *stream, const char *prefix)
 {
+    #ifdef SUPPORT_LAPACK
+    char support_lapack[] = "true";
+    #else
+    char support_lapack[] = "false";
+    #endif
+
     if(prefix == NULL)
         prefix = "";
 
     fprintf(stream, "%scompiler: %s\n", prefix, COMPILER);
     fprintf(stream, "%scompile time: %s %s\n", prefix, __DATE__, __TIME__);
+
+    #ifdef MACHINE
+    fprintf(stream, "%scompiled on: %s\n", prefix, MACHINE);
+    #endif
+
+    fprintf(stream, "%sLAPACK support: %s\n", prefix, support_lapack);
 
     #ifdef GIT_HEAD
     fprintf(stream, "%sgit HEAD: %s\n", prefix, GIT_HEAD);
@@ -246,10 +258,6 @@ void casimir_build(FILE *stream, const char *prefix)
 
     #ifdef GIT_BRANCH
     fprintf(stream, "%sgit branch: %s\n", prefix, GIT_BRANCH);
-    #endif
-
-    #ifdef MACHINE
-    fprintf(stream, "%scompiled on: %s\n", prefix, MACHINE);
     #endif
 }
 
