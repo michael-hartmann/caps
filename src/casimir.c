@@ -274,7 +274,7 @@ void master(int argc, char *argv[], const int cores)
         /* getopt_long stores the option index here. */
         int option_index = 0;
 
-        int c = getopt_long(argc, argv, "R:L:T:l:c:e:E:f:w:g:vh", long_options, &option_index);
+        int c = getopt_long(argc, argv, "R:L:T:l:c:e:E:f:w:g:vVh", long_options, &option_index);
 
         /* Detect the end of the options. */
         if(c == -1)
@@ -319,6 +319,9 @@ void master(int argc, char *argv[], const int cores)
             case 'f':
                 strncpy(filename, optarg, sizeof(filename)-sizeof(char));
                 break;
+            case 'V':
+                casimir_build(stdout, NULL);
+                exit(0);
             case 'h':
                 usage(stdout);
                 EXIT();
@@ -679,6 +682,9 @@ void usage(FILE *stream)
 "\n"
 "    -v, --verbose\n"
 "        Also print results for each m\n"
+"\n"
+"    -V\n"
+"        Print information about build to stdout and exit\n"
 "\n"
 "    -h, --help\n"
 "        Show this help\n",
