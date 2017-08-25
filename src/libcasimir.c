@@ -222,6 +222,36 @@ void casimir_free(casimir_t *self)
     xfree(self);
 }
 
+/**
+ * @build Print information on build to stream
+ *
+ * The information contain compiler, build time, git head and git branch if
+ * available. If prefix is not NULL, the string prefix will added in front of
+ * each line.
+ *
+ * @param stream output stream
+ * @param prefix prefix of each line or NULL
+ */
+void casimir_build(FILE *stream, const char *prefix)
+{
+    if(prefix == NULL)
+        prefix = "";
+
+    fprintf(stream, "%scompiler: %s\n", prefix, COMPILER);
+    fprintf(stream, "%scompile time: %s %s\n", prefix, __DATE__, __TIME__);
+
+    #ifdef GIT_HEAD
+    fprintf(stream, "%sgit HEAD: %s\n", prefix, GIT_HEAD);
+    #endif
+
+    #ifdef GIT_BRANCH
+    fprintf(stream, "%sgit branch: %s\n", prefix, GIT_BRANCH);
+    #endif
+
+    #ifdef MACHINE
+    fprintf(stream, "%scompiled on: %s\n", prefix, MACHINE);
+    #endif
+}
 
 /** @brief Print object information to stream
  *

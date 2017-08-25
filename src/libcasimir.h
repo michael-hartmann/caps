@@ -83,6 +83,7 @@ typedef struct
 
 
 /* prototypes */
+void casimir_build(FILE *stream, const char *prefix);
 void casimir_info(casimir_t *self, FILE *stream, const char *prefix);
 
 double casimir_lnLambda(int l1, int l2, int m);
