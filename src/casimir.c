@@ -418,6 +418,9 @@ void master(int argc, char *argv[], const int cores)
     setvbuf(stdout, NULL, _IONBF, 0);
     setvbuf(stderr, NULL, _IONBF, 0);
 
+    casimir_build(stdout, "# ");
+    printf("#\n");
+
     casimir_mpi_t *casimir_mpi = casimir_mpi_init(L, R, T, filename, omegap, gamma_, ldim, cutoff, cores, verbose);
 
     /* estimate, cf. eq. (6.33) */
