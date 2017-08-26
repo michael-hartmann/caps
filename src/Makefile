@@ -7,6 +7,10 @@ CQUADPACKINCLUDEDIR = cquadpack/include
 
 SUPPORT_LAPACK = FALSE
 
+GIT_HEAD=$(shell git rev-parse HEAD)
+GIT_BRANCH=$(shell git rev-parse --abbrev-ref HEAD)
+MACHINE=$(shell uname -a)
+
 # Choose a compiler.
 # At the moment gcc, clang and icc are supported.
 ifeq ($(CC),)
@@ -21,27 +25,27 @@ endif
 
 
 OBJS = \
-    cquadpack/src/dqagi.c \
-    cquadpack/src/dqk15.c \
-    cquadpack/src/dqk61.c \
-    cquadpack/src/dqk51.c \
-    cquadpack/src/dqk41.c \
-    cquadpack/src/dqk31.c \
-    cquadpack/src/dqage.c \
-    cquadpack/src/dqags.c \
-    cquadpack/src/dqext.c \
-    cquadpack/src/dqk15i.c \
-    cquadpack/src/dqk21.c \
-    cquadpack/src/dqsort.c \
-    bessel.c \
-    cache.c \
-    plm.c \
-    logfac.c \
+    cquadpack/src/dqagi.o \
+    cquadpack/src/dqk15.o \
+    cquadpack/src/dqk61.o \
+    cquadpack/src/dqk51.o \
+    cquadpack/src/dqk41.o \
+    cquadpack/src/dqk31.o \
+    cquadpack/src/dqage.o \
+    cquadpack/src/dqags.o \
+    cquadpack/src/dqext.o \
+    cquadpack/src/dqk15i.o \
+    cquadpack/src/dqk21.o \
+    cquadpack/src/dqsort.o \
+    bessel.o \
+    plm.o \
+    logfac.o \
     integration.o \
     libcasimir.o \
     material.o \
     matrix.o \
     misc.o \
+    cache.o \
     utils.o
 
 TESTS = \
@@ -64,8 +68,16 @@ TESTS = \
 CFLAGS = -std=c99
 
 # use traditional GNU semantics for inline
-#CFLAGS += -fgnu89-inline
 CFLAGS += -I . -I ${CQUADPACKINCLUDEDIR} -I ${HODLRINCLUDEDIR}
+ifdef GIT_HEAD
+    CFLAGS += -DGIT_HEAD='"$(GIT_HEAD)"'
+endif
+ifdef GIT_BRANCH
+    CFLAGS += -DGIT_BRANCH='"$(GIT_BRANCH)"'
+endif
+ifdef GIT_HEAD
+    CFLAGS += -DMACHINE='"$(MACHINE)"'
+endif
 
 # enable warnings
 CFLAGS += -g -Wall -Wextra -Wmissing-prototypes -Wshadow -Wpointer-arith -Wcast-qual -Wwrite-strings -Wno-unused-parameter -fstrict-aliasing
@@ -86,10 +98,11 @@ endif
 
 # clang supports various runtime checks. This will slow down the program, but
 # it's a good and easy way to find bugs.
+# https://clang.llvm.org/docs/UndefinedBehaviorSanitizer.html
 #CFLAGS += -fsanitize=undefined,memory -fno-omit-frame-pointer
 
 # optimize
-OPT = -O3 -msse -msse2
+OPT = -O3 -msse2
 
 # link time optimization
 #OPT += -flto
