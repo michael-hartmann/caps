@@ -274,7 +274,7 @@ void master(int argc, char *argv[], const int cores)
         /* getopt_long stores the option index here. */
         int option_index = 0;
 
-        int c = getopt_long(argc, argv, "R:L:T:l:c:e:E:f:w:g:vh", long_options, &option_index);
+        int c = getopt_long(argc, argv, "R:L:T:l:c:e:E:f:w:g:vVh", long_options, &option_index);
 
         /* Detect the end of the options. */
         if(c == -1)
@@ -319,6 +319,9 @@ void master(int argc, char *argv[], const int cores)
             case 'f':
                 strncpy(filename, optarg, sizeof(filename)-sizeof(char));
                 break;
+            case 'V':
+                casimir_build(stdout, NULL);
+                exit(0);
             case 'h':
                 usage(stdout);
                 EXIT();
@@ -418,6 +421,9 @@ void master(int argc, char *argv[], const int cores)
     setvbuf(stdout, NULL, _IONBF, 0);
     setvbuf(stderr, NULL, _IONBF, 0);
 
+    casimir_build(stdout, "# ");
+    printf("#\n");
+
     casimir_mpi_t *casimir_mpi = casimir_mpi_init(L, R, T, filename, omegap, gamma_, ldim, cutoff, cores, verbose);
 
     /* estimate, cf. eq. (6.33) */
@@ -451,7 +457,7 @@ void master(int argc, char *argv[], const int cores)
         printf("# quad   = adaptive Gauss-Kronrod\n");
         printf("#\n");
 
-        integral = dqagi(wrapper_integrand, 0, 1, 0, epsrel, &abserr, &neval, &ier, &casimir_mpi);
+        integral = dqagi(wrapper_integrand, 0, 1, 0, epsrel, &abserr, &neval, &ier, casimir_mpi);
 
         printf("#\n");
         printf("# ier=%d, integral=%.15g, neval=%d, abserr=%g, absrel=%g\n", ier, integral, neval, abserr, fabs(abserr/integral));
@@ -676,6 +682,9 @@ void usage(FILE *stream)
 "\n"
 "    -v, --verbose\n"
 "        Also print results for each m\n"
+"\n"
+"    -V\n"
+"        Print information about build to stdout and exit\n"
 "\n"
 "    -h, --help\n"
 "        Show this help\n",

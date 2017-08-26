@@ -4,9 +4,10 @@ from pyx import *
 
 if __name__ == "__main__":
     # read data
-    drudeR10  = np.loadtxt("drude/data_R10mu.csv", delimiter=",")
-    drudeR100 = np.loadtxt("drude/data_R100mu.csv", delimiter=",")
-    pc    = np.loadtxt("pc/data_eta10.csv", delimiter=",")
+    drudeR10_35   = np.loadtxt("drude/R10mu_gamma35meV.csv", delimiter=",", usecols=(0,8))
+    drudeR100_35  = np.loadtxt("drude/R100mu_gamma35meV.csv", delimiter=",", usecols=(0,8))
+    drudeR100_350 = np.loadtxt("drude/R100mu_gamma350meV.csv", delimiter=",", usecols=(0,8))
+    pr = np.loadtxt("pr/data_eta10.csv", delimiter=",", usecols=(0,5))
 
     # use LaTeX for Pyx
     text.set(text.LatexRunner)
@@ -18,18 +19,11 @@ if __name__ == "__main__":
         y     = graph.axis.log(title=r"$1-\mathcal{F}/\mathcal{F}_\mathrm{PFA}$", min=3e-4, max=2e-1)
     )
 
-    LbyR_drude10  = drudeR10[:,0]
-    ratio_drude10 = 1-drudeR10[:,8]
-
-    LbyR_drude100  = drudeR100[:,0]
-    ratio_drude100 = 1-drudeR100[:,8]
-
-    LbyR_pc  = pc[:,0]
-    ratio_pc = 1-pc[:,5]
     g.plot([
-       graph.data.values(x=LbyR_pc, y=ratio_pc, title=r"PR"),
-       graph.data.values(x=LbyR_drude10, y=ratio_drude10, title=r"Drude, $R=10\mu\mathrm{m}$"),
-       graph.data.values(x=LbyR_drude100, y=ratio_drude100, title=r"Drude, $R=100\mu\mathrm{m}$"),
+       graph.data.values(x=drudeR10_35[:,0],   y=1-drudeR10_35[:,1],  title=r"$R=10\mu\mathrm{m}$, $\gamma=35$meV"),
+       graph.data.values(x=drudeR100_35[:,0],  y=1-drudeR100_35[:,1], title=r"$R=100\mu\mathrm{m}$, $\gamma=35$meV"),
+       graph.data.values(x=drudeR100_350[:,0], y=1-drudeR100_350[:,1], title=r"$R=100\mu\mathrm{m}$, $\gamma=350$meV"),
+       graph.data.values(x=pr[:,0], y=1-pr[:,1], title=r"PR")
        ], [graph.style.symbol(graph.style.symbol.changecircle, symbolattrs=[color.gradient.RedBlue], size=0.07)]
     )
 
