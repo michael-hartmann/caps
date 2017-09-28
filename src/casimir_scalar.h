@@ -8,6 +8,15 @@ typedef struct {
 } integrand_t;
 
 typedef struct {
+    double alpha;
+    double LbyR;
+    int ldim;
+    char X;
+    char Y;
+    double epsrel;
+} integrand_xi_t;
+
+typedef struct {
     double xi_;    /*< xi_ = xi*(L+R)/c */
     double epsrel; /*< relative error for numerical integration */
     int m;         /*< azimutal quantum number m */
@@ -26,8 +35,11 @@ typedef struct {
     integration_t *integration;
 } args_t;
 
-double logdetD(double LbyR, double xi_, int m, int ldim, char X, char Y, double epsrel);
 integration_t *integration_init(int m, double xi_, int ldim, double epsrel);
 void integration_free(integration_t *self);
+
+double logdetD_m(double LbyR, double xi_, int m, int ldim, char X, char Y, double epsrel);
+double logdetD(double LbyR, double xi_, int ldim, char X, char Y, double epsrel);
+double casimir_E(double LbyR, char X, char Y, int ldim, double epsrel);;
 
 #endif

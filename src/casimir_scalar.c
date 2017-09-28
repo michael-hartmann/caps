@@ -1,6 +1,6 @@
+#include <ctype.h>
 #include <math.h>
 #include <stdio.h>
-#include <stdlib.h>
 #include <string.h>
 
 #include "constants.h"
@@ -245,12 +245,12 @@ static double kernel(int i, int j, void *args_)
 
     const double rs = (args->rs[i]+args->rs[j])/2;
     const double I = integrate_I(args->integration, l1, l2);
-    const double rp = args->X == 'N' ? 1 : -1;
+    const double rp = args->X == 'D' ? 1 : -1;
 
-    return -rp*exp(C+rs+I);
+    return rp*exp(C+rs+I);
 }
 
-double logdetD(double LbyR, double xi_, int m, int ldim, char X, char Y, double epsrel)
+double logdetD_m(double LbyR, double xi_, int m, int ldim, char X, char Y, double epsrel)
 {
     args_t args;
 
@@ -274,26 +274,125 @@ double logdetD(double LbyR, double xi_, int m, int ldim, char X, char Y, double 
     return v;
 }
 
+double logdetD(double LbyR, double xi_, int ldim, char X, char Y, double epsrel)
+{
+    double values[1000] = { 0 };
+
+    for(size_t m = 0; m < sizeof(values)/sizeof(values[0]); m++)
+    {
+        double v = values[m] = logdetD_m(LbyR, xi_, m, ldim, X, Y, epsrel);
+        if(v == 0 || v/values[0] < epsrel)
+            break;
+    }
+
+    double sum = values[0];
+    for(size_t m = 1; m < sizeof(values)/sizeof(values[0]); m++)
+        sum += 2*values[m];
+
+     return sum;
+}
+
+static double integrand_xi(double x, void *args_)
+{
+    double xi_, v;
+    integrand_xi_t *args = args_;
+
+    xi_ = x*args->alpha;
+    v = logdetD(args->LbyR, xi_, args->ldim, args->X, args->Y, args->epsrel);
+
+    printf("# xi*R/c=%.10g, logdetD=%.10g\n", xi_, v);
+
+    return v;
+}
+
+double casimir_E(double LbyR, char X, char Y, int ldim, double epsrel)
+{
+    double abserr;
+    int neval, ier;
+    integrand_xi_t args;
+
+    args.LbyR   = LbyR;
+    args.ldim   = ldim;
+    args.X      = X;
+    args.Y      = Y;
+    args.epsrel = epsrel/100;
+
+    args.alpha = (1+LbyR)/(2*LbyR);
+
+    return dqagi(integrand_xi, 0, 1, 0, epsrel, &abserr, &neval, &ier, &args)*args.alpha/(2*M_PI);
+}
+
+static void usage(char *self, FILE *stream)
+{
+    fprintf(stream, "Usage: %s LbyR bc ldim epsrel\n", self);
+}
+
 int main(int argc, char *argv[])
 {
-    const double epsrel = 1e-6;
+    double E, LbyR, epsrel = 5e-6;
+    int eta = 8, ldim = -1;
+    char X = 'D', Y = 'D';
 
-    if(argc < 3)
+    disable_buffering();
+
+    if(argc < 2)
     {
-        fprintf(stderr, "usage: %s LbyR xi_ m\n", argv[0]);
+        usage(argv[0], stderr);
         return 1;
     }
 
-    const double LbyR = atof(argv[1]);
-    const int m       = atoi(argv[2]);
-    const double xi_  = atof(argv[3]);
+    LbyR = atof(argv[1]);
+    if(LbyR <= 0)
+    {
+        fprintf(stderr, "LbyR must be positive\n\n");
+        usage(argv[0], stderr);
+        return 1;
+    }
 
-    double v = logdetD(LbyR, xi_, m, 6/LbyR, 'D', 'D', epsrel);
+    if(argc > 2)
+    {
+        for(size_t i = 0; i < strlen(argv[2]); i++)
+            argv[2][i] = toupper(argv[2][i]);
 
-    printf("LbyR    = %g\n", LbyR);
-    printf("m       = %d\n", m);
-    printf("xi_     = %g\n", xi_);
-    printf("logdetD = %.10g\n", v);
+        if(strcmp(argv[2], "DD") != 0 && strcmp(argv[2], "DN") && strcmp(argv[2], "ND") && strcmp(argv[2], "NN"))
+        {
+            fprintf(stderr, "boundary condition must be either DD, DN, ND or NN\n\n");
+            usage(argv[0], stderr);
+            return 1;
+        }
+        X = toupper(argv[2][0]);
+        Y = toupper(argv[2][1]);
+    }
+
+    if(argc > 3)
+    {
+        ldim = atoi(argv[3]);
+        if(ldim <= 0)
+        {
+            fprintf(stderr, "ldim must be positive\n\n");
+            usage(argv[0], stderr);
+            return 1;
+        }
+    }
+    else
+        ldim = eta/LbyR;
+
+    if(argc > 4)
+    {
+        epsrel = atof(argv[4]);
+        if(epsrel <= 0)
+        {
+            fprintf(stderr, "epsrel must be positive\n\n");
+            usage(argv[0], stderr);
+            return 1;
+        }
+    }
+
+    E = casimir_E(LbyR, X, Y, ldim, epsrel);
+
+    printf("\n");
+    printf("# L/R, X, Y, ldim, E*(L+R)/(hbar*c)\n");
+    printf("%.10g, %c, %c, %d, %.10g\n", LbyR, X, Y, ldim, E);
 
     return 0;
 }
