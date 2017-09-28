@@ -229,33 +229,24 @@ static double _rs(int l, double chi, char Y)
 
 static double kernel(int i, int j, void *args_)
 {
-    double rp, rs, I;
-    args_t *args = (args_t *)args_;
-
-    const double LbyR = args->LbyR;
+    const args_t *args = (args_t *)args_;
     const int m = args->m;
-    const double xi_ = args->xi_;
     const int l1 = i+m, l2 = j+m;
+    const double chi = args->xi_/(1+args->LbyR);
 
     /* N_l1^m * N_l2^m */
-    const double C = (logi(2*l1+1)+logi(2*l2+1)-log(4)+lfac(l1-m)+lfac(l2-m)-lfac(l1+m)-lfac(l2+m))/2;
-
-    if(args->X == 'N')
-        rp = 1;
-    else
-        rp = -1;
+    const double C = (logi(2*l1+1)+logi(2*l2+1)+lfac(l1-m)+lfac(l2-m)-lfac(l1+m)-lfac(l2+m))/2;
 
     if(isnan(args->rs[i]))
-        args->rs[i] = _rs(l1, xi_/(1+LbyR), args->Y);
+        args->rs[i] = _rs(l1, chi, args->Y);
     if(isnan(args->rs[j]))
-        args->rs[j] = _rs(l2, xi_/(1+LbyR), args->Y);
+        args->rs[j] = _rs(l2, chi, args->Y);
 
-    rs = (args->rs[i]+args->rs[j])/2;
+    const double rs = (args->rs[i]+args->rs[j])/2;
+    const double I = integrate_I(args->integration, l1, l2);
+    const double rp = args->X == 'N' ? 1 : -1;
 
-    I = integrate_I(args->integration, l1, l2);
-
-    double v = C + rs + I;
-    return -2*rp*exp(v);
+    return -rp*exp(C+rs+I);
 }
 
 double logdetD(double LbyR, double xi_, int m, int ldim, char X, char Y, double epsrel)
