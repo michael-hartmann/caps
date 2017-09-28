@@ -19,9 +19,10 @@ integration_t *integration_init(int m, double xi_, int ldim, double epsrel)
 
     self->xi_ = xi_;
     self->m   = m;
+    self->K   = xmalloc(3*ldim*sizeof(double));
     self->epsrel = epsrel;
-    self->K  = xmalloc(3*ldim*sizeof(double));
 
+    /* initialize values with NANs */
     for(int i = 0; i < 3*ldim; i++)
         self->K[i] = NAN;
 
