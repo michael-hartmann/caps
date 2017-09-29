@@ -21,7 +21,7 @@ typedef struct {
     double epsrel; /*< relative error for numerical integration */
     int m;         /*< azimutal quantum number m */
     double *K;
-} integration_t;
+} integration_scalar_t;
 
 typedef struct {
     double LbyR;   /*< L/R */
@@ -32,11 +32,12 @@ typedef struct {
     char X;        /*< boundary condition on plate (D or N) */
     char Y;        /*< boundary condition on sphere (D or N) */
     double *rs;    /*< cache for rs */
-    integration_t *integration;
+    integration_scalar_t *integration;
+    casimir_t *casimir;
 } args_t;
 
-integration_t *integration_init(int m, double xi_, int ldim, double epsrel);
-void integration_free(integration_t *self);
+integration_scalar_t *integration_init(int m, double xi_, int ldim, double epsrel);
+void integration_free(integration_scalar_t *self);
 
 double logdetD_m(double LbyR, double xi_, int m, int ldim, char X, char Y, double epsrel);
 double logdetD(double LbyR, double xi_, int ldim, char X, char Y, double epsrel);
