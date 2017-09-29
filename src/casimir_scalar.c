@@ -40,7 +40,7 @@ void integration_free(integration_scalar_t *self)
 
 static double log_integrand_K(double x, int l, int m, double xi_)
 {
-    const double log_sinhx = log(sinh(x));
+    const double log_sinhx = log(0.5)+x+log1p(-exp(-2*x)); /* log(sinh(x)) */
     const double coshx = cosh(x);
 
     return log_sinhx -(2*xi_)*coshx + Plm(l,m,coshx);
@@ -280,7 +280,7 @@ double logdetD_m(double LbyR, double xi_, int m, int ldim, char X, char Y, doubl
 
 double logdetD(double LbyR, double xi_, int ldim, char X, char Y, double epsrel)
 {
-    double values[1000] = { 0 };
+    double values[1024] = { 0 };
 
     for(size_t m = 0; m < sizeof(values)/sizeof(values[0]); m++)
     {
@@ -331,7 +331,15 @@ double casimir_E(double LbyR, char X, char Y, int ldim, double epsrel)
 
 static void usage(char *self, FILE *stream)
 {
-    fprintf(stream, "Usage: %s LbyR bc ldim epsrel\n", self);
+    fprintf(stream, "Usage: %s LbyR [bc ldim epsrel]\n\n", self);
+
+    fprintf(stream, "Compute the Casimir energy for a scalar field with perfect conductors at T=0.\n\n");
+
+    fprintf(stream, "Options:\n");
+    fprintf(stream, "  LbyR:   aspect ratio L/R\n");
+    fprintf(stream, "  bc:     boundary condition on plate and sphere (DD, DN, ND or NN)\n");
+    fprintf(stream, "  ldim:   dimension of vector space\n");
+    fprintf(stream, "  epsrel: relative accuracy of integration\n");
 }
 
 int main(int argc, char *argv[])
