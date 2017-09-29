@@ -126,6 +126,9 @@ casimir.o:
 casimir_logdetD: casimir_logdetD.o $(OBJS) dependencies
 	$(CC) $(CFLAGS) $(OPT) casimir_logdetD.o $(OBJS) $(LDFLAGS) -o casimir_logdetD
 
+casimir_scalar: casimir_scalar.o $(OBJS) dependencies
+	$(CC) $(CFLAGS) $(OPT) casimir_scalar.o $(OBJS) $(LDFLAGS) -o casimir_scalar
+
 test: test.o $(OBJS) dependencies
 	$(CC) $(CFLAGS) $(OPT) test.o $(OBJS) $(LDFLAGS) -o test
 
