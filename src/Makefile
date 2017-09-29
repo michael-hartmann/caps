@@ -1,4 +1,4 @@
-.PHONY: clean doc casimir_logdetD casimir casimir_tests matrix_elems dependencies dependencies_test
+.PHONY: clean doc casimir_logdetD casimir casimir_tests casimir_scalar matrix_elems dependencies dependencies_test
 all: casimir_logdetD
 
 HODLRDIR            = ../../hodlr_wrapper
@@ -126,8 +126,11 @@ casimir.o:
 casimir_logdetD: casimir_logdetD.o $(OBJS) dependencies
 	$(CC) $(CFLAGS) $(OPT) casimir_logdetD.o $(OBJS) $(LDFLAGS) -o casimir_logdetD
 
+casimir_scalar.o:
+	$(CC) -fopenmp $(CFLAGS) $(OPT) casimir_scalar.c -o $@ -c $<
+
 casimir_scalar: casimir_scalar.o $(OBJS) dependencies
-	$(CC) $(CFLAGS) $(OPT) casimir_scalar.o $(OBJS) $(LDFLAGS) -o casimir_scalar
+	$(CC) -fopenmp $(CFLAGS) $(OPT) casimir_scalar.o $(OBJS) $(LDFLAGS) -o casimir_scalar
 
 test: test.o $(OBJS) dependencies
 	$(CC) $(CFLAGS) $(OPT) test.o $(OBJS) $(LDFLAGS) -o test
