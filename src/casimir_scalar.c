@@ -1,7 +1,9 @@
+#include <omp.h>
 #include <ctype.h>
 #include <math.h>
 #include <stdio.h>
 #include <string.h>
+#include <stdbool.h>
 
 #include "constants.h"
 #include "plm.h"
@@ -281,12 +283,21 @@ double logdetD_m(double LbyR, double xi_, int m, int ldim, char X, char Y, doubl
 double logdetD(double LbyR, double xi_, int ldim, char X, char Y, double epsrel)
 {
     double values[1024] = { 0 };
+    bool done = false;
 
-    for(size_t m = 0; m < sizeof(values)/sizeof(values[0]); m++)
+    values[0] = logdetD_m(LbyR, xi_, 0, ldim, X, Y, epsrel);
+    if(values[0] == 0)
+        return 0;
+
+    #pragma omp parallel for shared(done) schedule(static,1)
+    for(size_t m = 1; m < sizeof(values)/sizeof(values[0]); m++)
     {
-        double v = values[m] = logdetD_m(LbyR, xi_, m, ldim, X, Y, epsrel);
-        if(v == 0 || v/values[0] < epsrel)
-            break;
+        if(!done)
+        {
+            double v = values[m] = logdetD_m(LbyR, xi_, m, ldim, X, Y, epsrel);
+            if(v/values[0] < epsrel)
+                done = true;
+        }
     }
 
     double sum = values[0];
@@ -339,7 +350,9 @@ static void usage(char *self, FILE *stream)
     fprintf(stream, "  LbyR:   aspect ratio L/R\n");
     fprintf(stream, "  bc:     boundary condition on plate and sphere (DD, DN, ND or NN)\n");
     fprintf(stream, "  ldim:   dimension of vector space\n");
-    fprintf(stream, "  epsrel: relative accuracy of integration\n");
+    fprintf(stream, "  epsrel: relative accuracy of integration\n\n");
+
+    fprintf(stream, "The number of threads can be set using OMP_NUM_THREADS.\n");
 }
 
 int main(int argc, char *argv[])
