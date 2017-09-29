@@ -38,4 +38,6 @@ void *xrealloc(void *p, size_t size);
 void *xcalloc(size_t nmemb, size_t size);
 void _xfree(void *p);
 
+void disable_buffering(void);
+
 #endif
