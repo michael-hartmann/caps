@@ -4,8 +4,8 @@
 #include <string.h>
 
 #include "constants.h"
-#include "bessel.h"
 #include "plm.h"
+#include "libcasimir.h"
 #include "logfac.h"
 #include "matrix.h"
 #include "misc.h"
@@ -13,9 +13,9 @@
 
 #include "casimir_scalar.h"
 
-integration_t *integration_init(int m, double xi_, int ldim, double epsrel)
+integration_scalar_t *integration_init(int m, double xi_, int ldim, double epsrel)
 {
-    integration_t *self = xmalloc(sizeof(integration_t));
+    integration_scalar_t *self = xmalloc(sizeof(integration_scalar_t));
 
     self->xi_ = xi_;
     self->m   = m;
@@ -29,7 +29,7 @@ integration_t *integration_init(int m, double xi_, int ldim, double epsrel)
     return self;
 }
 
-void integration_free(integration_t *self)
+void integration_free(integration_scalar_t *self)
 {
     if(self != NULL)
     {
@@ -56,16 +56,19 @@ static double _integrate_K(int l, int m, double xi_, double epsrel)
 {
     integrand_t args;
 
-    double xmax  = asinh((l+1)/(2*xi_));
-    double width = 1/sqrt(2*xi_*cosh(xmax));
+    /* position of maximum */
+    const double xmax  = asinh((l+1)/(2*xi_));
+    /* width of maximum */
+    const double width = 1/sqrt(2*xi_*cosh(xmax));
 
     args.l   = l;
     args.m   = m;
     args.xi_ = xi_;
     args.max = log_integrand_K(xmax, l, m, xi_);
 
-    double a = fmax(0, xmax-8*width);
-    double b = xmax+8*width;
+    /* left and right boundary of integration */
+    const double a = fmax(0, xmax-8*width);
+    const double b = xmax+8*width;
 
     /* perform integrations in interval [a,b] */
     int neval = 0, ier = 0;
@@ -74,18 +77,16 @@ static double _integrate_K(int l, int m, double xi_, double epsrel)
     /* I2: [a,b] */
     double I = dqags(integrand_K, a, b, 0, epsrel, &abserr, &neval, &ier, &args);
 
-    #if 0
-    printf("l1=%d, l2=%d, m=%d, tau=%g\n", l1, l2, m, tau);
-    printf("width=%g\n", width);
-    printf("xmax=%g, max=%g\n", xmax, args.max);
-    printf("a=%g, b=%g\n", a, b);
-    printf("I=%g\n", I);
-    #endif
+    TERMINATE(ier != 0, "ier=%d, l=%d, m=%d, xi_=%g, epsrel=%g", ier, l, m, xi_, epsrel);
 
     return args.max+log(I);
 }
 
-static double integrate_K(integration_t *self, int l)
+/* Integrate
+ *      sinh(x) * exp(-2*xi_*cosh(x)) * P(l,2m,cosh(x))
+ * from x=0...oo
+ */
+static double integrate_K(integration_scalar_t *self, int l)
 {
     int m = self->m;
     int index = l-m;
@@ -104,7 +105,11 @@ static double alpha(double p, double n, double nu)
     return (((pow_2(p)-pow_2(n+nu+1))*(pow_2(p)-pow_2(n-nu)))/(4*pow_2(p)-1));
 }
 
-static double integrate_I(integration_t *self, int l1, int l2)
+/* Integrate
+ *      sinh(x) * exp(-2*xi_*cosh(x)) * P(l1,m,cosh(x)) * P(l2,m,cosh(x))
+ * from x=0...oo
+ */
+static double integrate_I(integration_scalar_t *self, int l1, int l2)
 {
     double K;
 
@@ -215,17 +220,15 @@ static double integrate_I(integration_t *self, int l1, int l2)
     return log_I;
 }
 
-static double _rs(int l, double chi, char Y)
+static double _rs(casimir_t *casimir, int l, double xi_, char Y)
 {
-    if(Y == 'N')
-        abort();
-    else
-    {
-        double Inu, Knu;
-        bessel_lnInuKnu(l, chi, &Inu, &Knu);
+    double lna, lnb;
+    casimir_lnab_perf(casimir, xi_, l, &lna, &lnb);
 
-        return log(M_PI/2) + Inu-Knu;
-    }
+    if(Y == 'N')
+        return lna;
+    else
+        return lnb;
 }
 
 static double kernel(int i, int j, void *args_)
@@ -233,15 +236,14 @@ static double kernel(int i, int j, void *args_)
     const args_t *args = (args_t *)args_;
     const int m = args->m;
     const int l1 = i+m, l2 = j+m;
-    const double chi = args->xi_/(1+args->LbyR);
 
     /* N_l1^m * N_l2^m */
     const double C = (logi(2*l1+1)+logi(2*l2+1)+lfac(l1-m)+lfac(l2-m)-lfac(l1+m)-lfac(l2+m))/2;
 
     if(isnan(args->rs[i]))
-        args->rs[i] = _rs(l1, chi, args->Y);
+        args->rs[i] = _rs(args->casimir, l1, args->xi_, args->Y);
     if(isnan(args->rs[j]))
-        args->rs[j] = _rs(l2, chi, args->Y);
+        args->rs[j] = _rs(args->casimir, l2, args->xi_, args->Y);
 
     const double rs = (args->rs[i]+args->rs[j])/2;
     const double I = integrate_I(args->integration, l1, l2);
@@ -261,6 +263,7 @@ double logdetD_m(double LbyR, double xi_, int m, int ldim, char X, char Y, doubl
     args.Y      = Y;
     args.epsrel = epsrel;
     args.integration = integration_init(m, xi_, 4*ldim, epsrel);
+    args.casimir = casimir_init(LbyR);
 
     args.rs = xmalloc(ldim*sizeof(double));
     for(int i = 0; i < ldim; i++)
@@ -270,6 +273,7 @@ double logdetD_m(double LbyR, double xi_, int m, int ldim, char X, char Y, doubl
 
     xfree(args.rs);
     integration_free(args.integration);
+    casimir_free(args.casimir);
 
     return v;
 }
@@ -319,7 +323,10 @@ double casimir_E(double LbyR, char X, char Y, int ldim, double epsrel)
 
     args.alpha = (1+LbyR)/(2*LbyR);
 
-    return dqagi(integrand_xi, 0, 1, 0, epsrel, &abserr, &neval, &ier, &args)*args.alpha/(2*M_PI);
+    double I = dqagi(integrand_xi, 0, 1, 0, epsrel, &abserr, &neval, &ier, &args)*args.alpha/(2*M_PI);
+
+    TERMINATE(ier != 0, "ier=%d, LbyR=%g, X=%c, Y=%c, ldim=%d, epsrel=%g", ier, LbyR, X, Y, ldim, epsrel);
+    return I;
 }
 
 static void usage(char *self, FILE *stream)
@@ -329,8 +336,8 @@ static void usage(char *self, FILE *stream)
 
 int main(int argc, char *argv[])
 {
-    double E, LbyR, epsrel = 5e-6;
-    int eta = 8, ldim = -1;
+    double E, LbyR, epsrel = 5e-7;
+    int eta = 10, ldim = -1;
     char X = 'D', Y = 'D';
 
     disable_buffering();
@@ -392,7 +399,7 @@ int main(int argc, char *argv[])
 
     printf("\n");
     printf("# L/R, X, Y, ldim, E*(L+R)/(hbar*c)\n");
-    printf("%.10g, %c, %c, %d, %.10g\n", LbyR, X, Y, ldim, E);
+    printf("%.15g, %c, %c, %d, %.15g\n", LbyR, X, Y, ldim, E);
 
     return 0;
 }
