@@ -3,6 +3,7 @@ doc/
 casimir
 casimir_logdetD
 casimir_tests
+casimir_scalar
 integrate_K
 .depend
 matrix_elems
