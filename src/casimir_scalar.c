@@ -5,6 +5,7 @@
 #include <string.h>
 #include <stdbool.h>
 
+#include "bessel.h"
 #include "constants.h"
 #include "plm.h"
 #include "libcasimir.h"
@@ -56,30 +57,77 @@ static double integrand_K(double x, void *args_)
 
 static double _integrate_K(int l, int m, double xi_, double epsrel)
 {
+    const int nmax = 10;
     integrand_t args;
+
+    /* exact solution for m = 0; 7.141 of Gradshteyn and Ryzhik */
+    if(m == 0)
+    {
+        /* l = 0 is extremely simple */
+        if(l == 0)
+            /* int_0^infty dx sinh(x) exp(-2*xi_*cosh(x)) = exp(-2*xi_)/(2*xi_) */
+            return -2*xi_-log(2*xi_);
+
+        return -log(xi_*M_PI)/2 +bessel_lnKnu(l, 2*xi_);
+    }
 
     /* position of maximum */
     const double xmax  = asinh((l+1)/(2*xi_));
+
+    /* height of maximum */
+    const double max = log_integrand_K(xmax, l, m, xi_);
+
     /* width of maximum */
     const double width = 1/sqrt(2*xi_*cosh(xmax));
 
     args.l   = l;
     args.m   = m;
     args.xi_ = xi_;
-    args.max = log_integrand_K(xmax, l, m, xi_);
+    args.max = max;
 
     /* left and right boundary of integration */
-    const double a = fmax(0, xmax-8*width);
-    const double b = xmax+8*width;
+    double a = fmax(0, xmax-8*width);
+    double b = xmax+8*width;
+
+    /* check left border */
+    if(a > 0)
+    {
+        int i;
+        for(i = 0; i < nmax; i++)
+        {
+            const double fa = log_integrand_K(a, l, m, xi_);
+            if(exp(fa-max) < epsrel)
+                break;
+
+            a *= 0.5;
+        }
+
+        TERMINATE(i == nmax, "l=%d, m=%d, xi_=%g, xmax=%g, f(xmax)=%g, a=%g", l, m, xi_, xmax, max, a);
+    }
+
+    /* check right border */
+    {
+        int i;
+        for(i = 0; i < nmax; i++)
+        {
+            const double fb = log_integrand_K(b, l, m, xi_);
+            if(exp(fb-max) < epsrel)
+                break;
+
+            b *= 2;
+        }
+
+        TERMINATE(i == nmax, "l=%d, m=%d, xi_=%g, xmax=%g, f(xmax)=%g, b=%g", l, m, xi_, xmax, max, b);
+    }
 
     /* perform integrations in interval [a,b] */
     int neval = 0, ier = 0;
     double abserr = 0;
 
-    /* I2: [a,b] */
+    /* I: [a,b] */
     double I = dqags(integrand_K, a, b, 0, epsrel, &abserr, &neval, &ier, &args);
 
-    TERMINATE(ier != 0, "ier=%d, l=%d, m=%d, xi_=%g, epsrel=%g", ier, l, m, xi_, epsrel);
+    TERMINATE(ier != 0, "ier=%d, l=%d, m=%d, xi_=%g, epsrel=%g, abserr=%g", ier, l, m, xi_, epsrel, abserr);
 
     return args.max+log(I);
 }
@@ -357,7 +405,7 @@ static void usage(char *self, FILE *stream)
 
 int main(int argc, char *argv[])
 {
-    double E, LbyR, epsrel = 5e-7;
+    double LbyR, epsrel = 5e-7;
     int eta = 10, ldim = -1;
     char X = 'D', Y = 'D';
 
@@ -416,7 +464,15 @@ int main(int argc, char *argv[])
         }
     }
 
-    E = casimir_E(LbyR, X, Y, ldim, epsrel);
+    printf("# LbyR   = %g\n", LbyR);
+    printf("# X      = %c\n", X);
+    printf("# Y      = %c\n", Y);
+    printf("# ldim   = %d\n", ldim);
+    printf("# epsrel = %g\n", epsrel);
+    printf("# cores  = %d\n", omp_get_max_threads());
+    printf("#\n");
+
+    const double E = casimir_E(LbyR, X, Y, ldim, epsrel);
 
     printf("\n");
     printf("# L/R, X, Y, ldim, E*(L+R)/(hbar*c)\n");
