@@ -400,7 +400,9 @@ static void usage(char *self, FILE *stream)
     fprintf(stream, "  ldim:   dimension of vector space\n");
     fprintf(stream, "  epsrel: relative accuracy of integration\n\n");
 
-    fprintf(stream, "The number of threads can be set using OMP_NUM_THREADS.\n");
+    fprintf(stream, "The number of threads can be set using OMP_NUM_THREADS.\n\n");
+
+    casimir_build(stream, NULL);
 }
 
 int main(int argc, char *argv[])
