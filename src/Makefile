@@ -59,13 +59,9 @@ TESTS = \
     tests/test_mie.o \
     tests/test_Plm.o \
     tests/test_mie_drude.o
-#   tests/test_integration_perf.o \
-#   tests/test_logdet_HT.o \
-#   tests/test_logdet.o \
-# tests/test_integration_drude.o
 
 # use C99 standard
-CFLAGS = -std=c99
+CFLAGS = -std=c99 -fPIC
 
 # use traditional GNU semantics for inline
 CFLAGS += -I . -I ${CQUADPACKINCLUDEDIR} -I ${HODLRINCLUDEDIR}
@@ -120,36 +116,30 @@ dependencies_test: $(TESTS:.o=.c) dependencies
 %.o : %.c
 	$(CC) $(CFLAGS) $(OPT) -o $@ -c $<
 
-casimir.o:
-	$(MPICC) $(CFLAGS) $(OPT) casimir.c -o $@ -c $<
+library: $(OBJS) dependencies
+	$(CC) -o libcasimir.so $(OBJS) -shared
 
-casimir_logdetD: casimir_logdetD.o $(OBJS) dependencies
-	$(CC) $(CFLAGS) $(OPT) casimir_logdetD.o $(OBJS) $(LDFLAGS) -o casimir_logdetD
+casimir_logdetD: library
+	$(CC) $(CFLAGS) $(OPT) casimir_logdetD.c -lcasimir $(LDFLAGS) -o casimir_logdetD
 
-casimir_scalar.o:
-	$(CC) -fopenmp $(CFLAGS) $(OPT) casimir_scalar.c -o $@ -c $<
+casimir_scalar: library
+	$(CC) -fopenmp $(CFLAGS) $(OPT) casimir_scalar.c -lcasimir $(LDFLAGS) -o casimir_scalar
 
-casimir_scalar: casimir_scalar.o $(OBJS) dependencies
-	$(CC) -fopenmp $(CFLAGS) $(OPT) casimir_scalar.o $(OBJS) $(LDFLAGS) -o casimir_scalar
+matrix_elems: library
+	$(CC) $(CFLAGS) $(OPT) matrix_elems.c -lcasimir $(LDFLAGS) -o matrix_elems
 
-test: test.o $(OBJS) dependencies
-	$(CC) $(CFLAGS) $(OPT) test.o $(OBJS) $(LDFLAGS) -o test
+integrate_K: library
+	$(CC) $(CFLAGS) $(OPT) integrate_K.c -lcasimir $(LDFLAGS) -o integrate_K
 
-matrix_elems: matrix_elems.o $(OBJS) dependencies
-	$(CC) $(CFLAGS) $(OPT) matrix_elems.o $(OBJS) $(LDFLAGS) -o matrix_elems
-
-integrate_K: integrate_K.o $(OBJS) dependencies
-	$(CC) $(CFLAGS) $(OPT) integrate_K.o $(OBJS) $(LDFLAGS) -o integrate_K
-
-casimir_tests: $(TESTS) $(OBJS) dependencies_test
-	$(CC) $(CFLAGS) $(OPT) $(TESTS) $(OBJS) $(LDFLAGS) -o casimir_tests
+casimir_tests: $(TESTS) library
+	$(CC) $(CFLAGS) $(OPT) $(TESTS) -lcasimir $(LDFLAGS) -o casimir_tests
 	./casimir_tests
 
-casimir: casimir.o $(OBJS) dependencies
-	$(MPICC) $(CFLAGS) $(OPT) casimir.o $(OBJS) $(LDFLAGS) -o casimir
+casimir: dependencies
+	$(MPICC) $(CFLAGS) $(OPT) casimir.c -lcasimir $(LDFLAGS) -o casimir
 
 clean:
-	rm -f casimir_tests casimir_hiT casimir_logdetD casimir matrix_elems *.o tests/*.o $(DEPEND_FILE)
+	rm -f casimir_tests casimir_logdetD casimir_scalar casimir integrate_K matrix_elems *.o *.so cquadpack/src/*.o tests/*.o $(DEPEND_FILE)
 	rm -rf doc
 
 doc:
