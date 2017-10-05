@@ -453,11 +453,11 @@ void casimir_lnab_perf(casimir_t *self, double xi_, int l, double *lna, double *
 
     /* We want to calculate
      *
-     * b_l(χ) = (-1)^(l+1)* π/2 * Ip/Im
-     * a_l(χ) = (-1)^l    * π/2 * ( χ*Ilm - l*Ilp )/( l*Kp + χ*Km )
-     *        = (-1)^l    * π/2 * Ilp * ( χ*Ilm/Ilp - l )/( l*Kp + χ*Km )
-     *                                      \-----/
-     *                                       ratio
+     * b_l(χ) = π/2 * Ip/Im
+     * a_l(χ) = π/2 * ( χ*Ilm - l*Ilp )/( l*Kp + χ*Km )
+     *        = π/2 * Ilp * ( χ*Ilm/Ilp - l )/( l*Kp + χ*Km )
+     *                          \-----/
+     *                           ratio
      *
      * where Ip = I_{l+1/2}(χ), Im = I_{l-1/2}(χ), and similar for Kp and Km.
      *
