@@ -7,3 +7,4 @@ casimir_scalar
 integrate_K
 .depend
 matrix_elems
+libcasimir.so
