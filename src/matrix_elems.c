@@ -47,10 +47,9 @@ int main(int argc, char *argv[])
 
     for(int i = 0; i < 2*lmax; i++)
     {
-        sign_t dummy1, dummy2;
         double al1,al2,bl1,bl2;
         int l1 = (i % lmax) + 1;
-        casimir_lnab_perf(casimir, nT, l1, &al1, &bl1, &dummy1, &dummy2);
+        casimir_lnab_perf(casimir, nT, l1, &al1, &bl1);
 
         for(int j = 0; j < 2*lmax; j++)
         {
@@ -58,7 +57,7 @@ int main(int argc, char *argv[])
 
             double elem1 = log(fabs(casimir_kernel_M(i, j, args)));
 
-            casimir_lnab_perf(casimir, nT, l2, &al2, &bl2, &dummy1, &dummy2);
+            casimir_lnab_perf(casimir, nT, l2, &al2, &bl2);
 
             /* EE: sqrt( al1*al2 )
              * EM: sqrt( al1*bl2 )
