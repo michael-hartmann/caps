@@ -1,7 +1,7 @@
 /**
  * @file   utils.c
  * @author Michael Hartmann <michael.hartmann@physik.uni-augsburg.de>
- * @date   January, 2017
+ * @date   September, 2017
  * @brief  wrappers for malloc, calloc realloc, and a few more useful functions
  */
 
@@ -92,4 +92,15 @@ double now(void)
     gettimeofday(&tv, NULL);
 
     return tv.tv_sec + tv.tv_usec*1e-6;
+}
+
+/** @Disable buffering
+ */
+void disable_buffering(void)
+{
+    /* disable buffering */
+    fflush(stdin);
+    fflush(stderr);
+    setvbuf(stdout, NULL, _IONBF, 0);
+    setvbuf(stderr, NULL, _IONBF, 0);
 }
