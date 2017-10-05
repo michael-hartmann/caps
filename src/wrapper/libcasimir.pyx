@@ -1,4 +1,3 @@
-import numbers
 cimport libcasimir
 
 class constants:
