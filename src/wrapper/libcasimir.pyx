@@ -24,6 +24,7 @@ class sfunc:
         return libcasimir.Plm(l,m,x)
 
     def plm_cf(long l, long m, double x):
+        """Calculate fraction P_l^{m-1}(x)/P_l^m(x)"""
         sfunc.__check_parameters_plm(l,m,x)
         return libcasimir.plm_continued_fraction(l, m, x)
 
