@@ -43,10 +43,50 @@ void integration_free(integration_scalar_t *self)
 
 static double log_integrand_K(double x, int l, int m, double xi_)
 {
-    const double log_sinhx = log(0.5)+x+log1p(-exp(-2*x)); /* log(sinh(x)) */
-    const double coshx = cosh(x);
+    return -2*xi_*x + Plm(l,m,x);
+}
 
-    return log_sinhx -(2*xi_)*coshx + Plm(l,m,coshx);
+static void derivs(double x, int l, int m, double xi_, double *df, double *d2f)
+{
+    double p = 0, q = 0;
+    const double c2 = (x+1)*(x-1);
+    const double c  = sqrt(c2);
+
+    if(m+1 <= l)
+        p = 1/plm_continued_fraction(l,m+1,x);
+    if(m+2 <= l)
+        q = p/plm_continued_fraction(l,m+2,x);
+
+    *df = -2*xi_ + p/c + m*x/c2;
+    *d2f = (q - p*p - m*(x*x+1)/c2)/c2;
+}
+
+static double estimate_integrand(int l, int m, double xi_, double *Delta, double *I)
+{
+    double df, d2f;
+    const int maxiter = 10;
+    double x = fmax(1.01,cosh(asinh((l+1)/(2*xi_)))-1);
+
+    /* newton */
+    for(int i = 0; i < maxiter; i++)
+    {
+        const double xlast = x ;
+        derivs(x,l,m,xi_, &df, &d2f);
+        x = x - df/d2f;
+
+        double w = 2/sqrt(-d2f);
+        if(x < 1)
+            x = 1+(xlast-1)/2;
+        else if(fabs(x-xlast)/w < 1e-3)
+            break;
+    }
+
+    derivs(x,l,m,xi_, &df, &d2f);
+    const double f = log_integrand_K(x,l,m,xi_);
+    *Delta = 2/sqrt(-d2f);
+    *I = log(2*M_PI/-d2f)/2+f;
+
+    return x;
 }
 
 static double integrand_K(double x, void *args_)
@@ -57,6 +97,7 @@ static double integrand_K(double x, void *args_)
 
 static double _integrate_K(int l, int m, double xi_, double epsrel)
 {
+    double width, Ie;
     const int nmax = 10;
     integrand_t args;
 
@@ -72,37 +113,32 @@ static double _integrate_K(int l, int m, double xi_, double epsrel)
     }
 
     /* position of maximum */
-    const double xmax  = asinh((l+1)/(2*xi_));
-
-    /* height of maximum */
-    const double max = log_integrand_K(xmax, l, m, xi_);
-
-    /* width of maximum */
-    const double width = 1/sqrt(2*xi_*cosh(xmax));
+    const double xmax  = estimate_integrand(l, m, xi_, &width, &Ie);
+    const double fxmax = log_integrand_K(xmax, l, m, xi_);
 
     args.l   = l;
     args.m   = m;
     args.xi_ = xi_;
-    args.max = max;
+    args.max = Ie;
 
     /* left and right boundary of integration */
-    double a = fmax(0, xmax-8*width);
+    double a = fmax(1, xmax-8*width);
     double b = xmax+8*width;
 
     /* check left border */
-    if(a > 0)
+    if(a > 1)
     {
         int i;
         for(i = 0; i < nmax; i++)
         {
             const double fa = log_integrand_K(a, l, m, xi_);
-            if(exp(fa-max) < epsrel)
+            if(exp(fa-fxmax) < epsrel)
                 break;
 
             a *= 0.5;
         }
 
-        TERMINATE(i == nmax, "l=%d, m=%d, xi_=%g, xmax=%g, f(xmax)=%g, a=%g", l, m, xi_, xmax, max, a);
+        TERMINATE(i == nmax, "l=%d, m=%d, xi_=%g, xmax=%g, f(xmax)=%g, a=%g", l, m, xi_, xmax, fxmax, a);
     }
 
     /* check right border */
@@ -111,13 +147,13 @@ static double _integrate_K(int l, int m, double xi_, double epsrel)
         for(i = 0; i < nmax; i++)
         {
             const double fb = log_integrand_K(b, l, m, xi_);
-            if(exp(fb-max) < epsrel)
+            if(exp(fb-fxmax) < epsrel)
                 break;
 
             b *= 2;
         }
 
-        TERMINATE(i == nmax, "l=%d, m=%d, xi_=%g, xmax=%g, f(xmax)=%g, b=%g", l, m, xi_, xmax, max, b);
+        TERMINATE(i == nmax, "l=%d, m=%d, xi_=%g, xmax=%g, f(xmax)=%g, b=%g", l, m, xi_, xmax, fxmax, b);
     }
 
     /* perform integrations in interval [a,b] */
@@ -127,7 +163,7 @@ static double _integrate_K(int l, int m, double xi_, double epsrel)
     /* I: [a,b] */
     double I = dqags(integrand_K, a, b, 0, epsrel, &abserr, &neval, &ier, &args);
 
-    TERMINATE(ier != 0, "ier=%d, l=%d, m=%d, xi_=%g, epsrel=%g, abserr=%g", ier, l, m, xi_, epsrel, abserr);
+    TERMINATE(ier != 0, "ier=%d, l=%d, m=%d, xi_=%g, a=%g, b=%g, epsrel=%g, abserr=%g", ier, l, m, xi_, a, b, epsrel, abserr);
 
     return args.max+log(I);
 }
