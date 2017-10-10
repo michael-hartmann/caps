@@ -64,8 +64,8 @@ static void derivs(double x, int l, int m, double xi_, double *df, double *d2f)
 static double estimate_integrand(int l, int m, double xi_, double *Delta, double *I)
 {
     double df, d2f;
-    const int maxiter = 10;
-    double x = fmax(1.01,cosh(asinh((l+1)/(2*xi_)))-1);
+    const int maxiter = 20;
+    double x = fmax(1.001,cosh(asinh((l+1)/(2*xi_)))-1);
 
     /* newton */
     for(int i = 0; i < maxiter; i++)
@@ -98,7 +98,7 @@ static double integrand_K(double x, void *args_)
 static double _integrate_K(int l, int m, double xi_, double epsrel)
 {
     double width, Ie;
-    const int nmax = 10;
+    const int nmax = 100;
     integrand_t args;
 
     /* exact solution for m = 0; 7.141 of Gradshteyn and Ryzhik */
@@ -135,7 +135,7 @@ static double _integrate_K(int l, int m, double xi_, double epsrel)
             if(exp(fa-fxmax) < epsrel)
                 break;
 
-            a *= 0.5;
+            a = 1+0.5*(a-1);
         }
 
         TERMINATE(i == nmax, "l=%d, m=%d, xi_=%g, xmax=%g, f(xmax)=%g, a=%g", l, m, xi_, xmax, fxmax, a);
@@ -150,7 +150,7 @@ static double _integrate_K(int l, int m, double xi_, double epsrel)
             if(exp(fb-fxmax) < epsrel)
                 break;
 
-            b *= 2;
+            b = 1+2*(b-1);
         }
 
         TERMINATE(i == nmax, "l=%d, m=%d, xi_=%g, xmax=%g, f(xmax)=%g, b=%g", l, m, xi_, xmax, fxmax, b);
@@ -163,7 +163,7 @@ static double _integrate_K(int l, int m, double xi_, double epsrel)
     /* I: [a,b] */
     double I = dqags(integrand_K, a, b, 0, epsrel, &abserr, &neval, &ier, &args);
 
-    TERMINATE(ier != 0, "ier=%d, l=%d, m=%d, xi_=%g, a=%g, b=%g, epsrel=%g, abserr=%g", ier, l, m, xi_, a, b, epsrel, abserr);
+    TERMINATE(ier != 0, "ier=%d, l=%d, m=%d, xi_=%g, a=%g, b=%g, xmax=%.10g, width=%.10g, epsrel=%g, abserr=%g", ier, l, m, xi_, a, b, xmax, width, epsrel, abserr);
 
     return args.max+log(I);
 }
