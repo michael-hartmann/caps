@@ -16,6 +16,16 @@
 
 #include "casimir_scalar.h"
 
+/** @brief Initialize integration
+ *
+ * We want to compute the integral exp(-2*xi_*x)*Plm(l,2*m,x) from 1..oo.
+ *
+ * @param [in] m      magnetic quantum number
+ * @param [in] xi_    xi*(R+L)/c
+ * @param [in] ldim   size of vector space
+ * @param [in] epsrel relative accuracy of integration
+ * @retval self integration object
+ */
 integration_scalar_t *integration_init(int m, double xi_, int ldim, double epsrel)
 {
     integration_scalar_t *self = xmalloc(sizeof(integration_scalar_t));
@@ -32,6 +42,10 @@ integration_scalar_t *integration_init(int m, double xi_, int ldim, double epsre
     return self;
 }
 
+/** @brief Free integration object
+ *
+ * @param [in] self integration object
+ */
 void integration_free(integration_scalar_t *self)
 {
     if(self != NULL)
@@ -41,11 +55,34 @@ void integration_free(integration_scalar_t *self)
     }
 }
 
+/** @brief logarithm of integrand
+ *
+ * The function returns log( exp(-2*xi_*x)*Plm(l,m,x) ) which is the logarithm
+ * of the value of the integrand for parameters l,m,xi_ at x.
+ *
+ * @param [in] x position
+ * @param [in] l azimuthal quantum number
+ * @param [in] m magnetic quantum number
+ * @param [in] xi_ xi*(R+L)/c
+ * @retval logarithm of integrand
+ */
 static double log_integrand_K(double x, int l, int m, double xi_)
 {
     return -2*xi_*x + Plm(l,m,x);
 }
 
+/** @brief Compute first and second derivative of integrand
+ *
+ * The integrand is given by exp(-2*xi_*x)*Plm(l,m,x). This function computes
+ * the first and second derivative of the integrand.
+ *
+ * @param [in] x position
+ * @param [in] l azimuthal quantum number
+ * @param [in] m magnetic quantum number
+ * @param [in] xi_ xi*(R+L)/c
+ * @param [out] df first derivative of integrand
+ * @param [out] d2f second derivative of integrand
+ */
 static void derivs(double x, int l, int m, double xi_, double *df, double *d2f)
 {
     double p = 0, q = 0;
@@ -61,13 +98,27 @@ static void derivs(double x, int l, int m, double xi_, double *df, double *d2f)
     *d2f = (q - p*p - m*(x*x+1)/c2)/c2;
 }
 
+/** @brief Estimate position and width of maximum of integrand
+ *
+ * This function uses Newton's method to find the position of the maximum of
+ * the integrand. The width is estimated using the second derivative at the
+ * maximum. The value of the integral is estimated by approximating the maximum
+ * with a Gaussian function and evaluating the integral analytical.
+ *
+ * @param [in] l azimuthal quantum number
+ * @param [in] m magnetic quantum number
+ * @param [in] xi_ xi*(R+L)/c
+ * @param [out] Delta width of maximum
+ * @param [out] I estimated value of integral
+ * @retval xmax position of maximum
+ */
 static double estimate_integrand(int l, int m, double xi_, double *Delta, double *I)
 {
     double df, d2f;
     const int maxiter = 20;
     double x = fmax(1.001,cosh(asinh((l+1)/(2*xi_)))-1);
 
-    /* newton */
+    /* Newton's method */
     for(int i = 0; i < maxiter; i++)
     {
         const double xlast = x ;
@@ -89,12 +140,32 @@ static double estimate_integrand(int l, int m, double xi_, double *Delta, double
     return x;
 }
 
+/** @brief Integrand
+ *
+ * This is the function the integration function calls. It returns the value of
+ * the integrand at position x, multiplies is by an factor of exp(-args->max)
+ * and returns the result.
+ *
+ * @param [in] x position
+ * @param [in] args_ pointer to struct containing parameters
+ * @retval Kx scaled value of integrand
+ */
 static double integrand_K(double x, void *args_)
 {
     integrand_t *args = (integrand_t *)args_;
     return exp(log_integrand_K(x,args->l,args->m,args->xi_)-args->max);
 }
 
+/** @brief Compute integral
+ *
+ * Compute the integral exp(-2*xi_*x)*Plm(l,2m,x) for x=1..oo.
+ *
+ * @param [in] l azimuthal quantum number
+ * @param [in] m magnetic quantum number
+ * @param [in] xi_ xi*(R+L)/c
+ * @param [in] epsrel relative accuracy of integration
+ * @retval K value of integral
+ */
 static double _integrate_K(int l, int m, double xi_, double epsrel)
 {
     double width, Ie;
@@ -168,9 +239,16 @@ static double _integrate_K(int l, int m, double xi_, double epsrel)
     return args.max+log(I);
 }
 
-/* Integrate
- *      sinh(x) * exp(-2*xi_*cosh(x)) * P(l,2m,cosh(x))
- * from x=0...oo
+/** @brief Get value of integral
+ *
+ * Get the value of the integral exp(-2*xi_*x)*Plm(l,m,x) for x=1..oo. This
+ * function uses a cache to avoid recomputing integrals.
+ *
+ * @param [in] l azimuthal quantum number
+ * @param [in] m magnetic quantum number
+ * @param [in] xi_ xi*(R+L)/c
+ * @param [in] epsrel relative accuracy of integration
+ * @retval K value of integral
  */
 static double integrate_K(integration_scalar_t *self, int l)
 {
@@ -191,9 +269,15 @@ static double alpha(double p, double n, double nu)
     return (((pow_2(p)-pow_2(n+nu+1))*(pow_2(p)-pow_2(n-nu)))/(4*pow_2(p)-1));
 }
 
-/* Integrate
- *      sinh(x) * exp(-2*xi_*cosh(x)) * P(l1,m,cosh(x)) * P(l2,m,cosh(x))
- * from x=0...oo
+/** @brief Get value of integral
+ *
+ * Get the value of the integral exp(-2*xi_*x)*Plm(l1,m,x)*Plm(l2,m,x) for
+ * x=1..oo.
+ *
+ * @param [in] self integration object
+ * @param [in] l1 first azimuthal quantum number
+ * @param [in] l2 second azimuthal quantum number
+ * @retval I value of integral
  */
 static double integrate_I(integration_scalar_t *self, int l1, int l2)
 {
@@ -306,6 +390,16 @@ static double integrate_I(integration_scalar_t *self, int l1, int l2)
     return log_I;
 }
 
+/** @brief Get reflection coefficient
+ *
+ * Get the reflection coefficient at the sphere for boundary condition Y.
+ *
+ * @param [in] casimir casimir object
+ * @param [in] l azimuthal quantum number
+ * @param [in] xi_ xi*(R+L)/c
+ * @param [in] Y boundary condition (either D,N or R)
+ * @retval rs reflection coefficient
+ */
 static double _rs(casimir_t *casimir, int l, double xi_, char Y)
 {
     double lna, lnb;
@@ -317,6 +411,16 @@ static double _rs(casimir_t *casimir, int l, double xi_, char Y)
         return lnb;
 }
 
+/** @brief Kernel of scalar Casimir effect
+ *
+ * Return matrix element of round-trip operator for scalar Casimir effect for
+ * fixed magnetic quantum number m, ratio R/L and boundary conditions X and Y.
+ *
+ * @param i [in] azimuthal quantum number (row)
+ * @param j [in] azimuthal quantum number (column)
+ * @param args [in] pointer to structure containing the parameters
+ * @param Mij matrix element
+ */
 static double kernel(int i, int j, void *args_)
 {
     const args_t *args = (args_t *)args_;
@@ -338,6 +442,17 @@ static double kernel(int i, int j, void *args_)
     return rp*exp(C+rs+I);
 }
 
+/** @brief Compute logdetD for fixed magnetic quantum number m
+ *
+ * @param [in] LbyR L/R
+ * @param [in] m magnetic quantum number
+ * @param [in] xi_ xi*(L+R)/c
+ * @param [in] ldim size of vector space
+ * @param [in] X boundary condition at plate (D, N or R)
+ * @param [in] Y boundary condition at sphere (D, N or R)
+ * @param [in] epsrel relative accuracy of logdet value
+ * @param logdetD
+ */
 double logdetD_m(double LbyR, double xi_, int m, int ldim, char X, char Y, double epsrel)
 {
     args_t args;
@@ -364,6 +479,16 @@ double logdetD_m(double LbyR, double xi_, int m, int ldim, char X, char Y, doubl
     return v;
 }
 
+/** @brief Compute logdetD
+ *
+ * @param [in] LbyR L/R
+ * @param [in] xi_ xi*(L+R)/c
+ * @param [in] ldim size of vector space
+ * @param [in] X boundary condition at plate (D, N or R)
+ * @param [in] Y boundary condition at sphere (D, N or R)
+ * @param [in] epsrel relative accuracy of logdet value
+ * @param logdetD
+ */
 double logdetD(double LbyR, double xi_, int ldim, char X, char Y, double epsrel)
 {
     double values[1024] = { 0 };
@@ -391,6 +516,11 @@ double logdetD(double LbyR, double xi_, int ldim, char X, char Y, double epsrel)
      return sum;
 }
 
+/** @brief Integrand of xi
+ *
+ * @param [in] x position
+ * @param [in] args_ pointer to structure with parameters
+ */
 static double integrand_xi(double x, void *args_)
 {
     double xi_, v;
@@ -404,9 +534,20 @@ static double integrand_xi(double x, void *args_)
     return v;
 }
 
+/** @brief Compute energy
+ *
+ * Compute energy for T=0, aspect ratio L/R, and boundary conditions X and Y.
+ *
+ * @param [in] LbyR L/R
+ * @param [in] X boundary condition at plate (D, N or R)
+ * @param [in] Y boundary condition at sphere (D, N or R)
+ * @param [in] ldim dimension of vector space
+ * @param [in] epsrel relative accuracy
+ * @retval E energy
+ */
 double casimir_E(double LbyR, char X, char Y, int ldim, double epsrel)
 {
-    double abserr;
+    double abserr, I;
     int neval, ier;
     integrand_xi_t args;
 
@@ -418,12 +559,17 @@ double casimir_E(double LbyR, char X, char Y, int ldim, double epsrel)
 
     args.alpha = (1+LbyR)/(2*LbyR);
 
-    double I = dqagi(integrand_xi, 0, 1, 0, epsrel, &abserr, &neval, &ier, &args)*args.alpha/(2*M_PI);
+    I = dqagi(integrand_xi, 0, 1, 0, epsrel, &abserr, &neval, &ier, &args);
 
     TERMINATE(ier != 0, "ier=%d, LbyR=%g, X=%c, Y=%c, ldim=%d, epsrel=%g", ier, LbyR, X, Y, ldim, epsrel);
-    return I;
+    return I*args.alpha/(2*M_PI);
 }
 
+/** @brief Print usage to stream
+ *
+ * @param self [in] self string with name of the program, i.e., argv[0]
+ * @param stream [in] stream print message to stream
+ */
 static void usage(char *self, FILE *stream)
 {
     fprintf(stream, "Usage: %s LbyR [bc ldim epsrel]\n\n", self);
