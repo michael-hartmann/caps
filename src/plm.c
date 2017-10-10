@@ -396,3 +396,37 @@ double lnPlm_downwards(int l, int m, double x)
 
     return prefactor-log(fabs(vm));
 }
+
+
+/** @brief Compute 1st and 2nd logarithmic derivative of associated Legendre polynomial
+ *
+ * Compute d/dx ln(Plm(x)) and d²/dx² ln(Plm(x)).
+ *
+ * If d2lnPlm is NULL, the 2nd logarithmic derivative will not be computed.
+ *
+ * @param [in] l degree
+ * @param [in] m order
+ * @param [in] x position
+ * @param [out] d2lnPlm 2nd logarithmic derivative of Plm(x)
+ * @retval dlnPlm first logarithmic derivative of Plm(x)
+ */
+double dlnPlm(int l, int m, double x, double *d2lnPlm)
+{
+    double p = 0, q = 0, df;
+    const double c2 = (x+1)*(x-1);
+    const double c  = sqrt(c2);
+
+    if(m+1 <= l)
+        p = 1/Plm_continued_fraction(l,m+1,x);
+
+    df = p/c + m*x/c2;
+
+    if(d2lnPlm != NULL)
+    {
+        if(m+2 <= l)
+            q = p/Plm_continued_fraction(l,m+2,x);
+        *d2lnPlm = (q - p*p - m*(x*x+1)/c2)/c2;
+    }
+
+    return df;
+}
