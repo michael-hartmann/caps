@@ -135,7 +135,7 @@ casimir_tests: $(TESTS) library
 	$(CC) $(CFLAGS) $(OPT) $(TESTS) -lcasimir $(LDFLAGS) -o casimir_tests
 	./casimir_tests
 
-casimir: dependencies
+casimir: library
 	$(MPICC) $(CFLAGS) $(OPT) casimir.c -lcasimir $(LDFLAGS) -o casimir
 
 clean:
