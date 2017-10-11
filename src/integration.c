@@ -154,14 +154,14 @@ static double K_estimate_zlarge(int nu, int m, double tau, double eps, double *a
     if(m > 0)
     {
         zmax = (nu-2)/tau;
-        *log_normalization = Plm_estimate(nu,2*m,1+zmax)-log(zmax*(zmax+2))-tau*zmax;
+        *log_normalization = lnPlm_estimate(nu,2*m,1+zmax)-log(zmax*(zmax+2))-tau*zmax;
 
         nu -= 2;
     }
     else
     {
         zmax = nu/tau;
-        *log_normalization = Plm_estimate(nu,0,1+zmax)-tau*zmax;
+        *log_normalization = lnPlm_estimate(nu,0,1+zmax)-tau*zmax;
     }
 
     /* k(z) = z^ν*exp(-τz) */
@@ -176,9 +176,9 @@ static double log_k(double z, int nu, int m, double tau)
         return -INFINITY;
 
     if(m == 0)
-        return Plm(nu,2,1+z) - tau*z;
+        return lnPlm(nu,2,1+z) - tau*z;
     else
-        return Plm(nu,2*m,1+z)-log(z*(z+2)) - tau*z;
+        return lnPlm(nu,2*m,1+z)-log(z*(z+2)) - tau*z;
 }
 
 static double K_estimate_zsmall(int nu, int m, double tau, double eps, double *a, double *b, double *log_normalization)
@@ -299,9 +299,9 @@ static double K_integrand(double z, void *args_)
     const double z2p2z = z*(z+2);
 
     if(m)
-        v = exp(-log_normalization + Plm(nu,2*m,1+z)-tau*z)/z2p2z;
+        v = exp(-log_normalization + lnPlm(nu,2*m,1+z)-tau*z)/z2p2z;
     else
-        v = exp(-log_normalization + Plm(nu,2,1+z)-tau*z);
+        v = exp(-log_normalization + lnPlm(nu,2,1+z)-tau*z);
 
     casimir_rp(casimir, xi, xi*sqrt(z2p2z), &rTE, &rTM);
 

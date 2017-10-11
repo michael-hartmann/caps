@@ -68,7 +68,7 @@ void integration_free(integration_scalar_t *self)
  */
 static double log_integrand_K(double x, int l, int m, double xi_)
 {
-    return -2*xi_*x + Plm(l,m,x);
+    return -2*xi_*x + lnPlm(l,m,x);
 }
 
 /** @brief Compute first and second derivative of integrand
@@ -85,17 +85,7 @@ static double log_integrand_K(double x, int l, int m, double xi_)
  */
 static void derivs(double x, int l, int m, double xi_, double *df, double *d2f)
 {
-    double p = 0, q = 0;
-    const double c2 = (x+1)*(x-1);
-    const double c  = sqrt(c2);
-
-    if(m+1 <= l)
-        p = 1/plm_continued_fraction(l,m+1,x);
-    if(m+2 <= l)
-        q = p/plm_continued_fraction(l,m+2,x);
-
-    *df = -2*xi_ + p/c + m*x/c2;
-    *d2f = (q - p*p - m*(x*x+1)/c2)/c2;
+    *df = -2*xi_+dlnPlm(l, m, x, d2f);
 }
 
 /** @brief Estimate position and width of maximum of integrand
