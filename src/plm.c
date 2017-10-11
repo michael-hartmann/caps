@@ -39,7 +39,7 @@
  * \f]
  * Note that we don't include the factor \f$i^m\f$ in our calculuation.
  *
- * For (l-m) <= 200 we use an upwards recurrence relation, see \ref Plm_upwards, otherwise we use a
+ * For (l-m) <= 200 we use an upwards recurrence relation, see \ref lnPlm_upwards, otherwise we use a
  * downwards recurrence relation, see Plm_downwards .
  *
  * See also https://en.wikipedia.org/wiki/Associated_Legendre_polynomials .
@@ -49,14 +49,14 @@
  * @param [in] x argument
  * @retval log(Plm(x))
  */
-double Plm(int l, int m, double x)
+double lnPlm(int l, int m, double x)
 {
     if(m == 0)
-        return Pl(l, x);
+        return lnPl(l, x);
     else if((l-m) <= 200)
-        return Plm_upwards(l, m, x);
+        return lnPlm_upwards(l, m, x);
     else
-        return Plm_downwards(l, m, x);
+        return lnPlm_downwards(l, m, x);
 }
 
 /**
@@ -75,7 +75,7 @@ double Plm(int l, int m, double x)
  * @param [in] x argument
  * @retval logPlm \f$\log P_l^m(x)\f$
  */
-double Plm_upwards(int l, int m, double x)
+double lnPlm_upwards(int l, int m, double x)
 {
     double array[l-m+1];
     /* P_m^m = (2m)!/(2^m*m!) (1-x²)^(m/2), http://dlmf.nist.gov/14.7.E15 */
@@ -128,7 +128,7 @@ double Plm_upwards(int l, int m, double x)
  * @param [in] x argument
  * @retval estimate \f$ \approx \log(P_l^m(x))\f$
  */
-double Plm_estimate(int l, int m, double x)
+double lnPlm_estimate(int l, int m, double x)
 {
     return lfac(2*l)-l*M_LOG2-lfac(l)-lfac(l-m)+l*log(x);
 }
@@ -274,7 +274,7 @@ static double _Pl3(int l, double x)
  * @param [in] x argument
  * @retval logPl \f$\log P_l(x)\f$
  */
-double Pl(int l, double x)
+double lnPl(int l, double x)
 {
     if(l < 100)
         return _Pl3(l,x);
@@ -303,7 +303,7 @@ double Pl(int l, double x)
  * @param [in] x argument
  * @retval ratio \f$P_l^{m-1}(x)/P_l^m(x)\f$
  */
-double plm_continued_fraction(const long l, const long m, const double x)
+double Plm_continued_fraction(const long l, const long m, const double x)
 {
     const double alpha = (1-1/(x*x))/4;
 
@@ -354,7 +354,7 @@ double plm_continued_fraction(const long l, const long m, const double x)
 /**
  * @brief Compute associated Legendre polynomials using downwards recurrence relation
  *
- * First, the fraction \f$P_l^m(x)/P_l^{m-1}(x)\f$ is computed using \ref plm_continued_fraction.
+ * First, the fraction \f$P_l^m(x)/P_l^{m-1}(x)\f$ is computed using \ref Plm_continued_fraction.
  * Then the downwards recurrence relation http://dlmf.nist.gov/14.10.E1 is used
  * from \f$P_l^m(x)\f$ to \f$P_l^0(x)\f$. Together with \f$P_l(x)\f$ (see \ref Pl) one has the solution.
  *
@@ -365,10 +365,10 @@ double plm_continued_fraction(const long l, const long m, const double x)
  * @param [in] x argument
  * @retval logPlm \f$\log P_l^m(x)\f$
  */
-double Plm_downwards(int l, int m, double x)
+double lnPlm_downwards(int l, int m, double x)
 {
     double vp,vm,c;
-    double prefactor = Pl(l,x); /* value of Pl(x) */
+    double prefactor = lnPl(l,x); /* value of Pl(x) */
 
     if(m == 0)
         return prefactor;
@@ -377,7 +377,7 @@ double Plm_downwards(int l, int m, double x)
     c = 2*x/sqrt((x-1)*(x+1));
 
     vp = +1;
-    vm = -plm_continued_fraction(l,m,x);
+    vm = -Plm_continued_fraction(l,m,x);
 
     for(int mm = m-2; mm >= 0; mm--)
     {
@@ -395,4 +395,38 @@ double Plm_downwards(int l, int m, double x)
     }
 
     return prefactor-log(fabs(vm));
+}
+
+
+/** @brief Compute 1st and 2nd logarithmic derivative of associated Legendre polynomial
+ *
+ * Compute d/dx ln(Plm(x)) and d²/dx² ln(Plm(x)).
+ *
+ * If d2lnPlm is NULL, the 2nd logarithmic derivative will not be computed.
+ *
+ * @param [in] l degree
+ * @param [in] m order
+ * @param [in] x position
+ * @param [out] d2lnPlm 2nd logarithmic derivative of Plm(x)
+ * @retval dlnPlm first logarithmic derivative of Plm(x)
+ */
+double dlnPlm(int l, int m, double x, double *d2lnPlm)
+{
+    double p = 0, q = 0, df;
+    const double c2 = (x+1)*(x-1);
+    const double c  = sqrt(c2);
+
+    if(m+1 <= l)
+        p = 1/Plm_continued_fraction(l,m+1,x);
+
+    df = p/c + m*x/c2;
+
+    if(d2lnPlm != NULL)
+    {
+        if(m+2 <= l)
+            q = p/Plm_continued_fraction(l,m+2,x);
+        *d2lnPlm = (q - p*p - m*(x*x+1)/c2)/c2;
+    }
+
+    return df;
 }
