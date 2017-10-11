@@ -1,7 +1,7 @@
 /**
  * @file   integration.c
  * @author Michael Hartmann <michael.hartmann@physik.uni-augsburg.de>
- * @date   August, 2017
+ * @date   October, 2017
  * @brief  Perform integration for arbitrary materials
  */
 
@@ -39,273 +39,135 @@ static uint64_t hash(uint64_t l1, uint64_t l2, uint64_t p)
 }
 
 
-/** @brief Bisect method for f(x) = c
+/** @brief Estimate position and width of peak
  *
- * Apply the bisection method for
- *      f(x) = x^ν*exp(-τx) -c = 0,
- * where c = exp(log_c).
+ * We want to estimate the position and the width of the maximum of the peak of
+ * the integrand
+ * \f[
+ *  \int_1^\infty \mathrm{d}x \, r_p \frac{e^{-\alpha x}}{x^2-1} P_\nu^{2m}(x) = \int_1^\infty \mathrm{d}x \, r_p e^{-f(x)}\
+ * \f]
+ * with
+ * \f[
+ *  f(x) = \alpha x - \log P_\nu^{2m}(x) + \log(x^2-1) \,.
+ * \f]
+ * We will assume that the Fresnel coefficient \f$r_p\f$ varies slowly with
+ * respect to the width of the peak and set it to 1.
  *
- * @param [in] left left boundary
- * @param [in] right right boundary
- * @param [in] N number of times to apply bisection method
- * @param [in] nu parameter nu
- * @param [in] tau parameter tau
- * @param [in] log_c logarithm of parameter c
- * @retval x0 root of f(x)
  */
-static double _f_bisect(double left, double right, int N, int nu, double tau, double log_c)
+double K_estimate(int nu, int m, double alpha, double eps, double *a, double *b, double *approx)
 {
-    for(int i = 0; i < N; i++)
-    {
-        const double middle = (right+left)/2;
-        const double fl = nu*log(left)  -tau*left  -log_c;
-        const double fm = nu*log(middle)-tau*middle-log_c;
-
-        if(fl*fm < 0)
-            right = middle;
-        else
-            left = middle;
-    }
-
-    return (left+right)/2;
-}
-
-/** @brief Analyze function f(x) = x^ν*exp(-τx)
- *
- * This function analyzes the function
- *      f(x) = x^ν*exp(-τx).
- *
- * At x=0 the function is zero,
- *      f(0) = 0,
- * then it increases up to the unique maximum at
- *      x_max = ν/τ,
- * and decreases for x > x_max.
- *
- * This function returns the logarithm of the maximum, i.e.
- *      log(f(x_max)).
- *
- * There exist two values x* with
- *      f(x*) = f(x_max)*eps.
- * The value x* in (0,x_max) will be stored in left, the value x* in
- * (x_max,infty) will be stored in right.
- *
- * @param [in] nu parameter nu
- * @param [in] tau parameter tau
- * @param [in] eps determines left and right boundaries (see description)
- * @param [in] tol accuracy of left and right
- * @param [out] left point in (0,x_max) with f(x_max)*eps = f(left)
- * @param [out] right point in (x_max,infty) with f(x_max)*eps = f(right)
- * @retval maximum logarithm of maximum, log(f(x_max))
- */
-static double _f_estimate(int nu, double tau, double eps, double tol, double *left, double *right)
-{
-    /* f(x) = x^ν*exp(-τx) */
-    const double x_max = nu/tau;
-    const double log_f_max = nu*log(x_max)-tau*x_max; /* log(f(x_max)) */
-
-    const int N = ceil(-log(tol/x_max)/M_LOG2);
-    *left = _f_bisect(0, x_max, N, nu, tau, log_f_max+log(eps));
-
-    for(int i = 1; true; i++)
-    {
-        double x = (i+1)*x_max;
-        double log_f = nu*log(x) - tau*x;
-
-        if((log_f-log_f_max) < log(eps))
-        {
-            *right = _f_bisect(i*x_max, (i+1)*x_max, N, nu, tau, log_f_max+log(eps));
-            return log_f_max;
-        }
-    }
-}
-
-/* Estimate shape of integrand K assuming nu/tau >> 1.
- *
- * If nu/tau >> 1, we can approximate the associated Legendre polynomial
- *      Plm(ν,m,1+z) ≈ (2l)!/(2^l*l!*(l-m)!) z^ν.
- *
- * We are only interested in the rough shape of the integrand, so we also
- * ignore the Fresnel coefficient r_p. This means, we assume that the Fresnel
- * coefficient varies slowly compared to the other factors of the integrand.
- *
- * Thus the integrand looks like (m>0)
- *      k(z) ≈ (2l)!/(2^l*l!*(l-m)!) z^(ν-2) * exp(-τz).
- *
- * The maximum of the integrand is at
- *      zmax ≈ (ν-2)/τ.
- *
- * For m=0 we find
- *      k(z) = (2l)!/(2^l*l!*l!) z^ν * exp(-τz).
- * and
- *      zmax ≈ ν/τ.
- *
- * We estimate the position a < zmax where the integrand is approximately
- * zmax*eps with precision tol=1e-2 using the bisection method for the
- * simplified integrand k(z).
- *
- * We also estimate the position b > zmax where the integrand is approximately
- * zmax*eps with precision tol=1e-2 using bisection method.
- */
-static double K_estimate_zlarge(int nu, int m, double tau, double eps, double *a, double *b, double *log_normalization)
-{
-    const double tol = 1e-2;
-    double zmax;
-
-    if(m > 0)
-    {
-        zmax = (nu-2)/tau;
-        *log_normalization = lnPlm_estimate(nu,2*m,1+zmax)-log(zmax*(zmax+2))-tau*zmax;
-
-        nu -= 2;
-    }
-    else
-    {
-        zmax = nu/tau;
-        *log_normalization = lnPlm_estimate(nu,0,1+zmax)-tau*zmax;
-    }
-
-    /* k(z) = z^ν*exp(-τz) */
-    _f_estimate(nu, tau, eps, tol, a, b);
-
-    return zmax;
-}
-
-static double log_k(double z, int nu, int m, double tau)
-{
-    if(z == 0)
-        return -INFINITY;
+    const int maxiter = 50;
+    const int mpos = (m > 0) ? 1 : 0;
+    double fp, fpp;
 
     if(m == 0)
-        return lnPlm(nu,2,1+z) - tau*z;
-    else
-        return lnPlm(nu,2*m,1+z)-log(z*(z+2)) - tau*z;
+        m = 1;
+
+    double f(double x)
+    {
+        if(m == 0)
+            return alpha*x-lnPlm(nu,m,x);
+        else
+            return alpha*x-lnPlm(nu,m,x)+log(x*x-1);
+    }
+
+    /* estimate width and height of the peak of the integrand. */
+    if(nu == 2 && m == 1)
+    {
+        /* Plm(2,2,x)/(x²-1)*exp(-αx) = 3*exp(-αx) */
+        *a = 1;
+        *b = 1-log(eps)/alpha;
+        *approx = -alpha-log(alpha);
+
+        /* maximum is at 1 */
+        return 1;
+    }
+
+    double x = sqrt(1+pow_2((nu+0.5)/alpha));
+
+    /* find position of peak: we use Newton's method to find the root of f'(x) */
+    for(int i = 0; i < maxiter; i++)
+    {
+        const double xold = x, x2m1 = x*x-1;
+        double d, d2;
+        d = dlnPlm(nu, 2*m, x, &d2);
+
+        fp  = alpha -d  +mpos*2*x/x2m1;
+        fpp =       -d2 -mpos*2*(x*x+1)/pow_2(x2m1);
+
+        x = x-fp/fpp;
+
+        if(x <= 1)
+            x = 1+(xold-1)/2;
+        else if(fabs(x-xold) < 1e-6)
+            break;
+    }
+
+    /* approximation using Laplace's method */
+    const double fxmax = f(x);
+    *approx = log(2*M_PI/fpp)/2-fxmax;
+
+    /* estimate width, left and right borders */
+    const double width = -log(eps)/sqrt(fpp);
+    *a = fmax(1, x-width);
+    *b = x+width;
+
+    /* check left border */
+    if(*a > 1)
+    {
+        int i;
+        for(i = 0; i < maxiter; i++)
+        {
+            const double fa = f(*a);
+            if(exp(fxmax-fa) < eps)
+                break;
+
+            *a = 1+0.5*(*a-1);
+        }
+
+        TERMINATE(i == maxiter, "nu=%d, m=%d, alpha=%g, xmax=%g, f(xmax)=%g, a=%g", nu, m, alpha, x, fxmax, *a);
+    }
+
+    /* check right border */
+    {
+        int i;
+        for(i = 0; i < maxiter; i++)
+        {
+            const double fb = f(*b);
+            if(exp(fxmax-fb) < eps)
+                break;
+
+            *b = 1+2*(*b-1);
+        }
+
+        TERMINATE(i == maxiter, "nu=%d, m=%d, alpha=%g, xmax=%g, f(xmax)=%g, b=%g", nu, m, alpha, x, fxmax, *b);
+    }
+
+    return x;
 }
 
-static double K_estimate_zsmall(int nu, int m, double tau, double eps, double *a, double *b, double *log_normalization)
-{
-    double left, right, middle, log_k_zmax, zmax;
-    const double tol = 1e-4;
-
-    *a = 0;
-    *b = 4;
-
-    /* Now, we search a good approximation for zmax using Golden section
-     * search.
-     * The code for Golden section search is taken from Wikipedia:
-     * https://en.wikipedia.org/wiki/Golden_section_search
-     */
-    double fc = NAN, fd = NAN;
-    double c = *b-(*b-*a)/M_GM;
-    double d = *a+(*b-*a)/M_GM;
-
-    while(fabs(c-d) > tol)
-    {
-        /* we only have to caclulate fc or fd if it is NAN */
-        if(isnan(fc))
-            fc = log_k(c, nu, m, tau);
-        if(isnan(fd))
-            fd = log_k(d, nu, m, tau);
-
-        if(fc > fd)
-        {
-            *b = d;
-            fd = fc;
-            fc = NAN;
-        }
-        else
-        {
-            *a = c;
-            fc = fd;
-            fd = NAN;
-        }
-
-        /* we recompute both c and d here to avoid loss of precision which may
-         * lead to incorrect results or infinite loop */
-        c = *b-(*b-*a)/M_GM;
-        d = *a+(*b-*a)/M_GM;
-    }
-
-    /* now we have a good approximation for zmax */
-    zmax = (*a+*b)/2;
-
-    /* and we also know log(k(zmax)) which is approximately fc or fd */
-    if(!isnan(fc))
-        log_k_zmax = fc;
-    else
-        log_k_zmax = fd;
-
-    /* thus we can set log_normalization */
-    *log_normalization = log_k(zmax, nu,m,tau);
-
-    /* now we are trying to estimate the interval [a,b] which gives the main
-     * contributions to the integration; we are looking for a < zmax < b such
-     * that a/zmax ≈ b/zmax ≈ eps
-     *
-     * We are using the bisection method and have to apply it N times.
-     */
-    const int N = ceil(-log(tol)/M_LOG2);
-
-    /* a */
-    left = 0;
-    right = zmax;
-    for(int i = 0; i < N; i++)
-    {
-        middle = (left+right)/2;
-        double fm = log_k(middle, nu, m, tau);
-
-        if((fm-log_k_zmax) < log(eps))
-            left = middle;
-        else
-            right = middle;
-    }
-    *a = (left+right)/2;
-
-    if(*a < 1e-5)
-        *a = 0;
-
-    /* b */
-    left = zmax;
-    right = 4;
-    for(int i = 0; i < N; i++)
-    {
-        middle = (left+right)/2;
-        double fm = log_k(middle, nu, m, tau);
-
-        if((fm-log_k_zmax) < log(eps))
-            right = middle;
-        else
-            left = middle;
-    }
-    *b = (left+right)/2;
-
-    //printf("a=%g (%g), zmax=%g (%g), b=%g (%g) (%g)\n", *a, log_k(*a,nu,m,tau), zmax, log_k(zmax,nu,m,tau), *b, log_k(*b,nu,m,tau), *log_normalization*nu);
-    //printf("log_k = %g\n", log_k(0.00258133,nu,m,tau));
-
-    return zmax;
-}
-
-static double K_integrand(double z, void *args_)
+static double K_integrand(double x, void *args_)
 {
     double v, rTE, rTM;
     integrand_t *args = (integrand_t *)args_;
     casimir_t *casimir = args->casimir;
 
-    z *= args->factor;
+    x *= args->factor;
 
     const int nu = args->nu, m = args->m;
     const double log_normalization = args->log_normalization;
     const double tau = args->tau;
     const double xi = tau/2;
-    const double z2p2z = z*(z+2);
+    const double x2m1 = x*x-1;
 
     if(m)
-        v = exp(-log_normalization + lnPlm(nu,2*m,1+z)-tau*z)/z2p2z;
+        v = exp(-log_normalization + lnPlm(nu,2*m,x)-tau*x)/x2m1;
     else
-        v = exp(-log_normalization + lnPlm(nu,2,1+z)-tau*z);
+        v = exp(-log_normalization + lnPlm(nu,2,x)-tau*x);
 
-    casimir_rp(casimir, xi, xi*sqrt(z2p2z), &rTE, &rTM);
+    casimir_rp(casimir, xi, xi*sqrt(x2m1), &rTE, &rTM);
 
-    TERMINATE(isnan(v) || isinf(v), "z=%g, nu=%d, m=%d, tau=%g, v=%g, log_normalization=%g", z, nu, m, tau, v, log_normalization);
+    TERMINATE(isnan(v) || isinf(v), "x=%g, nu=%d, m=%d, tau=%g, v=%g, log_normalization=%g", x, nu, m, tau, v, log_normalization);
 
     if(args->p == TE)
         return rTE*v;
@@ -315,7 +177,7 @@ static double K_integrand(double z, void *args_)
 
 static double _casimir_integrate_K(integration_t *self, int nu, polarization_t p, sign_t *sign)
 {
-    double zmax,log_normalization,a,b;
+    double xmax,log_normalization,a,b;
     const int m = self->m;
     const double eps = 1e-6;
     const double tau = self->tau;
@@ -330,25 +192,11 @@ static double _casimir_integrate_K(integration_t *self, int nu, polarization_t p
         .casimir = self->casimir
     };
 
-    /* estimate width and height of the peak of the integrand. */
-    if(nu == 2 && m == 1)
-    {
-        /* Integrate
-         *      r_p*Plm(2,2,1+z)/(z²+2z)*exp(-τz) = -3*r_p*exp(-τz)
-         *
-         * Maximum is at z=0.
-         */
-        zmax = 0;
-        a = 0;
-        b = -log(eps)/tau; /* exp(-14) =~ 1e-6 */
-        log_normalization = log(3);
-    }
-    else if(nu/tau > 5)
-        /* large z limit */
-        zmax = K_estimate_zlarge(nu, m, tau, eps, &a, &b, &log_normalization);
-    else
-        /* small z limit */
-        zmax = K_estimate_zsmall(nu, m, tau, eps, &a, &b, &log_normalization);
+    xmax = K_estimate(nu, m, tau, eps, &a, &b, &log_normalization);
+
+    if(a < 1.0001)
+        a = 1;
+    //printf("nu=%d, m=%d, tau=%g, a=%g, b=%g, xmax=%g\n", nu,m,tau,a,b,xmax);
 
     /* log_normalization is the logarithm of the estimated maximum of the
      * integrand K
@@ -362,14 +210,14 @@ static double _casimir_integrate_K(integration_t *self, int nu, polarization_t p
     /* I2: [a,b] */
     I2 = dqags(K_integrand, a, b, 0, epsrel, &abserr2, &neval2, &ier2, &args);
 
-    /* I1: [0,a] */
-    if(a > 0)
+    /* I1: [1,a] */
+    if(a > 1)
     {
         /* The contribution of this integral should be small, so use
          * Gauss-Kronrod G_K 7-15 as integration rule.
          */
         int limit = 200;
-        I1 = dqage(K_integrand, 0, a, abserr2, epsrel, GK_7_15, &abserr1, &neval1, &ier1, &limit, &args);
+        I1 = dqage(K_integrand, 1, a, abserr2, 0, GK_7_15, &abserr1, &neval1, &ier1, &limit, &args);
     }
 
     /* I3: [b,∞]
@@ -384,11 +232,11 @@ static double _casimir_integrate_K(integration_t *self, int nu, polarization_t p
     const double sum = I1+I2+I3;
 
     bool warn = ier1 != 0 || ier2 != 0 || ier3 != 0 || isnan(sum) || sum == 0;
-    WARN(warn, "ier1=%d, ier2=%d, ier3=%d, nu=%d, m=%d, tau=%.20g, zmax=%g, a=%g, b=%g, I1=%g, I2=%g, I3=%g", ier1, ier2, ier3, nu,m,tau,zmax,a,b, I1, I2, I3);
+    WARN(warn, "ier1=%d, ier2=%d, ier3=%d, nu=%d, m=%d, tau=%.20g, xmax=%g, a=%g, b=%g, I1=%g, I2=%g, I3=%g", ier1, ier2, ier3, nu,m,tau,xmax,a,b, I1, I2, I3);
     TERMINATE((*sign == 1 && p != TM) || (*sign==-1 && p != TE), "nu=%d, p=%d, sign=%d, sum=%g", nu, p, *sign, sum);
 
     *sign = SGN(sum);
-    return log(fabs(sum)) + log_normalization;
+    return tau + log(fabs(sum)) + log_normalization;
 }
 
 
@@ -879,10 +727,11 @@ double casimir_integrate_plasma(integration_plasma_t *self, int l1, int l2, int 
      */
 
     /* find left and right boundaries */
+    TERMINATE(true, "not implemented right now");
     double a,b;
-    const double tol = 1e-2;
-    const double eps = 1e-6;
-    _f_estimate(nu, 1, eps, tol, &a, &b);
+    //const double tol = 1e-2;
+    //const double eps = 1e-6;
+    //_f_estimate(nu, 1, eps, tol, &a, &b);
 
     /* perform integrations in intervals [0,a], [a,b] and [b,∞] */
     const double epsrel = self->epsrel;
