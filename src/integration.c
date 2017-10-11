@@ -53,6 +53,23 @@ static uint64_t hash(uint64_t l1, uint64_t l2, uint64_t p)
  * We will assume that the Fresnel coefficient \f$r_p\f$ varies slowly with
  * respect to the width of the peak and set it to 1.
  *
+ * We find the maximum of \f$f(x)\f$ using Newton's method on \f$f'(x)\f$. With
+ * the maximum \f$x_\mathrm{max} \f$ and the second derivative at the maximum
+ * \f$f''(x_\mathrm{max})\f$, we estimate the width of the peak and the value of
+ * the integral using Laplace's method.
+ *
+ * The left border a and the right border b are determined by eps, such that
+ * \f[
+ *  e^{-f(a)} \approx e^{-f(b)} \approx \epsilon e^{-f(x_\mathrm{max})} \,.
+ * \f]
+ * However, a is cannot be smaller than 1.
+ *
+ * @param [in] nu parameter \f$\nu\f$
+ * @param [in] m parameter \f$m\f$
+ * @param [in] eps \f$\epsilon\f$
+ * @param [out] a left border
+ * @param [out] b right border
+ * @param [out] approx logarithm of estimated value of integral
  */
 double K_estimate(int nu, int m, double alpha, double eps, double *a, double *b, double *approx)
 {
@@ -60,15 +77,12 @@ double K_estimate(int nu, int m, double alpha, double eps, double *a, double *b,
     const int mpos = (m > 0) ? 1 : 0;
     double fp, fpp;
 
-    if(m == 0)
-        m = 1;
-
     double f(double x)
     {
         if(m == 0)
-            return alpha*x-lnPlm(nu,m,x);
+            return alpha*x-lnPlm(nu,2,x);
         else
-            return alpha*x-lnPlm(nu,m,x)+log(x*x-1);
+            return alpha*x-lnPlm(nu,2*m,x)+log(x*x-1);
     }
 
     /* estimate width and height of the peak of the integrand. */
@@ -236,7 +250,7 @@ static double _casimir_integrate_K(integration_t *self, int nu, polarization_t p
     TERMINATE((*sign == 1 && p != TM) || (*sign==-1 && p != TE), "nu=%d, p=%d, sign=%d, sum=%g", nu, p, *sign, sum);
 
     *sign = SGN(sum);
-    return tau + log(fabs(sum)) + log_normalization;
+    return log(fabs(sum)) + log_normalization;
 }
 
 
@@ -244,17 +258,17 @@ static double _casimir_integrate_K(integration_t *self, int nu, polarization_t p
  *
  * This function solves for \f$m>0\f$ the integral
  * \f[
- *   \mathcal{K}_{\nu,p}^{(m)}(\tau) = \int_0^\infty \mathrm{d}z \, r_p \frac{e^{-\tau z}}{z^2+2z} P_\nu^{2m}(1+z)
+ *   \mathcal{K}_{\nu,p}^{(m)}(\tau) = \int_0^\infty \mathrm{d}x \, r_p \frac{e^{-\tau x}}{x^2-1} P_\nu^{2m}(x)
  * \f]
  * and for \f$m=0\f$ the integral
  * \f[
- *   \mathcal{K}_{\nu,p}^{(0)}(\tau) = \int_0^\infty \mathrm{d}z \, r_p e^{-\tau z} P_\nu^{2}(1+z) \,.
+ *   \mathcal{K}_{\nu,p}^{(0)}(\tau) = \int_0^\infty \mathrm{d}x \, r_p e^{-\tau x} P_\nu^{2}(x) \,.
  * \f]
  *
  * The function returns the logarithm of the value of the integral and its sign.
  *
  * The projection of the wavevector onto the \f$xy\f$-plane is given by
- * \f$k=\frac{\xi}{c}\sqrt{z^2+2z}\f$ and \f$\tau=2\xi\mathcal{L}/c\f$.
+ * \f$k=\frac{\xi}{c}\sqrt{x^2-1}\f$ and \f$\tau=2\xi\mathcal{L}/c\f$.
  *
  * @param [in] self integration object
  * @param [in] nu parameter
@@ -406,7 +420,7 @@ static double _casimir_integrate_I(integration_t *self, int l1, int l2, polariza
  *
  * Compute the integral
  * \f[
- * \mathcal{I}_{\ell_1,\ell_2,p}^{(m)}(\tau) = \int_0^\infty \mathrm{d}z \, r_p \frac{e^{-\tau z}}{z^2+2z} P_{\ell_1}^m(1+z) P_{\ell_2}^m(1+z)
+ * \mathcal{I}_{\ell_1,\ell_2,p}^{(m)}(\tau) = \int_0^\infty \mathrm{d}x \, r_p \frac{e^{-\tau x}}{x^2-1} P_{\ell_1}^m(x) P_{\ell_2}^m(x)
  * \f]
  *
  * This function returns the sign of the integral and its logarithmic value.
@@ -477,7 +491,7 @@ double casimir_integrate_I(integration_t *self, int l1, int l2, polarization_t p
  *
  * @param [in] casimir Casimir object
  * @param [in] xi_ \f$\xi\mathcal{L}/c\f$
- * @param [in] m azimuthal quantum number
+ * @param [in] m magnetic quantum number
  * @param [in] epsrel relative accuracy of integration
  * @retval integration object
  */
@@ -545,7 +559,7 @@ double casimir_integrate_A(integration_t *self, int l1, int l2, polarization_t p
     }
 
     const double I1 = casimir_integrate_I(self, l1, l2, p, sign);
-    const double A0 = 2*logi(m)-self->tau;
+    const double A0 = 2*logi(m);
 
     const double A = A0+I1;
     TERMINATE(!isfinite(A), "l1=%d, l2=%d, m=%d, p=%d, I1=%g, A0=%g, A=%g", l1,l2,m,p, I1, A0, A);
@@ -570,7 +584,7 @@ double casimir_integrate_B(integration_t *self, int l1, int l2, polarization_t p
 {
     const int m = self->m;
 
-    const double B0 = -self->tau;
+    const double B0 = 0;
 
     if(m == 0)
     {
@@ -625,7 +639,7 @@ double casimir_integrate_C(integration_t *self, int l1, int l2, polarization_t p
         return -INFINITY;
     }
 
-    const double C0 = logi(m)-self->tau;
+    const double C0 = logi(m);
 
     sign_t sign1, sign2;
     const double I1 = casimir_integrate_I(self, l1, l2-1, p, &sign1);
