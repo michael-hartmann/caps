@@ -308,9 +308,7 @@ static double _casimir_integrate_I(integration_t *self, int l1, int l2, polariza
     double K;
 
     const int m_ = self->m > 0 ? self->m : 1;
-    const double n  = l1;
-    const double nu = l2;
-    const double m  = m_;
+    const double n  = l1, nu = l2, m = m_;
     const double n4 = l1+l2-2*m_;
     const int l1pl2 = l1+l2;
 
@@ -367,9 +365,7 @@ static double _casimir_integrate_I(integration_t *self, int l1, int l2, polariza
     double log_scaling = 0;
     for(q = 3; q <= qmax; q++)
     {
-        const double p = n+nu-2*q;
-        const double p1 = p-2*m;
-        const double p2 = p+2*m;
+        const double p = n+nu-2*q, p1 = p-2*m, p2 = p+2*m;
 
         if(Ap != 0)
         {
