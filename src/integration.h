@@ -21,4 +21,6 @@ integration_plasma_t *casimir_integrate_plasma_init(casimir_t *casimir, double o
 double casimir_integrate_plasma(integration_plasma_t *self, int l1, int l2, int m, double *ratio1, double *ratio2);
 void casimir_integrate_plasma_free(integration_plasma_t *self);
 
+double K_estimate(int nu, int m, double alpha, double eps, double *a, double *b, double *approx);
+
 #endif
