@@ -60,7 +60,7 @@ typedef struct {
     int m;
     double tau,epsrel;
     cache_t *cache_I;
-    cache_t *cache_K;
+    double *cache_K;
     bool is_pc;
 } integration_t;
 
