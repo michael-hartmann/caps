@@ -278,8 +278,8 @@ static double _casimir_integrate_K(integration_t *self, int nu, polarization_t p
  */
 double casimir_integrate_K(integration_t *self, int nu, polarization_t p, sign_t *sign)
 {
-    const uint64_t key = hash(0,nu,p);
-    double K = cache_lookup(self->cache_K, key);
+    const size_t index = nu-2*self->m;
+    double K = self->cache_K[index];
 
     if(p == TM)
         *sign = 1;
@@ -290,7 +290,7 @@ double casimir_integrate_K(integration_t *self, int nu, polarization_t p, sign_t
     {
         /* compute and save integral */
         K = _casimir_integrate_K(self, nu, p, sign);
-        cache_insert(self->cache_K, key, K);
+        self->cache_K[index] = K;
     }
 
     return K;
@@ -505,7 +505,11 @@ integration_t *casimir_integrate_init(casimir_t *casimir, double xi_, int m, dou
 
     const int ldim = casimir->ldim;
     self->cache_I = cache_new(1000000, 1e-2);
-    self->cache_K = cache_new(5*ldim, 0.3);
+
+    const size_t elems = 2*(ldim+10);
+    self->cache_K = xmalloc(elems*sizeof(double));
+    for(size_t i = 0; i < elems; i++)
+        self->cache_K[i] = NAN;
 
     if(isinf(casimir_epsilonm1(casimir, INFINITY)))
         self->is_pc = true;
@@ -525,7 +529,7 @@ void casimir_integrate_free(integration_t *integration)
     if(integration != NULL)
     {
         cache_free(integration->cache_I);
-        cache_free(integration->cache_K);
+        xfree(integration->cache_K);
         xfree(integration);
     }
 }
