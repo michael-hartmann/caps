@@ -75,20 +75,26 @@ double K_estimate(int nu, int m, double alpha, double eps, double *a, double *b,
 {
     const int maxiter = 50;
     const int mpos = (m > 0) ? 1 : 0;
-    double fp, fpp;
+    const int m_ = MAX(m,1);
+    double xmax = NAN, fxmax = NAN, fp = NAN, fpp = NAN;
 
     double f(double x)
     {
         if(m == 0)
             return alpha*x-lnPlm(nu,2,x);
         else
-            return alpha*x-lnPlm(nu,2*m,x)+log(x*x-1);
+        {
+            if(m == 1 && x == 1)
+                return alpha*x-logi(nu-1)-logi(nu)-logi(nu+1)-logi(nu+2)+log(8);
+            else
+                return alpha*x-lnPlm(nu,2*m,x)+log(x*x-1);
+        }
     }
 
     /* estimate width and height of the peak of the integrand. */
-    if(nu == 2 && m == 1)
+    if(m == 1 && nu == 2)
     {
-        /* Plm(2,2,x)/(x²-1)*exp(-αx) = 3*exp(-αx) */
+        /* integrand: Plm(2,2,x)/(x²-1)*exp(-αx) = 3*exp(-αx) */
         *a = 1;
         *b = 1-log(eps)/alpha;
         *approx = -alpha-log(alpha);
@@ -96,35 +102,48 @@ double K_estimate(int nu, int m, double alpha, double eps, double *a, double *b,
         /* maximum is at 1 */
         return 1;
     }
-
-    double x = sqrt(1+pow_2((nu+0.5)/alpha));
-
-    /* find position of peak: we use Newton's method to find the root of f'(x) */
-    for(int i = 0; i < maxiter; i++)
+    else if(m == 1 && ((nu-2.)*(nu+3)/6-alpha) <= 0)
     {
-        const double xold = x, x2m1 = x*x-1;
-        double d, d2;
-        d = dlnPlm(nu, 2*m, x, &d2);
-
-        fp  = alpha -d  +mpos*2*x/x2m1;
-        fpp =       -d2 -mpos*2*(x*x+1)/pow_2(x2m1);
-
-        x = x-fp/fpp;
-
-        if(x <= 1)
-            x = 1+(xold-1)/2;
-        else if(fabs(x-xold) < 1e-6)
-            break;
+        /* derivative of integrand at x=1 negative => there exists no maximum */
+        xmax = 1;
+        fxmax = f(1);
+        *a = 1;
+        *b = 1-log(eps)/alpha;
+        *approx = ...;
     }
+    else
+    {
+        double x = sqrt(1+pow_2((nu+0.5)/alpha));
 
-    /* approximation using Laplace's method */
-    const double fxmax = f(x);
-    *approx = log(2*M_PI/fpp)/2-fxmax;
+        /* find position of peak: we use Newton's method to find the root of f'(x) */
+        for(int i = 0; i < maxiter; i++)
+        {
+            const double xold = x, x2m1 = x*x-1;
+            double d, d2;
+            d = dlnPlm(nu, 2*m_, x, &d2);
 
-    /* estimate width, left and right borders */
-    const double width = -log(eps)/sqrt(fpp);
-    *a = fmax(1, x-width);
-    *b = x+width;
+            fp  = alpha -d  +mpos*2*x/x2m1;
+            fpp =       -d2 -mpos*2*(x*x+1)/pow_2(x2m1);
+
+            x = x-fp/fpp;
+
+            if(x <= 1)
+                x = 1+(xold-1)/2;
+            else if(fabs(x-xold) < 1e-6)
+                break;
+        }
+
+        xmax = x;
+        fxmax = f(xmax);
+
+        /* approximation using Laplace's method */
+        *approx = log(2*M_PI/fpp)/2-fxmax;
+
+        /* estimate width, left and right borders */
+        const double width = -log(eps)/sqrt(fpp);
+        *a = fmax(1, xmax-width);
+        *b = xmax+width;
+    }
 
     /* check left border */
     if(*a > 1)
@@ -139,7 +158,7 @@ double K_estimate(int nu, int m, double alpha, double eps, double *a, double *b,
             *a = 1+0.5*(*a-1);
         }
 
-        TERMINATE(i == maxiter, "nu=%d, m=%d, alpha=%g, xmax=%g, f(xmax)=%g, a=%g", nu, m, alpha, x, fxmax, *a);
+        TERMINATE(i == maxiter, "nu=%d, m=%d, alpha=%g, xmax=%g, f(xmax)=%g, a=%g", nu, m, alpha, xmax, fxmax, *a);
     }
 
     /* check right border */
@@ -147,6 +166,7 @@ double K_estimate(int nu, int m, double alpha, double eps, double *a, double *b,
         int i;
         for(i = 0; i < maxiter; i++)
         {
+            //printf("b=%g\n", *b);
             const double fb = f(*b);
             if(exp(fxmax-fb) < eps)
                 break;
@@ -154,10 +174,15 @@ double K_estimate(int nu, int m, double alpha, double eps, double *a, double *b,
             *b = 1+2*(*b-1);
         }
 
-        TERMINATE(i == maxiter, "nu=%d, m=%d, alpha=%g, xmax=%g, f(xmax)=%g, b=%g", nu, m, alpha, x, fxmax, *b);
+        TERMINATE(i == maxiter, "nu=%d, m=%d, alpha=%g, xmax=%g, f(xmax)=%g, b=%g", nu, m, alpha, xmax, fxmax, *b);
     }
 
-    return x;
+    if(m == 1)
+    {
+        printf("nu=%d, alpha=%g, m=%d, a=%g, b=%g, xmax=%.20g, fxmax=%g\n", nu, alpha, m, *a, *b, xmax, fxmax);
+    }
+
+    return xmax;
 }
 
 static double K_integrand(double x, void *args_)
