@@ -231,53 +231,55 @@ static double _casimir_integrate_K(integration_t *self, int nu, polarization_t p
     const double tau = self->tau;
     const double epsrel = self->epsrel;
 
-    if(m == 1 && self->is_pc)
+    if(self->is_pc)
     {
-        /* use analytical result for m=1 and PR
-         * integrand: r_p exp(-τ*x)*P_ν^2(x)/(x²-1)
-         * integral: τ^(3/2)*sqrt(2/pi) K_(ν+½)(τ) - exp(-τ) [τ + ν(ν+1)/2]
-         *           \---------- t1 -------------/   \-------- t2 --------/
-         */
         if(p == TE)
             *sign = -1;
         else
             *sign = +1;
 
-        const double logt1 = 1.5*log(tau)+log(2/M_PI)/2+bessel_lnKnu(nu,tau);
-        const double logt2 = -tau+log(tau+nu*(nu+1)/2.);
+        if(m == 0)
+        {
+            /* use analytical result for m=0 and PR
+             * integrand: r_p exp(-τ*x)*P_ν^2(x)
+             * integral: 2*exp(-τ) + sqrt(2/(pi*τ)) [ (ν+1)(ν+2)K_{ν+1/2}(τ) - 2τ K_(ν+3/2)(τ) ]
+             *           \- t1 --/   \----- C ----/   \------- t1 ---------/   \---- t2 -----/
+             */
+            const double logC = log(2/(tau*M_PI))/2;
 
-        return logt1 + log1p(-exp(logt2-logt1));
-    }
-    else if(m == 0 && self->is_pc)
-    {
-        /* use analytical result for m=0 and PR
-         * integrand: r_p exp(-τ*x)*P_ν^2(x)
-         * integral: 2*exp(-τ) + sqrt(2/(pi*τ)) [ (ν+1)(ν+2)K_{ν+1/2}(τ) - 2τ K_(ν+3/2)(τ) ]
-         *           \- t1 --/   \----- C ----/   \------- t1 ---------/   \---- t2 -----/
-         */
-        if(p == TE)
-            *sign = -1;
-        else
-            *sign = +1;
+            log_t terms[3];
 
-        const double logC = log(2/(tau*M_PI))/2;
+            /* t1 */
+            terms[0].v = log(2)-tau;
+            terms[0].s = +1;
 
-        log_t terms[3];
+            /* t2 */
+            terms[1].v = logC+logi(nu+1)+logi(nu+2)+bessel_lnKnu(nu,tau);
+            terms[1].s = +1;
 
-        /* t1 */
-        terms[0].v = log(2)-tau;
-        terms[0].s = +1;
+            /* t3 */
+            terms[2].v = logC+log(2)+log(tau)+bessel_lnKnu(nu+1,tau);
+            terms[2].s = -1;
 
-        /* t2 */
-        terms[1].v = logC+logi(nu+1)+logi(nu+2)+bessel_lnKnu(nu,tau);
-        terms[1].s = +1;
+            sign_t dummy;
+            return logadd_ms(terms, 3, &dummy);
+        }
+        else if(m == 1)
+        {
+            /* use analytical result for m=1 and PR
+             * integrand: r_p exp(-τ*x)*P_ν^2(x)/(x²-1)
+             * integral: τ^(3/2)*sqrt(2/pi) K_(ν+½)(τ) - exp(-τ) [τ + ν(ν+1)/2]
+             *           \---------- t1 -------------/   \-------- t2 --------/
+             */
+            const double logt1 = 1.5*log(tau)+log(2/M_PI)/2+bessel_lnKnu(nu,tau);
+            const double logt2 = -tau+log(tau+nu*(nu+1)/2.);
 
-        /* t3 */
-        terms[2].v = logC+log(2)+log(tau)+bessel_lnKnu(nu+1,tau);
-        terms[2].s = -1;
-
-        sign_t dummy;
-        return logadd_ms(terms, 3, &dummy);
+            return logt1 + log1p(-exp(logt2-logt1));
+        }
+        else if(nu == (2*m))
+            return -0.5*log(M_PI)+(m-0.5)*log(2/tau)+lfac(m-1)+lfac2(4*m-1)+bessel_lnKnu(m-1,tau);
+        else if(nu == (2*m+1))
+            return -0.5*log(M_PI)+(m-0.5)*log(2/tau)+lfac(m-1)+lfac2(4*m-1)+bessel_lnKnu(m,tau)+logi(4*m+1);
     }
 
     integrand_t args = {
