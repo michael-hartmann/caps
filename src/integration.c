@@ -591,7 +591,7 @@ integration_t *casimir_integrate_init(casimir_t *casimir, double xi_, int m, dou
     const int ldim = casimir->ldim;
     self->cache_I = cache_new(1000000, 1e-2);
 
-    const size_t elems = 2*(ldim+10);
+    const size_t elems = 2*(ldim+m+100);
     self->cache_K = xmalloc(elems*sizeof(double));
     for(size_t i = 0; i < elems; i++)
         self->cache_K[i] = NAN;
