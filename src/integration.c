@@ -669,14 +669,11 @@ double casimir_integrate_B(integration_t *self, int l1, int l2, polarization_t p
 {
     const int m = self->m;
 
-    const double B0 = 0;
-
     if(m == 0)
     {
-        const double I = casimir_integrate_I(self, l1, l2, p, sign);
-        const double B = B0+I;
+        const double B = casimir_integrate_I(self, l1, l2, p, sign);
 
-        TERMINATE(!isfinite(B), "l1=%d, l2=%d, m=%d, p=%d, I=%g, B0=%g, B=%g", l1,l2,m,p, I, B0, B);
+        TERMINATE(!isfinite(B), "l1=%d, l2=%d, m=%d, p=%d, B=%g", l1,l2,m,p,B);
 
         return B;
     }
@@ -689,15 +686,16 @@ double casimir_integrate_B(integration_t *self, int l1, int l2, polarization_t p
 
     double I;
     const double denom = (2*l1+1.)*(2*l2+1.);
-    I  = (l1+1.)*(l1+m)*(l2+1.)*(l2+m)/denom*sign1*exp(I1-I4);
-    I -=   l1*(l1-m+1.)*(l2+1.)*(l2+m)/denom*sign2*exp(I2-I4);
-    I -=   (l1+1.)*(l1+m)*l2*(l2-m+1.)/denom*sign3*exp(I3-I4);
-    I +=     l1*(l1-m+1.)*l2*(l2-m+1.)/denom*sign4;
+    const double maximum = fmax(fmax(I1,I2), fmax(I3,I4));
+    I  = (l1+1.)*(l1+m)*(l2+1.)*(l2+m)/denom*sign1*exp(I1-maximum);
+    I -=   l1*(l1-m+1.)*(l2+1.)*(l2+m)/denom*sign2*exp(I2-maximum);
+    I -=   (l1+1.)*(l1+m)*l2*(l2-m+1.)/denom*sign3*exp(I3-maximum);
+    I +=     l1*(l1-m+1.)*l2*(l2-m+1.)/denom*sign4*exp(I4-maximum);
 
     *sign = SGN(I);
 
-    const double B = B0+I4+log(fabs(I));
-    TERMINATE(!isfinite(B), "l1=%d, l2=%d, m=%d, p=%d, I1=%g, I2=%g, I3=%g, I4=%g, B0=%g, B=%g", l1,l2,m,p, I1,I2,I3,I4, B0, B);
+    const double B = maximum+log(fabs(I));
+    TERMINATE(!isfinite(B), "l1=%d, l2=%d, m=%d, p=%d, I1=%g, I2=%g, I3=%g, I4=%g, B=%g", l1,l2,m,p, I1,I2,I3,I4, B);
     return B;
 }
 
