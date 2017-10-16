@@ -44,7 +44,7 @@ static uint64_t hash(uint64_t l1, uint64_t l2, uint64_t p)
  * We want to estimate the position and the width of the maximum of the peak of
  * the integrand
  * \f[
- *  \int_1^\infty \mathrm{d}x \, r_p \frac{e^{-\alpha x}}{x^2-1} P_\nu^{2m}(x) = \int_1^\infty \mathrm{d}x \, r_p e^{-f(x)}\
+ *  \int_1^\infty \mathrm{d}x \, r_p \frac{e^{-\alpha x}}{x^2-1} P_\nu^{2m}(x) = \int_1^\infty \mathrm{d}x \, r_p g(x) = \int_1^\infty \mathrm{d}x \, r_p e^{-f(x)}\
  * \f]
  * with
  * \f[
@@ -91,25 +91,26 @@ double K_estimate(int nu, int m, double alpha, double eps, double *a, double *b,
         }
     }
 
-    /* estimate width and height of the peak of the integrand. */
-    if(m == 1 && nu == 2)
+    if(m == 1 && ((nu-2)*(nu+3)/6.) < (1e-4+alpha))
     {
-        /* integrand: Plm(2,2,x)/(x²-1)*exp(-αx) = 3*exp(-αx) */
-        *a = 1;
-        *b = 1-log(eps)/alpha;
-        *approx = -alpha-log(alpha);
+        /* g(x)  = Plm(nu,2,x)*exp(-αx)/(x²-1) = exp(-αx) P_nu''(x)
+         * g'(x) = exp(-αx) [ -αP_nu''(x) + P_nu'''(x) ]
+         * g'(1) = exp(-α) (n-1)n(n+1)(n+2)/8 [ (n-2)(n+3)/6 -α ]
+         * P_n'(1)   = n(n+1)/2
+         * P_n''(1)  = (n-1)n(n+1)(n+2)/8 (triangular numbers)
+         * P_n'''(1) = (n-2)(n-1)n(n+1)(n+2)(n+3)/48 (OEIS A240440)
+         */
 
-        /* maximum is at 1 */
-        return 1;
-    }
-    else if(m == 1 && ((nu-2.)*(nu+3)/6-alpha) <= 0)
-    {
-        /* derivative of integrand at x=1 negative => there exists no maximum */
-        xmax = 1;
-        fxmax = f(1);
+        /* no maximum */
+
         *a = 1;
         *b = 1-log(eps)/alpha;
-        *approx = ...;
+
+        double logt1 = 1.5*log(alpha)+log(2/M_PI)/2+bessel_lnKnu(nu,alpha);
+        double logt2 = -alpha+log(alpha+nu*(nu+1)/2.);
+        *approx = logt1 + log1p(-exp(logt2-logt1));
+
+        return 1;
     }
     else
     {
@@ -175,11 +176,6 @@ double K_estimate(int nu, int m, double alpha, double eps, double *a, double *b,
         }
 
         TERMINATE(i == maxiter, "nu=%d, m=%d, alpha=%g, xmax=%g, f(xmax)=%g, b=%g", nu, m, alpha, xmax, fxmax, *b);
-    }
-
-    if(m == 1)
-    {
-        printf("nu=%d, alpha=%g, m=%d, a=%g, b=%g, xmax=%.20g, fxmax=%g\n", nu, alpha, m, *a, *b, xmax, fxmax);
     }
 
     return xmax;
