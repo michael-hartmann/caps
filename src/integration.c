@@ -83,12 +83,7 @@ double K_estimate(int nu, int m, double alpha, double eps, double *a, double *b,
         if(m == 0)
             return alpha*x-lnPlm(nu,2,x);
         else
-        {
-            if(m == 1 && x == 1)
-                return alpha*x-logi(nu-1)-logi(nu)-logi(nu+1)-logi(nu+2)+log(8);
-            else
-                return alpha*x-lnPlm(nu,2*m,x)+log(x*x-1);
-        }
+            return alpha*x-lnPlm(nu,2*m,x)+log(x*x-1);
     }
 
     if(m == 1 && ((nu-2)*(nu+3)/6.) < (1e-4+alpha))
@@ -99,9 +94,9 @@ double K_estimate(int nu, int m, double alpha, double eps, double *a, double *b,
          * P_n'(1)   = n(n+1)/2
          * P_n''(1)  = (n-1)n(n+1)(n+2)/8 (triangular numbers)
          * P_n'''(1) = (n-2)(n-1)n(n+1)(n+2)(n+3)/48 (OEIS A240440)
+         *
+         * if m = 1 and (n-2)(n+3)/6 < α  =>  there is no maximum
          */
-
-        /* no maximum */
 
         *a = 1;
         *b = 1-log(eps)/alpha;
@@ -112,39 +107,46 @@ double K_estimate(int nu, int m, double alpha, double eps, double *a, double *b,
 
         return 1;
     }
-    else
+
+    /* initial guess of maximum */
+    double x;
+    if(nu == (2*m))
     {
-        double x = sqrt(1+pow_2((nu+0.5)/alpha));
-
-        /* find position of peak: we use Newton's method to find the root of f'(x) */
-        for(int i = 0; i < maxiter; i++)
-        {
-            const double xold = x, x2m1 = x*x-1;
-            double d, d2;
-            d = dlnPlm(nu, 2*m_, x, &d2);
-
-            fp  = alpha -d  +mpos*2*x/x2m1;
-            fpp =       -d2 -mpos*2*(x*x+1)/pow_2(x2m1);
-
-            x = x-fp/fpp;
-
-            if(x <= 1)
-                x = 1+(xold-1)/2;
-            else if(fabs(x-xold) < 1e-6)
-                break;
-        }
-
-        xmax = x;
-        fxmax = f(xmax);
-
-        /* approximation using Laplace's method */
-        *approx = log(2*M_PI/fpp)/2-fxmax;
-
-        /* estimate width, left and right borders */
-        const double width = -log(eps)/sqrt(fpp);
-        *a = fmax(1, xmax-width);
-        *b = xmax+width;
+        int l = nu/2;
+        double ratio = (l-1)/alpha;
+        x = ratio + sqrt(1+pow_2(ratio));
     }
+    else
+        x = sqrt(1+pow_2((nu+0.5)/alpha));
+
+    /* find position of peak: we use Newton's method to find the root of f'(x) */
+    for(int i = 0; i < maxiter; i++)
+    {
+        const double xold = x, x2m1 = x*x-1;
+        double d, d2;
+        d = dlnPlm(nu, 2*m_, x, &d2);
+
+        fp  = alpha -d  +mpos*2*x/x2m1;
+        fpp =       -d2 -mpos*2*(x*x+1)/pow_2(x2m1);
+
+        x = x-fp/fpp;
+
+        if(x <= 1)
+            x = 1+(xold-1)/2;
+        else if(fabs(x-xold) < 1e-6)
+            break;
+    }
+
+    xmax = x;
+    fxmax = f(xmax);
+
+    /* approximation using Laplace's method */
+    *approx = log(2*M_PI/fpp)/2-fxmax;
+
+    /* estimate width, left and right borders */
+    const double width = -log(eps)/sqrt(fpp);
+    *a = fmax(1, xmax-width);
+    *b = xmax+width;
 
     /* check left border */
     if(*a > 1)
@@ -217,6 +219,55 @@ static double _casimir_integrate_K(integration_t *self, int nu, polarization_t p
     const double eps = 1e-6;
     const double tau = self->tau;
     const double epsrel = self->epsrel;
+
+    if(m == 1 && self->is_pc)
+    {
+        /* use analytical result for m=1 and PR
+         * integrand: r_p exp(-τ*x)*P_ν^2(x)/(x²-1)
+         * integral: τ^(3/2)*sqrt(2/pi) K_(ν+½)(τ) - exp(-τ) [τ + ν(ν+1)/2]
+         *           \---------- t1 -------------/   \-------- t2 --------/
+         */
+        if(p == TE)
+            *sign = -1;
+        else
+            *sign = +1;
+
+        const double logt1 = 1.5*log(tau)+log(2/M_PI)/2+bessel_lnKnu(nu,tau);
+        const double logt2 = -tau+log(tau+nu*(nu+1)/2.);
+
+        return logt1 + log1p(-exp(logt2-logt1));
+    }
+    else if(m == 0 && self->is_pc)
+    {
+        /* use analytical result for m=0 and PR
+         * integrand: r_p exp(-τ*x)*P_ν^2(x)
+         * integral: 2*exp(-τ) + sqrt(2/(pi*τ)) [ (ν+1)(ν+2)K_{ν+1/2}(τ) - 2τ K_(ν+3/2)(τ) ]
+         *           \- t1 --/   \----- C ----/   \------- t1 ---------/   \---- t2 -----/
+         */
+        if(p == TE)
+            *sign = -1;
+        else
+            *sign = +1;
+
+        const double logC = log(2/(tau*M_PI))/2;
+
+        log_t terms[3];
+
+        /* t1 */
+        terms[0].v = log(2)-tau;
+        terms[0].s = +1;
+
+        /* t2 */
+        terms[1].v = logC+logi(nu+1)+logi(nu+2)+bessel_lnKnu(nu,tau);
+        terms[1].s = +1;
+
+        /* t3 */
+        terms[2].v = logC+log(2)+log(tau)+bessel_lnKnu(nu+1,tau);
+        terms[2].s = -1;
+
+        sign_t dummy;
+        return logadd_ms(terms, 3, &dummy);
+    }
 
     integrand_t args = {
         .nu   = nu,
