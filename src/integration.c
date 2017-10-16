@@ -42,13 +42,21 @@ static uint64_t hash(uint64_t l1, uint64_t l2, uint64_t p)
 /** @brief Estimate position and width of peak
  *
  * We want to estimate the position and the width of the maximum of the peak of
- * the integrand
+ * the integrand for \f$m>0\f$
  * \f[
- *  \int_1^\infty \mathrm{d}x \, r_p \frac{e^{-\alpha x}}{x^2-1} P_\nu^{2m}(x) = \int_1^\infty \mathrm{d}x \, r_p g(x) = \int_1^\infty \mathrm{d}x \, r_p e^{-f(x)}\
+ *  \int_1^\infty \mathrm{d}x \, r_p \frac{e^{-\alpha x}}{x^2-1} P_\nu^{2m}(x) = \int_1^\infty \mathrm{d}x \, r_p g(x) = \int_1^\infty \mathrm{d}x \, r_p e^{-f(x)}
  * \f]
- * with
+ * and for \f$m=0\f$
  * \f[
- *  f(x) = \alpha x - \log P_\nu^{2m}(x) + \log(x^2-1) \,.
+ *  \int_1^\infty \mathrm{d}x \, r_p e^{-\alpha x} P_\nu^2(x) = \int_1^\infty \mathrm{d}x \, r_p g(x) = \int_1^\infty \mathrm{d}x \, r_p e^{-f(x)}
+ * \f]
+ * with (\f$m>0\f$)
+ * \f[
+ *  f(x) = \alpha x - \log P_\nu^{2m}(x) + \log(x^2-1),
+ * \f]
+ * and (\f$m=0\f$)
+ * \f[
+ *  f(x) = \alpha x - \log P_\nu^2(x)\,.
  * \f]
  * We will assume that the Fresnel coefficient \f$r_p\f$ varies slowly with
  * respect to the width of the peak and set it to 1.
@@ -56,13 +64,16 @@ static uint64_t hash(uint64_t l1, uint64_t l2, uint64_t p)
  * We find the maximum of \f$f(x)\f$ using Newton's method on \f$f'(x)\f$. With
  * the maximum \f$x_\mathrm{max} \f$ and the second derivative at the maximum
  * \f$f''(x_\mathrm{max})\f$, we estimate the width of the peak and the value of
- * the integral using Laplace's method.
+ * the integral using Laplace's method:
+ * \f[
+ *  \int_1^\infty \mathrm{d}x \, e^{-f(x)} \approx \sqrt{\frac{2\pi}{-f''(x_\mathrm{max})}} e^{-f(x_\mathrm{max})}
+ * \f]
  *
  * The left border a and the right border b are determined by eps, such that
  * \f[
  *  e^{-f(a)} \approx e^{-f(b)} \approx \epsilon e^{-f(x_\mathrm{max})} \,.
  * \f]
- * However, a is cannot be smaller than 1.
+ * However, a cannot be smaller than 1.
  *
  * @param [in] nu parameter \f$\nu\f$
  * @param [in] m parameter \f$m\f$
