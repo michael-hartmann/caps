@@ -27,6 +27,8 @@ if __name__ == "__main__":
 double lfac(unsigned int n) __attribute__ ((pure));
 double logi(unsigned int x) __attribute__ ((pure));
 
+double lfac2(unsigned int n) __attribute__ ((pure));
+
 #endif"""
 
     month,year = date()
@@ -102,4 +104,28 @@ double lfac(unsigned int n)
         return lookup_lfac[n];
     else
         return lgamma(1+n);
-}""" % (max_logi, max_lfac), file=f)
+}
+""" % (max_logi, max_lfac), file=f)
+
+        print(r"""/** @brief Calculate \f$log(n!!)\f$
+ *
+ * This function computes the logarithm of the double factorial n!!.
+ *
+ * @param [in] n argument
+ * @retval lfac2 n!!
+ */
+double lfac2(unsigned int n)
+{
+    if(n % 2 == 0)
+    {
+        /* even */
+        unsigned int k = n/2;
+        return k*log(2)+lfac(k);
+    }
+    else
+    {
+        /* odd */
+        unsigned int k = (n+1)/2;
+        return lfac(2*k)-k*log(2)-lfac(k);
+    }
+}""", file=f)
