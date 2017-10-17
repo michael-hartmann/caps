@@ -392,13 +392,32 @@ static double integrate_I(integration_scalar_t *self, int l1, int l2)
  */
 static double _rs(casimir_t *casimir, int l, double xi_, char Y)
 {
-    double lna, lnb;
-    casimir_lnab_perf(casimir, xi_, l, &lna, &lnb);
+    const double chi = xi_/(1+casimir->LbyR);
 
+    if(Y == 'D')
+    {
+        double lnInu, lnKnu;
+        bessel_lnInuKnu(l, chi, &lnInu, &lnKnu);
+
+        /* Calculate b_l(chi), i.e. lnb */
+        return log(M_PI/2)+lnInu-lnKnu;
+    }
+
+    double u;
     if(Y == 'N')
-        return lna;
+        u = -0.5;
+    else if(Y == 'R')
+        u = +0.5;
     else
-        return lnb;
+        TERMINATE(true, "unknown bc Y=%c", Y);
+
+    double lnInu, lnKnu, lnInu_p, lnKnu_p;
+    bessel_lnInuKnu(l,   chi, &lnInu,   &lnKnu);
+    bessel_lnInuKnu(l+1, chi, &lnInu_p, &lnKnu_p);
+
+    const double num   = chi+(l+u+0.5)*exp(lnInu-lnInu_p);
+    const double denom = chi-(l+u+0.5)*exp(lnKnu-lnKnu_p);
+    return log(M_PI/2)+lnInu_p-lnKnu_p+log(num/denom);
 }
 
 /** @brief Kernel of scalar Casimir effect
@@ -427,7 +446,9 @@ static double kernel(int i, int j, void *args_)
 
     const double rs = (args->rs[i]+args->rs[j])/2;
     const double I = integrate_I(args->integration, l1, l2);
-    const double rp = args->X == 'D' ? 1 : -1;
+    double rp = args->X == 'D' ? 1 : -1;
+    if(args->Y == 'R' || args->Y == 'N')
+        rp *= -1;
 
     return rp*exp(C+rs+I);
 }
@@ -604,9 +625,15 @@ int main(int argc, char *argv[])
         for(size_t i = 0; i < strlen(argv[2]); i++)
             argv[2][i] = toupper(argv[2][i]);
 
-        if(strcmp(argv[2], "DD") != 0 && strcmp(argv[2], "DN") && strcmp(argv[2], "ND") && strcmp(argv[2], "NN"))
+        if(argv[2][0] != 'D' && argv[2][0] != 'N')
         {
-            fprintf(stderr, "boundary condition must be either DD, DN, ND or NN\n\n");
+            fprintf(stderr, "boundary condition at plate must be either D or N\n\n");
+            usage(argv[0], stderr);
+            return 1;
+        }
+        if(argv[2][1] != 'D' && argv[2][1] != 'N' && argv[2][1] != 'R')
+        {
+            fprintf(stderr, "boundary condition at sphere must be either D or N or R\n\n");
             usage(argv[0], stderr);
             return 1;
         }
