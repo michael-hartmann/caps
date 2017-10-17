@@ -87,10 +87,20 @@ double K_estimate(int nu, int m, double alpha, double eps, double *a, double *b,
     const int maxiter = 50;
     const int mpos = (m > 0) ? 1 : 0;
     const int m_ = MAX(m,1);
-    double xmax = NAN, fxmax = NAN, fp = NAN, fpp = NAN;
+    double fp = NAN, fpp = NAN;
 
     double f(double x)
     {
+        TERMINATE(x < 1, "x=%g, nu%d, m=%d, alpha=%g", x, nu, m, alpha);
+
+        if(x == 1)
+        {
+            if(m == 0)
+                return alpha*x-log( (nu-1.)*nu*(nu+1.)*(nu+2)/8. );
+            else
+                return -INFINITY;
+        }
+
         if(m == 0)
             return alpha*x-lnPlm(nu,2,x);
         else
@@ -120,36 +130,41 @@ double K_estimate(int nu, int m, double alpha, double eps, double *a, double *b,
     }
 
     /* initial guess of maximum */
-    double x;
+    double xmax;
     if(nu == (2*m))
     {
         int l = nu/2;
         double ratio = (l-1)/alpha;
-        x = ratio + sqrt(1+pow_2(ratio));
+        xmax = ratio + sqrt(1+pow_2(ratio));
     }
     else
-        x = sqrt(1+pow_2((nu+0.5)/alpha));
+        xmax = sqrt(1+pow_2((nu+0.5)/alpha));
 
     /* find position of peak: we use Newton's method to find the root of f'(x) */
     for(int i = 0; i < maxiter; i++)
     {
-        const double xold = x, x2m1 = x*x-1;
+        const double xold = xmax, x2m1 = xmax*xmax-1;
         double d, d2;
-        d = dlnPlm(nu, 2*m_, x, &d2);
+        d = dlnPlm(nu, 2*m_, xmax, &d2);
 
-        fp  = alpha -d  +mpos*2*x/x2m1;
-        fpp =       -d2 -mpos*2*(x*x+1)/pow_2(x2m1);
+        fp  = alpha -d  +mpos*2*xmax/x2m1;
+        fpp =       -d2 -mpos*2*(xmax*xmax+1)/pow_2(x2m1);
 
-        x = x-fp/fpp;
+        xmax = xmax-fp/fpp;
 
-        if(x <= 1)
-            x = 1+(xold-1)/2;
-        else if(fabs(x-xold) < 1e-6)
+        if(xmax <= 1)
+            xmax = 1+(xold-1)/2;
+        else if(fabs(xmax-xold) < 1e-6)
             break;
     }
 
-    xmax = x;
-    fxmax = f(xmax);
+    TERMINATE(xmax <= 1 || isnan(xmax) || isinf(xmax), "xmax=%g, nu=%d, m=%d, alpha=%g", xmax, nu, m, alpha);
+
+    const double fxmax = f(xmax);
+
+    TERMINATE(isnan(fxmax) || isinf(fxmax), "xmax=%g, fxmax=%g, nu=%d, m=%d, alpha=%g", xmax, fxmax, nu, m, alpha);
+
+    TERMINATE(isnan(fpp) || isinf(fpp), "xmax=%g, fxmax=%g, fpp=%g, nu=%d, m=%d, alpha=%g", xmax, fxmax, fpp, nu, m, alpha)
 
     /* approximation using Laplace's method */
     *approx = log(2*M_PI/fpp)/2-fxmax;
