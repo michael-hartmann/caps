@@ -97,7 +97,7 @@ double K_estimate(int nu, int m, double alpha, double eps, double *a, double *b,
             return alpha*x-lnPlm(nu,2*m,x)+log(x*x-1);
     }
 
-    if(m == 1 && ((nu-2)*(nu+3)/6.) < (1e-4+alpha))
+    if(m == 1 && ((nu-2)*(nu+3)/6.)/alpha < 1.01)
     {
         /* g(x)  = Plm(nu,2,x)*exp(-αx)/(x²-1) = exp(-αx) P_nu''(x)
          * g'(x) = exp(-αx) [ -αP_nu''(x) + P_nu'''(x) ]
