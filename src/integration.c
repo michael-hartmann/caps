@@ -87,19 +87,21 @@ double K_estimate(int nu, int m, double alpha, double eps, double *a, double *b,
     const int maxiter = 50;
     const int mpos = (m > 0) ? 1 : 0;
     const int m_ = MAX(m,1);
-    double fp = NAN, fpp = NAN;
+    double fxmax, fp, fpp, xmax;
 
     double f(double x)
     {
-        TERMINATE(x < 1, "x=%g, nu%d, m=%d, alpha=%g", x, nu, m, alpha);
+        TERMINATE(x <= 1, "x=%g, nu%d, m=%d, alpha=%g", x, nu, m, alpha);
 
+        /*
         if(x == 1)
         {
-            if(m == 0)
+            if(m == 1)
                 return alpha*x-log( (nu-1.)*nu*(nu+1.)*(nu+2)/8. );
             else
                 return -INFINITY;
         }
+        */
 
         if(m == 0)
             return alpha*x-lnPlm(nu,2,x);
@@ -107,7 +109,7 @@ double K_estimate(int nu, int m, double alpha, double eps, double *a, double *b,
             return alpha*x-lnPlm(nu,2*m,x)+log(x*x-1);
     }
 
-    if(m == 1 && ((nu-2)*(nu+3)/6.)/alpha < 1.01)
+    if(m == 1 && ((nu-2)*(nu+3)/6.)/alpha < 1.05)
     {
         /* g(x)  = Plm(nu,2,x)*exp(-αx)/(x²-1) = exp(-αx) P_nu''(x)
          * g'(x) = exp(-αx) [ -αP_nu''(x) + P_nu'''(x) ]
@@ -126,11 +128,12 @@ double K_estimate(int nu, int m, double alpha, double eps, double *a, double *b,
         double logt2 = -alpha+log(alpha+nu*(nu+1)/2.);
         *approx = logt1 + log1p(-exp(logt2-logt1));
 
-        return 1;
+        fxmax = alpha-log( (nu-1.)*nu*(nu+1.)*(nu+2)/8. );
+        xmax = 1;
+        goto bordercheck;
     }
 
     /* initial guess of maximum */
-    double xmax;
     if(nu == (2*m))
     {
         int l = nu/2;
@@ -154,17 +157,17 @@ double K_estimate(int nu, int m, double alpha, double eps, double *a, double *b,
 
         if(xmax <= 1)
             xmax = 1+(xold-1)/2;
-        else if(fabs(xmax-xold) < 1e-6)
+        if(fabs(xmax-xold) < 1e-6)
             break;
     }
 
     TERMINATE(xmax <= 1 || isnan(xmax) || isinf(xmax), "xmax=%g, nu=%d, m=%d, alpha=%g", xmax, nu, m, alpha);
 
-    const double fxmax = f(xmax);
+    fxmax = f(xmax);
 
     TERMINATE(isnan(fxmax) || isinf(fxmax), "xmax=%g, fxmax=%g, nu=%d, m=%d, alpha=%g", xmax, fxmax, nu, m, alpha);
 
-    TERMINATE(isnan(fpp) || isinf(fpp), "xmax=%g, fxmax=%g, fpp=%g, nu=%d, m=%d, alpha=%g", xmax, fxmax, fpp, nu, m, alpha)
+    TERMINATE(isnan(fpp) || isinf(fpp) || fpp <= 0, "xmax=%g, fxmax=%g, fpp=%g, nu=%d, m=%d, alpha=%g", xmax, fxmax, fpp, nu, m, alpha)
 
     /* approximation using Laplace's method */
     *approx = log(2*M_PI/fpp)/2-fxmax;
@@ -173,6 +176,8 @@ double K_estimate(int nu, int m, double alpha, double eps, double *a, double *b,
     const double width = -log(eps)/sqrt(fpp);
     *a = fmax(1, xmax-width);
     *b = xmax+width;
+
+bordercheck:
 
     /* check left border */
     if(*a > 1)
@@ -223,6 +228,16 @@ static double K_integrand(double x, void *args_)
     const double xi = tau/2;
     const double x2m1 = x*x-1;
 
+    /*
+    if(x == 1)
+    {
+        if(m == 0)
+            return tau*x-log( (nu-1.)*nu*(nu+1.)*(nu+2)/8. );
+        else
+            return -INFINITY;
+    }
+    */
+
     if(m)
         v = exp(-log_normalization + lnPlm(nu,2*m,x)-tau*x)/x2m1;
     else
@@ -246,6 +261,7 @@ static double _casimir_integrate_K(integration_t *self, int nu, polarization_t p
     const double tau = self->tau;
     const double epsrel = self->epsrel;
 
+    #if 0
     if(self->is_pc)
     {
         if(p == TE)
@@ -296,6 +312,7 @@ static double _casimir_integrate_K(integration_t *self, int nu, polarization_t p
         else if(nu == (2*m+1))
             return -0.5*log(M_PI)+(m-0.5)*log(2/tau)+lfac(m-1)+lfac2(4*m-1)+bessel_lnKnu(m,tau)+logi(4*m+1);
     }
+    #endif
 
     integrand_t args = {
         .nu   = nu,
