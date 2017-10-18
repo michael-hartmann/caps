@@ -379,7 +379,24 @@ static double _casimir_integrate_K(integration_t *self, int nu, polarization_t p
 double casimir_integrate_K(integration_t *self, int nu, polarization_t p, sign_t *sign)
 {
     const size_t index = nu-2*self->m;
-    double K = self->cache_K[index];
+
+    /* extend cache if neccessary */
+    if(index >= self->elems_cache_K)
+    {
+        size_t oldsize = self->elems_cache_K;
+        self->elems_cache_K *= 2;
+
+        self->cache_K[0] = xrealloc(self->cache_K[0], self->elems_cache_K);
+        self->cache_K[1] = xrealloc(self->cache_K[1], self->elems_cache_K);
+
+        for(size_t i = oldsize; i < self->elems_cache_K; i++)
+        {
+            self->cache_K[0][i] = NAN;
+            self->cache_K[1][i] = NAN;
+        }
+    }
+
+    double K = self->cache_K[p][index];
 
     if(p == TM)
         *sign = 1;
@@ -390,7 +407,7 @@ double casimir_integrate_K(integration_t *self, int nu, polarization_t p, sign_t
     {
         /* compute and save integral */
         K = _casimir_integrate_K(self, nu, p, sign);
-        self->cache_K[index] = K;
+        self->cache_K[p][index] = K;
     }
 
     return K;
@@ -606,10 +623,14 @@ integration_t *casimir_integrate_init(casimir_t *casimir, double xi_, int m, dou
     const int ldim = casimir->ldim;
     self->cache_I = cache_new(1000000, 1e-2);
 
-    const size_t elems = 4*(ldim+2*m+100); /* XXX */
-    self->cache_K = xmalloc(elems*sizeof(double));
-    for(size_t i = 0; i < elems; i++)
-        self->cache_K[i] = NAN;
+    self->elems_cache_K = 5*(ldim+2*m+100);
+    self->cache_K[0] = xmalloc(self->elems_cache_K*sizeof(double));
+    self->cache_K[1] = xmalloc(self->elems_cache_K*sizeof(double));
+    for(size_t i = 0; i < self->elems_cache_K; i++)
+    {
+        self->cache_K[0][i] = NAN;
+        self->cache_K[1][i] = NAN;
+    }
 
     if(isinf(casimir_epsilonm1(casimir, INFINITY)))
         self->is_pc = true;
@@ -629,7 +650,8 @@ void casimir_integrate_free(integration_t *integration)
     if(integration != NULL)
     {
         cache_free(integration->cache_I);
-        xfree(integration->cache_K);
+        xfree(integration->cache_K[0]);
+        xfree(integration->cache_K[1]);
         xfree(integration);
     }
 }
