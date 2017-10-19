@@ -215,8 +215,6 @@ bordercheck:
         TERMINATE(i == maxiter, "nu=%d, m=%d, alpha=%g, xmax=%g, f(xmax)=%g, b=%g", nu, m, alpha, xmax, fxmax, *b);
     }
 
-    printf("nu=%d, m=%d, alpha=%g, xmax=%g, f(xmax)=%g, approx=%g, a=%g, b=%g\n", nu,m,alpha,xmax,fxmax,*approx,*a,*b);
-
     return xmax;
 }
 
