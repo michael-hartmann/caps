@@ -93,16 +93,6 @@ double K_estimate(int nu, int m, double alpha, double eps, double *a, double *b,
     {
         TERMINATE(x <= 1, "x=%g, nu%d, m=%d, alpha=%g", x, nu, m, alpha);
 
-        /*
-        if(x == 1)
-        {
-            if(m == 1)
-                return alpha*x-log( (nu-1.)*nu*(nu+1.)*(nu+2)/8. );
-            else
-                return -INFINITY;
-        }
-        */
-
         if(m == 0)
             return alpha*x-lnPlm(nu,2,x);
         else
@@ -124,12 +114,25 @@ double K_estimate(int nu, int m, double alpha, double eps, double *a, double *b,
         *a = 1;
         *b = 1-log(eps)/alpha;
 
-        double logt1 = 1.5*log(alpha)+log(2/M_PI)/2+bessel_lnKnu(nu,alpha);
-        double logt2 = -alpha+log(alpha+nu*(nu+1)/2.);
-        *approx = logt1 + log1p(-exp(logt2-logt1));
+        const double logt1 = 1.5*log(alpha)+log(2/M_PI)/2+bessel_lnKnu(nu,alpha);
+        const double logt2 = -alpha+log(alpha+nu*(nu+1)/2.);
+        const double arg = -exp(logt2-logt1);
 
         fxmax = alpha-log( (nu-1.)*nu*(nu+1.)*(nu+2)/8. );
         xmax = 1;
+
+        /* for m=2 and PR we can evaluate the integral analytically. However,
+         * if alpha is very large, then arg may become -∞. In this case, we
+         * just use the maximum of the integrand as an approximation. This is
+         * ok, because we use approx only to scale the integrand.
+         */
+        if(fabs(arg) < 1)
+            /* exact evaluation */
+            *approx = logt1 + log1p(arg);
+        else
+            /* use maximum as an estimate for integral */
+            *approx = -fxmax;
+
         goto bordercheck;
     }
 
@@ -143,6 +146,7 @@ double K_estimate(int nu, int m, double alpha, double eps, double *a, double *b,
     else
         xmax = sqrt(1+pow_2((nu+0.5)/alpha));
 
+    /* xmax = fmax(1.1,xmax); XXX */
     /* find position of peak: we use Newton's method to find the root of f'(x) */
     for(int i = 0; i < maxiter; i++)
     {
@@ -211,6 +215,8 @@ bordercheck:
         TERMINATE(i == maxiter, "nu=%d, m=%d, alpha=%g, xmax=%g, f(xmax)=%g, b=%g", nu, m, alpha, xmax, fxmax, *b);
     }
 
+    printf("nu=%d, m=%d, alpha=%g, xmax=%g, f(xmax)=%g, approx=%g, a=%g, b=%g\n", nu,m,alpha,xmax,fxmax,*approx,*a,*b);
+
     return xmax;
 }
 
@@ -241,7 +247,9 @@ static double K_integrand(double x, void *args_)
     if(m)
         v = exp(-log_normalization + lnPlm(nu,2*m,x)-tau*x)/x2m1;
     else
+    {
         v = exp(-log_normalization + lnPlm(nu,2,x)-tau*x);
+    }
 
     casimir_rp(casimir, xi, xi*sqrt(x2m1), &rTE, &rTM);
 
@@ -261,6 +269,7 @@ static double _casimir_integrate_K(integration_t *self, int nu, polarization_t p
     const double tau = self->tau;
     const double epsrel = self->epsrel;
 
+    /* XXX */
     #if 0
     if(self->is_pc)
     {
