@@ -893,11 +893,10 @@ double casimir_integrate_plasma(integration_plasma_t *self, int l1, int l2, int 
      */
 
     /* find left and right boundaries */
-    TERMINATE(true, "not implemented right now");
-    double a,b;
-    //const double tol = 1e-2;
-    //const double eps = 1e-6;
-    //_f_estimate(nu, 1, eps, tol, &a, &b);
+    const double width = 1/sqrt(nu);
+    const double xmax = nu;
+    const double a = fmax(0, nu-5*width);
+    const double b = xmax+5*width;
 
     /* perform integrations in intervals [0,a], [a,b] and [b,∞] */
     const double epsrel = self->epsrel;
