@@ -267,8 +267,7 @@ static double _casimir_integrate_K(integration_t *self, int nu, polarization_t p
     const double tau = self->tau;
     const double epsrel = self->epsrel;
 
-    /* XXX */
-    #if 0
+    /* some analytical solutions for perfect reflectors */
     if(self->is_pc)
     {
         if(p == TE)
@@ -281,7 +280,7 @@ static double _casimir_integrate_K(integration_t *self, int nu, polarization_t p
             /* use analytical result for m=0 and PR
              * integrand: r_p exp(-τ*x)*P_ν^2(x)
              * integral: 2*exp(-τ) + sqrt(2/(pi*τ)) [ (ν+1)(ν+2)K_{ν+1/2}(τ) - 2τ K_(ν+3/2)(τ) ]
-             *           \- t1 --/   \----- C ----/   \------- t1 ---------/   \---- t2 -----/
+             *           \- t0 --/   \----- C ----/   \------- t1 ---------/   \---- t2 -----/
              */
             const double logC = log(2/(tau*M_PI))/2;
 
@@ -319,7 +318,6 @@ static double _casimir_integrate_K(integration_t *self, int nu, polarization_t p
         else if(nu == (2*m+1))
             return -0.5*log(M_PI)+(m-0.5)*log(2/tau)+lfac(m-1)+lfac2(4*m-1)+bessel_lnKnu(m,tau)+logi(4*m+1);
     }
-    #endif
 
     integrand_t args = {
         .nu   = nu,
@@ -626,6 +624,11 @@ double casimir_integrate_I(integration_t *self, int l1, int l2, polarization_t p
  * The memory of this object has to be freed after use by a call to \ref
  * casimir_integrate_free.
  *
+ * The computation is sped up using caches. The number of elements of the cache
+ * for the K integrals are proportional to ldim, the elements for the I
+ * integrals are fixed. This value can be changed using the environmental
+ * variable CASIMIR_CACHE_ELEMS.
+ *
  * @param [in] casimir Casimir object
  * @param [in] xi_ \f$\xi\mathcal{L}/c\f$
  * @param [in] m magnetic quantum number
@@ -644,10 +647,14 @@ integration_t *casimir_integrate_init(casimir_t *casimir, double xi_, int m, dou
     self->tau = 2*xi_;
     self->epsrel = epsrel;
 
-    const int ldim = casimir->ldim;
-    self->cache_I = cache_new(1000000, 1e-2);
+    int elems = CASIMIR_CACHE_ELEMS;
+    const char *s = getenv("CASIMIR_CACHE_ELEMS");
+    if(s != NULL)
+        elems = atoi(s);
 
-    self->elems_cache_K = 5*(ldim+2*m+100);
+    self->cache_I = cache_new(elems, 1e-2);
+
+    self->elems_cache_K = 5*(casimir->ldim+2*m+100);
     self->cache_K[0] = xmalloc(self->elems_cache_K*sizeof(double));
     self->cache_K[1] = xmalloc(self->elems_cache_K*sizeof(double));
     for(size_t i = 0; i < self->elems_cache_K; i++)
@@ -656,6 +663,7 @@ integration_t *casimir_integrate_init(casimir_t *casimir, double xi_, int m, dou
         self->cache_K[1][i] = NAN;
     }
 
+    /* determine wether we have perfect reflectors or not */
     if(isinf(casimir_epsilonm1(casimir, INFINITY)))
         self->is_pc = true;
     else
