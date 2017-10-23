@@ -538,7 +538,7 @@ static double _casimir_integrate_I(integration_t *self, int l1, int l2, polariza
         array[q].s = SGN(aq[q])*s;
         array[q].v = log_scaling+K+log(fabs(aq[q]));
 
-        if(q > 15 && (array[q].v - array[0].v) < -75)
+        if((array[q].v - array[0].v) < -75)
             break;
     }
 
