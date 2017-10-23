@@ -268,6 +268,7 @@ static double _casimir_integrate_K(integration_t *self, int nu, polarization_t p
     const double epsrel = self->epsrel;
 
     /* some analytical solutions for perfect reflectors */
+    #if 0
     if(self->is_pc)
     {
         if(p == TE)
@@ -318,6 +319,7 @@ static double _casimir_integrate_K(integration_t *self, int nu, polarization_t p
         else if(nu == (2*m+1))
             return -0.5*log(M_PI)+(m-0.5)*log(2/tau)+lfac(m-1)+lfac2(4*m-1)+bessel_lnKnu(m,tau)+logi(4*m+1);
     }
+    #endif
 
     integrand_t args = {
         .nu   = nu,
@@ -454,7 +456,7 @@ static double _casimir_integrate_I(integration_t *self, int l1, int l2, polariza
     /* eq. (24) */
     const int qmax = MIN(MIN(n,nu), (l1pl2-2*m_)/2);
 
-    TERMINATE(qmax < 0, "l1=%d, l2=%d, m=%d\n", l1, l2, (int)m);
+    TERMINATE(qmax < 0, "l1=%d, l2=%d, m=%d\n", l1, l2, self->m);
 
     /* eq. (28) */
     const double Ap = -2*m*(n-nu)*(n+nu+1);
@@ -545,7 +547,7 @@ static double _casimir_integrate_I(integration_t *self, int l1, int l2, polariza
     double log_I;
     done:
     log_I = log_a0+logadd_ms(array, MIN(q,qmax)+1, sign);
-    TERMINATE(!isfinite(log_I), "l1=%d, l2=%d, p=%d, log_I=%g", l1, l2, p_, log_I);
+    TERMINATE(!isfinite(log_I), "l1=%d, l2=%d, m=%d, p=%d, log_I=%g", l1, l2, self->m, p_, log_I);
     //TERMINATE((*sign == 1 && p_ != TM) || (*sign==-1 && p_ != TE), "l1=%d, l2=%d, p=%d, sign=%d, log_I=%g, q=%d", l1, l2, p_, *sign, log_I, q);
 
     return log_I;
