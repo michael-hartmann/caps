@@ -351,11 +351,20 @@ static double _casimir_integrate_K(integration_t *self, int nu, polarization_t p
     /* I1: [1,a] */
     if(a > 1)
     {
-        /* The contribution of this integral should be small, so use
-         * Gauss-Kronrod G_K 7-15 as integration rule.
+        /* check if the contribution is so small that we can neglect the
+         * contribution. The integrand is monotonically increasing in [1,a] and
+         * the maximum is at x=a. So, a very simple estimate of the integral is
+         * (a-1)*integrand(a)
          */
-        int limit = 200;
-        I1 = dqage(K_integrand, 1, a, abserr2, 0, GK_7_15, &abserr1, &neval1, &ier1, &limit, &args);
+        const double fa = K_integrand(a, &args);
+        if((a-1)*fa > I2*epsrel)
+        {
+            /* The contribution of this integral should be small, so use
+             * Gauss-Kronrod G_K 7-15 as integration rule.
+             */
+            int limit = 200;
+            I1 = dqage(K_integrand, 1, a, abserr2, 0, GK_7_15, &abserr1, &neval1, &ier1, &limit, &args);
+        }
     }
 
     /* I3: [b,∞]
