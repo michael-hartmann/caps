@@ -446,7 +446,6 @@ static double alpha(double p, double n, double nu)
 static double _casimir_integrate_I(integration_t *self, int l1, int l2, polarization_t p_, sign_t *sign)
 {
     sign_t s;
-    double K;
 
     const int m_ = self->m > 0 ? self->m : 1;
     const double n  = l1, nu = l2, m = m_;
@@ -467,11 +466,10 @@ static double _casimir_integrate_I(integration_t *self, int l1, int l2, polariza
     double aq[qmax+1];
     log_t array[qmax+1];
 
-
     /* q = 0 */
     int q = 0;
     aq[q] = 1;
-    K = casimir_integrate_K(self, l1pl2-2*q, p_, &s);
+    double K = casimir_integrate_K(self, l1pl2-2*q, p_, &s);
     array[q].s = s;
     array[q].v = K;
 
@@ -504,6 +502,7 @@ static double _casimir_integrate_I(integration_t *self, int l1, int l2, polariza
         goto done;
 
     double log_scaling = 0;
+    int count = 0;
     for(q = 3; q <= qmax; q++)
     {
         const double p = n+nu-2*q, p1 = p-2*m, p2 = p+2*m;
@@ -540,8 +539,13 @@ static double _casimir_integrate_I(integration_t *self, int l1, int l2, polariza
         array[q].s = SGN(aq[q])*s;
         array[q].v = log_scaling+K+log(fabs(aq[q]));
 
-        if((array[q].v - array[0].v) < -75)
-            break;
+        if((array[q].v - array[0].v) < -60)
+        {
+            if(++count >= 3)
+                break;
+        }
+        else
+            count = 0;
     }
 
     double log_I;
