@@ -78,7 +78,7 @@ double lnPlm(int l, int m, double x)
 double lnPlm_upwards(int l, int m, double x)
 {
     double array[l-m+1];
-    /* P_m^m = (2m)!/(2^m*m!) (1-x²)^(m/2), http://dlmf.nist.gov/14.7.E15 */
+    /* P_m^m = (2m)!/(2^m*m!) (x²-1)^(m/2), http://dlmf.nist.gov/14.7.E15 */
     double log_prefactor = lfac(2*m)-m*log(2)-lfac(m) + m/2.*log((x+1)*(x-1));
 
     if(l == m)
