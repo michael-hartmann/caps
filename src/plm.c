@@ -153,7 +153,7 @@ static double _Pl1(int l, double x, double sinhxi)
     double sum = 0;
     double sinhxi_m = 1; /* sinh(xi)**m */
     double expxi_m  = 1; /* exp(xi)**m */
-    for(int m = 0; m < 17; m++)
+    for(int m = 0; m < 16; m++)
     {
         sum += Clm*(expxi_m+exp(-(m+2*l+1)*xi))/sinhxi_m;
 
@@ -161,7 +161,7 @@ static double _Pl1(int l, double x, double sinhxi)
         expxi_m  *= expxi;
         Clm *= pow_2(m+0.5)/((2*m+2)*(l+1.5+m));
     }
-    sum += Clm*(expxi_m+exp(-(2*l+18)*xi))/sinhxi_m; /* m=17 */
+    sum += Clm*(expxi_m+exp(-(2*l+1+16)*xi))/sinhxi_m; /* m=16 */
 
     return -(M_LOG2+M_LOGPI)/2 - log(sinhxi)/2 + log(sum) + (l+0.5)*xi;
 }
