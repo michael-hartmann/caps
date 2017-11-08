@@ -1,7 +1,7 @@
 cdef extern from "plm.h":
-    double Plm(int l, int m, double x)
-    double Plm_estimate(int l, int m, double x)
-    double plm_continued_fraction(const long l, const long m, const double x)
+    double lnPlm(int l, int m, double x)
+    double lnPlm_estimate(int l, int m, double x)
+    double Plm_continued_fraction(const long l, const long m, const double x)
 
 cdef extern from "bessel.h":
     double besselI0e(double x)
