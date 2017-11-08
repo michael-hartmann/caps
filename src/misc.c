@@ -44,8 +44,8 @@ double kahan_sum(double input[], size_t N)
  * If x is small, sqrt(1+x)≈1 and a loss of significance occures when
  * calculating sqrt(1+x)-1.
  *
- * For this reason we use the Taylor series
- *     sqrt(1+x) ≈ 1 + x/2 - x²/8 + x³/16 - 5*x^4/128 + ...
+ * For this reason we compute
+ *     sqrt(1+x)-1 = x/(sqrt(1+x)+1)
  * to avoid a loss of significance if x is small.
  *
  * @param [in] x
@@ -53,12 +53,7 @@ double kahan_sum(double input[], size_t N)
  */
 double sqrtpm1(double x)
 {
-    /* return x/(sqrt(1+x)+1); */
-    if(fabs(x) < 1e-5)
-        /* sqrt(1+x)-1 = x/2 - x²/8 + x³/16 - 5*x^4/128 + O(x^5) */
-        return x/2 - pow_2(x)/8 + pow_3(x)/16 - 5*pow_4(x)/128;
-    else
-        return sqrt(1+x)-1;
+    return x/(sqrt(1+x)+1);
 }
 
 /**
