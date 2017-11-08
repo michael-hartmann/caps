@@ -7,7 +7,7 @@
 
 #include "utils.h"
 
-typedef enum { DETALG_HODLR, DETALG_LU } detalg_t;
+typedef enum { DETALG_HODLR, DETALG_LU, DETALG_QR, DETALG_CHOLESKY } detalg_t;
 
 /** define matrix type */
 typedef struct {
@@ -46,7 +46,8 @@ double matrix_norm_frobenius(matrix_t *A);
 double kernel_logdet(int dim, double (*M)(int,int,void *), void *args, int symmetric, detalg_t detalg);
 
 double matrix_logdet_triangular(matrix_t *A);
-double matrix_logdet_dense(matrix_t *A, double z);
+double matrix_logdet_dense(matrix_t *A, double z, detalg_t detalg);
+double matrix_logdet_cholesky(matrix_t *A, char uplo);
 double matrix_logdet_lu(matrix_t *A);
 double matrix_logdet_qr(matrix_t *A);
 double matrix_logdetIdmM_eig(matrix_t *A, double z);
