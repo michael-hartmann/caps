@@ -670,7 +670,7 @@ void usage(FILE *stream)
 "\n"
 "    -f, --material FILENAME\n"
 "        Filename of the material description file. If set, --omegap and\n"
-"        --gamma will be ignored."
+"        --gamma will be ignored.\n"
 "\n"
 "    --omegap OMEGAP\n"
 "        Model the metals using the Drude/Plasma model and set Plasma\n"

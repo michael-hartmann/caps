@@ -1,7 +1,7 @@
 /**
  * @file   libcasimir.c
  * @author Michael Hartmann <michael.hartmann@physik.uni-augsburg.de>
- * @date   August, 2017
+ * @date   November, 2017
  * @brief  library to calculate the free Casimir energy in the plane-sphere geometry
  */
 
@@ -278,9 +278,11 @@ void casimir_info(casimir_t *self, FILE *stream, const char *prefix)
 
     switch(self->detalg)
     {
-        case DETALG_HODLR: detalg_str = "HODLR"; break;
-        case DETALG_LU:    detalg_str = "LU";    break;
-        default:           detalg_str = "unknown";
+        case DETALG_HODLR:    detalg_str = "HODLR";    break;
+        case DETALG_LU:       detalg_str = "LU";       break;
+        case DETALG_QR:       detalg_str = "QR";       break;
+        case DETALG_CHOLESKY: detalg_str = "CHOLESKY"; break;
+        default:              detalg_str = "unknown";
     }
 
     fprintf(stream, "%sL/R    = %.16g\n", prefix, self->LbyR);
