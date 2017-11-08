@@ -143,6 +143,7 @@ double lnPlm_estimate(int l, int m, double x)
  */
 static double _Pl1(int l, double x, double sinhxi)
 {
+    const int M = 17;
     const double xi = acosh(x);
     /* exp(xi) = exp(acosh(x)) = x+ sqrt((x+1)*(x-1)) */
     const double expxi = x+sinhxi;
@@ -153,15 +154,16 @@ static double _Pl1(int l, double x, double sinhxi)
     double sum = 0;
     double sinhxi_m = 1; /* sinh(xi)**m */
     double expxi_m  = 1; /* exp(xi)**m */
-    for(int m = 0; m < 17; m++)
+    for(int m = 0; m < M-1; m++)
     {
-        sum += Clm*(expxi_m+exp(-(m+2*l+1)*xi))/sinhxi_m;
+        double v = Clm*(expxi_m+exp(-(m+2*l+1)*xi))/sinhxi_m;
+        sum += v;
 
         sinhxi_m *= sinhxi;
         expxi_m  *= expxi;
         Clm *= pow_2(m+0.5)/((2*m+2)*(l+1.5+m));
     }
-    sum += Clm*(expxi_m+exp(-(2*l+18)*xi))/sinhxi_m; /* m=17 */
+    sum += Clm*(expxi_m+exp(-(2*l+M-1+1)*xi))/sinhxi_m; /* m=M-1 */
 
     return -(M_LOG2+M_LOGPI)/2 - log(sinhxi)/2 + log(sum) + (l+0.5)*xi;
 }
@@ -211,8 +213,9 @@ static double _Pl2(int l, double x)
     double yn = 1; /* y^n */
     for(int n = 0; n < 13; n++)
     {
-        hn[n] = yn*besselI(n,-y);
-        yn *= y;
+        /* yn = (-y)**n */
+        hn[n] = yn*besselI(n,y);
+        yn *= -y;
     }
 
     double s = 0;
