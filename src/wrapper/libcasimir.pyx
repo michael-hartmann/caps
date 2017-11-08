@@ -21,16 +21,16 @@ class sfunc:
     def plm(int l, int m, double x):
         """Compute associated Legendre function Plm for x>1."""
         sfunc.__check_parameters_plm(l,m,x)
-        return libcasimir.Plm(l,m,x)
+        return libcasimir.lnPlm(l,m,x)
 
     def plm_cf(long l, long m, double x):
         """Calculate fraction P_l^{m-1}(x)/P_l^m(x)"""
         sfunc.__check_parameters_plm(l,m,x)
-        return libcasimir.plm_continued_fraction(l, m, x)
+        return libcasimir.Plm_continued_fraction(l, m, x)
 
     def plm_estimate(int l, int m, double x):
         sfunc.__check_parameters_plm(l,m,x)
-        return libcasimir.Plm_estimate(l, m, x)
+        return libcasimir.lnPlm_estimate(l, m, x)
 
     def besselI(int n, double x):
         return libcasimir.besselI(n, x)
