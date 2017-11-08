@@ -56,7 +56,7 @@ double kernel_logdet(int dim, double (*kernel)(int,int,void *), void *args, int 
         return -trace;
 
 #ifdef SUPPORT_LAPACK
-    if(detalg == DETALG_LU)
+    if(detalg != DETALG_HODLR)
     {
         /* allocate space for matrix M */
         matrix_t *M = matrix_alloc(dim);
@@ -72,12 +72,15 @@ double kernel_logdet(int dim, double (*kernel)(int,int,void *), void *args, int 
         for(size_t md = 1; md < (size_t)dim; md++)
             for(size_t k = 0; k < (size_t)dim-md; k++)
             {
-                matrix_set(M, k,md+k, kernel(k,md+k,args));
+                /* for cholesky decomposition we only need the upper part of
+                 * the matrix */
+                if(detalg != DETALG_CHOLESKY)
+                    matrix_set(M, k,md+k, kernel(k,md+k,args));
                 matrix_set(M, md+k,k, kernel(md+k,k,args));
             }
 
         /* compute logdet */
-        logdet = matrix_logdet_dense(M, -1);
+        logdet = matrix_logdet_dense(M, -1, detalg);
 
         matrix_free(M);
 
@@ -468,9 +471,10 @@ double matrix_logdet_triangular(matrix_t *A)
  *
  * @param [in,out] M round trip matrix M; M will be overwritten.
  * @param [in]     z factor z in log(det(Id+z*M))
+ * @param [in]     detalg algorithm to use (cholesky, lu or qr)
  * @retval logdet  \f$\log\det(\mathrm{Id}+z*M)\f$
  */
-double matrix_logdet_dense(matrix_t *A, double z)
+double matrix_logdet_dense(matrix_t *A, double z, detalg_t detalg)
 {
     /* ||zA|| = |z| ||A|| */
     const double norm = fabs(z)*matrix_norm_frobenius(A);
@@ -516,7 +520,15 @@ double matrix_logdet_dense(matrix_t *A, double z)
         }
     }
 
-    return matrix_logdet_lu(A);
+    if(detalg == DETALG_CHOLESKY)
+        /* use cholesky decomposition */
+        return matrix_logdet_cholesky(A, 'U');
+    else if(detalg == DETALG_QR)
+        /* use cholesky decomposition */
+        return matrix_logdet_qr(A);
+    else
+        /* LU decomposition */
+        return matrix_logdet_lu(A);
 }
 
 /**
@@ -550,6 +562,45 @@ double matrix_logdet_lu(matrix_t *A)
     TERMINATE(info != 0, "dgetrf returned %d", info);
 
     return matrix_logdet_triangular(A);
+}
+
+
+/**
+ * @brief Calculate log(|det(A)|) using Cholesky decomposition
+ *
+ * Calculate QR decomposition of A and use \ref matrix_logdet_triangular to
+ * calculate log(|det(A)|).
+ *
+ * Only the lower part of the matrix (uplo=L) or the upper part of the matrix
+ * (uplo=U) are used.
+ *
+ * @param [in,out] A matrix
+ * @param [in] uplo L or U
+ * @retval logdet log(|det(A)|)
+ */
+double matrix_logdet_cholesky(matrix_t *A, char uplo)
+{
+    int info = 0;
+    int dim = (int)A->dim;
+    if(dim <= 0)
+        return NAN;
+    int lda = (int)A->lda;
+    double *a = A->M;
+
+    if(uplo != 'U' && uplo != 'u')
+        uplo = 'L';
+
+    dpotrf_(
+        &uplo, /* UPLO U: Upper triangle is stored; L: Lower triangle is stored */
+        &dim,  /* N number of columns of A */
+        a,     /* matrix A to be factored */
+        &lda,  /* LDA leading dimension of A */
+        &info
+    );
+
+    TERMINATE(info != 0, "dpotrf returned %d", info);
+
+    return 2*matrix_logdet_triangular(A);
 }
 
 
