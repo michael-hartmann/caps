@@ -108,9 +108,6 @@ Also, libcasimir uses some third-party software:
  * [cquadpack](https://github.com/ESSS/cquadpack) for integration. cquadpack is
    a a C port of the QUADPACK software originally written in Fortran for
    solving integrals. (public domain)
- * [hash-table](https://github.com/fragglet/c-algorithms) is an implementation
-   of hash tables in C. The code was slightly modified for the use in
-   libcasimir. (ISC license)
  * [cephes](http://www.netlib.org/cephes/) is a software collection with
    special functions. libcasimir uses the implementation for the modified
    Bessel functions [I0(x)](http://www.netlib.org/cephes/doubldoc.html#i0) and

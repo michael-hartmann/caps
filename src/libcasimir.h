@@ -20,6 +20,8 @@ typedef enum { TE, TM } polarization_t;
 #define CASIMIR_FACTOR_LDIM 5   /**< by default: lmax=ceil(5/LbyR) */
 #define CASIMIR_EPSREL 1e-8  /**< default relative error for integration */
 
+#define CASIMIR_CACHE_ELEMS 1000000 /**< default number of elems of the cache for I integrals */
+
 /**
  * The Casimir object. This structure stores all essential information about
  * temperature, geometry and the reflection properties of the mirrors.
@@ -60,7 +62,8 @@ typedef struct {
     int m;
     double tau,epsrel;
     cache_t *cache_I;
-    cache_t *cache_K;
+    double *cache_K[2];
+    size_t elems_cache_K;
     bool is_pc;
 } integration_t;
 
