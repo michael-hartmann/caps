@@ -78,7 +78,7 @@ double lnPlm(int l, int m, double x)
 double lnPlm_upwards(int l, int m, double x)
 {
     double array[l-m+1];
-    /* P_m^m = (2m)!/(2^m*m!) (1-x²)^(m/2), http://dlmf.nist.gov/14.7.E15 */
+    /* P_m^m = (2m)!/(2^m*m!) (x²-1)^(m/2), http://dlmf.nist.gov/14.7.E15 */
     double log_prefactor = lfac(2*m)-m*log(2)-lfac(m) + m/2.*log((x+1)*(x-1));
 
     if(l == m)
@@ -358,7 +358,7 @@ double Plm_continued_fraction(const long l, const long m, const double x)
  * @brief Compute associated Legendre polynomials using downwards recurrence relation
  *
  * First, the fraction \f$P_l^m(x)/P_l^{m-1}(x)\f$ is computed using \ref Plm_continued_fraction.
- * Then the downwards recurrence relation http://dlmf.nist.gov/14.10.E1 is used
+ * Then the downwards recurrence relation http://dlmf.nist.gov/14.10.E6 is used
  * from \f$P_l^m(x)\f$ to \f$P_l^0(x)\f$. Together with \f$P_l(x)\f$ (see \ref Pl) one has the solution.
  *
  * This routine is efficient if \f$l \gg m\f$.
