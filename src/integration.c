@@ -416,11 +416,13 @@ double casimir_integrate_K(integration_t *self, int nu, polarization_t p, sign_t
     /* extend cache if neccessary */
     if(index >= self->elems_cache_K)
     {
-        size_t oldsize = self->elems_cache_K;
-        self->elems_cache_K *= 2;
+        const size_t oldsize = self->elems_cache_K;
+        /* if cache is not sufficient, set the new size to double the amount we
+         * need right now */
+        self->elems_cache_K = 2*index;
 
-        self->cache_K[0] = xrealloc(self->cache_K[0], self->elems_cache_K);
-        self->cache_K[1] = xrealloc(self->cache_K[1], self->elems_cache_K);
+        self->cache_K[0] = xrealloc(self->cache_K[0], self->elems_cache_K*sizeof(double));
+        self->cache_K[1] = xrealloc(self->cache_K[1], self->elems_cache_K*sizeof(double));
 
         for(size_t i = oldsize; i < self->elems_cache_K; i++)
         {
