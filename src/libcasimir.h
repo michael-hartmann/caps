@@ -100,7 +100,7 @@ int casimir_get_ldim(casimir_t *self);
 int casimir_set_ldim(casimir_t *self, int ldim);
 
 detalg_t casimir_get_detalg(casimir_t *self);
-void casimir_set_detalg(casimir_t *self, detalg_t detalg);
+int casimir_set_detalg(casimir_t *self, detalg_t detalg);
 
 double casimir_get_epsrel(casimir_t *self);
 int    casimir_set_epsrel(casimir_t *self, double epsrel);

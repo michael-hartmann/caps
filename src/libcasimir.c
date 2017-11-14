@@ -279,9 +279,11 @@ void casimir_info(casimir_t *self, FILE *stream, const char *prefix)
     switch(self->detalg)
     {
         case DETALG_HODLR:    detalg_str = "HODLR";    break;
+        #ifdef SUPPORT_LAPACK
         case DETALG_LU:       detalg_str = "LU";       break;
         case DETALG_QR:       detalg_str = "QR";       break;
         case DETALG_CHOLESKY: detalg_str = "CHOLESKY"; break;
+        #endif
         default:              detalg_str = "unknown";
     }
 
@@ -349,19 +351,30 @@ void casimir_set_epsilonm1(casimir_t *self, double (*epsilonm1)(double xi_, void
  * The algorithm is given by detalg. Usually you don't want to change the
  * algorithm to compute the determinant.
  *
- * detalg may be: DETALG_HODLR, DETALG_LU (needs LAPACK support)
+ * detalg may be: DETALG_HODLR or (needs LAPACK support) DETALG_LU, DETALG_QR,
+ * DETALG_CHOLESKY.
+ *
+ * If successul, the function returns 1. If the algorithm is not supported
+ * because of missing LAPACK support, 0 is returned.
  *
  * @param [in,out] self Casimir object
  * @param [in] detalg algorithm to compute determinant
+ * @retval success 1 if successful, 0 if not successful
  */
-void casimir_set_detalg(casimir_t *self, detalg_t detalg)
+int casimir_set_detalg(casimir_t *self, detalg_t detalg)
 {
-    if(detalg != DETALG_LU)
+    if(detalg == DETALG_HODLR)
+    {
         self->detalg = detalg;
+        return 1;
+    }
 #ifdef SUPPORT_LAPACK
-    else
-        self->detalg = detalg;
+    self->detalg = detalg;
+    return 1;
+#else
+    return 0;
 #endif
+
 }
 
 /**
