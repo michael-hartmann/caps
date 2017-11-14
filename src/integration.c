@@ -162,7 +162,10 @@ double K_estimate(int nu, int m, double alpha, double eps, double *a, double *b,
 
         if(xmax <= 1)
             xmax = 1+(xold-1)/2;
-        if(fabs(xmax-xold) < 1e-6)
+
+        /* if xmax is close to 1, compute maximum with higher precision */
+        const double delta = fabs(xmax-xold);
+        if(delta < 1e-9 || (xmax > 1.001 && delta < 1e-6))
             break;
     }
 
@@ -205,7 +208,6 @@ bordercheck:
         int i;
         for(i = 0; i < maxiter; i++)
         {
-            //printf("b=%g\n", *b);
             const double fb = f(*b);
             if(exp(fxmax-fb) < eps)
                 break;
@@ -215,6 +217,10 @@ bordercheck:
 
         TERMINATE(i == maxiter, "nu=%d, m=%d, alpha=%g, xmax=%g, f(xmax)=%g, b=%g", nu, m, alpha, xmax, fxmax, *b);
     }
+
+    #if 0 /* neat for debugging */
+    printf("estimate: a=%g, b=%g, I=%.15g, xmax=%g\n", *a, *b, *approx, xmax);
+    #endif
 
     return xmax;
 }
