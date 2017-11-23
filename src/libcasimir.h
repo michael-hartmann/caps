@@ -64,7 +64,7 @@ typedef struct {
     cache_t *cache_I;
     double *cache_K[2];
     size_t elems_cache_K;
-    bool is_pc;
+    bool is_pr;
 } integration_t;
 
 typedef struct {
