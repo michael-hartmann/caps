@@ -263,7 +263,7 @@ static double _casimir_integrate_K(integration_t *self, int nu, polarization_t p
 
     /* some analytical solutions for perfect reflectors */
     #if 0
-    if(self->is_pc)
+    if(self->is_pr)
     {
         if(p == TE)
             *sign = -1;
@@ -589,7 +589,7 @@ double casimir_integrate_I(integration_t *self, int l1, int l2, polarization_t p
     }
 
     /* simplification for perfect conductors */
-    if(self->is_pc && p == TE)
+    if(self->is_pr && p == TE)
     {
         const double v = casimir_integrate_I(self, l1, l2, TM, sign);
         *sign = -1;
@@ -676,9 +676,9 @@ integration_t *casimir_integrate_init(casimir_t *casimir, double xi_, int m, dou
 
     /* determine wether we have perfect reflectors or not */
     if(isinf(casimir_epsilonm1(casimir, INFINITY)))
-        self->is_pc = true;
+        self->is_pr = true;
     else
-        self->is_pc = false;
+        self->is_pr = false;
 
     return self;
 }
