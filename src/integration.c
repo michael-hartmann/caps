@@ -147,7 +147,6 @@ double K_estimate(int nu, int m, double alpha, double eps, double *a, double *b,
     else
         xmax = sqrt(1+pow_2((nu+0.5)/alpha));
 
-    /* xmax = fmax(1.1,xmax); XXX */
     /* find position of peak: we use Newton's method to find the root of f'(x) */
     for(int i = 0; i < maxiter; i++)
     {
