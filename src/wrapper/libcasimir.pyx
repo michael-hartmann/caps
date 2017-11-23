@@ -14,21 +14,21 @@ class sfunc:
         if m < 0:
             raise ValueError("m must be non-negative")
         if m > l:
-            raise ValueError("m must no be large than l")
+            raise ValueError("m must not be large than l")
         if x <= 1:
             raise ValueError("x must be larger than 1")
 
-    def plm(int l, int m, double x):
+    def lnPlm(int l, int m, double x):
         """Compute associated Legendre function Plm for x>1."""
         sfunc.__check_parameters_plm(l,m,x)
         return libcasimir.lnPlm(l,m,x)
 
-    def plm_cf(long l, long m, double x):
+    def Plm_continued_fraction(long l, long m, double x):
         """Calculate fraction P_l^{m-1}(x)/P_l^m(x)"""
         sfunc.__check_parameters_plm(l,m,x)
         return libcasimir.Plm_continued_fraction(l, m, x)
 
-    def plm_estimate(int l, int m, double x):
+    def lnPlm_estimate(int l, int m, double x):
         sfunc.__check_parameters_plm(l,m,x)
         return libcasimir.lnPlm_estimate(l, m, x)
 
