@@ -376,7 +376,6 @@ double lnPlm_downwards(int l, int m, double x)
     if(m == 0)
         return prefactor;
 
-    /* herbie XXX */
     c = 2*x/sqrt((x-1)*(x+1));
 
     vp = +1;
