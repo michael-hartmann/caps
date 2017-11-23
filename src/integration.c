@@ -238,22 +238,10 @@ static double K_integrand(double x, void *args_)
     const double xi = tau/2;
     const double x2m1 = x*x-1;
 
-    /*
-    if(x == 1)
-    {
-        if(m == 0)
-            return tau*x-log( (nu-1.)*nu*(nu+1.)*(nu+2)/8. );
-        else
-            return -INFINITY;
-    }
-    */
-
     if(m)
         v = exp(-log_normalization + lnPlm(nu,2*m,x)-tau*x)/x2m1;
     else
-    {
         v = exp(-log_normalization + lnPlm(nu,2,x)-tau*x);
-    }
 
     casimir_rp(casimir, xi, xi*sqrt(x2m1), &rTE, &rTM);
 
