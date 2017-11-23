@@ -32,6 +32,13 @@
  * loss of significance. If the modulus of the trace is larger than the modulus
  * of the value computed using HODLR, the trace approximation is returned.
  *
+ * If the library was compiled with LAPACK support and the algorithm to compute
+ * the matrix is not HODLR, all matrix elements have to be computed. In this
+ * case the round-trip matrix M may be written to the filesystem if the
+ * environment variable CASIMIR_DUMP is set. If it is set, the matrix will be
+ * stored in the path given in CASIMIR_DUMP as a two-dimensional numpy array
+ * (npy). This option might be useful for debugging.
+ *
  * @param [in] dim       dimension of matrix
  * @param [in] kernel    callback function that returns matrix elements of M
  * @param [in] args      pointer given to callback function kernel
@@ -78,6 +85,11 @@ double kernel_logdet(int dim, double (*kernel)(int,int,void *), void *args, int 
                     matrix_set(M, k,md+k, kernel(k,md+k,args));
                 matrix_set(M, md+k,k, kernel(md+k,k,args));
             }
+
+        /* dump */
+        const char *filename = getenv("CASIMIR_DUMP");
+        if(filename != NULL)
+            matrix_save_to_file(M, filename);
 
         /* compute logdet */
         logdet = matrix_logdet_dense(M, -1, detalg);
