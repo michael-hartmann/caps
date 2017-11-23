@@ -317,7 +317,7 @@ static double _casimir_integrate_K(integration_t *self, int nu, polarization_t p
              *           \---------- t1 -------------/   \-------- t2 --------/
              */
             const double logt1 = 1.5*log(tau)+log(2/M_PI)/2+bessel_lnKnu(nu,tau);
-            const double logt2 = -tau+log(tau+nu*(nu+1)/2.);
+            const double logt2 = -tau+log(tau+nu*(nu+1.)/2.);
 
             return logt1 + log1p(-exp(logt2-logt1));
         }
