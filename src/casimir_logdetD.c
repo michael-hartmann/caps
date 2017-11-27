@@ -181,7 +181,7 @@ int main(int argc, char *argv[])
         casimir_set_ldim(casimir, ldim);
 
     if(dense)
-        casimir_set_detalg(casimir, DETALG_CHOLESKY);
+        casimir_set_detalg(casimir, DETALG_LU);
 
     casimir_info(casimir, stdout, "# ");
     printf("#\n");
