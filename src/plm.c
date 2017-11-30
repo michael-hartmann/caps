@@ -1,7 +1,7 @@
 /**
  * @file   plm.c
  * @author Michael Hartmann <michael.hartmann@physik.uni-augsburg.de>
- * @date   July, 2017
+ * @date   November, 2017
  * @brief  computation of Legendre and associated Legendre polynomials
  */
 
@@ -357,9 +357,10 @@ double Plm_continued_fraction(const long l, const long m, const double x)
 /**
  * @brief Compute associated Legendre polynomials using downwards recurrence relation
  *
- * First, the fraction \f$P_l^m(x)/P_l^{m-1}(x)\f$ is computed using \ref Plm_continued_fraction.
- * Then the downwards recurrence relation http://dlmf.nist.gov/14.10.E6 is used
- * from \f$P_l^m(x)\f$ to \f$P_l^0(x)\f$. Together with \f$P_l(x)\f$ (see \ref Pl) one has the solution.
+ * First, the fraction \f$P_l^m(x)/P_l^{m-1}(x)\f$ is computed using \ref
+ * Plm_continued_fraction.  Then the downwards recurrence relation
+ * http://dlmf.nist.gov/14.10.E6 is used from \f$P_l^m(x)\f$ to \f$P_l^0(x)\f$.
+ * Together with \f$P_l(x)\f$ (see \ref Pl) one has the solution.
  *
  * This routine is efficient if \f$l \gg m\f$.
  *
@@ -370,25 +371,25 @@ double Plm_continued_fraction(const long l, const long m, const double x)
  */
 double lnPlm_downwards(int l, int m, double x)
 {
-    double vp,vm,c;
     double prefactor = lnPl(l,x); /* value of Pl(x) */
 
     if(m == 0)
         return prefactor;
 
-    c = 2*x/sqrt((x-1)*(x+1));
+    /* 2x/sqrt(x²-1) */
+    const double c = 2*x/sqrt((x-1)*(x+1));
 
-    vp = +1;
-    vm = -Plm_continued_fraction(l,m,x);
+    double vp = +1;
+    double vm = Plm_continued_fraction(l,m,x);
 
     for(int mm = m-2; mm >= 0; mm--)
     {
         /* prevent integer overflows in denominator */
-        double v = (vp-(mm+1)*vm*c)/((double)(l+1+mm)*(l-mm));
+        double v = (vp+(mm+1)*vm*c)/((l+1.+mm)*(l-mm));
         vp = vm;
         vm = v;
 
-        if(fabs(vm) < 1e-100)
+        if(vm < 1e-100)
         {
             vm *= 1e100;
             vp *= 1e100;
