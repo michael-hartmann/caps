@@ -23,16 +23,16 @@ if __name__ == "__main__":
         y     = graph.axis.log(title=r"$E/E_\mathrm{PFA}-1-\theta_1 x$")
     )
 
-    LbyR, E = eta8[:,0], eta8[:,3]
-    g.plot(
-        graph.data.values(x=LbyR, y=E/pfa(LbyR)-1-theta1*LbyR, title=r"$\eta=8$"),
-        [graph.style.symbol(graph.style.symbol.circle, size=0.05, symbolattrs=[color.cmyk.CadetBlue])]
-    )
+    #LbyR, E = eta8[:,0], eta8[:,3]
+    #g.plot(
+    #    graph.data.values(x=LbyR, y=E/pfa(LbyR)-1-theta1*LbyR, title=r"$\eta=8$"),
+    #    [graph.style.symbol(graph.style.symbol.circle, size=0.05, symbolattrs=[color.cmyk.CadetBlue])]
+    #)
 
     LbyR, E = eta10[:,0], eta10[:,3]
     g.plot(
         graph.data.values(x=LbyR, y=E/pfa(LbyR)-1-theta1*LbyR, title=r"$\eta=10$"),
-        [graph.style.symbol(graph.style.symbol.diamond, size=0.05, symbolattrs=[color.cmyk.BrickRed])]
+        [graph.style.symbol(graph.style.symbol.circle, size=0.05, symbolattrs=[color.cmyk.BrickRed])]
     )
 
     g.writePDFfile()
