@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <strings.h>
 
 #include "material.h"
 #include "libcasimir.h"
@@ -35,8 +36,8 @@ static void usage(FILE *stream)
 "        Enable buffering. By default buffering for stderr and stdout is\n"
 "        disabled.\n"
 "\n"
-"    -d, --dense\n"
-"        Compute the dense matrix and use LU decomposition to calculate the determinant\n"
+"    -d, --detalg DETALG\n"
+"        Compute the matrix using DETALG (LU, QR, CHOLESKY, HODLR)\n"
 "\n"
 "    -h,--help\n"
 "        Show this help.\n"
@@ -46,6 +47,7 @@ static void usage(FILE *stream)
 int main(int argc, char *argv[])
 {
     double start_time = now();
+    detalg_t detalg = DETALG_HODLR;
 
     char filename[512] = { 0 };
 
@@ -57,15 +59,15 @@ int main(int argc, char *argv[])
     int ldim = 0;
 
     /* flags */
-    bool buffering = false, dense = false;
+    bool buffering = false;
 
     while(1)
     {
         struct option long_options[] = {
             { "help",      no_argument,       0, 'h' },
             { "buffering", no_argument,       0, 'b' },
-            { "dense",     no_argument,       0, 'd' },
 
+            { "detalg",    required_argument, 0, 'd' },
             { "material",  required_argument, 0, 'f' },
             { "nT",        required_argument, 0, 'T' },
             { "ldim",      required_argument, 0, 'l' },
@@ -75,7 +77,7 @@ int main(int argc, char *argv[])
 
         /* getopt_long stores the option index here. */
         int option_index = 0;
-        int c = getopt_long (argc, argv, "L:R:T:m:l:f:t:bdh", long_options, &option_index);
+        int c = getopt_long(argc, argv, "L:R:T:m:l:f:t:d:bh", long_options, &option_index);
 
         /* Detect the end of the options. */
         if(c == -1)
@@ -109,7 +111,20 @@ int main(int argc, char *argv[])
                 buffering = true;
                 break;
             case 'd':
-                dense = true;
+                if(strcasecmp(optarg, "HODLR") == 0)
+                    detalg = DETALG_HODLR;
+                else if(strcasecmp(optarg, "LU") == 0)
+                    detalg = DETALG_LU;
+                else if(strcasecmp(optarg, "QR") == 0)
+                    detalg = DETALG_QR;
+                else if(strcasecmp(optarg, "CHOLESKY") == 0)
+                    detalg = DETALG_CHOLESKY;
+                else
+                {
+                    fprintf(stderr, "Unknown algorithm: %s\n\n", optarg);
+                    usage(stderr);
+                    exit(1);
+                }
                 break;
             case 'h':
                 usage(stdout);
@@ -180,8 +195,7 @@ int main(int argc, char *argv[])
     if(ldim)
         casimir_set_ldim(casimir, ldim);
 
-    if(dense)
-        casimir_set_detalg(casimir, DETALG_LU);
+    casimir_set_detalg(casimir, detalg);
 
     casimir_info(casimir, stdout, "# ");
     printf("#\n");
