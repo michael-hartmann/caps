@@ -289,7 +289,7 @@ void casimir_info(casimir_t *self, FILE *stream, const char *prefix)
 
     fprintf(stream, "%sL/R    = %.16g\n", prefix, self->LbyR);
     fprintf(stream, "%sldim   = %d\n",    prefix, self->ldim);
-    fprintf(stream, "%sepsrel = %g\n",    prefix, self->epsrel);
+    fprintf(stream, "%sepsrel = %.1e\n",  prefix, self->epsrel);
     fprintf(stream, "%sdetalg = %s\n",    prefix, detalg_str);
 }
 
