@@ -39,6 +39,9 @@ static void usage(FILE *stream)
 "    -d, --detalg DETALG\n"
 "        Compute the matrix using DETALG (LU, QR, CHOLESKY, HODLR)\n"
 "\n"
+"    -e, --epsrel EPSREL\n"
+"        Relative accuracy to evaluate integrals\n"
+"\n"
 "    -h,--help\n"
 "        Show this help.\n"
 "\n");
@@ -46,6 +49,7 @@ static void usage(FILE *stream)
 
 int main(int argc, char *argv[])
 {
+    double epsrel = 0;
     double start_time = now();
     detalg_t detalg = DETALG_HODLR;
 
@@ -67,6 +71,7 @@ int main(int argc, char *argv[])
             { "help",      no_argument,       0, 'h' },
             { "buffering", no_argument,       0, 'b' },
 
+            { "epsrel",    required_argument, 0, 'e' },
             { "detalg",    required_argument, 0, 'd' },
             { "material",  required_argument, 0, 'f' },
             { "nT",        required_argument, 0, 'T' },
@@ -77,7 +82,7 @@ int main(int argc, char *argv[])
 
         /* getopt_long stores the option index here. */
         int option_index = 0;
-        int c = getopt_long(argc, argv, "L:R:T:m:l:f:t:d:bh", long_options, &option_index);
+        int c = getopt_long(argc, argv, "L:R:T:m:l:f:t:d:e:bh", long_options, &option_index);
 
         /* Detect the end of the options. */
         if(c == -1)
@@ -125,6 +130,9 @@ int main(int argc, char *argv[])
                     usage(stderr);
                     exit(1);
                 }
+                break;
+            case 'e':
+                epsrel = atof(optarg);
                 break;
             case 'h':
                 usage(stdout);
@@ -176,6 +184,9 @@ int main(int argc, char *argv[])
 
     casimir_t *casimir;
     casimir = casimir_init(L/R);
+
+    if(epsrel > 0)
+        casimir_set_epsrel(casimir, epsrel);
 
     material_t *material = NULL;
     if(strlen(filename) > 0)
