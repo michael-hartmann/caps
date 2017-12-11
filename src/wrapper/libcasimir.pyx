@@ -28,6 +28,13 @@ class sfunc:
         sfunc.__check_parameters_plm(l,m,x)
         return libcasimir.Plm_continued_fraction(l, m, x)
 
+    def dlnPlm(int l, int m, double x):
+        cdef double dplm
+        cdef double d2plm
+        sfunc.__check_parameters_plm(l,m,x)
+        dplm = dlnPlm(l, m, x, &d2plm)
+        return dplm,d2plm
+
     def lnPlm_estimate(int l, int m, double x):
         sfunc.__check_parameters_plm(l,m,x)
         return libcasimir.lnPlm_estimate(l, m, x)
