@@ -294,7 +294,7 @@ void casimir_info(casimir_t *self, FILE *stream, const char *prefix)
 }
 
 /**
- * @brief Set relative rror for numerical integration
+ * @brief Set relative error for numerical integration
  *
  * Set relative error for numerical integration.
  *
