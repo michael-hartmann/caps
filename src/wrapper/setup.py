@@ -4,7 +4,7 @@ from distutils.extension import Extension
 
 extension = Extension("libcasimir", ["libcasimir.pyx"],
         include_dirs = [".."],
-        libraries = ["casimir", "hodlr"],
+        libraries = ["casimir", "hodlr", "lapack"],
 )
 
 setup(
