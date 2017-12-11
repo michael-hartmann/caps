@@ -25,7 +25,7 @@ typedef struct
 {
     int nu,m;
     polarization_t p; /* TE or TM */
-    double factor,tau,log_normalization;
+    double factor,alpha,log_normalization;
     casimir_t *casimir;
 } integrand_t;
 
@@ -179,6 +179,13 @@ double K_estimate(int nu, int m, double alpha, double eps, double *a, double *b,
     /* approximation using Laplace's method */
     *approx = log(2*M_PI/fpp)/2-fxmax;
 
+    /*
+    printf("xmax=%.10g\n", xmax);
+    printf("fxmax=%.10g\n", fxmax);
+    printf("fxmax=%.10g\n", f(xmax));
+    printf("fpp=%.10g\n", fpp);
+    */
+
     /* estimate width, left and right borders */
     const double width = -log(eps)/sqrt(fpp);
     *a = fmax(1, xmax-width);
@@ -234,18 +241,18 @@ static double K_integrand(double x, void *args_)
 
     const int nu = args->nu, m = args->m;
     const double log_normalization = args->log_normalization;
-    const double tau = args->tau;
-    const double xi = tau/2;
-    const double x2m1 = x*x-1;
+    const double alpha = args->alpha;
+    const double xi_tilde = alpha/2;
+    const double x2m1 = (x+1)*(x-1);
 
     if(m)
-        v = exp(-log_normalization + lnPlm(nu,2*m,x)-tau*x)/x2m1;
+        v = exp(-log_normalization + lnPlm(nu,2*m,x)-alpha*x)/x2m1;
     else
-        v = exp(-log_normalization + lnPlm(nu,2,x)-tau*x);
+        v = exp(-log_normalization + lnPlm(nu,2,x)-alpha*x);
 
-    casimir_rp(casimir, xi, xi*sqrt(x2m1), &rTE, &rTM);
+    casimir_rp(casimir, xi_tilde, xi_tilde*sqrt(x2m1), &rTE, &rTM);
 
-    TERMINATE(isnan(v) || isinf(v), "x=%g, nu=%d, m=%d, tau=%g, v=%g, log_normalization=%g", x, nu, m, tau, v, log_normalization);
+    TERMINATE(isnan(v) || isinf(v), "x=%g, nu=%d, m=%d, alpha=%g, v=%g, log_normalization=%g", x, nu, m, alpha, v, log_normalization);
 
     if(args->p == TE)
         return rTE*v;
@@ -258,7 +265,7 @@ static double _casimir_integrate_K(integration_t *self, int nu, polarization_t p
     double xmax,log_normalization,a,b;
     const int m = self->m;
     const double eps = 1e-6;
-    const double tau = self->tau;
+    const double alpha = self->alpha;
     const double epsrel = self->epsrel;
 
     /* some analytical solutions for perfect reflectors */
@@ -277,20 +284,20 @@ static double _casimir_integrate_K(integration_t *self, int nu, polarization_t p
              * integral: 2*exp(-τ) + sqrt(2/(pi*τ)) [ (ν+1)(ν+2)K_{ν+1/2}(τ) - 2τ K_(ν+3/2)(τ) ]
              *           \- t0 --/   \----- C ----/   \------- t1 ---------/   \---- t2 -----/
              */
-            const double logC = log(2/(tau*M_PI))/2;
+            const double logC = log(2/(alpha*M_PI))/2;
 
             log_t terms[3];
 
             /* t1 */
-            terms[0].v = log(2)-tau;
+            terms[0].v = log(2)-alpha;
             terms[0].s = +1;
 
             /* t2 */
-            terms[1].v = logC+logi(nu+1)+logi(nu+2)+bessel_lnKnu(nu,tau);
+            terms[1].v = logC+logi(nu+1)+logi(nu+2)+bessel_lnKnu(nu,alpha);
             terms[1].s = +1;
 
             /* t3 */
-            terms[2].v = logC+log(2)+log(tau)+bessel_lnKnu(nu+1,tau);
+            terms[2].v = logC+log(2)+log(alpha)+bessel_lnKnu(nu+1,alpha);
             terms[2].s = -1;
 
             sign_t dummy;
@@ -303,15 +310,15 @@ static double _casimir_integrate_K(integration_t *self, int nu, polarization_t p
              * integral: τ^(3/2)*sqrt(2/pi) K_(ν+½)(τ) - exp(-τ) [τ + ν(ν+1)/2]
              *           \---------- t1 -------------/   \-------- t2 --------/
              */
-            const double logt1 = 1.5*log(tau)+log(2/M_PI)/2+bessel_lnKnu(nu,tau);
-            const double logt2 = -tau+log(tau+nu*(nu+1.)/2.);
+            const double logt1 = 1.5*log(alpha)+log(2/M_PI)/2+bessel_lnKnu(nu,alpha);
+            const double logt2 = -alpha+log(alpha+nu*(nu+1.)/2.);
 
             return logt1 + log1p(-exp(logt2-logt1));
         }
         else if(nu == (2*m))
-            return -0.5*log(M_PI)+(m-0.5)*log(2/tau)+lfac(m-1)+lfac2(4*m-1)+bessel_lnKnu(m-1,tau);
+            return -0.5*log(M_PI)+(m-0.5)*log(2/alpha)+lfac(m-1)+lfac2(4*m-1)+bessel_lnKnu(m-1,alpha);
         else if(nu == (2*m+1))
-            return -0.5*log(M_PI)+(m-0.5)*log(2/tau)+lfac(m-1)+lfac2(4*m-1)+bessel_lnKnu(m,tau)+logi(4*m+1);
+            return -0.5*log(M_PI)+(m-0.5)*log(2/alpha)+lfac(m-1)+lfac2(4*m-1)+bessel_lnKnu(m,alpha)+logi(4*m+1);
     }
     #endif
 
@@ -319,16 +326,16 @@ static double _casimir_integrate_K(integration_t *self, int nu, polarization_t p
         .nu   = nu,
         .m    = m,
         .p    = p,
-        .tau  = tau,
+        .alpha  = alpha,
         .factor = 1,
         .casimir = self->casimir
     };
 
-    xmax = K_estimate(nu, m, tau, eps, &a, &b, &log_normalization);
+    xmax = K_estimate(nu, m, alpha, eps, &a, &b, &log_normalization);
 
     if(a < 1.0001)
         a = 1;
-    //printf("nu=%d, m=%d, tau=%g, a=%g, b=%g, xmax=%g\n", nu,m,tau,a,b,xmax);
+    //printf("nu=%d, m=%d, alpha=%g, a=%g, b=%g, xmax=%g\n", nu,m,alpha,a,b,xmax);
 
     /* log_normalization is the logarithm of the estimated maximum of the
      * integrand K
@@ -367,13 +374,13 @@ static double _casimir_integrate_K(integration_t *self, int nu, polarization_t p
      * after the substitution it decays as exp(-t). This makes life easier for
      * the quadrature routine.
      */
-    args.factor = 1/tau;
-    I3 = dqagi(K_integrand, b*tau, 1, abserr2*tau, epsrel, &abserr3, &neval3, &ier3, &args)/tau;
+    args.factor = 1/alpha;
+    I3 = dqagi(K_integrand, b*alpha, 1, abserr2*alpha, epsrel, &abserr3, &neval3, &ier3, &args)/alpha;
 
     const double sum = I1+I2+I3;
 
     bool warn = ier1 != 0 || ier2 != 0 || ier3 != 0 || isnan(sum) || sum == 0;
-    WARN(warn, "ier1=%d, ier2=%d, ier3=%d, nu=%d, m=%d, tau=%.20g, xmax=%g, a=%g, b=%g, I1=%g, I2=%g, I3=%g", ier1, ier2, ier3, nu,m,tau,xmax,a,b, I1, I2, I3);
+    WARN(warn, "ier1=%d, ier2=%d, ier3=%d, nu=%d, m=%d, alpha=%.20g, xmax=%g, a=%g, b=%g, I1=%g, I2=%g, I3=%g", ier1, ier2, ier3, nu,m,alpha,xmax,a,b, I1, I2, I3);
     TERMINATE((*sign == 1 && p != TM) || (*sign==-1 && p != TE), "nu=%d, p=%d, sign=%d, sum=%g", nu, p, *sign, sum);
 
     *sign = SGN(sum);
@@ -381,27 +388,27 @@ static double _casimir_integrate_K(integration_t *self, int nu, polarization_t p
 }
 
 
-/** @brief Compute integral \f$\mathcal{K}_{\nu,p}^{(m)}(\tau)\f$
+/** @brief Compute integral \f$\mathcal{K}_{\nu,p}^{(m)}(\alpha)\f$
  *
  * This function solves for \f$m>0\f$ the integral
  * \f[
- *   \mathcal{K}_{\nu,p}^{(m)}(\tau) = \int_0^\infty \mathrm{d}x \, r_p \frac{e^{-\tau x}}{x^2-1} P_\nu^{2m}(x)
+ *   \mathcal{K}_{\nu,p}^{(m)}(\alpha) = \int_0^\infty \mathrm{d}x \, r_p \frac{e^{-\alpha x}}{x^2-1} P_\nu^{2m}(x)
  * \f]
  * and for \f$m=0\f$ the integral
  * \f[
- *   \mathcal{K}_{\nu,p}^{(0)}(\tau) = \int_0^\infty \mathrm{d}x \, r_p e^{-\tau x} P_\nu^{2}(x) \,.
+ *   \mathcal{K}_{\nu,p}^{(0)}(\alpha) = \int_0^\infty \mathrm{d}x \, r_p e^{-\alpha x} P_\nu^{2}(x) \,.
  * \f]
  *
  * The function returns the logarithm of the value of the integral and its sign.
  *
  * The projection of the wavevector onto the \f$xy\f$-plane is given by
- * \f$k=\frac{\xi}{c}\sqrt{x^2-1}\f$ and \f$\tau=2\xi\mathcal{L}/c\f$.
+ * \f$k=\frac{\xi}{c}\sqrt{x^2-1}\f$ and \f$\alpha=2\xi\mathcal{L}/c\f$.
  *
  * @param [in] self integration object
  * @param [in] nu parameter
  * @param [in] p polarization, either TE or TM
- * @param [out] sign sign of \f$\mathcal{K}_{\nu,p}^{(m)}(\tau)\f$
- * @retval logK \f$\log\left|\mathcal{K}_{\nu,p}^{(m)}(\tau)\right|\f$
+ * @param [out] sign sign of \f$\mathcal{K}_{\nu,p}^{(m)}(\alpha)\f$
+ * @retval logK \f$\log\left|\mathcal{K}_{\nu,p}^{(m)}(\alpha)\right|\f$
  */
 double casimir_integrate_K(integration_t *self, int nu, polarization_t p, sign_t *sign)
 {
@@ -443,7 +450,7 @@ double casimir_integrate_K(integration_t *self, int nu, polarization_t p, sign_t
 }
 
 /* eq. (3) */
-static double alpha(double p, double n, double nu)
+static double _alpha(double p, double n, double nu)
 {
     return (((pow_2(p)-pow_2(n+nu+1))*(pow_2(p)-pow_2(n-nu)))/(4*pow_2(p)-1));
 }
@@ -515,17 +522,17 @@ static double _casimir_integrate_I(integration_t *self, int l1, int l2, polariza
         if(Ap != 0)
         {
             /* eqs. (26), (27) */
-            double c0 = (p+2)*(p+3)*(p1+1)*(p1+2)*Ap*alpha(p+1,n,nu);
+            double c0 = (p+2)*(p+3)*(p1+1)*(p1+2)*Ap*_alpha(p+1,n,nu);
             double c1 = Ap*(Ap*Ap \
-               + (p+1)*(p+3)*(p1+2)*(p2+2)*alpha(p+2,n,nu) \
-               + (p+2)*(p+4)*(p1+3)*(p2+3)*alpha(p+3,n,nu));
-            double c2 = -(p+2)*(p+3)*(p2+3)*(p2+4)*Ap*alpha(p+4,n,nu);
+               + (p+1)*(p+3)*(p1+2)*(p2+2)*_alpha(p+2,n,nu) \
+               + (p+2)*(p+4)*(p1+3)*(p2+3)*_alpha(p+3,n,nu));
+            double c2 = -(p+2)*(p+3)*(p2+3)*(p2+4)*Ap*_alpha(p+4,n,nu);
 
             aq[q] = (c1*aq[q-1] + c2*aq[q-2])/c0;
         }
         else
             /* eq. (30) */
-            aq[q] = (p+1)*(p2+2)*alpha(p+2,n,nu)*aq[q-1] / ((p+2)*(p1+1)*alpha(p+1,n,nu));
+            aq[q] = (p+1)*(p2+2)*_alpha(p+2,n,nu)*aq[q-1] / ((p+2)*(p1+1)*_alpha(p+1,n,nu));
 
         if(fabs(aq[q]) > 1e100)
         {
@@ -562,11 +569,11 @@ static double _casimir_integrate_I(integration_t *self, int l1, int l2, polariza
     return log_I;
 }
 
-/** @brief Compute integral \f$\mathcal{I}_{\ell_1,\ell_2,p}^{(m)}(\tau)\f$
+/** @brief Compute integral \f$\mathcal{I}_{\ell_1,\ell_2,p}^{(m)}(\alpha)\f$
  *
  * Compute the integral
  * \f[
- * \mathcal{I}_{\ell_1,\ell_2,p}^{(m)}(\tau) = \int_0^\infty \mathrm{d}x \, r_p \frac{e^{-\tau x}}{x^2-1} P_{\ell_1}^m(x) P_{\ell_2}^m(x)
+ * \mathcal{I}_{\ell_1,\ell_2,p}^{(m)}(\alpha) = \int_0^\infty \mathrm{d}x \, r_p \frac{e^{-\alpha x}}{x^2-1} P_{\ell_1}^m(x) P_{\ell_2}^m(x)
  * \f]
  *
  * This function returns the sign of the integral and its logarithmic value.
@@ -575,8 +582,8 @@ static double _casimir_integrate_I(integration_t *self, int l1, int l2, polariza
  * @param [in] l1 parameter
  * @param [in] l2 parameter
  * @param [in] p polarization; either TE or TM
- * @param [out] sign sign of integral \f$\mathrm{sgn}\left(\mathcal{I}_{\ell_1,\ell_2,p}^{(m)}(\tau)\right)\f$
- * @retval logI \f$\log\left| \mathcal{I}_{\ell_1,\ell_2,p}^{(m)}(\tau) \right|\f$
+ * @param [out] sign sign of integral \f$\mathrm{sgn}\left(\mathcal{I}_{\ell_1,\ell_2,p}^{(m)}(\alpha)\right)\f$
+ * @retval logI \f$\log\left| \mathcal{I}_{\ell_1,\ell_2,p}^{(m)}(\alpha) \right|\f$
  */
 double casimir_integrate_I(integration_t *self, int l1, int l2, polarization_t p, sign_t *sign)
 {
@@ -655,7 +662,7 @@ integration_t *casimir_integrate_init(casimir_t *casimir, double xi_, int m, dou
 
     self->casimir = casimir;
     self->m = m;
-    self->tau = 2*xi_;
+    self->alpha = 2*xi_;
     self->epsrel = epsrel;
 
     int elems = CASIMIR_CACHE_ELEMS;
@@ -699,19 +706,19 @@ void casimir_integrate_free(integration_t *integration)
     }
 }
 
-/** Compute integral \f$A_{\ell_1,\ell_2,p}^{(m)}(\tau)\f$
+/** Compute integral \f$A_{\ell_1,\ell_2,p}^{(m)}(\alpha)\f$
  *
  * Compute the integral
  * \f[
- * A_{\ell_1,\ell_2,p}^{(m)}(\tau) = \frac{m^2 \xi}{c} \int_0^\infty  \mathrm{d}k \frac{r_p}{k\kappa} e^{-2\kappa\mathcal{L}} P_{\ell_1}^m\left(\frac{\kappa c}{\xi}\right) P_{\ell_2}^m\left(\frac{\kappa c}{\xi}\right)
+ * A_{\ell_1,\ell_2,p}^{(m)}(\alpha) = \frac{m^2 \xi}{c} \int_0^\infty  \mathrm{d}k \frac{r_p}{k\kappa} e^{-2\kappa\mathcal{L}} P_{\ell_1}^m\left(\frac{\kappa c}{\xi}\right) P_{\ell_2}^m\left(\frac{\kappa c}{\xi}\right)
  * \f]
  *
  * @param [in] self integration object
  * @param [in] l1 parameter
  * @param [in] l2 parameter
  * @param [in] p polarization; either TE or TM
- * @param [out] sign sign of integral \f$\mathrm{sgn}\left(A_{\ell_1,\ell_2,p}^{(m)}(\tau)\right)\f$
- * @retval logA \f$\log\left|A_{\ell_1,\ell_2,p}^{(m)}(\tau)\right|\f$
+ * @param [out] sign sign of integral \f$\mathrm{sgn}\left(A_{\ell_1,\ell_2,p}^{(m)}(\alpha)\right)\f$
+ * @retval logA \f$\log\left|A_{\ell_1,\ell_2,p}^{(m)}(\alpha)\right|\f$
  */
 double casimir_integrate_A(integration_t *self, int l1, int l2, polarization_t p, sign_t *sign)
 {
@@ -731,19 +738,19 @@ double casimir_integrate_A(integration_t *self, int l1, int l2, polarization_t p
     return A;
 }
 
-/** Compute integral \f$B_{\ell_1,\ell_2,p}^{(m)}(\tau)\f$
+/** Compute integral \f$B_{\ell_1,\ell_2,p}^{(m)}(\alpha)\f$
  *
  * Compute the integral
  * \f[
- * B_{\ell_1,\ell_2,p}^{(m)}(\tau) = \frac{c^3}{\xi^3} \int_0^\infty  \mathrm{d}k \frac{k^3}{\kappa} r_p e^{-2\kappa\mathcal{L}} {P_{\ell_1}^m}^\prime\left(\frac{\kappa c}{\xi}\right) {P_{\ell_2}^m}^\prime\left(\frac{\kappa c}{\xi}\right)
+ * B_{\ell_1,\ell_2,p}^{(m)}(\alpha) = \frac{c^3}{\xi^3} \int_0^\infty  \mathrm{d}k \frac{k^3}{\kappa} r_p e^{-2\kappa\mathcal{L}} {P_{\ell_1}^m}^\prime\left(\frac{\kappa c}{\xi}\right) {P_{\ell_2}^m}^\prime\left(\frac{\kappa c}{\xi}\right)
  * \f]
  *
  * @param [in] self integration object
  * @param [in] l1 parameter
  * @param [in] l2 parameter
  * @param [in] p polarization; either TE or TM
- * @param [out] sign sign of integral \f$\mathrm{sgn}\left(B_{\ell_1,\ell_2,p}^{(m)}(\tau)\right)\f$
- * @retval logB \f$\log\left|B_{\ell_1,\ell_2,p}^{(m)}(\tau)\right|\f$
+ * @param [out] sign sign of integral \f$\mathrm{sgn}\left(B_{\ell_1,\ell_2,p}^{(m)}(\alpha)\right)\f$
+ * @retval logB \f$\log\left|B_{\ell_1,\ell_2,p}^{(m)}(\alpha)\right|\f$
  */
 double casimir_integrate_B(integration_t *self, int l1, int l2, polarization_t p, sign_t *sign)
 {
@@ -779,19 +786,19 @@ double casimir_integrate_B(integration_t *self, int l1, int l2, polarization_t p
     return B;
 }
 
-/** Compute integral \f$C_{\ell_1,\ell_2,p}^{(m)}(\tau)\f$
+/** Compute integral \f$C_{\ell_1,\ell_2,p}^{(m)}(\alpha)\f$
  *
  * Compute the integral
  * \f[
- * C_{\ell_1,\ell_2,p}^{(m)}(\tau) = \frac{mc}{\xi} \int_0^\infty \mathrm{d}k \frac{k}{\kappa} r_p e^{-2\kappa\mathcal{L}} P_{\ell_1}^m\left(\frac{\kappa c}{\xi}\right) {P_{\ell_2}^m}^\prime\left(\frac{\kappa c}{\xi}\right)
+ * C_{\ell_1,\ell_2,p}^{(m)}(\alpha) = \frac{mc}{\xi} \int_0^\infty \mathrm{d}k \frac{k}{\kappa} r_p e^{-2\kappa\mathcal{L}} P_{\ell_1}^m\left(\frac{\kappa c}{\xi}\right) {P_{\ell_2}^m}^\prime\left(\frac{\kappa c}{\xi}\right)
  * \f]
  *
  * @param [in] self integration object
  * @param [in] l1 parameter
  * @param [in] l2 parameter
  * @param [in] p polarization; either TE or TM
- * @param [out] sign sign of integral \f$\mathrm{sgn}\left(C_{\ell_1,\ell_2,p}^{(m)}(\tau)\right)\f$
- * @retval logC \f$\log\left|C_{\ell_1,\ell_2,p}^{(m)}(\tau)\right|\f$
+ * @param [out] sign sign of integral \f$\mathrm{sgn}\left(C_{\ell_1,\ell_2,p}^{(m)}(\alpha)\right)\f$
+ * @retval logC \f$\log\left|C_{\ell_1,\ell_2,p}^{(m)}(\alpha)\right|\f$
  */
 double casimir_integrate_C(integration_t *self, int l1, int l2, polarization_t p, sign_t *sign)
 {
@@ -820,11 +827,11 @@ double casimir_integrate_C(integration_t *self, int l1, int l2, polarization_t p
     return C;
 }
 
-/** Compute integral \f$D_{\ell_1,\ell_2,p}^{(m)}(\tau)\f$
+/** Compute integral \f$D_{\ell_1,\ell_2,p}^{(m)}(\alpha)\f$
  *
  * Compute
  * \f[
- * D_{\ell_1,\ell_2,p}^{(m)}(\tau) = C_{\ell_2,\ell_2,1}^{(m)}(\tau)
+ * D_{\ell_1,\ell_2,p}^{(m)}(\alpha) = C_{\ell_2,\ell_2,1}^{(m)}(\alpha)
  * \f]
  *
  * This function calls \ref casimir_integrate_C.
@@ -833,8 +840,8 @@ double casimir_integrate_C(integration_t *self, int l1, int l2, polarization_t p
  * @param [in] l1 parameter
  * @param [in] l2 parameter
  * @param [in] p polarization; either TE or TM
- * @param [out] sign sign of integral \f$\mathrm{sgn}\left(D_{\ell_1,\ell_2,p}^{(m)}(\tau)\right)\f$
- * @retval logD \f$\log\left|D_{\ell_1,\ell_2,p}^{(m)}(\tau)\right|\f$
+ * @param [out] sign sign of integral \f$\mathrm{sgn}\left(D_{\ell_1,\ell_2,p}^{(m)}(\alpha)\right)\f$
+ * @retval logD \f$\log\left|D_{\ell_1,\ell_2,p}^{(m)}(\alpha)\right|\f$
  */
 double casimir_integrate_D(integration_t *self, int l1, int l2, polarization_t p, sign_t *sign)
 {
