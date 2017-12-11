@@ -346,7 +346,7 @@ void casimir_set_epsilonm1(casimir_t *self, double (*epsilonm1)(double xi_, void
 }
 
 /**
- * @brief Set algorithm to calculate deterimant
+ * @brief Set algorithm to calculate determinant
  *
  * The algorithm is given by detalg. Usually you don't want to change the
  * algorithm to compute the determinant.
