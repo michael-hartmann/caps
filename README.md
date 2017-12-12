@@ -70,7 +70,7 @@ If the shared libraries are not in the search path, you can still run the
 programs by specifying the directories that contain the shared libraries in
 `LD_LIBRARY_PATH`:
 ```
-$ LD_LIBRARY_PATH=/path/to/libhodlr.so.:/path/to/libcasimir.so ./casimir_logdetD -R 1 -L 0.01 -m 1 --nT 1
+$ LD_LIBRARY_PATH=/path/to/libhodlr.so:/path/to/libcasimir.so ./casimir_logdetD -R 1 -L 0.01 -m 1 --nT 1
 # ./casimir_logdetD, -R, 1, -L, 0.01, -m, 1, --nT, 1
 # L/R    = 0.01
 # ldim   = 500
