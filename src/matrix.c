@@ -1,7 +1,7 @@
 /**
  * @file   matrix.c
  * @author Michael Hartmann <michael.hartmann@physik.uni-augsburg.de>
- * @date   April, 2017
+ * @date   December, 2017
  * @brief  matrix functions
  */
 
@@ -152,39 +152,8 @@ matrix_t *matrix_alloc(const size_t dim)
         return NULL;
     }
 
-    A->free_memory = true;
-
     return A;
 }
-
-/**
- * @brief Create matrix view
- *
- * Create a matrix view from an existing matrix.
- *
- * Note that you still have to call matrix_free once you don't need the view
- * anymore. The actual data given by will not be freed.
- *
- * @param [in] a double array with matrix data
- * @param [in] dim dimension of square matrix
- * @param [in] lda leading dimension of a
- * @retval A matrix view
- */
-matrix_t *matrix_view(double *a, size_t dim, size_t lda)
-{
-    matrix_t *A = xmalloc(sizeof(matrix_t));
-    if(A == NULL)
-        return NULL;
-
-    A->dim  = dim;
-    A->dim2 = dim*dim;
-    A->lda  = lda;
-    A->M    = a;
-    A->free_memory = false;
-
-    return A;
-}
-
 
 /**
  * @brief Free matrix
@@ -200,9 +169,7 @@ void matrix_free(matrix_t *A)
 {
     if(A != NULL)
     {
-        if(A->free_memory)
-            xfree(A->M);
-
+        xfree(A->M);
         xfree(A);
     }
 }
@@ -478,8 +445,12 @@ double matrix_logdet_triangular(matrix_t *A)
 /**
  * @brief Calculate \f$\log\det(\mathrm{Id}+z*M)\f$ for matrix M
  *
- * This function tries to approximate logdet(A) using a mercator series if
- * possible to reduce the complexity for an NxN matrix A from O(N³) to O(N²).
+ * Compute \f$\log\det(\mathrm{Id}+z*M)\f$ using LAPACK. The algorithm is
+ * chosen by detalg and may be DETALG_QR, DETALG_LU or DETALG_CHOLESKY.
+ *
+ * If the Frobenius norm of zA is smaller than 1, this function tries to
+ * approximate logdet(A) using a mercator series if possible to reduce the
+ * complexity for an NxN matrix A from O(N³) to O(N²).
  *
  * @param [in,out] M round trip matrix M; M will be overwritten.
  * @param [in]     z factor z in log(det(Id+z*M))
