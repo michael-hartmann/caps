@@ -43,26 +43,20 @@ Features
 Installation
 ------------
 If you use Linux or Unix, you need the gcc and development libraries and header
-files for the standard C library, MPI and LAPACK. Also, you will need to have
-the library [hodlr_wrapper](https://github.com/michael-hartmann/hodlr_wrapper)
-installed on your system. On a Debian-like Linux the command
+files for the standard C library, and MPI. On a Debian-like Linux the command
 ```
 $ sudo apt-get install gcc libc6-dev make libopenmpi-dev openmpi-bin liblapack-dev
 ```
-should install all dependencies. The dependency on LAPACK is optionally. By
-default LAPACK support is turned off. If you want to use QR, LU or Cholesky
-decomposition to compute the determinant, you have to set the variable
-`LAPACK_SUPPORT` to `TRUE` in the Makefile. Also, make sure that you set
-`HODLRDIR` and `HODLRINCLUDEDIR` to the correct paths. Then, you can compile
-the sources with:
+will install all dependencies. You can compile the sources with:
 ```
 $ cd src/
 $ make
 ```
-This will build the shared object `libcasimir.so`, and the binaries
-`casimir` and `casimir_logdetD`. If you want to run the programs,
-make sure that the paths to `libcasimir.so` and `libhodlr.so` are
-in the search path or you will get an error similar to:
+This will build the shared objects `libhodlr.so` and `libcasimir.so`,
+and the executables `casimir` and `casimir_logdetD`.
+
+If you want to run the programs, make sure that `libcasimir.so` and
+`libhodlr.so` are in the search path or you will get an error similar to:
 ```
 ./casimir_logdetD: error while loading shared libraries: libcasimir.so: cannot open shared object file: No such file or directory
 ```
@@ -70,7 +64,7 @@ If the shared libraries are not in the search path, you can still run the
 programs by specifying the directories that contain the shared libraries in
 `LD_LIBRARY_PATH`:
 ```
-$ LD_LIBRARY_PATH=/path/to/libhodlr.so:/path/to/libcasimir.so ./casimir_logdetD -R 1 -L 0.01 -m 1 --nT 1
+$ LD_LIBRARY_PATH=/path/to/the/libraries ./casimir_logdetD -R 1 -L 0.01 -m 1 --nT 1
 # ./casimir_logdetD, -R, 1, -L, 0.01, -m, 1, --nT, 1
 # L/R    = 0.01
 # ldim   = 500
@@ -79,6 +73,19 @@ $ LD_LIBRARY_PATH=/path/to/libhodlr.so:/path/to/libcasimir.so ./casimir_logdetD 
 #
 # L, R, ξ*(L+R)/c, m, logdet(Id-M), ldim, time
 0.01, 1, 1, 1, -6.46397198784309, 500, 0.524163
+```
+
+If you want to use LU, QR or Cholesky decomposition to compute the determinant,
+you will need LAPACK support. This requires that the package `liblapack-dev` is
+installed on your system. You can compile the sources with LAPACK support with:
+```
+$ LAPACK=1 make
+```
+
+Besides gcc, the sources may also be compiled with icc or clang (llvm). You can
+compile the sources for example with clang with:
+```
+$ CC=clang make
 ```
 
 Usage

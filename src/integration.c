@@ -38,6 +38,16 @@ static uint64_t hash(uint64_t l1, uint64_t l2, uint64_t p)
     return (l1 << 32) | (l2 << 1) | p;
 }
 
+/* this is a function only used in K_estimate */
+static double _f(double x, int nu, int m, double alpha)
+{
+    TERMINATE(x <= 1, "x=%g, nu%d, m=%d, alpha=%g", x, nu, m, alpha);
+
+    if(m == 0)
+        return alpha*x-lnPlm(nu,2,x);
+    else
+        return alpha*x-lnPlm(nu,2*m,x)+log(x*x-1);
+}
 
 /** @brief Estimate position and width of peak
  *
@@ -89,15 +99,7 @@ double K_estimate(int nu, int m, double alpha, double eps, double *a, double *b,
     const int m_ = MAX(m,1);
     double fxmax, fp, fpp, xmax;
 
-    double f(double x)
-    {
-        TERMINATE(x <= 1, "x=%g, nu%d, m=%d, alpha=%g", x, nu, m, alpha);
-
-        if(m == 0)
-            return alpha*x-lnPlm(nu,2,x);
-        else
-            return alpha*x-lnPlm(nu,2*m,x)+log(x*x-1);
-    }
+    #define f(x) _f((x), nu, m, alpha)
 
     /* don't remove the dots in order to avoid integer overflows */
     if(m == 1 && ((nu-2.)*(nu+3.)/6.)/alpha < 1.05)
@@ -229,6 +231,8 @@ bordercheck:
     #endif
 
     return xmax;
+
+    #undef f
 }
 
 static double K_integrand(double x, void *args_)
