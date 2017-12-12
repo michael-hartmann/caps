@@ -1,5 +1,5 @@
 .PHONY: clean doc casimir_logdetD casimir casimir_tests casimir_scalar matrix_elems dependencies dependencies_test
-all: casimir_logdetD
+all: casimir casimir_logdetD
 
 HODLRDIR            = ../../hodlr_wrapper
 HODLRINCLUDEDIR     = ../../hodlr_wrapper/include
