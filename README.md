@@ -43,12 +43,11 @@ Features
 Installation
 ------------
 If you use Linux or Unix, you need the gcc and development libraries and header
-files for the standard C library, MPI and LAPACK. On a Debian-like Linux the
-command
+files for the standard C library, and MPI. On a Debian-like Linux the command
 ```
 $ sudo apt-get install gcc libc6-dev make libopenmpi-dev openmpi-bin liblapack-dev
 ```
-should install all dependencies. You can compile the sources with:
+will install all dependencies. You can compile the sources with:
 ```
 $ cd src/
 $ make
@@ -83,7 +82,7 @@ installed on your system. You can compile the sources with LAPACK support with:
 $ LAPACK=1 make
 ```
 
-At the moment icc, gcc and clang (llvm) are supported as compilers. You can
+Besides gcc, the sources may also be compiled with icc or clang (llvm). You can
 compile the sources for example with clang with:
 ```
 $ CC=clang make
