@@ -60,7 +60,7 @@ typedef struct casimir
 typedef struct {
     casimir_t *casimir;
     int m;
-    double tau,epsrel;
+    double alpha,epsrel;
     cache_t *cache_I;
     double *cache_K[2];
     size_t elems_cache_K;
