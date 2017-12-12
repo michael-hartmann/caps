@@ -61,7 +61,7 @@ $ make
 ```
 This will build the shared object `libcasimir.so`, and the binaries
 `casimir` and `casimir_logdetD`. If you want to run the programs,
-make sure that the path to `libcasimir.so` and `libhodlr.so` are
+make sure that the paths to `libcasimir.so` and `libhodlr.so` are
 in the search path or you will get an error similar to:
 ```
 ./casimir_logdetD: error while loading shared libraries: libcasimir.so: cannot open shared object file: No such file or directory
