@@ -1,7 +1,7 @@
 /**
  * @file   plm.c
  * @author Michael Hartmann <michael.hartmann@physik.uni-augsburg.de>
- * @date   November, 2017
+ * @date   December, 2017
  * @brief  computation of Legendre and associated Legendre polynomials
  */
 
@@ -20,29 +20,24 @@
  *
  * This function calculates associated Legendre functions for m >= 0 and x > 0.
  *
- * Associated Legendre polynomials are defined as follows:
- * \f[
- *  P_l^m(x) = (-1)^m (1-x^2)^{m/2} \frac{d}{dx^m} P_l(x)
- * \f]
- * where \f$P_l(x)\f$ denotes a Legendre polynomial.
- *
- * As \f$P_l(x)\f$ are ordinary polynomials, the only problem is the term
- * \f$(1-x^2)^{m/2}\f$ when extending the domain to values of x > 1. We will use the
- * convention \f$\sqrt{-x} = +i \sqrt{x}\f$.
- *
- * Note: Products of associated legendre polynomials with common m are
- * unambiguous, because \f$(+i)^2 = (-i)^2 = -1\f$.
- *
- * What this functions actually computes:
+ * The associated Legendre polynomials for x>1 are defined as follows [1,2]
  * \f[
  *     P_l^m(x) = (x^2-1)^{m/2} \frac{d}{dx^m} P_l(x) .
  * \f]
- * Note that we don't include the factor \f$i^m\f$ in our calculuation.
+ * Note that in contrast to the common choice in physics we omit the
+ * Condon-Shortly phase \f$(-1)^m\f$, and commute the factors \f$x^2\f$ and
+ * \f$1\f$ in the first bracket after the equal sign. With this definition the
+ * associated Legendre polynomials are real and positive functions.
  *
- * For (l-m) <= 200 we use an upwards recurrence relation, see \ref lnPlm_upwards, otherwise we use a
- * downwards recurrence relation, see Plm_downwards .
+ * For (l-m) <= 200 we use an upwards recurrence relation, see \ref
+ * lnPlm_upwards, otherwise we use a downwards recurrence relation, see
+ * \ref Plm_downwards .
  *
  * See also https://en.wikipedia.org/wiki/Associated_Legendre_polynomials .
+ *
+ * References:
+ * [1] DLMF, §14.7.11, http://dlmf.nist.gov/14.7#E11
+ * [2] Zhang, Jin, Computation of Special Functions, 1996
  *
  * @param [in] l degree
  * @param [in] m order
