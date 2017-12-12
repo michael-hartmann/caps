@@ -85,7 +85,7 @@ endif
 #CFLAGS += -pg
 
 # ldflags
-LDFLAGS += -lm -L ${HODLRDIR} -lhodlr
+LDFLAGS += -lm -L . -L ${HODLRDIR} -lhodlr
 
 ifeq ($(SUPPORT_LAPACK),TRUE)
     LDFLAGS += -lgfortran -lblas -llapack
