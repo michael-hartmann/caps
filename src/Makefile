@@ -1,28 +1,16 @@
 .PHONY: clean doc casimir_logdetD casimir casimir_tests casimir_scalar matrix_elems dependencies dependencies_test
 all: casimir casimir_logdetD
 
-HODLRDIR            = ../../hodlr_wrapper
-HODLRINCLUDEDIR     = ../../hodlr_wrapper/include
-CQUADPACKINCLUDEDIR = cquadpack/include
-
-SUPPORT_LAPACK = FALSE
-
+# get head and branch from git, and machine name
 GIT_HEAD=$(shell git rev-parse HEAD)
 GIT_BRANCH=$(shell git rev-parse --abbrev-ref HEAD)
 MACHINE=$(shell uname -a)
 
-# Choose a compiler.
-# At the moment gcc, clang and icc are supported.
-ifeq ($(CC),)
-    CC = gcc
-endif
-
 ifeq ($(CC),icc)
-    MPICC = mpiicc
+    MPICC ?= mpiicc
 else
-    MPICC = mpicc
+    MPICC ?= mpicc
 endif
-
 
 OBJS = \
     cquadpack/src/dqagi.o \
@@ -63,8 +51,10 @@ TESTS = \
 # use C99 standard
 CFLAGS = -std=c99 -fPIC
 
-# use traditional GNU semantics for inline
-CFLAGS += -I . -I ${CQUADPACKINCLUDEDIR} -I ${HODLRINCLUDEDIR}
+# suppress warnings
+CXXFLAGS = -w
+
+CFLAGS += -I . -I cquadpack/include -I libhodlr/include/
 ifdef GIT_HEAD
     CFLAGS += -DGIT_HEAD='"$(GIT_HEAD)"'
 endif
@@ -77,6 +67,8 @@ endif
 
 # enable warnings
 CFLAGS += -g -Wall -Wextra -Wmissing-prototypes -Wshadow -Wpointer-arith -Wcast-qual -Wwrite-strings -Wno-unused-parameter -fstrict-aliasing
+
+# this is necessary to get correct results when using icc
 ifeq ($(CC),icc)
     CFLAGS += -fp-model precise -mkl=sequential
 endif
@@ -85,9 +77,9 @@ endif
 #CFLAGS += -pg
 
 # ldflags
-LDFLAGS += -lm -L . -L ${HODLRDIR} -lhodlr
+LDFLAGS += -lm -L . -L libhodlr/include/ -lhodlr
 
-ifeq ($(SUPPORT_LAPACK),TRUE)
+ifdef LAPACK
     LDFLAGS += -lgfortran -lblas -llapack
     CFLAGS  += -DSUPPORT_LAPACK
 endif
@@ -98,7 +90,7 @@ endif
 #CFLAGS += -fsanitize=undefined,memory -fno-omit-frame-pointer
 
 # optimize
-OPT = -O3 -msse2
+OPT = -O3
 
 # link time optimization
 #OPT += -flto
@@ -116,26 +108,29 @@ dependencies_test: $(TESTS:.o=.c) dependencies
 %.o : %.c
 	$(CC) $(CFLAGS) $(OPT) -o $@ -c $<
 
-library: $(OBJS) dependencies
+libcasimir.so: libhodlr.so $(OBJS) dependencies
 	$(CC) -o libcasimir.so $(OBJS) -shared
 
-casimir_logdetD: library
+libhodlr.so: libhodlr/src/hodlr.cpp libhodlr/include/hodlr.h
+	${CXX} ${OPT} ${CXXFLAGS} -fpic -shared libhodlr/src/hodlr.cpp -I libhodlr/src/header/ -I libhodlr/include/ -o libhodlr.so
+
+casimir_logdetD: libcasimir.so
 	$(CC) $(CFLAGS) $(OPT) casimir_logdetD.c -lcasimir $(LDFLAGS) -o casimir_logdetD
 
-casimir_scalar: library
+casimir_scalar: libcasimir.so
 	$(CC) -fopenmp $(CFLAGS) $(OPT) casimir_scalar.c -lcasimir $(LDFLAGS) -o casimir_scalar
 
-matrix_elems: library
+matrix_elems: libcasimir.so
 	$(CC) $(CFLAGS) $(OPT) matrix_elems.c -lcasimir $(LDFLAGS) -o matrix_elems
 
-integrate_K: library
+integrate_K: libcasimir.so
 	$(CC) $(CFLAGS) $(OPT) integrate_K.c -lcasimir $(LDFLAGS) -o integrate_K
 
-casimir_tests: $(TESTS) library
+casimir_tests: $(TESTS) libcasimir.so
 	$(CC) $(CFLAGS) $(OPT) $(TESTS) -lcasimir $(LDFLAGS) -o casimir_tests
 	./casimir_tests
 
-casimir: library
+casimir: libcasimir.so
 	$(MPICC) $(CFLAGS) $(OPT) casimir.c -lcasimir $(LDFLAGS) -o casimir
 
 clean:
