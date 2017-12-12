@@ -1,7 +1,7 @@
 The Casimir effect
 ==================
 
-In 1984 Hendrik Casimir considered two parallel, perfectly conducting plates in
+In 1948 Hendrik Casimir considered two parallel, perfectly conducting plates in
 vacuum at temperature T=0 and predicted an attracting force. This force arises
 due to vacuum fluctuations and was experimentally verified in 1956 by
 Derjaguin, Abrikosova and Lifshitz, as well as in 1958 by Sparnaay.
@@ -11,12 +11,12 @@ mesoscopic world, it has relations to many open physical questions. As the
 Casimir force is the dominant force between electically neutral bodies at
 micron or sub-micron distances, the Casimir effect plays an important role in
 the search for new hypothetical forces predicted by unified theories. The
-Casimir effect is also linked to the theory geometry and the puzzle of the
+Casimir effect is also linked to the theory of gravitation and the puzzle of the
 cosmological constant. All energy gravitates and thus zero point fluctuations
 are expected to contribute to the stress–energy tensor in Einstein's field
 equations. In fact, several cosmological observations like the discovery that
-the universe expands in an increasing rate suggest a non-zero energy density of
-vacuum. However, estimations of the cosmological constant and meassurements
+the universe expands with an increasing rate suggest a non-zero energy density of
+vacuum. However, estimations of the cosmological constant and measurements
 disagree by about 120 orders of magnitude.
 
 
