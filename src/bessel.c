@@ -161,8 +161,9 @@ static double B1[] =
 /** @brief Evaluate Chebyshev series
  *
  * Evaluates the series
- *      y = Sum( coef[i] * T_i(x/2), from i=0 to N-1)
- * of Chebyshev polynomials Ti at argument x/2.
+ *      y = Sum'( coef[i] * T_i(x/2), from i=0 to N-1)
+ * of Chebyshev polynomials Ti at argument x/2. The prime indicates that the
+ * term for i=0 has to be weighted by a factor 1/2.
  *
  * Coefficients are stored in reverse order, i.e. the zero order term is last
  * in the array.
