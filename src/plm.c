@@ -1,7 +1,7 @@
 /**
  * @file   plm.c
  * @author Michael Hartmann <michael.hartmann@physik.uni-augsburg.de>
- * @date   July, 2017
+ * @date   December, 2017
  * @brief  computation of Legendre and associated Legendre polynomials
  */
 
@@ -20,29 +20,24 @@
  *
  * This function calculates associated Legendre functions for m >= 0 and x > 0.
  *
- * Associated Legendre polynomials are defined as follows:
- * \f[
- *  P_l^m(x) = (-1)^m (1-x^2)^{m/2} \frac{d}{dx^m} P_l(x)
- * \f]
- * where \f$P_l(x)\f$ denotes a Legendre polynomial.
- *
- * As \f$P_l(x)\f$ are ordinary polynomials, the only problem is the term
- * \f$(1-x^2)^{m/2}\f$ when extending the domain to values of x > 1. We will use the
- * convention \f$\sqrt{-x} = +i \sqrt{x}\f$.
- *
- * Note: Products of associated legendre polynomials with common m are
- * unambiguous, because \f$(+i)^2 = (-i)^2 = -1\f$.
- *
- * What this functions actually computes:
+ * The associated Legendre polynomials for x>1 are defined as follows [1,2]
  * \f[
  *     P_l^m(x) = (x^2-1)^{m/2} \frac{d}{dx^m} P_l(x) .
  * \f]
- * Note that we don't include the factor \f$i^m\f$ in our calculuation.
+ * Note that in contrast to the common choice in physics we omit the
+ * Condon-Shortly phase \f$(-1)^m\f$, and commute the factors \f$x^2\f$ and
+ * \f$1\f$ in the first bracket after the equal sign. With this definition the
+ * associated Legendre polynomials are real and positive functions.
  *
- * For (l-m) <= 200 we use an upwards recurrence relation, see \ref lnPlm_upwards, otherwise we use a
- * downwards recurrence relation, see Plm_downwards .
+ * For (l-m) <= 200 we use an upwards recurrence relation, see \ref
+ * lnPlm_upwards, otherwise we use a downwards recurrence relation, see
+ * \ref Plm_downwards .
  *
  * See also https://en.wikipedia.org/wiki/Associated_Legendre_polynomials .
+ *
+ * References:
+ * [1] DLMF, §14.7.11, http://dlmf.nist.gov/14.7#E11
+ * [2] Zhang, Jin, Computation of Special Functions, 1996
  *
  * @param [in] l degree
  * @param [in] m order
@@ -357,9 +352,10 @@ double Plm_continued_fraction(const long l, const long m, const double x)
 /**
  * @brief Compute associated Legendre polynomials using downwards recurrence relation
  *
- * First, the fraction \f$P_l^m(x)/P_l^{m-1}(x)\f$ is computed using \ref Plm_continued_fraction.
- * Then the downwards recurrence relation http://dlmf.nist.gov/14.10.E6 is used
- * from \f$P_l^m(x)\f$ to \f$P_l^0(x)\f$. Together with \f$P_l(x)\f$ (see \ref Pl) one has the solution.
+ * First, the fraction \f$P_l^m(x)/P_l^{m-1}(x)\f$ is computed using \ref
+ * Plm_continued_fraction.  Then the downwards recurrence relation
+ * http://dlmf.nist.gov/14.10.E6 is used from \f$P_l^m(x)\f$ to \f$P_l^0(x)\f$.
+ * Together with \f$P_l(x)\f$ (see \ref Pl) one has the solution.
  *
  * This routine is efficient if \f$l \gg m\f$.
  *
@@ -370,25 +366,25 @@ double Plm_continued_fraction(const long l, const long m, const double x)
  */
 double lnPlm_downwards(int l, int m, double x)
 {
-    double vp,vm,c;
     double prefactor = lnPl(l,x); /* value of Pl(x) */
 
     if(m == 0)
         return prefactor;
 
-    c = 2*x/sqrt((x-1)*(x+1));
+    /* 2x/sqrt(x²-1) */
+    const double c = 2*x/sqrt((x-1)*(x+1));
 
-    vp = +1;
-    vm = -Plm_continued_fraction(l,m,x);
+    double vp = +1;
+    double vm = Plm_continued_fraction(l,m,x);
 
     for(int mm = m-2; mm >= 0; mm--)
     {
         /* prevent integer overflows in denominator */
-        double v = (vp-(mm+1)*vm*c)/((double)(l+1+mm)*(l-mm));
+        double v = (vp+(mm+1)*vm*c)/((l+1.+mm)*(l-mm));
         vp = vm;
         vm = v;
 
-        if(fabs(vm) < 1e-100)
+        if(vm < 1e-100)
         {
             vm *= 1e100;
             vp *= 1e100;
