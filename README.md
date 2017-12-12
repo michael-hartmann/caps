@@ -43,15 +43,43 @@ Features
 Installation
 ------------
 If you use Linux or Unix, you need the gcc and development libraries and header
-files for the standard C library, LAPACK and MPI. Also, you will need to have the
-library [hodlr_wrapper](https://github.com/michael-hartmann/hodlr_wrapper) installed
-on your system. On a Debian-like Linux the commands
+files for the standard C library, MPI and LAPACK. Also, you will need to have
+the library [hodlr_wrapper](https://github.com/michael-hartmann/hodlr_wrapper)
+installed on your system. On a Debian-like Linux the command
 ```
-$ sudo apt-get install gcc libc6-dev make liblapack-dev libopenmpi-dev openmpi-bin
+$ sudo apt-get install gcc libc6-dev make libopenmpi-dev openmpi-bin liblapack-dev
+```
+should install all dependencies. The dependency on LAPACK is optionally. By
+default LAPACK support is turned off. If you want to use QR, LU or Cholesky
+decomposition to compute the determinant, you have to set the variable
+`LAPACK_SUPPORT` to `TRUE` in the Makefile. Also, make sure that you set
+`HODLRDIR` and `HODLRINCLUDEDIR` to the correct paths. Then, you can compile
+the sources with:
+```
 $ cd src/
 $ make
 ```
-should install all dependencies and compile the code.
+This will build the shared object `libcasimir.so`, and the binaries
+`casimir` and `casimir_logdetD`. If you want to run the programs,
+make sure that the path to `libcasimir.so` and `libhodlr.so` are
+in the search path or you will get an error similar to:
+```
+./casimir_logdetD: error while loading shared libraries: libcasimir.so: cannot open shared object file: No such file or directory
+```
+If the shared libraries are not in the search path, you can still run the
+programs by specifying the directories that contain the shared libraries in
+`LD_LIBRARY_PATH`:
+```
+$ LD_LIBRARY_PATH=/path/to/libhodlr.so.:/path/to/libcasimir.so ./casimir_logdetD -R 1 -L 0.01 -m 1 --nT 1
+# ./casimir_logdetD, -R, 1, -L, 0.01, -m, 1, --nT, 1
+# L/R    = 0.01
+# ldim   = 500
+# epsrel = 1.0e-08
+# detalg = HODLR
+#
+# L, R, ξ*(L+R)/c, m, logdet(Id-M), ldim, time
+0.01, 1, 1, 1, -6.46397198784309, 500, 0.524163
+```
 
 Usage
 -----
