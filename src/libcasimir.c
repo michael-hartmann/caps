@@ -50,11 +50,10 @@ double casimir_lnLambda(int l1, int l2, int m)
     return (logi(2*l1+1)+logi(2*l2+1)-logi(l1)-logi(l1+1)-logi(l2)-logi(l2+1)+lfac(l1-m)+lfac(l2-m)-lfac(l1+m)-lfac(l2+m))/2.0;
 }
 
-/* XXX simplify XXX */
-/** @brief Estimate lmin and lmax for given m and dim
+/** @brief Estimate lmin and lmax
  *
- * Estimate the vector space. The main contributions come from l1≈l2≈X and only
- * depends on geometry, L/R, and the quantum number m. This function calculates
+ * Estimate the vector space: The main contributions come from l1≈l2≈X and only
+ * depend on geometry, L/R, and the quantum number m. This function calculates
  * X using the formula in the high-temperature limit and calculates lmin, lmax.
  *
  * @param [in] self Casimir object
@@ -65,40 +64,29 @@ double casimir_lnLambda(int l1, int l2, int m)
  */
 int casimir_estimate_lminmax(casimir_t *self, int m, size_t *lmin_p, size_t *lmax_p)
 {
-    const int dim = self->ldim;
+    const int ldim = self->ldim;
 
     if(m == 0)
     {
         *lmin_p = 1;
-        *lmax_p = 1+dim;
+        *lmax_p = 1+ldim;
         return 0;
     }
 
-    int l;
-    const double x = 1/(1+self->LbyR);
+    /* approximately the maximum on the diagonal of the round-trip matrix M is
+     * at X */
+    const int X = round(m/sqrt(2*self->LbyR));
 
-    /* find maximum, i.e., main contributions */
-    double last = 2*m*log(x/2);
-    for(l = m+1; 1; l++)
-    {
-        double f = lfac(2*l)-lfac(l+m)-lfac(l-m)+2*l*log(x/2);
-        if(f < last)
-        {
-            l--;
-            break;
-        }
-
-        last = f;
-    }
-
-    int lmin = l-dim/2;
+    /* lmin >= m */
+    int lmin = X-ldim/2;
     if(lmin < m)
         lmin = m;
 
+    /* minimum and maximum l */
     *lmin_p = lmin;
-    *lmax_p = lmin + dim;
+    *lmax_p = lmin + ldim;
 
-    return l;
+    return X;
 }
 
 
