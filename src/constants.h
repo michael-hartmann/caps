@@ -48,10 +48,6 @@ typedef signed char sign_t;
 #define M_LOGPI 1.1447298858494002 /**< log(π) */
 #endif
 
-#ifndef M_GM
-#define M_GM 1.618033988749895 /**< golden mean, (1+√5)/2 */
-#endif
-
 #define CASIMIR_hbar    1.0545718e-34   /**< reduced Planck constant [m² kg / s] */
 #define CASIMIR_hbar_eV 6.582119514e-16 /**< reduced Planck constant [eV s/rad] */
 #define CASIMIR_kB      1.38064852e-23  /**< Boltzman constant [m² kg / ( K s² )] */
