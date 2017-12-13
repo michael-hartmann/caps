@@ -44,6 +44,16 @@ static void usage(FILE *stream)
 "\n"
 "    -h,--help\n"
 "        Show this help.\n"
+"\n"
+"\n"
+"Environment variables:\n"
+"   CASIMIR_DUMP:\n"
+"        If this variable is set, the round-trip matrix will be dumped in numpy\n"
+"        format to the filename contained in CASIMIR_DUMP. Please note that the\n"
+"        round-trip matrix will only be dumped if detalg is QR, LU or CHOLESKY.\n"
+"\n"
+"   CASIMIR_CACHE_ELEMS:\n"
+"        Determines the size of the cache for the integrals I."
 "\n");
 }
 
