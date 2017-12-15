@@ -101,42 +101,52 @@ double K_estimate(int nu, int m, double alpha, double eps, double *a, double *b,
 
     #define f(x) _f((x), nu, m, alpha)
 
-    /* don't remove the dots in order to avoid integer overflows */
-    if(m == 1 && ((nu-2.)*(nu+3.)/6.)/alpha < 1.05)
+    if(m == 1)
     {
         /* g(x)  = Plm(nu,2,x)*exp(-αx)/(x²-1) = exp(-αx) P_nu''(x)
          * g'(x) = exp(-αx) [ -αP_nu''(x) + P_nu'''(x) ]
-         * g'(1) = exp(-α) (n-1)n(n+1)(n+2)/8 [ (n-2)(n+3)/6 -α ]
          * P_n'(1)   = n(n+1)/2
          * P_n''(1)  = (n-1)n(n+1)(n+2)/8 (triangular numbers)
          * P_n'''(1) = (n-2)(n-1)n(n+1)(n+2)(n+3)/48 (OEIS A240440)
          *
          * if m = 1 and (n-2)(n+3)/6 < α  =>  there is no maximum
+         *
+         * The derivative is given by:
+         * g'(1) = exp(-α) (n-1)n(n+1)(n+2)/8 [ (n-2)(n+3)/6 -α ]
+         *
+         * If the derivative is smaller than some threshold, we assume that the
+         * maximum is at x=1.
          */
 
-        *a = 1;
-        *b = 1-log(eps)/alpha;
+        /* don't remove the dots in order to avoid integer overflows */
+        const double deriv = exp(-alpha) * (nu-1.)*nu*(nu+1.)*(nu+2.)/8. * ((nu-2.)*(nu+3.)/6. -alpha);
 
-        const double logt1 = 1.5*log(alpha)+log(2/M_PI)/2+bessel_lnKnu(nu,alpha);
-        const double logt2 = -alpha+log(alpha+nu*(nu+1)/2.);
-        const double arg = -exp(logt2-logt1);
+        if(deriv < 1e-4)
+        {
+            *a = 1;
+            *b = 1-log(eps)/alpha;
 
-        fxmax = alpha-log( (nu-1.)*nu*(nu+1.)*(nu+2)/8. );
-        xmax = 1;
+            const double logt1 = 1.5*log(alpha)+log(2/M_PI)/2+bessel_lnKnu(nu,alpha);
+            const double logt2 = -alpha+log(alpha+nu*(nu+1)/2.);
+            const double arg = -exp(logt2-logt1);
 
-        /* for m=2 and PR we can evaluate the integral analytically. However,
-         * if alpha is very large, then arg may become -∞. In this case, we
-         * just use the maximum of the integrand as an approximation. This is
-         * ok, because we use approx only to scale the integrand.
-         */
-        if(fabs(arg) < 1)
-            /* exact evaluation */
-            *approx = logt1 + log1p(arg);
-        else
-            /* use maximum as an estimate for integral */
-            *approx = -fxmax;
+            fxmax = alpha-log( (nu-1.)*nu*(nu+1.)*(nu+2)/8. );
+            xmax = 1;
 
-        goto bordercheck;
+            /* for m=2 and PR we can evaluate the integral analytically. However,
+             * if alpha is very large, then arg may become -∞. In this case, we
+             * just use the maximum of the integrand as an approximation. This is
+             * ok, because we use approx only to scale the integrand.
+             */
+            if(fabs(arg) < 1)
+                /* exact evaluation */
+                *approx = logt1 + log1p(arg);
+            else
+                /* use maximum as an estimate for integral */
+                *approx = -fxmax;
+
+            goto bordercheck;
+        }
     }
 
     /* initial guess of maximum */
