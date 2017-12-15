@@ -160,7 +160,8 @@ double K_estimate(int nu, int m, double alpha, double eps, double *a, double *b,
         xmax = sqrt(1+pow_2((nu+0.5)/alpha));
 
     /* find position of peak: we use Newton's method to find the root of f'(x) */
-    for(int i = 0; i < maxiter; i++)
+    int i;
+    for(i = 0; i < maxiter; i++)
     {
         const double xold = xmax, x2m1 = xmax*xmax-1;
         double d, d2;
@@ -176,9 +177,11 @@ double K_estimate(int nu, int m, double alpha, double eps, double *a, double *b,
 
         /* if xmax is close to 1, compute maximum with higher precision */
         const double delta = fabs(xmax-xold);
-        if(delta < 1e-9 || (xmax > 1.001 && delta < 1e-6))
+        if(delta < 1e-14 || (xmax > 1.001 && delta < 1e-6))
             break;
     }
+
+    TERMINATE(i == maxiter, "Newton's method did not converge: xmax=%g, nu=%d, m=%d, alpha=%g", xmax, nu, m, alpha);
 
     TERMINATE(xmax <= 1 || isnan(xmax) || isinf(xmax), "xmax=%g, nu=%d, m=%d, alpha=%g", xmax, nu, m, alpha);
 
@@ -208,7 +211,6 @@ bordercheck:
     /* check left border */
     if(*a > 1)
     {
-        int i;
         for(i = 0; i < maxiter; i++)
         {
             const double fa = f(*a);
@@ -222,19 +224,16 @@ bordercheck:
     }
 
     /* check right border */
+    for(i = 0; i < maxiter; i++)
     {
-        int i;
-        for(i = 0; i < maxiter; i++)
-        {
-            const double fb = f(*b);
-            if(exp(fxmax-fb) < eps)
-                break;
+        const double fb = f(*b);
+        if(exp(fxmax-fb) < eps)
+            break;
 
-            *b = 1+2*(*b-1);
-        }
-
-        TERMINATE(i == maxiter, "nu=%d, m=%d, alpha=%g, xmax=%g, f(xmax)=%g, b=%g", nu, m, alpha, xmax, fxmax, *b);
+        *b = 1+2*(*b-1);
     }
+
+    TERMINATE(i == maxiter, "nu=%d, m=%d, alpha=%g, xmax=%g, f(xmax)=%g, b=%g", nu, m, alpha, xmax, fxmax, *b);
 
     #if 0 /* neat for debugging */
     printf("estimate: a=%g, b=%g, I=%.15g, xmax=%g\n", *a, *b, *approx, xmax);
@@ -260,13 +259,14 @@ static double K_integrand(double x, void *args_)
     const double x2m1 = (x+1)*(x-1);
 
     if(m)
-        v = exp(-log_normalization + lnPlm(nu,2*m,x)-alpha*x)/x2m1;
+        v = exp(-log_normalization + lnPlm(nu,2*m,x)-alpha*x-log(x2m1));
     else
         v = exp(-log_normalization + lnPlm(nu,2,x)-alpha*x);
 
     casimir_rp(casimir, xi_tilde, xi_tilde*sqrt(x2m1), &rTE, &rTM);
 
-    TERMINATE(isnan(v) || isinf(v), "x=%g, nu=%d, m=%d, alpha=%g, v=%g, log_normalization=%g", x, nu, m, alpha, v, log_normalization);
+    TERMINATE(isnan(v) || isinf(v), "x=%g, nu=%d, m=%d, alpha=%g, v=%g, log_normalization=%g, lnPlm=%g | %g", x, nu, m, alpha, v, log_normalization, lnPlm(nu,2*m,x),
+    -log_normalization + lnPlm(nu,2*m,x)-alpha*x);
 
     if(args->p == TE)
         return rTE*v;
