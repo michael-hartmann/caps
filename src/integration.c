@@ -43,6 +43,14 @@ static double _f(double x, int nu, int m, double alpha)
 {
     TERMINATE(x <= 1, "x=%g, nu%d, m=%d, alpha=%g", x, nu, m, alpha);
 
+    if(x == 1)
+    {
+        if(m != 1)
+            return -INFINITY;
+
+        return alpha - logi(nu+2)-logi(nu+1)-logi(nu)-logi(nu-1)+log(8);
+    }
+
     if(m == 0)
         return alpha*x-lnPlm(nu,2,x);
     else
@@ -94,7 +102,7 @@ static double _f(double x, int nu, int m, double alpha)
  */
 double K_estimate(int nu, int m, double alpha, double eps, double *a, double *b, double *approx)
 {
-    const int maxiter = 50;
+    const int maxiter = 75;
     const int mpos = (m > 0) ? 1 : 0;
     const int m_ = MAX(m,1);
     double fxmax, fp, fpp, xmax;
@@ -121,7 +129,7 @@ double K_estimate(int nu, int m, double alpha, double eps, double *a, double *b,
         /* don't remove the dots in order to avoid integer overflows */
         const double deriv = exp(-alpha) * (nu-1.)*nu*(nu+1.)*(nu+2.)/8. * ((nu-2.)*(nu+3.)/6. -alpha);
 
-        if(deriv < 1e-4)
+        if(deriv < 1e-3)
         {
             *a = 1;
             *b = 1-log(eps)/alpha;
@@ -177,22 +185,37 @@ double K_estimate(int nu, int m, double alpha, double eps, double *a, double *b,
 
         /* if xmax is close to 1, compute maximum with higher precision */
         const double delta = fabs(xmax-xold);
-        if(delta < 1e-14 || (xmax > 1.001 && delta < 1e-6))
+        if(delta < 1e-10 || (xmax > 1.001 && delta < 1e-6))
             break;
     }
 
-    TERMINATE(i == maxiter, "Newton's method did not converge: xmax=%g, nu=%d, m=%d, alpha=%g", xmax, nu, m, alpha);
-
-    TERMINATE(xmax <= 1 || isnan(xmax) || isinf(xmax), "xmax=%g, nu=%d, m=%d, alpha=%g", xmax, nu, m, alpha);
+    TERMINATE(isnan(xmax) || isinf(xmax), "xmax=%g, nu=%d, m=%d, alpha=%g", xmax, nu, m, alpha);
 
     fxmax = f(xmax);
 
     TERMINATE(isnan(fxmax) || isinf(fxmax), "xmax=%g, fxmax=%g, nu=%d, m=%d, alpha=%g", xmax, fxmax, nu, m, alpha);
 
-    TERMINATE(isnan(fpp) || isinf(fpp) || fpp <= 0, "xmax=%g, fxmax=%g, fpp=%g, nu=%d, m=%d, alpha=%g", xmax, fxmax, fpp, nu, m, alpha)
+    TERMINATE(isnan(fpp) || isinf(fpp), "xmax=%g, fxmax=%g, fpp=%g, nu=%d, m=%d, alpha=%g", xmax, fxmax, fpp, nu, m, alpha)
 
-    /* approximation using Laplace's method */
-    *approx = log(2*M_PI/fpp)/2-fxmax;
+    if(xmax < 1.001 || fpp <= 0)
+    {
+        /* use peak of integrand as approximation */
+        *approx = fxmax;
+
+        *a = 1;
+        *b = 1-log(eps)/alpha;
+    }
+    else
+    {
+        /* approximation using Laplace's method */
+        *approx = log(2*M_PI/fpp)/2-fxmax;
+
+        /* estimate width, left and right borders */
+        const double width = -log(eps)/sqrt(fpp);
+
+        *a = fmax(1, xmax-width);
+        *b = xmax+width;
+    }
 
     /*
     printf("xmax=%.10g\n", xmax);
@@ -200,11 +223,6 @@ double K_estimate(int nu, int m, double alpha, double eps, double *a, double *b,
     printf("fxmax=%.10g\n", f(xmax));
     printf("fpp=%.10g\n", fpp);
     */
-
-    /* estimate width, left and right borders */
-    const double width = -log(eps)/sqrt(fpp);
-    *a = fmax(1, xmax-width);
-    *b = xmax+width;
 
 bordercheck:
 
