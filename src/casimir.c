@@ -41,6 +41,9 @@ casimir_mpi_t *casimir_mpi_init(double L, double R, double T, char *filename, do
     self->tasks   = xmalloc(cores*sizeof(casimir_task_t *));
     self->alpha   = 2*L/(L+R); /* L/(R+L) */
 
+    /* number of determinants we have computed */
+    self->determinants = 0;
+
     TERMINATE(strlen(filename) > 511, "filename too long: %s", filename);
 
     memset(self->filename, '\0', sizeof(self->filename));
@@ -121,6 +124,10 @@ int casimir_mpi_submit(casimir_mpi_t *self, int index, double xi, int m)
     return 0;
 }
 
+int casimir_get_determinants(casimir_mpi_t *self)
+{
+    return self->determinants;
+}
 
 int casimir_mpi_retrieve(casimir_mpi_t *self, casimir_task_t **task_out)
 {
@@ -143,6 +150,7 @@ int casimir_mpi_retrieve(casimir_mpi_t *self, casimir_task_t **task_out)
 
                 task->value = task->recv;
                 task->state = STATE_IDLE;
+                self->determinants += 1;
 
                 *task_out = self->tasks[i];
 
@@ -539,6 +547,8 @@ void master(int argc, char *argv[], const int cores)
         }
     }
 
+    printf("#\n");
+    printf("# %d determinants computed\n", casimir_get_determinants(casimir_mpi));
     printf("#\n");
     printf("# L/R, L, R, T, ldim, F*(L+R)/(ħc)\n");
     printf("%.16g, %.16g, %.16g, %.16g, %d, %.16g\n", LbyR, L, R, T, ldim, F);
