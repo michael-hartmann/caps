@@ -283,8 +283,7 @@ static double K_integrand(double x, void *args_)
 
     casimir_rp(casimir, xi_tilde, xi_tilde*sqrt(x2m1), &rTE, &rTM);
 
-    TERMINATE(isnan(v) || isinf(v), "x=%g, nu=%d, m=%d, alpha=%g, v=%g, log_normalization=%g, lnPlm=%g | %g", x, nu, m, alpha, v, log_normalization, lnPlm(nu,2*m,x),
-    -log_normalization + lnPlm(nu,2*m,x)-alpha*x);
+    TERMINATE(isnan(v) || isinf(v), "x=%g, nu=%d, m=%d, alpha=%g, v=%g, log_normalization=%g, lnPlm=%g", x, nu, m, alpha, v, log_normalization, lnPlm(nu,2*m,x));
 
     if(args->p == TE)
         return rTE*v;
