@@ -12,6 +12,7 @@
 #include "casimir.h"
 
 #include "quadpack.h"
+#include "fcqs.h"
 #include "libcasimir.h"
 #include "material.h"
 #include "misc.h"
@@ -459,13 +460,17 @@ void master(int argc, char *argv[], const int cores)
     if(T == 0)
     {
         double integral = 0;
-        double abserr;
+        double abserr = 0;
         int ier, neval;
 
         printf("# quad   = adaptive Gauss-Kronrod\n");
         printf("#\n");
 
+        #if 0
         integral = dqagi(wrapper_integrand, 0, 1, 0, epsrel, &abserr, &neval, &ier, casimir_mpi);
+        #else
+        integral = fcgs_semiinf(wrapper_integrand, casimir_mpi, &epsrel, &neval, 1, &ier);
+        #endif
 
         printf("#\n");
         printf("# ier=%d, integral=%.15g, neval=%d, abserr=%g, absrel=%g\n", ier, integral, neval, abserr, fabs(abserr/integral));
