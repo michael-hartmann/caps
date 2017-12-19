@@ -43,6 +43,14 @@ static double _f(double x, int nu, int m, double alpha)
 {
     TERMINATE(x <= 1, "x=%g, nu%d, m=%d, alpha=%g", x, nu, m, alpha);
 
+    if(x == 1)
+    {
+        if(m != 1)
+            return -INFINITY;
+
+        return alpha - logi(nu+2)-logi(nu+1)-logi(nu)-logi(nu-1)+log(8);
+    }
+
     if(m == 0)
         return alpha*x-lnPlm(nu,2,x);
     else
@@ -94,49 +102,59 @@ static double _f(double x, int nu, int m, double alpha)
  */
 double K_estimate(int nu, int m, double alpha, double eps, double *a, double *b, double *approx)
 {
-    const int maxiter = 50;
+    const int maxiter = 75;
     const int mpos = (m > 0) ? 1 : 0;
     const int m_ = MAX(m,1);
     double fxmax, fp, fpp, xmax;
 
     #define f(x) _f((x), nu, m, alpha)
 
-    /* don't remove the dots in order to avoid integer overflows */
-    if(m == 1 && ((nu-2.)*(nu+3.)/6.)/alpha < 1.05)
+    if(m == 1)
     {
         /* g(x)  = Plm(nu,2,x)*exp(-αx)/(x²-1) = exp(-αx) P_nu''(x)
          * g'(x) = exp(-αx) [ -αP_nu''(x) + P_nu'''(x) ]
-         * g'(1) = exp(-α) (n-1)n(n+1)(n+2)/8 [ (n-2)(n+3)/6 -α ]
          * P_n'(1)   = n(n+1)/2
          * P_n''(1)  = (n-1)n(n+1)(n+2)/8 (triangular numbers)
          * P_n'''(1) = (n-2)(n-1)n(n+1)(n+2)(n+3)/48 (OEIS A240440)
          *
          * if m = 1 and (n-2)(n+3)/6 < α  =>  there is no maximum
+         *
+         * The derivative is given by:
+         * g'(1) = exp(-α) (n-1)n(n+1)(n+2)/8 [ (n-2)(n+3)/6 -α ]
+         *
+         * If the derivative is smaller than some threshold, we assume that the
+         * maximum is at x=1.
          */
 
-        *a = 1;
-        *b = 1-log(eps)/alpha;
+        /* don't remove the dots in order to avoid integer overflows */
+        const double deriv = exp(-alpha) * (nu-1.)*nu*(nu+1.)*(nu+2.)/8. * ((nu-2.)*(nu+3.)/6. -alpha);
 
-        const double logt1 = 1.5*log(alpha)+log(2/M_PI)/2+bessel_lnKnu(nu,alpha);
-        const double logt2 = -alpha+log(alpha+nu*(nu+1)/2.);
-        const double arg = -exp(logt2-logt1);
+        if(deriv < 1e-3)
+        {
+            *a = 1;
+            *b = 1-log(eps)/alpha;
 
-        fxmax = alpha-log( (nu-1.)*nu*(nu+1.)*(nu+2)/8. );
-        xmax = 1;
+            const double logt1 = 1.5*log(alpha)+log(2/M_PI)/2+bessel_lnKnu(nu,alpha);
+            const double logt2 = -alpha+log(alpha+nu*(nu+1)/2.);
+            const double arg = -exp(logt2-logt1);
 
-        /* for m=2 and PR we can evaluate the integral analytically. However,
-         * if alpha is very large, then arg may become -∞. In this case, we
-         * just use the maximum of the integrand as an approximation. This is
-         * ok, because we use approx only to scale the integrand.
-         */
-        if(fabs(arg) < 1)
-            /* exact evaluation */
-            *approx = logt1 + log1p(arg);
-        else
-            /* use maximum as an estimate for integral */
-            *approx = -fxmax;
+            fxmax = alpha-log( (nu-1.)*nu*(nu+1.)*(nu+2)/8. );
+            xmax = 1;
 
-        goto bordercheck;
+            /* for m=2 and PR we can evaluate the integral analytically. However,
+             * if alpha is very large, then arg may become -∞. In this case, we
+             * just use the maximum of the integrand as an approximation. This is
+             * ok, because we use approx only to scale the integrand.
+             */
+            if(fabs(arg) < 1)
+                /* exact evaluation */
+                *approx = logt1 + log1p(arg);
+            else
+                /* use maximum as an estimate for integral */
+                *approx = -fxmax;
+
+            goto bordercheck;
+        }
     }
 
     /* initial guess of maximum */
@@ -150,7 +168,8 @@ double K_estimate(int nu, int m, double alpha, double eps, double *a, double *b,
         xmax = sqrt(1+pow_2((nu+0.5)/alpha));
 
     /* find position of peak: we use Newton's method to find the root of f'(x) */
-    for(int i = 0; i < maxiter; i++)
+    int i;
+    for(i = 0; i < maxiter; i++)
     {
         const double xold = xmax, x2m1 = xmax*xmax-1;
         double d, d2;
@@ -166,20 +185,28 @@ double K_estimate(int nu, int m, double alpha, double eps, double *a, double *b,
 
         /* if xmax is close to 1, compute maximum with higher precision */
         const double delta = fabs(xmax-xold);
-        if(delta < 1e-9 || (xmax > 1.001 && delta < 1e-6))
+        if(delta < 1e-13 || (xmax > 1.001 && delta < 1e-6))
             break;
     }
 
-    TERMINATE(xmax <= 1 || isnan(xmax) || isinf(xmax), "xmax=%g, nu=%d, m=%d, alpha=%g", xmax, nu, m, alpha);
+    TERMINATE(isnan(xmax) || isinf(xmax), "xmax=%g, nu=%d, m=%d, alpha=%g", xmax, nu, m, alpha);
 
     fxmax = f(xmax);
 
     TERMINATE(isnan(fxmax) || isinf(fxmax), "xmax=%g, fxmax=%g, nu=%d, m=%d, alpha=%g", xmax, fxmax, nu, m, alpha);
 
-    TERMINATE(isnan(fpp) || isinf(fpp) || fpp <= 0, "xmax=%g, fxmax=%g, fpp=%g, nu=%d, m=%d, alpha=%g", xmax, fxmax, fpp, nu, m, alpha)
+    TERMINATE(isnan(fpp) || isinf(fpp) || fpp < 0, "xmax=%g, fxmax=%g, fpp=%g, nu=%d, m=%d, alpha=%g", xmax, fxmax, fpp, nu, m, alpha)
 
-    /* approximation using Laplace's method */
-    *approx = log(2*M_PI/fpp)/2-fxmax;
+    {
+        /* approximation using Laplace's method */
+        *approx = log(2*M_PI/fpp)/2-fxmax;
+
+        /* estimate width, left and right borders */
+        const double width = -log(eps)/sqrt(fpp);
+
+        *a = fmax(1, xmax-width);
+        *b = xmax+width;
+    }
 
     /*
     printf("xmax=%.10g\n", xmax);
@@ -188,17 +215,11 @@ double K_estimate(int nu, int m, double alpha, double eps, double *a, double *b,
     printf("fpp=%.10g\n", fpp);
     */
 
-    /* estimate width, left and right borders */
-    const double width = -log(eps)/sqrt(fpp);
-    *a = fmax(1, xmax-width);
-    *b = xmax+width;
-
 bordercheck:
 
     /* check left border */
     if(*a > 1)
     {
-        int i;
         for(i = 0; i < maxiter; i++)
         {
             const double fa = f(*a);
@@ -212,19 +233,16 @@ bordercheck:
     }
 
     /* check right border */
+    for(i = 0; i < maxiter; i++)
     {
-        int i;
-        for(i = 0; i < maxiter; i++)
-        {
-            const double fb = f(*b);
-            if(exp(fxmax-fb) < eps)
-                break;
+        const double fb = f(*b);
+        if(exp(fxmax-fb) < eps)
+            break;
 
-            *b = 1+2*(*b-1);
-        }
-
-        TERMINATE(i == maxiter, "nu=%d, m=%d, alpha=%g, xmax=%g, f(xmax)=%g, b=%g", nu, m, alpha, xmax, fxmax, *b);
+        *b = 1+2*(*b-1);
     }
+
+    TERMINATE(i == maxiter, "nu=%d, m=%d, alpha=%g, xmax=%g, f(xmax)=%g, b=%g", nu, m, alpha, xmax, fxmax, *b);
 
     #if 0 /* neat for debugging */
     printf("estimate: a=%g, b=%g, I=%.15g, xmax=%g\n", *a, *b, *approx, xmax);
@@ -250,13 +268,14 @@ static double K_integrand(double x, void *args_)
     const double x2m1 = (x+1)*(x-1);
 
     if(m)
-        v = exp(-log_normalization + lnPlm(nu,2*m,x)-alpha*x)/x2m1;
+        v = exp(-log_normalization + lnPlm(nu,2*m,x)-alpha*x-log(x2m1));
     else
         v = exp(-log_normalization + lnPlm(nu,2,x)-alpha*x);
 
     casimir_rp(casimir, xi_tilde, xi_tilde*sqrt(x2m1), &rTE, &rTM);
 
-    TERMINATE(isnan(v) || isinf(v), "x=%g, nu=%d, m=%d, alpha=%g, v=%g, log_normalization=%g", x, nu, m, alpha, v, log_normalization);
+    TERMINATE(isnan(v) || isinf(v), "x=%g, nu=%d, m=%d, alpha=%g, v=%g, log_normalization=%g, lnPlm=%g | %g", x, nu, m, alpha, v, log_normalization, lnPlm(nu,2*m,x),
+    -log_normalization + lnPlm(nu,2*m,x)-alpha*x);
 
     if(args->p == TE)
         return rTE*v;
