@@ -185,7 +185,7 @@ double K_estimate(int nu, int m, double alpha, double eps, double *a, double *b,
 
         /* if xmax is close to 1, compute maximum with higher precision */
         const double delta = fabs(xmax-xold);
-        if(delta < 1e-10 || (xmax > 1.001 && delta < 1e-6))
+        if(delta < 1e-13 || (xmax > 1.001 && delta < 1e-6))
             break;
     }
 
@@ -195,17 +195,8 @@ double K_estimate(int nu, int m, double alpha, double eps, double *a, double *b,
 
     TERMINATE(isnan(fxmax) || isinf(fxmax), "xmax=%g, fxmax=%g, nu=%d, m=%d, alpha=%g", xmax, fxmax, nu, m, alpha);
 
-    TERMINATE(isnan(fpp) || isinf(fpp), "xmax=%g, fxmax=%g, fpp=%g, nu=%d, m=%d, alpha=%g", xmax, fxmax, fpp, nu, m, alpha)
+    TERMINATE(isnan(fpp) || isinf(fpp) || fpp < 0, "xmax=%g, fxmax=%g, fpp=%g, nu=%d, m=%d, alpha=%g", xmax, fxmax, fpp, nu, m, alpha)
 
-    if(xmax < 1.001 || fpp <= 0)
-    {
-        /* use peak of integrand as approximation */
-        *approx = fxmax;
-
-        *a = 1;
-        *b = 1-log(eps)/alpha;
-    }
-    else
     {
         /* approximation using Laplace's method */
         *approx = log(2*M_PI/fpp)/2-fxmax;
@@ -283,7 +274,8 @@ static double K_integrand(double x, void *args_)
 
     casimir_rp(casimir, xi_tilde, xi_tilde*sqrt(x2m1), &rTE, &rTM);
 
-    TERMINATE(isnan(v) || isinf(v), "x=%g, nu=%d, m=%d, alpha=%g, v=%g, log_normalization=%g, lnPlm=%g", x, nu, m, alpha, v, log_normalization, lnPlm(nu,2*m,x));
+    TERMINATE(isnan(v) || isinf(v), "x=%g, nu=%d, m=%d, alpha=%g, v=%g, log_normalization=%g, lnPlm=%g | %g", x, nu, m, alpha, v, log_normalization, lnPlm(nu,2*m,x),
+    -log_normalization + lnPlm(nu,2*m,x)-alpha*x);
 
     if(args->p == TE)
         return rTE*v;
