@@ -26,6 +26,7 @@ OBJS = \
     cquadpack/src/dqk21.o \
     cquadpack/src/dqsort.o \
     bessel.o \
+    fcqs.c \
     plm.o \
     logfac.o \
     integration.o \
