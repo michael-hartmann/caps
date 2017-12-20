@@ -18,6 +18,7 @@ typedef struct {
     int ldim, cores;
     bool verbose;
     casimir_task_t **tasks;
+    int determinants;
     char filename[512];
 } casimir_mpi_t;
 
@@ -26,6 +27,7 @@ void casimir_mpi_free(casimir_mpi_t *self);
 int casimir_mpi_submit(casimir_mpi_t *self, int index, double xi, int m);
 int casimir_mpi_retrieve(casimir_mpi_t *self, casimir_task_t **task_out);
 int casimir_mpi_get_running(casimir_mpi_t *self);
+int casimir_get_determinants(casimir_mpi_t *self);
 
 void usage(FILE *stream);
 

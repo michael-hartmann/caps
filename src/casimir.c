@@ -12,6 +12,7 @@
 #include "casimir.h"
 
 #include "quadpack.h"
+#include "fcqs.h"
 #include "libcasimir.h"
 #include "material.h"
 #include "misc.h"
@@ -40,6 +41,9 @@ casimir_mpi_t *casimir_mpi_init(double L, double R, double T, char *filename, do
     self->verbose = verbose;
     self->tasks   = xmalloc(cores*sizeof(casimir_task_t *));
     self->alpha   = 2*L/(L+R); /* L/(R+L) */
+
+    /* number of determinants we have computed */
+    self->determinants = 0;
 
     TERMINATE(strlen(filename) > 511, "filename too long: %s", filename);
 
@@ -121,6 +125,10 @@ int casimir_mpi_submit(casimir_mpi_t *self, int index, double xi, int m)
     return 0;
 }
 
+int casimir_get_determinants(casimir_mpi_t *self)
+{
+    return self->determinants;
+}
 
 int casimir_mpi_retrieve(casimir_mpi_t *self, casimir_task_t **task_out)
 {
@@ -143,6 +151,7 @@ int casimir_mpi_retrieve(casimir_mpi_t *self, casimir_task_t **task_out)
 
                 task->value = task->recv;
                 task->state = STATE_IDLE;
+                self->determinants += 1;
 
                 *task_out = self->tasks[i];
 
@@ -245,7 +254,7 @@ int main(int argc, char *argv[])
 
 void master(int argc, char *argv[], const int cores)
 {
-    bool verbose = false;
+    bool verbose = false, fcqs = false;
     char filename[512] = { 0 };
     int ldim = 0;
     double L = 0, R = 0, T = 0, omegap = INFINITY, gamma_ = 0;
@@ -260,6 +269,7 @@ void master(int argc, char *argv[], const int cores)
         struct option long_options[] = {
             { "help",        no_argument,       0, 'h' },
             { "verbose",     no_argument,       0, 'v' },
+            { "fcqs",        no_argument,       0, 'F' },
             { "temperature", required_argument, 0, 'T' },
             { "eta",         required_argument, 0, 'E' },
             { "ldim",        required_argument, 0, 'l' },
@@ -274,7 +284,7 @@ void master(int argc, char *argv[], const int cores)
         /* getopt_long stores the option index here. */
         int option_index = 0;
 
-        int c = getopt_long(argc, argv, "R:L:T:l:c:e:E:f:w:g:vVh", long_options, &option_index);
+        int c = getopt_long(argc, argv, "R:L:T:l:c:e:E:f:w:g:FvVh", long_options, &option_index);
 
         /* Detect the end of the options. */
         if(c == -1)
@@ -312,6 +322,9 @@ void master(int argc, char *argv[], const int cores)
                 break;
             case 'g':
                 gamma_ = atof(optarg);
+                break;
+            case 'F':
+                fcqs = true;
                 break;
             case 'v':
                 verbose = true;
@@ -451,16 +464,25 @@ void master(int argc, char *argv[], const int cores)
     if(T == 0)
     {
         double integral = 0;
-        double abserr;
+        double abserr = 0;
         int ier, neval;
 
-        printf("# quad   = adaptive Gauss-Kronrod\n");
+        if(fcqs)
+            printf("# quad   = Fourier-Chebsheb quadrature scheme\n");
+        else
+            printf("# quad   = adaptive Gauss-Kronrod\n");
         printf("#\n");
 
-        integral = dqagi(wrapper_integrand, 0, 1, 0, epsrel, &abserr, &neval, &ier, casimir_mpi);
+        if(fcqs)
+            integral = fcgs_semiinf(wrapper_integrand, casimir_mpi, &epsrel, &neval, 1, &ier);
+        else
+        {
+            integral = dqagi(wrapper_integrand, 0, 1, 0, epsrel, &abserr, &neval, &ier, casimir_mpi);
+            epsrel = fabs(1-abserr/integral);
+        }
 
         printf("#\n");
-        printf("# ier=%d, integral=%.15g, neval=%d, abserr=%g, absrel=%g\n", ier, integral, neval, abserr, fabs(abserr/integral));
+        printf("# ier=%d, integral=%.15g, neval=%d, absrel=%g\n", ier, integral, neval, epsrel);
 
         WARN(ier != 0, "ier=%d", ier);
 
@@ -539,6 +561,8 @@ void master(int argc, char *argv[], const int cores)
         }
     }
 
+    printf("#\n");
+    printf("# %d determinants computed\n", casimir_get_determinants(casimir_mpi));
     printf("#\n");
     printf("# L/R, L, R, T, ldim, F*(L+R)/(ħc)\n");
     printf("%.16g, %.16g, %.16g, %.16g, %d, %.16g\n", LbyR, L, R, T, ldim, F);
@@ -667,6 +691,10 @@ void usage(FILE *stream)
 "       Request relative accuracy of EPSREL for Gauß-Kronrod integration if\n"
 "       T=0, or stop criterion logdetD(n)/logdetD(n=0) < epsrel for T>0\n"
 "       (default: %g)\n"
+"\n"
+"    -F, --fcqs\n"
+"      Use Fourier-Chebshev quadrature scheme to compute integral over xi. This\n"
+"      is usually faster than using Gauss-Kronrod. (only used when T=0)\n"
 "\n"
 "    -f, --material FILENAME\n"
 "        Filename of the material description file. If set, --omegap and\n"
