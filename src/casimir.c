@@ -26,7 +26,22 @@
 #define STATE_RUNNING 1
 #define STATE_IDLE    0
 
-casimir_mpi_t *casimir_mpi_init(double L, double R, double T, char *filename, double omegap, double gamma_, int ldim, double cutoff, int cores, bool verbose)
+/* @brief Create casimir_mpi object
+ *
+ * @param [in] L separation between sphere and plate in meter
+ * @param [in] R radius of sphere in meter
+ * @param [in] T temperature in Kelvin
+ * @param [in] filename filename of material description or NULL
+ * @param [in] omegap plasma frequency of the Drude model in eV
+ * @param [in] gamma_ relaxation frequency of the Drude model eV
+ * @param [in] ldim dimension of vector space
+ * @param [in] cutoff cutoff for summation over m
+ * @param [in] iepsrel relative accuracy for integration of k for matrix elements
+ * @param [in] cores number of cores to use
+ * @param [in] verbose flag if verbose
+ * @retval object casimir_mpi_t object
+ */
+casimir_mpi_t *casimir_mpi_init(double L, double R, double T, char *filename, double omegap, double gamma_, int ldim, double cutoff, double iepsrel, int cores, bool verbose)
 {
     casimir_mpi_t *self = xmalloc(sizeof(casimir_mpi_t));
 
@@ -37,6 +52,7 @@ casimir_mpi_t *casimir_mpi_init(double L, double R, double T, char *filename, do
     self->gamma   = gamma_;
     self->ldim    = ldim;
     self->cutoff  = cutoff;
+    self->iepsrel = iepsrel;
     self->cores   = cores;
     self->verbose = verbose;
     self->tasks   = xmalloc(cores*sizeof(casimir_task_t *));
@@ -107,14 +123,14 @@ int casimir_mpi_submit(casimir_mpi_t *self, int index, double xi, int m)
 
         if(task->state == STATE_IDLE)
         {
-            double buf[] = { xi, self->L, self->R, self->omegap, self->gamma, m, self->ldim };
+            double buf[] = { xi, self->L, self->R, self->omegap, self->gamma, m, self->iepsrel, self->ldim };
 
             task->index = index;
             task->xi    = xi;
             task->m     = m;
             task->state = STATE_RUNNING;
 
-            MPI_Send (buf,              7, MPI_DOUBLE, i, 0, MPI_COMM_WORLD);
+            MPI_Send (buf,              8, MPI_DOUBLE, i, 0, MPI_COMM_WORLD);
             MPI_Send (self->filename, 512, MPI_CHAR,   i, 0, MPI_COMM_WORLD);
             MPI_Irecv(&task->recv,     1,  MPI_DOUBLE, i, 0, MPI_COMM_WORLD, &task->request);
 
@@ -259,6 +275,7 @@ void master(int argc, char *argv[], const int cores)
     int ldim = 0;
     double L = 0, R = 0, T = 0, omegap = INFINITY, gamma_ = 0;
     double cutoff = CUTOFF, epsrel = EPSREL, eta = ETA;
+    double iepsrel = CASIMIR_EPSREL;
     material_t *material = NULL;
 
     #define EXIT() do { _mpi_stop(cores); return; } while(0)
@@ -275,6 +292,7 @@ void master(int argc, char *argv[], const int cores)
             { "ldim",        required_argument, 0, 'l' },
             { "cutoff",      required_argument, 0, 'c' },
             { "epsrel",      required_argument, 0, 'e' },
+            { "iepsrel",     required_argument, 0, 'i' },
             { "material",    required_argument, 0, 'f' },
             { "omegap",      required_argument, 0, 'w' },
             { "gamma",       required_argument, 0, 'g' },
@@ -284,7 +302,7 @@ void master(int argc, char *argv[], const int cores)
         /* getopt_long stores the option index here. */
         int option_index = 0;
 
-        int c = getopt_long(argc, argv, "R:L:T:l:c:e:E:f:w:g:FvVh", long_options, &option_index);
+        int c = getopt_long(argc, argv, "R:L:T:l:c:e:E:f:i:w:g:FvVh", long_options, &option_index);
 
         /* Detect the end of the options. */
         if(c == -1)
@@ -313,6 +331,9 @@ void master(int argc, char *argv[], const int cores)
                 break;
             case 'c':
                 cutoff = atof(optarg);
+                break;
+            case 'i':
+                iepsrel = atof(optarg);
                 break;
             case 'e':
                 epsrel = atof(optarg);
@@ -378,6 +399,12 @@ void master(int argc, char *argv[], const int cores)
         usage(stderr);
         EXIT();
     }
+    if(iepsrel < 0)
+    {
+        fprintf(stderr, "iepsrel must be non-negative.\n\n");
+        usage(stderr);
+        EXIT();
+    }
     if(eta <= 0)
     {
         fprintf(stderr, "eta must be positive.\n\n");
@@ -437,26 +464,27 @@ void master(int argc, char *argv[], const int cores)
     casimir_build(stdout, "# ");
     printf("#\n");
 
-    casimir_mpi_t *casimir_mpi = casimir_mpi_init(L, R, T, filename, omegap, gamma_, ldim, cutoff, cores, verbose);
+    casimir_mpi_t *casimir_mpi = casimir_mpi_init(L, R, T, filename, omegap, gamma_, ldim, cutoff, iepsrel, cores, verbose);
 
     /* estimate, cf. eq. (6.33) */
     const double alpha = 2*LbyR/(1+LbyR);
 
-    printf("# L      = %.15g\n", L);
-    printf("# R      = %.15g\n", R);
-    printf("# LbyR   = %.15g\n", LbyR);
-    printf("# T      = %.15g\n", T);
+    printf("# LbyR = %.15g\n", LbyR);
+    printf("# L = %.15g\n", L);
+    printf("# R = %.15g\n", R);
+    printf("# T = %.15g\n", T);
     printf("# cutoff = %g\n", cutoff);
     printf("# epsrel = %g\n", epsrel);
-    printf("# ldim   = %d\n", ldim);
-    printf("# cores  = %d\n", cores);
-    printf("# alpha  = %.15g\n", alpha);
+    printf("# iepsrel = %g\n", iepsrel);
+    printf("# ldim = %d\n", ldim);
+    printf("# cores = %d\n", cores);
+    printf("# alpha = %.15g\n", alpha);
     if(strlen(filename))
-        printf("# filename = %s\n", filename);
+    printf("# filename = %s\n", filename);
     else if(!isinf(omegap))
     {
         printf("# omegap = %.15g\n", omegap);
-        printf("# gamma  = %.15g\n", gamma_);
+        printf("# gamma = %.15g\n", gamma_);
     }
 
 
@@ -577,7 +605,7 @@ void slave(MPI_Comm master_comm, int rank)
 {
     char filename[512] = { 0 };
     double userdata[2] = { 0 };
-    double buf[7] = { 0 };
+    double buf[8] = { 0 };
 
     MPI_Status status;
     MPI_Request request;
@@ -591,7 +619,7 @@ void slave(MPI_Comm master_comm, int rank)
         memset(filename, 0, sizeof(filename));
         memset(userdata, 0, sizeof(userdata));
 
-        MPI_Recv(buf, 7, MPI_DOUBLE, 0, 0, master_comm, &status);
+        MPI_Recv(buf, 8, MPI_DOUBLE, 0, 0, master_comm, &status);
 
         /* Matsubara frequency */
         const double xi = buf[0];
@@ -609,8 +637,9 @@ void slave(MPI_Comm master_comm, int rank)
         const double omegap = buf[3]/(CASIMIR_hbar_eV*CASIMIR_c)*(L+R);
         const double gamma_ = buf[4]/(CASIMIR_hbar_eV*CASIMIR_c)*(L+R);
 
-        const int m    = (int)buf[5];
-        const int ldim = (int)buf[6];
+        const int m          = (int)buf[5];
+        const double iepsrel = buf[6];
+        const int ldim       = (int)buf[7];
 
         /* get filename */
         MPI_Recv(filename, 512, MPI_CHAR, 0, 0, master_comm, &status);
@@ -618,6 +647,9 @@ void slave(MPI_Comm master_comm, int rank)
         casimir = casimir_init(LbyR);
         TERMINATE(casimir == NULL, "casimir object is null");
         casimir_set_ldim(casimir, ldim);
+
+        if(iepsrel > 0)
+            casimir_set_epsrel(casimir, iepsrel);
 
         /* set material properties */
         if(strlen(filename))
@@ -649,17 +681,16 @@ void usage(FILE *stream)
 {
     fprintf(stream,
 "Usage: casimir [OPTIONS]\n\n"
-"This program will calculate the free Casimir energy F(T,L/R) for the\n"
-"plane-sphere geometry for given L/R and temperature T. The output is in\n"
-"units of ħc/(L+R).\n"
+"This program computes the free Casimir energy F(T,L/R) for the plane-sphere\n"
+"geometry for L, R and T. The output is in units of ħc/(L+R).\n"
 "\n"
-"This program uses MPI for parallization. The program needs at least two\n"
-"cores to run.\n"
+"This program uses MPI for parallization and needs at leas to cores to run.\n"
 "\n"
 "The free eenergy at T=0 is calculated using integration:\n"
 "   F(L/R) = \\int_0^\\infty dξ logdet D(ξ)\n"
-"The integration is done using an adaptive Gauß-Kronrod quadrature. The\n"
-"integrand decays exponentially, c.f. Eq. (6.33) of [1].\n"
+"The integration is performed either using an adaptive Gauß-Kronrod\n"
+"quadrature or a Fourier-Chebshev quadrature scheme. The integrand decays\n"
+"exponentially, c.f. Eq. (6.33) of [1].\n"
 "\n"
 "References:\n"
 "  [1] Hartmann, Negative Casimir entropies in the plane-sphere geometry, 2014\n"
@@ -687,10 +718,14 @@ void usage(FILE *stream)
 "            logdet(D^m(ξ))/logdet(D^0(ξ) < CUTOFF\n"
 "        (default: %g)\n"
 "\n"
-"    -e, --epsrel\n"
-"       Request relative accuracy of EPSREL for Gauß-Kronrod integration if\n"
-"       T=0, or stop criterion logdetD(n)/logdetD(n=0) < epsrel for T>0\n"
+"    -e, --epsrel EPSREL\n"
+"       Request relative accuracy of EPSREL for integration over xi if T=0,\n"
+"       or stop criterion logdetD(n)/logdetD(n=0) < EPSREL for T>0\n"
 "       (default: %g)\n"
+"\n"
+"    -i, --iepsrel IEPSREL\n"
+"       Set relative accuracy of integration over k for the matrix elements\n"
+"       to IEPSREL (default: %g)\n"
 "\n"
 "    -F, --fcqs\n"
 "      Use Fourier-Chebshev quadrature scheme to compute integral over xi. This\n"
@@ -716,5 +751,5 @@ void usage(FILE *stream)
 "\n"
 "    -h, --help\n"
 "        Show this help\n",
-    ETA, EPSREL, CUTOFF);
+    ETA, CUTOFF, EPSREL, CASIMIR_EPSREL);
 }
