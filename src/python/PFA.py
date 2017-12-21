@@ -129,3 +129,33 @@ class PFA:
     def E(self,L):
         """Casimir free energy, E"""
         return -0.5*self.R/L*psum(self.E_xi, L, self.T)
+
+
+if __name__ == "__main__":
+    import argparse
+    inf = 1e1000
+
+    parser = argparse.ArgumentParser(description="Compute PFA in the plane-sphere geometry")
+    parser.add_argument("--omegap", type=float, default=inf, help="plasma frequency in eV")
+    parser.add_argument("--gamma", type=float, default=0, help="relaxation frequency in eV")
+    parser.add_argument("-L", type=float, action="append", required=True, help="separation between sphere and plate in m")
+    parser.add_argument("-R", type=float, required=True, help="radius of sphere in m")
+    parser.add_argument("-T", type=float, default=0, help="temperature in K")
+    args = parser.parse_args()
+
+    R = args.R
+    T = args.T
+    omegap = args.omegap/hbar_eV # in rad/s
+    gamma  = args.gamma/hbar_eV  # in rad/s
+
+    if isinf(omegap):
+        epsm1 = lambda xi: inf
+    else:
+        epsm1 = lambda xi: omegap**2/(xi*(xi+gamma))
+
+    pfa = PFA(R, T, epsm1)
+
+    print("# L/R, L [m], R [m], T [K], omegap [eV], gamma [eV], E_PFA*(L+R)/(hbar*c)")
+    for L in args.L:
+        E = pfa.E(L)
+        print("%.12g, %.12g, %.12g, %.12g, %.12g, %.12g, %.12g" % (L/R, L, R, T, args.omegap, args.gamma, E*(L+R)/(hbar*c)))
