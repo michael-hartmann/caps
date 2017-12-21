@@ -192,7 +192,7 @@ double fcgs_semiinf(double f(double, void *), void *args, double *epsrel, int *n
  */
 double fcgs_finite(double f(double, void *), void *args, double a, double b, double *epsrel, int *neval, int *ier)
 {
-    const double dx = (b-a)/2;
+    const double dx = b-a;
 
     /* initialize cache */
     double f_cache[MMAX];
