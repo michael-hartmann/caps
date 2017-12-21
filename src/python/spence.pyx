@@ -1,4 +1,3 @@
-import math
 cimport libc.math
 cimport cython
 
