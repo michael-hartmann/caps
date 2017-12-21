@@ -292,7 +292,7 @@ static double _casimir_integrate_K(integration_t *self, int nu, polarization_t p
     const double epsrel = self->epsrel;
 
     /* some analytical solutions for perfect reflectors */
-    #if 0
+    #if 1
     if(self->is_pr)
     {
         if(p == TE)
