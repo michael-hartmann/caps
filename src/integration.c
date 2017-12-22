@@ -195,7 +195,7 @@ double K_estimate(int nu, int m, double alpha, double eps, double *a, double *b,
 
     TERMINATE(isnan(fxmax) || isinf(fxmax), "xmax=%.15g, fxmax=%g, nu=%d, m=%d, alpha=%.15g", xmax, fxmax, nu, m, alpha);
 
-    TERMINATE(isnan(fpp) || isinf(fpp) || fpp < 0, "xmax=%.15g, fxmax=%.15g, fpp=%.15g, nu=%d, m=%d, alpha=%.15g", xmax, fxmax, fpp, nu, m, alpha)
+    TERMINATE(isnan(fpp) || isinf(fpp) || fpp < 0, "xmax=%.15g, fxmax=%.15g, fpp=%.15g, nu=%d, m=%d, alpha=%.15g", xmax, fxmax, fpp, nu, m, alpha);
 
     {
         /* approximation using Laplace's method */
