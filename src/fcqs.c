@@ -66,7 +66,7 @@ static double wi_finite(double ti, double N)
     for(int j = 1; j <= N; j+=2)
         sum += sin(j*ti)/j;
 
-    return 2*sin(ti)/(N+1)*sum;
+    return 4*sin(ti)/(N+1)*sum;
 }
 
 /* @brief Integrate function over interval [0,inf]
@@ -192,7 +192,7 @@ double fcqs_semiinf(double f(double, void *), void *args, double *epsrel, int *n
  */
 double fcqs_finite(double f(double, void *), void *args, double a, double b, double *epsrel, int *neval, int *ier)
 {
-    const double dx = b-a;
+    const double dx = (b-a)/2;
 
     /* initialize cache */
     double f_cache[MMAX];
