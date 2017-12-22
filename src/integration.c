@@ -127,7 +127,7 @@ double K_estimate(int nu, int m, double alpha, double eps, double *a, double *b,
          */
 
         /* don't remove the dots in order to avoid integer overflows */
-        const double threshold = (nu-2.)*(nu+3.)/6.-alpha;
+        const double threshold = (nu-2.)*(nu+3.)/(6*alpha);
 
         if(threshold < 1.25)
         {
@@ -189,13 +189,13 @@ double K_estimate(int nu, int m, double alpha, double eps, double *a, double *b,
             break;
     }
 
-    TERMINATE(isnan(xmax) || isinf(xmax), "xmax=%g, nu=%d, m=%d, alpha=%g", xmax, nu, m, alpha);
+    TERMINATE(isnan(xmax) || isinf(xmax), "xmax=%g, nu=%d, m=%d, alpha=%.15g", xmax, nu, m, alpha);
 
     fxmax = f(xmax);
 
-    TERMINATE(isnan(fxmax) || isinf(fxmax), "xmax=%g, fxmax=%g, nu=%d, m=%d, alpha=%g", xmax, fxmax, nu, m, alpha);
+    TERMINATE(isnan(fxmax) || isinf(fxmax), "xmax=%.15g, fxmax=%g, nu=%d, m=%d, alpha=%.15g", xmax, fxmax, nu, m, alpha);
 
-    TERMINATE(isnan(fpp) || isinf(fpp) || fpp < 0, "xmax=%g, fxmax=%g, fpp=%g, nu=%d, m=%d, alpha=%g", xmax, fxmax, fpp, nu, m, alpha)
+    TERMINATE(isnan(fpp) || isinf(fpp) || fpp < 0, "xmax=%.15g, fxmax=%.15g, fpp=%.15g, nu=%d, m=%d, alpha=%.15g", xmax, fxmax, fpp, nu, m, alpha)
 
     {
         /* approximation using Laplace's method */
