@@ -502,7 +502,7 @@ void master(int argc, char *argv[], const int cores)
         printf("#\n");
 
         if(fcqs)
-            integral = fcgs_semiinf(wrapper_integrand, casimir_mpi, &epsrel, &neval, 1, &ier);
+            integral = fcqs_semiinf(wrapper_integrand, casimir_mpi, &epsrel, &neval, 1, &ier);
         else
         {
             integral = dqagi(wrapper_integrand, 0, 1, 0, epsrel, &abserr, &neval, &ier, casimir_mpi);
