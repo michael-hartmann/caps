@@ -90,7 +90,7 @@ static double wi_finite(double ti, double N)
  * @param [out]    ier exit code
  * @retval I numerical value of integral
  */
-double fcgs_semiinf(double f(double, void *), void *args, double *epsrel, int *neval, double L, int *ier)
+double fcqs_semiinf(double f(double, void *), void *args, double *epsrel, int *neval, double L, int *ier)
 {
     /* initialize cache */
     double f_cache[MMAX];
@@ -190,7 +190,7 @@ double fcgs_semiinf(double f(double, void *), void *args, double *epsrel, int *n
  * @param [out]    ier exit code
  * @retval I numerical value of integral
  */
-double fcgs_finite(double f(double, void *), void *args, double a, double b, double *epsrel, int *neval, int *ier)
+double fcqs_finite(double f(double, void *), void *args, double a, double b, double *epsrel, int *neval, int *ier)
 {
     const double dx = b-a;
 
