@@ -129,7 +129,7 @@ double K_estimate(int nu, int m, double alpha, double eps, double *a, double *b,
         /* don't remove the dots in order to avoid integer overflows */
         const double threshold = (nu-2.)*(nu+3.)/(6*alpha);
 
-        if(threshold < 1.25)
+        if(threshold < 2)
         {
             *a = 1;
             *b = 1-log(eps)/alpha;
