@@ -586,7 +586,7 @@ static double _casimir_integrate_I(integration_t *self, int l1, int l2, polariza
     double log_I;
     done:
     log_I = log_a0+logadd_ms(array, MIN(q,qmax)+1, sign);
-    TERMINATE(!isfinite(log_I), "l1=%d, l2=%d, m=%d, p=%d, log_I=%g", l1, l2, self->m, p_, log_I);
+    TERMINATE(!isfinite(log_I), "l1=%d, l2=%d, m=%d, p=%d, alpha=%g, log_I=%g", l1, l2, self->m, p_, self->alpha, log_I);
     //TERMINATE((*sign == 1 && p_ != TM) || (*sign==-1 && p_ != TE), "l1=%d, l2=%d, p=%d, sign=%d, log_I=%g, q=%d", l1, l2, p_, *sign, log_I, q);
 
     return log_I;
