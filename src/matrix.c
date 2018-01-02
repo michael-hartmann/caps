@@ -43,7 +43,7 @@
  * @param [in] kernel    callback function that returns matrix elements of M
  * @param [in] args      pointer given to callback function kernel
  * @param [in] symmetric matrix symmetric / not symmetric
- * @param [in] detalg    algorithm to use (LU or HODLR)
+ * @param [in] detalg    algorithm (DETALG_HODLR, DETALG_LU, DETALG_QR, DETALG_CHOLESKY)
  * @retval logdet \f$\log \det(1-M)\f$
  */
 double kernel_logdet(int dim, double (*kernel)(int,int,void *), void *args, int symmetric, detalg_t detalg)
@@ -114,8 +114,8 @@ double kernel_logdet(int dim, double (*kernel)(int,int,void *), void *args, int 
          * block at the leaf level. The number of levels in the tree is given
          * by log_2(N/nLeaf).
          */
-        const unsigned int nLeaf = 100; /* XXX */
-        const double tolerance = fmax(1e-15, trace*1e-15); /* XXX */
+        const unsigned int nLeaf = 100;
+        const double tolerance = fmax(1e-13, trace*1e-13);
 
         /* calculate log(det(D)) using HODLR approach */
         logdet = hodlr_logdet_diagonal(dim, kernel, args, diagonal, nLeaf, tolerance, symmetric);
