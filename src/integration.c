@@ -326,6 +326,10 @@ static double _casimir_integrate_K(integration_t *self, int nu, polarization_t p
             sign_t dummy;
             return logadd_ms(terms, 3, &dummy);
         }
+        else if(nu == (2*m))
+            return -0.5*log(M_PI)+(m-0.5)*log(2/alpha)+lfac(m-1)+lfac2(4*m-1)+bessel_lnKnu(m-1,alpha);
+        else if(nu == (2*m+1))
+            return -0.5*log(M_PI)+(m-0.5)*log(2/alpha)+lfac(m-1)+lfac2(4*m-1)+bessel_lnKnu(m,alpha)+logi(4*m+1);
         else if(m == 1)
         {
             /* use analytical result for m=1 and PR
@@ -338,10 +342,6 @@ static double _casimir_integrate_K(integration_t *self, int nu, polarization_t p
 
             return logt1 + log1p(-exp(logt2-logt1));
         }
-        else if(nu == (2*m))
-            return -0.5*log(M_PI)+(m-0.5)*log(2/alpha)+lfac(m-1)+lfac2(4*m-1)+bessel_lnKnu(m-1,alpha);
-        else if(nu == (2*m+1))
-            return -0.5*log(M_PI)+(m-0.5)*log(2/alpha)+lfac(m-1)+lfac2(4*m-1)+bessel_lnKnu(m,alpha)+logi(4*m+1);
     }
     #endif
 
