@@ -496,9 +496,9 @@ void master(int argc, char *argv[], const int cores)
         int ier, neval;
 
         if(fcqs)
-            printf("# quad   = Fourier-Chebsheb quadrature scheme\n");
+            printf("# quad = Fourier-Chebsheb quadrature scheme\n");
         else
-            printf("# quad   = adaptive Gauss-Kronrod\n");
+            printf("# quad = adaptive Gauss-Kronrod\n");
         printf("#\n");
 
         if(fcqs)
@@ -532,17 +532,17 @@ void master(int argc, char *argv[], const int cores)
 
             if(material == NULL && isinf(omegap) && gamma_ == 0)
             {
-                printf("# model  = perfect conductors\n");
+                printf("# model = perfect conductors\n");
                 v[0] = casimir_logdetD0_perf(casimir, cutoff);
             }
             else if(material == NULL && gamma_ == 0)
             {
-                printf("# model  = plasma\n");
+                printf("# model = plasma\n");
                 v[0] = casimir_logdetD0_plasma(casimir, omegap, cutoff);
             }
             else if(material == NULL)
             {
-                printf("# model  = drude\n");
+                printf("# model = drude\n");
                 v[0] = casimir_logdetD0_drude(casimir);
             }
             else
@@ -554,12 +554,12 @@ void master(int argc, char *argv[], const int cores)
 
                 if(gamma_low == 0)
                 {
-                    printf("# model  = optical data (xi=0: Plasma)\n");
+                    printf("# model = optical data (xi=0: Plasma)\n");
                     v[0] = casimir_logdetD0_plasma(casimir, omegap_scaled, cutoff);
                 }
                 else
                 {
-                    printf("# model  = optical data (xi=0: Drude)\n");
+                    printf("# model = optical data (xi=0: Drude)\n");
                     printf("# plasma = %.15g (logdetD(xi=0) for plasma model with omegap=%geV)\n", casimir_logdetD0_plasma(casimir, omegap_scaled, cutoff), omegap_low);
 
                     v[0] = casimir_logdetD0_drude(casimir);
