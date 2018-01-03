@@ -303,8 +303,8 @@ static double _casimir_integrate_K(integration_t *self, int nu, polarization_t p
         if(m == 0)
         {
             /* use analytical result for m=0 and PR
-             * integrand: r_p exp(-τ*x)*P_ν^2(x)
-             * integral: 2*exp(-τ) + sqrt(2/(pi*τ)) [ (ν+1)(ν+2)K_{ν+1/2}(τ) - 2τ K_(ν+3/2)(τ) ]
+             * integrand: r_p exp(-α*x)*P_ν^2(x)
+             * integral: 2*exp(-α) + sqrt(2/(pi*α)) [ (ν+1)(ν+2)K_{ν+1/2}(α) - 2α K_(ν+3/2)(α) ]
              *           \- t0 --/   \----- C ----/   \------- t1 ---------/   \---- t2 -----/
              */
             const double logC = log(2/(alpha*M_PI))/2;
@@ -333,8 +333,8 @@ static double _casimir_integrate_K(integration_t *self, int nu, polarization_t p
         else if(m == 1)
         {
             /* use analytical result for m=1 and PR
-             * integrand: r_p exp(-τ*x)*P_ν^2(x)/(x²-1)
-             * integral: τ^(3/2)*sqrt(2/pi) K_(ν+½)(τ) - exp(-τ) [τ + ν(ν+1)/2]
+             * integrand: r_p exp(-α*x)*P_ν^2(x)/(x²-1)
+             * integral: α^(3/2)*sqrt(2/pi) K_(ν+½)(α) - exp(-α) [α + ν(ν+1)/2]
              *           \---------- t1 -------------/   \-------- t2 --------/
              */
             const double logt1 = 1.5*log(alpha)+log(2/M_PI)/2+bessel_lnKnu(nu,alpha);
@@ -393,7 +393,7 @@ static double _casimir_integrate_K(integration_t *self, int nu, polarization_t p
 
     /* I3: [b,∞]
      * Make a substitution for the integrand, i.e., we don't integrate over z
-     * but over t=z*τ. The integrand exponentially decays as exp(-z*τ), so
+     * but over t=z*α. The integrand exponentially decays as exp(-z*α), so
      * after the substitution it decays as exp(-t). This makes life easier for
      * the quadrature routine.
      */
