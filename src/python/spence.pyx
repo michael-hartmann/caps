@@ -10,18 +10,21 @@ def Li2(double x):
     improve convergence, we make use of the identity:
         Li2(x)+Li2(1-x) = pi^2/6 - log(x)*log(1-x)
 
+    Maximum errors found by comparison with the polylog function from mpmath:
+    relative error 4.44e-16, absolute error 1.11e-15.
+
     References:
     [1] Robert Morris, The dilogarithm function of a real argument, Math. Comp. 33 (1979)
     """
     cdef double s = 0
     cdef int n
     cdef double xn = 1
-    cdef double pi2 = 9.869604401089358 # pi²
+    cdef double C = 1.644934066848226436 # pi²/6
 
     if x == 0:
         return 0
     elif x == 1:
-        return pi2/6
+        return C
     elif x < 0.5:
         for n in range(1,35):
             xn = xn*x
@@ -29,4 +32,4 @@ def Li2(double x):
 
         return x/(x+1)*(3+s)-2*(x-1)/(x+1)*libc.math.log1p(-x)
     else:
-        return pi2/6-libc.math.log(x)*libc.math.log1p(-x)-Li2(1-x)
+        return C-libc.math.log(x)*libc.math.log1p(-x)-Li2(1-x)
