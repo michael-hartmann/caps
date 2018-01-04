@@ -1,4 +1,3 @@
-import numpy as np
 from math import exp, fsum, pi, sqrt, log1p, isinf
 from scipy.integrate import quad
 from spence import Li2
@@ -8,6 +7,7 @@ c       = 299792458       # speed of light [m/s]
 kB      = 1.38064852e-23  # Boltzmann constant [m² kg / (s² K)]
 hbar    = 1.0545718e-34   # hbar [J s]
 hbar_eV = 6.582119514e-16 # hbar [eV s / rad]
+inf     = float("inf")    # infinity
 
 
 def psum(f, L, T, epsrel=1e-9):
@@ -26,7 +26,7 @@ def psum(f, L, T, epsrel=1e-9):
         # scale integrand
         alpha = c/L
         integrand = lambda x: f(L, alpha*x)
-        I,err = quad(integrand, 0, np.inf, epsabs=0, epsrel=epsrel)
+        I,err = quad(integrand, 0, inf, epsabs=0, epsrel=epsrel)
         return alpha*hbar*I/(2*pi)
     else:
         terms = []
@@ -90,7 +90,7 @@ class PFA:
             exp_f = exp(-2*t)
             return t**2*exp_f*( rTE2/(1-rTE2*exp_f) + rTM2/(1-rTM2*exp_f) )
 
-        I,err = quad(f, xi*L/c, np.inf, epsabs=epsabs, epsrel=epsrel)
+        I,err = quad(f, xi*L/c, inf, epsabs=epsabs, epsrel=epsrel)
         return I
 
 
@@ -107,7 +107,7 @@ class PFA:
             exp_f = exp(-2*t)
             return t*(log1p(-rTE**2*exp_f)+log1p(-rTM**2*exp_f))
 
-        I,err = quad(f, xi*L/c, np.inf, epsabs=epsabs, epsrel=epsrel)
+        I,err = quad(f, xi*L/c, inf, epsabs=epsabs, epsrel=epsrel)
         return I
 
 
@@ -123,7 +123,7 @@ class PFA:
             exp_f = exp(-2*t)
             return Li2(rTE**2*exp_f)+Li2(rTM**2*exp_f)
 
-        I,err = quad(f, xi*L/c, np.inf, epsabs=epsabs, epsrel=epsrel)
+        I,err = quad(f, xi*L/c, inf, epsabs=epsabs, epsrel=epsrel)
         return I
 
     def E(self,L):
@@ -133,7 +133,6 @@ class PFA:
 
 if __name__ == "__main__":
     import argparse
-    inf = 1e1000
 
     parser = argparse.ArgumentParser(description="Compute PFA in the plane-sphere geometry")
     parser.add_argument("--omegap", type=float, default=inf, help="plasma frequency in eV")
