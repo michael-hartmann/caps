@@ -19,7 +19,7 @@ if __name__ == "__main__":
     g = graph.graphxy(
         width = 10,
         key   = graph.key.key(pos="tl", dist=0.1),
-        x     = graph.axis.log(title=r"$x=L/R$", min=3e-4),
+        x     = graph.axis.log(title=r"$x=L/R$", min=2e-4),
         y     = graph.axis.log(title=r"$E/E_\mathrm{PFA}-1-\theta_1 x$")
     )
 
