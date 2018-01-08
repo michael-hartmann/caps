@@ -337,6 +337,20 @@ static double _casimir_integrate_K(integration_t *self, int nu, polarization_t p
              * integral: α^(3/2)*sqrt(2/pi) K_(ν+½)(α) - exp(-α) [α + ν(ν+1)/2]
              *           \---------- t1 -------------/   \-------- t2 --------/
              */
+            const double mu = 4*pow_2(nu+0.5);
+            const double ae1 =     (mu-1) /(  8*alpha);
+            const double ae2 = ae1*(mu-9) /(2*8*alpha);
+            const double ae3 = ae2*(mu-25)/(3*8*alpha);
+
+            /* Use asymptotic expansion
+             * K_{ν+½}(α) = sqrt(π/(2α)) e^{-α} ( 1 + ae1 + ae2 + ae3 + ... )
+             * to avoid loss of significance. The error is not larger than the
+             * first neglected term.
+             */
+            if(ae3 < 1e-8)
+                /* integral: α*exp(-α)*( ae1 + ae2 + ae3 + ... -ν(ν+1)/(2α)) */
+                return log(alpha)-alpha+log(ae1+ae2+ae3-nu*(nu+1.)/(2*alpha));
+
             const double logt1 = 1.5*log(alpha)+log(2/M_PI)/2+bessel_lnKnu(nu,alpha);
             const double logt2 = -alpha+log(alpha+nu*(nu+1.)/2.);
 
