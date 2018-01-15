@@ -84,13 +84,7 @@ electric field obeys the wave equation
 where $\c=(\mu_0\epsilon_0)^{-1/2}$ is the speed of light in vacuum.
 In a similar manner all steps can be carried out for the magnetic field as well
 and thus the electric field $\vec E$ can be replaced by the magnetic field
-$\vec B$ in \eqref{eq:basis_waveequation}. Electric and magnetic fields can be
-transformed into each other with use of \eqref{eq:maxwell_inhom}:
-\begin{equation}
-\label{eq:basis_EB2BE}
-\vec B(\vec R) = -\frac{\imag}{\omega} \vec \nabla \times \vec E \\
-\vec E(\vec R) = \frac{\imag \c^2}{\omega} \vec \nabla \times \vec B
-\end{equation}
+$\vec B$ in \eqref{eq:basis_waveequation}.
 Since the
 wave equation \eqref{eq:basis_waveequation} is linear, arbitrary fields can be
 composed of harmonic solutions. Without loss of generality, we assume that
@@ -100,10 +94,18 @@ the time dependence is given by $\e^{-\imag\omega t}$
 \vec E(\vec R,t) = \vec E(\vec R) \, \e^{-\imag\omega t} \\
 \vec B(\vec R,t) = \vec B(\vec R) \, \e^{-\imag\omega t}
 \end{equation}
-By doing so, the wave equation \eqref{eq:basis_waveequation} becomes the vector Helmholtz equation
+Electric and magnetic fields can be transformed into each other with use of
+\eqref{eq:maxwell_inhom}:
+\begin{equation}
+\label{eq:basis_EB2BE}
+\vec B(\vec R) = -\frac{\imag}{\omega} \vec \nabla \times \vec E \\
+\vec E(\vec R) = \frac{\imag \c^2}{\omega} \vec \nabla \times \vec B
+\end{equation}
+Then the wave equation \eqref{eq:basis_waveequation} becomes the vector
+Helmholtz equation
 \begin{equation}
 \label{eq:basis_helmholtz}
-\left(\Delta + k^2\right) \vec E(\vec R) = 0, \\ \left(\Delta + k^2\right) \vec B(\vec R) = 0.
+\left(\Delta + K^2\right) \vec E(\vec R) = 0, \\ \left(\Delta + K^2\right) \vec B(\vec R) = 0.
 \end{equation}
 We see that Maxwell's equations in vacuum are equivalent to the vector
 Helmholtz equation. As we consider vacuum and thus a source-free region of
