@@ -670,20 +670,13 @@ double casimir_kernel_M(int i, int j, void *args_)
 {
     char p1 = 'E', p2 = 'E';
     casimir_M_t *args = (casimir_M_t *)args_;
-    const int ldim = args->casimir->ldim;
     const int lmin = args->lmin;
-    int l1 = i+lmin, l2 = j+lmin;
+    const int l1 = lmin+i/2, l2 = lmin+j/2;
 
-    if(i >= ldim)
-    {
+    if(i % 2)
         p1 = 'M';
-        l1 -= ldim;
-    }
-    if(j >= ldim)
-    {
+    if(j % 2)
         p2 = 'M';
-        l2 -= ldim;
-    }
 
     return casimir_M_elem(args, l1, l2, p1, p2);
 }
