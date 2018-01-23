@@ -131,6 +131,24 @@ class PFA:
         return -0.5*self.R/L*psum(self.E_xi, L, self.T)
 
 
+class PP:
+    def __init__(self, T, epsm1):
+        """Initialize PP object
+        T:     temperature in Kelvin
+        epsm1: dielectric function minus 1, epsm1(xi) = eps-1
+        """
+        self.T = T
+        self.pfa = PFA(1, T, epsm1)
+
+    def F(self, L):
+        """Return F/A in N/m²"""
+        return -psum(self.pfa.dF_xi, L, self.T)/(pi*L**3)
+
+    def E(self, L):
+        """Return E/A in J/m²"""
+        return psum(self.pfa.F_xi, L, self.T)/(2*pi*L**2)
+
+
 if __name__ == "__main__":
     import argparse
 
