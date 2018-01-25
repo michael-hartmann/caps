@@ -66,12 +66,12 @@ class PFA:
 
         Returns r_TE,r_TM
         """
-        if xi == 0:
-            return 0,1 # Drude
-
         epsm1 = self.epsm1(xi)
         if isinf(epsm1): # PR
             return -1, 1
+
+        if xi == 0:
+            return 0,1 # Drude
 
         beta = sqrt(1+ (xi/(c*kappa))**2*epsm1 )
 
