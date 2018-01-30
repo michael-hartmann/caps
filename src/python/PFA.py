@@ -1,4 +1,6 @@
+import numpy as np
 from math import exp, fsum, pi, sqrt, log1p, isinf
+from scipy import interpolate
 from scipy.integrate import quad
 from spence import Li2
 
@@ -8,6 +10,7 @@ kB      = 1.38064852e-23  # Boltzmann constant [m² kg / (s² K)]
 hbar    = 1.0545718e-34   # hbar [J s]
 hbar_eV = 6.582119514e-16 # hbar [eV s / rad]
 inf     = float("inf")    # infinity
+hbarc   = hbar*c          # hbar
 
 
 def psum(f, L, T, epsrel=1e-9):
@@ -42,9 +45,47 @@ def psum(f, L, T, epsrel=1e-9):
                 return kB*T*fsum(terms)
 
 
+def epsilonm1_from_file(filename):
+    with open(filename, "r") as f:
+        content = f.read()
+
+    def extract(label):
+        string = "# %s" % label
+        start = content.find(string)
+        stop = start+content[start:].find("\n")
+        line = content[start:stop]
+        label,value = line.split("=")
+        return float(value[:-2]) # strip eV
+
+    omegap_low  = extract("omegap_low")  # in eV
+    gamma_low   = extract("gamma_low")   # in eV
+    omegap_high = extract("omegap_high") # in eV
+    gamma_high  = extract("gamma_high")  # in eV
+
+    data = np.loadtxt(filename)
+
+    data_xi  = data[:,0]
+    data_eps = data[:,1]
+    xi_min, xi_max = data_xi[0], data_xi[-1]
+
+    f = interpolate.interp1d(data_xi, data_eps, kind="linear")
+
+    def epsilonm1(xi):
+        if xi_min <= xi <= xi_max: # interpolation
+            return f(xi)-1
+        else: # extrapolation
+            xi_ = xi/hbar_eV # in rad/s
+
+            if xi < xi_min:
+                return omegap_low**2/(xi_*(xi_+gamma_low))
+            else:
+                return omegap_high**2/(xi_*(xi_+gamma_high))
+
+    return epsilonm1
+
 
 class PFA:
-    def __init__(self, R, T, epsm1):
+    def __init__(self, R, T, epsm1, model="Drude"):
         """Initialize PFA object
         R:     radius of sphere in m
         T:     temperature in Kelvin
@@ -55,23 +96,27 @@ class PFA:
         self.R = R
         self.T = T
         self.epsm1 = epsm1
+        self.model = model
 
 
     def rp(self, xi, kappa):
         """Fresnel coefficients
         Compute Fresnel coefficients r_TE and r_TM.
         
-        If xi=0, r_TE=0 and r_TM=1 will be returned (Drude).
-        If epsm1(xi) is inf, r_TE=-1 and r_TM=1 will be returned for xi > 0.
+        If epsm1(xi) is inf, r_TE=-1 and r_TM=1 will be returned for xi >= 0.
+        Otherwise, if xi=0, r_TE=0 and r_TM=1 will be returned (Drude).
 
         Returns r_TE,r_TM
         """
-        epsm1 = self.epsm1(xi)
-        if isinf(epsm1): # PR
-            return -1, 1
-
         if xi == 0:
-            return 0,1 # Drude
+            model = self.model.lower()
+            if model == "pr":
+                return -1,1
+            else: # drude
+                return 0,1
+
+
+        epsm1 = self.epsm1(xi)
 
         beta = sqrt(1+ (xi/(c*kappa))**2*epsm1 )
 
