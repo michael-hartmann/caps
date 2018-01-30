@@ -709,7 +709,7 @@ void usage(FILE *stream)
 "    -l, --ldim LDIM\n"
 "        Set ldim to the value LDIM. (default: ldim=ceil(eta*R/L))\n"
 "\n"
-"    -- eta ETA\n"
+"    --eta ETA\n"
 "        Set eta to the value ETA. eta is used to determine ldim if not set\n"
 "        by --ldim. (default: eta=%g)\n"
 "\n"
