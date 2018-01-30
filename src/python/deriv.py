@@ -106,8 +106,8 @@ def deriv_backward(y, h, i, accuracy=6, step=1):
 
 
 def deriv(x,y, method="central", deriv=1, accuracy=6, step=lambda x: 1):
-    """compute the second derivative. The stepsize dependent on x is given as a
-    callback function"""
+    """compute the first or second derivative. The stepsize dependent on x is
+    given as a callback function"""
     d2x = []
     d2y = []
 
