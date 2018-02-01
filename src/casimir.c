@@ -492,7 +492,7 @@ void master(int argc, char *argv[], const int cores)
     printf("# cores = %d\n", cores);
     printf("# alpha = %.15g\n", alpha);
     if(strlen(filename))
-    printf("# filename = %s\n", filename);
+        printf("# filename = %s\n", filename);
     else if(!isinf(omegap))
     {
         printf("# omegap = %.15g\n", omegap);
@@ -607,7 +607,7 @@ void master(int argc, char *argv[], const int cores)
 
     printf("#\n");
     printf("# %d determinants computed\n", casimir_get_determinants(casimir_mpi));
-	printf("# stop time: %s\n", time_str);
+    printf("# stop time: %s\n", time_str);
     printf("#\n");
     printf("# L/R, L, R, T, ldim, F*(L+R)/(ħc)\n");
     printf("%.16g, %.16g, %.16g, %.16g, %d, %.16g\n", LbyR, L, R, T, ldim, F);
