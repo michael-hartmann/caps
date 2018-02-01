@@ -533,7 +533,7 @@ void master(int argc, char *argv[], const int cores)
     {
         const double T_scaled = 2*M_PI*CASIMIR_kB*(R+L)*T/(CASIMIR_hbar*CASIMIR_c);
         /* finite temperature */
-        double v[1024] = { 0 };
+        double v[2048] = { 0 };
 
         /* xi = 0 */
         {
