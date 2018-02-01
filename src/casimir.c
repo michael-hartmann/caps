@@ -7,6 +7,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>
+#include <sys/types.h>
 #include <unistd.h>
 
 #include "casimir.h"
@@ -277,6 +279,9 @@ void master(int argc, char *argv[], const int cores)
     double cutoff = CUTOFF, epsrel = EPSREL, eta = ETA;
     double iepsrel = CASIMIR_EPSREL;
     material_t *material = NULL;
+    char time_str[128];
+    time_t rawtime;
+    struct tm *info;
 
     #define EXIT() do { _mpi_stop(cores); return; } while(0)
 
@@ -461,7 +466,13 @@ void master(int argc, char *argv[], const int cores)
     setvbuf(stdout, NULL, _IONBF, 0);
     setvbuf(stderr, NULL, _IONBF, 0);
 
+    time(&rawtime);
+    info = localtime(&rawtime);
+    strftime(time_str, sizeof(time_str),"%c", info);
+
     casimir_build(stdout, "# ");
+    printf("# pid: %d\n", (int)getpid());
+    printf("# start time: %s\n", time_str);
     printf("#\n");
 
     casimir_mpi_t *casimir_mpi = casimir_mpi_init(L, R, T, filename, omegap, gamma_, ldim, cutoff, iepsrel, cores, verbose);
@@ -470,6 +481,7 @@ void master(int argc, char *argv[], const int cores)
     const double alpha = 2*LbyR/(1+LbyR);
 
     printf("# LbyR = %.15g\n", LbyR);
+    printf("# RbyL = %.15g\n", 1/LbyR);
     printf("# L = %.15g\n", L);
     printf("# R = %.15g\n", R);
     printf("# T = %.15g\n", T);
@@ -589,8 +601,13 @@ void master(int argc, char *argv[], const int cores)
         }
     }
 
+    time(&rawtime);
+    info = localtime(&rawtime);
+    strftime(time_str, sizeof(time_str), "%c", info);
+
     printf("#\n");
     printf("# %d determinants computed\n", casimir_get_determinants(casimir_mpi));
+	printf("# stop time: %s\n", time_str);
     printf("#\n");
     printf("# L/R, L, R, T, ldim, F*(L+R)/(ħc)\n");
     printf("%.16g, %.16g, %.16g, %.16g, %d, %.16g\n", LbyR, L, R, T, ldim, F);
