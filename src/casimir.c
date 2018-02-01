@@ -518,11 +518,11 @@ void master(int argc, char *argv[], const int cores)
         else
         {
             integral = dqagi(wrapper_integrand, 0, 1, 0, epsrel, &abserr, &neval, &ier, casimir_mpi);
-            epsrel = fabs(1-abserr/integral);
+            epsrel = fabs(1-fabs(abserr/integral));
         }
 
         printf("#\n");
-        printf("# ier=%d, integral=%.15g, neval=%d, absrel=%g\n", ier, integral, neval, epsrel);
+        printf("# ier=%d, integral=%.15g, neval=%d, epsrel=%g\n", ier, integral, neval, epsrel);
 
         WARN(ier != 0, "ier=%d", ier);
 
