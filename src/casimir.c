@@ -518,7 +518,7 @@ void master(int argc, char *argv[], const int cores)
         else
         {
             integral = dqagi(wrapper_integrand, 0, 1, 0, epsrel, &abserr, &neval, &ier, casimir_mpi);
-            epsrel = fabs(1-fabs(abserr/integral));
+            epsrel = fabs(abserr/integral);
         }
 
         printf("#\n");
