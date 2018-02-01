@@ -58,7 +58,7 @@ casimir_mpi_t *casimir_mpi_init(double L, double R, double T, char *filename, do
     self->cores   = cores;
     self->verbose = verbose;
     self->tasks   = xmalloc(cores*sizeof(casimir_task_t *));
-    self->alpha   = 2*L/(L+R); /* L/(R+L) */
+    self->alpha   = 2*L/(L+R);
 
     /* number of determinants we have computed */
     self->determinants = 0;
