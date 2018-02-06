@@ -85,17 +85,19 @@ def epsilonm1_from_file(filename):
 
 
 class PFA:
-    def __init__(self, R, T, epsm1, model="Drude"):
+    def __init__(self, R, T, epsm1, model="Drude", omegap=9):
         """Initialize PFA object
-        R:     radius of sphere in m
-        T:     temperature in Kelvin
-        epsm1: dielectric function minus 1, epsm1(xi) = eps-1
-
-        The value of xi is given in rad/s.
+        R:      radius of sphere in m
+        T:      temperature in Kelvin
+        epsm1:  dielectric function minus 1, epsm1(xi) = eps-1
+        model:  either Drude, plasma or PR (perfect reflectors)
+        omegap: plasma frequency for the plasma model in eV. The value is used
+                for TE Fresnel coefficient at xi=0.
         """
         self.R = R
         self.T = T
         self.epsm1 = epsm1
+        self.omegap = omegap
         self.model = model
 
 
@@ -112,6 +114,11 @@ class PFA:
             model = self.model.lower()
             if model == "pr":
                 return -1,1
+            elif model == "plasma":
+                omegap = self.omegap/hbar_eV
+                beta = sqrt(1 + (omegap/(c*kappa))**2)
+                rTE = (1-beta)/(1+beta)
+                return rTE,1
             else: # drude
                 return 0,1
 
@@ -177,13 +184,13 @@ class PFA:
 
 
 class PP:
-    def __init__(self, T, epsm1):
+    def __init__(self, T, epsm1, model="Drude", omegap=9):
         """Initialize PP object
         T:     temperature in Kelvin
         epsm1: dielectric function minus 1, epsm1(xi) = eps-1
         """
         self.T = T
-        self.pfa = PFA(1, T, epsm1)
+        self.pfa = PFA(1, T, epsm1, model=model, omegap=omegap)
 
     def F(self, L):
         """Return F/A in N/m²"""
