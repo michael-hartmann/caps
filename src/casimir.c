@@ -194,7 +194,7 @@ static double wrapper_integrand(double xi_, void *args)
 double integrand(double xi, casimir_mpi_t *casimir_mpi)
 {
     int m;
-    double terms[1024] = { NAN };
+    double terms[2048] = { NAN };
     bool verbose = casimir_mpi->verbose;
     const double mmax = sizeof(terms)/sizeof(double);
     const double cutoff = casimir_mpi->cutoff;
@@ -533,7 +533,7 @@ void master(int argc, char *argv[], const int cores)
     {
         const double T_scaled = 2*M_PI*CASIMIR_kB*(R+L)*T/(CASIMIR_hbar*CASIMIR_c);
         /* finite temperature */
-        double v[2048] = { 0 };
+        double v[4096] = { 0 };
 
         /* xi = 0 */
         {
