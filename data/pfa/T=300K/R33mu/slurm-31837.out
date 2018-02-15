@@ -1,0 +1,48 @@
+# starting on alcc115 at Do 15. Feb 10:53:55 CET 2018
+# compiler: icc
+# compile time: Feb  1 2018 09:49:34
+# compiled on: Linux alcc83 3.16.0-4-amd64 #1 SMP Debian 3.16.51-3 (2017-12-13) x86_64 GNU/Linux
+# LAPACK support: false
+# git HEAD: b96c9c30c7b1cdd2d059ceccd0396c6d55d3da95
+# git branch: dev
+#
+# LbyR = 0.0158
+# L = 5.214e-07
+# R = 3.3e-05
+# T = 300
+# cutoff = 5e-08
+# epsrel = 1e-07
+# iepsrel = 2e-07
+# ldim = 507
+# cores = 4
+# alpha = 0.0311084859224257
+# filename = /alcc/gpfs1/home/u/hartmmic/libcasimir-dev/data/materials/GoldDalvit.dat
+# model = optical data (xi=0: Drude)
+# plasma = -16.4345144483703 (logdetD(xi=0) for plasma model with omegap=1.36734e+16eV)
+#
+# xi=0, logdetD=-9.08012749511736, t=1.50442
+# xi=27.5936750992761, logdetD=-6.31204858636471, t=16.5249
+# xi=55.1873501985522, logdetD=-2.44045395471084, t=18.0368
+# xi=82.7810252978284, logdetD=-0.959383372947394, t=18.12
+# xi=110.374700397104, logdetD=-0.379703852183759, t=18.4857
+# xi=137.968375496381, logdetD=-0.150776226664288, t=18.5598
+# xi=165.562050595657, logdetD=-0.0599934498964989, t=18.3773
+# xi=193.155725694933, logdetD=-0.0239362412215112, t=18.3386
+# xi=220.749400794209, logdetD=-0.00954369874672653, t=17.9372
+# xi=248.343075893485, logdetD=-0.00381820371832077, t=17.4677
+# xi=275.936750992761, logdetD=-0.00152806941644425, t=17.1035
+# xi=303.530426092037, logdetD=-0.000612477821550096, t=16.4968
+# xi=331.124101191313, logdetD=-0.000245967419681402, t=15.6113
+# xi=358.71777629059, logdetD=-9.88499234821544e-05, t=15.2917
+# xi=386.311451389866, logdetD=-3.98010417191376e-05, t=14.5195
+# xi=413.905126489142, logdetD=-1.6043850972612e-05, t=13.4739
+# xi=441.498801588418, logdetD=-6.4725003950575e-06, t=12.4971
+# xi=469.092476687694, logdetD=-2.61612621574379e-06, t=11.7096
+# xi=496.68615178697, logdetD=-1.05810650051467e-06, t=10.2917
+# xi=524.279826886246, logdetD=-4.28407915057277e-07, t=9.37792
+#
+# 1166 determinants computed
+#
+# L/R, L, R, T, ldim, F*(L+R)/(ħc)
+0.0158, 5.214e-07, 3.3e-05, 300, 507, -130.7160585268294
+# finished at Do 15. Feb 10:58:55 CET 2018
