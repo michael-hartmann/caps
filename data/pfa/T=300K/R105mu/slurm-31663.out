@@ -1,0 +1,48 @@
+# starting on alcc124 at Do 15. Feb 08:55:54 CET 2018
+# compiler: icc
+# compile time: Feb  1 2018 09:49:34
+# compiled on: Linux alcc83 3.16.0-4-amd64 #1 SMP Debian 3.16.51-3 (2017-12-13) x86_64 GNU/Linux
+# LAPACK support: false
+# git HEAD: b96c9c30c7b1cdd2d059ceccd0396c6d55d3da95
+# git branch: dev
+#
+# LbyR = 0.00495
+# L = 5.1975e-07
+# R = 0.000105
+# T = 300
+# cutoff = 5e-08
+# epsrel = 1e-07
+# iepsrel = 2e-07
+# ldim = 1617
+# cores = 6
+# alpha = 0.0098512363799194
+# filename = /alcc/gpfs1/home/u/hartmmic/libcasimir-dev/data/materials/GoldDalvit.dat
+# model = optical data (xi=0: Drude)
+# plasma = -55.7007772824558 (logdetD(xi=0) for plasma model with omegap=1.36734e+16eV)
+#
+# xi=0, logdetD=-29.8628316323304, t=8.60223
+# xi=86.860265324743, logdetD=-20.3770988290965, t=89.8914
+# xi=173.720530649486, logdetD=-7.87008169759315, t=99.9553
+# xi=260.580795974229, logdetD=-3.09777527462747, t=103.406
+# xi=347.441061298972, logdetD=-1.22842768366532, t=105.274
+# xi=434.301326623715, logdetD=-0.488891159874554, t=106.958
+# xi=521.161591948458, logdetD=-0.194995113831065, t=105.736
+# xi=608.021857273201, logdetD=-0.0779927898115272, t=105.919
+# xi=694.882122597944, logdetD=-0.031175808873725, t=104.699
+# xi=781.742387922687, logdetD=-0.0125048528284832, t=102.507
+# xi=868.60265324743, logdetD=-0.00501755697251797, t=99.844
+# xi=955.462918572173, logdetD=-0.0020164040406386, t=97.0208
+# xi=1042.32318389692, logdetD=-0.000811911928605556, t=94.6264
+# xi=1129.18344922166, logdetD=-0.000327157270353967, t=90.1778
+# xi=1216.0437145464, logdetD=-0.000132077028843072, t=86.3049
+# xi=1302.90397987115, logdetD=-5.33822677961075e-05, t=81.5479
+# xi=1389.76424519589, logdetD=-2.15932693302747e-05, t=77.508
+# xi=1476.62451052063, logdetD=-8.75114326239174e-06, t=71.9936
+# xi=1563.48477584537, logdetD=-3.5489250357794e-06, t=66.0305
+# xi=1650.34504117012, logdetD=-1.44074655549596e-06, t=59.6733
+#
+# 2055 determinants computed
+#
+# L/R, L, R, T, ldim, F*(L+R)/(ħc)
+0.00495, 5.1975e-07, 0.000105, 300, 1617, -1335.940128301628
+# finished at Do 15. Feb 09:25:12 CET 2018
