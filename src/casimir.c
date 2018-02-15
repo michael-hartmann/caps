@@ -292,6 +292,7 @@ void master(int argc, char *argv[], const int cores)
             { "help",        no_argument,       0, 'h' },
             { "verbose",     no_argument,       0, 'v' },
             { "fcqs",        no_argument,       0, 'F' },
+            { "version",     no_argument,       0, 'V' },
             { "temperature", required_argument, 0, 'T' },
             { "eta",         required_argument, 0, 'E' },
             { "ldim",        required_argument, 0, 'l' },
@@ -763,7 +764,7 @@ void usage(FILE *stream)
 "    -v, --verbose\n"
 "        Also print results for each m\n"
 "\n"
-"    -V\n"
+"    -V, --version\n"
 "        Print information about build to stdout and exit\n"
 "\n"
 "    -h, --help\n"
