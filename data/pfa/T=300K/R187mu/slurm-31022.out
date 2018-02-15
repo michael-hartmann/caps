@@ -1,0 +1,48 @@
+# starting on alcc119 at Mi 14. Feb 09:19:16 CET 2018
+# compiler: icc
+# compile time: Feb  1 2018 09:49:34
+# compiled on: Linux alcc83 3.16.0-4-amd64 #1 SMP Debian 3.16.51-3 (2017-12-13) x86_64 GNU/Linux
+# LAPACK support: false
+# git HEAD: b96c9c30c7b1cdd2d059ceccd0396c6d55d3da95
+# git branch: dev
+#
+# LbyR = 0.002675
+# L = 5.00225e-07
+# R = 0.000187
+# T = 300
+# cutoff = 5e-08
+# epsrel = 1e-07
+# iepsrel = 2e-07
+# ldim = 2991
+# cores = 8
+# alpha = 0.00533572693046102
+# filename = /alcc/gpfs1/home/u/hartmmic/libcasimir-dev/data/materials/GoldDalvit.dat
+# model = optical data (xi=0: Drude)
+# plasma = -104.681415154823 (logdetD(xi=0) for plasma model with omegap=1.36734e+16eV)
+#
+# xi=0, logdetD=-55.6507212767058, t=23.8183
+# xi=154.343800965687, logdetD=-39.0385332778253, t=216.142
+# xi=308.687601931373, logdetD=-15.5531929178135, t=229.318
+# xi=463.03140289706, logdetD=-6.31756635171159, t=249.411
+# xi=617.375203862747, logdetD=-2.58606825676523, t=251.644
+# xi=771.719004828433, logdetD=-1.0626180644649, t=252.073
+# xi=926.06280579412, logdetD=-0.4376336692779, t=254.567
+# xi=1080.40660675981, logdetD=-0.180753990608515, t=253.207
+# xi=1234.75040772549, logdetD=-0.0746121014813418, t=250.848
+# xi=1389.09420869118, logdetD=-0.0309053391685222, t=248.19
+# xi=1543.43800965687, logdetD=-0.012805983945363, t=242.506
+# xi=1697.78181062255, logdetD=-0.0053145309033589, t=236.977
+# xi=1852.12561158824, logdetD=-0.00220985429113973, t=230.168
+# xi=2006.46941255393, logdetD=-0.000919558576646876, t=223.535
+# xi=2160.81321351961, logdetD=-0.00038337088993049, t=212.499
+# xi=2315.1570144853, logdetD=-0.000160014456540007, t=202.794
+# xi=2469.50081545099, logdetD=-6.68425054656992e-05, t=192.136
+# xi=2623.84461641667, logdetD=-2.79752052790062e-05, t=181.886
+# xi=2778.18841738236, logdetD=-1.17160716845373e-05, t=170.867
+# xi=2932.53221834805, logdetD=-4.91193156543743e-06, t=158.003
+#
+# 2789 determinants computed
+#
+# L/R, L, R, T, ldim, F*(L+R)/(ħc)
+0.002675, 5.00225e-07, 0.000187, 300, 2991, -4575.356667409792
+# finished at Mi 14. Feb 10:30:38 CET 2018

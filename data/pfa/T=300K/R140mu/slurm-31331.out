@@ -1,0 +1,48 @@
+# starting on alcc115 at Mi 14. Feb 11:30:24 CET 2018
+# compiler: icc
+# compile time: Feb  1 2018 09:49:34
+# compiled on: Linux alcc83 3.16.0-4-amd64 #1 SMP Debian 3.16.51-3 (2017-12-13) x86_64 GNU/Linux
+# LAPACK support: false
+# git HEAD: b96c9c30c7b1cdd2d059ceccd0396c6d55d3da95
+# git branch: dev
+#
+# LbyR = 0.003725
+# L = 5.215e-07
+# R = 0.00014
+# T = 300
+# cutoff = 5e-08
+# epsrel = 1e-07
+# iepsrel = 2e-07
+# ldim = 2148
+# cores = 10
+# alpha = 0.00742235173976936
+# filename = /alcc/gpfs1/home/u/hartmmic/libcasimir-dev/data/materials/GoldDalvit.dat
+# model = optical data (xi=0: Drude)
+# plasma = -74.6786708719837 (logdetD(xi=0) for plasma model with omegap=1.36734e+16eV)
+#
+# xi=0, logdetD=-39.832001904589, t=13.6059
+# xi=115.672514139115, logdetD=-27.0247981401322, t=93.484
+# xi=231.34502827823, logdetD=-10.4033748178088, t=99.637
+# xi=347.017542417345, logdetD=-4.08261966966406, t=102.733
+# xi=462.69005655646, logdetD=-1.61420743934135, t=103.536
+# xi=578.362570695575, logdetD=-0.640547654187337, t=105.561
+# xi=694.03508483469, logdetD=-0.254739738223821, t=105.172
+# xi=809.707598973805, logdetD=-0.101593019390277, t=105.082
+# xi=925.38011311292, logdetD=-0.0404916680776333, t=104.04
+# xi=1041.05262725203, logdetD=-0.0161944672198821, t=102.95
+# xi=1156.72514139115, logdetD=-0.00647920593485928, t=101.015
+# xi=1272.39765553026, logdetD=-0.00259626708138979, t=96.1519
+# xi=1388.07016966938, logdetD=-0.00104237444402138, t=92.5527
+# xi=1503.74268380849, logdetD=-0.000418807930740314, t=90.6046
+# xi=1619.41519794761, logdetD=-0.000168589057602866, t=86.2644
+# xi=1735.08771208672, logdetD=-6.79427328448337e-05, t=81.3928
+# xi=1850.76022622584, logdetD=-2.74036413227484e-05, t=76.7409
+# xi=1966.43274036495, logdetD=-1.10738444998035e-05, t=71.7919
+# xi=2082.10525450407, logdetD=-4.47789578127272e-06, t=66.9212
+# xi=2197.77776864318, logdetD=-1.81262499575707e-06, t=59.7857
+#
+# 2422 determinants computed
+#
+# L/R, L, R, T, ldim, F*(L+R)/(ħc)
+0.003725, 5.215e-07, 0.00014, 300, 2148, -2360.341371647661
+# finished at Mi 14. Feb 11:59:44 CET 2018

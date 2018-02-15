@@ -1,0 +1,48 @@
+# starting on alcc121 at Mi 14. Feb 07:55:31 CET 2018
+# compiler: icc
+# compile time: Feb  1 2018 09:49:34
+# compiled on: Linux alcc83 3.16.0-4-amd64 #1 SMP Debian 3.16.51-3 (2017-12-13) x86_64 GNU/Linux
+# LAPACK support: false
+# git HEAD: b96c9c30c7b1cdd2d059ceccd0396c6d55d3da95
+# git branch: dev
+#
+# LbyR = 0.008975
+# L = 5.2055e-07
+# R = 5.8e-05
+# T = 300
+# cutoff = 5e-08
+# epsrel = 1e-07
+# iepsrel = 2e-07
+# ldim = 892
+# cores = 4
+# alpha = 0.0177903317723432
+# filename = /alcc/gpfs1/home/u/hartmmic/libcasimir-dev/data/materials/GoldDalvit.dat
+# model = optical data (xi=0: Drude)
+# plasma = -29.9650099434187 (logdetD(xi=0) for plasma model with omegap=1.36734e+16eV)
+#
+# xi=0, logdetD=-16.2798806193277, t=3.39022
+# xi=48.1721241753311, logdetD=-11.1878747850311, t=47.2426
+# xi=96.3442483506621, logdetD=-4.32140916565471, t=50.0216
+# xi=144.516372525993, logdetD=-1.69965181393674, t=53.4073
+# xi=192.688496701324, logdetD=-0.673305542908505, t=54.2353
+# xi=240.860620876655, logdetD=-0.267657415157131, t=54.3502
+# xi=289.032745051986, logdetD=-0.106627828190982, t=54.7971
+# xi=337.204869227317, logdetD=-0.0425957988492992, t=54.8464
+# xi=385.376993402649, logdetD=-0.0170053902961946, t=53.8069
+# xi=433.54911757798, logdetD=-0.00681236793940691, t=52.2249
+# xi=481.721241753311, logdetD=-0.0027299727300382, t=51.8524
+# xi=529.893365928642, logdetD=-0.00109568830797163, t=49.519
+# xi=578.065490103973, logdetD=-0.000440615342417443, t=48.2529
+# xi=626.237614279304, logdetD=-0.00017731553143281, t=46.7596
+# xi=674.409738454635, logdetD=-7.14917088096311e-05, t=44.2825
+# xi=722.581862629966, logdetD=-2.88577564962097e-05, t=41.2595
+# xi=770.753986805297, logdetD=-1.16578988124604e-05, t=38.9336
+# xi=818.926110980628, logdetD=-4.71848279186103e-06, t=36.4665
+# xi=867.098235155959, logdetD=-1.911039155715e-06, t=31.5303
+# xi=915.27035933129, logdetD=-7.7480985517279e-07, t=28.4797
+#
+# 1523 determinants computed
+#
+# L/R, L, R, T, ldim, F*(L+R)/(ħc)
+0.008975, 5.2055e-07, 5.8e-05, 300, 892, -405.8428675132104
+# finished at Mi 14. Feb 08:10:27 CET 2018

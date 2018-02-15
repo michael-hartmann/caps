@@ -1,0 +1,47 @@
+# starting on alcc121 at Mi 14. Feb 07:55:42 CET 2018
+# compiler: icc
+# compile time: Feb  1 2018 09:49:34
+# compiled on: Linux alcc83 3.16.0-4-amd64 #1 SMP Debian 3.16.51-3 (2017-12-13) x86_64 GNU/Linux
+# LAPACK support: false
+# git HEAD: b96c9c30c7b1cdd2d059ceccd0396c6d55d3da95
+# git branch: dev
+#
+# LbyR = 0.009325
+# L = 5.4085e-07
+# R = 5.8e-05
+# T = 300
+# cutoff = 5e-08
+# epsrel = 1e-07
+# iepsrel = 2e-07
+# ldim = 858
+# cores = 4
+# alpha = 0.0184776954895599
+# filename = /alcc/gpfs1/home/u/hartmmic/libcasimir-dev/data/materials/GoldDalvit.dat
+# model = optical data (xi=0: Drude)
+# plasma = -28.8250763600831 (logdetD(xi=0) for plasma model with omegap=1.36734e+16eV)
+#
+# xi=0, logdetD=-15.6535675973783, t=3.21232
+# xi=48.18883444413, logdetD=-10.4045004894931, t=43.5183
+# xi=96.3776688882599, logdetD=-3.88827742925946, t=48.0162
+# xi=144.56650333239, logdetD=-1.47965749775775, t=49.2819
+# xi=192.75533777652, logdetD=-0.567024803227968, t=50.6318
+# xi=240.94417222065, logdetD=-0.218020195270562, t=50.5568
+# xi=289.13300666478, logdetD=-0.0840004698589246, t=50.97
+# xi=337.32184110891, logdetD=-0.032453064693697, t=50.8695
+# xi=385.51067555304, logdetD=-0.0125298886527421, t=49.2138
+# xi=433.69950999717, logdetD=-0.00485432293724335, t=48.6354
+# xi=481.8883444413, logdetD=-0.00188130340190967, t=47.5918
+# xi=530.07717888543, logdetD=-0.000730227156843341, t=45.9749
+# xi=578.26601332956, logdetD=-0.000283988845025726, t=44.0761
+# xi=626.454847773689, logdetD=-0.000110524581018932, t=42.0655
+# xi=674.643682217819, logdetD=-4.30960486414054e-05, t=39.653
+# xi=722.832516661949, logdetD=-1.68233541827968e-05, t=37.0979
+# xi=771.021351106079, logdetD=-6.5725895122385e-06, t=34.7479
+# xi=819.210185550209, logdetD=-2.57265941811532e-06, t=31.5085
+# xi=867.399019994339, logdetD=-1.00765096338356e-06, t=28.8682
+#
+# 1412 determinants computed
+#
+# L/R, L, R, T, ldim, F*(L+R)/(ħc)
+0.009325, 5.4085e-07, 5.8e-05, 300, 858, -376.1299191145416
+# finished at Mi 14. Feb 08:08:59 CET 2018
