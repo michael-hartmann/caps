@@ -1,0 +1,46 @@
+# starting on alcc116 at Do 15. Feb 15:46:31 CET 2018
+# compiler: icc
+# compile time: Feb  1 2018 09:49:34
+# compiled on: Linux alcc83 3.16.0-4-amd64 #1 SMP Debian 3.16.51-3 (2017-12-13) x86_64 GNU/Linux
+# LAPACK support: false
+# git HEAD: b96c9c30c7b1cdd2d059ceccd0396c6d55d3da95
+# git branch: dev
+#
+# LbyR = 0.00635
+# L = 5.715e-07
+# R = 9e-05
+# T = 300
+# cutoff = 5e-08
+# epsrel = 1e-07
+# iepsrel = 2e-07
+# ldim = 1260
+# cores = 6
+# alpha = 0.0126198638644607
+# filename = /alcc/gpfs1/home/u/hartmmic/libcasimir-dev/data/materials/GoldDalvit.dat
+# model = optical data (xi=0: Drude)
+# plasma = -43.1719071535177 (logdetD(xi=0) for plasma model with omegap=1.36734e+16eV)
+#
+# xi=0, logdetD=-23.1826675741065, t=5.89172
+# xi=74.5553749024231, logdetD=-14.5444480795606, t=55.9632
+# xi=149.110749804846, logdetD=-5.16544177950748, t=62.3117
+# xi=223.666124707269, logdetD=-1.86931530206577, t=64.5501
+# xi=298.221499609693, logdetD=-0.681168623186186, t=64.3529
+# xi=372.776874512116, logdetD=-0.249016502926614, t=64.8062
+# xi=447.332249414539, logdetD=-0.0912145456733744, t=64.2431
+# xi=521.887624316962, logdetD=-0.0335026705201569, t=64.3654
+# xi=596.442999219385, logdetD=-0.0122973607344542, t=63.277
+# xi=670.998374121808, logdetD=-0.00452936578446906, t=60.7473
+# xi=745.553749024231, logdetD=-0.00166884174736208, t=59.3951
+# xi=820.109123926655, logdetD=-0.000615835623054329, t=57.5483
+# xi=894.664498829078, logdetD=-0.000227698643718255, t=55.0045
+# xi=969.219873731501, logdetD=-8.42501665690353e-05, t=51.5995
+# xi=1043.77524863392, logdetD=-3.12321103253344e-05, t=48.8871
+# xi=1118.33062353635, logdetD=-1.15911477815153e-05, t=45.5466
+# xi=1192.88599843877, logdetD=-4.30523795881041e-06, t=41.5881
+# xi=1267.44137334119, logdetD=-1.60208564048186e-06, t=38.1114
+#
+# 1638 determinants computed
+#
+# L/R, L, R, T, ldim, F*(L+R)/(ħc)
+0.006349999999999999, 5.714999999999999e-07, 9.000000000000001e-05, 300, 1260, -812.6904524574149
+# finished at Do 15. Feb 16:02:39 CET 2018
