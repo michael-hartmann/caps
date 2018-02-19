@@ -1,0 +1,47 @@
+# starting on alcc121 at Mo 19. Feb 08:06:26 CET 2018
+# compiler: icc
+# compile time: Feb  1 2018 09:49:34
+# compiled on: Linux alcc83 3.16.0-4-amd64 #1 SMP Debian 3.16.51-3 (2017-12-13) x86_64 GNU/Linux
+# LAPACK support: false
+# git HEAD: b96c9c30c7b1cdd2d059ceccd0396c6d55d3da95
+# git branch: dev
+#
+# LbyR = 0.01055
+# L = 5.3805e-07
+# R = 5.1e-05
+# T = 300
+# cutoff = 5e-08
+# epsrel = 1e-07
+# iepsrel = 2e-07
+# ldim = 759
+# cores = 4
+# alpha = 0.0208797189649201
+# filename = /alcc/gpfs1/home/u/hartmmic/libcasimir-dev/data/materials/GoldDalvit.dat
+# model = optical data (xi=0: Drude)
+# plasma = -25.3019678746044 (logdetD(xi=0) for plasma model with omegap=1.36734e+16eV)
+#
+# xi=0, logdetD=-13.7893420360418, t=2.77657
+# xi=42.4243679246764, logdetD=-9.23101148226434, t=35.8743
+# xi=84.8487358493528, logdetD=-3.46696999521183, t=38.9631
+# xi=127.273103774029, logdetD=-1.32556615738189, t=39.928
+# xi=169.697471698706, logdetD=-0.510349331367708, t=40.5048
+# xi=212.121839623382, logdetD=-0.197143192927172, t=40.8269
+# xi=254.546207548058, logdetD=-0.0763103906904493, t=40.4735
+# xi=296.970575472735, logdetD=-0.0296191425083937, t=40.466
+# xi=339.394943397411, logdetD=-0.0114888591501526, t=39.5321
+# xi=381.819311322088, logdetD=-0.00447166954275145, t=38.7006
+# xi=424.243679246764, logdetD=-0.00174104485384493, t=37.5558
+# xi=466.66804717144, logdetD=-0.000678919407885839, t=35.771
+# xi=509.092415096117, logdetD=-0.00026525890537866, t=34.7454
+# xi=551.516783020793, logdetD=-0.000103713574145453, t=33.6253
+# xi=593.94115094547, logdetD=-4.06276782660187e-05, t=31.8003
+# xi=636.365518870146, logdetD=-1.59332720663537e-05, t=29.5025
+# xi=678.789886794822, logdetD=-6.25369795309402e-06, t=27.9027
+# xi=721.214254719499, logdetD=-2.45918392913411e-06, t=25.048
+# xi=763.638622644175, logdetD=-9.67670626811177e-07, t=22.3897
+#
+# 1334 determinants computed
+#
+# L/R, L, R, T, ldim, F*(L+R)/(ħc)
+0.01055, 5.3805e-07, 5.1e-05, 300, 759, -293.7202455331662
+# finished at Mo 19. Feb 08:17:03 CET 2018
