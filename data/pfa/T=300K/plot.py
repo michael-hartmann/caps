@@ -54,7 +54,7 @@ if __name__ == "__main__":
     text.preamble(r"\usepackage{textcomp}")
 
     xmin,xmax = 1, 300
-    ymin,ymax = 4e0, 5e3
+    ymin,ymax = 4e0, 5e4
 
     g = graph.graphxy(
         width = 8,
@@ -64,8 +64,8 @@ if __name__ == "__main__":
     )
 
     plots = []
-    for value in (0.0025, 0.005,0.0075):
-        title = r"$1-F/F_\mathrm{PFA} = %g$\textperthousand" % (value*1000)
+    for value in (0.01, 0.005, 0.003):
+        title = r"$1-F/F_\mathrm{PFA} = %g$" % (value*100) + r"\%"
         data = cut_F(value)
         plots.append(graph.data.points(data, x=1, y=2, title=title))
 
