@@ -1,0 +1,35 @@
+# starting on alcc117 at Di 20. Feb 13:52:37 CET 2018
+# compiler: icc
+# compile time: Feb  1 2018 09:49:34
+# compiled on: Linux alcc83 3.16.0-4-amd64 #1 SMP Debian 3.16.51-3 (2017-12-13) x86_64 GNU/Linux
+# LAPACK support: false
+# git HEAD: b96c9c30c7b1cdd2d059ceccd0396c6d55d3da95
+# git branch: dev
+#
+# LbyR = 0.02175
+# L = 1.6965e-06
+# R = 7.8e-05
+# T = 300
+# cutoff = 5e-08
+# epsrel = 1e-07
+# iepsrel = 2e-07
+# ldim = 368
+# cores = 6
+# alpha = 0.0425740151700514
+# filename = /alcc/gpfs1/home/u/hartmmic/libcasimir-dev/data/materials/GoldDalvit.dat
+# model = optical data (xi=0: Drude)
+# plasma = -11.9623078589671 (logdetD(xi=0) for plasma model with omegap=1.36734e+16eV)
+#
+# xi=0, logdetD=-6.49819443277393, t=1.05203
+# xi=65.603445188729, logdetD=-0.648422407621403, t=6.10374
+# xi=131.206890377458, logdetD=-0.0369235885111872, t=6.20279
+# xi=196.810335566187, logdetD=-0.00211291513649543, t=5.8183
+# xi=262.413780754916, logdetD=-0.000121024382561189, t=5.03924
+# xi=328.017225943645, logdetD=-6.93933651626969e-06, t=4.16995
+# xi=393.620671132374, logdetD=-3.98285183336138e-07, t=3.26395
+#
+# 333 determinants computed
+#
+# L/R, L, R, T, ldim, F*(L+R)/(ħc)
+0.02175, 1.6965e-06, 7.8e-05, 300, 368, -82.20673194140699
+# finished at Di 20. Feb 13:53:09 CET 2018
