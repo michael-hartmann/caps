@@ -1,0 +1,48 @@
+# starting on alcc116 at Di 20. Feb 19:40:31 CET 2018
+# compiler: icc
+# compile time: Feb  1 2018 09:49:34
+# compiled on: Linux alcc83 3.16.0-4-amd64 #1 SMP Debian 3.16.51-3 (2017-12-13) x86_64 GNU/Linux
+# LAPACK support: false
+# git HEAD: b96c9c30c7b1cdd2d059ceccd0396c6d55d3da95
+# git branch: dev
+#
+# LbyR = 0.02105
+# L = 5.052e-07
+# R = 2.4e-05
+# T = 300
+# cutoff = 5e-08
+# epsrel = 1e-07
+# iepsrel = 2e-07
+# ldim = 381
+# cores = 4
+# alpha = 0.0412320650310954
+# filename = /alcc/gpfs1/home/u/hartmmic/libcasimir-dev/data/materials/GoldDalvit.dat
+# model = optical data (xi=0: Drude)
+# plasma = -12.0332519863573 (logdetD(xi=0) for plasma model with omegap=1.36734e+16eV)
+#
+# xi=0, logdetD=-6.72586358279328, t=1.01341
+# xi=20.1718462547143, logdetD=-4.84706225363271, t=9.87003
+# xi=40.3436925094287, logdetD=-1.92798173220727, t=10.2915
+# xi=60.515538764143, logdetD=-0.778737298217905, t=10.4639
+# xi=80.6873850188573, logdetD=-0.31660333355171, t=10.4486
+# xi=100.859231273572, logdetD=-0.129139211851735, t=10.4949
+# xi=121.031077528286, logdetD=-0.052781085786704, t=10.581
+# xi=141.202923783, logdetD=-0.0216308583876148, t=10.2188
+# xi=161.374770037715, logdetD=-0.00885871762521776, t=10.0413
+# xi=181.546616292429, logdetD=-0.00364034634739533, t=9.89367
+# xi=201.718462547143, logdetD=-0.00149640834685052, t=9.68758
+# xi=221.890308801858, logdetD=-0.000616049846536355, t=9.50554
+# xi=242.062155056572, logdetD=-0.000254107597327758, t=9.09437
+# xi=262.234001311286, logdetD=-0.000104888597705892, t=8.73072
+# xi=282.405847566001, logdetD=-4.33766946224038e-05, t=8.28444
+# xi=302.577693820715, logdetD=-1.79589047699309e-05, t=7.72668
+# xi=322.749540075429, logdetD=-7.44136242274165e-06, t=7.34734
+# xi=342.921386330144, logdetD=-3.08921943228316e-06, t=6.81822
+# xi=363.093232584858, logdetD=-1.28330642584538e-06, t=6.27293
+# xi=383.265078839572, logdetD=-5.3366798409274e-07, t=5.69311
+#
+# 1018 determinants computed
+#
+# L/R, L, R, T, ldim, F*(L+R)/(ħc)
+0.02105, 5.052000000000001e-07, 2.4e-05, 300, 381, -73.53155833663445
+# finished at Di 20. Feb 19:43:24 CET 2018
