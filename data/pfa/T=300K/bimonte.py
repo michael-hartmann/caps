@@ -89,11 +89,24 @@ def F_HT_PFA(LbyR):
     return -zeta3/(8*LbyR**2)
 
 
+def E_HT_PFA(LbyR):
+    """Casimir interaction energy in the high temperature limit given by the
+    PFA.
+
+    Parameters:
+        LbyR: L/R
+
+    Return value:
+        F_PFA/(kb*T)
+    """
+    return -zeta3/(8*LbyR)
+
+
 def F_HT_cut(eps, a=1e-4, b=1):
     """Compute LbyR so that
          1-F_exact/F_PFA = eps.
     The function uses the bisection method from scipy.
-    
+
     Parameters:
         eps: accuracy
         a: left border for bisection
@@ -105,7 +118,30 @@ def F_HT_cut(eps, a=1e-4, b=1):
     ratio = lambda x: 1-F_HT_exact(x)/F_HT_PFA(x)-eps
     return bisect(ratio, a, b)
 
+
+def E_HT_cut(eps, a=1e-4, b=1):
+    """Compute LbyR so that
+         1-E_exact/E_PFA = eps.
+    The function uses the bisection method from scipy.
+
+    Parameters:
+        eps: accuracy
+        a: left border for bisection
+        b: right border for bisection
+
+    Return value:
+        L/R
+    """
+    ratio = lambda x: 1-E_HT_exact(x)/E_HT_PFA(x)-eps
+    return bisect(ratio, a, b)
+
 if __name__ == "__main__":
-    print("1%:  ", 1/F_HT_cut(0.01))
-    print("0.5%:", 1/F_HT_cut(0.005))
-    print("0.3%:", 1/F_HT_cut(0.003))
+    print("force 1%:  ", 1/F_HT_cut(0.01))
+    print("force 0.5%:", 1/F_HT_cut(0.005))
+    print("force 0.3%:", 1/F_HT_cut(0.003))
+
+    print()
+
+    print("energy 2%:  ", 1/E_HT_cut(0.02))
+    print("energy 1%:  ", 1/E_HT_cut(0.01))
+    print("energy 0.5%:", 1/E_HT_cut(0.005))
