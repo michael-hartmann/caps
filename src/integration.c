@@ -292,7 +292,7 @@ static double _casimir_integrate_K(integration_t *self, int nu, polarization_t p
     const double epsrel = self->epsrel;
 
     /* some analytical solutions for perfect reflectors */
-    #if 1
+    #if 0
     if(self->is_pr)
     {
         if(p == TE)
@@ -885,15 +885,15 @@ double casimir_integrate_D(integration_t *self, int l1, int l2, polarization_t p
     return casimir_integrate_C(self, l2, l1, p, sign);
 }
 
-integration_plasma_t *casimir_integrate_plasma_init(casimir_t *casimir, double omegap, double epsrel)
+integration_plasma_t *casimir_integrate_plasma_init(casimir_t *casimir, double omegap_, double epsrel)
 {
     integration_plasma_t *self;
 
     self = (integration_plasma_t *)xmalloc(sizeof(integration_plasma_t));
-    self->LbyR   = casimir->LbyR;
-    self->omegap = omegap;
-    self->alpha  = omegap/(1+casimir->LbyR);
-    self->epsrel = epsrel;
+    self->LbyR    = casimir->LbyR;
+    self->omegap_ = omegap_;
+    self->alpha   = omegap_/(1+casimir->LbyR);
+    self->epsrel  = epsrel;
 
     const int ldim = casimir->ldim;
     self->cache       = cache_new(3*ldim, 0.3);
@@ -955,7 +955,7 @@ double casimir_integrate_plasma(integration_plasma_t *self, int l1, int l2, int 
 
     /* perform integrations in intervals [0,a], [a,b] and [b,∞] */
     const double epsrel = self->epsrel;
-    integrand_plasma_t args = { .nu = nu, .omegap = self->omegap, .log_prefactor = -lfac(nu) };
+    integrand_plasma_t args = { .nu = nu, .omegap = self->omegap_, .log_prefactor = -lfac(nu) };
 
     int neval1 = 0, neval2 = 0, neval3 = 0, ier1 = 0, ier2 = 0, ier3 = 0;
     double abserr1 = 0, abserr2 = 0, abserr3 = 0, I1 = 0, I2 = 0, I3 = 0;
