@@ -68,7 +68,7 @@ typedef struct {
 } integration_t;
 
 typedef struct {
-    double LbyR, alpha, omegap, epsrel;
+    double LbyR, alpha, omegap_, epsrel;
     cache_t *cache;
     cache_t *cache_ratio;
 } integration_plasma_t;
@@ -126,7 +126,7 @@ double casimir_epsilonm1_drude(double xi_, void *userdata);
 
 double casimir_logdetD0_drude(casimir_t *casimir);
 double casimir_logdetD0_perf(casimir_t *casimir, double eps);
-double casimir_logdetD0_plasma(casimir_t *casimir, double omegap, double eps);
+double casimir_logdetD0_plasma(casimir_t *casimir, double omegap_, double eps);
 
 double casimir_kernel_M0_EE(int i, int j, void *args);
 double casimir_kernel_M0_MM(int i, int j, void *args);

@@ -551,7 +551,7 @@ void master(int argc, char *argv[], const int cores)
             else if(material == NULL && gamma_ == 0)
             {
                 printf("# model = plasma\n");
-                v[0] = casimir_logdetD0_plasma(casimir, omegap, cutoff);
+                v[0] = casimir_logdetD0_plasma(casimir, omegap*(L+R)/(CASIMIR_hbar_eV*CASIMIR_c), cutoff);
             }
             else if(material == NULL)
             {
