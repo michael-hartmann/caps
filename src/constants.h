@@ -30,12 +30,6 @@ typedef signed char sign_t;
 /*! compute x^2 */
 #define pow_2(x) ((x)*(x))
 
-/*! compute x^3 */
-#define pow_3(x) ((x)*(x)*(x))
-
-/*! compute x^4 */
-#define pow_4(x) ((x)*(x)*(x)*(x))
-
 #ifndef M_PI
 #define M_PI 3.14159265358979323846 /**< value for π=3.141592... */
 #endif
