@@ -573,7 +573,7 @@ void master(int argc, char *argv[], const int cores)
                 else
                 {
                     printf("# model = optical data (xi=0: Drude)\n");
-                    printf("# plasma = %.15g (logdetD(xi=0) for plasma model with omegap=%geV)\n", casimir_logdetD0_plasma(casimir, omegap_scaled, cutoff), omegap_low);
+                    printf("# plasma = %.15g (logdetD(xi=0) for plasma model with omegap=%geV)\n", casimir_logdetD0_plasma(casimir, omegap_scaled, cutoff), omegap_low*CASIMIR_hbar_eV);
 
                     v[0] = casimir_logdetD0_drude(casimir);
                 }
