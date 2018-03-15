@@ -218,11 +218,16 @@ if __name__ == "__main__":
     gamma  = args.gamma/hbar_eV  # in rad/s
 
     if isinf(omegap):
+        model = "PR"
         epsm1 = lambda xi: inf
-    else:
+    elif gamma > 0:
+        model = "Drude"
         epsm1 = lambda xi: omegap**2/(xi*(xi+gamma))
+    else:
+        model = "Plasma"
+        epsm1 = lambda xi: omegap**2/xi**2
 
-    pfa = PFA(R, T, epsm1)
+    pfa = PFA(R, T, epsm1, model=model)
 
     print("# L/R, L [m], R [m], T [K], omegap [eV], gamma [eV], E_PFA*(L+R)/(hbar*c)")
     for L in args.L:
