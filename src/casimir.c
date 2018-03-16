@@ -567,11 +567,21 @@ void master(int argc, char *argv[], const int cores)
     if(ht)
     {
         double drude, pr, plasma;
-        F_HT(casimir_mpi, omegap, &drude, &pr, &plasma);
 
-        printf("#\n");
-        printf("# L/R, L, R, ldim, omegap, F_Drude/(kB*T), F_PR/(kB*T), F_Plasma/(kB*T)\n");
-        printf("%.16g, %.16g, %.16g, %d, %g, %.16g, %.16g, %.16g\n", LbyR, L, R, ldim, omegap, drude, pr, plasma);
+        if(!isinf(omegap))
+        {
+            F_HT(casimir_mpi, omegap, &drude, &pr, &plasma);
+            printf("#\n");
+            printf("# L/R, L, R, ldim, omegap, F_Drude/(kB*T), F_PR/(kB*T), F_Plasma/(kB*T)\n");
+            printf("%.16g, %.16g, %.16g, %d, %g, %.16g, %.16g, %.16g\n", LbyR, L, R, ldim, omegap, drude, pr, plasma);
+        }
+        else
+        {
+            F_HT(casimir_mpi, 0, &drude, &pr, NULL);
+            printf("#\n");
+            printf("# L/R, L, R, ldim, F_Drude/(kB*T), F_PR/(kB*T)\n");
+            printf("%.16g, %.16g, %.16g, %d, %.16g, %.16g\n", LbyR, L, R, ldim, drude, pr);
+        }
 
         casimir_mpi_free(casimir_mpi);
         return;
@@ -859,7 +869,8 @@ void usage(FILE *stream)
 "\n"
 "    -H, --ht\n"
 "        Compute the Casimir free energy in the high-temperature limit for\n"
-"        perfect reflectors, Drude and plasma model.\n"
+"        perfect reflectors, Drude and plasma model. The value for the plasma\n"
+"        model is only computed if a plasma frequency is given by --omegap.\n"
 "\n"
 "    -v, --verbose\n"
 "        Also print results for each m\n"
