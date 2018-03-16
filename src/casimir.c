@@ -231,7 +231,7 @@ double F_xi(double xi, casimir_mpi_t *casimir_mpi)
 {
     int m;
     double drude_HT = NAN;
-    double terms[2048] = { NAN };
+    double terms[4096] = { NAN };
     bool verbose = casimir_mpi->verbose;
     const double mmax = sizeof(terms)/sizeof(double);
     const double cutoff = casimir_mpi->cutoff;
