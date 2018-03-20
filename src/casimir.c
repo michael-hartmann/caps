@@ -186,7 +186,7 @@ static double integrand(double xi_, void *args)
     const double t0 = now();
     casimir_mpi_t *casimir_mpi = (casimir_mpi_t *)args;
     const double xi = xi_/casimir_mpi->alpha;
-    const double v = integrand(xi, casimir_mpi);
+    const double v = F_xi(xi, casimir_mpi);
     printf("# xi=%.12g, logdetD=%.15g, t=%g\n", xi, v, now()-t0);
     return v;
 }
