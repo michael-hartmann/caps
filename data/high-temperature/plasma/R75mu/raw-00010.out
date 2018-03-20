@@ -1,0 +1,25 @@
+# compiler: gcc
+# compile time: Mar 20 2018 10:27:33
+# compiled on: Linux jonas.physik.uni-augsburg.de 4.9.0-6-amd64 #1 SMP Debian 4.9.82-1+deb9u3 (2018-03-02) x86_64 GNU/Linux
+# LAPACK support: false
+# git HEAD: 6d0c9d2b97f5bf34953fe6036ede8a0e34487fd7
+# git branch: master
+# pid: 11728
+# start time: Tue Mar 20 15:17:37 2018
+#
+# LbyR = 0.000933333333333333
+# RbyL = 1071.42857142857
+# L = 7e-08
+# R = 7.5e-05
+# high-temperature limit
+# cutoff = 1e-12
+# epsrel = 1e-06
+# iepsrel = 1e-09
+# ldim = 10715
+# cores = 8
+# alpha = 0.00186492606900226
+# omegap = 9
+# gamma = 0
+#
+# L/R, L, R, ldim, omegap, F_Drude/(kB*T), F_PR/(kB*T), F_Plasma/(kB*T)
+0.0009333333333333334, 7e-08, 7.499999999999999e-05, 10715, 9, -160.4283166683153, -317.833360428779, -256.5279625676123
