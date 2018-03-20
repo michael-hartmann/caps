@@ -31,7 +31,8 @@ int casimir_get_determinants(casimir_mpi_t *self);
 
 void usage(FILE *stream);
 
-double integrand(double xi, casimir_mpi_t *casimir_mpi);
+void F_HT(casimir_mpi_t *casimir_mpi, double omegap, double *drude, double *pr, double *plasma);
+double F_xi(double xi, casimir_mpi_t *casimir_mpi);
 void master(int argc, char *argv[], int cores);
 void slave(MPI_Comm master_comm, int rank);
 

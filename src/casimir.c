@@ -181,7 +181,7 @@ int casimir_mpi_retrieve(casimir_mpi_t *self, casimir_task_t **task_out)
     return 0;
 }
 
-static double wrapper_integrand(double xi_, void *args)
+static double integrand(double xi_, void *args)
 {
     const double t0 = now();
     casimir_mpi_t *casimir_mpi = (casimir_mpi_t *)args;
@@ -191,13 +191,65 @@ static double wrapper_integrand(double xi_, void *args)
     return v;
 }
 
-double integrand(double xi, casimir_mpi_t *casimir_mpi)
+void F_HT(casimir_mpi_t *casimir_mpi, double omegap, double *drude, double *pr, double *plasma)
+{
+    const double omegap_orig = casimir_mpi->omegap;
+    const double gamma_orig  = casimir_mpi->gamma;
+
+    /* Drude
+     * The actual value of omegap and gamma for the high-temperature limit are
+     * irrelevant. What is relevant is that gamma is positive and non-zero.
+     */
+    if(drude != NULL)
+    {
+        casimir_mpi->omegap = 1;
+        casimir_mpi->gamma  = 1;
+        *drude = F_xi(0, casimir_mpi);
+    }
+
+    /* PR */
+    if(pr != NULL)
+    {
+        casimir_mpi->omegap = INFINITY;
+        casimir_mpi->gamma  = 0;
+        *pr = F_xi(0, casimir_mpi);
+    }
+
+    /* plasma */
+    if(plasma != NULL)
+    {
+        casimir_mpi->omegap = omegap;
+        casimir_mpi->gamma  = 0;
+        *plasma = F_xi(0, casimir_mpi);
+    }
+
+    casimir_mpi->omegap = omegap_orig;
+    casimir_mpi->gamma  = gamma_orig;
+}
+
+double F_xi(double xi, casimir_mpi_t *casimir_mpi)
 {
     int m;
-    double terms[2048] = { NAN };
+    double drude_HT = NAN;
+    double terms[4096] = { NAN };
     bool verbose = casimir_mpi->verbose;
     const double mmax = sizeof(terms)/sizeof(double);
     const double cutoff = casimir_mpi->cutoff;
+
+    if(xi == 0)
+    {
+        /* compute Drude contribution */
+        casimir_t *casimir = casimir_init(casimir_mpi->L/casimir_mpi->R);
+        casimir_set_ldim(casimir, casimir_mpi->ldim);
+        if(casimir_mpi->iepsrel > 0)
+            casimir_set_epsrel(casimir, casimir_mpi->iepsrel);
+        drude_HT = casimir_logdetD0_drude(casimir);
+        casimir_free(casimir);
+
+        if(!isinf(casimir_mpi->omegap) && casimir_mpi->gamma > 0)
+            /* omegap finite => Drude model */
+            return drude_HT;
+    }
 
     /* gather all data */
     for(m = 0; m < mmax; m++)
@@ -246,7 +298,11 @@ double integrand(double xi, casimir_mpi_t *casimir_mpi)
     }
 
     terms[0] /= 2; /* m = 0 */
-    return kahan_sum(terms, m);
+
+    if(xi == 0)
+        return drude_HT + kahan_sum(terms, m);
+    else
+        return kahan_sum(terms, m);
 }
 
 int main(int argc, char *argv[])
@@ -272,7 +328,7 @@ int main(int argc, char *argv[])
 
 void master(int argc, char *argv[], const int cores)
 {
-    bool verbose = false, fcqs = false;
+    bool verbose = false, fcqs = false, ht = false;
     char filename[512] = { 0 };
     int ldim = 0;
     double L = 0, R = 0, T = 0, omegap = INFINITY, gamma_ = 0;
@@ -293,6 +349,7 @@ void master(int argc, char *argv[], const int cores)
             { "verbose",     no_argument,       0, 'v' },
             { "fcqs",        no_argument,       0, 'F' },
             { "version",     no_argument,       0, 'V' },
+            { "ht",          no_argument,       0, 'H' },
             { "temperature", required_argument, 0, 'T' },
             { "eta",         required_argument, 0, 'E' },
             { "ldim",        required_argument, 0, 'l' },
@@ -308,7 +365,7 @@ void master(int argc, char *argv[], const int cores)
         /* getopt_long stores the option index here. */
         int option_index = 0;
 
-        int c = getopt_long(argc, argv, "R:L:T:l:c:e:E:f:i:w:g:FvVh", long_options, &option_index);
+        int c = getopt_long(argc, argv, "R:L:T:l:c:e:E:f:i:w:g:FvVHh", long_options, &option_index);
 
         /* Detect the end of the options. */
         if(c == -1)
@@ -352,6 +409,9 @@ void master(int argc, char *argv[], const int cores)
                 break;
             case 'F':
                 fcqs = true;
+                break;
+            case 'H':
+                ht = true;
                 break;
             case 'v':
                 verbose = true;
@@ -476,8 +536,6 @@ void master(int argc, char *argv[], const int cores)
     printf("# start time: %s\n", time_str);
     printf("#\n");
 
-    casimir_mpi_t *casimir_mpi = casimir_mpi_init(L, R, T, filename, omegap, gamma_, ldim, cutoff, iepsrel, cores, verbose);
-
     /* estimate, cf. eq. (6.33) */
     const double alpha = 2*LbyR/(1+LbyR);
 
@@ -485,7 +543,10 @@ void master(int argc, char *argv[], const int cores)
     printf("# RbyL = %.15g\n", 1/LbyR);
     printf("# L = %.15g\n", L);
     printf("# R = %.15g\n", R);
-    printf("# T = %.15g\n", T);
+    if(ht)
+        printf("# high-temperature limit\n");
+    else
+        printf("# T = %.15g\n", T);
     printf("# cutoff = %g\n", cutoff);
     printf("# epsrel = %g\n", epsrel);
     printf("# iepsrel = %g\n", iepsrel);
@@ -500,6 +561,31 @@ void master(int argc, char *argv[], const int cores)
         printf("# gamma = %.15g\n", gamma_);
     }
 
+    casimir_mpi_t *casimir_mpi = casimir_mpi_init(L, R, T, filename, omegap, gamma_, ldim, cutoff, iepsrel, cores, verbose);
+
+    /* high-temperature limit */
+    if(ht)
+    {
+        double drude, pr, plasma;
+
+        if(!isinf(omegap))
+        {
+            F_HT(casimir_mpi, omegap, &drude, &pr, &plasma);
+            printf("#\n");
+            printf("# L/R, L, R, ldim, omegap, F_Drude/(kB*T), F_PR/(kB*T), F_Plasma/(kB*T)\n");
+            printf("%.16g, %.16g, %.16g, %d, %g, %.16g, %.16g, %.16g\n", LbyR, L, R, ldim, omegap, drude, pr, plasma);
+        }
+        else
+        {
+            F_HT(casimir_mpi, 0, &drude, &pr, NULL);
+            printf("#\n");
+            printf("# L/R, L, R, ldim, F_Drude/(kB*T), F_PR/(kB*T)\n");
+            printf("%.16g, %.16g, %.16g, %d, %.16g, %.16g\n", LbyR, L, R, ldim, drude, pr);
+        }
+
+        casimir_mpi_free(casimir_mpi);
+        return;
+    }
 
     double F = NAN;
     if(T == 0)
@@ -515,10 +601,10 @@ void master(int argc, char *argv[], const int cores)
         printf("#\n");
 
         if(fcqs)
-            integral = fcqs_semiinf(wrapper_integrand, casimir_mpi, &epsrel, &neval, 1, &ier);
+            integral = fcqs_semiinf(integrand, casimir_mpi, &epsrel, &neval, 1, &ier);
         else
         {
-            integral = dqagi(wrapper_integrand, 0, 1, 0, epsrel, &abserr, &neval, &ier, casimir_mpi);
+            integral = dqagi(integrand, 0, 1, 0, epsrel, &abserr, &neval, &ier, casimir_mpi);
             epsrel = fabs(abserr/integral);
         }
 
@@ -532,6 +618,8 @@ void master(int argc, char *argv[], const int cores)
     }
     else
     {
+        double drude_HT = NAN, plasma_HT = NAN, pr_HT = NAN;
+
         const double T_scaled = 2*M_PI*CASIMIR_kB*(R+L)*T/(CASIMIR_hbar*CASIMIR_c);
         /* finite temperature */
         double v[4096] = { 0 };
@@ -543,39 +631,42 @@ void master(int argc, char *argv[], const int cores)
             casimir_t *casimir = casimir_init(LbyR);
             casimir_set_ldim(casimir, ldim);
 
-            if(material == NULL && isinf(omegap) && gamma_ == 0)
+            if(material == NULL && isinf(omegap))
             {
-                printf("# model = perfect conductors\n");
-                v[0] = casimir_logdetD0_perf(casimir, cutoff);
+                F_HT(casimir_mpi, 0, NULL, &pr_HT, NULL);
+                printf("# model = perfect reflectors\n");
+                v[0] = pr_HT;
             }
             else if(material == NULL && gamma_ == 0)
             {
+                F_HT(casimir_mpi, omegap, NULL, NULL, &plasma_HT);
                 printf("# model = plasma\n");
-                v[0] = casimir_logdetD0_plasma(casimir, omegap*(L+R)/(CASIMIR_hbar_eV*CASIMIR_c), cutoff);
+                v[0] = plasma_HT;
             }
             else if(material == NULL)
             {
+                F_HT(casimir_mpi, 0, &drude_HT, NULL, NULL);
                 printf("# model = drude\n");
-                v[0] = casimir_logdetD0_drude(casimir);
+                v[0] = drude_HT;
             }
             else
             {
                 double omegap_low, gamma_low;
                 material_get_extrapolation(material, &omegap_low, &gamma_low, NULL, NULL);
 
-                double omegap_scaled = omegap_low*(L+R)/CASIMIR_c;
-
                 if(gamma_low == 0)
                 {
+                    F_HT(casimir_mpi, omegap_low*CASIMIR_hbar_eV, NULL, NULL, &plasma_HT);
                     printf("# model = optical data (xi=0: Plasma)\n");
-                    v[0] = casimir_logdetD0_plasma(casimir, omegap_scaled, cutoff);
+                    v[0] = plasma_HT;
                 }
                 else
                 {
+                    F_HT(casimir_mpi, omegap_low*CASIMIR_hbar_eV, &drude_HT, NULL, &plasma_HT);
                     printf("# model = optical data (xi=0: Drude)\n");
-                    printf("# plasma = %.15g (logdetD(xi=0) for plasma model with omegap=%geV)\n", casimir_logdetD0_plasma(casimir, omegap_scaled, cutoff), omegap_low*CASIMIR_hbar_eV);
+                    printf("# plasma = %.15g (logdetD(xi=0) for plasma model with omegap=%geV)\n", plasma_HT, omegap_low*CASIMIR_hbar_eV);
 
-                    v[0] = casimir_logdetD0_drude(casimir);
+                    v[0] = drude_HT;
                 }
             }
 
@@ -590,7 +681,7 @@ void master(int argc, char *argv[], const int cores)
         {
             const double t0 = now();
             const double xi = n*T_scaled;
-            v[n] = integrand(xi, casimir_mpi);
+            v[n] = F_xi(xi, casimir_mpi);
             printf("# xi=%.15g, logdetD=%.15g, t=%g\n", xi, v[n], now()-t0);
 
             if(fabs(v[n]/v[0]) < epsrel)
@@ -630,6 +721,8 @@ void slave(MPI_Comm master_comm, int rank)
 
     while(1)
     {
+        double logdet = NAN;
+
         casimir_t  *casimir  = NULL;
         material_t *material = NULL;
 
@@ -669,28 +762,41 @@ void slave(MPI_Comm master_comm, int rank)
         if(iepsrel > 0)
             casimir_set_epsrel(casimir, iepsrel);
 
-        /* set material properties */
-        if(strlen(filename))
+        /* high-temperature case */
+        if(xi == 0)
         {
-            material = material_init(filename, L+R);
-            TERMINATE(material == NULL, "material_init failed");
-            casimir_set_epsilonm1(casimir, material_epsilonm1, material);
+            if(isinf(omegap))
+                /* MM mode of PR */
+                casimir_logdetD0(casimir, m, 0, NULL, &logdet, NULL);
+            else
+                /* plasma */
+                casimir_logdetD0(casimir, m, omegap, NULL, NULL, &logdet);
         }
-        else if(!isinf(omegap))
+        else
         {
-            userdata[0] = omegap;
-            userdata[1] = gamma_;
-            casimir_set_epsilonm1(casimir, casimir_epsilonm1_drude, userdata);
+            /* set material properties */
+            if(strlen(filename))
+            {
+                material = material_init(filename, L+R);
+                TERMINATE(material == NULL, "material_init failed");
+                casimir_set_epsilonm1(casimir, material_epsilonm1, material);
+            }
+            else if(!isinf(omegap))
+            {
+                userdata[0] = omegap;
+                userdata[1] = gamma_;
+                casimir_set_epsilonm1(casimir, casimir_epsilonm1_drude, userdata);
+            }
+
+            logdet = casimir_logdetD(casimir, xi, m);
+            TERMINATE(isnan(logdet), "L/R=%.10g, xi=%.10g, m=%d, ldim=%d", LbyR, xi, m, ldim);
         }
 
-        double logdet = casimir_logdetD(casimir, xi, m);
-        TERMINATE(isnan(logdet), "L/R=%.10g, xi=%.10g, m=%d, ldim=%d", LbyR, xi, m, ldim);
+        MPI_Isend(&logdet, 1, MPI_DOUBLE, 0, 0, master_comm, &request);
         casimir_free(casimir);
 
         if(material != NULL)
             material_free(material);
-
-        MPI_Isend(&logdet, 1, MPI_DOUBLE, 0, 0, master_comm, &request);
         MPI_Wait(&request, &status);
     }
 }
@@ -760,6 +866,11 @@ void usage(FILE *stream)
 "    --gamma GAMMA\n"
 "        Set dissipation of Drude model to GAMMA. Ignored if no value for\n"
 "        --omegap is given. (DEFAULT: perfect conductors; in eV)\n"
+"\n"
+"    -H, --ht\n"
+"        Compute the Casimir free energy in the high-temperature limit for\n"
+"        perfect reflectors, Drude and plasma model. The value for the plasma\n"
+"        model is only computed if a plasma frequency is given by --omegap.\n"
 "\n"
 "    -v, --verbose\n"
 "        Also print results for each m\n"
