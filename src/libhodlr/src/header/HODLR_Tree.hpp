@@ -181,10 +181,10 @@ public:
         this->kernel  = kernel;
         this->N       = N;
         this->nLeaf   = nLeaf;
-        this->nNodes  = 0;
-        this->nLevels = log2(nNodes);
         root          = new HODLR_Node<MatrixType>(kernel, 0, 0, 0, 0, N);
+        this->nNodes  = 0;
         create_Tree(root);
+        this->nLevels = log2(nNodes);
     };
 
         /*!
