@@ -808,7 +808,7 @@ void usage(FILE *stream)
 "This program computes the free Casimir energy F(T,L/R) for the plane-sphere\n"
 "geometry for L, R and T. The output is in units of ħc/(L+R).\n"
 "\n"
-"This program uses MPI for parallization and needs at leas to cores to run.\n"
+"This program uses MPI for parallization and needs at least two cores to run.\n"
 "\n"
 "The free eenergy at T=0 is calculated using integration:\n"
 "   F(L/R) = \\int_0^\\infty dξ logdet D(ξ)\n"
