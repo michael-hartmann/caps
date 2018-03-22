@@ -53,7 +53,7 @@ TESTS = \
 CFLAGS = -std=c99 -fPIC
 
 # suppress warnings
-CXXFLAGS = -w
+CXXFLAGS = -g -w
 
 CFLAGS += -I . -I cquadpack/include -I libhodlr/include/
 ifdef GIT_HEAD
@@ -88,7 +88,11 @@ endif
 # clang supports various runtime checks. This will slow down the program, but
 # it's a good and easy way to find bugs.
 # https://clang.llvm.org/docs/UndefinedBehaviorSanitizer.html
-#CFLAGS += -fsanitize=undefined,memory -fno-omit-frame-pointer
+ifdef SANITIZE
+    CFLAGS   += -fsanitize=undefined -fno-omit-frame-pointer
+    CXXFLAGS += -fsanitize=undefined -fno-omit-frame-pointer
+    LDFLAGS  += -lubsan
+endif
 
 # optimize
 OPT = -O3
