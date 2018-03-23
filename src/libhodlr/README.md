@@ -12,7 +12,7 @@ results. The reason is a change in the file FullPivLU.h described as "Make
 FullPivLU::solve use rank() instead of nonzeroPivots()." in the changelog. The
 diff looks like:
 
-
+```
 *** FullPivLU.h_327     2018-03-23 16:02:57.268313250 +0100
 --- FullPivLU.h_328     2018-03-23 16:03:22.409744343 +0100
 *************** struct solve_retval<FullPivLU<_MatrixTyp
@@ -31,3 +31,4 @@ diff looks like:
 !               nonzero_pivots = dec().rank();
       eigen_assert(rhs().rows() == rows);
       const Index smalldim = (std::min)(rows, cols);
+```
