@@ -25,6 +25,7 @@ public:
 
 double hodlr_logdet_diagonal(int dim, double (*callback)(int,int,void *), void *args, double *diagonal, unsigned int nLeaf, double tolerance, int is_symmetric)
 {
+    double logdet = NAN;
     char s = 'n'; /* non symmetric by default */
 
     if(is_symmetric)
@@ -39,10 +40,8 @@ double hodlr_logdet_diagonal(int dim, double (*callback)(int,int,void *), void *
         d(n) = 1-diagonal[n];
 
     A->assemble_Matrix(d, tolerance, s);
-
     A->compute_Factor();
-
-    double logdet = A->compute_Determinant(logdet);
+    A->compute_Determinant(logdet);
 
     delete A;
 
