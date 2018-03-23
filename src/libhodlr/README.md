@@ -32,3 +32,6 @@ diff looks like:
       eigen_assert(rhs().rows() == rows);
       const Index smalldim = (std::min)(rows, cols);
 ```
+
+The source file FullPivLU.h of version 3.2.7 (FullPivLU.h_327) and 3.2.8
+(FullPivLU.h_328) is also in this directory.
