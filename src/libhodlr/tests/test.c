@@ -41,7 +41,7 @@ int main(int argc, char *argv[])
     double tolerance = 1e-12;
     int is_symmetric = 1;
     double eta = 10;
-    double RbyL_start = 10;
+    double RbyL_start = 100;
     double RbyL_stop  = 100000;
     int npts = 20;
 
