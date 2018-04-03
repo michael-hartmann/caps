@@ -1,3 +1,5 @@
+#include <stdlib.h>
+
 #include "HODLR_Tree.hpp"
 #include "HODLR_Matrix.hpp"
 
@@ -50,10 +52,15 @@ double hodlr_logdet_diagonal(int dim, double (*callback)(int,int,void *), void *
 
 double hodlr_logdet(int dim, double (*callback)(int,int,void *), void *args, unsigned int nLeaf, double tolerance, int is_symmetric)
 {
-    double diagonal[dim];
+    double logdet = NAN;
+    double *diagonal = (double *)malloc(dim*sizeof(double));
+    if(diagonal == NULL)
+        return logdet;
 
     for(int n = 0; n < dim; n++)
         diagonal[n] = callback(n,n,args);
 
-    return hodlr_logdet_diagonal(dim, callback, args, diagonal, nLeaf, tolerance, is_symmetric);
+    logdet = hodlr_logdet_diagonal(dim, callback, args, diagonal, nLeaf, tolerance, is_symmetric);
+    free(diagonal);
+    return logdet;
 }
