@@ -1,0 +1,38 @@
+# starting on alcc53 at Mi 28. Mär 09:08:23 CEST 2018
+# compiler: icc
+# compile time: Mar 20 2018 10:17:31
+# compiled on: Linux alcc83 3.16.0-4-amd64 #1 SMP Debian 3.16.51-3 (2017-12-13) x86_64 GNU/Linux
+# LAPACK support: false
+# git HEAD: 6d0c9d2b97f5bf34953fe6036ede8a0e34487fd7
+# git branch: master
+# pid: 9232
+# start time: Wed Mar 28 09:08:23 2018
+#
+# LbyR = 0.02
+# RbyL = 50
+# L = 2e-06
+# R = 0.0001
+# T = 300
+# cutoff = 1e-15
+# epsrel = 1e-10
+# iepsrel = 1e-08
+# ldim = 417
+# cores = 3
+# alpha = 0.0392156862745098
+# model = perfect reflectors
+#
+# xi=0, logdetD=-13.2832551764761, t=0.180698
+# xi=83.9629269698212, logdetD=-0.46429441025967, t=29.3417
+# xi=167.925853939642, logdetD=-0.0172125258553669, t=29.1037
+# xi=251.888780909464, logdetD=-0.000639917192532579, t=27.4186
+# xi=335.851707879285, logdetD=-2.37813795600885e-05, t=24.9419
+# xi=419.814634849106, logdetD=-8.83339951797571e-07, t=21.7913
+# xi=503.777561818927, logdetD=-3.27875305079625e-08, t=17.7748
+# xi=587.740488788748, logdetD=-1.21582818177868e-09, t=17.2032
+#
+# 827 determinants computed
+# stop time: Wed Mar 28 09:11:11 2018
+#
+# L/R, L, R, T, ldim, F*(L+R)/(ħc)
+0.02, 2e-06, 0.0001, 300, 417, -190.3922923548243
+# finished at Mi 28. Mär 09:11:11 CEST 2018
