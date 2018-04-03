@@ -1,13 +1,14 @@
 #include <stdio.h>
 #include <math.h>
 #include <sys/time.h>
+#include <unistd.h>
 
 #include <hodlr.h>
 
 /* return time in seconds since 1970 */
 double now(void)
 {
-    struct timeval tv; 
+    struct timeval tv;
     gettimeofday(&tv, NULL);
     return tv.tv_sec + tv.tv_usec*1e-6;
 }
@@ -38,12 +39,18 @@ double kernel(int i, int j, void *args)
 int main(int argc, char *argv[])
 {
     unsigned int nLeaf = 100;
-    double tolerance = 1e-12;
+    double tolerance = 1e-10;
     int is_symmetric = 1;
     double eta = 10;
     double RbyL_start = 100;
     double RbyL_stop  = 100000;
     int npts = 20;
+
+    /* disable buffering */
+    fflush(stdin);
+    fflush(stderr);
+    setvbuf(stdout, NULL, _IONBF, 0);
+    setvbuf(stderr, NULL, _IONBF, 0);
 
     for(int i = 0; i < npts; i++)
     {
