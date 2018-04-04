@@ -14,7 +14,9 @@
  */
 
 #include <stdio.h>
+#include <stdlib.h>
 #include <math.h>
+#include <string.h>
 #include <sys/time.h>
 #include <unistd.h>
 
@@ -65,6 +67,7 @@ int main(int argc, char *argv[])
     double eta = 10;
     double RbyL_start = 100;
     double RbyL_stop  = 100000;
+    int repeat = 1;
     int npts = 50;
 
     /* disable buffering */
@@ -73,20 +76,39 @@ int main(int argc, char *argv[])
     setvbuf(stdout, NULL, _IONBF, 0);
     setvbuf(stderr, NULL, _IONBF, 0);
 
-    printf("# R/L, analytical, HODLR, relative error, status\n");
-    for(int i = 0; i < npts; i++)
+    if(argc > 1)
     {
-        double RbyL = RbyL_start*exp(i*log(RbyL_stop/RbyL_start)/(npts-1));
+        if(strncmp("-h", argv[1], 2) == 0)
+        {
+            printf("%s [NPTS, REPETITION]\n", argv[0]);
+            printf("Test HODLR library.\n");
+            printf("  NPTS: number of points\n");
+            printf("  REPETITIONS: number of repetitions\n");
+            return 0;
+        }
+        npts = atoi(argv[1]);
+    }
+    if(argc > 2)
+        repeat = atoi(argv[2]);
 
-        double dim = RbyL*eta;
-        double y = log(0.5/(1+1./RbyL));
-        double t = now();
-        double logdet = hodlr_logdet(dim, kernel, &y, nLeaf, tolerance, is_symmetric);
-        t = now()-t;
-        double exact = analytical(RbyL);
+    printf("# R/L, analytical, HODLR, relative error, status\n");
 
-        double relerr = 1-fabs(logdet/exact);
-        printf("%2d/%02d, %g, %.13g, %.13g, %.4g, %.4g, %s\n", i+1, npts, RbyL, exact, logdet, relerr, t, relerr < 2e-9 ? status[0] : status[1]);
+    for(int k = 0; k < repeat; k++)
+    {
+        for(int i = 0; i < npts; i++)
+        {
+            double RbyL = RbyL_start*exp(i*log(RbyL_stop/RbyL_start)/(npts-1));
+
+            double dim = RbyL*eta;
+            double y = log(0.5/(1+1./RbyL));
+            double t = now();
+            double logdet = hodlr_logdet(dim, kernel, &y, nLeaf, tolerance, is_symmetric);
+            t = now()-t;
+            double exact = analytical(RbyL);
+
+            double relerr = 1-fabs(logdet/exact);
+            printf("%2d/%02d, %g, %.13g, %.13g, %.4g, %.4g, %s\n", i+1, npts, RbyL, exact, logdet, relerr, t, relerr < 2e-9 ? status[0] : status[1]);
+        }
     }
 
     return 0;
