@@ -65,7 +65,7 @@ int main(int argc, char *argv[])
     double eta = 10;
     double RbyL_start = 100;
     double RbyL_stop  = 100000;
-    int npts = 20;
+    int npts = 50;
 
     /* disable buffering */
     fflush(stdin);
@@ -86,7 +86,7 @@ int main(int argc, char *argv[])
         double exact = analytical(RbyL);
 
         double relerr = 1-fabs(logdet/exact);
-        printf("%g, %.14g, %.14g, %.14g, %.5g, %s\n", RbyL, exact, logdet, relerr, t, relerr < 2e-9 ? status[0] : status[1]);
+        printf("%2d/%02d, %g, %.13g, %.13g, %.4g, %.4g, %s\n", i+1, npts, RbyL, exact, logdet, relerr, t, relerr < 2e-9 ? status[0] : status[1]);
     }
 
     return 0;
