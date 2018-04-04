@@ -1,3 +1,5 @@
+.PHONY: test
+
 OPT = -O3
 CXXFLAGS = -g -w -I ../include/ ../src/hodlr.cpp -I ../src/header/
 
@@ -6,6 +8,9 @@ CXXFLAGS = -g -w -I ../include/ ../src/hodlr.cpp -I ../src/header/
 
 all:
 	$(CXX) $(CXXFLAGS) ${OPT} test.c -o test
+
+test:
+	./test
 
 clean:
 	rm -f test
