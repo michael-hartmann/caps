@@ -1,7 +1,11 @@
 OPT = -O3
+CXXFLAGS = -g -w -I ../include/ ../src/hodlr.cpp -I ../src/header/
+
+# undefined behaviour sanitizer supported by clang++
+#CXXFLAGS += -fsanitize=undefined,unsigned-integer-overflow -fno-omit-frame-pointer
 
 all:
-	clang++ -fsanitize=undefined -fno-omit-frame-pointer -w ${OPT} test.c -I ../include/ ../src/hodlr.cpp -I ../src/header/ -o test
+	$(CXX) $(CXXFLAGS) ${OPT} test.c -o test
 
 clean:
 	rm -f test
