@@ -1,0 +1,3 @@
+Reference point to check accuracy of the points in directory ../eta10/. The
+points obtained here have been calculated with higher ldim and lower
+integration errors.
