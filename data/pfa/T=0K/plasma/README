@@ -1,0 +1,31 @@
+Plasma model at zero temperature
+================================
+
+This directory contains data for the Casimir effect using the plasma model
+ϵ(ξ)=1+ωp²/ξ² at zero temperature T=0. The names of the subfolders indicate
+the value a=c/(ωp·L).
+
+The linear correction θ to PFA can be obtained by a paper of Teo [1]
+    E ≈ E_PFA ( 1 + θ_1·x )
+where x=L/R corresponds to the inverse aspect ratio.
+
+It seems that the energy allows an expansion in powers of √x:
+    E ≈ E\_PFA ( 1 + θ_1·x + θ_2·x^1.5 + θ_3·x² )
+
+Fixed parameters:
+    quantity         | symbol | value
+    -----------------+--------+-------
+    temperature      | T      | T=0
+    plasma frequency | ωp     | ωp=9eV
+    separation       | L      | ωp·L/c
+
+Variable parameters:
+    quantity             | symbol | dependence
+    ---------------------+--------+-----------
+    inverse aspect ratio | x      | x=L/R
+    radius               | R      | R=L/x
+
+References:
+    [1] L. P. Teo, Material dependence of Casimir interaction between a sphere
+    and a plate: First analytic correction beyond proximity force
+    approximation, Physical Review **D**, 045019 (2013) 
