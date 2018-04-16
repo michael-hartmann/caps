@@ -65,7 +65,7 @@ double kernel_logdet(int dim, double (*kernel)(int,int,void *), void *args, int 
      * tr(M^r) = Σ_i λ_i^r < tr(M)^r
      *
      * Therefore we find:
-     * |R| = tr(M²/2 + M³/3 + ...) < tr(M²+M³+...)/2 < (tr(M)²+tr(M)³)/2 = tr(M)²/(2-2tr(M)) =~ tr(M)²/2
+     * |R| = |tr(M²/2 + M³/3 + ...)| < |tr(M²+M³+...)|/2 < |tr(M)²+tr(M)³|/2 = |tr(M)²/(2-2tr(M))| =~ |tr(M)²|/2
      */
     if(fabs(trace) < 1e-8)
         return -trace;
