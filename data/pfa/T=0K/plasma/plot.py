@@ -29,9 +29,19 @@ corr = data[:,7]
 
 pnts = zip(LbyR,corr)
 
-pnts = np.array(list(filter(lambda x: x[0] < 0.003, pnts)))
-LbyR_fit = pnts[:,0]
-corr_fit = pnts[:,1]
+LbyR_fit, corr_fit = [], []
+LbyR_nofit, corr_nofit = [], []
+
+for i,x in enumerate(LbyR):
+    if x < 0.003:
+        LbyR_fit.append(x)
+        corr_fit.append(corr[i])
+    else:
+        LbyR_nofit.append(x)
+        corr_nofit.append(corr[i])
+
+LbyR_fit = np.array(LbyR_fit)
+corr_fit = np.array(corr_fit)
 
 y = corr_fit/LbyR_fit**1.5
 x = np.sqrt(LbyR_fit)
@@ -61,11 +71,11 @@ cmd = "y(x) = %.12g*x**1.5 + %.12g*x**2" % (theta2,theta3)
 title=r"$\theta_2 x^{3/2} + \theta_3 x^2$, $\theta_2=%.3g$, $\theta_3=%.3g$" % (theta2,theta3)
 g.plot(graph.data.function(cmd, title))
 
-attrs = [graph.style.symbol(graph.style.symbol.changecircle, symbolattrs=[color.cmyk.MidnightBlue], size=0.07)]
-g.plot(graph.data.values(x=LbyR, y=corr, title=r"multipole"), attrs)
-
-attrs = [graph.style.symbol(graph.style.symbol.changecircle, symbolattrs=[color.cmyk.Maroon], size=0.07)]
+attrs = [graph.style.symbol(graph.style.symbol.triangle, symbolattrs=[color.cmyk.Maroon], size=0.07)]
 g.plot(graph.data.values(x=LbyR_fit, y=corr_fit, title=r"multipole (used for fit)"), attrs)
+
+attrs = [graph.style.symbol(graph.style.symbol.circle, symbolattrs=[color.cmyk.MidnightBlue], size=0.07)]
+g.plot(graph.data.values(x=LbyR_nofit, y=corr_nofit, title=r"multipole"), attrs)
 
 x, y = g.pos(8e-2, 6e-5)
 deltay = 0.5
