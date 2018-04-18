@@ -1,26 +1,7 @@
 from math import pi
-
-hbar    = 1.0545718e-34 # hbar [J s]
-hbar_eV = 6.582119514e-16 # hbar [eV s / rad]
-c       = 299792458     # speed of light [m/s]
-C       = pi**3*hbar*c/720
-
-
-# coefficients β_ij, Table I, [Teo, PRD 88, 045019 (2013)]
-d_β = {
-    (0,0): +1,
-    (1,0): -4/3,
-    (2,0): +9/5,
-    (1,1): +18/5,
-    (3,0): -16/7+32/735*pi**2,
-    (2,1): -48/7,
-    (4,0): +25/9-326/1323*pi**2,
-    (3,1): +100/9-326/1323*pi**2,
-    (2,2): +50/3,
-    (5,0): -36/11+1220/1617*pi**2-379/32340*pi**4,
-    (4,1): -180/11+2440/1617*pi**2,
-    (3,2): -360/11+1220/1617*pi**2
-}
+from sys import path,argv
+path.append("../../../../src/python/")
+from PFA import PFA, hbar, c, hbar_eV
 
 # coefficients λ_ij, Table II, [Teo, PRD 88, 045019 (2013)]
 d_λ = {
@@ -48,73 +29,43 @@ d_λ = {
     (5,0): 26732/1287/pi**2-150368/27027+4937399/5675670*pi**2-1142/63063*pi**4
 }
 
-def β(i,j):
-    """Return coefficient β or 0 if i+j>5"""
-    if i >= j:
-        key = (i,j)
-    else:
-        key = (j,i)
-    
-    return d_β.get(key,0)
-
-
 def λ(i,j):
     """Return coefficient λ or 0 if i+j>5"""
     key = (i,j)
     return d_λ.get(key,0)
 
 
-def E_plasma(a):
-    """Compute the free energy in the plasma model.
+def theta1(a):
+    """Compute linear correction to PFA in the plasma model
 
     Parameters: a=c/(ω_P*L)
 
-        E ≈ -π³ħcR/(720L²)*(s_1 + s_2 L/R) = -C R/L² (s_1 + s_2 L/R)
-    where
-        C = π³ħc/720
+    E ≈ -π³ħcR/(720L²)*(1 + θ_1·x)
 
     References: Teo, PRD 88, 045019 (2013)
 
     Returns: s_1, s_2
     print(E_plasma(float(argv[1])))
     """
-    s1 = 0
-    s2 = 0
+    # exact values irrelevant
+    R = 100e-6
+    L = 250e-9
 
-    maximum = 6
+    # plasma frequency in rad/s
+    omegap = c/(a*L)
+
+    # PFA value for perfect reflectors
+    E_PR = pi**3*hbar*c*R/(720*L**2)
+
+    epsm1 = lambda xi: (omegap/xi)**2
+    pfa = PFA(R, 0, epsm1)
+    E = pfa.E(L)
+    s1 = -E/E_PR
+
+    s2 = 0
+    maximum = 5
     for i in range(maximum+1):
         for j in range(maximum+1):
-            s1 += β(i,j)*a**(i+j)
             s2 += λ(i,j)*a**(i+j)
 
-    return s1,s2
-
-
-def theta(a):
-    """Get linear correction theta1 to PFA
-            E ≈ E_PFA( 1+theta1 x)
-       where x=L/R
-    """
-    s0,s1 = E_plasma(a)
-    return s1/s0
-
-
-
-if __name__ == "__main__":
-    from sys import argv, stderr
-
-    try:
-        L = float(argv[1])
-        R = float(argv[2])
-        omegap = float(argv[3])
-    except:
-        print("Usage: %s c/(ω_P*L)" % argv[0], file=stderr)
-        exit(1)
-
-    RbyL = R/L
-    a = 1/(omegap/hbar_eV*L/c)
-    theta0,theta1 = E_plasma(a)
-    print(a,theta0, theta1)
-
-    E_PFA = -pi**3/720*theta0*RbyL*(1+RbyL)
-    print(E_PFA)
+    return s2/s1
