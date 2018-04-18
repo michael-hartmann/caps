@@ -42,7 +42,7 @@ if __name__ == "__main__":
     a = c/(omegap*L)
 
     # compute prefactor of linear correction, see Teo, PRD 88, 045019 (2013)
-    theta1 = teo.theta(a)
+    theta1 = teo.theta1(a)
 
     print("# L = %.14g [m]" % L)
     print("# T = %.14g [K]" % T)
