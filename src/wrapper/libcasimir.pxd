@@ -1,6 +1,5 @@
 cdef extern from "plm.h":
     double lnPlm(int l, int m, double x)
-    double lnPlm_estimate(int l, int m, double x)
     double Plm_continued_fraction(const long l, const long m, const double x)
     double dlnPlm(int l, int m, double x, double *d2lnPlm);
 
