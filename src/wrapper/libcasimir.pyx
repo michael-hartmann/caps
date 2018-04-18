@@ -35,10 +35,6 @@ class sfunc:
         dplm = dlnPlm(l, m, x, &d2plm)
         return dplm,d2plm
 
-    def lnPlm_estimate(int l, int m, double x):
-        sfunc.__check_parameters_plm(l,m,x)
-        return libcasimir.lnPlm_estimate(l, m, x)
-
     def besselI(int n, double x):
         return libcasimir.besselI(n, x)
 
