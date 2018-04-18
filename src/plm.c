@@ -1,7 +1,7 @@
 /**
  * @file   plm.c
  * @author Michael Hartmann <michael.hartmann@physik.uni-augsburg.de>
- * @date   December, 2017
+ * @date   April, 2018
  * @brief  computation of Legendre and associated Legendre polynomials
  */
 
@@ -112,21 +112,6 @@ double lnPlm_upwards(int l, int m, double x)
     return log_prefactor+log(fabs(array[l-m]));
 }
 
-/**
- * @brief Estimate value of \f$P_l^m(x)\f$ for \f$x \gg 1\f$
- *
- * This function computes the value of \f$P_l^m(x)\f$ using an approximation
- * for large arguments \f$x \gg 1\f$ and returns the logarithm of the estimate.
- *
- * @param [in] l l
- * @param [in] m m
- * @param [in] x argument
- * @retval estimate \f$ \approx \log(P_l^m(x))\f$
- */
-double lnPlm_estimate(int l, int m, double x)
-{
-    return lfac(2*l)-l*M_LOG2-lfac(l)-lfac(l-m)+l*log(x);
-}
 
 /* Legendre polynomial Pl
  *
