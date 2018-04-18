@@ -74,11 +74,11 @@ int casimir_estimate_lminmax(casimir_t *self, int m, size_t *lmin_p, size_t *lma
     }
 
     /* approximately the maximum on the diagonal of the round-trip matrix M is
-     * at X */
-    const int X = round(m/sqrt(2*self->LbyR));
+     * at l */
+    const int l = round(m/sqrt(2*self->LbyR));
 
     /* lmin >= m */
-    int lmin = X-ldim/2;
+    int lmin = l-ldim/2;
     if(lmin < m)
         lmin = m;
 
@@ -86,7 +86,7 @@ int casimir_estimate_lminmax(casimir_t *self, int m, size_t *lmin_p, size_t *lma
     *lmin_p = lmin;
     *lmax_p = lmin + ldim;
 
-    return X;
+    return l;
 }
 
 
