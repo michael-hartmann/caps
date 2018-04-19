@@ -1,7 +1,7 @@
 /**
  * @file   matrix.c
  * @author Michael Hartmann <michael.hartmann@physik.uni-augsburg.de>
- * @date   December, 2017
+ * @date   April, 2018
  * @brief  matrix functions
  */
 
@@ -120,7 +120,7 @@ double kernel_logdet(int dim, double (*kernel)(int,int,void *), void *args, int 
         /* calculate log(det(D)) using HODLR approach */
         logdet = hodlr_logdet_diagonal(dim, kernel, args, diagonal, nLeaf, tolerance, symmetric);
 
-        /* if |trace| > log(det(D)), then the trace result is more accurate */
+        /* if |trace| > |log(det(D))|, then the trace result is more accurate */
         if(fabs(trace) > fabs(logdet))
             return -trace;
 
@@ -512,10 +512,10 @@ double matrix_logdet_dense(matrix_t *A, double z, detalg_t detalg)
     }
 
     if(detalg == DETALG_CHOLESKY)
-        /* use cholesky decomposition */
+        /* cholesky decomposition */
         return matrix_logdet_cholesky(A, 'U');
     else if(detalg == DETALG_QR)
-        /* use cholesky decomposition */
+        /* QR decomposition */
         return matrix_logdet_qr(A);
     else
         /* LU decomposition */
