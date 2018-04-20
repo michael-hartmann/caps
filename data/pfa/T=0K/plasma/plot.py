@@ -46,6 +46,13 @@ for i,x in enumerate(LbyR):
         LbyR_nofit.append(x)
         corr_nofit.append(corr[i])
 
+if len(LbyR_fit) == 0:
+    print("no points for fit: adjust FIT_MIN and FIT_MAX")
+    print()
+    parser.print_help()
+    exit(1)
+
+
 LbyR_fit = np.array(LbyR_fit)
 corr_fit = np.array(corr_fit)
 
