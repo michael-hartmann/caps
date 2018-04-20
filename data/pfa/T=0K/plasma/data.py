@@ -18,8 +18,8 @@ if __name__ == "__main__":
 
     # read data
     data = []
-    for fname in files:
-        with open(fname) as f:
+    for filename in files:
+        with open(filename) as f:
             omegap = float("nan")
             for line in f:
                 line = line.strip()
