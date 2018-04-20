@@ -84,6 +84,8 @@ def E_plasma(a):
 
 if __name__ == "__main__":
     from sys import argv, stderr
+    from math import pi
+    from PFA import PFA, hbar, hbar_eV, c
 
     try:
         a = float(argv[1])
@@ -91,5 +93,16 @@ if __name__ == "__main__":
         print("Usage: %s c/(ω_P*L)" % argv[0], file=stderr)
         exit(1)
 
-    s1,s2 = E_plasma(a)
-    print(s1, s2)
+    R = 0.11
+    L = 0.01
+    omegap = c/(a*L)
+    E_PR = pi**3*hbar*c*R/(720*L**2)
+
+    epsm1 = lambda xi: (omegap/xi)**2
+    pfa = PFA(R, 0, epsm1)
+    E = pfa.E(L)
+    theta0_besser = E/E_PR
+
+    theta0,theta1 = E_plasma(a)
+    print("# theta0, theta1, theta1/theta0")
+    print(theta0, theta1, theta1/theta0, theta1/theta0_besser)
