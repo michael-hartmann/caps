@@ -13,6 +13,7 @@ parser.add_argument("--ymin", help="minimum of y-axis", type=float, default=3e-5
 parser.add_argument("--ymax", help="maximum of y-axis", type=float, default=1e-1)
 parser.add_argument("--xtitle", help="label of x-axis", type=str, default=r"$x = L/R$")
 parser.add_argument("--ytitle", help="label of y-axis", type=str, default=r"$1-E/E_\mathrm{PFA}+\theta_1 x$")
+parser.add_argument("-o", "--output", help="output filename", type=str, default="plot.pdf")
 args = parser.parse_args()
 
 data = np.loadtxt(args.filename, delimiter=",")
@@ -46,8 +47,8 @@ for i,x in enumerate(LbyR):
         LbyR_nofit.append(x)
         corr_nofit.append(corr[i])
 
-if len(LbyR_fit) == 0:
-    print("no points for fit: adjust FIT_MIN and FIT_MAX")
+if len(LbyR_fit) < 2:
+    print("not enough points for fit: adjust FIT_MIN and FIT_MAX")
     print()
     parser.print_help()
     exit(1)
@@ -93,4 +94,4 @@ g.text(x,y, r"$\theta_1=%.5g$" % theta1, [text.halign.boxright])
 g.text(x,y+deltay, r"$\omega_P L/c = %g$" % inva, [text.halign.boxright])
 g.text(x,y+2*deltay, r"$\omega_P = %g \, \mathrm{eV}$" % omegap, [text.halign.boxright])
 
-g.writePDFfile()
+g.writePDFfile(args.output)
