@@ -41,8 +41,8 @@ def __theta_plasma(a):
         (5,0): 26732/1287/pi**2-150368/27027+4937399/5675670*pi**2-1142/63063*pi**4
     }
 
-    if a < 5:
-        raise ValueError("a must be a>=5")
+    if a <= 0 or a > 0.2:
+        raise ValueError("a must be 0 < a <= 0.2")
 
     terms = []
     maximum = 5
@@ -74,11 +74,12 @@ def theta_plasma(a):
     Parameters: a=c/(ω_P*L) (float, list, tuple or numpy array)
     Returns: θ_1, θ_2
 
-    This function only works if a ≲ 10. For a < 5 an exception will be raised.
+    This function only works if 0 < a ≲ 0.2. For a negative or a > 0.2 an
+    exception will be raised.
 
     Reference: Teo, PRD 88, 045019 (2013)
     """
-    if type(a) == float or type(a) == int:
+    if isinstance(a,float):
         return __theta_plasma(a)
 
     theta0 = np.zeros(len(a))
