@@ -1,5 +1,5 @@
 import numpy as np
-from math import exp, fsum, pi, sqrt, log1p, isinf
+from math import exp, fsum, pi, log1p, isinf
 from scipy import interpolate
 from scipy.integrate import quad
 from spence import Li2
@@ -11,6 +11,83 @@ hbar    = 1.0545718e-34   # hbar [J s]
 hbar_eV = 6.582119514e-16 # hbar [eV s / rad]
 inf     = float("inf")    # infinity
 hbarc   = hbar*c          # hbar
+
+
+def __theta_plasma(a):
+    """ a = c/(omegap*L)"""
+    # coefficients λ_ij, Table II, [Teo, PRD 88, 045019 (2013)]
+    λ = {
+        (0,0): -20/pi**2+1/3,
+        (1,0): +56/(3*pi**2)-32/45,
+        (0,1): +56/(3*pi**2)-14/45,
+        (2,0): -398/21/pi**2+401/315,
+        (1,1): -796/21/pi**2+454/315,
+        (0,2): -398/21/pi**2+113/315,
+        (3,0): +410/21/pi**2-37/18+286/6615*pi**2,
+        (2,1): +410/7/pi**2-26/7,
+        (1,2): +410/7/pi**2-16/7,
+        (0,3): +410/21/pi**2-79/126+pi**2/6615,
+        (4,0): -69824/3465/pi**2+35141/10395-28022/99225*pi**2,
+        (3,1): -279296/3465/pi**2+84176/10395-2774/14175*pi**2,
+        (2,2): -139648/1155/pi**2+742/99+32/11025*pi**2,
+        (1,3): -279296/3465/pi**2+43856/10395-46558/1091475*pi**2,
+        (0,4): -69824/3465/pi**2+14981/10395-11962/1091475*pi**2,
+        (5,0): +26732/1287/pi**2-150368/27027+4937399/5675670*pi**2-1142/63063*pi**4,
+        (4,1): +133660/1287/pi**2-35026/2079+773884/567567*pi**2,
+        (3,2): +267320/1287/pi**2-548024/27027+26212/51597*pi**2,
+        (2,3): +267320/1287/pi**2-415724/27027+16826/81081*pi**2,
+        (1,4): 133660/1287/pi**2-256888/27027+19984/81081*pi**2,
+        (0,5): 26732/1287/pi**2-84218/27027+3329/62370*pi**2+8059/2522520*pi**4,
+        (5,0): 26732/1287/pi**2-150368/27027+4937399/5675670*pi**2-1142/63063*pi**4
+    }
+
+    if a < 5:
+        raise ValueError("a must be a>=5")
+
+    terms = []
+    maximum = 5
+    for i in range(maximum+1):
+        for j in range(maximum+1):
+            terms.append(λ.get((i,j),0)*a**(i+j))
+
+    s = fsum(terms)
+
+    R = 100e-6 # exact value is irrelevant
+    L = 200e-9 # exact value is irrelevant
+    E_PR = -pi**3*hbarc*R/(720*L**2)
+
+    omegap = c/(a*L)
+    epsm1 = lambda xi: (omegap/xi)**2
+    pfa = PFA(R, 0, epsm1)
+    E = pfa.E(L)
+    theta0 = E/E_PR
+
+    theta1 = fsum(terms)/theta0
+    return theta0,theta1
+
+
+def theta_plasma(a):
+    """Compute correction to PFA for plasma model at T=0
+    E ≈ -π³ħcR/(720L²)*(θ_1 + θ_2·x), where x=L/R.
+    Note that θ_1, θ_2 depend only on a.
+
+    Parameters: a=c/(ω_P*L) (float, list, tuple or numpy array)
+    Returns: θ_1, θ_2
+
+    This function only works if a ≲ 10. For a < 5 an exception will be raised.
+
+    Reference: Teo, PRD 88, 045019 (2013)
+    """
+    if type(a) == float or type(a) == int:
+        return __theta_plasma(a)
+
+    theta0 = np.zeros(len(a))
+    theta1 = np.zeros(len(a))
+
+    for j,a_j in enumerate(a):
+        theta0[j], theta1[j] = __theta_plasma(a_j)
+
+    return theta0,theta1
 
 
 def psum(f, L, T, epsrel=1e-9):
@@ -46,6 +123,7 @@ def psum(f, L, T, epsrel=1e-9):
 
 
 def epsilonm1_from_file(filename):
+    """Get dielectric function eps(xi)-1 from file"""
     with open(filename, "r") as f:
         content = f.read()
 
@@ -116,7 +194,7 @@ class PFA:
                 return -1,1
             elif model == "plasma":
                 omegap = self.omegap/hbar_eV
-                beta = sqrt(1 + (omegap/(c*kappa))**2)
+                beta = np.sqrt(1 + (omegap/(c*kappa))**2)
                 rTE = (1-beta)/(1+beta)
                 return rTE,1
             else: # drude
@@ -125,7 +203,7 @@ class PFA:
 
         epsm1 = self.epsm1(xi)
 
-        beta = sqrt(1+ (xi/(c*kappa))**2*epsm1 )
+        beta = np.sqrt(1+ (xi/(c*kappa))**2*epsm1 )
 
         rTE = (1-beta)/(1+beta)
         rTM = (epsm1+1-beta)/(epsm1+1+beta)
