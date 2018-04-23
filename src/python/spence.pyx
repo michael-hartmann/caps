@@ -25,7 +25,7 @@ def Li2(double x):
         return 0
     elif x == 1:
         return C
-    elif x < 0.5:
+    elif x <= 0.5:
         for n in range(1,35):
             xn = xn*x
             s += xn/(n*n*(n+1)*(n+1))
