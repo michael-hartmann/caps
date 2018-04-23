@@ -7,11 +7,16 @@ def Li2(double x):
     or Spencer function) for 0 <= x <= 1.
 
     This function uses a series with n^4 convergence, see [1]. In order to
-    improve convergence, we make use of the identity:
+    improve convergence, we make use of the identity
         Li2(x)+Li2(1-x) = pi^2/6 - log(x)*log(1-x)
+    for 0.5<x<1.
 
-    Maximum errors found by comparison with the polylog function from mpmath:
-    relative error 4.44e-16, absolute error 1.11e-15.
+    Special values:
+    Li2(0) = 0
+    Li2(1) = pi²/6 (Basel problem)
+
+    Maximum relative error found by comparison with the polylog function from
+    mpmath was 8.88e-16.
 
     References:
     [1] Robert Morris, The dilogarithm function of a real argument, Math. Comp. 33 (1979)
