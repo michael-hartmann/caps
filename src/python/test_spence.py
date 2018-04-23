@@ -1,3 +1,8 @@
+# Test the implementation of the dilogarithm (or spence function) for
+# parameters 0<x<=1 against the implementation of mpmath.
+#
+# The script outputs the maximum relative error found.
+
 import numpy as np
 import mpmath as mp
 from spence import Li2
