@@ -12,8 +12,8 @@ def Li2(double x):
     for 0.5<x<1.
 
     Special values:
-    Li2(0) = 0
-    Li2(1) = pi²/6 (Basel problem)
+        Li2(0) = 0
+        Li2(1) = pi²/6 (Basel problem)
 
     Maximum relative error found by comparison with the polylog function from
     mpmath was 8.88e-16.
