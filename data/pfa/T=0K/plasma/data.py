@@ -104,7 +104,7 @@ if __name__ == "__main__":
     print("# theta1 = %.14g" % theta1)
     print("#")
 
-    print("# L/R, R, ldim, E*(L+R)/(hbar*c), E_PFA*(L+R)/(hbar*c), E/E_PFA, 1-E/E_PFA, 1-E/E_PFA+theta1*L/R")
+    print("# L/R, R, ldim, E*(L+R)/(hbar*c), E_PFA*(L+R)/(hbar*c), E/E_PFA, 1-E/E_PFA, E/E_PFA-1-theta1*L/R")
 
     for i in range(len(data)):
         LbyR = data[i][0]
