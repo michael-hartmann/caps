@@ -3,7 +3,7 @@ Plasma model at zero temperature
 
 This directory contains data for the Casimir effect using the plasma model
 ϵ(ξ)=1+ωp²/ξ² at zero temperature T=0. The names of the subfolders indicate
-the value a=c/(ωp·L).
+the value ωp·L/c.
 
 The linear correction θ to PFA can be obtained by a paper of Teo [1]
     E ≈ E_PFA ( 1 + θ_1·x )
@@ -24,6 +24,15 @@ Variable parameters:
     ---------------------+--------+-----------
     inverse aspect ratio | x      | x=L/R
     radius               | R      | R=L/x
+
+The directories data10 and data25 contain a lot of points, the other
+directories contain only a few points in order to allow a linear fit to obtain
+θ_2 and θ_3.
+
+Programs:
+    data.py: Process raw data and output one single CSV (needed for fit.py and plot.py)
+    fit.py:  obtain θ_2 and θ_3 from a linear fit
+    plot.py: create a plot
 
 References:
     [1] L. P. Teo, Material dependence of Casimir interaction between a sphere
