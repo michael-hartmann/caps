@@ -12,7 +12,7 @@ parser.add_argument("--xmax", help="maximum of x-axis", type=float, default=1e-1
 parser.add_argument("--ymin", help="minimum of y-axis", type=float, default=2e-5)
 parser.add_argument("--ymax", help="maximum of y-axis", type=float, default=1e-1)
 parser.add_argument("--xtitle", help="label of x-axis", type=str, default=r"$x = L/R$")
-parser.add_argument("--ytitle", help="label of y-axis", type=str, default=r"$1-E/E_\mathrm{PFA}+\theta_1 x$")
+parser.add_argument("--ytitle", help="label of y-axis", type=str, default=r"$E/E_\mathrm{PFA}-1-\theta_1 x$")
 parser.add_argument("-o", "--output", help="output filename", type=str, default="plot.pdf")
 args = parser.parse_args()
 
