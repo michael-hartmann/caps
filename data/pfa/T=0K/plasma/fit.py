@@ -39,6 +39,10 @@ if __name__ == "__main__":
     parser.add_argument("--fit_max", help="points used for fit: FIT_MIN ≤ L/R ≤ FIT_MAX", type=float, default=0.0011)
     args = parser.parse_args()
 
-    print("# L*omegap/c, theta1, theta2, theta3")
+    l = []
     for filename in args.filenames:
-        print("%.10g, %.10g, %.10g, %.10g" % theta_fit(filename, fit_min=args.fit_min, fit_max=args.fit_max))
+        l.append(theta_fit(filename, fit_min=args.fit_min, fit_max=args.fit_max))
+
+    print("# L*omegap/c, theta1, theta2, theta3")
+    for inva, theta1, theta2, theta3 in sorted(l):
+        print("%.10g, %.10g, %.10g, %.10g" % (inva, theta1, theta2, theta3))
