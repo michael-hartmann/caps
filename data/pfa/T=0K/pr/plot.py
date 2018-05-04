@@ -9,6 +9,17 @@ def pfa(LbyR):
     return -np.pi**3/720.*(LbyR+1)/LbyR**2
 
 
+def fit_theta23(LbyR, corr):
+    LbyR_fit = np.array(LbyR)
+    corr_fit = np.array(corr)
+
+    x = np.sqrt(LbyR_fit)
+    y = corr_fit/LbyR_fit**1.5
+    theta3,theta2 = np.polyfit(x,y,1)
+
+    return theta2, theta3
+
+
 if __name__ == "__main__":
     # use LaTeX for Pyx
     text.set(text.LatexRunner)
@@ -31,27 +42,30 @@ if __name__ == "__main__":
         y     = graph.axis.log(title=ytitle, min=ymin, max=ymax)
     )
 
-    g.plot([
-        graph.data.values(x=LbyR, y=correction, title="multipole data"),
-        ], [graph.style.symbol(graph.style.symbol.changecircle, size=0.05, symbolattrs=[color.cmyk.BrickRed])]
+    left, right = 0, 0.001
+    fit_x, fit_y = [], []
+    nofit_x, nofit_y = [], []
+    for i,LbyR_ in enumerate(LbyR):
+        if left <= LbyR_ <= right:
+            fit_x.append(LbyR_)
+            fit_y.append(correction[i])
+        else:
+            nofit_x.append(LbyR_)
+            nofit_y.append(correction[i])
+
+    theta2, theta3 = fit_theta23(fit_x, fit_y)
+    cmd = "y(x)=%.8g*x**1.5 %+.8g*x**2" % (theta2,theta3)
+    title = r"$\theta_2 x^{3/2}+\theta_3 x^2$, $\theta_2=%.2f$, $\theta_3=%.2f$" % (theta2,theta3)
+    g.plot(graph.data.function(cmd, title=title))
+
+    g.plot(
+        graph.data.values(x=fit_x, y=fit_y, title="multipole data (used for fit)"),
+        [graph.style.symbol(graph.style.symbol.triangle, size=0.05, symbolattrs=[color.cmyk.Maroon])]
     )
 
-
-    left, right = 0.0015, 0.007
-    fit_x, fit_y = [], []
-    for i,LbyR in enumerate(LbyR):
-        if left <= LbyR <= right:
-            fit_x.append(LbyR)
-            fit_y.append(correction[i])
-
-    # parameters obtained from fit
-    theta2, theta3 = 2.59928774, -3.54471423
-    cmd = "y(x)=%.8g*x**1.5+%.8g*x**2" % (theta2,theta3)
-    g.plot(graph.data.function(cmd, title=r"$\theta_2 x^{3/2}+\theta_3 x^2$, $\theta_2=2.6$, $\theta_3=-3.54$"))
-
-    g.plot([
-        graph.data.values(x=fit_x, y=fit_y, title=None),
-        ], [graph.style.symbol(graph.style.symbol.changecircle, size=0.05, symbolattrs=[color.cmyk.NavyBlue])]
+    g.plot(
+        graph.data.values(x=nofit_x, y=nofit_y, title="multipole data"),
+        [graph.style.symbol(graph.style.symbol.circle, size=0.05, symbolattrs=[color.cmyk.MidnightBlue])]
     )
 
     # plot correction according to Bimonte et al.
