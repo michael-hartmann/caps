@@ -3,7 +3,7 @@ from data import teo_theta1
 
 # python fit.py */data.csv
 
-def theta_fit(filename, fit_min=0, fit_max=0.0011):
+def theta_fit(filename, fit_min=0, fit_max=0.002001):
     LbyR = []
     corr = []
     with open(filename) as f:
