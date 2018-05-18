@@ -819,8 +819,10 @@ double casimir_kernel_M0_MM_plasma(int i, int j, void *args_)
     const int lmin = args->lmin;
     const int l1 = i+lmin, l2 = j+lmin, m = args->m;
 
-    /* value of integral */
-    /* ratio1 = I_{l1-1/2}/I_{l1+1/2} ; ratio2 = I_{l2-1/2}/I_{l2+1/2} */
+    /* I: value of integral
+     * ratio1 = I_{l1-1/2}/I_{l1+1/2}
+     * ratio2 = I_{l2-1/2}/I_{l2+1/2}
+     */
     double ratio1,ratio2;
     double I = casimir_integrate_plasma(integration_plasma, l1, l2, m, &ratio1, &ratio2);
 
