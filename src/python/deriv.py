@@ -105,9 +105,18 @@ def deriv_backward(y, h, i, accuracy=6, step=1):
     return fsum(terms)/(step*h)**2
 
 
-def deriv(x,y, method="central", deriv=1, accuracy=6, step=lambda x: 1):
+def deriv(x,y, method="central", deriv=1, accuracy=6, step=lambda x: 1, factor=1):
     """compute the first or second derivative. The stepsize dependent on x is
-    given as a callback function"""
+    given as a callback function
+
+    parameters:
+    x: x values (must be equidistant)
+    y: y values
+    deriv: 1 for 1st derivative, 2 for 2nd derivative
+    accuracy: accuracy of finite difference formula, may be 2,4,6,8
+    step: callback function to determine step size
+    factor: factor to multipy the derivative
+    """
     d2x = []
     d2y = []
 
@@ -124,4 +133,4 @@ def deriv(x,y, method="central", deriv=1, accuracy=6, step=lambda x: 1):
         except IndexError:
             pass
 
-    return np.array(d2x), np.array(d2y)
+    return np.array(d2x), factor*np.array(d2y)
