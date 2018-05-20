@@ -46,7 +46,7 @@ class CasimirHT:
 
 
     def elem(self, l1,l2,m):
-        """Matrix elements of the round-trip operator for plasma"""
+        """Matrix elements of the round-trip operator for the plasma model"""
         f1 = sqrt(l1/(l1+1)*l2/(l2+1))
         f2 = sqrt(1-(2*l1+1)/self.alpha*self.ratio(l1))
         f3 = sqrt(1-(2*l2+1)/self.alpha*self.ratio(l2))
@@ -66,6 +66,7 @@ class CasimirHT:
 
 
     def logdetD(self,m,ldim):
+        """logdet(Id-M) for plasma model"""
         D = np.eye(ldim) - self.M(m,ldim)
         s,v = np.linalg.slogdet(D)
         assert(s == 1)
@@ -73,6 +74,8 @@ class CasimirHT:
 
 
     def plasma(self, verbose=False, cutoff=1e-8):
+        """MM contribution to the free energy in the high-temperature limit for
+        the plasma model in units of kb*T"""
         terms = []
         for m in itertools.count():
             v = self.logdetD(m,ldim)
@@ -87,6 +90,8 @@ class CasimirHT:
  
 
     def drude(self, lmax=10000):
+        """Free energy in the high-temperature limit for the plasma model in
+        units of kb*T for Drude"""
         LbyR = self.LbyR
         Z = (1+LbyR)*(1-sqrt(LbyR*(LbyR+2)/(LbyR**2+2*LbyR+1)))
 
