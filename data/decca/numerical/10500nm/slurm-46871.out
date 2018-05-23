@@ -1,0 +1,49 @@
+# starting on alcc116 at Di 15. Mai 17:39:00 CEST 2018
+# compiler: icc
+# compile time: Mar 20 2018 10:17:31
+# compiled on: Linux alcc83 3.16.0-4-amd64 #1 SMP Debian 3.16.51-3 (2017-12-13) x86_64 GNU/Linux
+# LAPACK support: false
+# git HEAD: 6d0c9d2b97f5bf34953fe6036ede8a0e34487fd7
+# git branch: master
+# pid: 1504
+# start time: Tue May 15 17:39:00 2018
+#
+# LbyR = 0.0779047619047619
+# RbyL = 12.8361858190709
+# L = 8.18e-07
+# R = 1.05e-05
+# T = 295
+# cutoff = 1e-10
+# epsrel = 1e-09
+# iepsrel = 1e-08
+# ldim = 129
+# cores = 4
+# alpha = 0.144548506803322
+# filename = /alcc/gpfs1/home/u/hartmmic/libcasimir-dev/data/materials/GoldDalvit.dat
+# model = optical data (xi=0: Drude)
+# plasma = -2.74864644787479 (logdetD(xi=0) for plasma model with omegap=9eV)
+#
+# xi=0, logdetD=-1.60881108661074, t=0.116811
+# xi=9.16131569268329, logdetD=-0.771524635322642, t=1.44287
+# xi=18.3226313853666, logdetD=-0.191276960928602, t=1.26538
+# xi=27.4839470780499, logdetD=-0.0477064872698444, t=1.26583
+# xi=36.6452627707332, logdetD=-0.0119175662773065, t=1.26128
+# xi=45.8065784634164, logdetD=-0.00297935709653948, t=1.25648
+# xi=54.9678941560997, logdetD=-0.000745460820315197, t=1.23073
+# xi=64.129209848783, logdetD=-0.000186845822178017, t=1.17141
+# xi=73.2905255414663, logdetD=-4.68607041413167e-05, t=1.14607
+# xi=82.4518412341496, logdetD=-1.17680458609061e-05, t=1.16128
+# xi=91.6131569268329, logdetD=-2.95690105730334e-06, t=1.00899
+# xi=100.774472619516, logdetD=-7.45010273957627e-07, t=0.933071
+# xi=109.935788312199, logdetD=-1.87786547706202e-07, t=0.887273
+# xi=119.097104004883, logdetD=-4.74172667863302e-08, t=0.822967
+# xi=128.258419697566, logdetD=-1.19884283273627e-08, t=0.768862
+# xi=137.419735390249, logdetD=-3.03348754012681e-09, t=0.780111
+# xi=146.581051082933, logdetD=-7.6905726933502e-10, t=0.747352
+#
+# 670 determinants computed
+# stop time: Tue May 15 17:39:17 2018
+#
+# L/R, L, R, T, ldim, F*(L+R)/(ħc)
+0.07790476190476191, 8.18e-07, 1.05e-05, 295, 129, -5.338880129734375
+# finished at Di 15. Mai 17:39:19 CEST 2018

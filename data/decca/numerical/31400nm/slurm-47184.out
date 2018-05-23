@@ -1,0 +1,51 @@
+# starting on alcc117 at Do 17. Mai 13:34:20 CEST 2018
+# compiler: icc
+# compile time: Mar 20 2018 10:17:31
+# compiled on: Linux alcc83 3.16.0-4-amd64 #1 SMP Debian 3.16.51-3 (2017-12-13) x86_64 GNU/Linux
+# LAPACK support: false
+# git HEAD: 6d0c9d2b97f5bf34953fe6036ede8a0e34487fd7
+# git branch: master
+# pid: 25766
+# start time: Thu May 17 13:34:21 2018
+#
+# LbyR = 0.0227388535031847
+# RbyL = 43.9775910364146
+# L = 7.14e-07
+# R = 3.14e-05
+# T = 295
+# cutoff = 1e-10
+# epsrel = 1e-09
+# iepsrel = 1e-08
+# ldim = 440
+# cores = 4
+# alpha = 0.0444665877810301
+# filename = /alcc/gpfs1/home/u/hartmmic/libcasimir-dev/data/materials/GoldDalvit.dat
+# model = optical data (xi=0: Drude)
+# plasma = -11.1949184277825 (logdetD(xi=0) for plasma model with omegap=9eV)
+#
+# xi=0, logdetD=-6.20059076908492, t=0.527812
+# xi=25.9945654846113, logdetD=-3.23230365065578, t=14.7387
+# xi=51.9891309692227, logdetD=-0.933604206106102, t=15.2018
+# xi=77.983696453834, logdetD=-0.273838604343204, t=15.5687
+# xi=103.978261938445, logdetD=-0.0807100150506557, t=15.6054
+# xi=129.972827423057, logdetD=-0.0238383308732725, t=15.1158
+# xi=155.967392907668, logdetD=-0.00705119517750827, t=15.0105
+# xi=181.961958392279, logdetD=-0.00208998734205304, t=14.8065
+# xi=207.956523876891, logdetD=-0.000619968606153317, t=14.3052
+# xi=233.951089361502, logdetD=-0.00018416855833755, t=13.3849
+# xi=259.945654846113, logdetD=-5.47435087523851e-05, t=12.9265
+# xi=285.940220330725, logdetD=-1.6318045970917e-05, t=12.0442
+# xi=311.934785815336, logdetD=-4.86632270319852e-06, t=11.5369
+# xi=337.929351299947, logdetD=-1.45385333459703e-06, t=10.5842
+# xi=363.923916784559, logdetD=-4.34920129898753e-07, t=9.72515
+# xi=389.91848226917, logdetD=-1.30216869345996e-07, t=8.71159
+# xi=415.913047753781, logdetD=-3.90639163462376e-08, t=7.72302
+# xi=441.907613238393, logdetD=-1.17260836764906e-08, t=7.74111
+# xi=467.902178723004, logdetD=-3.52481537284167e-09, t=7.59227
+#
+# 1306 determinants computed
+# stop time: Thu May 17 13:38:03 2018
+#
+# L/R, L, R, T, ldim, F*(L+R)/(ħc)
+0.02273885350318471, 7.14e-07, 3.14e-05, 295, 440, -63.33677664451415
+# finished at Do 17. Mai 13:38:04 CEST 2018

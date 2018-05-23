@@ -1,0 +1,49 @@
+# starting on alcc117 at Do 17. Mai 13:38:21 CEST 2018
+# compiler: icc
+# compile time: Mar 20 2018 10:17:31
+# compiled on: Linux alcc83 3.16.0-4-amd64 #1 SMP Debian 3.16.51-3 (2017-12-13) x86_64 GNU/Linux
+# LAPACK support: false
+# git HEAD: 6d0c9d2b97f5bf34953fe6036ede8a0e34487fd7
+# git branch: master
+# pid: 27591
+# start time: Thu May 17 13:38:21 2018
+#
+# LbyR = 0.0255414012738854
+# RbyL = 39.1521197007481
+# L = 8.02e-07
+# R = 3.14e-05
+# T = 295
+# cutoff = 1e-10
+# epsrel = 1e-09
+# iepsrel = 1e-08
+# ldim = 392
+# cores = 4
+# alpha = 0.0498105707720018
+# filename = /alcc/gpfs1/home/u/hartmmic/libcasimir-dev/data/materials/GoldDalvit.dat
+# model = optical data (xi=0: Drude)
+# plasma = -9.88624129243752 (logdetD(xi=0) for plasma model with omegap=9eV)
+#
+# xi=0, logdetD=-5.48301791896757, t=0.486485
+# xi=26.0657967782106, logdetD=-2.48681245344479, t=11.9413
+# xi=52.1315935564211, logdetD=-0.624360337767497, t=12.2317
+# xi=78.1973903346317, logdetD=-0.159020235578932, t=12.4436
+# xi=104.263187112842, logdetD=-0.0406635488668591, t=12.2135
+# xi=130.328983891053, logdetD=-0.010416298158369, t=12.0522
+# xi=156.394780669263, logdetD=-0.00267180812231141, t=11.8446
+# xi=182.460577447474, logdetD=-0.000686717335478139, t=11.3134
+# xi=208.526374225685, logdetD=-0.000176643091358044, t=10.9048
+# xi=234.592171003895, logdetD=-4.55029108985141e-05, t=10.2086
+# xi=260.657967782106, logdetD=-1.17288964245734e-05, t=9.54254
+# xi=286.723764560316, logdetD=-3.03177446787596e-06, t=9.01381
+# xi=312.789561338527, logdetD=-7.84035514325727e-07, t=8.17631
+# xi=338.855358116737, logdetD=-2.03124479199108e-07, t=7.32459
+# xi=364.921154894948, logdetD=-5.26935312160594e-08, t=6.49644
+# xi=390.986951673159, logdetD=-1.36810419474018e-08, t=5.99711
+# xi=417.052748451369, logdetD=-3.55900571529158e-09, t=5.9185
+#
+# 1106 determinants computed
+# stop time: Thu May 17 13:40:59 2018
+#
+# L/R, L, R, T, ldim, F*(L+R)/(ħc)
+0.02554140127388535, 8.02e-07, 3.14e-05, 295, 392, -50.33274583004503
+# finished at Do 17. Mai 13:41:00 CEST 2018

@@ -1,0 +1,49 @@
+# starting on alcc118 at Di 15. Mai 17:38:30 CEST 2018
+# compiler: icc
+# compile time: Mar 20 2018 10:17:31
+# compiled on: Linux alcc83 3.16.0-4-amd64 #1 SMP Debian 3.16.51-3 (2017-12-13) x86_64 GNU/Linux
+# LAPACK support: false
+# git HEAD: 6d0c9d2b97f5bf34953fe6036ede8a0e34487fd7
+# git branch: master
+# pid: 1921
+# start time: Tue May 15 17:38:30 2018
+#
+# LbyR = 0.0771428571428571
+# RbyL = 12.962962962963
+# L = 8.1e-07
+# R = 1.05e-05
+# T = 295
+# cutoff = 1e-10
+# epsrel = 1e-09
+# iepsrel = 1e-08
+# ldim = 130
+# cores = 4
+# alpha = 0.143236074270557
+# filename = /alcc/gpfs1/home/u/hartmmic/libcasimir-dev/data/materials/GoldDalvit.dat
+# model = optical data (xi=0: Drude)
+# plasma = -2.7806442448555 (logdetD(xi=0) for plasma model with omegap=9eV)
+#
+# xi=0, logdetD=-1.62709232621701, t=0.118102
+# xi=9.15484012053791, logdetD=-0.789574069151569, t=1.43603
+# xi=18.3096802410758, logdetD=-0.198256123923891, t=1.31599
+# xi=27.4645203616137, logdetD=-0.0500862494925036, t=1.32282
+# xi=36.6193604821516, logdetD=-0.0126747203111631, t=1.31098
+# xi=45.7742006026895, logdetD=-0.00320993162572516, t=1.25952
+# xi=54.9290407232274, logdetD=-0.000813625194763142, t=1.23497
+# xi=64.0838808437653, logdetD=-0.000206590406487657, t=1.1851
+# xi=73.2387209643032, logdetD=-5.24883202343831e-05, t=1.16231
+# xi=82.3935610848411, logdetD=-1.33531902885784e-05, t=1.09665
+# xi=91.5484012053791, logdetD=-3.39894417640996e-06, t=1.04519
+# xi=100.703241325917, logdetD=-8.67552640018577e-07, t=0.994727
+# xi=109.858081446455, logdetD=-2.21525804770988e-07, t=0.906312
+# xi=119.012921566993, logdetD=-5.66659983165685e-08, t=0.845056
+# xi=128.167761687531, logdetD=-1.45135817616648e-08, t=0.771802
+# xi=137.322601808069, logdetD=-3.72032650353241e-09, t=0.760824
+# xi=146.477441928606, logdetD=-9.5548588967231e-10, t=0.752581
+#
+# 674 determinants computed
+# stop time: Tue May 15 17:38:48 2018
+#
+# L/R, L, R, T, ldim, F*(L+R)/(ħc)
+0.07714285714285714, 8.1e-07, 1.05e-05, 295, 130, -5.444770197760418
+# finished at Di 15. Mai 17:38:48 CEST 2018

@@ -1,0 +1,53 @@
+# starting on alcc119 at Sa 19. Mai 15:46:23 CEST 2018
+# compiler: icc
+# compile time: Mar 20 2018 10:17:31
+# compiled on: Linux alcc83 3.16.0-4-amd64 #1 SMP Debian 3.16.51-3 (2017-12-13) x86_64 GNU/Linux
+# LAPACK support: false
+# git HEAD: 6d0c9d2b97f5bf34953fe6036ede8a0e34487fd7
+# git branch: master
+# pid: 26724
+# start time: Sat May 19 15:46:23 2018
+#
+# LbyR = 0.0119694072657744
+# RbyL = 83.5463258785942
+# L = 6.26e-07
+# R = 5.23e-05
+# T = 295
+# cutoff = 1e-10
+# epsrel = 1e-09
+# iepsrel = 1e-08
+# ldim = 836
+# cores = 4
+# alpha = 0.0236556701810074
+# filename = /alcc/gpfs1/home/u/hartmmic/libcasimir-dev/data/materials/GoldDalvit.dat
+# model = optical data (xi=0: Drude)
+# plasma = -22.2533077642246 (logdetD(xi=0) for plasma model with omegap=9eV)
+#
+# xi=0, logdetD=-12.1074637702698, t=1.35858
+# xi=42.8407664208302, logdetD=-7.14732288973297, t=48.6786
+# xi=85.6815328416603, logdetD=-2.36929645786154, t=50.971
+# xi=128.52229926249, logdetD=-0.799395270399028, t=52.1149
+# xi=171.363065683321, logdetD=-0.271380110665862, t=52.5777
+# xi=214.203832104151, logdetD=-0.0923834042215936, t=52.6955
+# xi=257.044598524981, logdetD=-0.0315046138174084, t=51.7899
+# xi=299.885364945811, logdetD=-0.0107671385511398, t=51.988
+# xi=342.726131366641, logdetD=-0.0036829143579606, t=50.811
+# xi=385.566897787471, logdetD=-0.00126156630296953, t=49.0263
+# xi=428.407664208302, logdetD=-0.000432416726565479, t=47.4526
+# xi=471.248430629132, logdetD=-0.000148632510291442, t=45.5984
+# xi=514.089197049962, logdetD=-5.11120025542887e-05, t=44.212
+# xi=556.929963470792, logdetD=-1.76083791576419e-05, t=41.5615
+# xi=599.770729891622, logdetD=-6.07415798185452e-06, t=39.1353
+# xi=642.611496312452, logdetD=-2.09712075267634e-06, t=37.0756
+# xi=685.452262733283, logdetD=-7.25460706941364e-07, t=33.8127
+# xi=728.293029154113, logdetD=-2.51117061741594e-07, t=30.5527
+# xi=771.133795574943, logdetD=-8.70460064460384e-08, t=27.8376
+# xi=813.974561995773, logdetD=-3.02042551904455e-08, t=25.6796
+# xi=856.815328416603, logdetD=-1.04886126652952e-08, t=25.4654
+#
+# 1950 determinants computed
+# stop time: Sat May 19 16:00:43 2018
+#
+# L/R, L, R, T, ldim, F*(L+R)/(ħc)
+0.01196940726577438, 6.26e-07, 5.23e-05, 295, 836, -228.8417013178027
+# finished at Sa 19. Mai 16:00:44 CEST 2018

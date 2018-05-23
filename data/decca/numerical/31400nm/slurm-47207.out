@@ -1,0 +1,49 @@
+# starting on alcc116 at Do 17. Mai 13:38:51 CEST 2018
+# compiler: icc
+# compile time: Mar 20 2018 10:17:31
+# compiled on: Linux alcc83 3.16.0-4-amd64 #1 SMP Debian 3.16.51-3 (2017-12-13) x86_64 GNU/Linux
+# LAPACK support: false
+# git HEAD: 6d0c9d2b97f5bf34953fe6036ede8a0e34487fd7
+# git branch: master
+# pid: 12698
+# start time: Thu May 17 13:38:51 2018
+#
+# LbyR = 0.0256687898089172
+# RbyL = 38.9578163771712
+# L = 8.06e-07
+# R = 3.14e-05
+# T = 295
+# cutoff = 1e-10
+# epsrel = 1e-09
+# iepsrel = 1e-08
+# ldim = 390
+# cores = 4
+# alpha = 0.0500527851953052
+# filename = /alcc/gpfs1/home/u/hartmmic/libcasimir-dev/data/materials/GoldDalvit.dat
+# model = optical data (xi=0: Drude)
+# plasma = -9.83351134289612 (logdetD(xi=0) for plasma model with omegap=9eV)
+#
+# xi=0, logdetD=-5.45414651375077, t=0.460105
+# xi=26.0690345642833, logdetD=-2.45812978721022, t=11.8169
+# xi=52.1380691285665, logdetD=-0.613240125345791, t=12.0741
+# xi=78.2071036928498, logdetD=-0.155187974329887, t=12.1434
+# xi=104.276138257133, logdetD=-0.0394280757598556, t=12.1538
+# xi=130.345172821416, logdetD=-0.0100346461282755, t=11.8537
+# xi=156.4142073857, logdetD=-0.00255729232117478, t=11.5086
+# xi=182.483241949983, logdetD=-0.000653039147277243, t=11.1864
+# xi=208.552276514266, logdetD=-0.000166895283718722, t=10.9603
+# xi=234.621311078549, logdetD=-4.27142685418658e-05, t=10.096
+# xi=260.690345642833, logdetD=-1.09389965862382e-05, t=9.46577
+# xi=286.759380207116, logdetD=-2.80933725681001e-06, t=8.69427
+# xi=312.828414771399, logdetD=-7.21820831679036e-07, t=7.93099
+# xi=338.897449335682, logdetD=-1.85798667160318e-07, t=7.21821
+# xi=364.966483899966, logdetD=-4.78877196649387e-08, t=6.41768
+# xi=391.035518464249, logdetD=-1.23529993673343e-08, t=5.95112
+# xi=417.104553028532, logdetD=-3.19277319891885e-09, t=5.91923
+#
+# 1106 determinants computed
+# stop time: Thu May 17 13:41:27 2018
+#
+# L/R, L, R, T, ldim, F*(L+R)/(ħc)
+0.0256687898089172, 8.06e-07, 3.14e-05, 295, 390, -49.84236246484994
+# finished at Do 17. Mai 13:41:27 CEST 2018

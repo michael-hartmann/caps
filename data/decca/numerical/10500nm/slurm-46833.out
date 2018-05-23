@@ -1,0 +1,52 @@
+# starting on alcc116 at Di 15. Mai 17:33:30 CEST 2018
+# compiler: icc
+# compile time: Mar 20 2018 10:17:31
+# compiled on: Linux alcc83 3.16.0-4-amd64 #1 SMP Debian 3.16.51-3 (2017-12-13) x86_64 GNU/Linux
+# LAPACK support: false
+# git HEAD: 6d0c9d2b97f5bf34953fe6036ede8a0e34487fd7
+# git branch: master
+# pid: 30875
+# start time: Tue May 15 17:33:30 2018
+#
+# LbyR = 0.0634285714285714
+# RbyL = 15.7657657657658
+# L = 6.66e-07
+# R = 1.05e-05
+# T = 295
+# cutoff = 1e-10
+# epsrel = 1e-09
+# iepsrel = 1e-08
+# ldim = 158
+# cores = 4
+# alpha = 0.119290703922622
+# filename = /alcc/gpfs1/home/u/hartmmic/libcasimir-dev/data/materials/GoldDalvit.dat
+# model = optical data (xi=0: Drude)
+# plasma = -3.49123545168501 (logdetD(xi=0) for plasma model with omegap=9eV)
+#
+# xi=0, logdetD=-2.03316543329906, t=0.163678
+# xi=9.03827982192098, logdetD=-1.22078212615826, t=2.08991
+# xi=18.076559643842, logdetD=-0.385306596412492, t=1.95587
+# xi=27.1148394657629, logdetD=-0.122610294912965, t=1.91626
+# xi=36.1531192876839, logdetD=-0.0391393016021162, t=1.93049
+# xi=45.1913991096049, logdetD=-0.01251199451478, t=1.96189
+# xi=54.2296789315259, logdetD=-0.00400422233619153, t=1.89855
+# xi=63.2679587534468, logdetD=-0.00128380258504041, t=1.82878
+# xi=72.3062385753678, logdetD=-0.000411859313113925, t=1.80906
+# xi=81.3445183972888, logdetD=-0.00013230164186873, t=1.75626
+# xi=90.3827982192097, logdetD=-4.25219218062277e-05, t=1.69648
+# xi=99.4210780411307, logdetD=-1.3704038119076e-05, t=1.6351
+# xi=108.459357863052, logdetD=-4.418331527231e-06, t=1.52263
+# xi=117.497637684973, logdetD=-1.42704258754793e-06, t=1.44069
+# xi=126.535917506894, logdetD=-4.61498937432166e-07, t=1.39114
+# xi=135.574197328815, logdetD=-1.49369683160686e-07, t=1.31489
+# xi=144.612477150736, logdetD=-4.84391481415762e-08, t=1.16788
+# xi=153.650756972657, logdetD=-1.57178315953139e-08, t=1.15328
+# xi=162.689036794578, logdetD=-5.10728708112147e-09, t=1.13663
+# xi=171.727316616499, logdetD=-1.66121709480917e-09, t=1.12824
+#
+# 862 determinants computed
+# stop time: Tue May 15 17:34:01 2018
+#
+# L/R, L, R, T, ldim, F*(L+R)/(ħc)
+0.06342857142857143, 6.66e-07, 1.05e-05, 295, 158, -8.063662693469118
+# finished at Di 15. Mai 17:34:02 CEST 2018

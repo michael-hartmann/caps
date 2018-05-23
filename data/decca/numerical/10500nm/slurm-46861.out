@@ -1,0 +1,50 @@
+# starting on alcc118 at Di 15. Mai 17:37:30 CEST 2018
+# compiler: icc
+# compile time: Mar 20 2018 10:17:31
+# compiled on: Linux alcc83 3.16.0-4-amd64 #1 SMP Debian 3.16.51-3 (2017-12-13) x86_64 GNU/Linux
+# LAPACK support: false
+# git HEAD: 6d0c9d2b97f5bf34953fe6036ede8a0e34487fd7
+# git branch: master
+# pid: 1293
+# start time: Tue May 15 17:37:30 2018
+#
+# LbyR = 0.0740952380952381
+# RbyL = 13.4961439588689
+# L = 7.78e-07
+# R = 1.05e-05
+# T = 295
+# cutoff = 1e-10
+# epsrel = 1e-09
+# iepsrel = 1e-08
+# ldim = 135
+# cores = 4
+# alpha = 0.137967724773896
+# filename = /alcc/gpfs1/home/u/hartmmic/libcasimir-dev/data/materials/GoldDalvit.dat
+# model = optical data (xi=0: Drude)
+# plasma = -2.91538065911248 (logdetD(xi=0) for plasma model with omegap=9eV)
+#
+# xi=0, logdetD=-1.70406833037231, t=0.123572
+# xi=9.12893783195637, logdetD=-0.866990178158534, t=1.51811
+# xi=18.2578756639127, logdetD=-0.229048612724809, t=1.41266
+# xi=27.3868134958691, logdetD=-0.0609142719193394, t=1.42367
+# xi=36.5157513278255, logdetD=-0.0162320104780048, t=1.41165
+# xi=45.6446891597818, logdetD=-0.0043292953457586, t=1.38866
+# xi=54.7736269917382, logdetD=-0.00115571528847868, t=1.33528
+# xi=63.9025648236946, logdetD=-0.000309062128661705, t=1.318
+# xi=73.0315026556509, logdetD=-8.27003565736674e-05, t=1.25105
+# xi=82.1604404876073, logdetD=-2.21583671005382e-05, t=1.22344
+# xi=91.2893783195637, logdetD=-5.94023672391217e-06, t=1.13694
+# xi=100.41831615152, logdetD=-1.59684149939535e-06, t=1.07864
+# xi=109.547253983476, logdetD=-4.2943389965705e-07, t=0.982078
+# xi=118.676191815433, logdetD=-1.15691329905636e-07, t=0.945921
+# xi=127.805129647389, logdetD=-3.12075607560755e-08, t=0.869812
+# xi=136.934067479345, logdetD=-8.42508809078752e-09, t=0.85688
+# xi=146.063005311302, logdetD=-2.27891198081624e-09, t=0.848264
+# xi=155.191943143258, logdetD=-6.16789713531895e-10, t=0.843966
+#
+# 728 determinants computed
+# stop time: Tue May 15 17:37:50 2018
+#
+# L/R, L, R, T, ldim, F*(L+R)/(ħc)
+0.0740952380952381, 7.78e-07, 1.05e-05, 295, 135, -5.902110081600133
+# finished at Di 15. Mai 17:37:50 CEST 2018

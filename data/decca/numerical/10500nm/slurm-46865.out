@@ -1,0 +1,49 @@
+# starting on alcc118 at Di 15. Mai 17:38:00 CEST 2018
+# compiler: icc
+# compile time: Mar 20 2018 10:17:31
+# compiled on: Linux alcc83 3.16.0-4-amd64 #1 SMP Debian 3.16.51-3 (2017-12-13) x86_64 GNU/Linux
+# LAPACK support: false
+# git HEAD: 6d0c9d2b97f5bf34953fe6036ede8a0e34487fd7
+# git branch: master
+# pid: 1659
+# start time: Tue May 15 17:38:00 2018
+#
+# LbyR = 0.0756190476190476
+# RbyL = 13.2241813602015
+# L = 7.94e-07
+# R = 1.05e-05
+# T = 295
+# cutoff = 1e-10
+# epsrel = 1e-09
+# iepsrel = 1e-08
+# ldim = 133
+# cores = 4
+# alpha = 0.140605631308659
+# filename = /alcc/gpfs1/home/u/hartmmic/libcasimir-dev/data/materials/GoldDalvit.dat
+# model = optical data (xi=0: Drude)
+# plasma = -2.84662276337541 (logdetD(xi=0) for plasma model with omegap=9eV)
+#
+# xi=0, logdetD=-1.66478667546221, t=0.121875
+# xi=9.14188897624713, logdetD=-0.827202766111423, t=1.45442
+# xi=18.2837779524943, logdetD=-0.213052330214198, t=1.35703
+# xi=27.4256669287414, logdetD=-0.0552242410989638, t=1.3673
+# xi=36.5675559049885, logdetD=-0.0143406048677683, t=1.3797
+# xi=45.7094448812357, logdetD=-0.00372708314193589, t=1.31726
+# xi=54.8513338574828, logdetD=-0.000969505566024466, t=1.30163
+# xi=63.9932228337299, logdetD=-0.000252633317244141, t=1.24497
+# xi=73.1351118099771, logdetD=-6.58715141992087e-05, t=1.22486
+# xi=82.2770007862242, logdetD=-1.71978453552818e-05, t=1.13958
+# xi=91.4188897624713, logdetD=-4.49248535318896e-06, t=1.04979
+# xi=100.560778738718, logdetD=-1.17677086722243e-06, t=1.03087
+# xi=109.702667714966, logdetD=-3.08371282240853e-07, t=0.961417
+# xi=118.844556691213, logdetD=-8.09517378629211e-08, t=0.876568
+# xi=127.98644566746, logdetD=-2.12781005943951e-08, t=0.798903
+# xi=137.128334643707, logdetD=-5.5975127044309e-09, t=0.786683
+# xi=146.270223619954, logdetD=-1.47535150510442e-09, t=0.778715
+#
+# 675 determinants computed
+# stop time: Tue May 15 17:38:18 2018
+#
+# L/R, L, R, T, ldim, F*(L+R)/(ħc)
+0.07561904761904763, 7.94e-07, 1.05e-05, 295, 133, -5.666412050270663
+# finished at Di 15. Mai 17:38:19 CEST 2018

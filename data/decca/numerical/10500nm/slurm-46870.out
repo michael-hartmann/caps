@@ -1,0 +1,49 @@
+# starting on alcc116 at Di 15. Mai 17:39:00 CEST 2018
+# compiler: icc
+# compile time: Mar 20 2018 10:17:31
+# compiled on: Linux alcc83 3.16.0-4-amd64 #1 SMP Debian 3.16.51-3 (2017-12-13) x86_64 GNU/Linux
+# LAPACK support: false
+# git HEAD: 6d0c9d2b97f5bf34953fe6036ede8a0e34487fd7
+# git branch: master
+# pid: 1492
+# start time: Tue May 15 17:39:00 2018
+#
+# LbyR = 0.0775238095238095
+# RbyL = 12.8992628992629
+# L = 8.14e-07
+# R = 1.05e-05
+# T = 295
+# cutoff = 1e-10
+# epsrel = 1e-09
+# iepsrel = 1e-08
+# ldim = 129
+# cores = 4
+# alpha = 0.143892522538448
+# filename = /alcc/gpfs1/home/u/hartmmic/libcasimir-dev/data/materials/GoldDalvit.dat
+# model = optical data (xi=0: Drude)
+# plasma = -2.76456474873042 (logdetD(xi=0) for plasma model with omegap=9eV)
+#
+# xi=0, logdetD=-1.61790571202213, t=0.11804
+# xi=9.1580779066106, logdetD=-0.780487382146219, t=1.38205
+# xi=18.3161558132212, logdetD=-0.19473285726448, t=1.26447
+# xi=27.4742337198318, logdetD=-0.0488812929589322, t=1.26204
+# xi=36.6323116264424, logdetD=-0.0122901660944682, t=1.31543
+# xi=45.790389533053, logdetD=-0.00309245906070399, t=1.24495
+# xi=54.9484674396636, logdetD=-0.000778788228250859, t=1.22475
+# xi=64.1065453462742, logdetD=-0.000196467852692436, t=1.17326
+# xi=73.2646232528848, logdetD=-4.9594142330229e-05, t=1.11123
+# xi=82.4227011594954, logdetD=-1.25354285134135e-05, t=1.09446
+# xi=91.580779066106, logdetD=-3.17018535568662e-06, t=1.01323
+# xi=100.738856972717, logdetD=-8.03938611280665e-07, t=0.935181
+# xi=109.896934879327, logdetD=-2.03956533282526e-07, t=0.936931
+# xi=119.055012785938, logdetD=-5.18348504110852e-08, t=0.838156
+# xi=128.213090692548, logdetD=-1.31904452248863e-08, t=0.767529
+# xi=137.371168599159, logdetD=-3.35931648026933e-09, t=0.753865
+# xi=146.52924650577, logdetD=-8.57192705922078e-10, t=0.743149
+#
+# 671 determinants computed
+# stop time: Tue May 15 17:39:17 2018
+#
+# L/R, L, R, T, ldim, F*(L+R)/(ħc)
+0.07752380952380952, 8.14e-07, 1.05e-05, 295, 129, -5.39142766074298
+# finished at Di 15. Mai 17:39:18 CEST 2018
