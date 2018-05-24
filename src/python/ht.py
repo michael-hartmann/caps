@@ -37,8 +37,8 @@ class CasimirHT:
             I = x^nu*exp(-x)*sqrt(1+(β/2)²-1)/sqrt(1+(β/2)²+1)/nu!
         """
         def integrand(x):
-            f = sqrt(1+(self.beta/x)**2)
-            return exp(nu*log(x)-x-lgamma(1+nu)) * (f-1)/(f+1)
+            f = sqrt(x**2+self.beta**2)
+            return exp(nu*log(x)-x-lgamma(1+nu)) * (f-x)/(f+x)
             
         I1, err1 = quad(integrand, 0, nu)
         I2, err2 = quad(integrand, nu, float("inf"))
