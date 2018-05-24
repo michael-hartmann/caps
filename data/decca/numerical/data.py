@@ -1,3 +1,4 @@
+import argparse
 import numpy as np
 from sys import path,argv
 
@@ -26,11 +27,19 @@ def slurp(filename):
 
 
 if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description="Process raw data")
+    parser.add_argument("--order",    help="order of finite difference formula (2,4,6 or 8)", type=int, default=8)
+    parser.add_argument("--stepsize", help="stepsize", type=int, default=1)
+    parser.add_argument("filenames", nargs="+")
+    args = parser.parse_args()
+    order    = args.order
+    stepsize = args.stepsize
+
     T = 295 # temperature is 295K
 
     drude = []
     plasma = []
-    for filename in argv[1:]:
+    for filename in args.filenames:
         R, L, E_drude, E_plasma = slurp(filename)
         drude .append((L,E_drude))
         plasma.append((L,E_plasma))
@@ -38,14 +47,16 @@ if __name__ == "__main__":
     drude  = np.array(sorted(drude))
     plasma = np.array(sorted(plasma))
 
-    L_drude,  F_drude  = deriv(drude[:,0],  drude[:,1],  accuracy=6, step=lambda x:1, factor=-1)
-    L_plasma, F_plasma = deriv(plasma[:,0], plasma[:,1], accuracy=6, step=lambda x:1, factor=-1)
+    L_drude,  F_drude  = deriv(drude[:,0],  drude[:,1],  accuracy=order, step=lambda x: stepsize, factor=-1)
+    L_plasma, F_plasma = deriv(plasma[:,0], plasma[:,1], accuracy=order, step=lambda x: stepsize, factor=-1)
 
     epsm1 = epsilonm1_from_file("../../materials/GoldDalvit.dat")
     pfa_drude  = PFA(R,T,epsm1,model="Drude")
     pfa_plasma = PFA(R,T,epsm1,model="plasma")
 
     print("# R = %gnm" % (R*1e9))
+    print("# order of finite difference formula: %d" % order)
+    print("# stepsize: %d" % stepsize)
     print("#")
     print("# L (nm), F_Drude/F_PR, F_PFA_Drude/F_PR, F_plasma/F_PR, F_PFA_plasma/F_PR")
     for i,Li in enumerate(L_drude):
