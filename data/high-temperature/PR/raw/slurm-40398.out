@@ -1,0 +1,27 @@
+# starting on alcc125 at Mi 21. Mär 10:45:45 CET 2018
+
+# compiler: icc
+# compile time: Mar 20 2018 10:17:31
+# compiled on: Linux alcc83 3.16.0-4-amd64 #1 SMP Debian 3.16.51-3 (2017-12-13) x86_64 GNU/Linux
+# LAPACK support: false
+# git HEAD: 6d0c9d2b97f5bf34953fe6036ede8a0e34487fd7
+# git branch: master
+# pid: 25982
+# start time: Wed Mar 21 10:45:45 2018
+#
+# LbyR = 4.48651801336982e-05
+# RbyL = 22289
+# L = 1
+# R = 22289
+# high-temperature limit
+# cutoff = 1e-14
+# epsrel = 1e-06
+# iepsrel = 1e-08
+# ldim = 222890
+# cores = 12
+# alpha = 8.97263346792284e-05
+#
+# L/R, L, R, ldim, F_Drude/(kB*T), F_PR/(kB*T)
+4.486518013369824e-05, 1, 22289, 222890, -3348.434924388921, -6690.530345200282
+
+# finished at Mi 21. Mär 11:50:10 CET 2018
