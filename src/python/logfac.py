@@ -1,6 +1,8 @@
 import datetime
 import mpmath as mp
 
+# script to create logfac.c and logfac.h
+
 # set working precision
 mp.dps = 30
 

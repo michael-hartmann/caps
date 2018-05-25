@@ -5,6 +5,9 @@ import numpy as np
 from scipy.integrate import quad
 from scipy.special import ive
 
+# Implementation of the high-temperature case for plasma. this serves as a
+# reference implementation.
+
 hbar_eV = 6.582119514e-16 # hbar [eV s / rad]
 c       = 299792458       # speed of light [m/s]
 
@@ -103,14 +106,14 @@ class CasimirHT:
 
 
 if __name__ == "__main__":
-    omegap = 9
-    R = 10e-6
-    L = 200e-9
+    omegap = 9 # in eV
+    R = 10e-6  # in m
+    L = 200e-9 # in m
     LbyR = L/R
     ldim = int(1+8/LbyR)
 
     ht = CasimirHT(L,R,omegap=omegap)
-    plasma = ht.plasma(verbose=True)
+    plasma = ht.plasma(verbose=True) # free energy / kbT
     drude  = ht.drude()
 
     print()
