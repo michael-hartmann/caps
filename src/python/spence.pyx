@@ -28,13 +28,13 @@ def Li2(double x):
 
     if x == 0:
         return 0
-    elif x == 1:
-        return C
     elif x <= 0.5:
-        for n in range(1,35):
+        for n in range(1,31):
             xn = xn*x
             s += xn/(n*n*(n+1)*(n+1))
 
         return x/(x+1)*(3+s)-2*(x-1)/(x+1)*libc.math.log1p(-x)
+    elif x == 1:
+        return C
     else:
         return C-libc.math.log(x)*libc.math.log1p(-x)-Li2(1-x)
