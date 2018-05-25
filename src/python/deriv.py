@@ -1,6 +1,8 @@
 import numpy as np
 from math import fsum
 
+# compute numerical derivatives
+
 def get_spacing(x, epsrel=1e-12):
     npts = len(x)
 
