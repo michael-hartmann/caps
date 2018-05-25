@@ -42,7 +42,7 @@ if __name__ == "__main__":
         y     = graph.axis.log(title=ytitle, min=ymin, max=ymax)
     )
 
-    left, right = 0, 0.001
+    left, right = 0, 0.02
     fit_x, fit_y = [], []
     nofit_x, nofit_y = [], []
     for i,LbyR_ in enumerate(LbyR):
