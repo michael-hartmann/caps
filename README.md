@@ -156,6 +156,8 @@ Also, libcasimir uses some third-party software:
 
 Publications
 ------------
+ * [Advancing numerics for the Casimir effect to experimentally relevant aspect ratios](https://arxiv.org/abs/1803.05791) (on arxiv)
+   Michael Hartmann, Gert-Ludwig Ingold, Paulo A. Maia Neto
 
  * [Plasma vs Drude modelling of the Casimir force: beyond the proximity force approximation](https://doi.org/10.1103/PhysRevLett.119.043901) (on [arxiv](https://arxiv.org/abs/1705.04196))  
    Michael Hartmann, Gert-Ludwig Ingold, and Paulo A. Maia Neto,  
