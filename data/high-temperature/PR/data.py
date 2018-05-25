@@ -2,8 +2,10 @@ import numpy as np
 from glob import glob
 
 data = []
-for filename in glob("raw-*.out"):
+for filename in glob("raw/*.out"):
     LbyR, L, R, ldim, F_drude, F_PR = np.loadtxt(filename, delimiter=",")
+    if LbyR < 3e-5:
+        print(filename)
     data.append((1/LbyR, F_drude, F_PR))
 
 print("# high-temperature limit for perfect reflectors")
