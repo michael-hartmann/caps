@@ -36,7 +36,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Fit fit parameters θ_1, θ_2, θ_3")
     parser.add_argument("filenames", nargs="+", help="data.csv")
     parser.add_argument("--fit_min", help="points used for fit: FIT_MIN ≤ L/R ≤ FIT_MAX", type=float, default=0)
-    parser.add_argument("--fit_max", help="points used for fit: FIT_MIN ≤ L/R ≤ FIT_MAX", type=float, default=0.0011)
+    parser.add_argument("--fit_max", help="points used for fit: FIT_MIN ≤ L/R ≤ FIT_MAX", type=float, default=0.00201)
     args = parser.parse_args()
 
     l = []
