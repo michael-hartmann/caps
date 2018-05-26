@@ -1,0 +1,50 @@
+# starting on alcc123 at Mi 23. Mai 19:11:57 CEST 2018
+# compiler: icc
+# compile time: Mar 20 2018 10:17:31
+# compiled on: Linux alcc83 3.16.0-4-amd64 #1 SMP Debian 3.16.51-3 (2017-12-13) x86_64 GNU/Linux
+# LAPACK support: false
+# git HEAD: 6d0c9d2b97f5bf34953fe6036ede8a0e34487fd7
+# git branch: master
+# pid: 30331
+# start time: Wed May 23 19:11:57 2018
+#
+# LbyR = 0.0051417004048583
+# RbyL = 194.488188976378
+# L = 7.62e-07
+# R = 0.0001482
+# T = 295
+# cutoff = 4e-10
+# epsrel = 1e-09
+# iepsrel = 1e-08
+# ldim = 1751
+# cores = 7
+# alpha = 0.010230797116043
+# filename = /alcc/gpfs1/home/u/hartmmic/libcasimir-dev/data/materials/GoldDalvit.dat
+# model = optical data (xi=0: Drude)
+# plasma = -54.221118757124 (logdetD(xi=0) for plasma model with omegap=9eV)
+#
+# xi=0, logdetD=-28.7329288354685, t=2.32877
+# xi=120.576772240103, logdetD=-13.349080526576, t=105.53
+# xi=241.153544480206, logdetD=-3.55398413549531, t=110.462
+# xi=361.73031672031, logdetD=-0.963415936028102, t=113.993
+# xi=482.307088960413, logdetD=-0.262538187576892, t=116.685
+# xi=602.883861200516, logdetD=-0.0717054009002085, t=114.674
+# xi=723.460633440619, logdetD=-0.0196154078491968, t=113.825
+# xi=844.037405680722, logdetD=-0.00537743380379858, t=111.137
+# xi=964.614177920826, logdetD=-0.0014754587312977, t=108.124
+# xi=1085.19095016093, logdetD=-0.000405433411768651, t=103.095
+# xi=1205.76772240103, logdetD=-0.000111479999889558, t=97.6295
+# xi=1326.34449464114, logdetD=-3.07397599810819e-05, t=92.9457
+# xi=1446.92126688124, logdetD=-8.4801487933734e-06, t=85.0906
+# xi=1567.49803912134, logdetD=-2.34363983344258e-06, t=77.518
+# xi=1688.07481136144, logdetD=-6.48545345722218e-07, t=69.8575
+# xi=1808.65158360155, logdetD=-1.79616929071394e-07, t=60.5615
+# xi=1929.22835584165, logdetD=-4.98413166064582e-08, t=52.3699
+# xi=2049.80512808175, logdetD=-1.38382505517754e-08, t=52.2743
+#
+# 2421 determinants computed
+# stop time: Wed May 23 19:38:25 2018
+#
+# L/R, L, R, T, ldim, F*(L+R)/(ħc)
+0.0051417004048583, 7.62e-07, 0.0001482, 295, 1751, -1250.991400003222
+# finished at Mi 23. Mai 19:38:26 CEST 2018
