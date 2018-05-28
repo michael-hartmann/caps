@@ -1,0 +1,49 @@
+# starting on alcc115 at So 27. Mai 22:21:03 CEST 2018
+# compiler: icc
+# compile time: Mar 20 2018 10:17:31
+# compiled on: Linux alcc83 3.16.0-4-amd64 #1 SMP Debian 3.16.51-3 (2017-12-13) x86_64 GNU/Linux
+# LAPACK support: false
+# git HEAD: 6d0c9d2b97f5bf34953fe6036ede8a0e34487fd7
+# git branch: master
+# pid: 10702
+# start time: Sun May 27 22:21:03 2018
+#
+# LbyR = 0.00811284046692607
+# RbyL = 123.26139088729
+# L = 8.34e-07
+# R = 0.0001028
+# T = 295
+# cutoff = 4e-10
+# epsrel = 1e-09
+# iepsrel = 1e-08
+# ldim = 1110
+# cores = 4
+# alpha = 0.0160951039234228
+# filename = /alcc/gpfs1/home/u/hartmmic/libcasimir-dev/data/materials/GoldDalvit.dat
+# model = optical data (xi=0: Drude)
+# plasma = -33.811348057338 (logdetD(xi=0) for plasma model with omegap=9eV)
+#
+# xi=0, logdetD=-18.0536645410843, t=2.14666
+# xi=83.8861804643524, logdetD=-7.50006298042601, t=87.6787
+# xi=167.772360928705, logdetD=-1.7813776853359, t=92.7217
+# xi=251.658541393057, logdetD=-0.430262979989197, t=94.6949
+# xi=335.544721857409, logdetD=-0.104391460967727, t=94.0951
+# xi=419.430902321762, logdetD=-0.0253772115093348, t=92.7878
+# xi=503.317082786114, logdetD=-0.00617823314579911, t=91.3057
+# xi=587.203263250467, logdetD=-0.00150731666777123, t=88.4341
+# xi=671.089443714819, logdetD=-0.000368058284311648, t=83.9231
+# xi=754.975624179171, logdetD=-9.00054520609554e-05, t=79.8639
+# xi=838.861804643524, logdetD=-2.20244486673483e-05, t=73.9312
+# xi=922.747985107876, logdetD=-5.40461975796137e-06, t=67.7585
+# xi=1006.63416557223, logdetD=-1.32684601298296e-06, t=60.8946
+# xi=1090.52034603658, logdetD=-3.26327951770457e-07, t=52.404
+# xi=1174.40652650093, logdetD=-8.03603937879372e-08, t=45.4372
+# xi=1258.29270696529, logdetD=-1.98051220029375e-08, t=41.629
+# xi=1342.17888742964, logdetD=-4.89031755986712e-09, t=41.4647
+#
+# 1797 determinants computed
+# stop time: Sun May 27 22:40:55 2018
+#
+# L/R, L, R, T, ldim, F*(L+R)/(ħc)
+0.008112840466926069, 8.34e-07, 0.0001028, 295, 1110, -504.0359344574535
+# finished at So 27. Mai 22:40:55 CEST 2018
