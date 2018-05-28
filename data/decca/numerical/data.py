@@ -69,4 +69,4 @@ if __name__ == "__main__":
 
         F_pfa_drude  = pfa_drude.F(Li)
         F_pfa_plasma = pfa_plasma.F(Li)
-        print("%g, %g, %g, %g, %g" % (Li*1e9, F_drude[i]/F_PR, F_pfa_drude/F_PR, F_plasma[i]/F_PR, F_pfa_plasma/F_PR))
+        print("%g, %.8g, %.8g, %.8g, %.8g" % (Li*1e9, F_drude[i]/F_PR, F_pfa_drude/F_PR, F_plasma[i]/F_PR, F_pfa_plasma/F_PR))
