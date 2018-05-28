@@ -54,7 +54,12 @@ if __name__ == "__main__":
     pfa_drude  = PFA(R,T,epsm1,model="Drude")
     pfa_plasma = PFA(R,T,epsm1,model="plasma")
 
+    print("# optical data by Diego Dalvit, omegap = 9eV")
+    print("# T = %gK" % T)
     print("# R = %gnm" % (R*1e9))
+    print("#")
+    print("# F_PR = -pi³*hbar*c*R/(360*L³)")
+    print("#")
     print("# order of finite difference formula: %d" % order)
     print("# stepsize: %d" % stepsize)
     print("#")
