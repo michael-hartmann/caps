@@ -1,0 +1,48 @@
+# starting on alcc125 at Sa 26. Mai 16:43:20 CEST 2018
+# compiler: icc
+# compile time: Mar 20 2018 10:17:31
+# compiled on: Linux alcc83 3.16.0-4-amd64 #1 SMP Debian 3.16.51-3 (2017-12-13) x86_64 GNU/Linux
+# LAPACK support: false
+# git HEAD: 6d0c9d2b97f5bf34953fe6036ede8a0e34487fd7
+# git branch: master
+# pid: 2564
+# start time: Sat May 26 16:43:21 2018
+#
+# LbyR = 0.0824761904761905
+# RbyL = 12.1247113163972
+# L = 8.66e-07
+# R = 1.05e-05
+# T = 295
+# cutoff = 4e-10
+# epsrel = 1e-09
+# iepsrel = 1e-08
+# ldim = 122
+# cores = 3
+# alpha = 0.152384304064755
+# filename = /alcc/gpfs1/home/u/hartmmic/libcasimir-dev/data/materials/GoldDalvit.dat
+# model = optical data (xi=0: Drude)
+# plasma = -2.56938858882385 (logdetD(xi=0) for plasma model with omegap=9eV)
+#
+# xi=0, logdetD=-1.50638352540051, t=0.0772641
+# xi=9.2001691255556, logdetD=-0.672931470299512, t=1.74796
+# xi=18.4003382511112, logdetD=-0.154578506274223, t=1.63889
+# xi=27.6005073766668, logdetD=-0.0356929922805037, t=1.64084
+# xi=36.8006765022224, logdetD=-0.0082513343973269, t=1.5966
+# xi=46.000845627778, logdetD=-0.00190862631528543, t=1.55778
+# xi=55.2010147533336, logdetD=-0.000441839562292329, t=1.52277
+# xi=64.4011838788892, logdetD=-0.000102461484009707, t=1.45161
+# xi=73.6013530044448, logdetD=-2.37752012692599e-05, t=1.40148
+# xi=82.8015221300004, logdetD=-5.52407175890237e-06, t=1.29139
+# xi=92.001691255556, logdetD=-1.2841991827696e-06, t=1.21232
+# xi=101.201860381112, logdetD=-2.99363633416819e-07, t=1.14546
+# xi=110.402029506667, logdetD=-6.98139219783505e-08, t=1.07012
+# xi=119.602198632223, logdetD=-1.63099908041111e-08, t=0.947903
+# xi=128.802367757778, logdetD=-3.81519819893363e-09, t=0.943475
+# xi=138.002536883334, logdetD=-8.93165103344699e-10, t=0.935836
+#
+# 570 determinants computed
+# stop time: Sat May 26 16:43:41 2018
+#
+# L/R, L, R, T, ldim, F*(L+R)/(ħc)
+0.08247619047619048, 8.660000000000001e-07, 1.05e-05, 295, 122, -4.765057897746281
+# finished at Sa 26. Mai 16:43:41 CEST 2018
