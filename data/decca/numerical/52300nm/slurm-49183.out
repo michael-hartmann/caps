@@ -1,0 +1,46 @@
+# starting on alcc117 at So 27. Mai 23:37:36 CEST 2018
+# compiler: icc
+# compile time: Mar 20 2018 10:17:31
+# compiled on: Linux alcc83 3.16.0-4-amd64 #1 SMP Debian 3.16.51-3 (2017-12-13) x86_64 GNU/Linux
+# LAPACK support: false
+# git HEAD: 6d0c9d2b97f5bf34953fe6036ede8a0e34487fd7
+# git branch: master
+# pid: 10771
+# start time: Sun May 27 23:37:37 2018
+#
+# LbyR = 0.0188527724665392
+# RbyL = 53.0425963488844
+# L = 9.86e-07
+# R = 5.23e-05
+# T = 295
+# cutoff = 1e-10
+# epsrel = 1e-09
+# iepsrel = 1e-08
+# ldim = 531
+# cores = 3
+# alpha = 0.03700784446196
+# filename = /alcc/gpfs1/home/u/hartmmic/libcasimir-dev/data/materials/GoldDalvit.dat
+# model = optical data (xi=0: Drude)
+# plasma = -13.8431885412712 (logdetD(xi=0) for plasma model with omegap=9eV)
+#
+# xi=0, logdetD=-7.55092339375487, t=1.07267
+# xi=43.1321671673725, logdetD=-2.50073735441771, t=31.7587
+# xi=86.264334334745, logdetD=-0.467027522662727, t=32.664
+# xi=129.396501502117, logdetD=-0.0883917637107884, t=32.8096
+# xi=172.52866866949, logdetD=-0.0167796872337093, t=32.3503
+# xi=215.660835836862, logdetD=-0.00318993353574852, t=31.2473
+# xi=258.793003004235, logdetD=-0.000607230790475953, t=29.8045
+# xi=301.925170171607, logdetD=-0.000115831782496432, t=28.304
+# xi=345.05733733898, logdetD=-2.21141690004046e-05, t=26.1557
+# xi=388.189504506352, logdetD=-4.22819844021726e-06, t=23.7914
+# xi=431.321671673725, logdetD=-8.08961192617455e-07, t=21.4982
+# xi=474.453838841097, logdetD=-1.55213267116534e-07, t=18.604
+# xi=517.58600600847, logdetD=-2.97941395843961e-08, t=15.5904
+# xi=560.718173175842, logdetD=-5.72951650573462e-09, t=15.434
+#
+# 1032 determinants computed
+# stop time: Sun May 27 23:43:18 2018
+#
+# L/R, L, R, T, ldim, F*(L+R)/(ħc)
+0.0188527724665392, 9.86e-07, 5.23e-05, 295, 531, -94.07846158091158
+# finished at So 27. Mai 23:43:20 CEST 2018

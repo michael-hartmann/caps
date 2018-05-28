@@ -1,0 +1,49 @@
+# starting on alcc125 at So 27. Mai 23:30:24 CEST 2018
+# compiler: icc
+# compile time: Mar 20 2018 10:17:31
+# compiled on: Linux alcc83 3.16.0-4-amd64 #1 SMP Debian 3.16.51-3 (2017-12-13) x86_64 GNU/Linux
+# LAPACK support: false
+# git HEAD: 6d0c9d2b97f5bf34953fe6036ede8a0e34487fd7
+# git branch: master
+# pid: 26554
+# start time: Sun May 27 23:30:25 2018
+#
+# LbyR = 0.0158699808795411
+# RbyL = 63.0120481927711
+# L = 8.3e-07
+# R = 5.23e-05
+# T = 295
+# cutoff = 1e-10
+# epsrel = 1e-09
+# iepsrel = 1e-08
+# ldim = 631
+# cores = 3
+# alpha = 0.0312441182006399
+# filename = /alcc/gpfs1/home/u/hartmmic/libcasimir-dev/data/materials/GoldDalvit.dat
+# model = optical data (xi=0: Drude)
+# plasma = -16.6013090636771 (logdetD(xi=0) for plasma model with omegap=9eV)
+#
+# xi=0, logdetD=-9.03845586882879, t=1.25522
+# xi=43.0058935105375, logdetD=-3.8431102132201, t=43.3579
+# xi=86.011787021075, logdetD=-0.920403522982448, t=44.8227
+# xi=129.017680531612, logdetD=-0.223898755000827, t=45.6417
+# xi=172.02357404215, logdetD=-0.0546951019080624, t=45.6845
+# xi=215.029467552687, logdetD=-0.0133856465233819, t=44.8461
+# xi=258.035361063225, logdetD=-0.00328052482045292, t=43.8119
+# xi=301.041254573762, logdetD=-0.000805657907003657, t=42.3714
+# xi=344.0471480843, logdetD=-0.000198025273465251, t=39.8701
+# xi=387.053041594837, logdetD=-4.87446115117721e-05, t=37.3902
+# xi=430.058935105375, logdetD=-1.20065134391239e-05, t=34.9545
+# xi=473.064828615912, logdetD=-2.96575658736578e-06, t=32.2176
+# xi=516.07072212645, logdetD=-7.32922123394478e-07, t=29.354
+# xi=559.076615636987, logdetD=-1.81455900065691e-07, t=26.2369
+# xi=602.082509147525, logdetD=-4.49836748814286e-08, t=22.1234
+# xi=645.088402658062, logdetD=-1.11610939469117e-08, t=21.8685
+# xi=688.0942961686, logdetD=-2.77463901212728e-09, t=21.6143
+#
+# 1367 determinants computed
+# stop time: Sun May 27 23:40:02 2018
+#
+# L/R, L, R, T, ldim, F*(L+R)/(ħc)
+0.01586998087954111, 8.3e-07, 5.23e-05, 295, 631, -131.129816268679
+# finished at So 27. Mai 23:40:03 CEST 2018
