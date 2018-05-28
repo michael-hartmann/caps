@@ -1,4 +1,9 @@
+# optical data by Diego Dalvit, omegap = 9eV
+# T = 295K
 # R = 148200nm
+#
+# F_PR = -pi³*hbar*c*R/(360*L³)
+#
 # order of finite difference formula: 8
 # stepsize: 1
 #
