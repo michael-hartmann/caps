@@ -1,0 +1,49 @@
+# starting on alcc124 at Mi 23. Mai 19:38:34 CEST 2018
+# compiler: icc
+# compile time: Mar 20 2018 10:17:31
+# compiled on: Linux alcc83 3.16.0-4-amd64 #1 SMP Debian 3.16.51-3 (2017-12-13) x86_64 GNU/Linux
+# LAPACK support: false
+# git HEAD: 6d0c9d2b97f5bf34953fe6036ede8a0e34487fd7
+# git branch: master
+# pid: 3738
+# start time: Wed May 23 19:38:34 2018
+#
+# LbyR = 0.0053306342780027
+# RbyL = 187.594936708861
+# L = 7.9e-07
+# R = 0.0001482
+# T = 295
+# cutoff = 4e-10
+# epsrel = 1e-09
+# iepsrel = 1e-08
+# ldim = 1689
+# cores = 7
+# alpha = 0.0106047385730586
+# filename = /alcc/gpfs1/home/u/hartmmic/libcasimir-dev/data/materials/GoldDalvit.dat
+# model = optical data (xi=0: Drude)
+# plasma = -52.2834272653399 (logdetD(xi=0) for plasma model with omegap=9eV)
+#
+# xi=0, logdetD=-27.6989240476182, t=2.15718
+# xi=120.599436742612, logdetD=-12.2927418072619, t=98.9438
+# xi=241.198873485224, logdetD=-3.12991144365829, t=104.94
+# xi=361.798310227836, logdetD=-0.811166277268649, t=107.243
+# xi=482.397746970448, logdetD=-0.211278719674734, t=108.07
+# xi=602.99718371306, logdetD=-0.0551486398085654, t=107.809
+# xi=723.596620455672, logdetD=-0.0144173222855134, t=104.996
+# xi=844.196057198284, logdetD=-0.00377714253408644, t=104.052
+# xi=964.795493940896, logdetD=-0.000990414004681732, t=99.9357
+# xi=1085.39493068351, logdetD=-0.000260082765472756, t=96.2396
+# xi=1205.99436742612, logdetD=-6.83426535043002e-05, t=89.4045
+# xi=1326.59380416873, logdetD=-1.80093515104763e-05, t=83.2658
+# xi=1447.19324091134, logdetD=-4.74791356422758e-06, t=77.3863
+# xi=1567.79267765396, logdetD=-1.25397876718961e-06, t=69.3757
+# xi=1688.39211439657, logdetD=-3.31617253022328e-07, t=60.3979
+# xi=1808.99155113918, logdetD=-8.77683711570816e-08, t=51.0762
+# xi=1929.59098788179, logdetD=-2.32739703878908e-08, t=49.4026
+#
+# 2245 determinants computed
+# stop time: Wed May 23 20:02:09 2018
+#
+# L/R, L, R, T, ldim, F*(L+R)/(ħc)
+0.005330634278002699, 7.9e-07, 0.0001482, 295, 1689, -1165.814428063912
+# finished at Mi 23. Mai 20:02:09 CEST 2018
