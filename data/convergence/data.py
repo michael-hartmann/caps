@@ -32,4 +32,4 @@ for key in data:
         print("# eta, ldim, E, (E-E_exact)/E_exac", file=f)
 
         for ldim,eta,E,ratio in data[key]:
-            print("%g, %d, %g, %g" % (eta,ldim,E,ratio), file=f)
+            print("%g, %d, %.14g, %g" % (eta,ldim,E,ratio), file=f)
