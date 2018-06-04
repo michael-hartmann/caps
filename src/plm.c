@@ -396,19 +396,19 @@ double lnPlm_downwards(int l, int m, double x)
 double dlnPlm(int l, int m, double x, double *d2lnPlm)
 {
     double p = 0, q = 0, df;
-    const double c2 = (x+1)*(x-1);
-    const double c  = sqrt(c2);
+    const double c2 = (x+1)*(x-1); /* x²-1 */
+    const double c  = sqrt(c2); /* sqrt(x²-1) */
 
     if(m+1 <= l)
-        p = 1/Plm_continued_fraction(l,m+1,x);
+        p = 1/Plm_continued_fraction(l,m+1,x); /* p = P_l^{m+1}/P_l^m */
 
-    df = p/c + m*x/c2;
+    df = p/c + m*x/c2; /* d/dx log(Plm(x)) */
 
     if(d2lnPlm != NULL)
     {
         if(m+2 <= l)
-            q = p/Plm_continued_fraction(l,m+2,x);
-        *d2lnPlm = (q - p*p - m*(x*x+1)/c2)/c2;
+            q = p/Plm_continued_fraction(l,m+2,x); /* P_l^{m+1}/P_l^m */
+        *d2lnPlm = (q - p*p - m*(x*x+1)/c2)/c2; /* d²/dx² log(Plm(x)) */
     }
 
     return df;
