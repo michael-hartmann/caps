@@ -34,6 +34,7 @@
  * @param [in] R radius of sphere in meter
  * @param [in] T temperature in Kelvin
  * @param [in] filename filename of material description or NULL
+ * @param [in] resume filename of partial output to be resumed
  * @param [in] omegap plasma frequency of the Drude model in eV
  * @param [in] gamma_ relaxation frequency of the Drude model eV
  * @param [in] ldim dimension of vector space
@@ -43,7 +44,7 @@
  * @param [in] verbose flag if verbose
  * @retval object casimir_mpi_t object
  */
-casimir_mpi_t *casimir_mpi_init(double L, double R, double T, char *filename, double omegap, double gamma_, int ldim, double cutoff, double iepsrel, int cores, bool verbose)
+casimir_mpi_t *casimir_mpi_init(double L, double R, double T, char *filename, char *resume, double omegap, double gamma_, int ldim, double cutoff, double iepsrel, int cores, bool verbose)
 {
     casimir_mpi_t *self = xmalloc(sizeof(casimir_mpi_t));
 
@@ -64,9 +65,43 @@ casimir_mpi_t *casimir_mpi_init(double L, double R, double T, char *filename, do
     self->determinants = 0;
 
     TERMINATE(strlen(filename) > 511, "filename too long: %s", filename);
-
     memset(self->filename, '\0', sizeof(self->filename));
     strncpy(self->filename, filename, sizeof(self->filename)-sizeof(char));
+
+    /* cache for resume */
+    self->cache_elems = 0;
+    if(resume && strlen(resume) > 0)
+    {
+        char line[512];
+        FILE *fh = fopen(resume, "r");
+        TERMINATE(fh == NULL, "cannot open %s for reading", resume);
+
+        while(fgets(line, sizeof(line)/sizeof(char), fh) != NULL)
+        {
+            char *p1 = strstr(line, "xi=");
+            char *p2 = strstr(line, "logdetD=");
+            if(strncmp(line, "# xi=", 5) == 0 && p1 && p2)
+            {
+                char *p3;
+
+                p1 += 3;
+                p3 = strchr(p1, ',');
+                TERMINATE(p3 == NULL, "%s has wrong format", resume);
+                *p3 = '\0';
+                self->cache[self->cache_elems][0] = atof(p1); /* xi */
+
+                p2 += 8;
+                p3 = strchr(p2, ',');
+                TERMINATE(p3 == NULL, "%s has wrong format", resume);
+                *p3 = '\0';
+                self->cache[self->cache_elems][1] = atof(p2); /* logdetD */
+
+                self->cache_elems++;
+            }
+        }
+
+        fclose(fh);
+    }
 
     self->tasks[0] = NULL;
     for(int i = 1; i < cores; i++)
@@ -187,7 +222,7 @@ static double integrand(double xi_, void *args)
     casimir_mpi_t *casimir_mpi = (casimir_mpi_t *)args;
     const double xi = xi_/casimir_mpi->alpha;
     const double v = F_xi(xi, casimir_mpi);
-    printf("# xi=%.12g, logdetD=%.15g, t=%g\n", xi, v, now()-t0);
+    printf("# xi=%.15g, logdetD=%.15g, t=%g\n", xi, v, now()-t0);
     return v;
 }
 
@@ -235,6 +270,19 @@ double F_xi(double xi, casimir_mpi_t *casimir_mpi)
     bool verbose = casimir_mpi->verbose;
     const double mmax = sizeof(terms)/sizeof(double);
     const double cutoff = casimir_mpi->cutoff;
+
+    /* look in cache if resumed */
+    for(int j = 0; j < casimir_mpi->cache_elems; j++)
+    {
+        const double xi_cache = casimir_mpi->cache[j][0];
+        //printf("xi_cache=%g vs xi=%g\n", xi_cache, xi);
+
+        if(xi == xi_cache || fabs(1-xi_cache/xi) < 1e-11)
+        {
+            const double logdetD = casimir_mpi->cache[j][1];
+            return logdetD;
+        }
+    }
 
     if(xi == 0)
     {
@@ -330,6 +378,7 @@ void master(int argc, char *argv[], const int cores)
 {
     bool verbose = false, fcqs = false, ht = false;
     char filename[512] = { 0 };
+    char resume[512] = { 0 };
     int ldim = 0;
     double L = 0, R = 0, T = 0, omegap = INFINITY, gamma_ = 0;
     double cutoff = CUTOFF, epsrel = EPSREL, eta = ETA;
@@ -359,13 +408,14 @@ void master(int argc, char *argv[], const int cores)
             { "material",    required_argument, 0, 'f' },
             { "omegap",      required_argument, 0, 'w' },
             { "gamma",       required_argument, 0, 'g' },
+            { "resume",      required_argument, 0, 'r' },
             { 0, 0, 0, 0 }
         };
 
         /* getopt_long stores the option index here. */
         int option_index = 0;
 
-        int c = getopt_long(argc, argv, "R:L:T:l:c:e:E:f:i:w:g:FvVHh", long_options, &option_index);
+        int c = getopt_long(argc, argv, "R:L:T:l:c:e:E:f:i:w:g:r:FvVHh", long_options, &option_index);
 
         /* Detect the end of the options. */
         if(c == -1)
@@ -415,6 +465,9 @@ void master(int argc, char *argv[], const int cores)
                 break;
             case 'v':
                 verbose = true;
+                break;
+            case 'r':
+                strncpy(resume, optarg, sizeof(resume)-sizeof(char));
                 break;
             case 'f':
                 strncpy(filename, optarg, sizeof(filename)-sizeof(char));
@@ -561,7 +614,7 @@ void master(int argc, char *argv[], const int cores)
         printf("# gamma = %.15g\n", gamma_);
     }
 
-    casimir_mpi_t *casimir_mpi = casimir_mpi_init(L, R, T, filename, omegap, gamma_, ldim, cutoff, iepsrel, cores, verbose);
+    casimir_mpi_t *casimir_mpi = casimir_mpi_init(L, R, T, filename, resume, omegap, gamma_, ldim, cutoff, iepsrel, cores, verbose);
 
     /* high-temperature limit */
     if(ht)
@@ -789,7 +842,7 @@ void slave(MPI_Comm master_comm, int rank)
             }
 
             logdet = casimir_logdetD(casimir, xi, m);
-            TERMINATE(isnan(logdet), "L/R=%.10g, xi=%.10g, m=%d, ldim=%d", LbyR, xi, m, ldim);
+            TERMINATE(isnan(logdet), "L/R=%.10g, xi=%.15g, m=%d, ldim=%d", LbyR, xi, m, ldim);
         }
 
         MPI_Isend(&logdet, 1, MPI_DOUBLE, 0, 0, master_comm, &request);
@@ -871,6 +924,9 @@ void usage(FILE *stream)
 "        Compute the Casimir free energy in the high-temperature limit for\n"
 "        perfect reflectors, Drude and plasma model. The value for the plasma\n"
 "        model is only computed if a plasma frequency is given by --omegap.\n"
+"\n"
+"    -r, --resume FILENAME\n"
+"        Resume the computation from a partial output file. (experimental)\n"
 "\n"
 "    -v, --verbose\n"
 "        Also print results for each m\n"
