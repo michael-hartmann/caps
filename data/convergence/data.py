@@ -28,8 +28,8 @@ for key in data:
 
     fname = "conv_%d_%d.csv" % (RbyL,T)
     with open(fname, "w") as f:
-        print("# R=%gµm, T=%dK" % (R*1e6,T), file=f)
+        print("# R=%gµm, R/L=%g, T=%dK" % (R*1e6,RbyL,T), file=f)
         print("# eta, ldim, E, (E-E_exact)/E_exac", file=f)
 
         for ldim,eta,E,ratio in data[key]:
-            print("%g, %d, %g, %g" % (eta,ldim,E,ratio), file=f)
+            print("%g, %d, %.14g, %g" % (eta,ldim,E,ratio), file=f)
