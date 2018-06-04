@@ -853,7 +853,7 @@ void usage(FILE *stream)
 "\n"
 "    -F, --fcqs\n"
 "      Use Fourier-Chebshev quadrature scheme to compute integral over xi. This\n"
-"      is usually faster than using Gauss-Kronrod. (only used when T=0)\n"
+"      is usually faster than using Gauss-Kronrod. (only for T=0; experimental)\n"
 "\n"
 "    -f, --material FILENAME\n"
 "        Filename of the material description file. If set, --omegap and\n"
