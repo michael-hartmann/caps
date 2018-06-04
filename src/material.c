@@ -11,8 +11,8 @@
 
 /* Parse a string in the form of:
  *      key separator value
- * where value is a double. If key or separator is not found, false is
- * returned. If the string is matched successfully, value is set.
+ * where key and value are of type double. If key or separator is not found,
+ * false is returned. If the string is matched successfully, value is set.
  */
 static bool _parse(const char *line, const char *key, const char separator, double *value)
 {
