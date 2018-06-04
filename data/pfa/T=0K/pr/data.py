@@ -40,9 +40,9 @@ for filename in filenames:
                     # L/R, L, R, T, ldim, F*(L+R)/(ħc)
                     LbyR,L,R,T,ldim,E = map(float, line.split(","))
 
-                data.append((LbyR, ldim, E))
+                data.append((LbyR, ldim, E, absrel))
 
-print("# LbyR, T [K], ldim, E*(L+R)/(hbar*c), E_PFA*(L+R)/(hbar*c), E/E_PFA, E/E_PFA-1-theta1*L/R")
-for LbyR, ldim, E in sorted(data, key=lambda x: x[0], reverse=True):
+print("# LbyR, T [K], ldim, E*(L+R)/(hbar*c), E_PFA*(L+R)/(hbar*c), E/E_PFA, E/E_PFA-1-theta1*L/R, relative error")
+for LbyR, ldim, E, absrel in sorted(data, key=lambda x: x[0], reverse=True):
     Epfa = pfa(LbyR)
-    print("%.12g, 0, %d, %.12g, %.12g, %.12g, %.12g" % (LbyR, ldim, E, Epfa, E/Epfa, E/Epfa-1-theta1*LbyR))
+    print("%.12g, 0, %d, %.12g, %.12g, %.12g, %.12g, %.2e" % (LbyR, ldim, E, Epfa, E/Epfa, E/Epfa-1-theta1*LbyR, absrel))
