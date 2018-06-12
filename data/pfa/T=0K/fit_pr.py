@@ -19,7 +19,7 @@ try:
 except:
     pass
 
-data = np.loadtxt("pr/data_eta10.csv", delimiter=",", usecols=(0,3))
+data = np.loadtxt("pr/data.csv", delimiter=",", usecols=(0,3))
 
 xdata = []
 ydata = []
