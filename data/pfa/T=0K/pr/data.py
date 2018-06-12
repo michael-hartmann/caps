@@ -28,6 +28,8 @@ for filename in filenames:
             comment = line.startswith("#")
             if comment:
                 index = line.find("absrel=")
+                if index == -1:
+                    index = line.find("epsrel=")
                 if index > 0:
                     line = line[index+7:]
                     absrel = float(line)
