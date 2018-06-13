@@ -110,11 +110,18 @@ double kernel_logdet(int dim, double (*kernel)(int,int,void *), void *args, int 
 #endif
     {
         /* HODLR */
+
         /* nLeaf is the size (number of rows of the matrix) of the smallest
          * block at the leaf level. The number of levels in the tree is given
          * by log_2(N/nLeaf).
          */
         const unsigned int nLeaf = 100;
+
+        /* Chose relative error to compute the determinant as ~1e-13.
+         * The value of the determinant is estimated using the trace. As
+         *      |log det(Id-M)| < trace(M)
+         * the estimate trace*1e-13 gives actually a lower error than 1e-13.
+         */
         const double tolerance = fmax(1e-13, trace*1e-13);
 
         /* calculate log(det(D)) using HODLR approach */
