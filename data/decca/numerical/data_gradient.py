@@ -29,7 +29,7 @@ def slurp(filename):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Process raw data")
     parser.add_argument("--order",    help="order of finite difference formula (2,4,6 or 8)", type=int, default=8)
-    parser.add_argument("--stepsize", help="stepsize", type=int, default=1)
+    parser.add_argument("--stepsize", help="stepsize (0 for adaptive)", type=int, default=0)
     parser.add_argument("filenames", nargs="+")
     args = parser.parse_args()
     order    = args.order
@@ -47,8 +47,23 @@ if __name__ == "__main__":
     drude  = np.array(sorted(drude))
     plasma = np.array(sorted(plasma))
 
-    L_drude,  dF_drude  = deriv(drude[:,0],  drude[:,1],  accuracy=order, deriv=2, step=lambda x: stepsize, factor=-1)
-    L_plasma, dF_plasma = deriv(plasma[:,0], plasma[:,1], accuracy=order, deriv=2, step=lambda x: stepsize, factor=-1)
+    def step(x):
+        if stepsize > 0:
+            return stepsize
+        else:
+            if x < 200e-9:
+                return 1
+            if x < 400e-9:
+                return 2
+            if x < 600e-9:
+                return 3
+            if x < 800e-9:
+                return 4
+            else:
+                return 5
+
+    L_drude,  dF_drude  = deriv(drude[:,0],  drude[:,1],  accuracy=order, deriv=2, step=step, factor=-1)
+    L_plasma, dF_plasma = deriv(plasma[:,0], plasma[:,1], accuracy=order, deriv=2, step=step, factor=-1)
 
     epsm1 = epsilonm1_from_file("../../materials/GoldDalvit.dat")
     pfa_drude  = PFA(R,T,epsm1,model="Drude")
