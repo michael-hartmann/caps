@@ -15,7 +15,15 @@ parser = argparse.ArgumentParser(description="plot data")
 parser.add_argument("-e", "--experimental",  help="experimental data", type=str)
 parser.add_argument("-n", "--numerical",     help="numerical data", type=str)
 parser.add_argument("-o", "--output", type=str, default="plot.pdf")
+parser.add_argument("-g", "--gradient", action="store_true", default=False)
+parser.add_argument("--ymin", default=None)
+parser.add_argument("--ymax", default=None)
 args = parser.parse_args()
+
+if args.ymin:
+    args.ymin = float(args.ymin)
+if args.ymax:
+    args.ymax = float(args.ymax)
 
 text.set(text.LatexRunner)
 
@@ -28,11 +36,15 @@ if R_exp != R_num:
     print("radii of experimental and numerical data differ: %d (exp) vs %d (num)" % (R_exp, R_num))
     exit(1)
 
+ytitle = r"$F/F_\mathrm{PR}$"
+if args.gradient:
+    ytitle = r"$F'/F'_\mathrm{PR}$"
+
 g = graph.graphxy(
     width = 11,
     key   = graph.key.key(pos="tl"),
-    x     = graph.axis.lin(title=r"$L$ (nm)", min=150, max=800),
-    y     = graph.axis.lin(title=r"$F/F_\mathrm{PR}$")
+    x     = graph.axis.lin(title=r"$L$ (nm)", min=150, max=750),
+    y     = graph.axis.lin(title=ytitle, min=args.ymin, max=args.ymax)
 )
 
 g.plot(graph.data.values(x=experiment[:,0], y=experiment[:,1], title=None), [graph.style.symbol(graph.style.symbol.circle, size=0.07)])
