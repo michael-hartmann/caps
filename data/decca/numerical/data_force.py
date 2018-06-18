@@ -63,10 +63,11 @@ if __name__ == "__main__":
     print("# order of finite difference formula: %d" % order)
     print("# stepsize: %d" % stepsize)
     print("#")
-    print("# L (nm), F_Drude/F_PR, F_PFA_Drude/F_PR, F_plasma/F_PR, F_PFA_plasma/F_PR")
+    print("# L (nm), F_Drude/F_PR, F_PFA_Drude/F_PR, F_plasma/F_PR, F_PFA_plasma/F_PR, 1-F_Drude/F_PFA_Drude, 1-F_Plasma/F_PFA_Plasma")
     for i,Li in enumerate(L_drude):
         F_PR = -np.pi**3*hbarc*R/(360*Li**3)
 
         F_pfa_drude  = pfa_drude.F(Li)
         F_pfa_plasma = pfa_plasma.F(Li)
-        print("%g, %.8g, %.8g, %.8g, %.8g" % (Li*1e9, F_drude[i]/F_PR, F_pfa_drude/F_PR, F_plasma[i]/F_PR, F_pfa_plasma/F_PR))
+        print("%g, %.12g, %.12g, %.12g, %.12g, %.12g, %.12g"
+            % (Li*1e9, F_drude[i]/F_PR, F_pfa_drude/F_PR, F_plasma[i]/F_PR, F_pfa_plasma/F_PR, 1-F_drude[i]/F_pfa_drude, 1-F_plasma[i]/F_pfa_plasma))
