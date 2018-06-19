@@ -109,7 +109,7 @@ double integrand(const double tau, const double l, const double eps, const doubl
 		{
 			const double sum = kahan_sum(terms, i);
             free(terms);
-            return sum*l/(tau*sqrt(alpha));
+            return sum;
 		}
     }
 
