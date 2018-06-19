@@ -14,9 +14,15 @@ def epsilon(xi, omegap, gamma):
     xi_eV = xi*hbar_eV
     return 1+omegap**2/(xi_eV*(xi_eV+gamma))
 
-def integrand(tau, l, L, R, omegap, gamma):
+def integrand(x, xi_, L, R, omegap, gamma):
+    assert x >= xi_
     e = L/R # L/R
-    xi = c/R*l*sqrt(1-tau**2)/tau # xi in rad/s
+
+    tau = sqrt(1-(xi_/x)**2)
+    l   = R/L*tau*x
+
+    #xi = c/R*l*sqrt(1-tau**2)/tau # xi in rad/s
+    xi = xi_*c/L
     eps = epsilon(xi, omegap, gamma)
 
     return clib.integrand(tau, l, eps, e)
@@ -32,8 +38,8 @@ L = 150e-9
 #    dx = 2*e/tau
 #    return dx*integrand(tau, l, L, R, omegap, gamma)
 
-I, err = dblquad(integrand, 0, float("inf"), lambda x: 0, lambda x: 1, args=(L,R,omegap,gamma), epsrel=1e-6)
-f = (1+L/R)/(4*pi)
+I, err = dblquad(integrand, 0, float("inf"), lambda x: x, lambda x: float("inf"), args=(L,R,omegap,gamma), epsrel=1e-5)
+f = R/L*(1+R/L)/(4*pi)
 pfa = -I*f
 err *= f
 print("I", I)
