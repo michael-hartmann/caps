@@ -119,7 +119,7 @@ double integrand(const double xi_, const double x, const double eps, const doubl
 
         if(v == 0 || fabs(v/terms[0]) < 1e-20)
         {
-            const double sum = kahan_sum(terms, i);
+            const double sum = kahan_sum(terms, i+1);
             free(terms);
             return sum;
         }
