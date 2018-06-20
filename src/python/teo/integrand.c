@@ -29,6 +29,9 @@ double integrand(const double xi_, const double x, const double eps, const doubl
         abort();
     }
 
+    /* in the following, we assume that both sphere and plate have the same
+     * dielectric properties */
+
     const double f = xi_/x;
     const double tau2 = (1+f)*(1-f); /* τ² */
     const double tau = sqrt(tau2);   /* τ */
@@ -38,18 +41,18 @@ double integrand(const double xi_, const double x, const double eps, const doubl
 
     const double eps2 = eps*eps; /* ε² */
 
-    const double alpha = f*f; /* 1-τ² */
-    const double alpha2 = alpha*alpha;    /* (1-τ²)² */
-    const double alpha3 = alpha2*alpha;   /* (1-τ²)³ */
+    const double alpha = f*f;           /* 1-τ² */
+    const double alpha2 = alpha*alpha;  /* (1-τ²)² */
+    const double alpha3 = alpha2*alpha; /* (1-τ²)³ */
 
     const double beta2 = f*f*(eps-1)+1; /* β² = ε*(1-τ²)+τ² */
-    const double beta  = sqrt(beta2);    /* β */
-    const double beta3 = beta2*beta;     /* β³ */
+    const double beta  = sqrt(beta2);   /* β */
+    const double beta3 = beta2*beta;    /* β³ */
 
-    const double T0_TE = (beta-1)/(beta+1);
-    const double T0_TM = (eps-beta)/(eps+beta);
-    const double T0_TE2 = T0_TE*T0_TE;
-    const double T0_TM2 = T0_TM*T0_TM;
+    const double rTE = (beta-1)/(beta+1);     /* T0_TE */
+    const double rTM = (eps-beta)/(eps+beta); /* T0_TM */
+    const double rTE2 = rTE*rTE; /* r_TE² */
+    const double rTM2 = rTM*rTM; /* r_TM² */
 
     const double K1_TE = -2*tau/beta;
     const double K1_TM = 2*eps*tau*alpha/(beta*(eps+tau2));
@@ -67,15 +70,15 @@ double integrand(const double xi_, const double x, const double eps, const doubl
     double qs = 1; /* q^s */
     const double q = exp(-2*e*l/tau);
 
-    double T0_TE_2s = 1;
-    double T0_TM_2s = 1;
+    double rTE_2s = 1; /* r_TE^(2s) */
+    double rTM_2s = 1; /* r_TM^(2s) */
 
-    for(int i = 0; i < BUF_ELEMS; i++)
+    for(size_t i = 0; i < BUF_ELEMS; i++)
     {
         qs *= q;
 
-        T0_TE_2s *= T0_TE2; /* T0_TE^(2s) */
-        T0_TM_2s *= T0_TM2; /* T0_TM^(2s) */
+        rTE_2s *= rTE2; /* rTE^(2s) */
+        rTM_2s *= rTM2; /* rTM^(2s) */
 
         const double s = i+1;   /* s */
         const double s2 = s*s;  /* s² */
@@ -84,8 +87,8 @@ double integrand(const double xi_, const double x, const double eps, const doubl
         const double A = e*e*l*tau/3*(s3+2*s) + e/3*((tau2-2)*s2-3*tau*s+2*tau2-1) + (tau4+tau2-12)/(12*l*tau)*s + (1+tau)*alpha/(2*l*tau) - tau*alpha/(3*l*s);
 
         const double B = alpha/(l*tau);
-        const double X_num   = (T0_TE*T0_TM+T0_TM2)*T0_TE_2s - (T0_TE*T0_TM+T0_TE2)*T0_TM_2s;
-        const double X_denom = (T0_TE+T0_TM)*(T0_TE-T0_TM);
+        const double X_num   = (rTE*rTM+rTM2)*rTE_2s - (rTE*rTM+rTE2)*rTM_2s;
+        const double X_denom = (rTE+rTM)*(rTE-rTM);
         const double X = X_num/X_denom;
 
         const double CV = -e*tau/3*(s3+2*s)+alpha/(6*l)*s2 + tau/(2*l)*s + (1-4*tau2)/(12*l);
@@ -101,16 +104,14 @@ double integrand(const double xi_, const double x, const double eps, const doubl
         const double D_TE = DVV*K1_TE*K1_TE + DVJ*K1_TE*W1_TE + DJJ*W1_TE*W1_TE + (s*tau/(2*l)+DV)*K2_TE + DJ*W2_TE + s*tau/l*Y2_TE;
         const double D_TM = DVV*K1_TM*K1_TM + DVJ*K1_TM*W1_TM + DJJ*W1_TM*W1_TM + (s*tau/(2*l)+DV)*K2_TM + DJ*W2_TM + s*tau/l*Y2_TM;
 
-        #if 1
-        const double v = qs/s2*( T0_TE_2s*(A+C_TE+D_TE) + T0_TM_2s*(A+C_TM+D_TM) + X*B );
-        #else
-        const double v = qs/s2*( T0_TE_2s + T0_TM_2s );
-        #endif
+        const double v = qs/s2*( rTE_2s*(A+C_TE+D_TE) + rTM_2s*(A+C_TM+D_TM) + X*B );
+
+        /* only PFA result: const double v = qs/s2*( rTE_2s + rTM_2s ); */
 
         if(isnan(v))
         {
-            printf("v=nan, i=%d, xi_=%.16g, x=%.16g, tau=%.16g, l=%.16g\n", i, xi_, x, tau, l);
-            printf("%g %g %g %g %g %g %g %g %g %g %g\n", qs, s2, T0_TE_2s, T0_TM_2s, A, C_TE, D_TE, C_TM, D_TM, X, B);
+            printf("v=nan, i=%zu, xi_=%.16g, x=%.16g, tau=%.16g, l=%.16g\n", i, xi_, x, tau, l);
+            printf("%g %g %g %g %g %g %g %g %g %g %g\n", qs, s2, rTE_2s, rTM_2s, A, C_TE, D_TE, C_TM, D_TM, X, B);
             abort();
         }
 
