@@ -1,9 +1,31 @@
+/* Implementation of the integrand for the linear correction to PFA for
+ * arbitrary materials at zero temperature.
+ *
+ * Refernce: Teo, Material dependence of Casimir interaction between a sphere
+ * and a plate: First analytic correction beyond proximity force approximation,
+ * https://doi.org/10.1103/PhysRevD.88.045019
+ */
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
 
+double integrand(const double xi_, const double x, const double eps, const double e);
+
 #define BUF_ELEMS 16777216L
 
+/**
+ * @brief Sum elements in array
+ *
+ * Compute sum of the elements of the array input. The function uses Kahan
+ * summation algorithm to reduce numerical error.
+ *
+ * The algorithm is taken from Wikipedia, see
+ * https://en.wikipedia.org/wiki/Kahan_summation_algorithm
+ *
+ * @param [in] input array
+ * @param [in] N length of array
+ * @return sum sum of array elements
+ */
 static double __attribute__((optimize("O0"))) kahan_sum(double input[], size_t N)
 {
     double sum = 0;
@@ -20,6 +42,7 @@ static double __attribute__((optimize("O0"))) kahan_sum(double input[], size_t N
     return sum;
 }
 
+/* see also theory/teo_prd.pdf */
 double integrand(const double xi_, const double x, const double eps, const double e)
 {
     double *terms = malloc(BUF_ELEMS*sizeof(double));
