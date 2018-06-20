@@ -23,7 +23,7 @@ def theta_teo(L,R,omegap=9,gamma=0.035):
     pfa = PFA(R, 0, epsm1)
     E0 = pfa.E(L)*(L+R)/hbarc
 
-    I, err = dblquad(integrand, 0, float("inf"), lambda x: x, lambda x: float("inf"), args=(L,R,omegap,gamma), epsrel=1e-9)
+    I, err = dblquad(integrand, 0, float("inf"), lambda x: x, lambda x: float("inf"), args=(L,R,omegap,gamma), epsrel=1e-11)
     f = R/L*(1+R/L)/(4*pi)
     E1 = -I*f
 
