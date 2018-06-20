@@ -1,5 +1,5 @@
 import ctypes
-from math import sqrt, pi
+from math import pi
 from scipy.integrate import dblquad
 from sys import path
 path.append("..")
@@ -18,6 +18,7 @@ def integrand(x, xi_, L, R, omegap, gamma):
 
     return clib.integrand(xi_, x, eps, L/R)
 
+
 def theta_teo(L,R,omegap=9,gamma=0.035):
     epsm1 = lambda xi: (omegap/hbar_eV)**2/(xi*(xi+gamma/hbar_eV))
     pfa = PFA(R, 0, epsm1)
@@ -35,7 +36,7 @@ def theta_teo(L,R,omegap=9,gamma=0.035):
 if __name__ == "__main__":
     import argparse
 
-    parser = argparse.ArgumentParser(description="Compute PFA in the plane-sphere geometry")
+    parser = argparse.ArgumentParser(description="Compute linear correction to PFA in the plane-sphere geometry for T=0")
     parser.add_argument("--omegap", type=float, default=9, help="plasma frequency in eV")
     parser.add_argument("--gamma", type=float, default=0, help="relaxation frequency in eV")
     parser.add_argument("-L", type=float, required=True, help="separation between sphere and plate in m")
