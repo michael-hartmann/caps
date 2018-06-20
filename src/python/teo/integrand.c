@@ -4,7 +4,7 @@
 
 #define BUF_ELEMS 16777216L
 
-static double kahan_sum(double input[], size_t N)
+static double __attribute__((optimize("O0"))) kahan_sum(double input[], size_t N)
 {
     double sum = 0;
     double c = 0; /* running compensation for lost low-order bits */
@@ -116,7 +116,7 @@ double integrand(const double xi_, const double x, const double eps, const doubl
 
         terms[i] = v;
 
-        if(v == 0 || fabs(v/terms[0]) < 1e-14)
+        if(v == 0 || fabs(v/terms[0]) < 1e-20)
         {
             const double sum = kahan_sum(terms, i);
             free(terms);
