@@ -17,6 +17,8 @@ if __name__ == "__main__":
     #theta1 = -1.8325715+/-0.0000026
     theta1 = -1.8325715
 
+    T = 0
+    L = 150e-9
     omegap_eV = 9
     gamma_eV  = 0.035
 
@@ -32,7 +34,7 @@ if __name__ == "__main__":
         except LookupError:
             pass
 
-    print("# Drude model, T=0K, omegap=%geV, gamma=%gmeV, theta1=%.8g" % (omegap_eV, gamma_eV*1000, theta1))
+    print("# Drude model, T=%gK, L=%gnm, omegap=%geV, gamma=%gmeV, theta1=%.8g" % (T, L*1e9, omegap_eV, gamma_eV*1000, theta1))
     print("# L/R, E/E_PFA-1, E/E_PFA-1-theta1*(L/R)")
     for L,R,T,E in sorted(data):
         pfa = PFA(R, T, epsm1)
