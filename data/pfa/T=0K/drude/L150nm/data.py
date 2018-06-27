@@ -1,5 +1,5 @@
 from glob import glob
-from sys import path
+from sys import path,stderr
 path.append("/cfs/home/h/a/hartmmic/git/libcasimir-dev/src/python")
 from PFA import PFA, hbarc, hbar_eV
 
@@ -32,7 +32,7 @@ if __name__ == "__main__":
             L, R, T, E = slurp(filename)
             data.append((L,R,T,E))
         except LookupError:
-            pass
+            print("%s did not contain result" % filename, file=stderr)
 
     print("# Drude model, T=%gK, L=%gnm, omegap=%geV, gamma=%gmeV, theta1=%.8g" % (T, L*1e9, omegap_eV, gamma_eV*1000, theta1))
     print("# L/R, E/E_PFA-1, E/E_PFA-1-theta1*(L/R)")
