@@ -59,8 +59,8 @@ double lnPlm(int l, int m, double x)
  *
  * The values of Plm are calculated from \f$P_m^m(x)\f$ to \f$P_l^m(x)\f$.
  * The associated Legendre polynomials are calculated using the recurrence
- * relation http://dlmf.nist.gov/14.10.E3 with 
- * \f[ 
+ * relation http://dlmf.nist.gov/14.10.E3 with
+ * \f[
  *      P_m^m(x) = \frac{(2m)!}{2^m m!} (x^2-1)^{m/2}
  * \f]
  * (http://dlmf.nist.gov/14.7.E15).
@@ -127,9 +127,18 @@ static double _Pl1(int l, double x, double sinhxi)
     const double xi = acosh(x);
     /* exp(xi) = exp(acosh(x)) = x+ sqrt((x+1)*(x-1)) */
     const double expxi = x+sinhxi;
+    double Clm;
 
     /* Cl0 */
-    double Clm = exp( lfac(l)-lfac(2*l+2)-M_LOGPI/2+(l+1)*log(4)+lfac(l+1) );
+    {
+        const double sqrtl = sqrt(l);
+        const double k = 1./l;
+        const double k2 = k*k;
+        const double k4 = k2*k2;
+
+        /* asymptotic expansion of Gamma(l+1)/Gamma(l+3/2) with machine precision for l>=100 */
+        Clm = (1 - 3./8*k + 25./128*k2 - 105./1024*k*k2 + 1659./32768*k4 - 6237./262144*k*k4 + 50765./4194304*k2*k4)/sqrtl;
+    }
 
     double sum = 0;
     double sinhxi_m = 1; /* sinh(xi)**m */
