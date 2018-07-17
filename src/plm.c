@@ -192,7 +192,6 @@ static double _fn(int n, double hn[13])
  */
 static double _Pl2(int l, double x)
 {
-    const int N = 14;
     const double v = l+0.5;
     const double xi = acosh(x);
 
@@ -209,7 +208,7 @@ static double _Pl2(int l, double x)
 
     double s = 0;
     double vn = 1; /* v**n */
-    for(int n = 0; n < N; n += 2)
+    for(int n = 0; n < 13; n += 2)
     {
         s += _fn(n,hn)/vn;
         vn *= v*v;
