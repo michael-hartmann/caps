@@ -35,6 +35,7 @@ OBJS = \
     matrix.o \
     misc.o \
     cache.o \
+    psd.o \
     utils.o
 
 TESTS = \

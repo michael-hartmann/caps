@@ -18,6 +18,7 @@
 #include "libcasimir.h"
 #include "material.h"
 #include "misc.h"
+#include "psd.h"
 #include "utils.h"
 
 #define EPSREL 1e-6
@@ -338,6 +339,7 @@ void master(int argc, char *argv[], const int cores)
     char time_str[128];
     time_t rawtime;
     struct tm *info;
+    int psd_order = 0;
 
     #define EXIT() do { _mpi_stop(cores); return; } while(0)
 
@@ -359,13 +361,14 @@ void master(int argc, char *argv[], const int cores)
             { "material",    required_argument, 0, 'f' },
             { "omegap",      required_argument, 0, 'w' },
             { "gamma",       required_argument, 0, 'g' },
+            { "psd",         required_argument, 0, 'P' },
             { 0, 0, 0, 0 }
         };
 
         /* getopt_long stores the option index here. */
         int option_index = 0;
 
-        int c = getopt_long(argc, argv, "R:L:T:l:c:e:E:f:i:w:g:FvVHh", long_options, &option_index);
+        int c = getopt_long(argc, argv, "R:L:T:l:c:e:E:f:i:w:g:P:FvVHh", long_options, &option_index);
 
         /* Detect the end of the options. */
         if(c == -1)
@@ -418,6 +421,9 @@ void master(int argc, char *argv[], const int cores)
                 break;
             case 'f':
                 strncpy(filename, optarg, sizeof(filename)-sizeof(char));
+                break;
+            case 'P':
+                psd_order = atoi(optarg);
                 break;
             case 'V':
                 casimir_build(stdout, NULL);
@@ -474,6 +480,12 @@ void master(int argc, char *argv[], const int cores)
     if(eta <= 0)
     {
         fprintf(stderr, "eta must be positive.\n\n");
+        usage(stderr);
+        EXIT();
+    }
+    if(psd_order < 0)
+    {
+        fprintf(stderr, "order for Pade spectrum decomposition must be positive.\n\n");
         usage(stderr);
         EXIT();
     }
@@ -559,6 +571,8 @@ void master(int argc, char *argv[], const int cores)
         printf("# omegap = %.15g\n", omegap);
         printf("# gamma = %.15g\n", gamma_);
     }
+    if(psd_order)
+        printf("# use Pade spectrum decomposition of order %d\n", psd_order);
 
     casimir_mpi_t *casimir_mpi = casimir_mpi_init(L, R, T, filename, omegap, gamma_, ldim, cutoff, iepsrel, cores, verbose);
 
@@ -676,20 +690,37 @@ void master(int argc, char *argv[], const int cores)
         }
 
 
-        for(size_t n = 1; n < sizeof(v)/sizeof(double); n++)
+        if(psd_order)
         {
-            const double t0 = now();
-            const double xi = n*T_scaled;
-            v[n] = F_xi(xi, casimir_mpi);
-            printf("# xi=%.15g, logdetD=%.15g, t=%g\n", xi, v[n], now()-t0);
+            double psd_xi[psd_order];
+            double psd_eta[psd_order];
 
-            if(fabs(v[n]/v[0]) < epsrel)
+            psd(psd_order, psd_xi, psd_eta);
+
+            for(int n = 0; n < psd_order; n++)
             {
-                v[0] /= 2;
-                F = T_scaled/M_PI*kahan_sum(v, n+1);
-                break;
+                const double xi = psd_xi[n]*T_scaled/(2*M_PI);
+                const double t0 = now();
+                v[n+1] = psd_eta[n]*F_xi(xi, casimir_mpi);
+                printf("# xi=%.15g, logdetD=%.15g, t=%g\n", xi, v[n+1], now()-t0);
             }
         }
+        else
+        {
+            for(size_t n = 1; n < sizeof(v)/sizeof(double); n++)
+            {
+                const double t0 = now();
+                const double xi = n*T_scaled;
+                v[n] = F_xi(xi, casimir_mpi);
+                printf("# xi=%.15g, logdetD=%.15g, t=%g\n", xi, v[n], now()-t0);
+
+                if(fabs(v[n]/v[0]) < epsrel)
+                    break;
+            }
+        }
+
+        v[0] /= 2;
+        F = T_scaled/M_PI*kahan_sum(v, sizeof(v)/sizeof(v[0]));
     }
 
     time(&rawtime);
@@ -872,6 +903,12 @@ void usage(FILE *stream)
 "        Compute the Casimir free energy in the high-temperature limit for\n"
 "        perfect reflectors, Drude and plasma model. The value for the plasma\n"
 "        model is only computed if a plasma frequency is given by --omegap.\n"
+"\n"
+"    -P, --psd N\n"
+"        Instead of the Matsubara spectrum decomposition, use the Pade spectrum\n"
+"        decomposition (PSD) of order N. The PSD might converge faster than the\n"
+"        but there are no checks wether the sum over the PSD frequencies\n"
+"        converged. (experimental)\n"
 "\n"
 "    -v, --verbose\n"
 "        Also print results for each m.\n"
