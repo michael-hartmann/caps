@@ -2,7 +2,6 @@
 
 #include "psd.h"
 #include "utils.h"
-#include "constants.h"
 
 /* prototype for LAPACK routine */
 int dstemr_(char *jobz, char *range, int *n, double *
@@ -37,6 +36,14 @@ static double _eta(int N, double z)
         dB = (2*M+1)*dBm + Bmm/4 + z*dBmm/4; /* derivative of Eq. (12) */
         A = (2*M+1)*Am + z*Amm/4;            /* Eq. (12) */
         B = (2*M+1)*Bm + z*Bmm/4;            /* Eq. (12) */
+
+        /* rescale to prevent overflows */
+        Am /= A;
+        Bm /= A;
+        B  /= A;
+        dBm /= A;
+        dB  /= A;
+        A = 1;
     }
 
     return A/(2*dB);
