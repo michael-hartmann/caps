@@ -79,11 +79,8 @@ endif
 
 # ldflags
 LDFLAGS += -lm -L . -L libhodlr/include/ -lhodlr
-
-ifdef LAPACK
-    LDFLAGS += -lgfortran -lblas -llapack
-    CFLAGS  += -DSUPPORT_LAPACK
-endif
+LDFLAGS += -lgfortran -lblas -llapack
+CFLAGS  += -DSUPPORT_LAPACK
 
 # clang supports various runtime checks. This will slow down the program, but
 # it's a good and easy way to find bugs.
@@ -98,7 +95,9 @@ endif
 OPT = -O3
 
 # link time optimization
-#OPT += -flto
+ifdef LTO
+    OPT += -flto
+endif
 
 # This file contains header dependencies. dependencies and dependencies_test will update this file.
 DEPEND_FILE = .depend
