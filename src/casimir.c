@@ -692,8 +692,12 @@ void master(int argc, char *argv[], const int cores)
 
         if(psd_order)
         {
-            double psd_xi[psd_order];
-            double psd_eta[psd_order];
+            /* Pade spectrum decomposition (PSD), see psd.c and [1]
+             * References:
+             *      [1] Hu, Xu, Yan, J. Chem. Phys. 133, 101106 (2010)
+             */
+            double *psd_xi  = xcalloc(psd_order, sizeof(double));
+            double *psd_eta = xcalloc(psd_order, sizeof(double));
 
             psd(psd_order, psd_xi, psd_eta);
 
@@ -704,9 +708,13 @@ void master(int argc, char *argv[], const int cores)
                 v[n+1] = psd_eta[n]*F_xi(xi, casimir_mpi);
                 printf("# xi=%.15g, logdetD=%.15g, t=%g\n", xi, v[n+1], now()-t0);
             }
+
+            xfree(psd_xi);
+            xfree(psd_eta);
         }
         else
         {
+            /* Matsubara spectrum decomposition (MSD) */
             for(size_t n = 1; n < sizeof(v)/sizeof(double); n++)
             {
                 const double t0 = now();
@@ -719,7 +727,7 @@ void master(int argc, char *argv[], const int cores)
             }
         }
 
-        v[0] /= 2;
+        v[0] /= 2; /* half weight */
         F = T_scaled/M_PI*kahan_sum(v, sizeof(v)/sizeof(v[0]));
     }
 
