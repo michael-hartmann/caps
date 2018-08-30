@@ -4,7 +4,7 @@ import mpmath as mp
 # script to create logfac.c and logfac.h
 
 # set working precision
-mp.dps = 30
+mp.dps = 64
 
 def date():
     today = datetime.date.today()
@@ -12,15 +12,17 @@ def date():
     return d[today.month-1], today.year
 
 
-def log(i,digits=18):
+def log(i,digits=19):
     return mp.nstr(mp.log(i), digits)
 
-def lgamma(i,digits=18):
+def lgamma(i,digits=19):
     return mp.nstr(mp.loggamma(i), digits)
 
 if __name__ == "__main__":
     max_logi = 2**16
-    max_lfac = 2**16
+    max_lfac = 2**10
+
+    assert max_lfac > 1023
 
     header = """/* created by logfac.py */
 #ifndef LOGFAC_H
@@ -73,6 +75,10 @@ double lfac2(unsigned int n) __attribute__ ((pure));
         print("};\n", file=f);
 
         print(r"""
+
+const size_t __lookup_logi_elems = sizeof(lookup_logi)/sizeof(lookup_logi[0]);
+const size_t __lookup_lfac_elems = sizeof(lookup_lfac)/sizeof(lookup_lfac[0]);
+
 /** @brief Calculate \f$\log(n)\f$ for integer n
  *
  * This function uses a lookup table to avoid calling log() for n <= %d
@@ -82,30 +88,35 @@ double lfac2(unsigned int n) __attribute__ ((pure));
  */
 double logi(unsigned int n)
 {
-    size_t lookup_logi_elems = sizeof(lookup_logi)/sizeof(lookup_logi[0]);
-
-    if(n < lookup_logi_elems)
+    if(n < __lookup_logi_elems)
+        /* use lookup table */
         return lookup_logi[n];
     else
+        /* use log function */
         return log(n);
 }
 
-
 /** @brief Calculate \f$\log(n!) = \log(\Gamma(n+1))\f$
  *
- * This function computes the logarithm of the factorial n!. This function uses a loogup table for n >= %d
+ * This function computes the logarithm of the factorial n!. This function uses
+ * a lookup table for n <= %d
  *
  * @param [in] n integer
  * @retval lfac \f$\log(n!)\f$
  */
 double lfac(unsigned int n)
 {
-    size_t lookup_lfac_elems = sizeof(lookup_lfac)/sizeof(lookup_lfac[0]);
-
-    if(n < lookup_lfac_elems)
+    if(n < __lookup_lfac_elems)
         return lookup_lfac[n];
+
+    /* Use Stirling's approximation to compute the logarithm of the factorial
+     * function for integer arguments greater or equal than 1024.
+     */
+    const double C = 0.91893853320467274178; /* log(2*pi)/2 */
+    if(n < __lookup_logi_elems)
+        return (n+0.5)*lookup_logi[n] - n + C + (1./12)/n;
     else
-        return lgamma(1+n);
+        return (n+0.5)*logi(n) - n + C + (1./12)/n;
 }
 """ % (max_logi, max_lfac), file=f)
 
