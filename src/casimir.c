@@ -22,6 +22,7 @@
 
 #define EPSREL 1e-6
 #define CUTOFF 1e-9
+#define LDIM_MIN 20
 #define ETA 7.
 #define IDLE 25
 
@@ -34,7 +35,6 @@
  * @param [in] R radius of sphere in meter
  * @param [in] T temperature in Kelvin
  * @param [in] filename filename of material description or NULL
- * @param [in] resume filename of partial output to be resumed
  * @param [in] omegap plasma frequency of the Drude model in eV
  * @param [in] gamma_ relaxation frequency of the Drude model eV
  * @param [in] ldim dimension of vector space
@@ -44,7 +44,7 @@
  * @param [in] verbose flag if verbose
  * @retval object casimir_mpi_t object
  */
-casimir_mpi_t *casimir_mpi_init(double L, double R, double T, char *filename, char *resume, double omegap, double gamma_, int ldim, double cutoff, double iepsrel, int cores, bool verbose)
+casimir_mpi_t *casimir_mpi_init(double L, double R, double T, char *filename, double omegap, double gamma_, int ldim, double cutoff, double iepsrel, int cores, bool verbose)
 {
     casimir_mpi_t *self = xmalloc(sizeof(casimir_mpi_t));
 
@@ -59,7 +59,7 @@ casimir_mpi_t *casimir_mpi_init(double L, double R, double T, char *filename, ch
     self->cores   = cores;
     self->verbose = verbose;
     self->tasks   = xmalloc(cores*sizeof(casimir_task_t *));
-    self->alpha   = 2*L/(L+R);
+    self->alpha   = 2*L/(L+R); /* used to scale integration if T=0 */
 
     /* number of determinants we have computed */
     self->determinants = 0;
@@ -67,41 +67,6 @@ casimir_mpi_t *casimir_mpi_init(double L, double R, double T, char *filename, ch
     TERMINATE(strlen(filename) > 511, "filename too long: %s", filename);
     memset(self->filename, '\0', sizeof(self->filename));
     strncpy(self->filename, filename, sizeof(self->filename)-sizeof(char));
-
-    /* cache for resume */
-    self->cache_elems = 0;
-    if(resume && strlen(resume) > 0)
-    {
-        char line[512];
-        FILE *fh = fopen(resume, "r");
-        TERMINATE(fh == NULL, "cannot open %s for reading", resume);
-
-        while(fgets(line, sizeof(line)/sizeof(char), fh) != NULL)
-        {
-            char *p1 = strstr(line, "xi=");
-            char *p2 = strstr(line, "logdetD=");
-            if(strncmp(line, "# xi=", 5) == 0 && p1 && p2)
-            {
-                char *p3;
-
-                p1 += 3;
-                p3 = strchr(p1, ',');
-                TERMINATE(p3 == NULL, "%s has wrong format", resume);
-                *p3 = '\0';
-                self->cache[self->cache_elems][0] = atof(p1); /* xi */
-
-                p2 += 8;
-                p3 = strchr(p2, ',');
-                TERMINATE(p3 == NULL, "%s has wrong format", resume);
-                *p3 = '\0';
-                self->cache[self->cache_elems][1] = atof(p2); /* logdetD */
-
-                self->cache_elems++;
-            }
-        }
-
-        fclose(fh);
-    }
 
     self->tasks[0] = NULL;
     for(int i = 1; i < cores; i++)
@@ -271,19 +236,6 @@ double F_xi(double xi, casimir_mpi_t *casimir_mpi)
     const double mmax = sizeof(terms)/sizeof(double);
     const double cutoff = casimir_mpi->cutoff;
 
-    /* look in cache if resumed */
-    for(int j = 0; j < casimir_mpi->cache_elems; j++)
-    {
-        const double xi_cache = casimir_mpi->cache[j][0];
-        //printf("xi_cache=%g vs xi=%g\n", xi_cache, xi);
-
-        if(xi == xi_cache || fabs(1-xi_cache/xi) < 1e-11)
-        {
-            const double logdetD = casimir_mpi->cache[j][1];
-            return logdetD;
-        }
-    }
-
     if(xi == 0)
     {
         /* compute Drude contribution */
@@ -378,7 +330,6 @@ void master(int argc, char *argv[], const int cores)
 {
     bool verbose = false, fcqs = false, ht = false;
     char filename[512] = { 0 };
-    char resume[512] = { 0 };
     int ldim = 0;
     double L = 0, R = 0, T = 0, omegap = INFINITY, gamma_ = 0;
     double cutoff = CUTOFF, epsrel = EPSREL, eta = ETA;
@@ -408,14 +359,13 @@ void master(int argc, char *argv[], const int cores)
             { "material",    required_argument, 0, 'f' },
             { "omegap",      required_argument, 0, 'w' },
             { "gamma",       required_argument, 0, 'g' },
-            { "resume",      required_argument, 0, 'r' },
             { 0, 0, 0, 0 }
         };
 
         /* getopt_long stores the option index here. */
         int option_index = 0;
 
-        int c = getopt_long(argc, argv, "R:L:T:l:c:e:E:f:i:w:g:r:FvVHh", long_options, &option_index);
+        int c = getopt_long(argc, argv, "R:L:T:l:c:e:E:f:i:w:g:FvVHh", long_options, &option_index);
 
         /* Detect the end of the options. */
         if(c == -1)
@@ -465,9 +415,6 @@ void master(int argc, char *argv[], const int cores)
                 break;
             case 'v':
                 verbose = true;
-                break;
-            case 'r':
-                strncpy(resume, optarg, sizeof(resume)-sizeof(char));
                 break;
             case 'f':
                 strncpy(filename, optarg, sizeof(filename)-sizeof(char));
@@ -532,6 +479,12 @@ void master(int argc, char *argv[], const int cores)
     }
     if(strlen(filename))
     {
+        if(strlen(filename) > 511)
+        {
+            fprintf(stderr, "filename %s must not be longer than 511 characters.\n\n", filename);
+            usage(stderr);
+            EXIT();
+        }
         if(access(filename, R_OK) != 0)
         {
             fprintf(stderr, "file %s does not exist or is not readable.\n\n", filename);
@@ -572,13 +525,10 @@ void master(int argc, char *argv[], const int cores)
 
     /* if ldim was not set */
     if(ldim <= 0)
-        ldim = ceil(eta/LbyR);
+        ldim = MAX(LDIM_MIN, ceil(eta/LbyR));
 
     /* disable buffering */
-    fflush(stdin);
-    fflush(stderr);
-    setvbuf(stdout, NULL, _IONBF, 0);
-    setvbuf(stderr, NULL, _IONBF, 0);
+    disable_buffering();
 
     time(&rawtime);
     info = localtime(&rawtime);
@@ -588,9 +538,6 @@ void master(int argc, char *argv[], const int cores)
     printf("# pid: %d\n", (int)getpid());
     printf("# start time: %s\n", time_str);
     printf("#\n");
-
-    /* estimate, cf. eq. (6.33) */
-    const double alpha = 2*LbyR/(1+LbyR);
 
     printf("# LbyR = %.15g\n", LbyR);
     printf("# RbyL = %.15g\n", 1/LbyR);
@@ -605,7 +552,6 @@ void master(int argc, char *argv[], const int cores)
     printf("# iepsrel = %g\n", iepsrel);
     printf("# ldim = %d\n", ldim);
     printf("# cores = %d\n", cores);
-    printf("# alpha = %.15g\n", alpha);
     if(strlen(filename))
         printf("# filename = %s\n", filename);
     else if(!isinf(omegap))
@@ -614,7 +560,7 @@ void master(int argc, char *argv[], const int cores)
         printf("# gamma = %.15g\n", gamma_);
     }
 
-    casimir_mpi_t *casimir_mpi = casimir_mpi_init(L, R, T, filename, resume, omegap, gamma_, ldim, cutoff, iepsrel, cores, verbose);
+    casimir_mpi_t *casimir_mpi = casimir_mpi_init(L, R, T, filename, omegap, gamma_, ldim, cutoff, iepsrel, cores, verbose);
 
     /* high-temperature limit */
     if(ht)
@@ -667,7 +613,7 @@ void master(int argc, char *argv[], const int cores)
         WARN(ier != 0, "ier=%d", ier);
 
         /* free energy for T=0 */
-        F = integral/alpha/M_PI;
+        F = integral/casimir_mpi->alpha/M_PI;
     }
     else
     {
@@ -754,7 +700,7 @@ void master(int argc, char *argv[], const int cores)
     printf("# %d determinants computed\n", casimir_get_determinants(casimir_mpi));
     printf("# stop time: %s\n", time_str);
     printf("#\n");
-    printf("# L/R, L, R, T, ldim, F*(L+R)/(ħc)\n");
+    printf("# L/R, L, R, T, ldim, E*(L+R)/(ħc)\n");
     printf("%.16g, %.16g, %.16g, %.16g, %d, %.16g\n", LbyR, L, R, T, ldim, F);
 
     if(material != NULL)
@@ -858,19 +804,21 @@ void usage(FILE *stream)
 {
     fprintf(stream,
 "Usage: casimir [OPTIONS]\n\n"
-"This program computes the free Casimir energy F(T,L/R) for the plane-sphere\n"
-"geometry for L, R and T. The output is in units of ħc/(L+R).\n"
+"This program computes the free Casimir energy E(T,L,R) for the plane-sphere\n"
+"geometry. L denotes the smallest separation between sphere and plane, R is\n"
+"the radius of the sphere, and T is the temperature.\n"
 "\n"
 "This program uses MPI for parallization and needs at least two cores to run.\n"
 "\n"
-"The free eenergy at T=0 is calculated using integration:\n"
-"   F(L/R) = \\int_0^\\infty dξ logdet D(ξ)\n"
-"The integration is performed either using an adaptive Gauß-Kronrod\n"
-"quadrature or a Fourier-Chebshev quadrature scheme. The integrand decays\n"
-"exponentially, c.f. Eq. (6.33) of [1].\n"
+"The free energy at T=0 is calculated using integration:\n"
+"   E(L,R,T=0) = ∫dξ log det(1-M(ξ)),  ξ=0...∞,\n"
+"where M denotes the round-trip operator. The integration is performed either\n"
+"using an adaptive Gauß-Kronrod quadrature or a Fourier-Chebshev quadrature\n"
+"scheme.\n"
 "\n"
 "References:\n"
-"  [1] Hartmann, Negative Casimir entropies in the plane-sphere geometry, 2014\n"
+"  [1] Hartmann, The Casimir effect in the plane-sphere geometry and the\n"
+"      Proximity Force Approximation, phd thesis, 2018\n"
 "\n"
 "Mandatory options:\n"
 "    -L L\n"
@@ -881,10 +829,10 @@ void usage(FILE *stream)
 "\n"
 "Further options:\n"
 "    -T, --temperature TEMPERATURE\n"
-"        Set temperature to TEMPERATURE (default: 0; in K)\n"
+"        Set temperature to TEMPERATURE. (default: 0; in K)\n"
 "\n"
 "    -l, --ldim LDIM\n"
-"        Set ldim to the value LDIM. (default: ldim=ceil(eta*R/L))\n"
+"        Set ldim to the value LDIM. (default: ldim=max(%d, ceil(eta*R/L)))\n"
 "\n"
 "    --eta ETA\n"
 "        Set eta to the value ETA. eta is used to determine ldim if not set\n"
@@ -892,17 +840,17 @@ void usage(FILE *stream)
 "\n"
 "    -c, --cutoff CUTOFF\n"
 "        Stop summation over m for a given value of ξ if\n"
-"            logdet(D^m(ξ))/logdet(D^0(ξ) < CUTOFF\n"
+"            logdet(1-M^m(ξ))/logdet(1-M^0(ξ) < CUTOFF.\n"
 "        (default: %g)\n"
 "\n"
 "    -e, --epsrel EPSREL\n"
 "       Request relative accuracy of EPSREL for integration over xi if T=0,\n"
-"       or stop criterion logdetD(n)/logdetD(n=0) < EPSREL for T>0\n"
+"       or stop criterion logdetD(n)/logdetD(n=0) < EPSREL for T>0.\n"
 "       (default: %g)\n"
 "\n"
 "    -i, --iepsrel IEPSREL\n"
 "       Set relative accuracy of integration over k for the matrix elements\n"
-"       to IEPSREL (default: %g)\n"
+"       to IEPSREL. (default: %g)\n"
 "\n"
 "    -F, --fcqs\n"
 "      Use Fourier-Chebshev quadrature scheme to compute integral over xi. This\n"
@@ -925,16 +873,13 @@ void usage(FILE *stream)
 "        perfect reflectors, Drude and plasma model. The value for the plasma\n"
 "        model is only computed if a plasma frequency is given by --omegap.\n"
 "\n"
-"    -r, --resume FILENAME\n"
-"        Resume the computation from a partial output file. (experimental)\n"
-"\n"
 "    -v, --verbose\n"
-"        Also print results for each m\n"
+"        Also print results for each m.\n"
 "\n"
 "    -V, --version\n"
-"        Print information about build to stdout and exit\n"
+"        Print information about build to stdout and exit.\n"
 "\n"
 "    -h, --help\n"
-"        Show this help\n",
-    ETA, CUTOFF, EPSREL, CASIMIR_EPSREL);
+"        Show this help.\n",
+    LDIM_MIN, ETA, CUTOFF, EPSREL, CASIMIR_EPSREL);
 }
