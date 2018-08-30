@@ -1,4 +1,4 @@
-.PHONY: clean doc casimir_logdetD casimir casimir_tests casimir_scalar matrix_elems dependencies dependencies_test
+.PHONY: clean doc casimir_logdetD casimir casimir_tests dependencies dependencies_test
 all: casimir casimir_logdetD
 
 # get head and branch from git, and machine name
@@ -121,15 +121,6 @@ libhodlr.so: libhodlr/src/hodlr.cpp libhodlr/include/hodlr.h
 casimir_logdetD: libcasimir.so
 	$(CC) $(CFLAGS) $(OPT) casimir_logdetD.c -lcasimir $(LDFLAGS) -o casimir_logdetD
 
-casimir_scalar: libcasimir.so
-	$(CC) -fopenmp $(CFLAGS) $(OPT) casimir_scalar.c -lcasimir $(LDFLAGS) -o casimir_scalar
-
-matrix_elems: libcasimir.so
-	$(CC) $(CFLAGS) $(OPT) matrix_elems.c -lcasimir $(LDFLAGS) -o matrix_elems
-
-integrate_K: libcasimir.so
-	$(CC) $(CFLAGS) $(OPT) integrate_K.c -lcasimir $(LDFLAGS) -o integrate_K
-
 casimir_tests: $(TESTS) libcasimir.so
 	$(CC) $(CFLAGS) $(OPT) $(TESTS) -lcasimir $(LDFLAGS) -o casimir_tests
 	./casimir_tests
@@ -138,7 +129,7 @@ casimir: libcasimir.so
 	$(MPICC) $(CFLAGS) $(OPT) casimir.c -lcasimir $(LDFLAGS) -o casimir
 
 clean:
-	rm -f casimir_tests casimir_logdetD casimir_scalar casimir integrate_K matrix_elems *.o *.so cquadpack/src/*.o tests/*.o $(DEPEND_FILE)
+	rm -f casimir_tests casimir_logdetD casimir *.o *.so cquadpack/src/*.o tests/*.o $(DEPEND_FILE)
 	rm -rf doc
 
 doc:
