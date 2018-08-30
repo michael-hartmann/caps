@@ -10,6 +10,7 @@ int dstemr_(char *jobz, char *range, int *n, double *
      int *nzc, int *isuppz, int *tryrac, double *work, 
     int *lwork, int *iwork, int *liwork, int *info);
 
+/* Hu, Xu, Yan, J. Chem. Phys. 133, 101106 (2010) */
 
 /* compute expansion coefficients eta according to the paragraph around
  * equations (12) and (13). */
@@ -96,7 +97,7 @@ int psd(int N, double xi[N], double eta[N])
     for(int j = 1; j <= ndim; j++)
         e[j-1] = 1/sqrt((2*j+1)*(2*j+3)); /* Eq. (14) */
 
-    /* compute eigenvalues */
+    /* compute eigenvalues of a real, symmetric, tridiagonal matrix */
     dstemr_(&jobz, &range, &ndim, d, e, &vl, &vu, &il, &iu, &m, w, z, &ldz, &nzc, isuppz, &tryrac, work, &lwork, iwork, &liwork, &info);
 
     if(info != 0)
