@@ -281,10 +281,8 @@ double besselI1(double x)
         z = chbevl(y,A1,29)*z*exp(z);
     }
     else
-    {
         z = exp(z)*chbevl(32.0/z-2.0,B1,25)/sqrt(z);
-    }
-    if( x < 0.0 )
+    if(x < 0)
         z = -z;
     return z;
 }
@@ -377,11 +375,12 @@ double besselI(int n, double x)
  * @brief Calculate \f$I_{\nu+1/2}(x)/I_{\nu+3/2}(x)\f$
  *
  * Compute the ratio of the modified Bessel functions of the first kind
- * \f$I_{\nu+1/2}(x)/I_{\nu+3/2}(x)\f$ using a continued fraction.
+ * \f$I_{\nu+1/2}(x)/I_{\nu+3/2}(x)\f$ using a continued fraction, see
+ * https://dlmf.nist.gov/10.33.
  *
  * @param nu order
  * @param x argument
- * @retval ratio
+ * @retval ratio \f$I_{\nu+1/2}(x)/I_{\nu+3/2}(x)\f$
  */
 double bessel_continued_fraction(int nu, double x)
 {
@@ -448,7 +447,7 @@ double bessel_lnKnu(int nu, double x)
  * \f$I_{\nu+1/2}(x)\f$ and \f$K_{\nu+1/2}(x)\f$. The results are saved in
  * lnInu_p and lnKnu_p.
  *
- * If lnInu_p or lnKnu_p is NULL, the pointer is not accessed.
+ * If lnInu_p or lnKnu_p is NULL, the variable is not referenced.
  *
  * @param [in] nu order
  * @param [in] x argument
