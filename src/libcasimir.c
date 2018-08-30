@@ -220,12 +220,6 @@ void casimir_free(casimir_t *self)
  */
 void casimir_build(FILE *stream, const char *prefix)
 {
-    #ifdef SUPPORT_LAPACK
-    char support_lapack[] = "true";
-    #else
-    char support_lapack[] = "false";
-    #endif
-
     if(prefix == NULL)
         prefix = "";
 
@@ -235,8 +229,6 @@ void casimir_build(FILE *stream, const char *prefix)
     #ifdef MACHINE
     fprintf(stream, "%scompiled on: %s\n", prefix, MACHINE);
     #endif
-
-    fprintf(stream, "%sLAPACK support: %s\n", prefix, support_lapack);
 
     #ifdef GIT_HEAD
     fprintf(stream, "%sgit HEAD: %s\n", prefix, GIT_HEAD);
@@ -265,11 +257,9 @@ void casimir_info(casimir_t *self, FILE *stream, const char *prefix)
     switch(self->detalg)
     {
         case DETALG_HODLR:    detalg_str = "HODLR";    break;
-        #ifdef SUPPORT_LAPACK
         case DETALG_LU:       detalg_str = "LU";       break;
         case DETALG_QR:       detalg_str = "QR";       break;
         case DETALG_CHOLESKY: detalg_str = "CHOLESKY"; break;
-        #endif
         default:              detalg_str = "unknown";
     }
 
@@ -354,13 +344,9 @@ int casimir_set_detalg(casimir_t *self, detalg_t detalg)
         self->detalg = detalg;
         return 1;
     }
-#ifdef SUPPORT_LAPACK
+
     self->detalg = detalg;
     return 1;
-#else
-    return 0;
-#endif
-
 }
 
 /**
