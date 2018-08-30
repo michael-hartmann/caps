@@ -36,8 +36,6 @@
  *      \Lambda_{\ell_1,\ell_2}^{(m)} = \frac{2 N_{\ell_1,m} N_{\ell_2,m}}{\sqrt{\ell_1 (\ell_1+1) \ell_2 (\ell_2+1)}}
  * \f]
  *
- * The values are computed using the lgamma function to avoid overflows.
- *
  * Symmetries: \f$\Lambda_{\ell_1,\ell_2}^{(m)} = \Lambda_{\ell_2,\ell_1}^{(m)}\f$
  *
  * @param [in]  l1 l1>0
