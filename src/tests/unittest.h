@@ -22,6 +22,7 @@ typedef struct {
     const char *func;
     const char *desc;
     double eps;
+    double start;
 } unittest_t;
 
 void unittest_init(unittest_t *test, const char *func, const char *desc, double eps);
