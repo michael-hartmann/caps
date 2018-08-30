@@ -7,7 +7,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <time.h>
 #include <sys/types.h>
 #include <unistd.h>
 
@@ -337,8 +336,6 @@ void master(int argc, char *argv[], const int cores)
     double iepsrel = CASIMIR_EPSREL;
     material_t *material = NULL;
     char time_str[128];
-    time_t rawtime;
-    struct tm *info;
     int psd_order = 0;
 
     #define EXIT() do { _mpi_stop(cores); return; } while(0)
@@ -542,9 +539,7 @@ void master(int argc, char *argv[], const int cores)
     /* disable buffering */
     disable_buffering();
 
-    time(&rawtime);
-    info = localtime(&rawtime);
-    strftime(time_str, sizeof(time_str),"%c", info);
+    time_as_string(time_str, sizeof(time_str)/sizeof(time_str[0]));
 
     casimir_build(stdout, "# ");
     printf("# pid: %d\n", (int)getpid());
@@ -731,9 +726,7 @@ void master(int argc, char *argv[], const int cores)
         F = T_scaled/M_PI*kahan_sum(v, sizeof(v)/sizeof(v[0]));
     }
 
-    time(&rawtime);
-    info = localtime(&rawtime);
-    strftime(time_str, sizeof(time_str), "%c", info);
+    time_as_string(time_str, sizeof(time_str)/sizeof(time_str[0]));
 
     printf("#\n");
     printf("# %d determinants computed\n", casimir_get_determinants(casimir_mpi));

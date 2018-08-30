@@ -32,6 +32,7 @@
 #define xfree(p) do { _xfree(p); p = NULL; } while(0)
 
 double now(void);
+void time_as_string(char *s, size_t len);
 
 void *xmalloc(size_t size);
 void *xrealloc(void *p, size_t size);

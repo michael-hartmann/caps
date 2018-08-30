@@ -9,6 +9,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/time.h>
+#include <time.h>
 #include <unistd.h>
 
 #include "utils.h"
@@ -92,6 +93,24 @@ double now(void)
     gettimeofday(&tv, NULL);
 
     return tv.tv_sec + tv.tv_usec*1e-6;
+}
+
+/** @brief Write time into string
+ *
+ * Write current time in a human readable format into string s. The output is
+ * similar to "Aug 30 2018 14:37:35".
+ *
+ * @param str array
+ * @param len length of array
+  */
+void time_as_string(char *s, size_t len)
+{
+    time_t rawtime;
+    struct tm *info;
+
+    time(&rawtime);
+    info = localtime(&rawtime);
+    strftime(s, len, "%c", info);
 }
 
 /** @Disable buffering
