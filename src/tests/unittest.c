@@ -1,18 +1,28 @@
 #include <stdio.h>
 #include <math.h>
+#include "utils.h"
 #include "unittest.h"
 
 void unittest_init(unittest_t *test, const char *func, const char *desc, double eps)
 {
     test->passed = test->failed = 0;
-    test->func = func;
-    test->desc = desc;
-    test->eps  = eps;
+    test->func   = func;
+    test->desc   = desc;
+    test->eps    = eps;
+    test->start  = now();
 }
 
 int test_results(unittest_t *test, FILE *stream)
 {
-    fprintf(stream, "[%4d/%4d]\t%-20s\t%-50s", test->passed, test->passed+test->failed, test->func, test->desc);
+    double t = now()-test->start;
+
+    fprintf(stream, "[%9d/%9d]\t%-20s\t%-50s", test->passed, test->passed+test->failed, test->func, test->desc);
+
+    if(t < 0.1)
+        fprintf(stream, " (%.3gms)\t", t*1000);
+    else
+        fprintf(stream, " (%.3gs)\t", t);
+
     if(test->failed == 0)
         fprintf(stream, " [" KGRN "PASSED" KNRM "]\n");
     else
