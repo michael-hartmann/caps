@@ -70,7 +70,6 @@ double kernel_logdet(int dim, double (*kernel)(int,int,void *), void *args, int 
     if(fabs(trace) < 1e-8)
         return -trace;
 
-#ifdef SUPPORT_LAPACK
     if(detalg != DETALG_HODLR)
     {
         /* allocate space for matrix M */
@@ -107,7 +106,6 @@ double kernel_logdet(int dim, double (*kernel)(int,int,void *), void *args, int 
         return logdet;
     }
     else
-#endif
     {
         /* HODLR */
 
@@ -135,7 +133,6 @@ double kernel_logdet(int dim, double (*kernel)(int,int,void *), void *args, int 
     }
 }
 
-#ifdef SUPPORT_LAPACK
 /**
  * @brief Create new matrix object
  *
@@ -739,4 +736,3 @@ bool matrix_check_diagonal_dominant(matrix_t *A)
 
     return true;
 }
-#endif

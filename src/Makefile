@@ -80,7 +80,6 @@ endif
 # ldflags
 LDFLAGS += -lm -L . -L libhodlr/include/ -lhodlr
 LDFLAGS += -lgfortran -lblas -llapack
-CFLAGS  += -DSUPPORT_LAPACK
 
 # clang supports various runtime checks. This will slow down the program, but
 # it's a good and easy way to find bugs.
