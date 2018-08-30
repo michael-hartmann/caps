@@ -50,7 +50,7 @@ static double _eta(int N, double z)
  * are stored in the array eta.
  *
  * References:
- * [1] Ju, Xu, Yan, J. Chem. Phys. 133, 101106 (2010)
+ * [1] Hu, Xu, Yan, J. Chem. Phys. 133, 101106 (2010)
  *
  * @param [in]  N   order
  * @param [out] xi  poles
