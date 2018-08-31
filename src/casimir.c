@@ -349,6 +349,7 @@ void master(int argc, char *argv[], const int cores)
             { "fcqs",        no_argument,       0, 'F' },
             { "version",     no_argument,       0, 'V' },
             { "ht",          no_argument,       0, 'H' },
+            { "psd",         no_argument,       0, 'p' },
             { "temperature", required_argument, 0, 'T' },
             { "eta",         required_argument, 0, 'E' },
             { "ldim",        required_argument, 0, 'l' },
@@ -358,14 +359,14 @@ void master(int argc, char *argv[], const int cores)
             { "material",    required_argument, 0, 'f' },
             { "omegap",      required_argument, 0, 'w' },
             { "gamma",       required_argument, 0, 'g' },
-            { "psd",         required_argument, 0, 'P' },
+            { "psd-order",   required_argument, 0, 'P' },
             { 0, 0, 0, 0 }
         };
 
         /* getopt_long stores the option index here. */
         int option_index = 0;
 
-        int c = getopt_long(argc, argv, "R:L:T:l:c:e:E:f:i:w:g:P:FvVHh", long_options, &option_index);
+        int c = getopt_long(argc, argv, "R:L:T:l:c:e:E:f:i:w:g:P:pFvVHh", long_options, &option_index);
 
         /* Detect the end of the options. */
         if(c == -1)
@@ -418,6 +419,9 @@ void master(int argc, char *argv[], const int cores)
                 break;
             case 'f':
                 strncpy(filename, optarg, sizeof(filename)-sizeof(char));
+                break;
+            case 'p':
+                psd_order = -1;
                 break;
             case 'P':
                 psd_order = atoi(optarg);
@@ -480,12 +484,6 @@ void master(int argc, char *argv[], const int cores)
         usage(stderr);
         EXIT();
     }
-    if(psd_order < 0)
-    {
-        fprintf(stderr, "order for Pade spectrum decomposition must be positive.\n\n");
-        usage(stderr);
-        EXIT();
-    }
     if(strlen(filename))
     {
         if(strlen(filename) > 511)
@@ -523,6 +521,12 @@ void master(int argc, char *argv[], const int cores)
             EXIT();
         }
     }
+    if(fcqs && (ht || T > 0))
+    {
+        fprintf(stderr, "flag --fcqs can only be used when T=0\n\n");
+        usage(stderr);
+        EXIT();
+    }
 
     if(cores < 2)
     {
@@ -531,6 +535,12 @@ void master(int argc, char *argv[], const int cores)
     }
 
     const double LbyR = L/R;
+
+    if(psd_order < 0)
+    {
+        const double Teff = 4*M_PI*CASIMIR_kB/CASIMIR_hbar/CASIMIR_c*T*L;
+        psd_order = ceil( (1-1.5*log10(epsrel))/sqrt(Teff) );
+    }
 
     /* if ldim was not set */
     if(ldim <= 0)
@@ -631,6 +641,7 @@ void master(int argc, char *argv[], const int cores)
         double drude_HT = NAN, plasma_HT = NAN, pr_HT = NAN;
         const double T_scaled = 2*M_PI*CASIMIR_kB*(R+L)*T/(CASIMIR_hbar*CASIMIR_c);
         double v[4096] = { 0 };
+        printf("# T_scaled = %g\n", T_scaled);
 
         /* xi = 0 */
         {
@@ -715,7 +726,7 @@ void master(int argc, char *argv[], const int cores)
                 const double t0 = now();
                 const double xi = n*T_scaled;
                 v[n] = F_xi(xi, casimir_mpi);
-                printf("# xi=%.15g, logdetD=%.15g, t=%g\n", xi, v[n], now()-t0);
+                printf("# %d, xi=%.15g, logdetD=%.15g, t=%g\n", (int)n, xi, v[n], now()-t0);
 
                 if(fabs(v[n]/v[0]) < epsrel)
                     break;
@@ -905,11 +916,14 @@ void usage(FILE *stream)
 "        perfect reflectors, Drude and plasma model. The value for the plasma\n"
 "        model is only computed if a plasma frequency is given by --omegap.\n"
 "\n"
-"    -P, --psd N\n"
+"    -p, --psd\n"
 "        Instead of the Matsubara spectrum decomposition, use the Pade spectrum\n"
-"        decomposition (PSD) of order N. The PSD might converge faster than the\n"
-"        MSD, but there are no checks wether the sum over the PSD frequencies\n"
-"        converged. (experimental)\n"
+"        decomposition (PSD) of order N. N is chosen automatically. The PSD\n"
+"        converges faster than the MSD. (experimental)\n"
+"\n"
+"    -P, --psd-order N\n"
+"        Use Pade spectrum decomposition (PSD) of order N. In contrast to the\n"
+"        option --psd, you can chose the order N of the PSD. (experimental)\n"
 "\n"
 "    -v, --verbose\n"
 "        Also print results for each m.\n"
