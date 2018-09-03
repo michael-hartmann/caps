@@ -120,7 +120,7 @@ double lfac(unsigned int n)
 }
 """ % (max_logi, max_lfac), file=f)
 
-        print(r"""/** @brief Calculate \f$log(n!!)\f$
+        print(r"""/** @brief Calculate \f$\log(n!!)\f$
  *
  * This function computes the logarithm of the double factorial n!!.
  *
