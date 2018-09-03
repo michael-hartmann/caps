@@ -3,7 +3,7 @@
 /**
  * @file   logfac.c
  * @author Michael Hartmann <michael.hartmann@physik.uni-augsburg.de>
- * @date   August, 2018
+ * @date   September, 2018
  * @brief  computation of logarithm and factorial for integer arguments; created by logfac.py
  */
 
@@ -66625,7 +66625,7 @@ double lfac(unsigned int n)
         return (n+0.5)*logi(n) - n + C + (1./12)/n;
 }
 
-/** @brief Calculate \f$log(n!!)\f$
+/** @brief Calculate \f$\log(n!!)\f$
  *
  * This function computes the logarithm of the double factorial n!!.
  *
