@@ -608,8 +608,7 @@ void master(int argc, char *argv[], const int cores)
     double F = NAN;
     if(T == 0)
     {
-        double integral = 0;
-        double abserr = 0;
+        double integral = 0, abserr = 0;
         int ier, neval;
 
         if(fcqs)
@@ -637,7 +636,6 @@ void master(int argc, char *argv[], const int cores)
     else
     {
         /* finite temperature */
-
         double drude_HT = NAN, plasma_HT = NAN, pr_HT = NAN;
         const double T_scaled = 2*M_PI*CASIMIR_kB*(R+L)*T/(CASIMIR_hbar*CASIMIR_c);
         double v[4096] = { 0 };
@@ -696,7 +694,7 @@ void master(int argc, char *argv[], const int cores)
         }
 
 
-        if(psd_order)
+        if(psd_order > 0)
         {
             /* Pade spectrum decomposition (PSD), see psd.c and [1]
              * References:
