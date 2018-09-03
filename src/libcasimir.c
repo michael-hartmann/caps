@@ -27,8 +27,7 @@
 */
 /*@{*/
 
-/**
- * @brief Calculate logarithm \f$\Lambda_{\ell_1 \ell_2}^{(m)}\f$
+/** @brief Calculate logarithm \f$\Lambda_{\ell_1 \ell_2}^{(m)}\f$
  *
  * This function returns the logarithm of \f$\Lambda_{\ell_1 \ell_2}^{(m)}\f$ for
  * \f$\ell_1,\ell_2,m\f$.
