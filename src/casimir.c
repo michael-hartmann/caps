@@ -421,7 +421,7 @@ void master(int argc, char *argv[], const int cores)
                 strncpy(filename, optarg, sizeof(filename)-sizeof(char));
                 break;
             case 'p':
-                psd_order = -1;
+                psd_order = -1; /* auto */
                 break;
             case 'P':
                 psd_order = atoi(optarg);
