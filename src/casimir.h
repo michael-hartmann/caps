@@ -1,8 +1,7 @@
-#ifndef CASIMIR_T0
-#define CASIMIR_T0
+#ifndef CASIMIR_H
+#define CASIMIR_H
 
 #include <stdbool.h>
-#include <stdlib.h>
 
 typedef struct {
     int index, m;
