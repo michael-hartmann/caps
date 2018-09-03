@@ -1,6 +1,5 @@
 #define _DEFAULT_SOURCE /* make usleep work */
 
-#include <ctype.h>
 #include <getopt.h>
 #include <mpi.h>
 #include <stdbool.h>
@@ -12,19 +11,20 @@
 
 #include "casimir.h"
 
-#include "quadpack.h"
+#include "buf.h"
 #include "fcqs.h"
 #include "libcasimir.h"
 #include "material.h"
 #include "misc.h"
 #include "psd.h"
+#include "quadpack.h"
 #include "utils.h"
 
-#define EPSREL 1e-6
-#define CUTOFF 1e-9
-#define LDIM_MIN 20
-#define ETA 7.
-#define IDLE 25
+#define EPSREL 1e-6 /**< default value for --epsrel */
+#define CUTOFF 1e-9 /**< default value for --cutoff */
+#define LDIM_MIN 20 /**< minimum value for --ldim */
+#define ETA 7.      /**< default value for --eta */
+#define IDLE 25     /**< idle time in ms */
 
 #define STATE_RUNNING 1
 #define STATE_IDLE    0
@@ -80,32 +80,38 @@ casimir_mpi_t *casimir_mpi_init(double L, double R, double T, char *filename, do
     return self;
 }
 
+/* stop all remaining slaves */
 static void _mpi_stop(int cores)
 {
     double buf[] = { -1, -1, -1, -1, -1, -1, -1 };
 
-    /* stop all remaining slaves */
     for(int i = 1; i < cores; i++)
         MPI_Send(buf, 7, MPI_DOUBLE, i, 0, MPI_COMM_WORLD);
 }
 
+/** @brief Free mpi object
+ *
+ * Stop all running jobs and free allocated memory.
+ *
+ * @param [in] self casimir_mpit_t object
+ */
 void casimir_mpi_free(casimir_mpi_t *self)
 {
     _mpi_stop(self->cores);
 
     for(int i = 1; i < self->cores; i++)
-    {
         xfree(self->tasks[i]);
-        self->tasks[i] = NULL;
-    }
 
     xfree(self->tasks);
-    self->tasks = NULL;
-
     xfree(self);
 }
 
 
+/** @brief Get number of running jobs
+ *
+ * @param [in] self casimir_mpit_t object
+ * @retval running number of processes that are running
+ */
 int casimir_mpi_get_running(casimir_mpi_t *self)
 {
     int running = 0;
@@ -143,6 +149,13 @@ int casimir_mpi_submit(casimir_mpi_t *self, int index, double xi, int m)
     return 0;
 }
 
+/** @brief Get number of computed determinants
+ *
+ * Get the number of determinants that have been computed.
+ *
+ * @param [in] self casimir_mpit_t object
+ * @retval determinants number of computed determinants
+ */
 int casimir_get_determinants(casimir_mpi_t *self)
 {
     return self->determinants;
@@ -638,7 +651,7 @@ void master(int argc, char *argv[], const int cores)
         /* finite temperature */
         double drude_HT = NAN, plasma_HT = NAN, pr_HT = NAN;
         const double T_scaled = 2*M_PI*CASIMIR_kB*(R+L)*T/(CASIMIR_hbar*CASIMIR_c);
-        double v[4096] = { 0 };
+        double *v = NULL;
         printf("# T_scaled = %g\n", T_scaled);
 
         /* xi = 0 */
@@ -652,19 +665,19 @@ void master(int argc, char *argv[], const int cores)
             {
                 F_HT(casimir_mpi, 0, NULL, &pr_HT, NULL);
                 printf("# model = perfect reflectors\n");
-                v[0] = pr_HT;
+                buf_push(v, pr_HT);
             }
             else if(material == NULL && gamma_ == 0)
             {
                 F_HT(casimir_mpi, omegap, NULL, NULL, &plasma_HT);
                 printf("# model = plasma\n");
-                v[0] = plasma_HT;
+                buf_push(v, plasma_HT);
             }
             else if(material == NULL)
             {
                 F_HT(casimir_mpi, 0, &drude_HT, NULL, NULL);
                 printf("# model = drude\n");
-                v[0] = drude_HT;
+                buf_push(v, drude_HT);
             }
             else
             {
@@ -675,7 +688,7 @@ void master(int argc, char *argv[], const int cores)
                 {
                     F_HT(casimir_mpi, omegap_low*CASIMIR_hbar_eV, NULL, NULL, &plasma_HT);
                     printf("# model = optical data (xi=0: Plasma)\n");
-                    v[0] = plasma_HT;
+                    buf_push(v, plasma_HT);
                 }
                 else
                 {
@@ -683,7 +696,7 @@ void master(int argc, char *argv[], const int cores)
                     printf("# model = optical data (xi=0: Drude)\n");
                     printf("# plasma = %.15g (logdetD(xi=0) for plasma model with omegap=%geV)\n", plasma_HT, omegap_low*CASIMIR_hbar_eV);
 
-                    v[0] = drude_HT;
+                    buf_push(v, drude_HT);
                 }
             }
 
@@ -709,7 +722,7 @@ void master(int argc, char *argv[], const int cores)
             {
                 const double xi = psd_xi[n]*T_scaled/(2*M_PI);
                 const double t0 = now();
-                v[n+1] = psd_eta[n]*F_xi(xi, casimir_mpi);
+                buf_push(v, psd_eta[n]*F_xi(xi, casimir_mpi));
                 printf("# xi=%.15g, logdetD=%.15g, t=%g\n", xi, v[n+1], now()-t0);
             }
 
@@ -723,7 +736,7 @@ void master(int argc, char *argv[], const int cores)
             {
                 const double t0 = now();
                 const double xi = n*T_scaled;
-                v[n] = F_xi(xi, casimir_mpi);
+                buf_push(v, F_xi(xi, casimir_mpi));
                 printf("# %d, xi=%.15g, logdetD=%.15g, t=%g\n", (int)n, xi, v[n], now()-t0);
 
                 if(fabs(v[n]/v[0]) < epsrel)
@@ -732,7 +745,9 @@ void master(int argc, char *argv[], const int cores)
         }
 
         v[0] /= 2; /* half weight */
-        F = T_scaled/M_PI*kahan_sum(v, sizeof(v)/sizeof(v[0]));
+        F = T_scaled/M_PI*kahan_sum(v, buf_size(v));
+
+        buf_free(v);
     }
 
     time_as_string(time_str, sizeof(time_str)/sizeof(time_str[0]));
