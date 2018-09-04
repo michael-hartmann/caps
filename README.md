@@ -87,25 +87,40 @@ To compute the Casimir free energy between a sphere of radius R=150µm and a
 plane separated by a distance L=2µm at room temperature T=300K, use the
 command:
 ```
-mpirun -c 7 ./casimir -L 2e-6 -R 150e-6 -T 300
-# L      = 2e-06
-# R      = 0.00015
-# LbyR   = 0.0133333333333333
-# T      = 300
+$ mpirun -c 7 ./casimir -L 2e-6 -R 150e-6 -T 300
+# compiler: gcc
+# compile time: Sep  4 2018 15:16:58
+# compiled on: Linux jonas.physik.uni-augsburg.de 4.9.0-8-amd64 #1 SMP Debian 4.9.110-3+deb9u4 (2018-08-21) x86_64 GNU/Linux
+# git HEAD: 80e7dbec8127bce388f092a13690e94209c8ca84
+# git branch: master
+# pid: 24186
+# start time: Tue Sep  4 15:26:34 2018
+#
+# LbyR = 0.0133333333333333
+# RbyL = 75
+# L = 2e-06
+# R = 0.00015
+# T = 300
 # cutoff = 1e-09
 # epsrel = 1e-06
-# ldim   = 525
-# cores  = 7
-# alpha  = 0.0263157894736842
-# k=1, xi=0, logdetD=-20.5414371366319, t=0.893615
-# k=2, xi=125.121224504, logdetD=-0.697593023726068, t=47.042
-# k=3, xi=250.242449008, logdetD=-0.0258391836330834, t=47.5505
-# k=4, xi=375.363673512, logdetD=-0.000959951381331692, t=44.3509
-# k=5, xi=500.484898016, logdetD=-3.56248208858549e-05, t=39.9074
-# k=6, xi=625.60612252, logdetD=-1.31970422831906e-06, t=29.2294
+# iepsrel = 1e-08
+# ldim = 525
+# cores = 7
+# using Matsubara spectrum decomposition (MSD)
+# model = perfect reflectors
 #
-# L/R, L, R, T, ldim, F*(L+R)/(ħc)
-0.01333333333333333, 2e-06, 0.00015, 300, 525, -1049.959261174529
+# xi=0, logdetD=-20.5414434024651, t=0.135882
+# xi=125.121224504047, logdetD=-0.697593024440509, t=12.1523
+# xi=250.242449008094, logdetD=-0.0258391838178472, t=12.6687
+# xi=375.363673512142, logdetD=-0.000959951405403435, t=11.862
+# xi=500.484898016189, logdetD=-3.56248230705423e-05, t=10.2416
+# xi=625.606122520236, logdetD=-1.31970430444605e-06, t=7.93809
+#
+# 484 determinants computed
+# stop time: Tue Sep  4 15:27:29 2018
+#
+# L/R, L, R, T, ldim, E*(L+R)/(ħc)
+0.01333333333333333, 2e-06, 0.00015, 300, 525, -437.907419604281
 ```
 
 Bugs, developing and contributing
@@ -119,10 +134,10 @@ improvements, create a pull request.
 Authors, license and credits
 ----------------------------
 
- * [Michael Hartmann](https://myweb.rz.uni-augsburg.de/~hartmmic/), michael.hartmann@physik.uni-augsburg.de  
+ * [Michael Hartmann](https://myweb.rz.uni-augsburg.de/~hartmmic/), michael.hartmann@physik.uni-augsburg.de
    main developer
 
- * [Gert-Ludwig Ingold](http://www.physik.uni-augsburg.de/theo1/ingold/), gert.ingold@physik.uni-augsburg.de  
+ * [Gert-Ludwig Ingold](http://www.physik.uni-augsburg.de/theo1/ingold/), gert.ingold@physik.uni-augsburg.de
    contributions to documentation, speedup of PFA calculation, bugfixes
 
 For a full list, see CREDITS.
@@ -155,14 +170,14 @@ Publications
    Michael Hartmann, Gert-Ludwig Ingold, Paulo A. Maia Neto,
    accepted by Physica Scripta
 
- * [Plasma vs Drude modelling of the Casimir force: beyond the proximity force approximation](https://doi.org/10.1103/PhysRevLett.119.043901) (on [arxiv](https://arxiv.org/abs/1705.04196))  
-   Michael Hartmann, Gert-Ludwig Ingold, and Paulo A. Maia Neto,  
+ * [Plasma vs Drude modelling of the Casimir force: beyond the proximity force approximation](https://doi.org/10.1103/PhysRevLett.119.043901) (on [arxiv](https://arxiv.org/abs/1705.04196))
+   Michael Hartmann, Gert-Ludwig Ingold, and Paulo A. Maia Neto,
    Phys. Rev. Lett. **119**, 043901 (2017)
 
- * [Disentangling geometric and dissipative origins of negative Casimir entropies](https://dx.doi.org/10.1103/PhysRevE.92.042125) (on [arxiv](http://arxiv.org/abs/1507.05891))  
-   Stefan Umrath, Michael Hartmann, Gert-Ludwig Ingold, and Paulo A. Maia Neto,  
+ * [Disentangling geometric and dissipative origins of negative Casimir entropies](https://dx.doi.org/10.1103/PhysRevE.92.042125) (on [arxiv](http://arxiv.org/abs/1507.05891))
+   Stefan Umrath, Michael Hartmann, Gert-Ludwig Ingold, and Paulo A. Maia Neto,
    Phys. Rev. E **92**, 042125 (2015)
 
- * [Geometric origin of negative Casimir entropies: A scattering-channel analysis](https://dx.doi.org/10.1103/PhysRevE.91.033203) (on [arxiv](http://arxiv.org/abs/1411.1866))  
-   Gert-Ludwig Ingold, Stefan Umrath, Michael Hartmann, Romain Guérout, Astrid Lambrecht, Serge Reynaud, and Kimball A. Milton,  
+ * [Geometric origin of negative Casimir entropies: A scattering-channel analysis](https://dx.doi.org/10.1103/PhysRevE.91.033203) (on [arxiv](http://arxiv.org/abs/1411.1866))
+   Gert-Ludwig Ingold, Stefan Umrath, Michael Hartmann, Romain Guérout, Astrid Lambrecht, Serge Reynaud, and Kimball A. Milton,
    Phys. Rev. E **91**, 033203 (2015)
