@@ -76,9 +76,12 @@ class CasimirHT:
         return v
 
 
-    def plasma(self, verbose=False, cutoff=1e-8):
+    def plasma(self, verbose=False, cutoff=1e-8, eta=8):
         """MM contribution to the free energy in the high-temperature limit for
         the plasma model in units of kb*T"""
+        ldim = int(eta/self.LbyR)
+        print(ldim)
+
         terms = []
         for m in itertools.count():
             v = self.logdetD(m,ldim)
@@ -93,28 +96,55 @@ class CasimirHT:
  
 
     def drude(self, lmax=10000):
-        """Free energy in the high-temperature limit for the plasma model in
-        units of kb*T for Drude"""
-        LbyR = self.LbyR
-        Z = (1+LbyR)*(1-sqrt(LbyR*(LbyR+2)/(LbyR**2+2*LbyR+1)))
+        """Free energy in the high-temperature limit for the Drude model in
+        units of kb*T"""
+        x   = self.LbyR
+        Z   = (1+x)*(1-sqrt(x*(x+2)/(x**2+2*x+1)))
+        dZ  = 1-(x+1)/sqrt(x*(x+2))
+        d2Z = sqrt(x*(x+2))/(x**4+4*x**3+4*x**2)
 
         l = np.arange(1,lmax+1)
-        term1 = np.sum((2*l+1)*np.log1p(-Z**(2*l+1)))
+
+        a = np.sum((2*l+1)*np.log1p(-Z**(2*l+1)))
+        b = np.sum((1-Z**2)*Z**(2*l+1)*(1-Z**(2*l))/(1-Z**(2*l+1)))
+
+        da  = -np.sum((2*l+1)**2*Z**(2*l)/(1-Z**(2*l+1)))
+        d2a = np.sum((8*Z**(2*l)*l**3+(4*Z**(4*l+1)+8*Z**(2*l))*l**2+(4*Z**(4*l+1)+2*Z**(2*l))*l+Z**(4*l+1))/(Z**(4*l+3)-2*Z**(2*l+2)+Z))
+
+        db  = -np.sum(((Z**(6*l)*(2*Z**3-2*Z)+Z**(2*l)*(2*Z**2-2)+Z**(4*l)*(4-4*Z**2))*l+2*Z**(6*l+3)+Z**(4*l)*(-2*Z**3-3*Z**2+1)+Z**(2*l)*(3*Z**2-1))/(Z**(4*l+2)-2*Z**(2*l+1)+1))
+        d2b = -np.sum(((Z**(8*l)*(4*Z**4-4*Z**2)+Z**(4*l)*(-4*Z**3+16*Z**2+4*Z-16)+Z**(6*l)*(12*Z-12*Z**3)+Z**(2*l)*(4-4*Z**2))*l**2+(Z**(8*l)*(6*Z**4+2*Z**2)+Z**(4*l)*(2*Z**3+20*Z**2+6*Z-4)+Z**(6*l)*(-18*Z**3-6*Z)+Z**(2*l)*(2-10*Z**2))*l+2*Z**(8*l+4)-6*Z**(2*l+2)+Z**(6*l)*(-2*Z**4-6*Z**3-2*Z)+Z**(4*l)*(6*Z**3+6*Z**2+2*Z))/(Z**(6*l+4)-3*Z**(4*l+3)+3*Z**(2*l+2)-Z))
+
+        E = (a+np.log1p(-b))/2
+        F = (da-db/(1-b))/2*dZ
+        P = (d2a+((1-b)*d2b+db**2)/(1-b)**2)/2*d2Z
+
+        print(F)
+        print(P)
+
+        return E
+
+ 
+
+    def drude_F(self, lmax=10000):
+        """Force in the high-temperature limit for the Drude model in
+        units of kb*T"""
+        x = self.LbyR
+        Z  = (1+x)*(1-sqrt(x*(x+2)/(x**2+2*x+1)))
+        dZ = 1-(x+1)/sqrt(x*(x+2))
+
+        l = np.arange(1,lmax+1)
+        term1 = np.sum(-(2*l+1)**2*Z**(2*l)/(1-Z**(2*l+1)))
+
         term2 = log1p(-(1-Z**2)*np.sum(Z**(2*l+1)*(1-Z**(2*l))/(1-Z**(2*l+1))))
 
         return (term1+term2)/2
 
 
 if __name__ == "__main__":
-    omegap = 9 # in eV
-    R = 10e-6  # in m
-    L = 200e-9 # in m
-    LbyR = L/R
-    ldim = int(1+8/LbyR)
+    L = 1
+    R = 20
 
-    ht = CasimirHT(L,R,omegap=omegap)
-    plasma = ht.plasma(verbose=True) # free energy / kbT
-    drude  = ht.drude()
+    ht = CasimirHT(L,R)
+    plasma = ht.plasma(verbose=True, cutoff=1e-12)
 
-    print()
-    print(drude, plasma, drude+plasma)
+    print(plasma)
