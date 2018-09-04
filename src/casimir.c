@@ -590,7 +590,9 @@ void master(int argc, char *argv[], const int cores)
         printf("# gamma = %.15g\n", gamma_);
     }
     if(psd_order)
-        printf("# use Pade spectrum decomposition of order %d\n", psd_order);
+        printf("# using Pade spectrum decomposition (PSD) of order %d\n", psd_order);
+    else
+        printf("# using Matsubara spectrum decomposition (MSD)\n");
 
     casimir_mpi_t *casimir_mpi = casimir_mpi_init(L, R, T, filename, omegap, gamma_, ldim, cutoff, iepsrel, cores, verbose);
 
@@ -652,7 +654,6 @@ void master(int argc, char *argv[], const int cores)
         double drude_HT = NAN, plasma_HT = NAN, pr_HT = NAN;
         const double T_scaled = 2*M_PI*CASIMIR_kB*(R+L)*T/(CASIMIR_hbar*CASIMIR_c);
         double *v = NULL;
-        printf("# T_scaled = %g\n", T_scaled);
 
         /* xi = 0 */
         {
@@ -732,12 +733,12 @@ void master(int argc, char *argv[], const int cores)
         else
         {
             /* Matsubara spectrum decomposition (MSD) */
-            for(size_t n = 1; n < sizeof(v)/sizeof(double); n++)
+            for(size_t n = 1; true; n++)
             {
                 const double t0 = now();
                 const double xi = n*T_scaled;
                 buf_push(v, F_xi(xi, casimir_mpi));
-                printf("# %d, xi=%.15g, logdetD=%.15g, t=%g\n", (int)n, xi, v[n], now()-t0);
+                printf("# xi=%.15g, logdetD=%.15g, t=%g\n", xi, v[n], now()-t0);
 
                 if(fabs(v[n]/v[0]) < epsrel)
                     break;
