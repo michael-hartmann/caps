@@ -45,7 +45,7 @@ Installation
 If you use Linux or Unix, you need the gcc and development libraries and header
 files for the standard C library, and MPI. On a Debian-like Linux the command
 ```
-$ sudo apt-get install gcc libc6-dev make libopenmpi-dev openmpi-bin liblapack-dev
+$ sudo apt-get install gcc g++ libc6-dev libc++-dev make libopenmpi-dev openmpi-bin liblapack-dev
 ```
 will install all dependencies. You can compile the sources with:
 ```
@@ -73,13 +73,6 @@ $ LD_LIBRARY_PATH=/path/to/the/libraries ./casimir_logdetD -R 1 -L 0.01 -m 1 --n
 #
 # L, R, ξ*(L+R)/c, m, logdet(Id-M), ldim, time
 0.01, 1, 1, 1, -6.46397198784309, 500, 0.524163
-```
-
-If you want to use LU, QR or Cholesky decomposition to compute the determinant,
-you will need LAPACK support. This requires that the package `liblapack-dev` is
-installed on your system. You can compile the sources with LAPACK support with:
-```
-$ LAPACK=1 make
 ```
 
 Besides gcc, the sources may also be compiled with icc or clang (llvm). You can
@@ -152,12 +145,15 @@ Also, libcasimir uses some third-party software:
  * [LAPACK](http://www.netlib.org/lapack/) Linear algebra library. LAPACK may
    be used to calculate the determinant of the scattering matrices. However,
    for small separations using HODLR is much faster. (Modified BSD)
+ * [buf](https://github.com/skeeto/growable-buf) growable memory buffers for
+   C99. (public domain)
 
 
 Publications
 ------------
  * [Advancing numerics for the Casimir effect to experimentally relevant aspect ratios](https://arxiv.org/abs/1803.05791) (on arxiv)
-   Michael Hartmann, Gert-Ludwig Ingold, Paulo A. Maia Neto
+   Michael Hartmann, Gert-Ludwig Ingold, Paulo A. Maia Neto,
+   accepted by Physica Scripta
 
  * [Plasma vs Drude modelling of the Casimir force: beyond the proximity force approximation](https://doi.org/10.1103/PhysRevLett.119.043901) (on [arxiv](https://arxiv.org/abs/1705.04196))  
    Michael Hartmann, Gert-Ludwig Ingold, and Paulo A. Maia Neto,  
