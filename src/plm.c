@@ -133,10 +133,10 @@ static double _Pl1(int l, double x, double sinhxi)
     {
         const double k = 1./l;
         const double k2 = k*k;
-        const double k4 = k2*k2;
 
         /* asymptotic expansion of Gamma(l+1)/Gamma(l+3/2) with machine precision for l>=100 */
-        Clm = (1 - 3./8*k + 25./128*k2 - 105./1024*k*k2 + 1659./32768*k4 - 6237./262144*k*k4 + 50765./4194304*k2*k4)/sqrt(l);
+        /* Clm = (1 - 3./8*k + 25./128*k2 - 105./1024*k*k2 + 1659./32768*k4 - 6237./262144*k*k4 + 50765./4194304*k2*k4)/sqrt(l); */
+        Clm = (1 + k*(-3./8 + 25./128*k + k2*(-105./1024 + 1659./32768*k + k2*(-6237./262144 + 50765./4194304*k))))/sqrt(l);
     }
 
     double sum = 0;
