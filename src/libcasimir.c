@@ -469,6 +469,7 @@ void casimir_lnab_perf(casimir_t *self, double xi_, int l, double *lna, double *
  * For generic metals we calculate the Mie coefficients \f$a_\ell\f$ und
  * \f$b_\ell\f$ using the expressions taken from [1]. Ref. [1] is the erratum
  * to [2]. Please note that the equations (3.30) and (3.31) in [3] are wrong.
+ * The formulas are corrected in [4].
  *
  * Note: If sla =~ slb or slc =~ sld, there is a loss of significance when
  * calculating sla-slb or slc-sld.
@@ -483,6 +484,8 @@ void casimir_lnab_perf(casimir_t *self, double xi_, int l, double *lna, double *
  *       Canaguier-Durand, Neto, Lambrecht, Reynaud (2010),
  *       http://journals.aps.org/pra/abstract/10.1103/PhysRevA.82.012511
  * - [3] Negative Casimir entropies in the plane-sphere geometry, Hartmann, 2014
+ * - [4] Casimir effect in the plane-sphere geometry: Beyond the proximity
+ *       force approximation, Hartmann, 2018
  *
  * @param [in,out] self Casimir object
  * @param [in] xi_ \f$\xi\mathcal{L}/\mathrm{c}\f$
