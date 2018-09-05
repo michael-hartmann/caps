@@ -576,7 +576,16 @@ void master(int argc, char *argv[], const int cores)
     if(ht)
         printf("# high-temperature limit\n");
     else
+    {
         printf("# T = %.15g\n", T);
+        if(T > 0)
+        {
+            if(psd_order)
+                printf("# using Pade spectrum decomposition (PSD) of order %d\n", psd_order);
+            else
+                printf("# using Matsubara spectrum decomposition (MSD)\n");
+        }
+    }
     printf("# cutoff = %g\n", cutoff);
     printf("# epsrel = %g\n", epsrel);
     printf("# iepsrel = %g\n", iepsrel);
@@ -589,10 +598,6 @@ void master(int argc, char *argv[], const int cores)
         printf("# omegap = %.15g\n", omegap);
         printf("# gamma = %.15g\n", gamma_);
     }
-    if(psd_order)
-        printf("# using Pade spectrum decomposition (PSD) of order %d\n", psd_order);
-    else
-        printf("# using Matsubara spectrum decomposition (MSD)\n");
 
     casimir_mpi_t *casimir_mpi = casimir_mpi_init(L, R, T, filename, omegap, gamma_, ldim, cutoff, iepsrel, cores, verbose);
 
