@@ -2,7 +2,7 @@
  * @file   bessel.c
  * @author Stephen L. Moshier, Cephes Math Library Release 2.8, June 2000
  * @author Michael Hartmann <michael.hartmann@physik.uni-augsburg.de>
- * @date   July, 2017
+ * @date   September, 2018
  * @brief  Computation of Bessel functions
  */
 
@@ -441,6 +441,31 @@ double bessel_lnKnu(int nu, double x)
     return lnKnu;
 }
 
+/* https://dlmf.nist.gov/10.41#ii */
+static double __lnbesselI_asymp(double nu, double x, double *relerror)
+{
+    const double z = x/nu;
+    const double p2 = 1/(1+z*z); /* p² */
+
+    const double U5 = 59535/262144.+p2*(-67608983/9175040.+p2*(250881631/5898240.+p2*(-108313205/1179648.+p2*(5391411025/63700992.-5391411025/191102976.*p2))));
+    const double U4 = 3675/32768. + p2*(-96833/40960.+p2*(144001/16384.+p2*(-7436429/663552.+37182145/7962624.*p2)));
+    const double U3 = 75/1024.+p2*(-4563/5120.+p2*(17017/9216.-85085/82944.*p2));
+    const double U2 = 9/128.+p2*(-77/192.+385/1152.*p2);
+    const double U1 = 1/8.-5/24.*p2;
+    /* U0 = 1 */
+
+    const double a = sqrt(1+z*z);
+    const double y = 1/(nu*a);
+    const double sum = log1p(y*(U1 + y*(U2 + y*(U3 + y*(U4 + U5*y)))));
+
+    const double eta = a+log(z/(1+a));
+    const double prefactor = nu*eta-log(2*M_PI*nu*a)/2;
+
+	*relerror = U5*y*y*y*y*y;
+
+    return prefactor+sum;
+}
+
 /** @brief Compute modified Bessel functions of first and second kind
  *
  * This function computes the logarithm of the modified Bessel functions
@@ -494,6 +519,15 @@ void bessel_lnInuKnu(int nu, const double x, double *lnInu_p, double *lnKnu_p)
 
     if(lnInu_p != NULL)
     {
+		if(nu > 100)
+        {
+            double relerr;
+            *lnInu_p = __lnbesselI_asymp(nu+0.5, x, &relerr);
+
+            if(relerr < 1e-12)
+                return;
+        }
+
         double ratio = bessel_continued_fraction(nu,x);
         *lnInu_p = -logx-logadd(lnKnup, lnKnu-log(ratio));
     }
