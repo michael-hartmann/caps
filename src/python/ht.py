@@ -1,27 +1,27 @@
 import itertools
 from functools import lru_cache
-from math import *
+from math import log,exp,lgamma,sqrt,fsum
 import numpy as np
 from scipy.integrate import quad
 from scipy.special import ive
 
-# Implementation of the high-temperature case for plasma. this serves as a
-# reference implementation.
+class Plasma:
+    # Implementation of the high-temperature case for plasma. this serves as a
+    # reference implementation.
 
-hbar_eV = 6.582119514e-16 # hbar [eV s / rad]
-c       = 299792458       # speed of light [m/s]
-
-class CasimirHT:
     def __init__(self, L, R, omegap=9):
         """
         Compute the Casimir free energy in the high-temperature limit for the
         plane-sphere geometry. Supports Drude and plasma model.
 
         parameters:
-        L: separation between plane and sphere
-        R: radius of sphere
-        omegap: plasma frequency in eV
+            L: separation between plane and sphere
+            R: radius of sphere
+            omegap: plasma frequency in eV
         """
+        hbar_eV = 6.582119514e-16 # hbar [eV s / rad]
+        c       = 299792458       # speed of light [m/s]
+
         self.LbyR  = L/R                        # L/R
         self.y     = log(R/(L+R)/2)             # log(R/(2(L+R))
         self.alpha = omegap/(hbar_eV*c)*R       # α=ωp*R/c
@@ -76,11 +76,10 @@ class CasimirHT:
         return v
 
 
-    def plasma(self, verbose=False, cutoff=1e-8, eta=8):
+    def E(self, verbose=False, cutoff=1e-8, eta=8):
         """MM contribution to the free energy in the high-temperature limit for
         the plasma model in units of kb*T"""
         ldim = int(eta/self.LbyR)
-        print(ldim)
 
         terms = []
         for m in itertools.count():
@@ -95,56 +94,113 @@ class CasimirHT:
                 return fsum(terms)
  
 
-    def drude(self, lmax=10000):
-        """Free energy in the high-temperature limit for the Drude model in
-        units of kb*T"""
-        x   = self.LbyR
-        Z   = (1+x)*(1-sqrt(x*(x+2)/(x**2+2*x+1)))
-        dZ  = 1-(x+1)/sqrt(x*(x+2))
-        d2Z = sqrt(x*(x+2))/(x**4+4*x**3+4*x**2)
+def __dirichlet(L,R,lmax=10000,lmin=0):
+    x = L/R
+    Z = 1+x-np.sqrt(x*(x+2))
+    l = np.arange(lmin,lmax+1)
 
-        l = np.arange(1,lmax+1)
+    # dZ/dL
+    dZ = (1-(x+1)/np.sqrt(x*(x+2)))/R
 
-        a = np.sum((2*l+1)*np.log1p(-Z**(2*l+1)))
-        b = np.sum((1-Z**2)*Z**(2*l+1)*(1-Z**(2*l))/(1-Z**(2*l+1)))
+    # d²Z/dL²
+    dZ2 = np.sqrt(x*(x+2))/(4*x**2+4*x**3+x**4)/R**2
 
-        da  = -np.sum((2*l+1)**2*Z**(2*l)/(1-Z**(2*l+1)))
-        d2a = np.sum((8*Z**(2*l)*l**3+(4*Z**(4*l+1)+8*Z**(2*l))*l**2+(4*Z**(4*l+1)+2*Z**(2*l))*l+Z**(4*l+1))/(Z**(4*l+3)-2*Z**(2*l+2)+Z))
+    A = Z**(2*l) # Z^(2l)
+    q  = 2*l+1   # 2l+1
+    q2 = q**2    # (2l+1)²
 
-        db  = -np.sum(((Z**(6*l)*(2*Z**3-2*Z)+Z**(2*l)*(2*Z**2-2)+Z**(4*l)*(4-4*Z**2))*l+2*Z**(6*l+3)+Z**(4*l)*(-2*Z**3-3*Z**2+1)+Z**(2*l)*(3*Z**2-1))/(Z**(4*l+2)-2*Z**(2*l+1)+1))
-        d2b = -np.sum(((Z**(8*l)*(4*Z**4-4*Z**2)+Z**(4*l)*(-4*Z**3+16*Z**2+4*Z-16)+Z**(6*l)*(12*Z-12*Z**3)+Z**(2*l)*(4-4*Z**2))*l**2+(Z**(8*l)*(6*Z**4+2*Z**2)+Z**(4*l)*(2*Z**3+20*Z**2+6*Z-4)+Z**(6*l)*(-18*Z**3-6*Z)+Z**(2*l)*(2-10*Z**2))*l+2*Z**(8*l+4)-6*Z**(2*l+2)+Z**(6*l)*(-2*Z**4-6*Z**3-2*Z)+Z**(4*l)*(6*Z**3+6*Z**2+2*Z))/(Z**(6*l+4)-3*Z**(4*l+3)+3*Z**(2*l+2)-Z))
+    # E = kb T/2 Σ (2l+1) log(1-Z^(2l+1))
+    E = np.sum(q*np.log1p(-A*Z))/2
 
-        E = (a+np.log1p(-b))/2
-        F = (da-db/(1-b))/2*dZ
-        P = (d2a+((1-b)*d2b+db**2)/(1-b)**2)/2*d2Z
+    # B = Z^(2l)/(1-Z^(2l+1))
+    B = A/(1-A*Z)
 
-        print(F)
-        print(P)
+    # F = -dE/dL
+    F = np.sum(q2*B)*dZ/2
 
-        return E
+    # dF = F' = dF/dL = -d²E/dL²
+    dF = np.sum(q2*B*( dZ**2*(2*l/Z + q*B) + dZ2 ))/2
 
- 
+    return E,F,dF
 
-    def drude_F(self, lmax=10000):
-        """Force in the high-temperature limit for the Drude model in
-        units of kb*T"""
-        x = self.LbyR
-        Z  = (1+x)*(1-sqrt(x*(x+2)/(x**2+2*x+1)))
-        dZ = 1-(x+1)/sqrt(x*(x+2))
 
-        l = np.arange(1,lmax+1)
-        term1 = np.sum(-(2*l+1)**2*Z**(2*l)/(1-Z**(2*l+1)))
+def dirichlet(L,R,lmax=10000):
+    """Computes the Casimir interaction (i.e., the free energy E, the force
+    F=-dE/dL, and the force gradient F'=-d²E/dL²) for the plane-sphere geometry
+    in the high-temperature limit for Dirichlet boundary conditions.
 
-        term2 = log1p(-(1-Z**2)*np.sum(Z**(2*l+1)*(1-Z**(2*l))/(1-Z**(2*l+1))))
+    The function evaluates Eq. (3) of Bimonte, Emig, PRL 109, 160403 (2012).
 
-        return (term1+term2)/2
+    Parameters:
+        L: separation between plane and sphere
+        R: radius of sphere
+        lmax: truncation of sum
+
+    Returns:
+        (E, F, F')
+    """
+    return __dirichlet(L,R,lmax=lmax,lmin=0)
+
+
+def drude(L,R,lmax=10000):
+    """Computes the Casimir interaction (i.e., the free energy E, the force
+    F=-dE/dL, and the force gradient F'=-d²E/dL²) for the plane-sphere geometry
+    in the high-temperature limit for Drude boundary conditions.
+
+    The function evaluates Eq. (8) of Bimonte, Emig, PRL 109, 160403 (2012).
+
+    Parameters:
+        L: separation between plane and sphere
+        R: radius of sphere
+        lmax: truncation of sum
+
+    Returns:
+        (E, F, F')
+    """
+    # E1 = kb T/2 Σ (2l+1) log(1-Z^(2l+1))  where l=1,2,..,lmax
+    E1, F1, dF1 = __dirichlet(L,R,lmax=lmax,lmin=1)
+
+    x = L/R
+    Z = 1+x-np.sqrt(x*(x+2))
+    l = np.arange(1,lmax+1)
+
+    # dZ/dL
+    dZ = (1-(x+1)/np.sqrt(x*(x+2)))/R
+
+    # d²Z/dL²
+    dZ2 = np.sqrt(x*(x+2))/(4*x**2+4*x**3+x**4)/R**2
+
+    A = Z**(2*l) # Z^(2l)
+    q  = 2*l+1   # 2l+1
+    q2 = q**2    # (2l+1)²
+
+    # B = Z^(2l)/(1-Z^(2l+1))
+    B = A/(1-A*Z)
+
+    # E2 = kb T/2 log(1-(1-Z²)Σ Z^(2l+1) (1-Z^(2l))/(1-Z^(2l+1)))
+    S = np.sum((1-A)*Z*B)
+    E2 = np.log1p(-(1-Z**2)*S)/2
+
+    # dS/dZ
+    dS = np.sum(B*((1-A)*q+Z*(1-A)*q*B-2*A*l))
+    
+    # d²S/dZ²
+    dS2 = np.sum( 2*B*(B*(1-A)*q*(3*l+1+q*Z*B) - 4*A*l**2/Z - A/Z*l*q + 1/Z*(1-A)*l*q - 2*B*A*l*q))
+
+    # F2 = -dE2/dL
+    F2 = -dZ/2*(2*Z*S-(1-Z**2)*dS)/(1-(1-Z**2)*S)
+
+    # dF2 = -d²E2/dL²
+    dF2 = -(dZ2*(2*S*Z-(1-Z**2)*dS)/(1-(1-Z**2)*S) + dZ**2*( (1-(1-Z**2)*S)*(4*dS*Z+2*S-(1-Z**2)*dS2) - (2*S*Z-(1-Z**2)*dS)*(2*S*Z-(1-Z**2)*dS) )/(1-(1-Z**2)*S)**2)/2
+
+    return E1+E2, F1+F2, dF1+dF2
 
 
 if __name__ == "__main__":
     L = 1
     R = 20
 
-    ht = CasimirHT(L,R)
-    plasma = ht.plasma(verbose=True, cutoff=1e-12)
+    ht = Plasma(L,R)
+    plasma = ht.E(verbose=True, cutoff=1e-12)
 
     print(plasma)
