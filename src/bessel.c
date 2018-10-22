@@ -360,8 +360,7 @@ double besselI0e(double x)
 
 /** @brief Modified Bessel function \f$K_0(x)\f$
  *
- * The range is partitioned into the two intervals \f$[0,8]\f$ and \f$(8,
- * \infty)\f$.  Chebyshev polynomial expansions are employed in each interval.
+ * The range is partitioned into the two intervals \f$[0,8]\f$ and \f$(8,\infty)\f$.  Chebyshev polynomial expansions are employed in each interval.
  *
  * @param [in] x argument
  * @retval K0 \f$K_0(x)\f$
@@ -519,11 +518,7 @@ double besselK1e(double x)
 #define BIGNO 1e10
 #define BIGNI 1e-10
 
-/** @brief Modified Bessel function of integer order
- *
- * Returns modified Bessel function of order \f$n\f$ for the argument \f$x\f$.
- *
- * The function is defined as \f$I_n(x) = i^{-n} J_n(ix)\f$.
+/** @brief Modified Bessel function $\fI_n(x)\f$ for integer order \f$n\f$
  *
  * For \f$n<0\f$ NAN is returned.
  *
@@ -567,6 +562,81 @@ double besselI(int n, double x)
 
     ans *= besselI0(x)/bi;
     return x < 0.0 && (n & 1) ? -ans : ans;
+}
+
+/** @brief Logarithm of modified Bessel function $\fK_n(x)\f$ for integer orders
+ *
+ * The Bessel functions are computed using a recurrence relation.
+ *
+ * @param [in]  n order
+ * @param [in]  x argument
+ * @param [out] K_n(x) array of n+1 elements with the values of \f$K_0(x), K_1(x),\dots, K_n(x)\f$
+ */
+void log_besselK_array(int n, double x, double out[])
+{
+    /* K_0(x) */
+    {
+        if(x < 1e-100)
+        {
+            /* K_0(x) ≈ -log(x/2)-gamma */
+            double gamma = 0.5772156649015328606;
+            out[0] = log(-log(x/2)-gamma);
+        }
+        else if(x > 650)
+        {
+            /* Hankel expansion
+             * K_0(x) ≈ sqrt(pi/2x)*exp(-x) * ( 1 - k + 9/2*k² - 225/6*k³ ), k=1/8x
+             */
+             double k = 1./8/x;
+             out[0] = log(M_PI/(2*x))/2 - x + log1p( k*(-1+9./2*k*(1-25./3*k)) );
+        }
+        else
+            out[0] = log(besselK0(x));
+    }
+
+    if(n == 0)
+        return;
+
+    /* K_1(x) */
+    {
+        if(x < 1e-8)
+            /* K_1(x) ≈ 1/x */
+            out[1] = -log(x);
+        else if(x > 600)
+        {
+            /* Hankel expansion
+             * K_1(x) ≈ sqrt(pi/2x)*exp(-x) * ( 1 + 3/8x - 15/128x² + 315/3072x³ )
+             */
+             double k = 1/(8*x);
+             out[1] = log(M_PI/(2*x))/2 -x + log1p(3*k*(1+5./2*k *(-1+21./3*k)));
+        }
+        else
+            out[1] = log(besselK1(x));
+    }
+
+    for(int l = 1; l < n; l++)
+    {
+        /* K_{n+1} = K_{n-1} - 2n/x K_n = 2n/x * K_n * log(1+x/2n*K_{n-1}/K_n) */
+        double k = 2./x*l;
+        out[l+1] = log(k)+out[l]+log1p(exp(out[l-1]-out[l])/k);
+    }
+}
+
+/** @brief Logarithm of modified Bessel function $\fK_n(x)\f$ for integer order \f$n\f$
+ *
+ * The Bessel functions are computed using a recurrence relation.
+ *
+ * @param [in]  n order
+ * @param [in]  x argument
+ * @retval Kn \f$\log K_n(x)\f$
+ */
+double log_besselK(int n, double x)
+{
+    double *out = malloc((n+1)*sizeof(double));
+    log_besselK_array(n, x, out);
+    double v = out[n];
+    free(out);
+    return v;
 }
 
 /**
