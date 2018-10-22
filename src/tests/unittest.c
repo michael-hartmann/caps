@@ -16,7 +16,7 @@ int test_results(unittest_t *test, FILE *stream)
 {
     double t = now()-test->start;
 
-    fprintf(stream, "[%9d/%9d]\t%-20s\t%-50s", test->passed, test->passed+test->failed, test->func, test->desc);
+    fprintf(stream, "[%9d/%9d]\t%-20s\t%-60s", test->passed, test->passed+test->failed, test->func, test->desc);
 
     if(t < 0.1)
         fprintf(stream, " (%.3gms)\t", t*1000);
