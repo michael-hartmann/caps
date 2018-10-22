@@ -19,6 +19,18 @@ int main(int argc, char *argv[])
 
     test_fresnel();
 
+    test_besselI0();
+    test_besselI0e();
+
+    test_besselK0();
+    test_besselK0e();
+
+    test_besselI1();
+    test_besselI1e();
+
+    test_besselK1();
+    test_besselK1e();
+
     test_besselI();
     test_besselK();
 
