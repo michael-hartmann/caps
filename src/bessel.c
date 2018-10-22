@@ -376,8 +376,7 @@ double besselK0(double x)
     if(x <= 2.0)
     {
         y = x*x-2.0;
-        y = chbevl(y, K0_A, 10)-log(0.5*x)*besselI0(x);
-        return y;
+        return chbevl(y, K0_A, 10)-log(0.5*x)*besselI0(x);
     }
 
     z = 8.0/x-2.0;
@@ -484,8 +483,7 @@ double besselK1(double x)
     if(x <= 2.0)
     {
         y = x*x-2.0;
-        y =  log(z)*besselI1(x)+chbevl(y, K1_A, 11)/x;
-        return y;
+        return log(z)*besselI1(x)+chbevl(y, K1_A, 11)/x;
     }
 
     return exp(-x)*chbevl(8.0/x-2.0, K1_B, 25)/sqrt(x);
