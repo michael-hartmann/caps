@@ -15,6 +15,10 @@ double besselK1e(double x) __attribute__ ((pure));
 
 double besselI(int n, double x) __attribute__ ((pure));
 
+void log_besselK_array(int n, double x, double out[]);
+
+double log_besselK(int n, double x) __attribute__ ((pure));
+
 double bessel_continued_fraction(int nu, double x) __attribute__ ((pure));
 
 double bessel_lnInu(int nu, double x) __attribute__ ((pure));
