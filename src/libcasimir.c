@@ -423,7 +423,7 @@ int casimir_get_ldim(casimir_t *self)
  */
 void casimir_lnab_perf(casimir_t *self, double xi_, int l, double *lna, double *lnb)
 {
-    double lnKlp,lnKlm,lnIlm,lnIlp;
+    double logKlp,logKlm,logIlm,logIlp;
     /* χ = ξR/c = ξ(R+L)/c * R/(R+L) = xi_ 1/(1+L/R) */
     const double chi = xi_/(1+self->LbyR);
     const double log_chi = log(xi_)-log1p(self->LbyR);
@@ -431,11 +431,11 @@ void casimir_lnab_perf(casimir_t *self, double xi_, int l, double *lna, double *
     /* we could do both calculations together. but it doesn't cost much time -
      * so why bother?
      */
-    bessel_lnInuKnu(l-1, chi, &lnIlm, &lnKlm);
-    bessel_lnInuKnu(l,   chi, &lnIlp, &lnKlp);
+    bessel_logInuKnu(l-1, chi, &logIlm, &logKlm);
+    bessel_logInuKnu(l,   chi, &logIlp, &logKlp);
 
     /* Calculate b_l(chi), i.e. lnb */
-    *lnb = M_LOGPI-M_LOG2+lnIlp-lnKlp;
+    *lnb = M_LOGPI-M_LOG2+logIlp-logKlp;
 
     /* We want to calculate
      *
@@ -451,9 +451,9 @@ void casimir_lnab_perf(casimir_t *self, double xi_, int l, double *lna, double *
      */
 
     /* numerator and denominator to calculate al */
-    double ratio = bessel_continued_fraction(l-1, chi);
-    double numerator = M_LOGPI-M_LOG2 + lnIlp + log(chi*ratio - l);
-    double denominator = logadd(logi(l)+lnKlp, log_chi+lnKlm);
+    double ratio = bessel_continued_fraction(l-0.5, chi);
+    double numerator = M_LOGPI-M_LOG2 + logIlp + log(chi*ratio - l);
+    double denominator = logadd(logi(l)+logKlp, log_chi+logKlm);
 
     *lna = numerator-denominator;
 }
@@ -518,23 +518,23 @@ void casimir_lnab(casimir_t *self, double xi_, int l, double *lna, double *lnb)
     const double ln_n = log1p(epsilonm1)/2;
     const double n    = exp(ln_n);
 
-    double lnIlp, lnKlp, lnIlm, lnKlm, lnIlp_nchi, lnKlp_nchi, lnIlm_nchi, lnKlm_nchi;
+    double logIlp, logKlp, logIlm, logKlm, logIlp_nchi, logKlp_nchi, logIlm_nchi, logKlm_nchi;
 
-    bessel_lnInuKnu(l,   chi, &lnIlp, &lnKlp); /* I_{l+0.5}(χ), K_{l+0.5}(χ) */
-    bessel_lnInuKnu(l-1, chi, &lnIlm, &lnKlm); /* K_{l-0.5}(χ), K_{l-0.5}(χ) */
+    bessel_logInuKnu(l,   chi, &logIlp, &logKlp); /* I_{l+0.5}(χ), K_{l+0.5}(χ) */
+    bessel_logInuKnu(l-1, chi, &logIlm, &logKlm); /* K_{l-0.5}(χ), K_{l-0.5}(χ) */
 
-    bessel_lnInuKnu(l,   n*chi, &lnIlp_nchi, &lnKlp_nchi); /* I_{l+0.5}(nχ), K_{l+0.5}(nχ) */
-    bessel_lnInuKnu(l-1, n*chi, &lnIlm_nchi, &lnKlm_nchi); /* K_{l-0.5}(nχ), K_{l-0.5}(nχ) */
+    bessel_logInuKnu(l,   n*chi, &logIlp_nchi, &logKlp_nchi); /* I_{l+0.5}(nχ), K_{l+0.5}(nχ) */
+    bessel_logInuKnu(l-1, n*chi, &logIlm_nchi, &logKlm_nchi); /* K_{l-0.5}(nχ), K_{l-0.5}(nχ) */
 
-    double ratio   = bessel_continued_fraction(l-1,   chi);
-    double ratio_n = bessel_continued_fraction(l-1, n*chi);
+    double ratio   = bessel_continued_fraction(l-0.5,   chi);
+    double ratio_n = bessel_continued_fraction(l-0.5, n*chi);
 
-    double ln_gammaB = lnIlp_nchi + lnIlp + ln_chi + log( n*ratio_n-ratio );
-    double ln_gammaC = log(epsilonm1)+lnIlp_nchi + logadd(ln_chi+lnKlm, ln_l+lnKlp);
-    double ln_gammaD = ln_chi + logadd(lnIlp_nchi+lnKlm, ln_n+lnKlp+lnIlm_nchi);
+    double ln_gammaB = logIlp_nchi + logIlp + ln_chi + log( n*ratio_n-ratio );
+    double ln_gammaC = log(epsilonm1)+logIlp_nchi + logadd(ln_chi+logKlm, ln_l+logKlp);
+    double ln_gammaD = ln_chi + logadd(logIlp_nchi+logKlm, ln_n+logKlp+logIlm_nchi);
 
     /* ln_gammaA - ln_gammba_B */
-    double num = lnIlp_nchi + lnIlp + log( -l*epsilonm1 + n*chi*( n*ratio - ratio_n ) );
+    double num = logIlp_nchi + logIlp + log( -l*epsilonm1 + n*chi*( n*ratio - ratio_n ) );
 
     *lnb = M_LOGPI-M_LOG2 + ln_gammaB-ln_gammaD;
     *lna = M_LOGPI-M_LOG2 + num - logadd(ln_gammaC, ln_gammaD);
