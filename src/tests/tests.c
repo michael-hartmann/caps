@@ -34,6 +34,8 @@ int main(int argc, char *argv[])
     test_besselI();
     test_besselK();
 
+    test_log_besselKn();
+
     test_mie();
     test_mie_drude();
 
