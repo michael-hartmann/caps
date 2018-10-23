@@ -1,23 +1,23 @@
 #ifndef __BESSEL_H
 #define __BESSEL_H
 
-double besselI0(double x) __attribute__ ((pure));
-double besselI0e(double x) __attribute__ ((pure));
+double bessel_I0(double x) __attribute__ ((pure));
+double bessel_I0e(double x) __attribute__ ((pure));
 
-double besselI1(double x) __attribute__ ((pure));
-double besselI1e(double x) __attribute__ ((pure));
+double bessel_I1(double x) __attribute__ ((pure));
+double bessel_I1e(double x) __attribute__ ((pure));
 
-double besselK0(double x) __attribute__ ((pure));
-double besselK0e(double x) __attribute__ ((pure));
+double bessel_K0(double x) __attribute__ ((pure));
+double bessel_K0e(double x) __attribute__ ((pure));
 
-double besselK1(double x) __attribute__ ((pure));
-double besselK1e(double x) __attribute__ ((pure));
+double bessel_K1(double x) __attribute__ ((pure));
+double bessel_K1e(double x) __attribute__ ((pure));
 
-double besselI(int n, double x) __attribute__ ((pure));
+double bessel_In(int n, double x) __attribute__ ((pure));
 
-void log_besselK_array(int n, double x, double out[]);
+void log_besselKn_array(int n, double x, double out[]);
 
-double log_besselK(int n, double x) __attribute__ ((pure));
+double log_besselKn(int n, double x) __attribute__ ((pure));
 
 double bessel_continued_fraction(double nu, double x) __attribute__ ((pure));
 

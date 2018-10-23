@@ -13,6 +13,11 @@
 #include "constants.h"
 #include "bessel.h"
 
+/**
+ * @name modified Bessel functions for orders n=0,1
+ * @{
+ */
+
 /* Chebyshev coefficients for exp(-x) I0(x)
  * in the interval [0,8].
  *
@@ -320,16 +325,13 @@ static double chbevl(double x, double array[], int n)
  * @param [in] x argument
  * @retval I0 \f$I_0(x)\f$
  */
-double besselI0(double x)
+double bessel_I0(double x)
 {
     if(x < 0)
         x = -x;
 
     if(x <= 8.0)
-    {
-        double y = (x/2.0) - 2.0;
-        return(exp(x)*chbevl(y,I0_A,30));
-    }
+        return exp(x)*chbevl(x/2-2,I0_A,30);
 
     return exp(x)*chbevl(32.0/x-2.0,I0_B,25)/sqrt(x);
 }
@@ -339,33 +341,32 @@ double besselI0(double x)
  *
  * The function returns \f$\exp(-|x|) I_0(x)\f$.
  *
- * See \ref besselI0.
+ * See \ref bessel_I0.
  *
  * @param [in] x argument
  * @retval I0exp \f$\exp(-|x|) I_0(x)\f$
  */
-double besselI0e(double x)
+double bessel_I0e(double x)
 {
     if(x < 0)
         x = -x;
 
     if(x <= 8.0)
-    {
-        double y = (x/2.0) - 2.0;
-        return chbevl(y,I0_A,30);
-    }
+        return chbevl(x/2-2,I0_A,30);
 
     return chbevl(32.0/x-2.0,I0_B,25)/sqrt(x);
 }
 
 /** @brief Modified Bessel function \f$K_0(x)\f$
  *
- * The range is partitioned into the two intervals \f$[0,8]\f$ and \f$(8,\infty)\f$.  Chebyshev polynomial expansions are employed in each interval.
+ * The range is partitioned into the two intervals \f$[0,8]\f$ and
+ * \f$(8,\infty)\f$. Chebyshev polynomial expansions are employed in each
+ * interval.
  *
  * @param [in] x argument
  * @retval K0 \f$K_0(x)\f$
  */
-double besselK0(double x)
+double bessel_K0(double x)
 {
     double y,z;
 
@@ -375,7 +376,7 @@ double besselK0(double x)
     if(x <= 2.0)
     {
         y = x*x-2.0;
-        return chbevl(y, K0_A, 10)-log(0.5*x)*besselI0(x);
+        return chbevl(y, K0_A, 10)-log(0.5*x)*bessel_I0(x);
     }
 
     z = 8.0/x-2.0;
@@ -388,12 +389,12 @@ double besselK0(double x)
  *
  * The function returns \f$\exp(x) K_0(x)\f$.
  *
- * See \ref besselK0.
+ * See \ref bessel_K0.
  *
  * @param [in] x argument
  * @retval K0exp \f$\exp(x) K_0(x)\f$
  */
-double besselK0e(double x)
+double bessel_K0e(double x)
 {
     double y;
 
@@ -403,7 +404,7 @@ double besselK0e(double x)
     if(x <= 2)
     {
         y = x*x-2.0;
-        y = chbevl(y, K0_A, 10)-log(0.5*x)*besselI0(x);
+        y = chbevl(y, K0_A, 10)-log(0.5*x)*bessel_I0(x);
         return(y*exp(x));
     }
 
@@ -420,7 +421,7 @@ double besselK0e(double x)
  * @param [in] x argument
  * @retval I1 \f$I_1(x)\f$
  */
-double besselI1(double x)
+double bessel_I1(double x)
 {
     double z = fabs(x);
 
@@ -440,12 +441,12 @@ double besselI1(double x)
  *
  * The function returns \f$\exp(-|x|) I_1(x)\f$.
  *
- * See \ref besselI1.
+ * See \ref bessel_I1.
  *
  * @param [in] x argument
  * @retval I1e \f$\exp(-|x|) I_1(x)\f$
  */
-double besselI1e(double x)
+double bessel_I1e(double x)
 {
     double z = fabs(x);
 
@@ -471,7 +472,7 @@ double besselI1e(double x)
  * @param [in] x argument
  * @retval K1 \f$K_1(x)\f$
  */
-double besselK1(double x)
+double bessel_K1(double x)
 {
     double y, z;
 
@@ -482,7 +483,7 @@ double besselK1(double x)
     if(x <= 2.0)
     {
         y = x*x-2.0;
-        return log(z)*besselI1(x)+chbevl(y, K1_A, 11)/x;
+        return log(z)*bessel_I1(x)+chbevl(y, K1_A, 11)/x;
     }
 
     return exp(-x)*chbevl(8.0/x-2.0, K1_B, 25)/sqrt(x);
@@ -492,12 +493,12 @@ double besselK1(double x)
  *
  * The function returns \f$\exp(x) K_1(x)\f$.
  *
- * See \ref besselK1.
+ * See \ref bessel_K1.
  *
  * @param [in] x argument
  * @retval K1exp \f$\exp(x) K_1(x)\f$
  */
-double besselK1e(double x)
+double bessel_K1e(double x)
 {
     double y;
 
@@ -507,18 +508,25 @@ double besselK1e(double x)
     if(x <= 2)
     {
         y = x*x-2.0;
-        y = log(0.5*x)*besselI1(x)+chbevl(y, K1_A, 11)/x;
+        y = log(0.5*x)*bessel_I1(x)+chbevl(y, K1_A, 11)/x;
         return y*exp(x);
     }
 
     return chbevl(8.0/x-2.0, K1_B, 25)/sqrt(x);
 }
 
+/*@}*/
+
+/**
+ * @name modified Bessel functions for integer orders
+ * @{
+ */
+
 #define ACC 40.0
 #define BIGNO 1e10
 #define BIGNI 1e-10
 
-/** @brief Modified Bessel function $\fI_n(x)\f$ for integer order \f$n\f$
+/** @brief Modified Bessel function \f$I_n(x)\f$ for integer order \f$n\f$
  *
  * For \f$n<0\f$ NAN is returned.
  *
@@ -528,14 +536,14 @@ double besselK1e(double x)
  * @param [in] x argument
  * @retval In \f$I_n(x)\f$
  */
-double besselI(int n, double x)
+double bessel_In(int n, double x)
 {
     if(n < 0)
         return NAN;
     if(n == 0)
-        return besselI0(x);
+        return bessel_I0(x);
     if(n == 1)
-        return besselI1(x);
+        return bessel_I1(x);
 
     if(x == 0)
         return 0;
@@ -560,11 +568,11 @@ double besselI(int n, double x)
             ans = bip;
     }
 
-    ans *= besselI0(x)/bi;
-    return x < 0.0 && (n & 1) ? -ans : ans;
+    ans *= bessel_I0(x)/bi;
+    return x < 0 && (n & 1) ? -ans : ans;
 }
 
-/** @brief Logarithm of modified Bessel function $\fK_n(x)\f$ for integer orders
+/** @brief Logarithm of modified Bessel function \f$K_n(x)\f$ for integer orders
  *
  * The Bessel functions are computed using a recurrence relation.
  *
@@ -572,7 +580,7 @@ double besselI(int n, double x)
  * @param [in]  x argument
  * @param [out] K_n(x) array of n+1 elements with the values of \f$K_0(x), K_1(x),\dots, K_n(x)\f$
  */
-void log_besselK_array(int n, double x, double out[])
+void log_besselKn_array(int n, double x, double out[])
 {
     /* K_0(x) */
     {
@@ -591,7 +599,7 @@ void log_besselK_array(int n, double x, double out[])
              out[0] = 0.5*log(M_PI/2/x) - x + log1p( k*(-1+9./2*k*(1-25./3*k)) );
         }
         else
-            out[0] = log(besselK0(x));
+            out[0] = log(bessel_K0(x));
     }
 
     if(n == 0)
@@ -611,7 +619,7 @@ void log_besselK_array(int n, double x, double out[])
              out[1] = 0.5*log(M_PI/2/x) -x + log1p(3*k*(1+5./2*k *(-1+21./3*k)));
         }
         else
-            out[1] = log(besselK1(x));
+            out[1] = log(bessel_K1(x));
     }
 
     for(int l = 1; l < n; l++)
@@ -622,7 +630,7 @@ void log_besselK_array(int n, double x, double out[])
     }
 }
 
-/** @brief Logarithm of modified Bessel function $\fK_n(x)\f$ for integer order \f$n\f$
+/** @brief Logarithm of modified Bessel function \f$K_n(x)\f$ for integer order \f$n\f$
  *
  * The Bessel functions are computed using a recurrence relation.
  *
@@ -630,14 +638,21 @@ void log_besselK_array(int n, double x, double out[])
  * @param [in]  x argument
  * @retval Kn \f$\log K_n(x)\f$
  */
-double log_besselK(int n, double x)
+double log_besselKn(int n, double x)
 {
     double *out = malloc((n+1)*sizeof(double));
-    log_besselK_array(n, x, out);
+    log_besselKn_array(n, x, out);
     double v = out[n];
     free(out);
     return v;
 }
+
+/*@}*/
+
+/**
+ * @name modified Bessel functions for non-integer orders
+ * @{
+ */
 
 /**
  * @brief Calculate \f$I_\nu(x)/I_{\nu+1}(x)\f$
@@ -710,6 +725,39 @@ double bessel_lnKnu(int nu, double x)
     return lnKnu;
 }
 
+/** @brief Compute modified Bessel function \f$I_\nu(x)\f$ using asymptotic expansion
+ *
+ * See https://dlmf.nist.gov/10.41#ii
+ *
+ * @param [in] order
+ * @param [in] argument
+ * @param [out] relerror estimated relative error
+ * @retval logI \f$\log I_\nu(x)\f$
+ */
+static double __lnbesselI_asymp(double nu, double x, double *relerror)
+{
+    const double z = x/nu;
+    const double p2 = 1/(1+z*z); /* p² */
+
+    const double U5 = 59535/262144.+p2*(-67608983/9175040.+p2*(250881631/5898240.+p2*(-108313205/1179648.+p2*(5391411025/63700992.-5391411025/191102976.*p2))));
+    const double U4 = 3675/32768. + p2*(-96833/40960.+p2*(144001/16384.+p2*(-7436429/663552.+37182145/7962624.*p2)));
+    const double U3 = 75/1024.+p2*(-4563/5120.+p2*(17017/9216.-85085/82944.*p2));
+    const double U2 = 9/128.+p2*(-77/192.+385/1152.*p2);
+    const double U1 = 1/8.-5/24.*p2;
+    /* U0 = 1 */
+
+    const double a = sqrt(1+z*z);
+    const double y = 1/(nu*a);
+    const double sum = log1p(y*(U1 + y*(U2 + y*(U3 + y*(U4 + U5*y)))));
+
+    const double eta = a+log(z/(1+a));
+    const double prefactor = nu*eta-log(2*M_PI*nu*a)/2;
+
+	*relerror = U5*y*y*y*y*y;
+
+    return prefactor+sum;
+}
+
 /** @brief Compute modified Bessel functions of first and second kind
  *
  * This function computes the logarithm of the modified Bessel functions
@@ -763,7 +811,18 @@ void bessel_lnInuKnu(int nu, const double x, double *lnInu_p, double *lnKnu_p)
 
     if(lnInu_p != NULL)
     {
+		if(nu > 100)
+        {
+            double relerr;
+            *lnInu_p = __lnbesselI_asymp(nu+0.5, x, &relerr);
+
+            if(relerr < 1e-12)
+                return;
+        }
+
         double ratio = bessel_continued_fraction(nu+0.5,x);
         *lnInu_p = -logx-logadd(lnKnup, lnKnu-log(ratio));
     }
 }
+
+/*@}*/
