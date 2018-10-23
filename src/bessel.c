@@ -694,7 +694,7 @@ static double __lnbesselI_asymp(double nu, double x, double *relerror)
     const double eta = a+log(z/(1+a));
     const double prefactor = nu*eta-log(2*M_PI*nu*a)/2;
 
-	*relerror = U5*y*y*y*y*y;
+    *relerror = U5*y*y*y*y*y;
 
     return prefactor+sum;
 }
@@ -752,7 +752,7 @@ void bessel_logInuKnu(int nu, const double x, double *logInu_p, double *logKnu_p
 
     if(logInu_p != NULL)
     {
-		if(nu > 100)
+    if(nu > 100)
         {
             double relerr;
             *logInu_p = __lnbesselI_asymp(nu+0.5, x, &relerr);
