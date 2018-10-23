@@ -134,7 +134,7 @@ double K_estimate(int nu, int m, double alpha, double eps, double *a, double *b,
             *a = 1;
             *b = 1-log(eps)/alpha;
 
-            const double logt1 = 1.5*log(alpha)+log(2/M_PI)/2+bessel_lnKnu(nu,alpha);
+            const double logt1 = 1.5*log(alpha)+log(2/M_PI)/2+bessel_logKnu(nu,alpha);
             const double logt2 = -alpha+log(alpha+nu*(nu+1)/2.);
             const double arg = -exp(logt2-logt1);
 
@@ -316,20 +316,20 @@ static double _casimir_integrate_K(integration_t *self, int nu, polarization_t p
             terms[0].s = +1;
 
             /* t2 */
-            terms[1].v = logC+logi(nu+1)+logi(nu+2)+bessel_lnKnu(nu,alpha);
+            terms[1].v = logC+logi(nu+1)+logi(nu+2)+bessel_logKnu(nu,alpha);
             terms[1].s = +1;
 
             /* t3 */
-            terms[2].v = logC+log(2)+log(alpha)+bessel_lnKnu(nu+1,alpha);
+            terms[2].v = logC+log(2)+log(alpha)+bessel_logKnu(nu+1,alpha);
             terms[2].s = -1;
 
             sign_t dummy;
             return logadd_ms(terms, 3, &dummy);
         }
         else if(nu == (2*m))
-            return -0.5*log(M_PI)+(m-0.5)*log(2/alpha)+lfac(m-1)+lfac2(4*m-1)+bessel_lnKnu(m-1,alpha);
+            return -0.5*log(M_PI)+(m-0.5)*log(2/alpha)+lfac(m-1)+lfac2(4*m-1)+bessel_logKnu(m-1,alpha);
         else if(nu == (2*m+1))
-            return -0.5*log(M_PI)+(m-0.5)*log(2/alpha)+lfac(m-1)+lfac2(4*m-1)+bessel_lnKnu(m,alpha)+logi(4*m+1);
+            return -0.5*log(M_PI)+(m-0.5)*log(2/alpha)+lfac(m-1)+lfac2(4*m-1)+bessel_logKnu(m,alpha)+logi(4*m+1);
         else if(m == 1)
         {
             /* use analytical result for m=1 and PR
@@ -351,7 +351,7 @@ static double _casimir_integrate_K(integration_t *self, int nu, polarization_t p
                 /* integral: α*exp(-α)*( ae1 + ae2 + ae3 + ... -ν(ν+1)/(2α)) */
                 return log(alpha)-alpha+log(ae1+ae2+ae3-nu*(nu+1.)/(2*alpha));
 
-            const double logt1 = 1.5*log(alpha)+log(2/M_PI)/2+bessel_lnKnu(nu,alpha);
+            const double logt1 = 1.5*log(alpha)+log(2/M_PI)/2+bessel_logKnu(nu,alpha);
             const double logt2 = -alpha+log(alpha+nu*(nu+1.)/2.);
 
             return logt1 + log1p(-exp(logt2-logt1));
@@ -925,7 +925,7 @@ double casimir_integrate_plasma(integration_plasma_t *self, int l1, int l2, int 
     *ratio1 = cache_lookup(self->cache_ratio, l1);
     if(isnan(*ratio1))
     {
-        *ratio1 = bessel_continued_fraction(l1-1, self->alpha);
+        *ratio1 = bessel_continued_fraction(l1-0.5, self->alpha);
         cache_insert(self->cache_ratio, l1, *ratio1);
     }
 
@@ -933,7 +933,7 @@ double casimir_integrate_plasma(integration_plasma_t *self, int l1, int l2, int 
     *ratio2 = cache_lookup(self->cache_ratio, l2);
     if(isnan(*ratio2))
     {
-        *ratio2 = bessel_continued_fraction(l2-1, self->alpha);
+        *ratio2 = bessel_continued_fraction(l2-0.5, self->alpha);
         cache_insert(self->cache_ratio, l2, *ratio2);
     }
 
