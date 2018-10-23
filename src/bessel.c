@@ -368,20 +368,13 @@ double bessel_I0e(double x)
  */
 double bessel_K0(double x)
 {
-    double y,z;
-
     if(x <= 0)
         return NAN;
 
     if(x <= 2.0)
-    {
-        y = x*x-2.0;
-        return chbevl(y, K0_A, 10)-log(0.5*x)*bessel_I0(x);
-    }
+        return chbevl(x*x-2, K0_A, 10)-log(0.5*x)*bessel_I0(x);
 
-    z = 8.0/x-2.0;
-    y = exp(-x)*chbevl(z, K0_B, 25)/sqrt(x);
-    return y;
+    return exp(-x)*chbevl(8/x-2, K0_B, 25)/sqrt(x);
 }
 
 
@@ -396,21 +389,13 @@ double bessel_K0(double x)
  */
 double bessel_K0e(double x)
 {
-    double y;
-
     if(x <= 0)
         return NAN;
 
     if(x <= 2)
-    {
-        y = x*x-2.0;
-        y = chbevl(y, K0_A, 10)-log(0.5*x)*bessel_I0(x);
-        return(y*exp(x));
-    }
+        return exp(x)*(chbevl(x*x-2, K0_A, 10)-log(0.5*x)*bessel_I0(x));
 
-    y = chbevl(8.0/x-2.0, K0_B, 25)/sqrt(x);
-
-    return y;
+    return chbevl(8/x-2, K0_B, 25)/sqrt(x);
 }
 
 /** @brief Modified Bessel function \f$I_1(x)\f$
@@ -425,15 +410,14 @@ double bessel_I1(double x)
 {
     double z = fabs(x);
 
-    if(z <= 8.0)
-    {
-        double y = (z/2.0)-2.0;
-        z = chbevl(y,I1_A,29)*z*exp(z);
-    }
+    if(z <= 8)
+        z = chbevl(z/2-2,I1_A,29)*z*exp(z);
     else
-        z = exp(z)*chbevl(32.0/z-2.0,I1_B,25)/sqrt(z);
+        z = exp(z)*chbevl(32/z-2,I1_B,25)/sqrt(z);
+
     if(x < 0)
-        z = -z;
+        return -z;
+
     return z;
 }
 
@@ -450,16 +434,13 @@ double bessel_I1e(double x)
 {
     double z = fabs(x);
 
-    if(z <= 8.0)
-    {
-        double y = (z/2.0)-2.0;
-        z = chbevl(y,I1_A,29)*z;
-    }
+    if(z <= 8)
+        z = chbevl(z/2-2,I1_A,29)*z;
     else
         z = chbevl(32.0/z-2.0,I1_B,25)/sqrt(z);
 
-    if(x < 0.0)
-        z = -z;
+    if(x < 0)
+        return -z;
 
     return z;
 }
@@ -474,17 +455,13 @@ double bessel_I1e(double x)
  */
 double bessel_K1(double x)
 {
-    double y, z;
+    double z = 0.5*x;
 
-    z = 0.5*x;
     if(z <= 0)
         return NAN;
 
     if(x <= 2.0)
-    {
-        y = x*x-2.0;
-        return log(z)*bessel_I1(x)+chbevl(y, K1_A, 11)/x;
-    }
+        return log(z)*bessel_I1(x)+chbevl(x*x-2, K1_A, 11)/x;
 
     return exp(-x)*chbevl(8.0/x-2.0, K1_B, 25)/sqrt(x);
 }
@@ -500,17 +477,11 @@ double bessel_K1(double x)
  */
 double bessel_K1e(double x)
 {
-    double y;
-
     if(x <= 0)
         return NAN;
 
     if(x <= 2)
-    {
-        y = x*x-2.0;
-        y = log(0.5*x)*bessel_I1(x)+chbevl(y, K1_A, 11)/x;
-        return y*exp(x);
-    }
+        return exp(x)*(log(0.5*x)*bessel_I1(x)+chbevl(x*x-2, K1_A, 11)/x);
 
     return chbevl(8.0/x-2.0, K1_B, 25)/sqrt(x);
 }
