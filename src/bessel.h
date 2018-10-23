@@ -2,16 +2,16 @@
 #define __BESSEL_H
 
 double bessel_I0(double x) __attribute__ ((pure));
-double bessel_I0e(double x) __attribute__ ((pure));
-
 double bessel_I1(double x) __attribute__ ((pure));
-double bessel_I1e(double x) __attribute__ ((pure));
 
 double bessel_K0(double x) __attribute__ ((pure));
-double bessel_K0e(double x) __attribute__ ((pure));
-
 double bessel_K1(double x) __attribute__ ((pure));
-double bessel_K1e(double x) __attribute__ ((pure));
+
+double bessel_logI0(double x) __attribute__ ((pure));
+double bessel_logK0(double x) __attribute__ ((pure));
+
+double bessel_logI1(double x) __attribute__ ((pure));
+double bessel_logK1(double x) __attribute__ ((pure));
 
 double bessel_In(int n, double x) __attribute__ ((pure));
 
