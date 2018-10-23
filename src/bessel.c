@@ -319,171 +319,172 @@ static double chbevl(double x, double array[], int n)
 
 /** @brief Modified Bessel function \f$I_0(x)\f$
  *
- * The range is partitioned into the two intervals \f$[0,8]\f$ and \f$(8, \infty)\f$.
- * Chebyshev polynomial expansions are employed in each interval.
+ * See \ref bessel_logI0.
  *
  * @param [in] x argument
  * @retval I0 \f$I_0(x)\f$
  */
 double bessel_I0(double x)
 {
-    if(x < 0)
-        x = -x;
-
-    if(x <= 8.0)
-        return exp(x)*chbevl(x/2-2,I0_A,30);
-
-    return exp(x)*chbevl(32.0/x-2.0,I0_B,25)/sqrt(x);
+    return exp(bessel_logI0(x));
 }
 
 
-/** @brief Modified Bessel function \f$I_0(x)\f$, exponentially scaled
+/** @brief Logarithm of modified Bessel function \f$I_0(x)\f$
  *
- * The function returns \f$\exp(-|x|) I_0(x)\f$.
- *
- * See \ref bessel_I0.
+ * The range is partitioned into the two intervals \f$[0,8]\f$ and \f$(8, \infty)\f$.
+ * Chebyshev polynomial expansions are employed in each interval.
  *
  * @param [in] x argument
- * @retval I0exp \f$\exp(-|x|) I_0(x)\f$
+ * @retval logI0 \f$\log I_0(x)\f$
  */
-double bessel_I0e(double x)
+double bessel_logI0(double x)
 {
-    if(x < 0)
-        x = -x;
-
     if(x <= 8.0)
-        return chbevl(x/2-2,I0_A,30);
+        return x+log(chbevl(x/2-2,I0_A,30));
 
-    return chbevl(32.0/x-2.0,I0_B,25)/sqrt(x);
+    return x+log(chbevl(32/x-2,I0_B,25))-0.5*log(x);
 }
+
 
 /** @brief Modified Bessel function \f$K_0(x)\f$
  *
- * The range is partitioned into the two intervals \f$[0,8]\f$ and
- * \f$(8,\infty)\f$. Chebyshev polynomial expansions are employed in each
- * interval.
+ * See \ref bessel_logK0.
  *
  * @param [in] x argument
  * @retval K0 \f$K_0(x)\f$
  */
 double bessel_K0(double x)
 {
-    if(x <= 0)
-        return NAN;
-
-    if(x <= 2.0)
-        return chbevl(x*x-2, K0_A, 10)-log(0.5*x)*bessel_I0(x);
-
-    return exp(-x)*chbevl(8/x-2, K0_B, 25)/sqrt(x);
+    return exp(bessel_logK0(x));
 }
 
 
-/** @brief Modified Bessel function \f$K_0(x)\f$, exponentially scaled
+/** @brief Logarithm of modified Bessel function \f$K_0(x)\f$
  *
- * The function returns \f$\exp(x) K_0(x)\f$.
+ * For small arguments \f$x<10^{-8}\f$, the limiting form
+ * \f$K_0(x) \approx -\log(x/2)-\gamma\f$ for \f$x\to0\f$ where \f$\gamma\f$
+ * denotes the Euler-Mascheroni constant is used.
  *
- * See \ref bessel_K0.
+ * For large arguments \f$x>700\f$, the Hankel expansion
+ * \f[
+ * K_0(x) \approx \sqrt{\frac{\pi}{2x}} e^{-x} \left(1-k+\frac{9}{2} k^2 - \frac{225}{6} k^3\right), \quad k=\frac{1}{8x}
+ * \f]
+ * is used.
+ *
+ * For intermediate values, the range is partitioned into the two intervals
+ * \f$[10^{-8},8]\f$ and \f$(8,700)\f$ and Chebyshev polynomial expansions are
+ * employed in each interval.
  *
  * @param [in] x argument
- * @retval K0exp \f$\exp(x) K_0(x)\f$
+ * @retval logK0 \f$\log K_0(x)\f$
  */
-double bessel_K0e(double x)
+double bessel_logK0(double x)
 {
     if(x <= 0)
         return NAN;
 
-    if(x <= 2)
-        return exp(x)*(chbevl(x*x-2, K0_A, 10)-log(0.5*x)*bessel_I0(x));
+    if(x < 1e-8)
+    {
+        /* K_0(x) ≈ -log(x/2)-gamma */
+        const double gamma = 0.5772156649015328606;
+        return log(-log(x/2)-gamma);
+    }
+    else if(x > 700)
+    {
+        /* Hankel expansion
+         * K_0(x) ≈ sqrt(pi/2x)*exp(-x) * ( 1 - k + 9/2*k² - 225/6*k³ ), k=1/8x
+         */
+         const double k = 1./8/x;
+         return 0.5*log(M_PI/2/x) - x + log1p( k*(-1+9./2*k*(1-25./3*k)) );
+    }
 
-    return chbevl(8/x-2, K0_B, 25)/sqrt(x);
+    if(x <= 2.0)
+        return log(chbevl(x*x-2, K0_A, 10)-log(0.5*x)*bessel_I0(x));
+
+    return -x-0.5*log(x)+log(chbevl(8/x-2, K0_B, 25));
 }
+
 
 /** @brief Modified Bessel function \f$I_1(x)\f$
  *
- * The range is partitioned into the two intervals \f$[0,8]\f$ and \f$(8,
- * \infty)\f$. Chebyshev polynomial expansions are employed in each interval.
+ * See \ref bessel_logI1.
  *
  * @param [in] x argument
  * @retval I1 \f$I_1(x)\f$
  */
 double bessel_I1(double x)
 {
-    double z = fabs(x);
-
-    if(z <= 8)
-        z = chbevl(z/2-2,I1_A,29)*z*exp(z);
-    else
-        z = exp(z)*chbevl(32/z-2,I1_B,25)/sqrt(z);
-
-    if(x < 0)
-        return -z;
-
-    return z;
+    return exp(bessel_logI1(x));
 }
 
-/** @brief Modified Bessel function \f$I_1(x)\f$, exponentially scaled
+
+/** @brief Logarithm of modified Bessel function \f$I_1(x)\f$
  *
- * The function returns \f$\exp(-|x|) I_1(x)\f$.
- *
- * See \ref bessel_I1.
+ * The range is partitioned into the two intervals \f$[0,8]\f$ and \f$(8,
+ * \infty)\f$. Chebyshev polynomial expansions are employed in each interval.
  *
  * @param [in] x argument
- * @retval I1e \f$\exp(-|x|) I_1(x)\f$
+ * @retval logI1 \f$\log I_1(x)\f$
  */
-double bessel_I1e(double x)
+double bessel_logI1(double x)
 {
-    double z = fabs(x);
-
-    if(z <= 8)
-        z = chbevl(z/2-2,I1_A,29)*z;
+    if(x <= 8)
+        return x+log(x)+log(chbevl(x/2-2,I1_A,29));
     else
-        z = chbevl(32.0/z-2.0,I1_B,25)/sqrt(z);
-
-    if(x < 0)
-        return -z;
-
-    return z;
+        return x+log(chbevl(32/x-2,I1_B,25))-0.5*log(x);
 }
 
 /** @brief Modified Bessel function \f$K_1(x)\f$
  *
- * The range is partitioned into the two intervals \f$[0,2]\f$ and \f$(2,
- * \infty)\f$. Chebyshev polynomial expansions are employed in each interval.
+ * See \ref bessel_logK1.
  *
  * @param [in] x argument
  * @retval K1 \f$K_1(x)\f$
  */
 double bessel_K1(double x)
 {
-    double z = 0.5*x;
-
-    if(z <= 0)
-        return NAN;
-
-    if(x <= 2.0)
-        return log(z)*bessel_I1(x)+chbevl(x*x-2, K1_A, 11)/x;
-
-    return exp(-x)*chbevl(8.0/x-2.0, K1_B, 25)/sqrt(x);
+    return exp(bessel_logK1(x));
 }
 
-/** @brief Modified Bessel function \f$K_1(x)\f$, exponentially scaled
+/** @brief Logarithm of modified Bessel function \f$K_1(x)\f$
  *
- * The function returns \f$\exp(x) K_1(x)\f$.
+ * For small arguments \f$x<10^{-8}\f$, the limiting form
+ * \f$K_1(x)\approx 1/x\f$ for \f$x\to0\f$ is used.
  *
- * See \ref bessel_K1.
+ * For large arguments \f$x>700\f$, the Hankel expansion
+ * \f[
+ * K_1(x) \approx \sqrt{\frac{\pi}{2x}} e^{-x} \left(1 + \frac{3}{8x} - \frac{15}{128x^2} + \frac{315}{3072x^3}\right)
+ * \f]
+ * is used.
+ *
+ * For intermediate values, the range is partitioned into the two intervals
+ * \f$[10^{-8},8]\f$ and \f$(8,700)\f$ and Chebyshev polynomial expansions are
+ * employed in each interval.
  *
  * @param [in] x argument
- * @retval K1exp \f$\exp(x) K_1(x)\f$
+ * @retval logK1 \f$\log K_1(x)\f$
  */
-double bessel_K1e(double x)
+double bessel_logK1(double x)
 {
-    if(x <= 0)
-        return NAN;
+    if(x < 1e-8)
+        /* K_1(x) ≈ 1/x */
+        return -log(x);
+    else if(x > 700)
+    {
+        /* Hankel expansion
+         * K_1(x) ≈ sqrt(pi/2x)*exp(-x) * ( 1 + 3/8x - 15/128x² + 315/3072x³ )
+         */
+        double k = 1/(8*x);
+        return 0.5*log(M_PI/2/x) -x + log1p(3*k*(1+5./2*k *(-1+21./3*k)));
+    }
+
+    /* use Chebyshev polynomial expansions */
 
     if(x <= 2)
-        return exp(x)*(log(0.5*x)*bessel_I1(x)+chbevl(x*x-2, K1_A, 11)/x);
+        return log(log(0.5*x)*bessel_I1(x)+chbevl(x*x-2, K1_A, 11)/x);
 
-    return chbevl(8.0/x-2.0, K1_B, 25)/sqrt(x);
+    return -x+log(chbevl(8.0/x-2.0, K1_B, 25))-0.5*log(x);
 }
 
 /*@}*/
@@ -554,44 +555,13 @@ double bessel_In(int n, double x)
 void log_besselKn_array(int n, double x, double out[])
 {
     /* K_0(x) */
-    {
-        if(x < 1e-100)
-        {
-            /* K_0(x) ≈ -log(x/2)-gamma */
-            double gamma = 0.5772156649015328606;
-            out[0] = log(-log(x/2)-gamma);
-        }
-        else if(x > 650)
-        {
-            /* Hankel expansion
-             * K_0(x) ≈ sqrt(pi/2x)*exp(-x) * ( 1 - k + 9/2*k² - 225/6*k³ ), k=1/8x
-             */
-             double k = 1./8/x;
-             out[0] = 0.5*log(M_PI/2/x) - x + log1p( k*(-1+9./2*k*(1-25./3*k)) );
-        }
-        else
-            out[0] = log(bessel_K0(x));
-    }
+    out[0] = bessel_logK0(x);
 
     if(n == 0)
         return;
 
     /* K_1(x) */
-    {
-        if(x < 1e-8)
-            /* K_1(x) ≈ 1/x */
-            out[1] = -log(x);
-        else if(x > 600)
-        {
-            /* Hankel expansion
-             * K_1(x) ≈ sqrt(pi/2x)*exp(-x) * ( 1 + 3/8x - 15/128x² + 315/3072x³ )
-             */
-             double k = 1/(8*x);
-             out[1] = 0.5*log(M_PI/2/x) -x + log1p(3*k*(1+5./2*k *(-1+21./3*k)));
-        }
-        else
-            out[1] = log(bessel_K1(x));
-    }
+    out[1] = bessel_logK1(x);
 
     for(int l = 1; l < n; l++)
     {
