@@ -702,11 +702,11 @@ double bessel_continued_fraction(double nu, double x)
  * @param [in] x argument
  * @retval logI \f$\log I_{\nu+1/2}(x)\f$
  */
-double bessel_lnInu(int nu, double x)
+double bessel_logInu(int nu, double x)
 {
-    double lnInu;
-    bessel_lnInuKnu(nu, x, &lnInu, NULL);
-    return lnInu;
+    double logInu;
+    bessel_logInuKnu(nu, x, &logInu, NULL);
+    return logInu;
 }
 
 /** @brief Compute \f$\log K_{\nu+1/2}(x)\f$
@@ -718,11 +718,11 @@ double bessel_lnInu(int nu, double x)
  * @param [in] x argument
  * @retval logK \f$K_{\nu+1/2}(x)\f$
  */
-double bessel_lnKnu(int nu, double x)
+double bessel_logKnu(int nu, double x)
 {
-    double lnKnu;
-    bessel_lnInuKnu(nu, x, NULL, &lnKnu);
-    return lnKnu;
+    double logKnu;
+    bessel_logInuKnu(nu, x, NULL, &logKnu);
+    return logKnu;
 }
 
 /** @brief Compute modified Bessel function \f$I_\nu(x)\f$ using asymptotic expansion
@@ -762,29 +762,29 @@ static double __lnbesselI_asymp(double nu, double x, double *relerror)
  *
  * This function computes the logarithm of the modified Bessel functions
  * \f$I_{\nu+1/2}(x)\f$ and \f$K_{\nu+1/2}(x)\f$. The results are saved in
- * lnInu_p and lnKnu_p.
+ * logInu_p and logKnu_p.
  *
- * If lnInu_p or lnKnu_p is NULL, the variable is not referenced.
+ * If logInu_p or logKnu_p is NULL, the variable is not referenced.
  *
  * @param [in] nu order
  * @param [in] x argument
- * @param [out] lnInu_p pointer for \f$\log I_{\nu+1/2}(x)\f$
- * @param [out] lnKnu_p pointer for \f$\log K_{\nu+1/2}(x)\f$
+ * @param [out] logInu_p pointer for \f$\log I_{\nu+1/2}(x)\f$
+ * @param [out] logKnu_p pointer for \f$\log K_{\nu+1/2}(x)\f$
  */
-void bessel_lnInuKnu(int nu, const double x, double *lnInu_p, double *lnKnu_p)
+void bessel_logInuKnu(int nu, const double x, double *logInu_p, double *logKnu_p)
 {
     const double logx = log(x);
     const double invx = 1/x;
 
-    double lnKnu, lnKnup;
+    double logKnu, logKnup;
     double Knu = 1, Knup = 1+invx;
     double prefactor = -x+0.5*(M_LOGPI-M_LOG2-logx);
 
     /* calculate Knu, Knup */
     if(nu == 0)
     {
-        lnKnu  = prefactor+log(Knu);
-        lnKnup = prefactor+log(Knup);
+        logKnu  = prefactor+log(Knu);
+        logKnup = prefactor+log(Knup);
     }
     else
     {
@@ -802,26 +802,26 @@ void bessel_lnInuKnu(int nu, const double x, double *lnInu_p, double *lnKnu_p)
             }
         }
 
-        lnKnup = prefactor+log(Knup);
-        lnKnu  = prefactor+log(Knu);
+        logKnup = prefactor+log(Knup);
+        logKnu  = prefactor+log(Knu);
     }
 
-    if(lnKnu_p != NULL)
-        *lnKnu_p = lnKnu;
+    if(logKnu_p != NULL)
+        *logKnu_p = logKnu;
 
-    if(lnInu_p != NULL)
+    if(logInu_p != NULL)
     {
 		if(nu > 100)
         {
             double relerr;
-            *lnInu_p = __lnbesselI_asymp(nu+0.5, x, &relerr);
+            *logInu_p = __lnbesselI_asymp(nu+0.5, x, &relerr);
 
             if(relerr < 1e-12)
                 return;
         }
 
         double ratio = bessel_continued_fraction(nu+0.5,x);
-        *lnInu_p = -logx-logadd(lnKnup, lnKnu-log(ratio));
+        *logInu_p = -logx-logadd(logKnup, logKnu-log(ratio));
     }
 }
 
