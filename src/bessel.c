@@ -2,7 +2,7 @@
  * @file   bessel.c
  * @author Stephen L. Moshier, Cephes Math Library Release 2.8, June 2000
  * @author Michael Hartmann <michael.hartmann@physik.uni-augsburg.de>
- * @date   July, 2018
+ * @date   October, 2019
  * @brief  Computation of Bessel functions
  */
 
@@ -588,7 +588,7 @@ void log_besselK_array(int n, double x, double out[])
              * K_0(x) ≈ sqrt(pi/2x)*exp(-x) * ( 1 - k + 9/2*k² - 225/6*k³ ), k=1/8x
              */
              double k = 1./8/x;
-             out[0] = log(M_PI/(2*x))/2 - x + log1p( k*(-1+9./2*k*(1-25./3*k)) );
+             out[0] = 0.5*log(M_PI/2/x) - x + log1p( k*(-1+9./2*k*(1-25./3*k)) );
         }
         else
             out[0] = log(besselK0(x));
@@ -608,7 +608,7 @@ void log_besselK_array(int n, double x, double out[])
              * K_1(x) ≈ sqrt(pi/2x)*exp(-x) * ( 1 + 3/8x - 15/128x² + 315/3072x³ )
              */
              double k = 1/(8*x);
-             out[1] = log(M_PI/(2*x))/2 -x + log1p(3*k*(1+5./2*k *(-1+21./3*k)));
+             out[1] = 0.5*log(M_PI/2/x) -x + log1p(3*k*(1+5./2*k *(-1+21./3*k)));
         }
         else
             out[1] = log(besselK1(x));
@@ -616,9 +616,9 @@ void log_besselK_array(int n, double x, double out[])
 
     for(int l = 1; l < n; l++)
     {
-        /* K_{n+1} = K_{n-1} - 2n/x K_n = 2n/x * K_n * log(1+x/2n*K_{n-1}/K_n) */
-        double k = 2./x*l;
-        out[l+1] = log(k)+out[l]+log1p(exp(out[l-1]-out[l])/k);
+        /* K_{n+1} = K_{n-1} + 2n/x K_n = 2n/x * K_n * (1+x/2n*K_{n-1}/K_n) */
+        double k = 0.5*x/l;
+        out[l+1] = -log(k)+out[l]+log1p(exp(out[l-1]-out[l])*k);
     }
 }
 
@@ -640,23 +640,23 @@ double log_besselK(int n, double x)
 }
 
 /**
- * @brief Calculate \f$I_{\nu+1/2}(x)/I_{\nu+3/2}(x)\f$
+ * @brief Calculate \f$I_\nu(x)/I_{\nu+1}(x)\f$
  *
  * Compute the ratio of the modified Bessel functions of the first kind
- * \f$I_{\nu+1/2}(x)/I_{\nu+3/2}(x)\f$ using a continued fraction, see
+ * \f$I_\nu(x)/I_{\nu+1}(x)\f$ using a continued fraction, see
  * https://dlmf.nist.gov/10.33.
  *
  * @param nu order
  * @param x argument
- * @retval ratio \f$I_{\nu+1/2}(x)/I_{\nu+3/2}(x)\f$
+ * @retval ratio \f$I_\nu(x)/I_{\nu+1}(x)\f$
  */
-double bessel_continued_fraction(int nu, double x)
+double bessel_continued_fraction(double nu, double x)
 {
     /* it's faster to calculate the inverse of x only once */
-    const double invx = 1/x;
+    const double invx2 = 2/x;
 
-    const double a1 = (2*(nu+1)+1)*invx;
-    const double a2 = (2*(nu+2)+1)*invx;
+    const double a1 = (nu+1)*invx2;
+    const double a2 = (nu+2)*invx2;
 
     double num   = a2+1/a1;
     double denom = a2;
@@ -665,7 +665,7 @@ double bessel_continued_fraction(int nu, double x)
 
     for(int l = 3; 1; l++)
     {
-        const double an = (2*nu+1+2*l)*invx;
+        const double an = invx2*(nu+l);
         num   = an+1/num;
         denom = an+1/denom;
         ratio *= num/denom;
@@ -676,6 +676,7 @@ double bessel_continued_fraction(int nu, double x)
         ratio_last = ratio;
     }
 }
+
 
 /** @brief Compute \f$\log I_{\nu+1/2}(x)\f$
  *
@@ -762,7 +763,7 @@ void bessel_lnInuKnu(int nu, const double x, double *lnInu_p, double *lnKnu_p)
 
     if(lnInu_p != NULL)
     {
-        double ratio = bessel_continued_fraction(nu,x);
+        double ratio = bessel_continued_fraction(nu+0.5,x);
         *lnInu_p = -logx-logadd(lnKnup, lnKnu-log(ratio));
     }
 }

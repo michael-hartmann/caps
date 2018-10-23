@@ -19,7 +19,7 @@ void log_besselK_array(int n, double x, double out[]);
 
 double log_besselK(int n, double x) __attribute__ ((pure));
 
-double bessel_continued_fraction(int nu, double x) __attribute__ ((pure));
+double bessel_continued_fraction(double nu, double x) __attribute__ ((pure));
 
 double bessel_lnInu(int nu, double x) __attribute__ ((pure));
 double bessel_lnKnu(int nu, double x) __attribute__ ((pure));
