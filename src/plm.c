@@ -201,7 +201,7 @@ static double _Pl2(int l, double x)
     for(int n = 0; n < 13; n++)
     {
         /* yn = (-y)**n */
-        hn[n] = yn*besselI(n,y);
+        hn[n] = yn*bessel_In(n,y);
         yn *= -y;
     }
 
