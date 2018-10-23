@@ -340,6 +340,19 @@ double bessel_I0(double x)
  */
 double bessel_logI0(double x)
 {
+    if(x < 0.2) /* XXX check XXX */
+    {
+        const double y = 0.25*x*x; /* (x/2)² */
+        return log1p(y*(1+y*(1./4+y*(1./36+y*(1./576+y/14400)))));
+    }
+    if(x > 700) /* XXX check XXX */
+    {
+        /* Hankel expansion
+         * I_0(x) ≈ exp(x)/sqrt(2*pi*x) * ( 1 + k + 9/2*k² + 225/6*k³ ), k=1/8x
+         */
+         const double k = 1./8/x;
+         return x-0.5*log(2*M_PI*x) - x + log1p( k*(1+9./2*k*(1+25./3*k)) );
+    }
     if(x <= 8.0)
         return x+log(chbevl(x/2-2,I0_A,30));
 
