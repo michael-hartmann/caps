@@ -549,6 +549,11 @@ void bessel_logInKn_array(int nmax, double x, double *logIn, double *logKn)
 
         for(int n = nmax-1; n > 0; n--)
             logIn[n-1] = logIn[n+1]+log1p(2/x*n*exp(logIn[n]-logIn[n+1]));
+
+        /* correct the rounding error */
+        const double delta = -logIn[0]+bessel_logI0(x);
+        for(int n = 0; n < nmax; n++)
+            logIn[n] += delta;
     }
 
     if(freeKn)
