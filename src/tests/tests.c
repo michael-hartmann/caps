@@ -20,14 +20,21 @@ int main(int argc, char *argv[])
     test_fresnel();
 
     test_besselI0();
+    test_bessellogI0();
+
     test_besselK0();
+    test_bessellogK0();
 
     test_besselI1();
+    test_bessellogI1();
+
     test_besselK1();
+    test_bessellogK1();
 
     test_besselI();
     test_besselK();
 
+    test_log_besselIn();
     test_log_besselKn();
 
     test_mie();
