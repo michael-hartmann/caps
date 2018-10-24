@@ -105,50 +105,12 @@ static double K0_coeffsB[] = {
      2.44030308206595545468E0
 };
 
-/* Chebyshev coefficients for exp(-x) I1(x) / x
- * in the interval [0,8].
- *
- * lim(x->0){ exp(-x) I1(x) / x } = 1/2.
- */
-static double I1_A[] =
-{
-     2.77791411276104639959E-18,
-    -2.11142121435816608115E-17,
-     1.55363195773620046921E-16,
-    -1.10559694773538630805E-15,
-     7.60068429473540693410E-15,
-    -5.04218550472791168711E-14,
-     3.22379336594557470981E-13,
-    -1.98397439776494371520E-12,
-     1.17361862988909016308E-11,
-    -6.66348972350202774223E-11,
-     3.62559028155211703701E-10,
-    -1.88724975172282928790E-9,
-     9.38153738649577178388E-9,
-    -4.44505912879632808065E-8,
-     2.00329475355213526229E-7,
-    -8.56872026469545474066E-7,
-     3.47025130813767847674E-6,
-    -1.32731636560394358279E-5,
-     4.78156510755005422638E-5,
-    -1.61760815825896745588E-4,
-     5.12285956168575772895E-4,
-    -1.51357245063125314899E-3,
-     4.15642294431288815669E-3,
-    -1.05640848946261981558E-2,
-     2.47264490306265168283E-2,
-    -5.29459812080949914269E-2,
-     1.02643658689847095384E-1,
-    -1.76416518357834055153E-1,
-     2.52587186443633654823E-1
-};
-
 /* Chebyshev coefficients for exp(-x) sqrt(x) I1(x)
  * in the inverted interval [8,infinity].
  *
  * lim(x->inf){ exp(-x) sqrt(x) I1(x) } = 1/sqrt(2pi).
  */
-static double I1_B[] =
+static double I1_coeffs[] =
 {
      7.51729631084210481353E-18,
      4.41434832307170791151E-18,
@@ -313,6 +275,8 @@ double bessel_I0(double x)
  */
 double bessel_logI0(double x)
 {
+    if(x < 0)
+        return NAN;
     if(x == 0)
         return 0; /* log(I0(0)) = log(1) = 0 */
     if(x < 8)
@@ -404,18 +368,36 @@ double bessel_I1(double x)
 
 /** @brief Logarithm of modified Bessel function \f$I_1(x)\f$
  *
- * The range is partitioned into the two intervals \f$[0,8]\f$ and \f$(8,
- * \infty)\f$. Chebyshev polynomial expansions are employed in each interval.
+ * For \f$0<x<8\f$ a series expansion is used, see \ref bessel_logInu_series.
+ *
+ * For \f$8\le x<800\f$ a Chebychev expansion is used.
+ *
+ * For \f$x\ge800\f$ the Hankel expansion
+ * \f[
+ * I_0(x) \approx \frac{e^x}{\sqrt{2\pi x}} \left( 1 - 3k - \frac{15}{2} k^2 - \frac{105}{2} k^3 \right), \quad k=\frac{1}{8x}
+ * \f]
+ * is used.
  *
  * @param [in] x argument
  * @retval logI1 \f$\log I_1(x)\f$
  */
 double bessel_logI1(double x)
 {
-    if(x <= 8)
-        return x+log(x)+log(chbevl(x/2-2,I1_A,29));
+    if(x <= 0)
+        return NAN;
+    if(x < 8)
+        return bessel_logInu_series(1, x); /* series expansion */
+    if(x < 800)
+        /* Chebychev expansion */
+        return x+log(chbevl(32/x-2,I1_coeffs,25))-0.5*log(x);
     else
-        return x+log(chbevl(32/x-2,I1_B,25))-0.5*log(x);
+    {
+        /* Hankel expansion
+         * I_1(x) ≈ exp(x)/sqrt(2*pi*x) * ( 1 - 3k - 15/2*k² - 105/2*k³ ), k=1/8x
+         */
+         const double k = 1./8/x;
+         return x-0.5*log(2*M_PI*x) + log1p( -k*(3+k*(15./2+105./2*k)) );
+    }
 }
 
 /** @brief Modified Bessel function \f$K_1(x)\f$
