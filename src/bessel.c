@@ -417,14 +417,14 @@ double bessel_K1(double x)
  * For small arguments \f$x<10^{-8}\f$, the limiting form
  * \f$K_1(x)\approx 1/x\f$ for \f$x\to0\f$ is used.
  *
- * For large arguments \f$x>700\f$, the Hankel expansion
+ * For large arguments \f$x\le800\f$, the Hankel expansion
  * \f[
- * K_1(x) \approx \sqrt{\frac{\pi}{2x}} e^{-x} \left(1 + \frac{3}{8x} - \frac{15}{128x^2} + \frac{315}{3072x^3}\right)
+ * K_1(x) \approx \sqrt{\frac{\pi}{2x}} e^{-x} \left(1 + 3k - \frac{15}{2} k^2 + \frac{315}{6} k^3\right), \quad k = \frac{1}{8x}
  * \f]
  * is used.
  *
  * For intermediate values, the range is partitioned into the two intervals
- * \f$[10^{-8},8]\f$ and \f$(8,700)\f$ and Chebyshev polynomial expansions are
+ * \f$[10^{-8},8)\f$ and \f$[8,800)\f$ and Chebyshev polynomial expansions are
  * employed in each interval.
  *
  * @param [in] x argument
@@ -432,24 +432,25 @@ double bessel_K1(double x)
  */
 double bessel_logK1(double x)
 {
+    if(x <= 0)
+        return NAN;
     if(x < 1e-8)
         /* K_1(x) ≈ 1/x */
         return -log(x);
-    else if(x > 700)
+    if(x < 2)
+        /* Chebychev expansion */
+        return log(log(0.5*x)*bessel_I1(x)+chbevl(x*x-2, K1_A, 11)/x);
+    if(x < 800)
+        /* Chebychev expansion */
+        return -x+log(chbevl(8.0/x-2.0, K1_B, 25))-0.5*log(x);
+    else /* x >= 800 */
     {
         /* Hankel expansion
-         * K_1(x) ≈ sqrt(pi/2x)*exp(-x) * ( 1 + 3/8x - 15/128x² + 315/3072x³ )
+         * K_1(x) ≈ sqrt(pi/2x)*exp(-x) * ( 1 + 3k - 15/2 k² + 315/6 k³ )
          */
         double k = 1/(8*x);
-        return 0.5*log(M_PI/2/x) -x + log1p(3*k*(1+5./2*k *(-1+21./3*k)));
+        return 0.5*log(M_PI/2/x) -x + log1p( k*(3+k*(-15./2+315./6*k)));
     }
-
-    /* use Chebyshev polynomial expansions */
-
-    if(x <= 2)
-        return log(log(0.5*x)*bessel_I1(x)+chbevl(x*x-2, K1_A, 11)/x);
-
-    return -x+log(chbevl(8.0/x-2.0, K1_B, 25))-0.5*log(x);
 }
 
 /*@}*/
