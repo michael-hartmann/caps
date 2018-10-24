@@ -58,7 +58,7 @@ static double I0_coeffs[] =
  *
  * lim(x->0){ K0(x) + log(x/2) I0(x) } = -EUL.
  */
-static double K0_A[] =
+static double K0_coeffsA[] =
 {
     1.37446543561352307156E-16,
     4.25981614279661018399E-14,
@@ -77,7 +77,7 @@ static double K0_A[] =
  *
  * lim(x->inf){ exp(x) sqrt(x) K0(x) } = sqrt(pi/2).
  */
-static double K0_B[] = {
+static double K0_coeffsB[] = {
      5.30043377268626276149E-18,
     -1.64758043015242134646E-17,
      5.21039150503902756861E-17,
@@ -346,18 +346,18 @@ double bessel_K0(double x)
 
 /** @brief Logarithm of modified Bessel function \f$K_0(x)\f$
  *
- * For small arguments \f$x<10^{-8}\f$, the limiting form
+ * For small arguments \f$0<x<10^{-8}\f$, the limiting form
  * \f$K_0(x) \approx -\log(x/2)-\gamma\f$ for \f$x\to0\f$ where \f$\gamma\f$
  * denotes the Euler-Mascheroni constant is used.
  *
- * For large arguments \f$x>700\f$, the Hankel expansion
+ * For large arguments \f$x>800\f$, the Hankel expansion
  * \f[
  * K_0(x) \approx \sqrt{\frac{\pi}{2x}} e^{-x} \left(1-k+\frac{9}{2} k^2 - \frac{225}{6} k^3\right), \quad k=\frac{1}{8x}
  * \f]
  * is used.
  *
  * For intermediate values, the range is partitioned into the two intervals
- * \f$[10^{-8},8]\f$ and \f$(8,700)\f$ and Chebyshev polynomial expansions are
+ * \f$[10^{-8},2)\f$ and \f$(2,800)\f$ and Chebyshev polynomial expansions are
  * employed in each interval.
  *
  * @param [in] x argument
@@ -367,14 +367,17 @@ double bessel_logK0(double x)
 {
     if(x <= 0)
         return NAN;
-
     if(x < 1e-8)
     {
         /* K_0(x) ≈ -log(x/2)-gamma */
         const double gamma = 0.5772156649015328606;
         return log(-log(x/2)-gamma);
     }
-    else if(x > 700)
+    if(x <= 2)
+        return log(chbevl(x*x-2, K0_coeffsA, 10)-log(0.5*x)*bessel_I0(x));
+    if(x < 800)
+        return -x-0.5*log(x)+log(chbevl(8/x-2, K0_coeffsB, 25));
+    else /* x >= 800 */
     {
         /* Hankel expansion
          * K_0(x) ≈ sqrt(pi/2x)*exp(-x) * ( 1 - k + 9/2*k² - 225/6*k³ ), k=1/8x
@@ -383,10 +386,6 @@ double bessel_logK0(double x)
          return 0.5*log(M_PI/2/x) - x + log1p( k*(-1+9./2*k*(1-25./3*k)) );
     }
 
-    if(x <= 2.0)
-        return log(chbevl(x*x-2, K0_A, 10)-log(0.5*x)*bessel_I0(x));
-
-    return -x-0.5*log(x)+log(chbevl(8/x-2, K0_B, 25));
 }
 
 
