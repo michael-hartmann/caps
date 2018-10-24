@@ -24,6 +24,7 @@ double bessel_continued_fraction(double nu, double x) __attribute__ ((pure));
 double bessel_logInu(int nu, double x) __attribute__ ((pure));
 double bessel_logKnu(int nu, double x) __attribute__ ((pure));
 
+double bessel_logInu_series(double nu, double x) __attribute__ ((pure));
 double bessel_logInu_asymp(double nu, double x, double *relerror) __attribute__ ((pure));
 
 void bessel_logInuKnu(int nu, const double x, double *logInu_p, double *logKnu_p);

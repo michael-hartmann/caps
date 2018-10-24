@@ -712,6 +712,39 @@ double bessel_logInu_asymp(double nu, double x, double *relerror)
     return prefactor+sum;
 }
 
+
+/** @brief Compute modified Bessel functions \f$I_\nu(x)\f$ using series expansion
+ *
+ * The modified Bessel function is computed using the series expansion
+ * \f[
+ * I_\nu(x) = \sum_{m=0}^\infty \frac{1}{m! \Gamma(1+m+\nu)}\left(\frac{x}{2}\right)^{2m+\nu} .
+ * \f]
+ *
+ * The functions succeeds for orders up to \f$\nu\le100000\f$ when
+ * \f$x\le10\sqrt{\nu}\f$. For larger values of \f$x\f$ the function might
+ * return NAN.
+ *
+ * @param [in] nu order
+ * @param [in] x argument
+ * @retval Inu \f$I_\nu(x)\f$ if successful or NAN otherwise
+ */
+double bessel_logInu_series(double nu, double x)
+{
+    const double y = 0.25*x*x; /* x²/4 */
+    double v = 1, sum = 0;
+
+    for(int m = 1; m < 2048; m++)
+    {
+        v *= y/(m*(m+nu)); /* y**m */
+        sum += v;
+
+        if(v < 1e-16*sum)
+            return 0.5*nu*log(y)-lgamma(1+nu)+log1p(sum);
+    }
+
+    return NAN;
+}
+
 /** @brief Compute modified Bessel functions of first and second kind
  *
  * This function computes the logarithm of the modified Bessel functions
