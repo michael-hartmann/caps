@@ -762,7 +762,7 @@ void master(int argc, char *argv[], const int cores)
     printf("# %d determinants computed\n", casimir_get_determinants(casimir_mpi));
     printf("# stop time: %s\n", time_str);
     printf("#\n");
-    printf("# L/R, L, R, T, ldim, E*(L+R)/(ħc)\n");
+    printf("# L/R, L, R, T, ldim, E*(L+R)/(hbar*c)\n");
     printf("%.16g, %.16g, %.16g, %.16g, %d, %.16g\n", LbyR, L, R, T, ldim, F);
 
     if(material != NULL)
