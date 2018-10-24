@@ -519,6 +519,149 @@ int test_bessellogI0()
     return test_results(&test, stderr);
 }
 
+int test_bessellogK0()
+{
+    unittest_t test;
+
+    unittest_init(&test, "Bessel logK0", "Test Bessel function logK0", 1e-13);
+
+	AssertAlmostEqual(&test, bessel_logK0(1e-200), 6.1326015222019157464);
+	AssertAlmostEqual(&test, bessel_logK0(1e-100), 5.4397059887057088088);
+    AssertAlmostEqual(&test, bessel_logK0(1e-100), 5.439705988705709);
+    AssertAlmostEqual(&test, bessel_logK0(1.047615752789666e-99), 5.42945675809298);
+    AssertAlmostEqual(&test, bessel_logK0(1.097498765493059e-98), 5.419101392006437);
+    AssertAlmostEqual(&test, bessel_logK0(1.14975699539774e-97), 5.40863766926183);
+    AssertAlmostEqual(&test, bessel_logK0(1.204503540258789e-96), 5.398063298210099);
+    AssertAlmostEqual(&test, bessel_logK0(1.261856883066029e-95), 5.387375913724928);
+    AssertAlmostEqual(&test, bessel_logK0(1.32194114846604e-94), 5.376573074027573);
+    AssertAlmostEqual(&test, bessel_logK0(1.384886371393886e-93), 5.365652257338296);
+    AssertAlmostEqual(&test, bessel_logK0(1.450828778495955e-92), 5.354610858342943);
+    AssertAlmostEqual(&test, bessel_logK0(1.519911082952952e-91), 5.34344618446225);
+    AssertAlmostEqual(&test, bessel_logK0(1.592282793341113e-90), 5.332155451910532);
+    AssertAlmostEqual(&test, bessel_logK0(1.668100537200083e-89), 5.320735781529321);
+    AssertAlmostEqual(&test, bessel_logK0(1.747528400007712e-88), 5.309184194380346);
+    AssertAlmostEqual(&test, bessel_logK0(1.83073828029534e-87), 5.297497607080982);
+    AssertAlmostEqual(&test, bessel_logK0(1.917910261672461e-86), 5.285672826863904);
+    AssertAlmostEqual(&test, bessel_logK0(2.009233002565021e-85), 5.273706546341132);
+    AssertAlmostEqual(&test, bessel_logK0(2.104904144511996e-84), 5.261595337950987);
+    AssertAlmostEqual(&test, bessel_logK0(2.205130739903023e-83), 5.249335648064636);
+    AssertAlmostEqual(&test, bessel_logK0(2.310129700083139e-82), 5.236923790726872);
+    AssertAlmostEqual(&test, bessel_logK0(2.420128264794364e-81), 5.224355941003541);
+    AssertAlmostEqual(&test, bessel_logK0(2.535364493970096e-80), 5.211628127905576);
+    AssertAlmostEqual(&test, bessel_logK0(2.656087782946673e-79), 5.198736226856897);
+    AssertAlmostEqual(&test, bessel_logK0(2.782559402207115e-78), 5.185675951670411);
+    AssertAlmostEqual(&test, bessel_logK0(2.91505306282517e-77), 5.172442845993065);
+    AssertAlmostEqual(&test, bessel_logK0(3.053855508833412e-76), 5.159032274177231);
+    AssertAlmostEqual(&test, bessel_logK0(3.199267137797385e-75), 5.145439411531609);
+    AssertAlmostEqual(&test, bessel_logK0(3.351602650938848e-74), 5.131659233900379);
+    AssertAlmostEqual(&test, bessel_logK0(3.511191734215142e-73), 5.117686506514236);
+    AssertAlmostEqual(&test, bessel_logK0(3.678379771828649e-72), 5.103515772051436);
+    AssertAlmostEqual(&test, bessel_logK0(3.853528593710551e-71), 5.089141337840678);
+    AssertAlmostEqual(&test, bessel_logK0(4.037017258596451e-70), 5.074557262130741);
+    AssertAlmostEqual(&test, bessel_logK0(4.229242874389395e-69), 5.059757339343997);
+    AssertAlmostEqual(&test, bessel_logK0(4.430621457583778e-68), 5.044735084222182);
+    AssertAlmostEqual(&test, bessel_logK0(4.641588833612677e-67), 5.029483714763082);
+    AssertAlmostEqual(&test, bessel_logK0(4.862601580065254e-66), 5.013996133835724);
+    AssertAlmostEqual(&test, bessel_logK0(5.094138014816281e-65), 4.998264909349357);
+    AssertAlmostEqual(&test, bessel_logK0(5.336699231206301e-64), 4.982282252837519);
+    AssertAlmostEqual(&test, bessel_logK0(5.590810182512223e-63), 4.966039996302688);
+    AssertAlmostEqual(&test, bessel_logK0(5.857020818056577e-62), 4.949529567149214);
+    AssertAlmostEqual(&test, bessel_logK0(6.135907273413088e-61), 4.932741961011934);
+    AssertAlmostEqual(&test, bessel_logK0(6.428073117284241e-60), 4.91566771226486);
+    AssertAlmostEqual(&test, bessel_logK0(6.734150657750746e-59), 4.898296861968123);
+    AssertAlmostEqual(&test, bessel_logK0(7.054802310718574e-58), 4.880618922981392);
+    AssertAlmostEqual(&test, bessel_logK0(7.390722033525714e-57), 4.862622841937799);
+    AssertAlmostEqual(&test, bessel_logK0(7.742636826811214e-56), 4.844296957733084);
+    AssertAlmostEqual(&test, bessel_logK0(8.111308307896823e-55), 4.825628956139585);
+    AssertAlmostEqual(&test, bessel_logK0(8.497534359086403e-54), 4.806605820102695);
+    AssertAlmostEqual(&test, bessel_logK0(8.902150854450356e-53), 4.787213775217331);
+    AssertAlmostEqual(&test, bessel_logK0(9.32603346883218e-52), 4.767438229812414);
+    AssertAlmostEqual(&test, bessel_logK0(9.770099572992086e-51), 4.747263708990552);
+    AssertAlmostEqual(&test, bessel_logK0(1.02353102189901e-49), 4.726673781875994);
+    AssertAlmostEqual(&test, bessel_logK0(1.072267222010308e-48), 4.705650981214005);
+    AssertAlmostEqual(&test, bessel_logK0(1.123324032978013e-47), 4.684176714335952);
+    AssertAlmostEqual(&test, bessel_logK0(1.176811952434985e-46), 4.662231164352963);
+    AssertAlmostEqual(&test, bessel_logK0(1.232846739442053e-45), 4.639793180262307);
+    AssertAlmostEqual(&test, bessel_logK0(1.291549665014872e-44), 4.616840154439256);
+    AssertAlmostEqual(&test, bessel_logK0(1.353047774579797e-43), 4.593347885735847);
+    AssertAlmostEqual(&test, bessel_logK0(1.417474162926796e-42), 4.569290426108492);
+    AssertAlmostEqual(&test, bessel_logK0(1.484968262254457e-41), 4.544639908337557);
+    AssertAlmostEqual(&test, bessel_logK0(1.55567614393044e-40), 4.519366351970867);
+    AssertAlmostEqual(&test, bessel_logK0(1.629750834620614e-39), 4.493437444102296);
+    AssertAlmostEqual(&test, bessel_logK0(1.707352647470661e-38), 4.466818290964928);
+    AssertAlmostEqual(&test, bessel_logK0(1.788649529057406e-37), 4.439471135548332);
+    AssertAlmostEqual(&test, bessel_logK0(1.873817422860356e-36), 4.411355035506241);
+    AssertAlmostEqual(&test, bessel_logK0(1.963040650040244e-35), 4.382425494459363);
+    AssertAlmostEqual(&test, bessel_logK0(2.056512308348626e-34), 4.352634038359378);
+    AssertAlmostEqual(&test, bessel_logK0(2.15443469003186e-33), 4.321927726788019);
+    AssertAlmostEqual(&test, bessel_logK0(2.257019719633898e-32), 4.290248586818413);
+    AssertAlmostEqual(&test, bessel_logK0(2.364489412645388e-31), 4.257532954230829);
+    AssertAlmostEqual(&test, bessel_logK0(2.477076355991694e-30), 4.223710703272307);
+    AssertAlmostEqual(&test, bessel_logK0(2.595024211399721e-29), 4.18870434153729);
+    AssertAlmostEqual(&test, bessel_logK0(2.718588242732929e-28), 4.152427940594557);
+    AssertAlmostEqual(&test, bessel_logK0(2.848035868435793e-27), 4.114785865240029);
+    AssertAlmostEqual(&test, bessel_logK0(2.983647240283334e-26), 4.075671254083554);
+    AssertAlmostEqual(&test, bessel_logK0(3.125715849688235e-25), 4.034964190690669);
+    AssertAlmostEqual(&test, bessel_logK0(3.274549162877625e-24), 3.992529486430101);
+    AssertAlmostEqual(&test, bessel_logK0(3.430469286314814e-23), 3.948213971694141);
+    AssertAlmostEqual(&test, bessel_logK0(3.593813663804523e-22), 3.901843158581896);
+    AssertAlmostEqual(&test, bessel_logK0(3.764935806792364e-21), 3.85321709147956);
+    AssertAlmostEqual(&test, bessel_logK0(3.944206059437551e-20), 3.802105136211292);
+    AssertAlmostEqual(&test, bessel_logK0(4.132012400115233e-19), 3.748239364291331);
+    AssertAlmostEqual(&test, bessel_logK0(4.328761281082955e-18), 3.691306051711509);
+    AssertAlmostEqual(&test, bessel_logK0(4.53487850812848e-17), 3.630934608260309);
+    AssertAlmostEqual(&test, bessel_logK0(4.750810162102696e-16), 3.566682945135779);
+    AssertAlmostEqual(&test, bessel_logK0(4.977023564332012e-15), 3.498017810649436);
+    AssertAlmostEqual(&test, bessel_logK0(5.214008287999589e-14), 3.424287863151587);
+    AssertAlmostEqual(&test, bessel_logK0(5.462277217684247e-13), 3.344686003706003);
+    AssertAlmostEqual(&test, bessel_logK0(5.722367659350126e-12), 3.258195378728092);
+    AssertAlmostEqual(&test, bessel_logK0(5.994842503189323e-11), 3.16350974358785);
+    AssertAlmostEqual(&test, bessel_logK0(6.28029144183417e-10), 3.058912030971043);
+    AssertAlmostEqual(&test, bessel_logK0(6.579332246575602e-09), 2.94208168159087);
+    AssertAlmostEqual(&test, bessel_logK0(6.892612104349625e-08), 2.809773839199443);
+    AssertAlmostEqual(&test, bessel_logK0(7.220809018385398e-07), 2.657252234376389);
+    AssertAlmostEqual(&test, bessel_logK0(7.564633275546229e-06), 2.477206933255409);
+    AssertAlmostEqual(&test, bessel_logK0(7.924828983539121e-05), 2.257468081521178);
+    AssertAlmostEqual(&test, bessel_logK0(0.0008302175681319701), 1.975435066058274);
+    AssertAlmostEqual(&test, bessel_logK0(0.008697490026177798), 1.581195451948346);
+    AssertAlmostEqual(&test, bessel_logK0(0.46), -0.0057600816460973162450);
+    AssertAlmostEqual(&test, bessel_logK0(0.5), -0.078589769869081416895);
+    AssertAlmostEqual(&test, bessel_logK0(0.0911162756115457), 0.9237996882297024);
+    AssertAlmostEqual(&test, bessel_logK0(0.9545484566618015), -0.7996757030503495);
+    AssertAlmostEqual(&test, bessel_logK0(1), -0.86506439890678809680);
+
+    AssertAlmostEqual(&test, bessel_logK0(10), -10.93743282303833);
+    AssertAlmostEqual(&test, bessel_logK0(29.76351441631318), -31.23849627967974);
+    AssertAlmostEqual(&test, bessel_logK0(88.58667904100822), -90.60428161198828);
+    AssertAlmostEqual(&test, bessel_logK0(263.6650898730358), -266.2271115605786);
+    AssertAlmostEqual(&test, bessel_logK0(784.7599703514607), -787.8670271322236);
+    AssertAlmostEqual(&test, bessel_logK0(799), -802.11604546802189298);
+    AssertAlmostEqual(&test, bessel_logK0(800), -803.11667066365989547);
+    AssertAlmostEqual(&test, bessel_logK0(801), -804.11729507853465647);
+    AssertAlmostEqual(&test, bessel_logK0(2335.721469090121), -2339.373769294039);
+    AssertAlmostEqual(&test, bessel_logK0(6951.927961775606), -6956.125575554622);
+    AssertAlmostEqual(&test, bessel_logK0(20691.3808111479), -20696.12376208958);
+    AssertAlmostEqual(&test, bessel_logK0(61584.82110660255), -61590.10940263388);
+    AssertAlmostEqual(&test, bessel_logK0(183298.0710832434), -183303.9047270279);
+    AssertAlmostEqual(&test, bessel_logK0(545559.4781168514), -545565.8571092841);
+    AssertAlmostEqual(&test, bessel_logK0(1623776.739188721), -1623783.663530102);
+    AssertAlmostEqual(&test, bessel_logK0(4832930.238571752), -4832937.708262184);
+    AssertAlmostEqual(&test, bessel_logK0(14384498.88287663), -14384506.89791614);
+    AssertAlmostEqual(&test, bessel_logK0(42813323.98719387), -42813332.54758248);
+    AssertAlmostEqual(&test, bessel_logK0(127427498.5703132), -127427507.6760509);
+    AssertAlmostEqual(&test, bessel_logK0(379269019.0732238), -379269028.7243106);
+    AssertAlmostEqual(&test, bessel_logK0(1128837891.684688), -1128837901.881124);
+    AssertAlmostEqual(&test, bessel_logK0(3359818286.283774), -3359818297.025559);
+    AssertAlmostEqual(&test, bessel_logK0(10000000000), -10000000011.28713);
+
+    AssertAlmostEqual(&test, bessel_logK0(1e+20), -1e+20);
+    AssertAlmostEqual(&test, bessel_logK0(1e+50), -1e+50);
+    AssertAlmostEqual(&test, bessel_logK0(1e+100), -1e+100);
+
+    return test_results(&test, stderr);
+}
+
+
 int test_besselK0()
 {
     unittest_t test;
