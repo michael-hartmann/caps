@@ -14,10 +14,12 @@ double bessel_logI1(double x) __attribute__ ((pure));
 double bessel_logK1(double x) __attribute__ ((pure));
 
 double bessel_In(int n, double x) __attribute__ ((pure));
+double bessel_Kn(int n, double x) __attribute__ ((pure));
 
-void log_besselKn_array(int n, double x, double out[]);
+void bessel_logInKn_array(int nmax, double x, double *logIn, double *logKn);
 
-double log_besselKn(int n, double x) __attribute__ ((pure));
+double bessel_logIn(int n, double x) __attribute__ ((pure));
+double bessel_logKn(int n, double x) __attribute__ ((pure));
 
 double bessel_continued_fraction(double nu, double x) __attribute__ ((pure));
 
