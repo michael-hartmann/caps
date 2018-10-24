@@ -604,7 +604,7 @@ double log_besselKn(int n, double x)
 /*@}*/
 
 /**
- * @name modified Bessel functions for non-integer orders
+ * @name modified Bessel functions for arbitrary orders
  * @{
  */
 
@@ -646,38 +646,6 @@ double bessel_continued_fraction(double nu, double x)
     }
 }
 
-
-/** @brief Compute \f$\log I_{\nu+1/2}(x)\f$
- *
- * Compute logarithm of modified Bessel function of the first kind
- * \f$I_{\nu+1/2}(x)\f$.
- *
- * @param [in] nu order
- * @param [in] x argument
- * @retval logI \f$\log I_{\nu+1/2}(x)\f$
- */
-double bessel_logInu(int nu, double x)
-{
-    double logInu;
-    bessel_logInuKnu(nu, x, &logInu, NULL);
-    return logInu;
-}
-
-/** @brief Compute \f$\log K_{\nu+1/2}(x)\f$
- *
- * Compute logarithm of modified Bessel function of the second kind
- * \f$K_{\nu+1/2}(x)\f$.
- *
- * @param [in] nu order
- * @param [in] x argument
- * @retval logK \f$K_{\nu+1/2}(x)\f$
- */
-double bessel_logKnu(int nu, double x)
-{
-    double logKnu;
-    bessel_logInuKnu(nu, x, NULL, &logKnu);
-    return logKnu;
-}
 
 /** @brief Compute modified Bessel function \f$I_\nu(x)\f$ using asymptotic expansion
  *
@@ -745,6 +713,13 @@ double bessel_logInu_series(double nu, double x)
     return NAN;
 }
 
+/*@}*/
+
+/**
+ * @name modified Bessel functions for half-integer orders
+ * @{
+ */
+
 /** @brief Compute modified Bessel functions of first and second kind
  *
  * This function computes the logarithm of the modified Bessel functions
@@ -758,7 +733,7 @@ double bessel_logInu_series(double nu, double x)
  * @param [out] logInu_p pointer for \f$\log I_{\nu+1/2}(x)\f$
  * @param [out] logKnu_p pointer for \f$\log K_{\nu+1/2}(x)\f$
  */
-void bessel_logInuKnu(int nu, const double x, double *logInu_p, double *logKnu_p)
+void bessel_logInuKnu_half(int nu, const double x, double *logInu_p, double *logKnu_p)
 {
     const double logx = log(x);
     const double invx = 1/x;
@@ -810,6 +785,38 @@ void bessel_logInuKnu(int nu, const double x, double *logInu_p, double *logKnu_p
         double ratio = bessel_continued_fraction(nu+0.5,x);
         *logInu_p = -logx-logadd(logKnup, logKnu-log(ratio));
     }
+}
+
+/** @brief Compute \f$\log I_{\nu+1/2}(x)\f$
+ *
+ * Compute logarithm of modified Bessel function of the first kind
+ * \f$I_{\nu+1/2}(x)\f$.
+ *
+ * @param [in] nu order
+ * @param [in] x argument
+ * @retval logI \f$\log I_{\nu+1/2}(x)\f$
+ */
+double bessel_logInu_half(int nu, double x)
+{
+    double logInu;
+    bessel_logInuKnu_half(nu, x, &logInu, NULL);
+    return logInu;
+}
+
+/** @brief Compute \f$\log K_{\nu+1/2}(x)\f$
+ *
+ * Compute logarithm of modified Bessel function of the second kind
+ * \f$K_{\nu+1/2}(x)\f$.
+ *
+ * @param [in] nu order
+ * @param [in] x argument
+ * @retval logK \f$K_{\nu+1/2}(x)\f$
+ */
+double bessel_logKnu_half(int nu, double x)
+{
+    double logKnu;
+    bessel_logInuKnu_half(nu, x, NULL, &logKnu);
+    return logKnu;
 }
 
 /*@}*/
