@@ -18,51 +18,12 @@
  * @{
  */
 
-/* Chebyshev coefficients for exp(-x) I0(x)
- * in the interval [0,8].
- *
- * lim(x->0){ exp(-x) I0(x) } = 1.
- */
-static double I0_A[] =
-{
-    -4.41534164647933937950E-18,
-     3.33079451882223809783E-17,
-    -2.43127984654795469359E-16,
-     1.71539128555513303061E-15,
-    -1.16853328779934516808E-14,
-     7.67618549860493561688E-14,
-    -4.85644678311192946090E-13,
-     2.95505266312963983461E-12,
-    -1.72682629144155570723E-11,
-     9.67580903537323691224E-11,
-    -5.18979560163526290666E-10,
-     2.65982372468238665035E-9,
-    -1.30002500998624804212E-8,
-     6.04699502254191894932E-8,
-    -2.67079385394061173391E-7,
-     1.11738753912010371815E-6,
-    -4.41673835845875056359E-6,
-     1.64484480707288970893E-5,
-    -5.75419501008210370398E-5,
-     1.88502885095841655729E-4,
-    -5.76375574538582365885E-4,
-     1.63947561694133579842E-3,
-    -4.32430999505057594430E-3,
-     1.05464603945949983183E-2,
-    -2.37374148058994688156E-2,
-     4.93052842396707084878E-2,
-    -9.49010970480476444210E-2,
-     1.71620901522208775349E-1,
-    -3.04682672343198398683E-1,
-     6.76795274409476084995E-1
-};
-
 /* Chebyshev coefficients for exp(-x) sqrt(x) I0(x)
  * in the inverted interval [8,infinity].
  *
  * lim(x->inf){ exp(-x) sqrt(x) I0(x) } = 1/sqrt(2pi).
  */
-static double I0_B[] =
+static double I0_coeffs[] =
 {
     -7.23318048787475395456E-18,
     -4.83050448594418207126E-18,
@@ -332,6 +293,18 @@ double bessel_I0(double x)
 
 /** @brief Logarithm of modified Bessel function \f$I_0(x)\f$
  *
+ * For \f$x=0\f$ the value \f$\log I_0(0) = \log(1)=0\f$ is returned.
+ *
+ * For \f$0<x<8\f$ a series expansion is used, see \ref bessel_logInu_series.
+ *
+ * For \f$8\le x<800\f$ a Chebychev expansion is used.
+ *
+ * For \f$x\ge800\f$ the Hankel expansion
+ * \f[
+ * I_0(x) \approx \frac{e^x}{\sqrt{2\pi x}} \left( 1 + k + \frac{9}{2} k^2 + \frac{225}{6} k^3 \right), \quad k=\frac{1}{8x}
+ * \f]
+ * is used.
+ *
  * The range is partitioned into the two intervals \f$[0,8]\f$ and \f$(8, \infty)\f$.
  * Chebyshev polynomial expansions are employed in each interval.
  *
@@ -340,23 +313,21 @@ double bessel_I0(double x)
  */
 double bessel_logI0(double x)
 {
-    if(x < 0.2) /* XXX check XXX */
-    {
-        const double y = 0.25*x*x; /* (x/2)² */
-        return log1p(y*(1+y*(1./4+y*(1./36+y*(1./576+y/14400)))));
-    }
-    if(x > 700) /* XXX check XXX */
+    if(x == 0)
+        return 0; /* log(I0(0)) = log(1) = 0 */
+    if(x < 8)
+        return bessel_logInu_series(0, x); /* series expansion */
+    if(x < 800)
+        /* Chebychev expansion */
+        return x+log(chbevl(32/x-2,I0_coeffs,25))-0.5*log(x);
+    else
     {
         /* Hankel expansion
          * I_0(x) ≈ exp(x)/sqrt(2*pi*x) * ( 1 + k + 9/2*k² + 225/6*k³ ), k=1/8x
          */
          const double k = 1./8/x;
-         return x-0.5*log(2*M_PI*x) - x + log1p( k*(1+9./2*k*(1+25./3*k)) );
+         return x-0.5*log(2*M_PI*x) + log1p( k*(1+9./2*k*(1+25./3*k)) );
     }
-    if(x <= 8.0)
-        return x+log(chbevl(x/2-2,I0_A,30));
-
-    return x+log(chbevl(32/x-2,I0_B,25))-0.5*log(x);
 }
 
 
