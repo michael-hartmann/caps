@@ -20,7 +20,7 @@ int test_casimir_rp()
     double r_TE, r_TM;
     double userdata[2];
 
-    unittest_init(&test, "casimir_rp", "Fresnel coefficients", 1e-10);
+    unittest_init(&test, "casimir_rp", "Fresnel coefficients", 1e-15);
 
     casimir = casimir_init(1); /* L/R doesn't matter */
 
