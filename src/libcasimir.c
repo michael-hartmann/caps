@@ -432,8 +432,8 @@ void casimir_lnab_perf(casimir_t *self, double xi_, int l, double *lna, double *
     /* we could do both calculations together. but it doesn't cost much time -
      * so why bother?
      */
-    bessel_logInuKnu(l-1, chi, &logIlm, &logKlm);
-    bessel_logInuKnu(l,   chi, &logIlp, &logKlp);
+    bessel_logInuKnu_half(l-1, chi, &logIlm, &logKlm);
+    bessel_logInuKnu_half(l,   chi, &logIlp, &logKlp);
 
     /* Calculate b_l(chi), i.e. lnb */
     *lnb = M_LOGPI-M_LOG2+logIlp-logKlp;
@@ -521,11 +521,11 @@ void casimir_lnab(casimir_t *self, double xi_, int l, double *lna, double *lnb)
 
     double logIlp, logKlp, logIlm, logKlm, logIlp_nchi, logKlp_nchi, logIlm_nchi, logKlm_nchi;
 
-    bessel_logInuKnu(l,   chi, &logIlp, &logKlp); /* I_{l+0.5}(χ), K_{l+0.5}(χ) */
-    bessel_logInuKnu(l-1, chi, &logIlm, &logKlm); /* K_{l-0.5}(χ), K_{l-0.5}(χ) */
+    bessel_logInuKnu_half(l,   chi, &logIlp, &logKlp); /* I_{l+0.5}(χ), K_{l+0.5}(χ) */
+    bessel_logInuKnu_half(l-1, chi, &logIlm, &logKlm); /* K_{l-0.5}(χ), K_{l-0.5}(χ) */
 
-    bessel_logInuKnu(l,   n*chi, &logIlp_nchi, &logKlp_nchi); /* I_{l+0.5}(nχ), K_{l+0.5}(nχ) */
-    bessel_logInuKnu(l-1, n*chi, &logIlm_nchi, &logKlm_nchi); /* K_{l-0.5}(nχ), K_{l-0.5}(nχ) */
+    bessel_logInuKnu_half(l,   n*chi, &logIlp_nchi, &logKlp_nchi); /* I_{l+0.5}(nχ), K_{l+0.5}(nχ) */
+    bessel_logInuKnu_half(l-1, n*chi, &logIlm_nchi, &logKlm_nchi); /* K_{l-0.5}(nχ), K_{l-0.5}(nχ) */
 
     double ratio   = bessel_continued_fraction(l-0.5,   chi);
     double ratio_n = bessel_continued_fraction(l-0.5, n*chi);
