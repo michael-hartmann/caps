@@ -563,7 +563,7 @@ double bessel_In(int n, double x)
  *
  * @param [in]  n order
  * @param [in]  x argument
- * @param [out] K_n(x) array of n+1 elements with the values of \f$K_0(x), K_1(x),\dots, K_n(x)\f$
+ * @param [out] out array of n+1 elements with the values of \f$K_0(x), K_1(x),\dots, K_n(x)\f$
  */
 void log_besselKn_array(int n, double x, double out[])
 {
@@ -683,8 +683,8 @@ double bessel_logKnu(int nu, double x)
  *
  * See https://dlmf.nist.gov/10.41#ii
  *
- * @param [in] order
- * @param [in] argument
+ * @param [in] nu order
+ * @param [in] x argument
  * @param [out] relerror estimated relative error
  * @retval logI \f$\log I_\nu(x)\f$
  */
