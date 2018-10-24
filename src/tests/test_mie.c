@@ -4,11 +4,11 @@
 
 #include "test_mie.h"
 
-int test_mie(void)
+int test_casimir_lnab_perf(void)
 {
     double lna, lnb;
     unittest_t test;
-    unittest_init(&test, "Mie", "Test Mie functions al,bl for various parameters", 1e-10);
+    unittest_init(&test, "casimir_lnab_perf", "Mie functions (PR)", 1e-14);
 
     casimir_t *self = casimir_init(1);
 

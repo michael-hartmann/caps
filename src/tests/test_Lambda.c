@@ -3,10 +3,10 @@
 
 #include "test_Lambda.h"
 
-int test_Lambda(void)
+int test_casimir_lnLambda(void)
 {
     unittest_t test;
-    unittest_init(&test, "Lambda", "Test Lambda function for various parameters", 1e-10);
+    unittest_init(&test, "casimir_lnLambda", "Lambda function", 1e-10);
 
     AssertAlmostEqual(&test, casimir_lnLambda(1,1,0), 0.405465108108164381);
     AssertAlmostEqual(&test, casimir_lnLambda(1,1,1), -0.28768207245178092);

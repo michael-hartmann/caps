@@ -4,14 +4,14 @@
 
 #include "test_mie_drude.h"
 
-int test_mie_drude(void)
+int test_casimir_lnab(void)
 {
     double lna, lnb;
     double userdata[2];
     casimir_t *casimir;
     unittest_t test;
 
-    unittest_init(&test, "Mie (Drude)", "Test Mie coefficients for various parameters", 1e-10);
+    unittest_init(&test, "casimir_lnab", "Mie coefficients (Drude)", 1e-11);
 
     casimir = casimir_init(1);
     userdata[0] = 50000; userdata[1] = 1;

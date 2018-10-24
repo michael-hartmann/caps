@@ -15,32 +15,32 @@ int main(int argc, char *argv[])
 {
     test_lfac();
     test_logi();
-    test_Lambda();
+    test_casimir_lnLambda();
 
-    test_fresnel();
+    test_casimir_rp();
 
-    test_besselI0();
-    test_bessellogI0();
+    test_bessel_I0();
+    test_bessel_logI0();
 
-    test_besselK0();
-    test_bessellogK0();
+    test_bessel_K0();
+    test_bessel_logK0();
 
-    test_besselI1();
-    test_bessellogI1();
+    test_bessel_I1();
+    test_bessel_logI1();
 
-    test_besselK1();
-    test_bessellogK1();
+    test_bessel_K1();
+    test_bessel_logK1();
 
-    test_besselI();
-    test_besselK();
+    test_bessel_logInu_half();
+    test_bessel_logKnu_half();
 
-    test_log_besselIn();
-    test_log_besselKn();
+    test_bessel_logIn();
+    test_bessel_logKn();
 
-    test_mie();
-    test_mie_drude();
+    test_casimir_lnab_perf();
+    test_casimir_lnab();
 
-    test_Plm();
+    test_lnPlm();
 
 	return 0;
 }
