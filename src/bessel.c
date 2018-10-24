@@ -443,7 +443,7 @@ double bessel_logK1(double x)
         return log(log(0.5*x)*bessel_I1(x)+chbevl(x*x-2, K1_coeffsA, 11)/x);
     if(x < 800)
         /* Chebychev expansion */
-        return -x+log(chbevl(8.0/x-2.0, K1_coeffsB, 25))-0.5*log(x);
+        return -x+log(chbevl(8/x-2, K1_coeffsB, 25))-0.5*log(x);
     else /* x >= 800 */
     {
         /* Hankel expansion
