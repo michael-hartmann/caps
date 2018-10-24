@@ -49,9 +49,10 @@ double casimir_lnLambda(int l1, int l2, int m)
 
 /** @brief Estimate lmin and lmax
  *
- * Estimate the vector space: The main contributions come from l1≈l2≈X and only
- * depend on geometry, L/R, and the quantum number m. This function calculates
- * X using the formula in the high-temperature limit and calculates lmin, lmax.
+ * Estimate the vector space: The main contributions comes from the vicinity
+ * l1=l2=X and only depend on geometry, L/R, and the quantum number m. This
+ * function calculates X using the formula in the high-temperature limit and
+ * calculates lmin, lmax.
  *
  * @param [in] self Casimir object
  * @param [in] m quantum number
