@@ -16,17 +16,17 @@ int test_results(unittest_t *test, FILE *stream)
 {
     double t = now()-test->start;
 
-    fprintf(stream, "[%9d/%9d]\t%-20s\t%-60s", test->passed, test->passed+test->failed, test->func, test->desc);
+    fprintf(stream, "[%9d/%9d]\t%-16s\t%-32s", test->passed, test->passed+test->failed, test->func, test->desc);
 
     if(t < 0.1)
-        fprintf(stream, " (%.3gms)\t", t*1000);
+        fprintf(stream, " (%.3fms)\t", t*1000);
     else
-        fprintf(stream, " (%.3gs)\t", t);
+        fprintf(stream, " (%.3fs)\t", t);
 
     if(test->failed == 0)
-        fprintf(stream, " [" KGRN "PASSED" KNRM "]\n");
+        fprintf(stream, " [" KGRN "OK" KNRM "]\n");
     else
-        fprintf(stream, " [" KRED "FAILED" KNRM "]\n");
+        fprintf(stream, " [" KRED "FAIL" KNRM "]\n");
 
     return test->failed;
 }
