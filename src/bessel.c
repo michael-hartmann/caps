@@ -145,7 +145,7 @@ static double I1_coeffs[] =
  *
  * lim(x->0){ x(K1(x) - log(x/2) I1(x)) } = 1.
  */
-static double K1_A[] =
+static double K1_coeffsA[] =
 {
     -7.02386347938628759343E-18,
     -2.42744985051936593393E-15,
@@ -165,7 +165,7 @@ static double K1_A[] =
  *
  * lim(x->inf){ exp(x) sqrt(x) K1(x) } = sqrt(pi/2).
  */
-static double K1_B[] =
+static double K1_coeffsB[] =
 {
     -5.75674448366501715755E-18,
      1.79405087314755922667E-17,
@@ -440,10 +440,10 @@ double bessel_logK1(double x)
         return -log(x);
     if(x < 2)
         /* Chebychev expansion */
-        return log(log(0.5*x)*bessel_I1(x)+chbevl(x*x-2, K1_A, 11)/x);
+        return log(log(0.5*x)*bessel_I1(x)+chbevl(x*x-2, K1_coeffsA, 11)/x);
     if(x < 800)
         /* Chebychev expansion */
-        return -x+log(chbevl(8.0/x-2.0, K1_B, 25))-0.5*log(x);
+        return -x+log(chbevl(8.0/x-2.0, K1_coeffsB, 25))-0.5*log(x);
     else /* x >= 800 */
     {
         /* Hankel expansion
