@@ -13,14 +13,14 @@ static double epsilonm1(double xi, void *userdata)
     return omegap_*omegap_/(xi*(xi+gamma_));
 }
 
-int test_fresnel()
+int test_casimir_rp()
 {
     unittest_t test;
     casimir_t *casimir;
     double r_TE, r_TM;
     double userdata[2];
 
-    unittest_init(&test, "Fresnel", "Test Fresnel coefficients", 1e-10);
+    unittest_init(&test, "casimir_rp", "Fresnel coefficients", 1e-10);
 
     casimir = casimir_init(1); /* L/R doesn't matter */
 
