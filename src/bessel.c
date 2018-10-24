@@ -9,9 +9,10 @@
 #include <stdlib.h>
 #include <math.h>
 
-#include "misc.h"
-#include "constants.h"
 #include "bessel.h"
+#include "constants.h"
+#include "misc.h"
+#include "utils.h"
 
 /**
  * @name modified Bessel functions for orders n=0,1
@@ -460,15 +461,9 @@ double bessel_logK1(double x)
  * @{
  */
 
-#define ACC 40.0
-#define BIGNO 1e10
-#define BIGNI 1e-10
-
 /** @brief Modified Bessel function \f$I_n(x)\f$ for integer order \f$n\f$
  *
- * For \f$n<0\f$ NAN is returned.
- *
- * The algorithm is taken from Numerical Recipes in C.
+ * See \ref bessel_logIn and \ref bessel_logInKn_array.
  *
  * @param [in] n order
  * @param [in] x argument
@@ -476,81 +471,161 @@ double bessel_logK1(double x)
  */
 double bessel_In(int n, double x)
 {
-    if(n < 0)
-        return NAN;
-    if(n == 0)
-        return bessel_I0(x);
-    if(n == 1)
-        return bessel_I1(x);
-
-    if(x == 0)
-        return 0;
-
-    double tox = 2/fabs(x);
-    double bip = 0, ans = 0, bi = 1;
-
-    for(int j = 2*(n+(int)sqrt(ACC*n)); j > 0; j--)
-    {
-        double bim = bip+j*tox*bi;
-        bip = bi;
-        bi  = bim;
-
-        if(fabs(bi) > BIGNO)
-        {
-            ans *= BIGNI;
-            bi  *= BIGNI;
-            bip *= BIGNI;
-        }
-
-        if(j == n)
-            ans = bip;
-    }
-
-    ans *= bessel_I0(x)/bi;
-    return x < 0 && (n & 1) ? -ans : ans;
+    return exp(bessel_logIn(n,x));
 }
 
-/** @brief Logarithm of modified Bessel function \f$K_n(x)\f$ for integer orders
+/** @brief Modified Bessel function \f$K_n(x)\f$ for integer order \f$n\f$
  *
- * The Bessel functions are computed using a recurrence relation.
+ * See \ref bessel_logKn and \ref bessel_logInKn_array.
  *
- * @param [in]  n order
- * @param [in]  x argument
- * @param [out] out array of n+1 elements with the values of \f$K_0(x), K_1(x),\dots, K_n(x)\f$
+ * @param [in] n order
+ * @param [in] x argument
+ * @retval Kn \f$K_n(x)\f$
  */
-void log_besselKn_array(int n, double x, double out[])
+double bessel_Kn(int n, double x)
 {
+    return exp(bessel_logKn(n,x));
+}
+
+/** @brief Logarithm of modified Bessel functions \f$I_n(x)\f$ and \f$K_n(x)\f$ for integer orders \f$n=0,1,\dots,n_\mathrm{max}\f$
+ *
+ * The Bessel functions \f$K_n(x)\f$ are computed using the recurrence relation
+ * \f[
+ * K_{n+1}(x) = K_{n-1}(x) + \frac{2n}{x} K_n(x)
+ * \f]
+ * in upwards direction. The Bessel functions \f$K_0(x)\f$ and \f$K_1(x)\f$
+ * are computed using \ref bessel_logK0 and \ref bessel_logK1.
+ *
+ * The Bessel functions \f$I_n(x)\f$ are computed using the recurrence relation
+ * \f[
+ * I_{n-1}(x) = I_{n+1}(x) + \frac{2n}{x} I_n(x)
+ * \f]
+ * in downwards direction. The Bessel functions \f$I_{n_\mathrm{max}}(x)\f$ and
+ * \f$I_{n_\mathrm{max}-1}(x)\f$ are computed using the relation for the
+ * Wronskian
+ * \f[
+ * I_n(x) = \left[x\left(K_{n+1}(x)+K_n(x)\frac{I_{n+1}(x)}{I_n(x)}\right)\right]^{-1} .
+ * \f]
+ * See also \ref bessel_continued_fraction.
+ *
+ * logIn and logKn may be NULL.
+ *
+ * @param [in]  nmax \f$n_\mathrm{max}\f$ maximum order
+ * @param [in]  x argument
+ * @param [out] logIn array of n+1 elements with the values of \f$I_0(x), I_1(x),\dots, I_{n_\mathrm{max}}(x)\f$
+ * @param [out] logKn array of n+1 elements with the values of \f$K_0(x), K_1(x),\dots, K_{n_\mathrm{max}}(x)\f$
+ */
+void bessel_logInKn_array(int nmax, double x, double *logIn, double *logKn)
+{
+    int freeKn = 0;
+
+    if(logKn == NULL)
+    {
+        logKn = xmalloc(((size_t)nmax+1)*sizeof(double));
+        TERMINATE(logKn == NULL, "Cannot allocate memory");
+        freeKn = 1;
+    }
+
     /* K_0(x) */
-    out[0] = bessel_logK0(x);
+    logKn[0] = bessel_logK0(x);
 
-    if(n == 0)
-        return;
+    if(nmax)
+        /* K_1(x) */
+        logKn[1] = bessel_logK1(x);
 
-    /* K_1(x) */
-    out[1] = bessel_logK1(x);
-
-    for(int l = 1; l < n; l++)
+    for(int n = 1; n < nmax; n++)
     {
         /* K_{n+1} = K_{n-1} + 2n/x K_n = 2n/x * K_n * (1+x/2n*K_{n-1}/K_n) */
-        double k = 0.5*x/l;
-        out[l+1] = -log(k)+out[l]+log1p(exp(out[l-1]-out[l])*k);
+        double k = 0.5*x/n;
+        logKn[n+1] = -log(k)+logKn[n]+log1p(exp(logKn[n-1]-logKn[n])*k);
     }
+
+    if(logIn)
+    {
+        /* I_n = 1/( x*K_n*(1+K_n/K_{n+1}*I_{n+1}/I_n) ) */
+        const double ratio = 1/bessel_continued_fraction(nmax-1, x); /* I_{n-1}/I_n */
+        logIn[nmax-1] = -log(x)-logKn[nmax]-log1p(exp(logKn[nmax-1]-logKn[nmax])*ratio);
+        logIn[nmax] = logIn[nmax-1]+log(ratio);
+
+        for(int n = nmax-1; n > 0; n--)
+            logIn[n-1] = logIn[n+1]+log1p(2/x*n*exp(logIn[n]-logIn[n+1]));
+    }
+
+    if(freeKn)
+        xfree(logKn);
 }
 
 /** @brief Logarithm of modified Bessel function \f$K_n(x)\f$ for integer order \f$n\f$
  *
- * The Bessel functions are computed using a recurrence relation.
+ * For n=0 and n=1 the function calls \ref bessel_logK0 or \ref bessel_logK1.
+ * Otherwise, the value is computed using \ref bessel_logInKn_array.
  *
  * @param [in]  n order
  * @param [in]  x argument
  * @retval Kn \f$\log K_n(x)\f$
  */
-double log_besselKn(int n, double x)
+double bessel_logKn(int n, double x)
 {
-    double *out = malloc((n+1)*sizeof(double));
-    log_besselKn_array(n, x, out);
-    double v = out[n];
-    free(out);
+    if(n < 0)
+        return NAN;
+    if(n == 0)
+        return bessel_logK0(x);
+    if(n == 1)
+        return bessel_logK1(x);
+
+    double *Kn = xmalloc((size_t)(n+1)*sizeof(double));
+    TERMINATE(Kn == NULL, "Couldn't allocate memory.");
+    bessel_logInKn_array(n, x, NULL, Kn);
+    double v = Kn[n];
+    xfree(Kn);
+    return v;
+}
+
+/** @brief Logarithm of modified Bessel function \f$I_n(x)\f$ for integer order \f$n\f$
+ *
+ * For n=0 and n=1 the function calls \ref bessel_logI0 or \ref bessel_logI1.
+ * If \f$n<10\sqrt{n}\f$ the series expansion \ref bessel_logInu_series is
+ * used.  For n>100 the function is computed using \ref bessel_logInu_asymp if
+ * the relative error is sufficiently small. Otherwise, the function is
+ * computed using \ref bessel_logInKn_array.
+ *
+ * @param [in]  n order
+ * @param [in]  x argument
+ * @retval In \f$\log I_n(x)\f$
+ */
+double bessel_logIn(int n, double x)
+{
+    if(n < 0)
+        return NAN;
+    if(n == 0)
+        return bessel_logI0(x);
+    if(n == 1)
+        return bessel_logI1(x);
+
+    if(x == 0)
+        return -INFINITY;
+
+    /* series expansion */
+    if(x < 10*sqrt(n))
+        return bessel_logInu_series(n,x);
+
+    /* maybe an asymptotic expansion is sufficient? */
+    if(n > 100)
+    {
+        double relerror = 1;
+        double v = bessel_logInu_asymp(n, x, &relerror);
+        if(relerror < 1e-12)
+            return v;
+    }
+
+    double *In = xmalloc((size_t)(n+1)*sizeof(double));
+    TERMINATE(In == NULL, "Couldn't allocate memory.");
+
+    bessel_logInKn_array(n, x, In, NULL);
+    double v = In[n];
+
+    xfree(In);
+
     return v;
 }
 
