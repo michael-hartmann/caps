@@ -11,6 +11,7 @@ int test_besselI1(void);
 int test_bessellogI1(void);
 
 int test_besselK1(void);
+int test_bessellogK1(void);
 
 int test_besselI(void);
 int test_besselK(void);
