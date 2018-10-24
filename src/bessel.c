@@ -688,7 +688,7 @@ double bessel_logKnu(int nu, double x)
  * @param [out] relerror estimated relative error
  * @retval logI \f$\log I_\nu(x)\f$
  */
-static double __lnbesselI_asymp(double nu, double x, double *relerror)
+double bessel_logInu_asymp(double nu, double x, double *relerror)
 {
     const double z = x/nu;
     const double p2 = 1/(1+z*z); /* p² */
@@ -768,7 +768,7 @@ void bessel_logInuKnu(int nu, const double x, double *logInu_p, double *logKnu_p
     if(nu > 100)
         {
             double relerr;
-            *logInu_p = __lnbesselI_asymp(nu+0.5, x, &relerr);
+            *logInu_p = bessel_logInu_asymp(nu+0.5, x, &relerr);
 
             if(relerr < 1e-12)
                 return;
