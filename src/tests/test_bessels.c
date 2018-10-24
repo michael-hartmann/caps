@@ -1,3 +1,5 @@
+#include <stdlib.h>
+
 #include "bessel.h"
 #include "unittest.h"
 
@@ -2518,47 +2520,91 @@ int test_bessellogK1()
 }
 
 
+int test_log_besselIn(void)
+{
+    unittest_t test;
+    unittest_init(&test, "Bessel log_besselIn", "Test Bessel function In", 1e-11);
+
+    double *logIn = malloc((size_t)10001*sizeof(double));
+    double *logKn = malloc((size_t)10001*sizeof(double));
+
+    AssertAlmostEqual(&test, bessel_logIn(10,1), -22.01317857797304);
+    AssertAlmostEqual(&test, bessel_logIn(100,1), -433.0516183940659);
+    AssertAlmostEqual(&test, bessel_logIn(1000,1), -6605.275109297890);
+
+    bessel_logInKn_array(10, 1, logIn, logKn);
+    AssertAlmostEqual(&test, logKn[0],  -0.8650643989067881);
+    AssertAlmostEqual(&test, logKn[1],  -0.5076519482107523);
+    AssertAlmostEqual(&test, logKn[2],  0.4854086715656462);
+    AssertAlmostEqual(&test, logKn[3],  1.960272630870733);
+    AssertAlmostEqual(&test, logKn[4],  3.789457910489513);
+    AssertAlmostEqual(&test, logKn[5],  5.888768782293728);
+    AssertAlmostEqual(&test, logKn[6],  8.203533486330958);
+    AssertAlmostEqual(&test, logKn[7],  10.69663888649227);
+    AssertAlmostEqual(&test, logKn[8],  13.34158263547621);
+    AssertAlmostEqual(&test, logKn[9],  16.11859962271028);
+    AssertAlmostEqual(&test, logKn[10], 19.01242229962631);
+
+    AssertAlmostEqual(&test, logIn[0],  0.2359143585071786);
+    AssertAlmostEqual(&test, logIn[1],  -0.5706479874908313);
+    AssertAlmostEqual(&test, logIn[2],  -1.996957485935767);
+    AssertAlmostEqual(&test, logIn[3],  -3.809086303239423);
+    AssertAlmostEqual(&test, logIn[4],  -5.900848925501372);
+    AssertAlmostEqual(&test, logIn[5],  -8.211684133298291);
+    AssertAlmostEqual(&test, logIn[6],  -10.70249931012048);
+    AssertAlmostEqual(&test, logIn[7],  -13.34599565362448);
+    AssertAlmostEqual(&test, logIn[8],  -16.12204102036633);
+    AssertAlmostEqual(&test, logIn[9],  -19.01518043558626);
+    AssertAlmostEqual(&test, logIn[10], -22.01317857797304);
+
+    free(logIn);
+    free(logKn);
+
+    return test_results(&test, stderr);
+}
+
+
 int test_log_besselKn(void)
 {
     unittest_t test;
     unittest_init(&test, "Bessel log_besselKn", "Test Bessel function Kn", 1e-11);
 
-    AssertAlmostEqual(&test, log_besselKn(1000,1e-101), 239158.768848987181);
-    AssertAlmostEqual(&test, log_besselKn(1000,9.9e-101), 236866.234091846636);
-    AssertAlmostEqual(&test, log_besselKn(1000,9.999999e-101), 236856.183855993140);
-    AssertAlmostEqual(&test, log_besselKn(1000,1e-100), 236856.183755993135);
-    AssertAlmostEqual(&test, log_besselKn(1000,1e-99), 234553.598662999089);
+    AssertAlmostEqual(&test, bessel_logKn(1000,1e-101), 239158.768848987181);
+    AssertAlmostEqual(&test, bessel_logKn(1000,9.9e-101), 236866.234091846636);
+    AssertAlmostEqual(&test, bessel_logKn(1000,9.999999e-101), 236856.183855993140);
+    AssertAlmostEqual(&test, bessel_logKn(1000,1e-100), 236856.183755993135);
+    AssertAlmostEqual(&test, bessel_logKn(1000,1e-99), 234553.598662999089);
 
-    AssertAlmostEqual(&test, log_besselKn(1000,650), 19.9079960846961474);
-    AssertAlmostEqual(&test, log_besselKn(1000,650.01), 19.8896448819331096);
-    AssertAlmostEqual(&test, log_besselKn(1000,660), 1.65475618900717256);
-    AssertAlmostEqual(&test, log_besselKn(1000,660.3), 1.11015280174325592);
-    AssertAlmostEqual(&test, log_besselKn(1000,660.91), 0.00332358104988784627);
-    AssertAlmostEqual(&test, log_besselKn(1000,661), -0.159918896053440327);
-    AssertAlmostEqual(&test, log_besselKn(1001,661), 1.04202545713556486);
-    AssertAlmostEqual(&test, log_besselKn(1005,661), 5.85813489511538215);
+    AssertAlmostEqual(&test, bessel_logKn(1000,650), 19.9079960846961474);
+    AssertAlmostEqual(&test, bessel_logKn(1000,650.01), 19.8896448819331096);
+    AssertAlmostEqual(&test, bessel_logKn(1000,660), 1.65475618900717256);
+    AssertAlmostEqual(&test, bessel_logKn(1000,660.3), 1.11015280174325592);
+    AssertAlmostEqual(&test, bessel_logKn(1000,660.91), 0.00332358104988784627);
+    AssertAlmostEqual(&test, bessel_logKn(1000,661), -0.159918896053440327);
+    AssertAlmostEqual(&test, bessel_logKn(1001,661), 1.04202545713556486);
+    AssertAlmostEqual(&test, bessel_logKn(1005,661), 5.85813489511538215);
 
-    AssertAlmostEqual(&test, log_besselKn(1000,1e-10), 29623.5253865290234);
-    AssertAlmostEqual(&test, log_besselKn(1000,1e-9), 27320.9402935349777);
-    AssertAlmostEqual(&test, log_besselKn(1000,1e-8), 25018.3552005409320);
-    AssertAlmostEqual(&test, log_besselKn(1000,1e-7), 22715.7701075468864);
-    AssertAlmostEqual(&test, log_besselKn(1000,1e-6), 20413.1850145528407);
-    AssertAlmostEqual(&test, log_besselKn(1000,1e-5), 18110.5999215587950);
-    AssertAlmostEqual(&test, log_besselKn(1000,1e-4), 15808.0148285647468);
-    AssertAlmostEqual(&test, log_besselKn(1000,1e-3), 13505.4297355704534);
-    AssertAlmostEqual(&test, log_besselKn(1000,1e-2), 11202.8446425516329);
-    AssertAlmostEqual(&test, log_besselKn(1000,1e-1), 8900.25954708010976);
-    AssertAlmostEqual(&test, log_besselKn(1000,1), 6597.6742063383477010);
-    AssertAlmostEqual(&test, log_besselKn(1000,1e1), 4295.06433888323881);
-    AssertAlmostEqual(&test, log_besselKn(1000,1e2), 1990.00489518119196);
-    AssertAlmostEqual(&test, log_besselKn(1000,1e3), -536.241363190353686);
-    AssertAlmostEqual(&test, log_besselKn(1000,1e4), -9954.42342086987500);
-    AssertAlmostEqual(&test, log_besselKn(1000,1e5), -100000.530739293730);
-    AssertAlmostEqual(&test, log_besselKn(1000,1e6), -1.00000618196434300e6);
-    AssertAlmostEqual(&test, log_besselKn(1000,1e7), -1.00000077832564879e7);
-    AssertAlmostEqual(&test, log_besselKn(1000,1e8), -1.00000008979549021e8);
-    AssertAlmostEqual(&test, log_besselKn(1000,1e9), -1.00000001013534157e9);
-    AssertAlmostEqual(&test, log_besselKn(1000,1e10), -1.00000000112870841e10);
+    AssertAlmostEqual(&test, bessel_logKn(1000,1e-10), 29623.5253865290234);
+    AssertAlmostEqual(&test, bessel_logKn(1000,1e-9), 27320.9402935349777);
+    AssertAlmostEqual(&test, bessel_logKn(1000,1e-8), 25018.3552005409320);
+    AssertAlmostEqual(&test, bessel_logKn(1000,1e-7), 22715.7701075468864);
+    AssertAlmostEqual(&test, bessel_logKn(1000,1e-6), 20413.1850145528407);
+    AssertAlmostEqual(&test, bessel_logKn(1000,1e-5), 18110.5999215587950);
+    AssertAlmostEqual(&test, bessel_logKn(1000,1e-4), 15808.0148285647468);
+    AssertAlmostEqual(&test, bessel_logKn(1000,1e-3), 13505.4297355704534);
+    AssertAlmostEqual(&test, bessel_logKn(1000,1e-2), 11202.8446425516329);
+    AssertAlmostEqual(&test, bessel_logKn(1000,1e-1), 8900.25954708010976);
+    AssertAlmostEqual(&test, bessel_logKn(1000,1), 6597.6742063383477010);
+    AssertAlmostEqual(&test, bessel_logKn(1000,1e1), 4295.06433888323881);
+    AssertAlmostEqual(&test, bessel_logKn(1000,1e2), 1990.00489518119196);
+    AssertAlmostEqual(&test, bessel_logKn(1000,1e3), -536.241363190353686);
+    AssertAlmostEqual(&test, bessel_logKn(1000,1e4), -9954.42342086987500);
+    AssertAlmostEqual(&test, bessel_logKn(1000,1e5), -100000.530739293730);
+    AssertAlmostEqual(&test, bessel_logKn(1000,1e6), -1.00000618196434300e6);
+    AssertAlmostEqual(&test, bessel_logKn(1000,1e7), -1.00000077832564879e7);
+    AssertAlmostEqual(&test, bessel_logKn(1000,1e8), -1.00000008979549021e8);
+    AssertAlmostEqual(&test, bessel_logKn(1000,1e9), -1.00000001013534157e9);
+    AssertAlmostEqual(&test, bessel_logKn(1000,1e10), -1.00000000112870841e10);
 
     return test_results(&test, stderr);
 }
