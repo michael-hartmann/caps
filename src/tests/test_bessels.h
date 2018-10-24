@@ -8,6 +8,8 @@ int test_besselK0(void);
 int test_bessellogK0(void);
 
 int test_besselI1(void);
+int test_bessellogI1(void);
+
 int test_besselK1(void);
 
 int test_besselI(void);
