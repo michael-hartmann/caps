@@ -726,7 +726,7 @@ void bessel_logInuKnu_half(int nu, const double x, double *logInu_p, double *log
 
     if(logInu_p != NULL)
     {
-    if(nu > 100)
+        if(nu > 100)
         {
             double relerr;
             *logInu_p = bessel_logInu_asymp(nu+0.5, x, &relerr);
