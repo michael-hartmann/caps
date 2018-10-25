@@ -16,7 +16,7 @@ double bessel_logK1(double x) __attribute__ ((pure));
 double bessel_In(int n, double x) __attribute__ ((pure));
 double bessel_Kn(int n, double x) __attribute__ ((pure));
 
-void bessel_logInKn_array(int nmax, double x, double *logIn, double *logKn);
+void bessel_logKn_recursive(int nmax, double x, double *logKn);
 
 double bessel_logIn(int n, double x) __attribute__ ((pure));
 double bessel_logKn(int n, double x) __attribute__ ((pure));
@@ -24,7 +24,8 @@ double bessel_logKn(int n, double x) __attribute__ ((pure));
 double bessel_continued_fraction(double nu, double x) __attribute__ ((pure));
 
 double bessel_logInu_series(double nu, double x) __attribute__ ((pure));
-double bessel_logInu_asymp(double nu, double x, double *relerror) __attribute__ ((pure));
+double bessel_logInu_asymp(double nu, double x) __attribute__ ((pure));
+double bessel_logKnu_asymp(double nu, double x) __attribute__ ((pure));
 
 void bessel_logInuKnu_half(int nu, const double x, double *logInu_p, double *logKnu_p);
 double bessel_logInu_half(int nu, double x) __attribute__ ((pure));
