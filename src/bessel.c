@@ -465,7 +465,7 @@ double bessel_logK1(double x)
 
 /** @brief Modified Bessel function \f$I_n(x)\f$ for integer order \f$n\f$
  *
- * See \ref bessel_logIn and \ref bessel_logInKn_array.
+ * See \ref bessel_logIn.
  *
  * @param [in] n order
  * @param [in] x argument
@@ -478,7 +478,7 @@ double bessel_In(int n, double x)
 
 /** @brief Modified Bessel function \f$K_n(x)\f$ for integer order \f$n\f$
  *
- * See \ref bessel_logKn and \ref bessel_logInKn_array.
+ * See \ref bessel_logKn.
  *
  * @param [in] n order
  * @param [in] x argument
@@ -527,7 +527,10 @@ void bessel_logKn_recursive(int nmax, double x, double *logKn)
 /** @brief Logarithm of modified Bessel function \f$K_n(x)\f$ for integer order \f$n\f$
  *
  * For n=0 and n=1 the function calls \ref bessel_logK0 or \ref bessel_logK1.
- * Otherwise, the value is computed using \ref bessel_logInKn_array.
+ *
+ * For n>=100 an symptotic expansion is used, see \ref bessel_logKnu_asymp.
+ *
+ * Otherwise, the function is computed using a recursion relation, see \ref bessel_logInKn_array.
  *
  * @param [in]  n order
  * @param [in]  x argument
@@ -554,23 +557,21 @@ double bessel_logKn(int n, double x)
 
 /** @brief Logarithm of modified Bessel function \f$I_n(x)\f$ for integer order \f$n\f$
  *
- * For n=0 and n=1 the function calls \ref bessel_logI0 or \ref bessel_logI1.
- * If \f$n<10\sqrt{n}\f$ the series expansion \ref bessel_logInu_series is
- * used.  For n>100 the function is computed using \ref bessel_logInu_asymp if
- * the relative error is sufficiently small. Otherwise, the function is
- * computed using \ref bessel_logInKn_array.
+ * For \f$n=0\f$ and \f$n=1\f$ the function calls \ref bessel_logI0 or \ref
+ * bessel_logI1.
  *
- * The Bessel functions \f$I_n(x)\f$ are computed using the recurrence relation
+ * For \f$n>=100\f$ an asymptotic expansion is used, see \ref
+ * bessel_logInu_asymp.
+ *
+ * For \f$n<100\f$ and \f$x<5\sqrt{n}\f$ a series expansion is used, see \ref
+ * bessel_logInu_series.
+ *
+ * Otherwise, the functions \f$I_n(x)\f$ is computed using the recurrence relation
  * \f[
  * I_{n-1}(x) = I_{n+1}(x) + \frac{2n}{x} I_n(x)
  * \f]
- * in downwards direction. The Bessel functions \f$I_{n_\mathrm{max}}(x)\f$ and
- * \f$I_{n_\mathrm{max}-1}(x)\f$ are computed using the relation for the
- * Wronskian
- * \f[
- * I_n(x) = \left[x\left(K_{n+1}(x)+K_n(x)\frac{I_{n+1}(x)}{I_n(x)}\right)\right]^{-1} .
- * \f]
- * See also \ref bessel_ratioI.
+ * in downwards direction using Miller's algorithm. See also \ref bessel_logI0
+ * and \ref bessel_ratio.
  *
  * @param [in]  n order
  * @param [in]  x argument
@@ -658,7 +659,9 @@ double bessel_ratioI(double nu, double x)
 
 /** @brief Compute modified Bessel function \f$I_\nu(x)\f$ using asymptotic expansion
  *
- * See https://dlmf.nist.gov/10.41#ii
+ * For \f$n\ge100\f$ the asymptotic expansion is accurate.
+ *
+ * See also https://dlmf.nist.gov/10.41#ii.
  *
  * @param [in] nu order
  * @param [in] x argument
@@ -689,7 +692,9 @@ double bessel_logInu_asymp(double nu, double x)
 
 /** @brief Compute modified Bessel function \f$K_\nu(x)\f$ using asymptotic expansion
  *
- * See https://dlmf.nist.gov/10.41#ii
+ * For \f$n\ge100\f$ the asymptotic expansion is accurate.
+ *
+ * See also https://dlmf.nist.gov/10.41#ii.
  *
  * @param [in] nu order
  * @param [in] x argument
