@@ -793,8 +793,15 @@ void bessel_logInuKnu_half(int nu, const double x, double *logInu_p, double *log
         logKnu  = prefactor+log(Knu);
         logKnup = prefactor+log(Knup);
     }
+    else if(nu >= 100)
+    {
+        /* use asymptotic expansion */
+        logKnup = bessel_logKnu_asymp(nu+1.5, x);
+        logKnu  = bessel_logKnu_asymp(nu+0.5, x);
+    }
     else
     {
+        /* recurrence relation */
         for(int l = 2; l <= nu+1; l++)
         {
             double Kn_new = (2*l-1)*Knup*invx + Knu;
@@ -819,13 +826,9 @@ void bessel_logInuKnu_half(int nu, const double x, double *logInu_p, double *log
     if(logInu_p != NULL)
     {
         if(nu >= 100)
-        {
             *logInu_p = bessel_logInu_asymp(nu+0.5, x);
-            return;
-        }
-
-        double ratio = bessel_ratioI(nu+0.5,x);
-        *logInu_p = -logx-logadd(logKnup, logKnu-log(ratio));
+        else
+            *logInu_p = -logx-logadd(logKnup, logKnu-log(bessel_ratioI(nu+0.5,x)));
     }
 }
 
