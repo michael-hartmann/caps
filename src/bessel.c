@@ -526,11 +526,14 @@ void bessel_logKn_recursive(int nmax, double x, double *logKn)
 
 /** @brief Logarithm of modified Bessel function \f$K_n(x)\f$ for integer order \f$n\f$
  *
- * For n=0 and n=1 the function calls \ref bessel_logK0 or \ref bessel_logK1.
+ * For \f$n=0\f$ and \f$n=1\f$ the function calls \ref bessel_logK0 or \ref
+ * bessel_logK1.
  *
- * For n>=100 an symptotic expansion is used, see \ref bessel_logKnu_asymp.
+ * For \f$n\ge100\f$ an asymptotic expansion is used, see \ref
+ * bessel_logKnu_asymp.
  *
- * Otherwise, the function is computed using a recursion relation, see \ref bessel_logInKn_array.
+ * Otherwise, the function is computed using a recursion relation, see \ref
+ * bessel_logKn_recursive.
  *
  * @param [in]  n order
  * @param [in]  x argument
@@ -571,7 +574,7 @@ double bessel_logKn(int n, double x)
  * I_{n-1}(x) = I_{n+1}(x) + \frac{2n}{x} I_n(x)
  * \f]
  * in downwards direction using Miller's algorithm. See also \ref bessel_logI0
- * and \ref bessel_ratio.
+ * and \ref bessel_ratioI.
  *
  * @param [in]  n order
  * @param [in]  x argument
@@ -599,7 +602,7 @@ double bessel_logIn(int n, double x)
 
     /* miller algorithm */
     double Ip = 1; /* I_n */
-    double I = bessel_ratioI(n-1,x); /* I_{n-1} */
+    double I = bessel_ratioI(n-1,x); /* I_{n-1}/I_n */
 
     for(int k = n-1; k > 0; k--)
     {
