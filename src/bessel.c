@@ -6,6 +6,8 @@
  * @brief  Computation of Bessel functions
  */
 
+#include <stdio.h>
+
 #include <stdlib.h>
 #include <math.h>
 
@@ -487,7 +489,7 @@ double bessel_Kn(int n, double x)
     return exp(bessel_logKn(n,x));
 }
 
-/** @brief Logarithm of modified Bessel functions \f$I_n(x)\f$ and \f$K_n(x)\f$ for integer orders \f$n=0,1,\dots,n_\mathrm{max}\f$
+/** @brief Logarithm of modified Bessel functions \f$K_n(x)\f$ for integer orders \f$n=0,1,\dots,n_\mathrm{max}\f$
  *
  * The Bessel functions \f$K_n(x)\f$ are computed using the recurrence relation
  * \f[
@@ -496,42 +498,23 @@ double bessel_Kn(int n, double x)
  * in upwards direction. The Bessel functions \f$K_0(x)\f$ and \f$K_1(x)\f$
  * are computed using \ref bessel_logK0 and \ref bessel_logK1.
  *
- * The Bessel functions \f$I_n(x)\f$ are computed using the recurrence relation
- * \f[
- * I_{n-1}(x) = I_{n+1}(x) + \frac{2n}{x} I_n(x)
- * \f]
- * in downwards direction. The Bessel functions \f$I_{n_\mathrm{max}}(x)\f$ and
- * \f$I_{n_\mathrm{max}-1}(x)\f$ are computed using the relation for the
- * Wronskian
- * \f[
- * I_n(x) = \left[x\left(K_{n+1}(x)+K_n(x)\frac{I_{n+1}(x)}{I_n(x)}\right)\right]^{-1} .
- * \f]
- * See also \ref bessel_continued_fraction.
- *
- * logIn and logKn may be NULL.
- *
  * @param [in]  nmax \f$n_\mathrm{max}\f$ maximum order
  * @param [in]  x argument
- * @param [out] logIn array of n+1 elements with the values of \f$I_0(x), I_1(x),\dots, I_{n_\mathrm{max}}(x)\f$
  * @param [out] logKn array of n+1 elements with the values of \f$K_0(x), K_1(x),\dots, K_{n_\mathrm{max}}(x)\f$
  */
-void bessel_logInKn_array(int nmax, double x, double *logIn, double *logKn)
+void bessel_logKn_recursive(int nmax, double x, double *logKn)
 {
-    int freeKn = 0;
-
-    if(logKn == NULL)
-    {
-        logKn = xmalloc(((size_t)nmax+1)*sizeof(double));
-        TERMINATE(logKn == NULL, "Cannot allocate memory");
-        freeKn = 1;
-    }
+    if(nmax < 0)
+        return;
 
     /* K_0(x) */
     logKn[0] = bessel_logK0(x);
 
-    if(nmax)
-        /* K_1(x) */
-        logKn[1] = bessel_logK1(x);
+    if(nmax < 1)
+        return;
+
+    /* K_1(x) */
+    logKn[1] = bessel_logK1(x);
 
     for(int n = 1; n < nmax; n++)
     {
@@ -539,25 +522,6 @@ void bessel_logInKn_array(int nmax, double x, double *logIn, double *logKn)
         double k = 0.5*x/n;
         logKn[n+1] = -log(k)+logKn[n]+log1p(exp(logKn[n-1]-logKn[n])*k);
     }
-
-    if(logIn)
-    {
-        /* I_n = 1/( x*K_n*(1+K_n/K_{n+1}*I_{n+1}/I_n) ) */
-        const double ratio = 1/bessel_continued_fraction(nmax-1, x); /* I_{n-1}/I_n */
-        logIn[nmax-1] = -log(x)-logKn[nmax]-log1p(exp(logKn[nmax-1]-logKn[nmax])*ratio);
-        logIn[nmax] = logIn[nmax-1]+log(ratio);
-
-        for(int n = nmax-1; n > 0; n--)
-            logIn[n-1] = logIn[n+1]+log1p(2/x*n*exp(logIn[n]-logIn[n+1]));
-
-        /* correct the rounding error */
-        const double delta = -logIn[0]+bessel_logI0(x);
-        for(int n = 0; n < nmax; n++)
-            logIn[n] += delta;
-    }
-
-    if(freeKn)
-        xfree(logKn);
 }
 
 /** @brief Logarithm of modified Bessel function \f$K_n(x)\f$ for integer order \f$n\f$
@@ -571,6 +535,8 @@ void bessel_logInKn_array(int nmax, double x, double *logIn, double *logKn)
  */
 double bessel_logKn(int n, double x)
 {
+    double logKn[101];
+
     if(n < 0)
         return NAN;
     if(n == 0)
@@ -578,12 +544,12 @@ double bessel_logKn(int n, double x)
     if(n == 1)
         return bessel_logK1(x);
 
-    double *Kn = xmalloc((size_t)(n+1)*sizeof(double));
-    TERMINATE(Kn == NULL, "Couldn't allocate memory.");
-    bessel_logInKn_array(n, x, NULL, Kn);
-    double v = Kn[n];
-    xfree(Kn);
-    return v;
+    /* for n>=100 use asymptotic expansion */
+    if(n >= 100)
+        return bessel_logKnu_asymp(n, x);
+
+    bessel_logKn_recursive(n, x, logKn);
+    return logKn[n];
 }
 
 /** @brief Logarithm of modified Bessel function \f$I_n(x)\f$ for integer order \f$n\f$
@@ -593,6 +559,18 @@ double bessel_logKn(int n, double x)
  * used.  For n>100 the function is computed using \ref bessel_logInu_asymp if
  * the relative error is sufficiently small. Otherwise, the function is
  * computed using \ref bessel_logInKn_array.
+ *
+ * The Bessel functions \f$I_n(x)\f$ are computed using the recurrence relation
+ * \f[
+ * I_{n-1}(x) = I_{n+1}(x) + \frac{2n}{x} I_n(x)
+ * \f]
+ * in downwards direction. The Bessel functions \f$I_{n_\mathrm{max}}(x)\f$ and
+ * \f$I_{n_\mathrm{max}-1}(x)\f$ are computed using the relation for the
+ * Wronskian
+ * \f[
+ * I_n(x) = \left[x\left(K_{n+1}(x)+K_n(x)\frac{I_{n+1}(x)}{I_n(x)}\right)\right]^{-1} .
+ * \f]
+ * See also \ref bessel_continued_fraction.
  *
  * @param [in]  n order
  * @param [in]  x argument
@@ -610,28 +588,26 @@ double bessel_logIn(int n, double x)
     if(x == 0)
         return -INFINITY;
 
-    /* series expansion */
-    if(x < 10*sqrt(n))
+    /* for n>=100 use asymptotic expansion */
+    if(n >= 100)
+        return bessel_logInu_asymp(n, x);
+
+    /* for small values use series expansion */
+    if(x < 5*sqrt(n))
         return bessel_logInu_series(n,x);
 
-    /* maybe an asymptotic expansion is sufficient? */
-    if(n > 100)
+    /* miller algorithm */
+    double Ip = 1; /* I_n */
+    double I = bessel_continued_fraction(n-1,x); /* I_{n-1} */
+
+    for(int k = n-1; k > 0; k--)
     {
-        double relerror = 1;
-        double v = bessel_logInu_asymp(n, x, &relerror);
-        if(relerror < 1e-12)
-            return v;
+        double Im = Ip + 2*k/x*I;
+        Ip = I;
+        I = Im;
     }
 
-    double *In = xmalloc((size_t)(n+1)*sizeof(double));
-    TERMINATE(In == NULL, "Couldn't allocate memory.");
-
-    bessel_logInKn_array(n, x, In, NULL);
-    double v = In[n];
-
-    xfree(In);
-
-    return v;
+    return bessel_logI0(x)-log(I);
 }
 
 /*@}*/
@@ -686,10 +662,9 @@ double bessel_continued_fraction(double nu, double x)
  *
  * @param [in] nu order
  * @param [in] x argument
- * @param [out] relerror estimated relative error
  * @retval logI \f$\log I_\nu(x)\f$
  */
-double bessel_logInu_asymp(double nu, double x, double *relerror)
+double bessel_logInu_asymp(double nu, double x)
 {
     const double z = x/nu;
     const double p2 = 1/(1+z*z); /* p² */
@@ -708,7 +683,36 @@ double bessel_logInu_asymp(double nu, double x, double *relerror)
     const double eta = a+log(z/(1+a));
     const double prefactor = nu*eta-log(2*M_PI*nu*a)/2;
 
-    *relerror = U5*y*y*y*y*y;
+    return prefactor+sum;
+}
+
+
+/** @brief Compute modified Bessel function \f$K_\nu(x)\f$ using asymptotic expansion
+ *
+ * See https://dlmf.nist.gov/10.41#ii
+ *
+ * @param [in] nu order
+ * @param [in] x argument
+ * @retval logI \f$\log I_\nu(x)\f$
+ */
+double bessel_logKnu_asymp(double nu, double x)
+{
+    const double z = x/nu;
+    const double p2 = 1/(1+z*z); /* p² */
+
+    const double U5 = 59535/262144.+p2*(-67608983/9175040.+p2*(250881631/5898240.+p2*(-108313205/1179648.+p2*(5391411025/63700992.-5391411025/191102976.*p2))));
+    const double U4 = 3675/32768. + p2*(-96833/40960.+p2*(144001/16384.+p2*(-7436429/663552.+37182145/7962624.*p2)));
+    const double U3 = 75/1024.+p2*(-4563/5120.+p2*(17017/9216.-85085/82944.*p2));
+    const double U2 = 9/128.+p2*(-77/192.+385/1152.*p2);
+    const double U1 = 1/8.-5/24.*p2;
+    /* U0 = 1 */
+
+    const double a = sqrt(1+z*z);
+    const double y = -1/(nu*a);
+    const double sum = log1p(y*(U1 + y*(U2 + y*(U3 + y*(U4 + U5*y)))));
+
+    const double eta = a+log(z/(1+a));
+    const double prefactor = -nu*eta-0.5*log(a)+0.5*log(0.5*M_PI/nu);
 
     return prefactor+sum;
 }
@@ -806,13 +810,10 @@ void bessel_logInuKnu_half(int nu, const double x, double *logInu_p, double *log
 
     if(logInu_p != NULL)
     {
-        if(nu > 100)
+        if(nu >= 100)
         {
-            double relerr;
-            *logInu_p = bessel_logInu_asymp(nu+0.5, x, &relerr);
-
-            if(relerr < 1e-12)
-                return;
+            *logInu_p = bessel_logInu_asymp(nu+0.5, x);
+            return;
         }
 
         double ratio = bessel_continued_fraction(nu+0.5,x);
