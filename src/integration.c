@@ -925,7 +925,7 @@ double casimir_integrate_plasma(integration_plasma_t *self, int l1, int l2, int 
     *ratio1 = cache_lookup(self->cache_ratio, l1);
     if(isnan(*ratio1))
     {
-        *ratio1 = bessel_continued_fraction(l1-0.5, self->alpha);
+        *ratio1 = bessel_ratioI(l1-0.5, self->alpha);
         cache_insert(self->cache_ratio, l1, *ratio1);
     }
 
@@ -933,7 +933,7 @@ double casimir_integrate_plasma(integration_plasma_t *self, int l1, int l2, int 
     *ratio2 = cache_lookup(self->cache_ratio, l2);
     if(isnan(*ratio2))
     {
-        *ratio2 = bessel_continued_fraction(l2-0.5, self->alpha);
+        *ratio2 = bessel_ratioI(l2-0.5, self->alpha);
         cache_insert(self->cache_ratio, l2, *ratio2);
     }
 

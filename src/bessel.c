@@ -570,7 +570,7 @@ double bessel_logKn(int n, double x)
  * \f[
  * I_n(x) = \left[x\left(K_{n+1}(x)+K_n(x)\frac{I_{n+1}(x)}{I_n(x)}\right)\right]^{-1} .
  * \f]
- * See also \ref bessel_continued_fraction.
+ * See also \ref bessel_ratioI.
  *
  * @param [in]  n order
  * @param [in]  x argument
@@ -598,7 +598,7 @@ double bessel_logIn(int n, double x)
 
     /* miller algorithm */
     double Ip = 1; /* I_n */
-    double I = bessel_continued_fraction(n-1,x); /* I_{n-1} */
+    double I = bessel_ratioI(n-1,x); /* I_{n-1} */
 
     for(int k = n-1; k > 0; k--)
     {
@@ -628,7 +628,7 @@ double bessel_logIn(int n, double x)
  * @param x argument
  * @retval ratio \f$I_\nu(x)/I_{\nu+1}(x)\f$
  */
-double bessel_continued_fraction(double nu, double x)
+double bessel_ratioI(double nu, double x)
 {
     /* it's faster to calculate the inverse of x only once */
     const double invx2 = 2/x;
@@ -816,7 +816,7 @@ void bessel_logInuKnu_half(int nu, const double x, double *logInu_p, double *log
             return;
         }
 
-        double ratio = bessel_continued_fraction(nu+0.5,x);
+        double ratio = bessel_ratioI(nu+0.5,x);
         *logInu_p = -logx-logadd(logKnup, logKnu-log(ratio));
     }
 }

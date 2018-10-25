@@ -21,7 +21,7 @@ void bessel_logKn_recursive(int nmax, double x, double *logKn);
 double bessel_logIn(int n, double x) __attribute__ ((pure));
 double bessel_logKn(int n, double x) __attribute__ ((pure));
 
-double bessel_continued_fraction(double nu, double x) __attribute__ ((pure));
+double bessel_ratioI(double nu, double x) __attribute__ ((pure));
 
 double bessel_logInu_series(double nu, double x) __attribute__ ((pure));
 double bessel_logInu_asymp(double nu, double x) __attribute__ ((pure));
