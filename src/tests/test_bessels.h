@@ -19,4 +19,6 @@ int test_bessel_logKnu_half(void);
 int test_bessel_logIn(void);
 int test_bessel_logKn(void);
 
+int test_bessel_continued_fraction(void);
+
 #endif
