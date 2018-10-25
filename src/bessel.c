@@ -544,7 +544,7 @@ double bessel_logKn(int n, double x)
     double logKn[101];
 
     if(n < 0)
-        return NAN;
+        n = -n;
     if(n == 0)
         return bessel_logK0(x);
     if(n == 1)
@@ -583,7 +583,7 @@ double bessel_logKn(int n, double x)
 double bessel_logIn(int n, double x)
 {
     if(n < 0)
-        return NAN;
+        n = -n;
     if(n == 0)
         return bessel_logI0(x);
     if(n == 1)
