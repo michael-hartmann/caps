@@ -452,7 +452,7 @@ void casimir_lnab_perf(casimir_t *self, double xi_, int l, double *lna, double *
      */
 
     /* numerator and denominator to calculate al */
-    double ratio = bessel_continued_fraction(l-0.5, chi);
+    double ratio = bessel_ratioI(l-0.5, chi);
     double numerator = M_LOGPI-M_LOG2 + logIlp + log(chi*ratio - l);
     double denominator = logadd(logi(l)+logKlp, log_chi+logKlm);
 
@@ -527,8 +527,8 @@ void casimir_lnab(casimir_t *self, double xi_, int l, double *lna, double *lnb)
     bessel_logInuKnu_half(l,   n*chi, &logIlp_nchi, &logKlp_nchi); /* I_{l+0.5}(nχ), K_{l+0.5}(nχ) */
     bessel_logInuKnu_half(l-1, n*chi, &logIlm_nchi, &logKlm_nchi); /* K_{l-0.5}(nχ), K_{l-0.5}(nχ) */
 
-    double ratio   = bessel_continued_fraction(l-0.5,   chi);
-    double ratio_n = bessel_continued_fraction(l-0.5, n*chi);
+    double ratio   = bessel_ratioI(l-0.5,   chi);
+    double ratio_n = bessel_ratioI(l-0.5, n*chi);
 
     double ln_gammaB = logIlp_nchi + logIlp + ln_chi + log( n*ratio_n-ratio );
     double ln_gammaC = log(epsilonm1)+logIlp_nchi + logadd(ln_chi+logKlm, ln_l+logKlp);
