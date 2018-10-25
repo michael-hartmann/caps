@@ -37,6 +37,8 @@ int main(int argc, char *argv[])
     test_bessel_logIn();
     test_bessel_logKn();
 
+    test_bessel_ratioI();
+
     test_casimir_lnab_perf();
     test_casimir_lnab();
 
