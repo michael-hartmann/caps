@@ -35,25 +35,26 @@ class sfunc:
         dplm = dlnPlm(l, m, x, &d2plm)
         return dplm,d2plm
 
-    def besselI(int n, double x):
-        return libcasimir.besselI(n, x)
+    def bessel_In(int n, double x):
+        return libcasimir.bessel_In(n, x)
 
-    def besselI0e(double x):
-        return libcasimir.besselI0e(x)
+    def bessel_Kn(int n, double x):
+        return libcasimir.bessel_Kn(n, x)
 
-    def besselI1e(double x):
-        return libcasimir.besselI1e(x)
+    def bessel_logIn(int n, double x):
+        return libcasimir.bessel_logIn(n, x)
 
-    def bessel_lnInu(int nu, double x):
-        return libcasimir.bessel_lnInu(nu, x)
+    def bessel_logKn(int n, double x):
+        return libcasimir.bessel_logKn(n, x)
 
-    def bessel_lnKnu(int nu, double x):
-        return libcasimir.bessel_lnKnu(nu, x)
+    def bessel_ratioI(double nu, double x):
+        return libcasimir.bessel_ratioI(nu, x)
 
-    def bessel_lnInuKnu(int nu, double x):
-        cdef double Inu, Knu
-        libcasimir.bessel_lnInuKnu(nu, x, &Inu, &Knu)
-        return Inu, Knu
+    def bessel_logInu_half(int nu, double x):
+        return libcasimir.bessel_logInu_half(nu, x)
+
+    def bessel_logKnu_half(int nu, double x):
+        return libcasimir.bessel_logKnu_half(nu, x)
 
     def lfac(unsigned int n):
         return libcasimir.lfac(n)

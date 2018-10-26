@@ -4,13 +4,14 @@ cdef extern from "plm.h":
     double dlnPlm(int l, int m, double x, double *d2lnPlm);
 
 cdef extern from "bessel.h":
-    double besselI0e(double x)
-    double besselI1e(double x)
-    double besselI(int n, double x)
-    double bessel_continued_fraction(int nu, double x)
-    double bessel_lnInu(int nu, double x)
-    double bessel_lnKnu(int nu, double x)
-    void bessel_lnInuKnu(int nu, const double x, double *lnInu_p, double *lnKnu_p)
+    double bessel_In(int n, double x);
+    double bessel_Kn(int n, double x);
+    double bessel_logIn(int n, double x);
+    double bessel_logKn(int n, double x);
+    double bessel_ratioI(double nu, double x);
+    double bessel_logInu_half(int nu, double x);
+    double bessel_logKnu_half(int nu, double x);
+
 
 cdef extern from "logfac.h":
     double lfac(unsigned int n)
