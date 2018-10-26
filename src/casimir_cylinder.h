@@ -13,7 +13,7 @@ double casimir_cp_dirichlet(casimir_cp_t *self, double q);
 double casimir_cp_neumann(casimir_cp_t *self, double q);
 void casimir_cp_free(casimir_cp_t *self);
 
-int casimir_cp_get_lmax(casimir_cp_t *self, int lmax);
+int casimir_cp_get_lmax(casimir_cp_t *self);
 int casimir_cp_set_lmax(casimir_cp_t *self, int lmax);
 
 #endif
