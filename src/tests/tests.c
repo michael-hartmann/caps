@@ -10,6 +10,7 @@
 #include "test_mie.h"
 #include "test_mie_drude.h"
 #include "test_Plm.h"
+#include "test_logdetD.h"
 
 int main(int argc, char *argv[])
 {
@@ -43,6 +44,8 @@ int main(int argc, char *argv[])
     test_casimir_lnab();
 
     test_lnPlm();
+
+    test_logdetD();
 
 	return 0;
 }
