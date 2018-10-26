@@ -489,39 +489,45 @@ double bessel_Kn(int n, double x)
     return exp(bessel_logKn(n,x));
 }
 
-/** @brief Logarithm of modified Bessel functions \f$K_n(x)\f$ for integer orders \f$n=0,1,\dots,n_\mathrm{max}\f$
+/** @brief Logarithm of modified Bessel functions \f$K_n(x)\f$
  *
- * The Bessel functions \f$K_n(x)\f$ are computed using the recurrence relation
+ * The Bessel function \f$K_n(x)\f$ for integer order \f$n\f$ is computed using
+ * the recurrence relation
  * \f[
  * K_{n+1}(x) = K_{n-1}(x) + \frac{2n}{x} K_n(x)
  * \f]
- * in upwards direction. The Bessel functions \f$K_0(x)\f$ and \f$K_1(x)\f$
- * are computed using \ref bessel_logK0 and \ref bessel_logK1.
+ * in upwards direction. The Bessel functions \f$K_0(x)\f$ and \f$K_1(x)\f$ are
+ * computed using \ref bessel_logK0 and \ref bessel_logK1.
  *
- * @param [in]  nmax \f$n_\mathrm{max}\f$ maximum order
+ * @param [in]  n \f$n_\mathrm{max}\f$ maximum order
  * @param [in]  x argument
- * @param [out] logKn array of n+1 elements with the values of \f$K_0(x), K_1(x),\dots, K_{n_\mathrm{max}}(x)\f$
+ * @retval logKn array of n+1 elements with the values of \f$K_0(x), K_1(x),\dots, K_{n_\mathrm{max}}(x)\f$
  */
-void bessel_logKn_recursive(int nmax, double x, double *logKn)
+double bessel_logKn_recursive(int n, double x)
 {
-    if(nmax < 0)
-        return;
+    if(n < 0)
+        return NAN;
 
     /* K_0(x) */
-    logKn[0] = bessel_logK0(x);
+    double Km = bessel_logK0(x);
 
-    if(nmax < 1)
-        return;
+    if(n < 1)
+        return Km;
 
     /* K_1(x) */
-    logKn[1] = bessel_logK1(x);
+    double K = bessel_logK1(x);
 
-    for(int n = 1; n < nmax; n++)
+    for(int j = 1; j < n; j++)
     {
         /* K_{n+1} = K_{n-1} + 2n/x K_n = 2n/x * K_n * (1+x/2n*K_{n-1}/K_n) */
-        double k = 0.5*x/n;
-        logKn[n+1] = -log(k)+logKn[n]+log1p(exp(logKn[n-1]-logKn[n])*k);
+        double k = 0.5*x/j;
+        double Kp = -log(k)+K+log1p(exp(Km-K)*k);
+
+        Km = K;
+        K = Kp;
     }
+
+    return K;
 }
 
 /** @brief Logarithm of modified Bessel function \f$K_n(x)\f$ for integer order \f$n\f$
@@ -541,8 +547,6 @@ void bessel_logKn_recursive(int nmax, double x, double *logKn)
  */
 double bessel_logKn(int n, double x)
 {
-    double logKn[101];
-
     if(n < 0)
         n = -n;
     if(n == 0)
@@ -554,8 +558,7 @@ double bessel_logKn(int n, double x)
     if(n >= 100)
         return bessel_logKnu_asymp(n, x);
 
-    bessel_logKn_recursive(n, x, logKn);
-    return logKn[n];
+    return bessel_logKn_recursive(n, x);
 }
 
 /** @brief Logarithm of modified Bessel function \f$I_n(x)\f$ for integer order \f$n\f$
