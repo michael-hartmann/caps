@@ -120,6 +120,8 @@ Also, libcasimir uses some third-party software:
  - <a href="http://www.netlib.org/lapack/">LAPACK</a> Linear algebra library.
    LAPACK may be used to calculate the determinant of the scattering matrices.
    However, for small separations using HODLR is much faster. (Modified BSD)
+ - <a href="https://github.com/cofyc/argparse">argparse<a> A command line
+   arguments parsing library in C. (MIT)
 
 
 \section publications Publications related to libcasimir

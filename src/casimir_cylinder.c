@@ -3,6 +3,7 @@
 
 #include "casimir_cylinder.h"
 
+#include "argparse.h"
 #include "constants.h"
 #include "bessel.h"
 #include "matrix.h"
@@ -23,7 +24,7 @@ casimir_cp_t *casimir_cp_init(double R, double d)
     return self;
 }
 
-int casimir_cp_get_lmax(casimir_cp_t *self, int lmax)
+int casimir_cp_get_lmax(casimir_cp_t *self)
 {
     return self->lmax;
 }
@@ -130,34 +131,90 @@ static double __integrand_neumann(double x, void *args)
 }
 
 
-int main(int argc, char *argv[])
+int main(int argc, const char *argv[])
 {
-    const double T = 0;
-    const double R = 100e-6;
-    const double d = 25e-6;
-    const int lmax = 50;
+    double T = 0;
+    double R = NAN, d = NAN;
+    int lmax = 0;
 
-    /* in units of hbar*c*L, i.e., E_PFA^DN / (hbar*c*L) */
+    const char *const usage[] = {
+        "casimir_cylinder [options] [[--] args]",
+        "casimir_cylinder [options]",
+        NULL,
+    };
+
+    struct argparse_option options[] = {
+        OPT_HELP(),
+        OPT_GROUP("Mandatory options"),
+        OPT_DOUBLE('R', "radius",      &R, "radius of cylinder in m", NULL, 0, 0),
+        OPT_DOUBLE('d', "separation",  &d, "seperation between cylinder and plate in m", NULL, 0, 0),
+        OPT_DOUBLE('T', "temperature", &T, "temperature in K", NULL, 0, 0),
+        OPT_GROUP("Further options"),
+        OPT_INTEGER('l', "lmax", &lmax, "dimension of vector space", NULL, 0, 0),
+        OPT_END(),
+    };
+
+    struct argparse argparse;
+    argparse_init(&argparse, options, usage, 0);
+    argparse_describe(&argparse, "\nA brief description of what the program does and how it works.", "\nAdditional description of the program after the description of the arguments.");
+    argc = argparse_parse(&argparse, argc, argv);
+
+    /* check arguments */
+    if(isnan(R))
+    {
+        fprintf(stderr, "missing mandatory option: -R radius of sphere\n\n");
+        argparse_usage(&argparse);
+        return 1;
+    }
+    if(R <= 0)
+    {
+        fprintf(stderr, "radius of sphere must be positive\n\n");
+        argparse_usage(&argparse);
+        return 1;
+    }
+    if(isnan(d))
+    {
+        fprintf(stderr, "missing mandatory option: -d separation between cylinder and plate\n\n");
+        argparse_usage(&argparse);
+        return 1;
+    }
+    if(d <= 0)
+    {
+        fprintf(stderr, "separation between cylinder and plate must be positive\n\n");
+        argparse_usage(&argparse);
+        return 1;
+    }
+    if(T < 0)
+    {
+        fprintf(stderr, "temperature must be non-negative\n\n");
+        argparse_usage(&argparse);
+        return 1;
+    }
+
+    /* PFA for Dirichlet/Neumann in units of hbar*c*L, i.e., E_PFA^DN / (hbar*c*L) */
     double E_PFA_DN = -M_PI*M_PI*M_PI/1920*sqrt(R/(2*d))/(d*d);
+    /* PFA for EM in units of hbar*c*L, i.e., E_PFA^DN / (hbar*c*L) */
     double E_PFA = 2*E_PFA_DN;
 
     casimir_cp_t *c = casimir_cp_init(R,d);
-    casimir_cp_set_lmax(c,lmax);
+    
+    if(lmax > 0)
+        casimir_cp_set_lmax(c,lmax);
 
     double abserr;
     int neval, ier;
 
-    /* in units of hbar*c*L */
+    /* energy Dirichlet in units of hbar*c*L */
     double E_D = dqagi(__integrand_dirichlet, 0, 1, 1e-8, 1e-8, &abserr, &neval, &ier, c)/(4*M_PI*2*d);
 
-    /* in units of hbar*c*L */
+    /* energy Neumann in units of hbar*c*L */
     double E_N = dqagi(__integrand_neumann, 0, 1, 1e-8, 1e-8, &abserr, &neval, &ier, c)/(4*M_PI*2*d);
 
-    /* in units of hbar*c*L */
+    /* energy EM in units of hbar*c*L */
     double E_EM = E_D+E_N;
 
-    printf("# d/R, d, R, lmax, T, E_PFA/(L*hbar*c), E_D/E_PFA, E_N/E_PFA, E_EM/E_PFA\n");
-    printf("%.15g, %.15g, %.15g, %d, %.15g, %.15g, %.15g, %.15g, %.15g\n", d/R, d, R, lmax, T, E_PFA, E_D/E_PFA, E_N/E_PFA, E_EM/E_PFA);
+    printf("# d/R, d, R, T, lmax, E_PFA/(L*hbar*c), E_D/E_PFA, E_N/E_PFA, E_EM/E_PFA\n");
+    printf("%.15g, %.15g, %.15g, %.15g, %d, %.15g, %.15g, %.15g, %.15g\n", d/R, d, R, T, casimir_cp_get_lmax(c), E_PFA, E_D/E_PFA, E_N/E_PFA, E_EM/E_PFA);
 
     casimir_cp_free(c);
 
