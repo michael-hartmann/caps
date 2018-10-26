@@ -14,9 +14,9 @@ typedef struct
 
 double sqrtpm1(double x) __attribute__ ((pure));
 
-double kahan_sum(double input[], size_t len);
+double kahan_sum(double input[], size_t len) __attribute__ ((pure));
 
-double logadd(const double a, const double b);
+double logadd(const double a, const double b) __attribute__ ((pure));
 double logadd_ms(log_t list[], const int len, sign_t *sign);
 
 #endif
