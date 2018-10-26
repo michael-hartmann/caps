@@ -48,6 +48,7 @@ TESTS = \
     tests/test_fresnel.o \
     tests/test_mie.o \
     tests/test_Plm.o \
+    tests/test_logdetD.o \
     tests/test_mie_drude.o
 
 # use C99 standard
