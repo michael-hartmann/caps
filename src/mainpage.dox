@@ -106,12 +106,20 @@ The code is licensed under GPLv2, see LICENSE.
 Also, libcasimir uses some third-party software:
 
 
- - HODLR A fast direct solver and determinant computation for dense linear systems. (MPL2)
- - libeigen HODLR depends on libeigen. However, only header files are needed. (MPL2)
- - cquadpack for integration. cquadpack is a a C port of the QUADPACK software originally written in Fortran for solving integrals. (public domain)
- - hash-table is an implementation of hash tables in C. The code was slightly modified for the use in libcasimir. (ISC license)
- - cephes is a software collection with special functions. libcasimir uses the implementation for the modified Bessel functions I0(x) and I1(x). Boths files have been slightly modified, see besselI.c. (No license, probably BSD licensed.)
- - LAPACK Linear algebra library. LAPACK may be used to calculate the determinant of the scattering matrices. However, for small separations using HODLR is much faster. (Modified BSD)
+ - <a href="https://github.com/sivaramambikasaran/HODLR">HODLR</a> A fast
+   direct solver and determinant computation for dense linear systems.(MPL2)
+ - <a href="http://eigen.tuxfamily.org/index.php?title=Main_Page">Eigen</a>
+   HODLR depends on libeigen. However, only header files are needed. (MPL2)
+ - <a href="https://github.com/ESSS/cquadpack">cquadpack</a> for integration.
+   cquadpack is a a C port of the QUADPACK software originally written in
+   Fortran for solving integrals. (public domain)
+ - <a href="https://www.netlib.org/cephes/">cephes</a> is a software collection
+   with special functions. libcasimir uses the code of the Chebychev expansion
+   to compute the modified Bessel functions I0(x) and I1(x). Boths files have
+   been slightly modified, see bessel.c. (No license, probably BSD licensed.)
+ - <a href="http://www.netlib.org/lapack/">LAPACK</a> Linear algebra library.
+   LAPACK may be used to calculate the determinant of the scattering matrices.
+   However, for small separations using HODLR is much faster. (Modified BSD)
 
 
 \section publications Publications related to libcasimir
