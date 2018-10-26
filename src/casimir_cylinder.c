@@ -7,6 +7,8 @@
 #include "bessel.h"
 #include "matrix.h"
 
+#include "cquadpack/include/cquadpack.h"
+
 
 casimir_cp_t *casimir_cp_init(double R, double d)
 {
@@ -14,7 +16,7 @@ casimir_cp_t *casimir_cp_init(double R, double d)
 
     self->R = R;
     self->d = d;
-    self->H = d+R;
+    self->H = R+d;
 
     self->lmax = MAX(5*ceil(R/d),10);
 
@@ -84,11 +86,16 @@ double casimir_cp_neumann(casimir_cp_t *self, double q)
         {
             int l2 = j-lmax;
 
+            double log_dIl1 = bessel_logIn(l1-1,R*q)+log1p(exp(bessel_logIn(l1+1,R*q)-bessel_logIn(l1-1,R*q)))-log(2);
+            double log_dIl2 = bessel_logIn(l2-1,R*q)+log1p(exp(bessel_logIn(l2+1,R*q)-bessel_logIn(l2-1,R*q)))-log(2);
+
+            double log_dKl1 = bessel_logKn(l1+1,R*q)+log1p(exp(bessel_logKn(l1-1,R*q)-bessel_logKn(l1+1,R*q)))-log(2);
+            double log_dKl2 = bessel_logKn(l2+1,R*q)+log1p(exp(bessel_logKn(l2-1,R*q)-bessel_logKn(l2+1,R*q)))-log(2);
+
             /* matrix element ℳ_{l1,l2} */
-            /* XXX symmetrize XXX */
-            //double elem = exp( (iv(l1-1,z)+iv(l1+1,z)) / (kv(l2-1,z)+kv(l2+1,z))* kv(l1+l2,2*H*q) )
-            double elem = (bessel_In(l1-1,R*q)+bessel_In(l1+1,R*q))/(bessel_Kn(l2-1,R*q)+bessel_Kn(l2+1,R*q)) * bessel_Kn(l1+l2,2*H*q);
-            matrix_set(D,i,j, -elem);
+            double elem = 0.5*(log_dIl1+log_dIl2-log_dKl1-log_dKl2) + bessel_logKn(l1+l2,2*H*q);
+
+            matrix_set(D,i,j, -exp(elem));
         }
     }
 
@@ -107,26 +114,52 @@ void casimir_cp_free(casimir_cp_t *self)
     free(self);
 }
 
+
+static double __integrand_dirichlet(double x, void *args)
+{
+    casimir_cp_t *self = (casimir_cp_t *)args;
+    double q = x/(2*self->d);
+    return q*casimir_cp_dirichlet(self, q);
+}
+
+static double __integrand_neumann(double x, void *args)
+{
+    casimir_cp_t *self = (casimir_cp_t *)args;
+    double q = x/(2*self->d);
+    return q*casimir_cp_neumann(self, q);
+}
+
+
 int main(int argc, char *argv[])
 {
-    const double q = 1;
+    const double T = 0;
     const double R = 100e-6;
-    const double d = 200e-6;
-    //double H = R+a
+    const double d = 25e-6;
+    const int lmax = 50;
 
-    printf("R = %g\n", R);
-    printf("d = %g\n", d);
-    printf("q = %g\n", q);
-
-    printf("\n");
+    /* in units of hbar*c*L, i.e., E_PFA^DN / (hbar*c*L) */
+    double E_PFA_DN = -M_PI*M_PI*M_PI/1920*sqrt(R/(2*d))/(d*d);
+    double E_PFA = 2*E_PFA_DN;
 
     casimir_cp_t *c = casimir_cp_init(R,d);
-    double dirichlet = casimir_cp_dirichlet(c, q);
-    double neumann   = casimir_cp_neumann(c, q);
-    casimir_cp_free(c);
+    casimir_cp_set_lmax(c,lmax);
 
-    printf("dirichlet=%.15g\n", dirichlet);
-    printf("neumann  =%.15g\n", neumann);
+    double abserr;
+    int neval, ier;
+
+    /* in units of hbar*c*L */
+    double E_D = dqagi(__integrand_dirichlet, 0, 1, 1e-8, 1e-8, &abserr, &neval, &ier, c)/(4*M_PI*2*d);
+
+    /* in units of hbar*c*L */
+    double E_N = dqagi(__integrand_neumann, 0, 1, 1e-8, 1e-8, &abserr, &neval, &ier, c)/(4*M_PI*2*d);
+
+    /* in units of hbar*c*L */
+    double E_EM = E_D+E_N;
+
+    printf("# d/R, d, R, lmax, T, E_PFA/(L*hbar*c), E_D/E_PFA, E_N/E_PFA, E_EM/E_PFA\n");
+    printf("%.15g, %.15g, %.15g, %d, %.15g, %.15g, %.15g, %.15g, %.15g\n", d/R, d, R, lmax, T, E_PFA, E_D/E_PFA, E_N/E_PFA, E_EM/E_PFA);
+
+    casimir_cp_free(c);
 
     return 0;
 }
