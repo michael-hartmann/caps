@@ -72,3 +72,26 @@ int test_logdetD()
 
     return test_results(&test, stderr);
 }
+
+int test_logdetD0()
+{
+    const double eps = 1e-13;
+    unittest_t test;
+    casimir_t *casimir;
+
+    unittest_init(&test, "casimir_logdetD0", "Computation of determinant for xi=0", 1e-10);
+
+    casimir = casimir_init(0.01); /* L/R doesn't matter */
+    casimir_set_ldim(casimir, 500);
+
+    AssertAlmostEqual(&test, casimir_logdetD0_plasma(casimir, 0.01, eps), -14.569722716816960073);
+    AssertAlmostEqual(&test, casimir_logdetD0_plasma(casimir, 0.1, eps), -14.569723099773346675);
+    AssertAlmostEqual(&test, casimir_logdetD0_plasma(casimir, 1, eps), -14.571258410941549499);
+    AssertAlmostEqual(&test, casimir_logdetD0_plasma(casimir, 10, eps), -14.868792120441892024);
+    AssertAlmostEqual(&test, casimir_logdetD0_plasma(casimir, 100, eps), -18.461022336857670467);
+    AssertAlmostEqual(&test, casimir_logdetD0_plasma(casimir, 1000, eps), -25.441820432119136797);
+
+    casimir_free(casimir);
+
+    return test_results(&test, stderr);
+}
