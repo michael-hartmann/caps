@@ -41,6 +41,7 @@ int main(int argc, char *argv[])
     test_Plm();
 
     test_logdetD();
+    test_logdetD0();
 
 	return 0;
 }
