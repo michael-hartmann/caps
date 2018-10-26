@@ -122,6 +122,9 @@ libhodlr.so: libhodlr/src/hodlr.cpp libhodlr/include/hodlr.h
 casimir_logdetD: libcasimir.so
 	$(CC) $(CFLAGS) $(OPT) casimir_logdetD.c -lcasimir $(LDFLAGS) -o casimir_logdetD
 
+casimir_cylinder: libcasimir.so
+	$(CC) $(CFLAGS) $(OPT) casimir_cylinder.c -lcasimir $(LDFLAGS) -o casimir_cylinder
+
 casimir_tests: $(TESTS) libcasimir.so
 	$(CC) $(CFLAGS) $(OPT) $(TESTS) -lcasimir $(LDFLAGS) -o casimir_tests
 	./casimir_tests
@@ -130,7 +133,7 @@ casimir: libcasimir.so
 	$(MPICC) $(CFLAGS) $(OPT) casimir.c -lcasimir $(LDFLAGS) -o casimir
 
 clean:
-	rm -f casimir_tests casimir_logdetD casimir *.o *.so cquadpack/src/*.o tests/*.o $(DEPEND_FILE)
+	rm -f casimir_cylinder casimir_tests casimir_logdetD casimir *.o *.so cquadpack/src/*.o tests/*.o $(DEPEND_FILE)
 	rm -rf doc
 
 doc:
