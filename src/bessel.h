@@ -16,7 +16,7 @@ double bessel_logK1(double x) __attribute__ ((pure));
 double bessel_In(int n, double x) __attribute__ ((pure));
 double bessel_Kn(int n, double x) __attribute__ ((pure));
 
-void bessel_logKn_recursive(int nmax, double x, double *logKn);
+double bessel_logKn_recursive(int n, double x) __attribute__ ((pure));
 
 double bessel_logIn(int n, double x) __attribute__ ((pure));
 double bessel_logKn(int n, double x) __attribute__ ((pure));
