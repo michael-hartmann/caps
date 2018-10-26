@@ -83,7 +83,7 @@ double casimir_cp_neumann(casimir_cp_t *self, double q)
     {
         int l1 = i-lmax;
 
-        for(int j = 0; j < dim; j++)
+        for(int j = i; j < dim; j++)
         {
             int l2 = j-lmax;
 
@@ -94,9 +94,10 @@ double casimir_cp_neumann(casimir_cp_t *self, double q)
             double log_dKl2 = bessel_logKn(l2+1,R*q)+log1p(exp(bessel_logKn(l2-1,R*q)-bessel_logKn(l2+1,R*q)))-log(2);
 
             /* matrix element ℳ_{l1,l2} */
-            double elem = 0.5*(log_dIl1+log_dIl2-log_dKl1-log_dKl2) + bessel_logKn(l1+l2,2*H*q);
+            double elem = exp(0.5*(log_dIl1+log_dIl2-log_dKl1-log_dKl2) + bessel_logKn(l1+l2,2*H*q));
 
-            matrix_set(D,i,j, -exp(elem));
+            matrix_set(D,i,j, -elem);
+            matrix_set(D,j,i, -elem);
         }
     }
 
