@@ -25,6 +25,7 @@ OBJS = \
     cquadpack/src/dqk15i.o \
     cquadpack/src/dqk21.o \
     cquadpack/src/dqsort.o \
+    argparse.o \
     bessel.o \
     fcqs.o \
     plm.o \
