@@ -44,27 +44,47 @@ double casimir_cp_dirichlet(casimir_cp_t *self, double q)
     const int dim = 2*lmax+1;
     const double H = self->H, R = self->R;
 
+    double *cacheI = malloc((lmax+2)*sizeof(double));
+    double *cacheK1 = malloc((lmax+2)*sizeof(double));
+    double *cacheK2 = malloc(2*(lmax+1)*sizeof(double));
+    for(int i = 0; i < lmax+2; i++)
+    {
+        cacheI[i]  = bessel_logIn(i, R*q);
+        cacheK1[i] = bessel_logKn(i, R*q);
+    }
+
+    for(int i = 0; i < 2*(lmax+1); i++)
+        cacheK2[i] = bessel_logKn(i,2*H*q);
+
     matrix_t *D = matrix_alloc(dim);
 
     for(int i = 0; i < dim; i++)
     {
         int l1 = i-lmax;
 
+        double term_l1 = cacheI[abs(l1)]-cacheK1[abs(l1)];
+
         for(int j = i; j < dim; j++)
         {
             int l2 = j-lmax;
 
             /* matrix element ℳ_{l1,l2} */
-            double elem = exp(0.5*(bessel_logIn(l1,R*q)+bessel_logIn(l2,R*q)-bessel_logKn(l1,R*q)-bessel_logKn(l2,R*q))+bessel_logKn(l1+l2,2*H*q));
+            double term_l2 = cacheI[abs(l2)]-cacheK1[abs(l2)];
+
+            double elem = exp(0.5*(term_l1+term_l2)+cacheK2[abs(l1+l2)]);
             matrix_set(D,i,j, -elem);
             matrix_set(D,j,i, -elem);
         }
     }
 
+    free(cacheI);
+    free(cacheK1);
+    free(cacheK2);
+
     for(int i = 0; i < dim; i++)
         matrix_set(D,i,i, 1+matrix_get(D,i,i));
 
-    const double logdet = matrix_logdet_lu(D);
+    const double logdet = matrix_logdet_cholesky(D, 'U');
 
     matrix_free(D);
 
@@ -77,34 +97,50 @@ double casimir_cp_neumann(casimir_cp_t *self, double q)
     const int dim = 2*lmax+1;
     const double H = self->H, R = self->R;
 
+    double *cacheI = malloc((lmax+2)*sizeof(double));
+    double *cacheK1 = malloc((lmax+2)*sizeof(double));
+    double *cacheK2 = malloc(2*(lmax+1)*sizeof(double));
+    for(int i = 0; i < lmax+2; i++)
+    {
+        cacheI[i]  = bessel_logIn(i, R*q);
+        cacheK1[i] = bessel_logKn(i, R*q);
+    }
+
+    for(int i = 0; i < 2*(lmax+1); i++)
+        cacheK2[i] = bessel_logKn(i,2*H*q);
+
     matrix_t *D = matrix_alloc(dim);
 
     for(int i = 0; i < dim; i++)
     {
         int l1 = i-lmax;
 
+        double log_dIl1 = cacheI [abs(l1-1)]+log1p(exp(cacheI [abs(l1+1)]-cacheI [abs(l1-1)]))-log(2);
+        double log_dKl1 = cacheK1[abs(l1-1)]+log1p(exp(cacheK1[abs(l1+1)]-cacheK1[abs(l1-1)]))-log(2);
+
         for(int j = i; j < dim; j++)
         {
             int l2 = j-lmax;
 
-            double log_dIl1 = bessel_logIn(l1-1,R*q)+log1p(exp(bessel_logIn(l1+1,R*q)-bessel_logIn(l1-1,R*q)))-log(2);
-            double log_dIl2 = bessel_logIn(l2-1,R*q)+log1p(exp(bessel_logIn(l2+1,R*q)-bessel_logIn(l2-1,R*q)))-log(2);
-
-            double log_dKl1 = bessel_logKn(l1+1,R*q)+log1p(exp(bessel_logKn(l1-1,R*q)-bessel_logKn(l1+1,R*q)))-log(2);
-            double log_dKl2 = bessel_logKn(l2+1,R*q)+log1p(exp(bessel_logKn(l2-1,R*q)-bessel_logKn(l2+1,R*q)))-log(2);
+            double log_dIl2 = cacheI [abs(l2-1)]+log1p(exp(cacheI [abs(l2+1)]-cacheI [abs(l2-1)]))-log(2);
+            double log_dKl2 = cacheK1[abs(l2-1)]+log1p(exp(cacheK1[abs(l2+1)]-cacheK1[abs(l2-1)]))-log(2);
 
             /* matrix element ℳ_{l1,l2} */
-            double elem = exp(0.5*(log_dIl1+log_dIl2-log_dKl1-log_dKl2) + bessel_logKn(l1+l2,2*H*q));
+            double elem = exp(0.5*(log_dIl1+log_dIl2-log_dKl1-log_dKl2) + cacheK2[abs(l1+l2)]);
 
             matrix_set(D,i,j, -elem);
             matrix_set(D,j,i, -elem);
         }
     }
 
+    free(cacheI);
+    free(cacheK1);
+    free(cacheK2);
+
     for(int i = 0; i < dim; i++)
         matrix_set(D,i,i, 1+matrix_get(D,i,i));
 
-    const double logdet = matrix_logdet_lu(D);
+    const double logdet = matrix_logdet_cholesky(D, 'U');
 
     matrix_free(D);
 
