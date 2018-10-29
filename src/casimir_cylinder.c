@@ -170,7 +170,7 @@ static double __integrand_neumann(double x, void *args)
 
 int main(int argc, const char *argv[])
 {
-    double epsrel = 1e-8, T = 0, R = NAN, d = NAN;
+    double epsrel = 1e-8, eta = 6, T = 0, R = NAN, d = NAN;
     int lmax = 0;
 
     const char *const usage[] = {
@@ -188,6 +188,7 @@ int main(int argc, const char *argv[])
         OPT_GROUP("Further options"),
         OPT_INTEGER('l', "lmax", &lmax, "dimension of vector space", NULL, 0, 0),
         OPT_DOUBLE('e', "epsrel", &epsrel, "relative error for integration", NULL, 0, 0),
+        OPT_DOUBLE('n', "eta", &eta, "set eta", NULL, 0, 0),
         OPT_END(),
     };
 
@@ -233,6 +234,12 @@ int main(int argc, const char *argv[])
         argparse_usage(&argparse);
         return 1;
     }
+    if(eta <= 0)
+    {
+        fprintf(stderr, "eta must be positive\n\n");
+        argparse_usage(&argparse);
+        return 1;
+    }
 
     /* PFA for Dirichlet/Neumann in units of hbar*c*L, i.e., E_PFA^DN / (hbar*c*L) */
     double E_PFA_DN = -M_PI*M_PI*M_PI/1920*sqrt(R/(2*d))/(d*d);
@@ -243,6 +250,8 @@ int main(int argc, const char *argv[])
     
     if(lmax > 0)
         casimir_cp_set_lmax(c,lmax);
+    else
+        casimir_cp_set_lmax(c,MAX(20,ceil(eta/d*R)));
 
     double abserr;
     int neval, ier;
