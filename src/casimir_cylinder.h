@@ -8,12 +8,20 @@ typedef struct {
     int lmax; /* truncation of vector space */
 } casimir_cp_t;
 
+typedef struct {
+    double *cacheI, *cacheK1, *cacheK2;
+    int lmax;
+    char DN;
+} kernel_args_t;
+
 casimir_cp_t *casimir_cp_init(double R, double d);
-double casimir_cp_dirichlet(casimir_cp_t *self, double q);
-double casimir_cp_neumann(casimir_cp_t *self, double q);
+double casimir_cp_logdetD(casimir_cp_t *self, double q, char DN);
 void casimir_cp_free(casimir_cp_t *self);
 
 int casimir_cp_get_lmax(casimir_cp_t *self);
 int casimir_cp_set_lmax(casimir_cp_t *self, int lmax);
+
+kernel_args_t *kernel_init(casimir_cp_t *self, double q, char DN);
+void kernel_free(kernel_args_t *args);
 
 #endif
