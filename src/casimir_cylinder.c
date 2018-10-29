@@ -170,8 +170,7 @@ static double __integrand_neumann(double x, void *args)
 
 int main(int argc, const char *argv[])
 {
-    double T = 0;
-    double R = NAN, d = NAN;
+    double epsrel = 1e-8, T = 0, R = NAN, d = NAN;
     int lmax = 0;
 
     const char *const usage[] = {
@@ -188,6 +187,7 @@ int main(int argc, const char *argv[])
         OPT_DOUBLE('T', "temperature", &T, "temperature in K", NULL, 0, 0),
         OPT_GROUP("Further options"),
         OPT_INTEGER('l', "lmax", &lmax, "dimension of vector space", NULL, 0, 0),
+        OPT_DOUBLE('e', "epsrel", &epsrel, "relative error for integration", NULL, 0, 0),
         OPT_END(),
     };
 
@@ -227,6 +227,12 @@ int main(int argc, const char *argv[])
         argparse_usage(&argparse);
         return 1;
     }
+    if(epsrel <= 0)
+    {
+        fprintf(stderr, "epsrel must be positive\n\n");
+        argparse_usage(&argparse);
+        return 1;
+    }
 
     /* PFA for Dirichlet/Neumann in units of hbar*c*L, i.e., E_PFA^DN / (hbar*c*L) */
     double E_PFA_DN = -M_PI*M_PI*M_PI/1920*sqrt(R/(2*d))/(d*d);
@@ -242,10 +248,10 @@ int main(int argc, const char *argv[])
     int neval, ier;
 
     /* energy Dirichlet in units of hbar*c*L */
-    double E_D = dqagi(__integrand_dirichlet, 0, 1, 1e-8, 1e-8, &abserr, &neval, &ier, c)/(4*M_PI*2*d);
+    double E_D = dqagi(__integrand_dirichlet, 0, 1, 1e-8, epsrel, &abserr, &neval, &ier, c)/(4*M_PI*2*d);
 
     /* energy Neumann in units of hbar*c*L */
-    double E_N = dqagi(__integrand_neumann, 0, 1, 1e-8, 1e-8, &abserr, &neval, &ier, c)/(4*M_PI*2*d);
+    double E_N = dqagi(__integrand_neumann, 0, 1, 1e-8, epsrel, &abserr, &neval, &ier, c)/(4*M_PI*2*d);
 
     /* energy EM in units of hbar*c*L */
     double E_EM = E_D+E_N;
