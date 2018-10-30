@@ -21,6 +21,7 @@ casimir_cp_t *casimir_cp_init(double R, double d)
     self->H = R+d;
 
     self->lmax = MAX(5*ceil(R/d),10);
+    self->dim = 2*self->lmax+1;
 
     self->verbose = 0;
 
@@ -126,10 +127,9 @@ void kernel_free(kernel_args_t *args)
 
 double casimir_cp_logdetD(casimir_cp_t *self, double q, char DN)
 {
-    const int dim = 2*self->lmax+1;
     kernel_args_t *args = kernel_init(self, q, DN);
 
-    double logdet = kernel_logdet(dim, __kernel, args, true, DETALG_HODLR);
+    double logdet = kernel_logdet(self->dim, __kernel, args, true, self->detalg);
     TERMINATE(isnan(logdet), "bc=%c, q=%.15g, logdet=nan", DN, q);
 
     kernel_free(args);
@@ -285,17 +285,23 @@ int main(int argc, const char *argv[])
 
     printf("#\n");
 
-    double abserr;
+    double integral, abserr, E_D, E_N;
     int neval, ier;
 
     /* energy Dirichlet in units of hbar*c*L */
-    double E_D = dqagi(__integrand_dirichlet, 0, 1, 0, epsrel, &abserr, &neval, &ier, c)/(4*M_PI*2*d);
+    integral = dqagi(__integrand_dirichlet, 0, 1, 0, epsrel, &abserr, &neval, &ier, c);
+    printf("# D: ier=%d, neval=%d, I=%.15g, absrel=%g\n", ier, neval, integral, fabs(abserr/integral));
+    E_D = integral/(4*M_PI*2*d);
 
     /* energy Neumann in units of hbar*c*L */
-    double E_N = dqagi(__integrand_neumann, 0, 1, 0, epsrel, &abserr, &neval, &ier, c)/(4*M_PI*2*d);
+    integral = dqagi(__integrand_neumann, 0, 1, 0, epsrel, &abserr, &neval, &ier, c);
+    printf("# N: ier=%d, neval=%d, I=%.15g, absrel=%g\n", ier, neval, integral, fabs(abserr/integral));
+    E_N = integral/(4*M_PI*2*d);
 
     /* energy EM in units of hbar*c*L */
     double E_EM = E_D+E_N;
+
+    printf("#\n");
 
     printf("# d/R, d, R, T, lmax, E_PFA/(L*hbar*c), E_D/E_PFA, E_N/E_PFA, E_EM/E_PFA\n");
     printf("%.15g, %.15g, %.15g, %.15g, %d, %.15g, %.15g, %.15g, %.15g\n", d/R, d, R, T, casimir_cp_get_lmax(c), E_PFA, E_D/E_PFA, E_N/E_PFA, E_EM/E_PFA);
