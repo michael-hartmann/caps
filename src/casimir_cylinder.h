@@ -8,6 +8,7 @@ typedef struct {
     double d; /* smallest separation beteween cylinder and plate */
     double H; /* a+R*/
     int lmax; /* truncation of vector space */
+    int dim;
     int verbose;
     detalg_t detalg;
 } casimir_cp_t;
