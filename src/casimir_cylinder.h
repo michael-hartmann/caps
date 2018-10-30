@@ -6,6 +6,7 @@ typedef struct {
     double d; /* smallest separation beteween cylinder and plate */
     double H; /* a+R*/
     int lmax; /* truncation of vector space */
+    int verbose;
 } casimir_cp_t;
 
 typedef struct {
@@ -20,6 +21,9 @@ void casimir_cp_free(casimir_cp_t *self);
 
 int casimir_cp_get_lmax(casimir_cp_t *self);
 int casimir_cp_set_lmax(casimir_cp_t *self, int lmax);
+
+int casimir_cp_get_verbose(casimir_cp_t *self);
+int casimir_cp_set_verbose(casimir_cp_t *self, int verbose);
 
 kernel_args_t *kernel_init(casimir_cp_t *self, double q, char DN);
 void kernel_free(kernel_args_t *args);

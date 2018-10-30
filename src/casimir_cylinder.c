@@ -21,7 +21,19 @@ casimir_cp_t *casimir_cp_init(double R, double d)
 
     self->lmax = MAX(5*ceil(R/d),10);
 
+    self->verbose = 0;
+
     return self;
+}
+
+int casimir_cp_get_verbose(casimir_cp_t *self)
+{
+    return self->verbose;
+}
+
+int casimir_cp_set_verbose(casimir_cp_t *self, int verbose)
+{
+    return self->verbose = verbose;
 }
 
 int casimir_cp_get_lmax(casimir_cp_t *self)
@@ -106,8 +118,12 @@ double casimir_cp_logdetD(casimir_cp_t *self, double q, char DN)
     kernel_args_t *args = kernel_init(self, q, DN);
 
     double logdet = kernel_logdet(dim, __kernel, args, true, DETALG_HODLR);
+    TERMINATE(isnan(logdet), "bc=%c, q=%.15g, logdet=nan", DN, q);
 
     kernel_free(args);
+
+    if(self->verbose)
+        printf("# %c, q=%.15g, logdet=%.15g\n", DN, q, logdet);
 
     return logdet;
 }
@@ -136,7 +152,7 @@ static double __integrand_neumann(double x, void *args)
 int main(int argc, const char *argv[])
 {
     double epsrel = 1e-8, eta = 6, T = 0, R = NAN, d = NAN;
-    int lmax = 0;
+    int verbose = 0, lmax = 0;
 
     const char *const usage[] = {
         "casimir_cylinder [options] [[--] args]",
@@ -154,6 +170,7 @@ int main(int argc, const char *argv[])
         OPT_INTEGER('l', "lmax", &lmax, "dimension of vector space", NULL, 0, 0),
         OPT_DOUBLE('e', "epsrel", &epsrel, "relative error for integration", NULL, 0, 0),
         OPT_DOUBLE('n', "eta", &eta, "set eta", NULL, 0, 0),
+        OPT_BOOLEAN('v', "verbose", &verbose, "be verbose", NULL, 0, 0),
         OPT_END(),
     };
 
@@ -217,6 +234,9 @@ int main(int argc, const char *argv[])
         casimir_cp_set_lmax(c,lmax);
     else
         casimir_cp_set_lmax(c,MAX(20,ceil(eta/d*R)));
+
+    if(verbose)
+        casimir_cp_set_verbose(c, verbose);
 
     double abserr;
     int neval, ier;
