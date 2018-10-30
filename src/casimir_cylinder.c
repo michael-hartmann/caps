@@ -1,6 +1,7 @@
 #include <stdbool.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <strings.h>
 
 #include "casimir_cylinder.h"
 
@@ -24,6 +25,17 @@ casimir_cp_t *casimir_cp_init(double R, double d)
     self->verbose = 0;
 
     return self;
+}
+
+int casimir_cp_set_detalg(casimir_cp_t *self, detalg_t detalg)
+{
+    self->detalg = detalg;
+    return 1;
+}
+
+detalg_t casimir_cp_get_detalg(casimir_cp_t *self)
+{
+    return self->detalg;
 }
 
 int casimir_cp_get_verbose(casimir_cp_t *self)
@@ -152,6 +164,7 @@ static double __integrand_neumann(double x, void *args)
 int main(int argc, const char *argv[])
 {
     double epsrel = 1e-8, eta = 6, T = 0, R = NAN, d = NAN;
+    const char *detalg = NULL;
     int verbose = 0, lmax = 0;
 
     const char *const usage[] = {
@@ -171,6 +184,7 @@ int main(int argc, const char *argv[])
         OPT_DOUBLE('e', "epsrel", &epsrel, "relative error for integration", NULL, 0, 0),
         OPT_DOUBLE('n', "eta", &eta, "set eta", NULL, 0, 0),
         OPT_BOOLEAN('v', "verbose", &verbose, "be verbose", NULL, 0, 0),
+        OPT_STRING('D', "detalg", &detalg, "algorithm to compute determinants (HODLR, LU, QR or CHOLESKY", NULL, 0, 0),
         OPT_END(),
     };
 
@@ -238,14 +252,47 @@ int main(int argc, const char *argv[])
     if(verbose)
         casimir_cp_set_verbose(c, verbose);
 
+    printf("# R/d = %.15g\n", R/d);
+    printf("# d = %.15g\n", d);
+    printf("# R = %.15g\n", R);
+    printf("# T = %.15g\n", T);
+    printf("# lmax = %d\n", lmax);
+    printf("# epsrel = %g\n", epsrel);
+
+    if(detalg)
+    {
+        if(strcasecmp(detalg, "LU") == 0)
+        {
+            printf("# detalg = LU\n");
+            casimir_cp_set_detalg(c, DETALG_LU);
+        }
+        else if(strcasecmp(detalg, "QR") == 0)
+        {
+            printf("# detalg = QR\n");
+            casimir_cp_set_detalg(c, DETALG_QR);
+        }
+        else if(strcasecmp(detalg, "Cholesky") == 0)
+        {
+            printf("# detalg = Cholesky\n");
+            casimir_cp_set_detalg(c, DETALG_QR);
+        }
+    }
+    else
+    {
+        printf("# detalg = HODLR\n");
+        casimir_cp_set_detalg(c, DETALG_HODLR);
+    }
+
+    printf("#\n");
+
     double abserr;
     int neval, ier;
 
     /* energy Dirichlet in units of hbar*c*L */
-    double E_D = dqagi(__integrand_dirichlet, 0, 1, 1e-8, epsrel, &abserr, &neval, &ier, c)/(4*M_PI*2*d);
+    double E_D = dqagi(__integrand_dirichlet, 0, 1, 0, epsrel, &abserr, &neval, &ier, c)/(4*M_PI*2*d);
 
     /* energy Neumann in units of hbar*c*L */
-    double E_N = dqagi(__integrand_neumann, 0, 1, 1e-8, epsrel, &abserr, &neval, &ier, c)/(4*M_PI*2*d);
+    double E_N = dqagi(__integrand_neumann, 0, 1, 0, epsrel, &abserr, &neval, &ier, c)/(4*M_PI*2*d);
 
     /* energy EM in units of hbar*c*L */
     double E_EM = E_D+E_N;
