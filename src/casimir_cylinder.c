@@ -68,60 +68,69 @@ static double __kernel(int i, int j, void *args_)
     kernel_args_t *args = (kernel_args_t *)args_;
 
     const int lmax = args->lmax;
-    const int l1 = i-lmax, l2 = j-lmax;
+    const int mu1 = i-lmax, mu2 = j-lmax;
 
-    /* dirichlet */
-    if(args->DN == 'D')
-    {
-        double term_l1 = args->cacheI[abs(l1)]-args->cacheK1[abs(l1)];
-        double term_l2 = args->cacheI[abs(l2)]-args->cacheK1[abs(l2)];
-
-        /* matrix element ℳ_{l1,l2} */
-        return exp(0.5*(term_l1+term_l2)+args->cacheK2[abs(l1+l2)]);
-    }
-    else /* neumann */
-    {
-        double log_dIl1 = args->cacheI [abs(l1-1)]+log1p(exp(args->cacheI [abs(l1+1)]-args->cacheI [abs(l1-1)]))-log(2);
-        double log_dKl1 = args->cacheK1[abs(l1-1)]+log1p(exp(args->cacheK1[abs(l1+1)]-args->cacheK1[abs(l1-1)]))-log(2);
-
-        double log_dIl2 = args->cacheI [abs(l2-1)]+log1p(exp(args->cacheI [abs(l2+1)]-args->cacheI [abs(l2-1)]))-log(2);
-        double log_dKl2 = args->cacheK1[abs(l2-1)]+log1p(exp(args->cacheK1[abs(l2+1)]-args->cacheK1[abs(l2-1)]))-log(2);
-
-        /* matrix element ℳ_{l1,l2} */
-        return exp(0.5*(log_dIl1+log_dIl2-log_dKl1-log_dKl2) + args->cacheK2[abs(l1+l2)]);
-    }
+    return exp(0.5*(args->cache_ratio[abs(mu1)]+args->cache_ratio[abs(mu2)]) + args->cacheK[abs(mu1+mu2)]);
 }
 
 kernel_args_t *kernel_init(casimir_cp_t *self, double q, char DN)
 {
     const int lmax = self->lmax;
-    const double H = self->H, R = self->R;
+    const double R = self->R, H = self->H; /* H = R+d */
 
     kernel_args_t *args = malloc(sizeof(kernel_args_t));
 
     args->lmax = self->lmax;
     args->DN = DN;
 
-    args->cacheI = malloc((lmax+2)*sizeof(double));
-    args->cacheK1 = malloc((lmax+2)*sizeof(double));
-    args->cacheK2 = malloc(2*(lmax+1)*sizeof(double));
-    for(int i = 0; i < lmax+2; i++)
+    /* K_{µ1+µ2}(2*(R+d)*q) */
+    args->cacheK = malloc(2*(lmax+1)*sizeof(double));
+    for(int j = 0; j < 2*(lmax+1); j++)
+        args->cacheK[j] = bessel_logKn(j,2*H*q);
+
+    double *logIn = malloc((lmax+3)*sizeof(double));
+    double *logKn = malloc((lmax+3)*sizeof(double));
+
+    for(int j = 0; j < lmax+3; j++)
     {
-        args->cacheI[i]  = bessel_logIn(i, R*q);
-        args->cacheK1[i] = bessel_logKn(i, R*q);
+        logIn[j] = bessel_logIn(j, R*q);
+        logKn[j] = bessel_logKn(j, R*q);
     }
 
-    for(int i = 0; i < 2*(lmax+1); i++)
-        args->cacheK2[i] = bessel_logKn(i,2*H*q);
+    args->cache_ratio = malloc((lmax+2)*sizeof(double));
+    if(DN == 'D')
+    {
+        /* Dirichlet */
+        for(int j = 0; j < lmax+2; j++)
+            args->cache_ratio[j] = logIn[j]-logKn[j];
+    }
+    else
+    {
+        args->cache_ratio[0] = logIn[1]-logKn[1];
+
+        /* Neumann */
+        for(int j = 1; j < lmax+2; j++)
+        {
+            /* denom = -2K'_j(x); K'_j(x) = -1/2*[ K_{j+1}(x) + K_{j-1}(x) ] */
+            double denom = logKn[j+1]+log1p(exp(logKn[j-1]-logKn[j+1]));
+
+            /* num = 2I'_j(x); I'_j(x) = = 1/2*[ I_{j+1}(x) + I_{j-1}(x) ] = dI */
+            double num = logIn[j-1]+log1p(exp(logIn[j+1]-logIn[j-1]));
+
+            args->cache_ratio[j] = num-denom;
+        }
+    }
+
+    free(logIn);
+    free(logKn);
 
     return args;
 }
 
 void kernel_free(kernel_args_t *args)
 {
-    free(args->cacheI);
-    free(args->cacheK1);
-    free(args->cacheK2);
+    free(args->cache_ratio);
+    free(args->cacheK);
     free(args);
 }
 

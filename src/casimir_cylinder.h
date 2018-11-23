@@ -14,7 +14,7 @@ typedef struct {
 } casimir_cp_t;
 
 typedef struct {
-    double *cacheI, *cacheK1, *cacheK2;
+    double *cache_ratio, *cacheK;
     int lmax;
     char DN;
 } kernel_args_t;
