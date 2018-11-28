@@ -1,6 +1,10 @@
 #ifndef __BESSEL_H
 #define __BESSEL_H
 
+#ifndef M_PI
+#define M_PI 3.14159265358979323846
+#endif
+
 double bessel_I0(double x) __attribute__ ((pure));
 double bessel_I1(double x) __attribute__ ((pure));
 
