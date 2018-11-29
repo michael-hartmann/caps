@@ -118,7 +118,7 @@ libcasimir.so: libhodlr.so $(OBJS) dependencies
 	$(CC) -o libcasimir.so $(OBJS) -shared
 
 libhodlr.so: libhodlr/src/hodlr.cpp libhodlr/include/hodlr.h
-	${CXX} ${OPT} ${CXXFLAGS} -fpic -shared libhodlr/src/hodlr.cpp -I libhodlr/src/header/ -I libhodlr/include/ -o libhodlr.so
+	${CXX} ${OPT} ${CXXFLAGS} -fpic -shared libhodlr/src/hodlr.cpp  libhodlr/src/HODLR_Matrix.cpp  libhodlr/src/HODLR_Node.cpp  libhodlr/src/HODLR_Tree.cpp -I libhodlr/include/ -o libhodlr.so
 
 casimir_logdetD: libcasimir.so
 	$(CC) $(CFLAGS) $(OPT) casimir_logdetD.c -lcasimir $(LDFLAGS) -o casimir_logdetD
