@@ -84,7 +84,7 @@ double dqage(dq_function_type f,double a,double b,double epsabs,double epsrel,
     iord[0] = 0;
 
 /* Test on accuracy. */
-    errbnd = max(epsabs,epsrel * fabs(result));
+    errbnd = MAX(epsabs,epsrel * fabs(result));
     if ((*abserr <= 50.0 * epmach * defabs) && (*abserr > errbnd))
         *ier = 2;
     if (limit == 0) *ier = 1;
@@ -150,7 +150,7 @@ double dqage(dq_function_type f,double a,double b,double epsabs,double epsrel,
         }
         rlist[maxerr] = area1;
         rlist[*last] = area2;
-        errbnd = max(epsabs,epsrel * fabs(area));
+        errbnd = MAX(epsabs,epsrel * fabs(area));
         if (errsum > errbnd)  {
 
 /* Test for roundoff error and eventually set error flag. */
@@ -164,7 +164,7 @@ double dqage(dq_function_type f,double a,double b,double epsabs,double epsrel,
 
 /* Set error flag in the case of bad integrand behavior at a
     point of the integration range. */
-            if (max(fabs(a1),fabs(b2)) <= (1.0 + c * 1000.0 * epmach) *
+            if (MAX(fabs(a1),fabs(b2)) <= (1.0 + c * 1000.0 * epmach) *
                 (fabs(a2)+1.0e4 * uflow))
             *ier = 3;
         }
