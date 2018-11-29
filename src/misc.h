@@ -1,6 +1,10 @@
 #ifndef __MISC_H
 #define __MISC_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include <stdlib.h>
 #include <math.h>
 
@@ -18,5 +22,9 @@ double kahan_sum(double input[], size_t len) __attribute__ ((pure));
 
 double logadd(const double a, const double b) __attribute__ ((pure));
 double logadd_ms(log_t list[], const int len, sign_t *sign);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

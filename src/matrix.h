@@ -1,6 +1,10 @@
 #ifndef __MATRIX_H
 #define __MATRIX_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include <stdio.h>
 #include <stdbool.h>
 #include <math.h>
@@ -51,5 +55,9 @@ double matrix_logdet_qr(matrix_t *A);
 double matrix_logdetIdmM_eig(matrix_t *A, double z);
 
 bool matrix_check_diagonal_dominant(matrix_t *A);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

@@ -8,6 +8,10 @@
 #ifndef __UTILS_H
 #define __UTILS_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include <stdlib.h>
 #include <stdio.h>
 
@@ -40,5 +44,9 @@ void *xcalloc(size_t nmemb, size_t size);
 void _xfree(void *p);
 
 void disable_buffering(void);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif
