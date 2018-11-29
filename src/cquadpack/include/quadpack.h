@@ -1,6 +1,10 @@
 #ifndef QUADPACK_H
 #define QUADPACK_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif /* __cplusplus */
+
 #define GK_7_15   1
 #define GK_10_21  2
 #define GK_15_31  3
@@ -103,5 +107,9 @@ double dqags(double f(double, void *), double a, double b, double epsabs, double
  *    limit - maximum number of subintervals.
  */
 double dqage(double f(double, void *), double a, double b, double epsabs, double epsrel, int irule, double *abserr, int *neval, int *ier, int *last, void *user_data);
+
+#ifdef __cplusplus
+}
+#endif /* __cplusplus */
 
 #endif
