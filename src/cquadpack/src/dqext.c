@@ -31,10 +31,10 @@ double dqext(int *n,double epstab[],double *abserr,
         e1abs = fabs(e1);
         delta2 = e2 - e1;
         err2 = fabs(delta2);
-        tol2 = max(fabs(e2),e1abs) * epmach;
+        tol2 = MAX(fabs(e2),e1abs) * epmach;
         delta3 = e1 - e0;
         err3 = fabs(delta3);
-        tol3 = max(e1abs,fabs(e0)) * epmach;
+        tol3 = MAX(e1abs,fabs(e0)) * epmach;
         if ((err2 > tol2) || (err3 > tol3)) goto _10;
         result = res;
         *abserr = err2 + err3;
@@ -44,7 +44,7 @@ _10:
         epstab[k1-1] = e1;
         delta1 = e1 - e3;
         err1 = fabs(delta1);
-        tol1 = max(e1abs,fabs(e3)) * epmach;
+        tol1 = MAX(e1abs,fabs(e3)) * epmach;
         if ((err1 <= tol1) || (err2 <= tol2) || (err3 <= tol3)) goto _20;
         ss = 1.0/delta1 + 1.0/delta2 - 1.0/delta3;
         epsinf = fabs(ss*e1);
@@ -91,7 +91,7 @@ _90:
     res3la[1] = res3la[2];
     res3la[2] = result;
 _100:
-    *abserr = max(*abserr,5.0 * epmach * fabs(result));
+    *abserr = MAX(*abserr,5.0 * epmach * fabs(result));
     *n = NN - 1;
     return result;
     }
