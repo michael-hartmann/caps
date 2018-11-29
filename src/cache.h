@@ -1,6 +1,10 @@
 #ifndef __CACHE_H
 #define __CACHE_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #define CACHE_NUM_ENTRIES 262144
 #define CACHE_NUM_LOOKUP 50331653
 
@@ -17,5 +21,9 @@ cache_t *cache_new(int entries, double filling);
 void cache_free(cache_t *cache);
 void cache_insert(cache_t *cache, uint64_t key, double value);
 double cache_lookup(cache_t *cache, uint64_t key);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

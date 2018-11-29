@@ -1,6 +1,10 @@
 #ifndef __BESSEL_H
 #define __BESSEL_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #ifndef M_PI
 #define M_PI 3.14159265358979323846
 #endif
@@ -34,5 +38,9 @@ double bessel_logKnu_asymp(double nu, double x) __attribute__ ((pure));
 void bessel_logInuKnu_half(int nu, const double x, double *logInu_p, double *logKnu_p);
 double bessel_logInu_half(int nu, double x) __attribute__ ((pure));
 double bessel_logKnu_half(int nu, double x) __attribute__ ((pure));
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif
