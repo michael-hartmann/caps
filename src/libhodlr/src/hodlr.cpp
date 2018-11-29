@@ -1,4 +1,5 @@
 #include <stdlib.h>
+#include <math.h>
 
 #include "HODLR_Tree.hpp"
 #include "HODLR_Matrix.hpp"
@@ -12,55 +13,35 @@ private:
     double (*get_kernel_element)(int, int, void *);
 
 public:
-    Kernel(unsigned N, double (kernel_)(int,int,void *), void *args_)
+    Kernel(unsigned N, double (kernel_)(int,int,void *), void *args_) : HODLR_Matrix(N)
     {
         args = args_;
         get_kernel_element = kernel_;
     };
 
-    double get_Matrix_Entry(const unsigned m, const unsigned n)
+    double getMatrixEntry(int m, int n)
     {
-        return -get_kernel_element((int)m,(int)n,args);
+        double delta = (m==n) ? 1 : 0;
+        return delta-get_kernel_element((int)m,(int)n,args);
     };
 };
 
 
-double hodlr_logdet_diagonal(int dim, double (*callback)(int,int,void *), void *args, double *diagonal, unsigned int nLeaf, double tolerance, int is_symmetric)
-{
-    double logdet = NAN;
-    char s = 'n'; /* non symmetric by default */
-
-    if(is_symmetric)
-        s = 's';
-
-    Kernel kernel(dim, callback, args);
-
-    HODLR_Tree<Kernel>* A = new HODLR_Tree<Kernel>(&kernel, dim, nLeaf);
-
-    VectorXd d = VectorXd(dim);
-    for(int n = 0; n < dim; n++)
-        d(n) = 1-diagonal[n];
-
-    A->assemble_Matrix(d, tolerance, s);
-    A->compute_Factor();
-    A->compute_Determinant(logdet);
-
-    delete A;
-
-    return logdet;
-}
-
 double hodlr_logdet(int dim, double (*callback)(int,int,void *), void *args, unsigned int nLeaf, double tolerance, int is_symmetric)
 {
-    double logdet = NAN;
-    double *diagonal = (double *)malloc(dim*sizeof(double));
-    if(diagonal == NULL)
-        return logdet;
+    // XXX
+    int n_levels = 1+log2(((double)dim)/nLeaf);
 
-    for(int n = 0; n < dim; n++)
-        diagonal[n] = callback(n,n,args);
+    Kernel *K = new Kernel(dim, callback, args);
 
-    logdet = hodlr_logdet_diagonal(dim, callback, args, diagonal, nLeaf, tolerance, is_symmetric);
-    free(diagonal);
+    HODLR_Tree *T = new HODLR_Tree(n_levels, tolerance, K);
+
+    T->assembleTree(true);
+    T->factorize();
+    double logdet = T->logDeterminant();
+
+    //delete T;
+    delete K;
+
     return logdet;
 }
