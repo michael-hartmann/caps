@@ -122,8 +122,8 @@ double G_K51(dq_function_type f,double a,double b,double *abserr,
     *resasc = (*resasc) * dhlgth;
     *abserr = fabs((resk - resg) * hlgth);
     if ((*resasc != 0.0) && (*abserr != 0.0))
-        *abserr = (*resasc) * min(1.0,pow((200.0 * (*abserr)/(*resasc)),1.5));
+        *abserr = (*resasc) * MIN(1.0,pow((200.0 * (*abserr)/(*resasc)),1.5));
     if (*resabs > uflow/(50.0 * epmach))
-        *abserr = max(epmach * 50.0 * (*resabs),(*abserr));
+        *abserr = MAX(epmach * 50.0 * (*resabs),(*abserr));
     return result;
 }
