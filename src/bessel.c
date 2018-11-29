@@ -6,15 +6,10 @@
  * @brief  Computation of Bessel functions
  */
 
-#include <stdio.h>
-
 #include <stdlib.h>
 #include <math.h>
 
 #include "bessel.h"
-#include "constants.h"
-#include "misc.h"
-#include "utils.h"
 
 /**
  * @name modified Bessel functions for orders n=0,1
@@ -788,7 +783,7 @@ void bessel_logInuKnu_half(int nu, const double x, double *logInu_p, double *log
 
     double logKnu, logKnup;
     double Knu = 1, Knup = 1+invx;
-    double prefactor = -x+0.5*(M_LOGPI-M_LOG2-logx);
+    double prefactor = -x+0.5*(log(M_PI/2)-logx);
 
     /* calculate Knu, Knup */
     if(nu == 0)
@@ -831,7 +826,7 @@ void bessel_logInuKnu_half(int nu, const double x, double *logInu_p, double *log
         if(nu >= 100)
             *logInu_p = bessel_logInu_asymp(nu+0.5, x);
         else
-            *logInu_p = -logx-logadd(logKnup, logKnu-log(bessel_ratioI(nu+0.5,x)));
+            *logInu_p = -logx-logKnup-log1p(exp(logKnu-logKnup-log(bessel_ratioI(nu+0.5,x))));
     }
 }
 

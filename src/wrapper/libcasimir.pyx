@@ -1,4 +1,5 @@
 cimport libcasimir
+from libc.math cimport exp
 
 class constants:
     hbar    = 1.0545718e-34
@@ -8,7 +9,7 @@ class constants:
 
 
 class sfunc:
-    def __check_parameters_plm(l, m, x):
+    def __check_parameters_plm(int l, int m, double x):
         if l <= 0:
             raise ValueError("l must be positive")
         if m < 0:
@@ -22,6 +23,10 @@ class sfunc:
         """Compute associated Legendre function Plm for x>1."""
         sfunc.__check_parameters_plm(l,m,x)
         return libcasimir.lnPlm(l,m,x)
+
+    def Plm(int l, int m, double x):
+        """Compute associated Legendre function Plm for x>1."""
+        return exp(lnPlm(l,m,x))
 
     def Plm_continued_fraction(long l, long m, double x):
         """Calculate fraction P_l^{m-1}(x)/P_l^m(x)"""

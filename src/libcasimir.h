@@ -1,6 +1,10 @@
 #ifndef __LIBCASIMIR_H
 #define __LIBCASIMIR_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /**
  * define fresnel_t as either TE or TM.
  */
@@ -133,5 +137,9 @@ double casimir_kernel_M0_MM(int i, int j, void *args);
 double casimir_kernel_M0_MM_plasma(int i, int j, void *args_);
 
 void casimir_logdetD0(casimir_t *self, int m, double omegap, double *EE, double *MM, double *MM_plasma);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

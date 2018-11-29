@@ -1,6 +1,10 @@
 #ifndef __INTEGRATION_H
 #define __INTEGRATION_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include <stdbool.h>
 
 #include "libcasimir.h"
@@ -22,5 +26,9 @@ double casimir_integrate_plasma(integration_plasma_t *self, int l1, int l2, int 
 void casimir_integrate_plasma_free(integration_plasma_t *self);
 
 double K_estimate(int nu, int m, double alpha, double eps, double *a, double *b, double *approx);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif
