@@ -37,7 +37,7 @@ double hodlr_logdet_diagonal(int dim, double (*callback)(int,int,void *), void *
 
     HODLR_Tree<Kernel>* A = new HODLR_Tree<Kernel>(&kernel, dim, nLeaf);
 
-    VectorXd d = VectorXd::Ones(dim);
+    VectorXd d = VectorXd(dim);
     for(int n = 0; n < dim; n++)
         d(n) = 1-diagonal[n];
 
