@@ -59,7 +59,7 @@ double dqags(dq_function_type f,double a,double b,double epsabs,
 
 /* Test on accuracy. */
     dres = fabs(result);
-    errbnd = max(epsabs,epsrel*dres);
+    errbnd = MAX(epsabs,epsrel*dres);
     last = 1;
     rlist[0] = result;
     elist[0] = *abserr;
@@ -120,7 +120,7 @@ _10:
 _15:
         rlist[maxerr] = area1;
         rlist[last] = area2;
-        errbnd = max(epsabs,epsrel * fabs(area));
+        errbnd = MAX(epsabs,epsrel * fabs(area));
 
 /* Test for roundoff error and eventually set error flag. */
         if (((iroff1 + iroff2) >= 10) || (iroff3 >= 20))
@@ -135,7 +135,7 @@ _15:
 
 /* Set error flag in the case of bad integrand behavior at some
     points in the integration range. */
-        if (max(fabs(a1),fabs(b2)) <= (1.0 +1000.0 * epmach) *
+        if (MAX(fabs(a1),fabs(b2)) <= (1.0 +1000.0 * epmach) *
             (fabs(a2) + 1000.0*uflow))
             *ier = 4;
 
@@ -205,7 +205,7 @@ _60:
         *abserr = abseps;
         result = reseps;
         correc = erlarg;
-        ertest = max(epsabs,epsrel * fabs(reseps));
+        ertest = MAX(epsabs,epsrel * fabs(reseps));
         if (*abserr <= ertest) goto _100;
 
 /* Prepare bisection of the smallest interval. */
@@ -241,7 +241,7 @@ _105:
 
 /* Test on divergence. */
 _110:
-    if ((ksgn == -1) && (max(fabs(result),fabs(area)) <= defabs * .01))
+    if ((ksgn == -1) && (MAX(fabs(result),fabs(area)) <= defabs * .01))
         goto _130;
     if ((0.01 > result/area) || (result/area > 100.0) ||
         (errsum > fabs(area))) *ier = 6;

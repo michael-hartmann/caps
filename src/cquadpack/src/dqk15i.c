@@ -32,7 +32,7 @@ double G_K15I(dq_function_type f, double boun, int inf, double a, double b,
     double reskh,result,tabsc1,tabsc2;
     int j;
 
-    dinf = min((double)(1.0),(double)inf);
+    dinf = MIN((double)(1.0),(double)inf);
     centr = 0.5 * (a + b);
     hlgth = 0.5 * (b - a);
     tabsc1 = boun + dinf * (1.0 - centr)/centr;
@@ -74,8 +74,8 @@ double G_K15I(dq_function_type f, double boun, int inf, double a, double b,
     *resasc = (*resasc) * hlgth;
     *abserr = fabs((resk - resg) * hlgth);
     if ((*resasc != 0.0) && (*abserr != 0.0))
-        *abserr = (*resasc) * min(1.0,pow((200.0 * (*abserr)/(*resasc)),1.5));
+        *abserr = (*resasc) * MIN(1.0,pow((200.0 * (*abserr)/(*resasc)),1.5));
     if (*resabs > uflow/(50.0 * epmach))
-        *abserr = max(epmach * 50.0 * (*resabs),(*abserr));
+        *abserr = MAX(epmach * 50.0 * (*resabs),(*abserr));
     return result;
 }
