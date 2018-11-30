@@ -40,7 +40,7 @@ double hodlr_logdet(int dim, double (*callback)(int,int,void *), void *args, uns
     T->factorize();
     double logdet = T->logDeterminant();
 
-    //delete T;
+    delete T;
     delete K;
 
     return logdet;
