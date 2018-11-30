@@ -49,7 +49,7 @@
 double kernel_logdet(int dim, double (*kernel)(int,int,void *), void *args, int symmetric, detalg_t detalg)
 {
     double logdet = NAN;
-    double diagonal[dim];
+    double *diagonal = xmalloc(((size_t)(dim))*sizeof(double));
 
     /* calculate diagonal elements */
     for(int n = 0; n < dim; n++)
@@ -68,7 +68,10 @@ double kernel_logdet(int dim, double (*kernel)(int,int,void *), void *args, int 
      * |R| = |tr(M²/2 + M³/3 + ...)| < |tr(M²+M³+...)|/2 < |tr(M)²+tr(M)³|/2 = |tr(M)²/(2-2tr(M))| =~ |tr(M)²|/2
      */
     if(fabs(trace) < 1e-8)
+    {
+        xfree(diagonal);
         return -trace;
+    }
 
     if(detalg != DETALG_HODLR)
     {
@@ -102,6 +105,7 @@ double kernel_logdet(int dim, double (*kernel)(int,int,void *), void *args, int 
         logdet = matrix_logdet_dense(M, -1, detalg);
 
         matrix_free(M);
+        xfree(diagonal);
 
         return logdet;
     }
@@ -125,6 +129,8 @@ double kernel_logdet(int dim, double (*kernel)(int,int,void *), void *args, int 
 
         /* calculate log(det(D)) using HODLR approach */
         logdet = hodlr_logdet_diagonal(dim, kernel, args, diagonal, nLeaf, tolerance, symmetric);
+
+        xfree(diagonal);
 
         /* if |trace| > |log(det(D))|, then the trace result is more accurate */
         if(fabs(trace) > fabs(logdet))
