@@ -111,9 +111,10 @@ double kernel_logdet(int dim, double (*kernel)(int,int,void *), void *args, int 
 
         /* nLeaf is the size (number of rows of the matrix) of the smallest
          * block at the leaf level. The number of levels in the tree is given
-         * by log_2(N/nLeaf).
+         * by n_levels=log_2(N/nLeaf) where N denotes the dimension of the
+         * matrix.
          */
-        const unsigned int nLeaf = 100;
+        const unsigned int nLeaf = 50;
 
         /* Choose relative error to compute the determinant as ~1e-13.
          * The value of the determinant is estimated using the trace. As
