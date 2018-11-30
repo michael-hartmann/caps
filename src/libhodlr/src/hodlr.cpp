@@ -36,7 +36,7 @@ double hodlr_logdet(int dim, double (*callback)(int,int,void *), void *args, uns
 
     HODLR_Tree *T = new HODLR_Tree(n_levels, tolerance, &K);
 
-    T->assembleTree(true);
+    T->assembleTree(is_symmetric);
     T->factorize();
     double logdet = T->logDeterminant();
 
