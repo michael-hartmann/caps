@@ -124,7 +124,7 @@ double kernel_logdet(int dim, double (*kernel)(int,int,void *), void *args, int 
         const double tolerance = fmax(1e-13, trace*1e-13);
 
         /* calculate log(det(D)) using HODLR approach */
-        logdet = hodlr_logdet(dim, kernel, args, nLeaf, tolerance, symmetric);
+        logdet = hodlr_logdet_diagonal(dim, kernel, args, diagonal, nLeaf, tolerance, symmetric);
 
         /* if |trace| > |log(det(D))|, then the trace result is more accurate */
         if(fabs(trace) > fabs(logdet))
