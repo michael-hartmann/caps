@@ -32,16 +32,15 @@ double hodlr_logdet(int dim, double (*callback)(int,int,void *), void *args, uns
     // XXX
     int n_levels = 1+log2(((double)dim)/nLeaf);
 
-    Kernel *K = new Kernel(dim, callback, args);
+    Kernel K = Kernel(dim, callback, args);
 
-    HODLR_Tree *T = new HODLR_Tree(n_levels, tolerance, K);
+    HODLR_Tree *T = new HODLR_Tree(n_levels, tolerance, &K);
 
     T->assembleTree(true);
     T->factorize();
     double logdet = T->logDeterminant();
 
     delete T;
-    delete K;
 
     return logdet;
 }
