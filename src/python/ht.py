@@ -196,6 +196,23 @@ def drude(L,R,lmax=10000):
     return E1+E2, F1+F2, dF1+dF2
 
 
+def logdet_MM_0(x):
+    """Compute logdet(Id-M^0_MM) for xi=0 and m=0"""
+    l = np.arange(20000)
+    Z = 1/(1+x+np.sqrt(x*(2+x)))
+    return np.sum(np.log1p(-Z**(2*l+3)))
+
+
+def logdet_EE_0(x):
+    """Compute logdet(Id-M^0_EE) for xi=0 and m=0"""
+    l = np.arange(1,20000)
+    Z = 1/(1+x+np.sqrt(x*(2+x)))
+    sum1 = np.sum(np.log1p(-Z**(2*l+1)))
+    sum2 = np.sum(Z**(2*l+1)*(1-Z**(2*l))/(1-Z**(2*l+1)))
+
+    return sum1 + np.log1p(-(1-Z**2)*sum2)
+
+
 if __name__ == "__main__":
     L = 1
     R = 20
