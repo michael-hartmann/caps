@@ -299,8 +299,8 @@ double HODLR_Tree::logDeterminant()
 
 HODLR_Tree::~HODLR_Tree()
 {
-    for(int i=0; i < tree.size(); i++)
-        for(int j=0; j < tree[i].size(); j++)
+    for(unsigned int i=0; i < tree.size(); i++)
+        for(unsigned int j=0; j < tree[i].size(); j++)
             delete tree[i][j];
 
     tree.clear();
