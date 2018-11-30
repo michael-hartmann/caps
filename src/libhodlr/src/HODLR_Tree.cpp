@@ -296,3 +296,12 @@ double HODLR_Tree::logDeterminant()
 
     return(log_det);
 }
+
+HODLR_Tree::~HODLR_Tree()
+{
+    for(int i=0; i < tree.size(); i++)
+        for(int j=0; j < tree[i].size(); j++)
+            delete tree[i][j];
+
+    tree.clear();
+}
