@@ -55,9 +55,6 @@ TESTS = \
 # use C99 standard
 CFLAGS = -std=c99 -fPIC
 
-# suppress warnings
-CXXFLAGS = -g -w
-
 CFLAGS += -I . -I cquadpack/include -I libhodlr/include/
 ifdef GIT_HEAD
     CFLAGS += -DGIT_HEAD='"$(GIT_HEAD)"'
@@ -81,7 +78,7 @@ endif
 #CFLAGS += -pg
 
 # ldflags
-LDFLAGS += -lm -L . -L libhodlr/include/ -lhodlr
+LDFLAGS += -lm -L . -L libhodlr/ -lhodlr
 LDFLAGS += -lgfortran -lblas -llapack
 
 # clang supports various runtime checks. This will slow down the program, but
@@ -89,7 +86,6 @@ LDFLAGS += -lgfortran -lblas -llapack
 # https://clang.llvm.org/docs/UndefinedBehaviorSanitizer.html
 ifdef SANITIZE
     CFLAGS   += -fsanitize=undefined -fno-omit-frame-pointer
-    CXXFLAGS += -fsanitize=undefined -fno-omit-frame-pointer
     LDFLAGS  += -lubsan
 endif
 
@@ -117,8 +113,8 @@ dependencies_test: $(TESTS:.o=.c) dependencies
 libcasimir.so: libhodlr.so $(OBJS) dependencies
 	$(CC) -o libcasimir.so $(OBJS) -shared
 
-libhodlr.so: libhodlr/src/hodlr.cpp libhodlr/include/hodlr.h
-	${CXX} $(OPT) ${CXXFLAGS} -fpic -shared libhodlr/src/hodlr.cpp libhodlr/src/HODLR_Matrix.cpp libhodlr/src/HODLR_Node.cpp libhodlr/src/HODLR_Tree.cpp -I libhodlr/include/ -o libhodlr.so
+libhodlr.so:
+	cd libhodlr; make
 
 casimir_logdetD: libcasimir.so
 	$(CC) $(CFLAGS) $(OPT) casimir_logdetD.c -lcasimir $(LDFLAGS) -o casimir_logdetD
