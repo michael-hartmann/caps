@@ -18,7 +18,7 @@ static double __integrand_dirichlet(double x, void *args);
 static double __integrand_neumann(double x, void *args);
 
 class CasimirCP {
-    double R, d, calL, epsrel;
+    double R, d, calL;
     int lmax;
     detalg_t detalg;
 
@@ -30,20 +30,13 @@ class CasimirCP {
             this->calL = R+d;
             this->lmax = std::max(25, (int)(5*R/d));
             this->detalg = detalg;
-            this->epsrel = 1e-8;
         }
 
         double get_R() const { return R; }
         double get_d() const { return d; }
         double get_calL() const { return calL; }
-        double get_epsrel() const { return epsrel; }
         int get_lmax() const { return lmax; }
         detalg_t get_detalg() const { return detalg; }
-
-        void set_epsrel(double epsrel) {
-            if(epsrel > 0)
-                this->epsrel = epsrel;
-        }
 
         void set_lmax(int lmax) {
             this->lmax = lmax;
@@ -54,11 +47,11 @@ class CasimirCP {
         }
 
         double logdet_dirichlet(double q) {
-            return this->logdet(q,'D');
+            return this->logdet(q, 'D');
         }
 
         double logdet_neumann(double q) {
-            return this->logdet(q,'N');
+            return this->logdet(q, 'N');
         }
 
         double logdet(double q, char DN) {
@@ -134,7 +127,7 @@ class CasimirCP {
             return log_rho+logdet1+logdet2;
         }
 
-        double energy(char p, double T)
+        double energy(char p, double T, double epsrel=1e-8)
         {
             p = toupper(p);
             if(p != 'D')
@@ -286,9 +279,6 @@ int main(int argc, const char *argv[]) {
     printf("# lmax = %d\n", lmax);
     printf("# epsrel = %g\n", epsrel);
 
-    // set epsrel
-    casimir.set_epsrel(epsrel);
-
     // set detalg
     if(detalg != NULL)
     {
@@ -318,8 +308,8 @@ int main(int argc, const char *argv[]) {
         casimir.set_lmax(std::max(25,(int)ceil(eta/d*R)));
 
     /* energy Dirichlet in units of hbar*c*L */
-    double E_D = casimir.energy('D', 0);
-    double E_N = casimir.energy('N', 0);
+    double E_D = casimir.energy('D', 0, epsrel);
+    double E_N = casimir.energy('N', 0, epsrel);
 
     /* energy EM in units of hbar*c*L */
     double E_EM = E_D+E_N;
