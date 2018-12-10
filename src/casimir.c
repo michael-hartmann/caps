@@ -123,7 +123,8 @@ int casimir_mpi_get_running(casimir_mpi_t *self)
     return running;
 }
 
-int casimir_mpi_submit(casimir_mpi_t *self, int index, double xi, int m)
+/* xi_ = ξ(L+R)/c */
+int casimir_mpi_submit(casimir_mpi_t *self, int index, double xi_, int m)
 {
     for(int i = 1; i < self->cores; i++)
     {
@@ -131,10 +132,10 @@ int casimir_mpi_submit(casimir_mpi_t *self, int index, double xi, int m)
 
         if(task->state == STATE_IDLE)
         {
-            double buf[] = { xi, self->L, self->R, self->omegap, self->gamma, m, self->iepsrel, self->ldim };
+            double buf[] = { xi_, self->L, self->R, self->omegap, self->gamma, m, self->iepsrel, self->ldim };
 
             task->index = index;
-            task->xi    = xi;
+            task->xi_   = xi_;
             task->m     = m;
             task->state = STATE_RUNNING;
 
@@ -194,14 +195,17 @@ int casimir_mpi_retrieve(casimir_mpi_t *self, casimir_task_t **task_out)
     return 0;
 }
 
-static double integrand(double xi_, void *args)
+/* x = 2ξL/c */
+static double integrand(double x, void *args)
 {
     const double t0 = now();
     casimir_mpi_t *casimir_mpi = (casimir_mpi_t *)args;
-    const double xi = xi_/casimir_mpi->alpha;
-    const double v = F_xi(xi, casimir_mpi);
-    printf("# xi=%.15g, logdetD=%.15g, t=%g\n", xi, v, now()-t0);
-    return v;
+    const double xi_ = x/casimir_mpi->alpha; /* xi_=ξ(L+R)/c; α=2*L/(L+R) */
+
+    const double logdetD = F_xi(xi_, casimir_mpi);
+
+    printf("# xi*(L+R)/c=%.15g, logdetD=%.15g, t=%g\n", xi_, logdetD, now()-t0);
+    return logdetD;
 }
 
 void F_HT(casimir_mpi_t *casimir_mpi, double omegap, double *drude, double *pr, double *plasma)
@@ -240,7 +244,8 @@ void F_HT(casimir_mpi_t *casimir_mpi, double omegap, double *drude, double *pr, 
     casimir_mpi->gamma  = gamma_orig;
 }
 
-double F_xi(double xi, casimir_mpi_t *casimir_mpi)
+/* xi_ = ξ(L+R)/c */
+double F_xi(double xi_, casimir_mpi_t *casimir_mpi)
 {
     int m;
     double drude_HT = NAN;
@@ -249,7 +254,7 @@ double F_xi(double xi, casimir_mpi_t *casimir_mpi)
     const double mmax = sizeof(terms)/sizeof(double);
     const double cutoff = casimir_mpi->cutoff;
 
-    if(xi == 0)
+    if(xi_ == 0)
     {
         /* compute Drude contribution */
         casimir_t *casimir = casimir_init(casimir_mpi->L/casimir_mpi->R);
@@ -272,7 +277,7 @@ double F_xi(double xi, casimir_mpi_t *casimir_mpi)
             casimir_task_t *task = NULL;
 
             /* send job */
-            if(casimir_mpi_submit(casimir_mpi, m, xi, m))
+            if(casimir_mpi_submit(casimir_mpi, m, xi_, m))
                 break;
 
             /* retrieve jobs */
@@ -281,7 +286,7 @@ double F_xi(double xi, casimir_mpi_t *casimir_mpi)
                 double v = terms[task->m] = task->value;
 
                 if(verbose)
-                    fprintf(stderr, "# m=%d, xi=%.12g, logdetD=%.12g\n", task->m, xi, task->value);
+                    fprintf(stderr, "# m=%d, xi_=%.12g, logdetD=%.12g\n", task->m, xi_, task->value);
 
                 if(v == 0 || v/terms[0] < cutoff)
                     goto done;
@@ -304,7 +309,7 @@ double F_xi(double xi, casimir_mpi_t *casimir_mpi)
         {
             terms[task->m] = task->value;
             if(verbose)
-                fprintf(stderr, "# m=%d, xi=%.12g, logdetD=%.12g\n", task->m, xi, task->value);
+                fprintf(stderr, "# m=%d, xi_=%.12g, logdetD=%.12g\n", task->m, xi_, task->value);
         }
 
         usleep(IDLE);
@@ -312,7 +317,7 @@ double F_xi(double xi, casimir_mpi_t *casimir_mpi)
 
     terms[0] /= 2; /* m = 0 */
 
-    if(xi == 0)
+    if(xi_ == 0)
         return drude_HT + kahan_sum(terms, m);
     else
         return kahan_sum(terms, m);
@@ -793,11 +798,11 @@ void slave(MPI_Comm master_comm, int rank)
 
         MPI_Recv(buf, 8, MPI_DOUBLE, 0, 0, master_comm, &status);
 
-        /* Matsubara frequency */
-        const double xi = buf[0];
+        /* Matsubara frequency; xi_ = ξ(L+R)/c */
+        const double xi_ = buf[0];
 
         /* signal to quit */
-        if(xi < 0)
+        if(xi_ < 0)
             break;
 
         /* geometry */
@@ -824,7 +829,7 @@ void slave(MPI_Comm master_comm, int rank)
             casimir_set_epsrel(casimir, iepsrel);
 
         /* high-temperature case */
-        if(xi == 0)
+        if(xi_ == 0)
         {
             if(isinf(omegap))
                 /* MM mode of PR */
@@ -849,8 +854,8 @@ void slave(MPI_Comm master_comm, int rank)
                 casimir_set_epsilonm1(casimir, casimir_epsilonm1_drude, userdata);
             }
 
-            logdet = casimir_logdetD(casimir, xi, m);
-            TERMINATE(isnan(logdet), "L/R=%.10g, xi=%.15g, m=%d, ldim=%d", LbyR, xi, m, ldim);
+            logdet = casimir_logdetD(casimir, xi_, m);
+            TERMINATE(isnan(logdet), "L/R=%.10g, xi_=%.15g, m=%d, ldim=%d", LbyR, xi_, m, ldim);
         }
 
         MPI_Isend(&logdet, 1, MPI_DOUBLE, 0, 0, master_comm, &request);
