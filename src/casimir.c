@@ -211,6 +211,11 @@ static double integrand(double x, void *args)
      * R/L>10), we estimate the value of the Matsubara frequency ξ where
      *      logdet(Id-M(ξ_cutoff))=logdet_cutoff=1e-100.
      * If ξ>ξ_cutoff and R/L>10, we return 0.
+     *
+     * Assuming perfect reflectors and that the PFA is valid, one finds
+     *      logdet(Id-M(ξ)) = -1/2 R/L Li_3(exp(-ξL/c)).
+     * As ξ is assumed to be large, the argument of the polylog becomes small,
+     * and we can use Li_3(x)=~x. With this, one finds the assumption above.
      */
     const double LbyR = casimir_mpi->L/casimir_mpi->R;
     const double logdet_cutoff = 1e-100;
