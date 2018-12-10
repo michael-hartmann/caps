@@ -198,11 +198,28 @@ int casimir_mpi_retrieve(casimir_mpi_t *self, casimir_task_t **task_out)
 /* x = 2ξL/c */
 static double integrand(double x, void *args)
 {
+    double logdetD;
     const double t0 = now();
     casimir_mpi_t *casimir_mpi = (casimir_mpi_t *)args;
     const double xi_ = x/casimir_mpi->alpha; /* xi_=ξ(L+R)/c; α=2*L/(L+R) */
 
-    const double logdetD = F_xi(xi_, casimir_mpi);
+    /* For large values of ξ the integrand logdet(Id-M(ξ)) is almost 0, but the
+     * actual computation of the matrix elements might yield warnings and
+     * errors. To save computation time and prevent warnings and errors, we
+     * estimate the integrand using the PFA assuming perfect reflectors. If the
+     * aspect ratio is sufficiently high to use the PFA estimate (we choose
+     * R/L>10), we estimate the value of the Matsubara frequency ξ where
+     *      logdet(Id-M(ξ_cutoff))=logdet_cutoff=1e-100.
+     * If ξ>ξ_cutoff and R/L>10, we return 0.
+     */
+    const double LbyR = casimir_mpi->L/casimir_mpi->R;
+    const double logdet_cutoff = 1e-100;
+    const double xi_cutoff = (1+1/LbyR)*log(2*LbyR*logdet_cutoff)/2;
+
+    if(LbyR < 0.1 && xi_ > xi_cutoff)
+        logdetD = 0;
+    else
+        logdetD = F_xi(xi_, casimir_mpi);
 
     printf("# xi*(L+R)/c=%.15g, logdetD=%.15g, t=%g\n", xi_, logdetD, now()-t0);
     return logdetD;
