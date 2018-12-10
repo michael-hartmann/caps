@@ -429,11 +429,11 @@ static double _casimir_integrate_K(integration_t *self, int nu, polarization_t p
  *
  * This function solves for \f$m>0\f$ the integral
  * \f[
- *   \mathcal{K}_{\nu,p}^{(m)}(\alpha) = \int_0^\infty \mathrm{d}x \, r_p \frac{e^{-\alpha x}}{x^2-1} P_\nu^{2m}(x)
+ *   \mathcal{K}_{\nu,p}^{(m)}(\alpha) = \int_1^\infty \mathrm{d}x \, r_p \frac{e^{-\alpha x}}{x^2-1} P_\nu^{2m}(x)
  * \f]
  * and for \f$m=0\f$ the integral
  * \f[
- *   \mathcal{K}_{\nu,p}^{(0)}(\alpha) = \int_0^\infty \mathrm{d}x \, r_p e^{-\alpha x} P_\nu^{2}(x) \,.
+ *   \mathcal{K}_{\nu,p}^{(0)}(\alpha) = \int_1^\infty \mathrm{d}x \, r_p e^{-\alpha x} P_\nu^{2}(x) \,.
  * \f]
  *
  * The function returns the logarithm of the value of the integral and its sign.
