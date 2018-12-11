@@ -1,7 +1,6 @@
 #include <algorithm>
 #include <string>
 
-#include <stdlib.h>
 #include <stdio.h>
 #include <strings.h>
 
@@ -290,21 +289,21 @@ int main(int argc, const char *argv[]) {
     {
         if(strcasecmp(detalg, "LU") == 0)
         {
-            printf("# detalg=LU\n");
+            printf("# detalg = LU\n");
             casimir.set_detalg(DETALG_LU);
         }
         else if(strcasecmp(detalg, "QR") == 0)
         {
-            printf("# detalg=QR\n");
+            printf("# detalg = QR\n");
             casimir.set_detalg(DETALG_QR);
         }
         else if(strcasecmp(detalg, "CHOLESKY") == 0)
         {
-            printf("# detalg=CHOLESKY\n");
+            printf("# detalg = CHOLESKY\n");
             casimir.set_detalg(DETALG_CHOLESKY);
         }
         else
-            printf("# detalg=HODLR\n");
+            printf("# detalg = HODLR\n");
     }
 
     /* energy Dirichlet in units of hbar*c*L */
