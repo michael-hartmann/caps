@@ -219,7 +219,7 @@ static double integrand(double x, void *args)
      */
     const double LbyR = casimir_mpi->L/casimir_mpi->R;
     const double logdet_cutoff = 1e-100;
-    const double xi_cutoff = (1+1/LbyR)*log(2*LbyR*logdet_cutoff)/2;
+    const double xi_cutoff = -(1+1/LbyR)*log(2*LbyR*logdet_cutoff)/2;
 
     if(LbyR < 0.1 && xi_ > xi_cutoff)
         logdetD = 0;
