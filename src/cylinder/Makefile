@@ -1,2 +1,6 @@
+CXXFLAGS = -Wall -Wextra -I.. -L.. -L../libhodlr
+LDFLAGS = -lcasimir -lhodlr -lgfortran -lblas -llapack
+OPT = -O3
+
 all:
-	g++ -Wall -Wextra -O3 cylinder.cpp -lcasimir -lhodlr -I.. -L.. -L../libhodlr -lgfortran -lblas -llapack -o cylinder
+	$(CXX) $(CXXFLAGS) $(OPT) $(LDFLAGS) cylinder.cpp -o cylinder
