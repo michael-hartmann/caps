@@ -33,7 +33,7 @@ extern "C" {
 #define WARN(cond, ...)      if(cond) { fprintf(stderr, "Warning: ");     fprintf(stderr, __VA_ARGS__); fprintf(stderr, " (in %s, %s:%d)\n", __func__, __FILE__, __LINE__); }
 
 /*! macro for free that sets pointer p to NULL after freeing memory */
-#define xfree(p) do { _xfree(p); p = NULL; } while(0)
+#define xfree(p) do { free(p); p = NULL; } while(0)
 
 double now(void);
 void time_as_string(char *s, size_t len);
@@ -41,7 +41,6 @@ void time_as_string(char *s, size_t len);
 void *xmalloc(size_t size);
 void *xrealloc(void *p, size_t size);
 void *xcalloc(size_t nmemb, size_t size);
-void _xfree(void *p);
 
 void disable_buffering(void);
 
