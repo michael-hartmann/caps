@@ -253,6 +253,8 @@ double bessel_I0(double x)
 
 /** @brief Logarithm of modified Bessel function \f$I_0(x)\f$
  *
+ * For \f$x<0\f$ NAN (not a number) is returned.
+ *
  * For \f$x=0\f$ the value \f$\log I_0(0) = \log(1)=0\f$ is returned.
  *
  * For \f$0<x<8\f$ a series expansion is used, see \ref bessel_logInu_series.
@@ -264,9 +266,6 @@ double bessel_I0(double x)
  * I_0(x) \approx \frac{e^x}{\sqrt{2\pi x}} \left( 1 + k + \frac{9}{2} k^2 + \frac{225}{6} k^3 \right), \quad k=\frac{1}{8x}
  * \f]
  * is used.
- *
- * The range is partitioned into the two intervals \f$[0,8]\f$ and \f$(8, \infty)\f$.
- * Chebyshev polynomial expansions are employed in each interval.
  *
  * @param [in] x argument
  * @retval logI0 \f$\log I_0(x)\f$
@@ -282,14 +281,12 @@ double bessel_logI0(double x)
     if(x < 800)
         /* Chebychev expansion */
         return x+log(chbevl(32/x-2,I0_coeffs,25))-0.5*log(x);
-    else
-    {
-        /* Hankel expansion
-         * I_0(x) ≈ exp(x)/sqrt(2*pi*x) * ( 1 + k + 9/2*k² + 225/6*k³ ), k=1/8x
-         */
-         const double k = 1./8/x;
-         return x-0.5*log(2*M_PI*x) + log1p( k*(1+9./2*k*(1+25./3*k)) );
-    }
+
+    /* Hankel expansion
+     * I_0(x) ≈ exp(x)/sqrt(2*pi*x) * ( 1 + k + 9/2*k² + 225/6*k³ ), k=1/8x
+     */
+    const double k = 1./8/x;
+    return x-0.5*log(2*M_PI*x) + log1p( k*(1+9./2*k*(1+25./3*k)) );
 }
 
 
@@ -366,6 +363,8 @@ double bessel_I1(double x)
 
 /** @brief Logarithm of modified Bessel function \f$I_1(x)\f$
  *
+ * For \f$x<0\f$ NAN (not a number) is returned.
+ *
  * For \f$0<x<8\f$ a series expansion is used, see \ref bessel_logInu_series.
  *
  * For \f$8\le x<800\f$ a Chebychev expansion is used.
@@ -388,14 +387,12 @@ double bessel_logI1(double x)
     if(x < 800)
         /* Chebychev expansion */
         return x+log(chbevl(32/x-2,I1_coeffs,25))-0.5*log(x);
-    else
-    {
-        /* Hankel expansion
-         * I_1(x) ≈ exp(x)/sqrt(2*pi*x) * ( 1 - 3k - 15/2*k² - 105/2*k³ ), k=1/8x
-         */
-         const double k = 1./8/x;
-         return x-0.5*log(2*M_PI*x) + log1p( -k*(3+k*(15./2+105./2*k)) );
-    }
+
+    /* Hankel expansion
+    * I_1(x) ≈ exp(x)/sqrt(2*pi*x) * ( 1 - 3k - 15/2*k² - 105/2*k³ ), k=1/8x
+    */
+    const double k = 1./8/x;
+    return x-0.5*log(2*M_PI*x) + log1p( -k*(3+k*(15./2+105./2*k)) );
 }
 
 /** @brief Modified Bessel function \f$K_1(x)\f$
