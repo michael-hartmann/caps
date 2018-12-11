@@ -5,7 +5,6 @@
  * @brief  wrappers for malloc, calloc realloc, and a few more useful functions
  */
 
-#include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/time.h>
@@ -65,20 +64,6 @@ void *xrealloc(void *p, size_t size)
     TERMINATE(p2 == NULL, "realloc failed: p=%p, size=%zu", p, size);
 
     return p2;
-}
-
-/** @brief Wrapper for xfree
- *
- * This function is a wrapper for free.
- *
- * You usually want to use the macro xfree that also sets the pointer p to
- * NULL.
- *
- * @param ptr ptr to free
- */
-void _xfree(void *ptr)
-{
-    free(ptr);
 }
 
 /** @brief Get time
