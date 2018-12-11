@@ -272,11 +272,17 @@ int main(int argc, const char *argv[]) {
 
     CasimirCP casimir(R, d);
 
+    // set lmax
+    if(lmax > 0)
+        casimir.set_lmax(lmax);
+    else
+        casimir.set_lmax(std::max(25,(int)ceil(eta/d*R)));
+
     printf("# R/d = %.15g\n", R/d);
     printf("# d = %.15g\n", d);
     printf("# R = %.15g\n", R);
     printf("# T = %.15g\n", T);
-    printf("# lmax = %d\n", lmax);
+    printf("# lmax = %d\n", casimir.get_lmax());
     printf("# epsrel = %g\n", epsrel);
 
     // set detalg
@@ -300,12 +306,6 @@ int main(int argc, const char *argv[]) {
         else
             printf("# detalg=HODLR\n");
     }
-
-    // set lmax
-    if(lmax > 0)
-        casimir.set_lmax(lmax);
-    else
-        casimir.set_lmax(std::max(25,(int)ceil(eta/d*R)));
 
     /* energy Dirichlet in units of hbar*c*L */
     double E_D = casimir.energy('D', 0, epsrel);
