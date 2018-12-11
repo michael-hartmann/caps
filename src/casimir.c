@@ -908,6 +908,8 @@ void usage(FILE *stream)
 "References:\n"
 "  [1] Hartmann, The Casimir effect in the plane-sphere geometry and the\n"
 "      Proximity Force Approximation, phd thesis, 2018\n"
+"  [2] Hartmann, Ingold, Maia Neto, Advancing numerics for the Casimir effect\n"
+"      to experimentally relevant aspect ratios, Phys. Scr. 93, 114003 (2018)\n"
 "\n"
 "Mandatory options:\n"
 "    -L L\n"
