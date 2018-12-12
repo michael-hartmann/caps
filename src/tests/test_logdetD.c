@@ -56,7 +56,7 @@ int test_logdetD()
 
     unittest_init(&test, "casimir_logdetD", "Computation of determinant", 1e-10);
 
-    casimir = casimir_init(0.01); /* L/R doesn't matter */
+    casimir = casimir_init(0.01); /* R/L = 100 */
     casimir_set_ldim(casimir, 500);
 
     for(size_t m=0; m < sizeof(v1)/sizeof(double); m++)
