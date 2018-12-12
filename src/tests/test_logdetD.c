@@ -70,6 +70,12 @@ int test_logdetD()
 
     casimir_free(casimir);
 
+
+    casimir = casimir_init(0.001); /* R/L = 1000 */
+    casimir_set_ldim(casimir, 10000);
+
+    AssertAlmostEqual(&test, casimir_logdetD(casimir, 500.5, 1), -6.483716215501811);
+
     return test_results(&test, stderr);
 }
 
