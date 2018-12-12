@@ -26,7 +26,7 @@ public:
         if(m==n)
             return 1-diag[m];
 
-        return -get_kernel_element((int)m,(int)n,args);
+        return -get_kernel_element(m,n,args);
     };
 };
 
