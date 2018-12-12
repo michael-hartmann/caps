@@ -129,6 +129,7 @@ casimir: libcasimir.so
 clean:
 	rm -f casimir_cylinder casimir_tests casimir_logdetD casimir *.o *.so cquadpack/src/*.o tests/*.o $(DEPEND_FILE)
 	rm -rf doc
+	cd libhodlr; make clean
 
 doc:
 	doxygen doxygen.conf
