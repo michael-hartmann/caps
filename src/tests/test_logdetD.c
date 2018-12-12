@@ -74,7 +74,34 @@ int test_logdetD()
     casimir = casimir_init(0.001); /* R/L = 1000 */
     casimir_set_ldim(casimir, 10000);
 
+    /* m = 1, xi*(L+R)=500.5 */
     AssertAlmostEqual(&test, casimir_logdetD(casimir, 500.5, 1), -6.483716215501811);
+
+    /* m = 0 */
+    AssertAlmostEqual(&test, casimir_logdetD(casimir, 1,    0), -30.8973328391624);
+    AssertAlmostEqual(&test, casimir_logdetD(casimir, 10,   0), -27.98449458128564);
+    AssertAlmostEqual(&test, casimir_logdetD(casimir, 50,   0), -22.56796136574511);
+    AssertAlmostEqual(&test, casimir_logdetD(casimir, 100,  0), -18.67356891192568);
+    AssertAlmostEqual(&test, casimir_logdetD(casimir, 500,  0), -6.479303087598992);
+    AssertAlmostEqual(&test, casimir_logdetD(casimir, 1000, 0), -2.178202346096343);
+
+    /* m = 1 */
+    AssertAlmostEqual(&test, casimir_logdetD(casimir, 1,    1), -28.9780689068129);
+    AssertAlmostEqual(&test, casimir_logdetD(casimir, 10,   1), -27.51188326787787);
+    AssertAlmostEqual(&test, casimir_logdetD(casimir, 50,   1), -22.56514836205272);
+    AssertAlmostEqual(&test, casimir_logdetD(casimir, 100,  1), -18.70411844448763);
+    AssertAlmostEqual(&test, casimir_logdetD(casimir, 500,  1), -6.49120287175491);
+    AssertAlmostEqual(&test, casimir_logdetD(casimir, 1000, 1), -2.182012419010837);
+
+    /* m = 10 */
+    AssertAlmostEqual(&test, casimir_logdetD(casimir, 1,    10), -10.26970523556247);
+    AssertAlmostEqual(&test, casimir_logdetD(casimir, 10,   10), -10.22460379504289);
+    AssertAlmostEqual(&test, casimir_logdetD(casimir, 50,   10), -9.586954072769368);
+    AssertAlmostEqual(&test, casimir_logdetD(casimir, 100,  10), -8.594078947559478);
+    AssertAlmostEqual(&test, casimir_logdetD(casimir, 500,  10), -3.493702985034492);
+    AssertAlmostEqual(&test, casimir_logdetD(casimir, 1000, 10), -1.218387445150732);
+
+    casimir_free(casimir);
 
     return test_results(&test, stderr);
 }
