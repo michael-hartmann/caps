@@ -54,8 +54,8 @@ TESTS = \
 
 # use C99 standard
 CFLAGS = -std=c99 -fPIC
-
 CFLAGS += -I include/ -I cquadpack/include -I libhodlr/include/
+
 ifdef GIT_HEAD
     CFLAGS += -DGIT_HEAD='"$(GIT_HEAD)"'
 endif
@@ -76,6 +76,8 @@ endif
 
 # profiling
 #CFLAGS += -pg
+
+CXXFLAGS = -Wall -Wextra -I include/
 
 # ldflags
 LDFLAGS += -lm -L . -L libhodlr/ -lhodlr
@@ -125,6 +127,10 @@ casimir_tests: $(TESTS) libcasimir.so
 
 casimir: libcasimir.so
 	$(MPICC) $(CFLAGS) $(OPT) casimir.c -lcasimir $(LDFLAGS) -o casimir
+
+cylinder: libcasimir.so
+	$(CXX) $(CXXFLAGS) $(OPT) $(LDFLAGS) -lcasimir cylinder.cpp -o cylinder_bla
+
 
 clean:
 	rm -f casimir_cylinder casimir_tests casimir_logdetD casimir *.o *.so cquadpack/src/*.o tests/*.o $(DEPEND_FILE)
