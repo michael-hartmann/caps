@@ -24,9 +24,6 @@ disagree by about 120 orders of magnitude.
 
 \section whatislibcasimir What is libcasimir?
 
-\image html  geometry.png
-\image latex geometry.png
-
 libcasimir implements the numerics for the Casimir effect in the plane-sphere
 geometry for arbitrary materials at zero and finite temperature using the
 scattering approach. A sphere of radius R is separated by a distance of L from
