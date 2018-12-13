@@ -90,18 +90,15 @@ LDFLAGS += -lgfortran -lblas -llapack
 # clang supports various runtime checks. This will slow down the program, but
 # it's a good and easy way to find bugs.
 # https://clang.llvm.org/docs/UndefinedBehaviorSanitizer.html
-ifdef SANITIZE
-    CFLAGS   += -fsanitize=undefined -fno-omit-frame-pointer
-    LDFLAGS  += -lubsan
-endif
+# CFLAGS   += -fsanitize=undefined -fno-omit-frame-pointer
+# LDFLAGS  += -lubsan
 
 # optimize
 OPT = -O3
+OPT += -march=native
 
 # link time optimization
-ifdef LTO
-    OPT += -flto
-endif
+#OPT += -flto
 
 # This file contains header dependencies. dependencies and dependencies_test will update this file.
 DEPEND_FILE = .depend
