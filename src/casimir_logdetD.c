@@ -157,12 +157,7 @@ int main(int argc, char *argv[])
 
     /* disable buffering */
     if(!buffering)
-    {
-        fflush(stdin);
-        fflush(stderr);
-        setvbuf(stdout, NULL, _IONBF, 0);
-        setvbuf(stderr, NULL, _IONBF, 0);
-    }
+        disable_buffering();
 
     /* check parameters */
     do {
