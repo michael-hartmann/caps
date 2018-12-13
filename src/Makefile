@@ -55,7 +55,7 @@ TESTS = \
 # use C99 standard
 CFLAGS = -std=c99 -fPIC
 
-CFLAGS += -I . -I cquadpack/include -I libhodlr/include/
+CFLAGS += -I include/ -I cquadpack/include -I libhodlr/include/
 ifdef GIT_HEAD
     CFLAGS += -DGIT_HEAD='"$(GIT_HEAD)"'
 endif
