@@ -54,7 +54,7 @@ int test_logdetD()
         -1.629918416194979  /* m=5 */
     };
 
-    unittest_init(&test, "casimir_logdetD", "Computation of determinant", 1e-10);
+    unittest_init(&test, "casimir_logdetD", "Computation of logdet", 1e-10);
 
     casimir = casimir_init(0.01); /* R/L = 100 */
     casimir_set_ldim(casimir, 500);
@@ -112,7 +112,7 @@ int test_logdetD0()
     unittest_t test;
     casimir_t *casimir;
 
-    unittest_init(&test, "casimir_logdetD0", "Computation of determinant for xi=0", 1e-10);
+    unittest_init(&test, "casimir_logdetD0", "Computation of logdet for xi=0", 1e-10);
 
     casimir = casimir_init(0.01); /* R/L=100 */
     casimir_set_ldim(casimir, 500);
