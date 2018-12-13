@@ -2,8 +2,12 @@
 all: casimir casimir_logdetD
 
 # get head and branch from git, and machine name
-GIT_HEAD=$(shell git rev-parse HEAD)
-GIT_BRANCH=$(shell git rev-parse --abbrev-ref HEAD)
+GIT := $(shell git)
+ifdef GIT
+    GIT_HEAD=$(shell git rev-parse HEAD)
+    GIT_BRANCH=$(shell git rev-parse --abbrev-ref HEAD)
+endif
+
 MACHINE=$(shell uname -a)
 
 ifeq ($(CC),icc)
@@ -62,7 +66,7 @@ endif
 ifdef GIT_BRANCH
     CFLAGS += -DGIT_BRANCH='"$(GIT_BRANCH)"'
 endif
-ifdef GIT_HEAD
+ifdef MACHINE
     CFLAGS += -DMACHINE='"$(MACHINE)"'
 endif
 
