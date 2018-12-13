@@ -114,7 +114,7 @@ int test_logdetD0()
 
     unittest_init(&test, "casimir_logdetD0", "Computation of determinant for xi=0", 1e-10);
 
-    casimir = casimir_init(0.01); /* L/R doesn't matter */
+    casimir = casimir_init(0.01); /* R/L=100 */
     casimir_set_ldim(casimir, 500);
 
     AssertAlmostEqual(&test, casimir_logdetD0_plasma(casimir, 0.01, eps), -14.569722716816960073);
@@ -123,6 +123,18 @@ int test_logdetD0()
     AssertAlmostEqual(&test, casimir_logdetD0_plasma(casimir, 10, eps), -14.868792120441892024);
     AssertAlmostEqual(&test, casimir_logdetD0_plasma(casimir, 100, eps), -18.461022336857670467);
     AssertAlmostEqual(&test, casimir_logdetD0_plasma(casimir, 1000, eps), -25.441820432119136797);
+
+    casimir_free(casimir);
+
+
+    /* test against analytical results for m=0 */
+    double EE,MM;
+    casimir = casimir_init(0.001); /* R/L=1000 */
+    casimir_set_ldim(casimir, 12000);
+
+    casimir_logdetD0(casimir, 0, INFINITY, &EE, &MM, NULL);
+    AssertAlmostEqual(&test, EE, -16.570869421880897);
+    AssertAlmostEqual(&test, MM, -14.918081098098352);
 
     casimir_free(casimir);
 
