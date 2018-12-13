@@ -27,7 +27,7 @@ static void usage(FILE *stream)
 "\n"
 "Further options:\n"
 "    -l, --ldim LDIM\n"
-"        Set ldim to LDIM. When -L is used, -l will be ignored.\n"
+"        Set ldim to LDIM.\n"
 "\n"
 "    -f, --material FILENAME\n"
 "        Use material described by FILENAME.\n"
