@@ -8,7 +8,10 @@ OBJS = \
     src/HODLR_Tree.o
 
 CXXFLAGS = -Wall -Wno-unknown-pragmas -g -fPIC -I include/ -I src/
-CXXFLAGS += -ffast-math
+
+# The HODLR library works with -ffast-math but the performance gain is
+# negligible
+#CXXFLAGS += -ffast-math
 
 # optimize
 OPT = -O3
@@ -30,4 +33,4 @@ libhodlr: $(OBJS) dependencies
 	$(CXX) -o libhodlr.so $(OBJS) -shared
 
 clean:
-	rm -f libhodlr.so src/HODLR_Matrix.o src/HODLR_Node.o src/hodlr.o src/HODLR_Tree.o $(DEPEND_FILE)
+	rm -f libhodlr.so src/*.o $(DEPEND_FILE)
