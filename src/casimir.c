@@ -415,9 +415,7 @@ void master(int argc, char *argv[], const int cores)
         switch (c)
         {
             case 0:
-                /* If this option sets a flag, do nothing else now. */
-                if (long_options[option_index].flag != 0)
-                    break;
+                break;
             case 'L':
                 L = atof(optarg);
                 break;

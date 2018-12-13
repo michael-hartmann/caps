@@ -101,9 +101,7 @@ int main(int argc, char *argv[])
         switch(c)
         {
             case 0:
-                /* If this option set a flag, do nothing else now. */
-                if(long_options[option_index].flag != 0)
-                    break;
+                break;
             case 'L':
                 L = atof(optarg);
                 break;
