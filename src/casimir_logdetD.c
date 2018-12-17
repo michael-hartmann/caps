@@ -22,7 +22,7 @@ static void usage(FILE *stream)
 "Mandatory options:\n"
 "    -L     separation L\n"
 "    -R     radius R\n"
-"    --nT   imaginary frequency ξ in units of c/(L+R)\n"
+"    --nT   imaginary frequency ξ in units of (L+R)/c\n"
 "    -m     value of m\n"
 "\n"
 "Further options:\n"
