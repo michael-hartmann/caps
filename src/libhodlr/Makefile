@@ -5,6 +5,11 @@ OBJS = src/hodlr.o src/HODLR_Matrix.o src/HODLR_Node.o src/HODLR_Tree.o
 
 CXXFLAGS = -std=c++11 -Wall -g -fPIC -I include/ -I src/
 
+# Define the NDEBUG macro when compiling: this disables some run-time checks
+# which slightly speeds up your program. As the speedup is negligible, it is
+# recommended to keep run-time checks enabled.
+# CXXFLAGS += -DNDEBUG
+
 # ignore omp pragmas
 CXXFLAGS += -Wno-unknown-pragmas
 
