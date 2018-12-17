@@ -1,39 +1,17 @@
-The Casimir effect
-==================
-
-In 1948 Hendrik Casimir considered two parallel, perfectly conducting plates in
-vacuum at temperature T=0 and predicted an attracting force. This force arises
-due to vacuum fluctuations and was experimentally verified in 1956 by
-Derjaguin, Abrikosova and Lifshitz, as well as in 1958 by Sparnaay.
-
-Since the Casimir effect is a manifestation of vacuum fluctuations in the
-mesoscopic world, it has relations to many open physical questions. As the
-Casimir force is the dominant force between electically neutral bodies at
-micron or sub-micron distances, the Casimir effect plays an important role in
-the search for new hypothetical forces predicted by unified theories. The
-Casimir effect is also linked to the theory of gravitation and the puzzle of the
-cosmological constant. All energy gravitates and thus zero point fluctuations
-are expected to contribute to the stress–energy tensor in Einstein's field
-equations. In fact, several cosmological observations like the discovery that
-the universe expands with an increasing rate suggest a non-zero energy density of
-vacuum. However, estimations of the cosmological constant and measurements
-disagree by about 120 orders of magnitude.
-
-
 libcasimir
 ==========
 
 What is libcasimir?
 -------------------
-libcasimir implements the numerics for the Casimir effect in the plane-sphere
-geometry for arbitrary materials at zero and finite temperature using the
-scattering approach. A sphere of radius R is separated by a distance of L from
-a plane. The plane is infinite in the xy-direction.
+
+libcasimir is an implementation of the Casimir effect in the plane-sphere
+geometry. The geometry consists of a sphere of radius R separated by a
+distance L from an infinite plate.
 
 Features
 --------
- - Calculate the free energy F(T,L,R) for different separations and temperatures
- - Calculate the free energy F(T→∞,L,R) in the high temperature limit
+ - Calculate the free energy for different separations and temperatures
+ - Calculate the free energy in the high temperature limit
  - Full support for perfect conductors, Drude metals, and generic metals
    described by a user-defined dielectric function
  - libcasimir is fast and reliable
@@ -45,7 +23,7 @@ Installation
 If you use Linux or Unix, you need the gcc and development libraries and header
 files for the standard C library, and MPI. On a Debian-like Linux the command
 ```
-$ sudo apt-get install gcc g++ libc6-dev libc++-dev make libopenmpi-dev openmpi-bin liblapack-dev
+$ sudo apt-get install gcc g++ libc6-dev libc++-dev make libopenmpi-dev openmpi-bin liblapack-dev libgfortran-7-dev gfortran-7
 ```
 will install all dependencies. You can compile the sources with:
 ```
@@ -64,7 +42,7 @@ If the shared libraries are not in the search path, you can still run the
 programs by specifying the directories that contain the shared libraries in
 `LD_LIBRARY_PATH`:
 ```
-$ LD_LIBRARY_PATH=/path/to/the/libraries ./casimir_logdetD -R 1 -L 0.01 -m 1 --nT 1
+$ LD_LIBRARY_PATH=$LD_LIBRARY_PATH:./libhodlr ./casimir -R 1 -L 0.01 -m 1 --nT 1
 # ./casimir_logdetD, -R, 1, -L, 0.01, -m, 1, --nT, 1
 # L/R    = 0.01
 # ldim   = 500
@@ -75,10 +53,10 @@ $ LD_LIBRARY_PATH=/path/to/the/libraries ./casimir_logdetD -R 1 -L 0.01 -m 1 --n
 0.01, 1, 1, 1, -6.46397198784309, 500, 0.524163
 ```
 
-Besides gcc, the sources may also be compiled with icc or clang (llvm). You can
+Besides gcc, the sources may also be compiled with icc or clang. You can
 compile the sources for example with clang with:
 ```
-$ CC=clang make
+$ CC=clang CXX=clang++ make
 ```
 
 Usage
@@ -89,39 +67,44 @@ command:
 ```
 $ mpirun -c 7 ./casimir -L 2e-6 -R 150e-6 -T 300
 # compiler: gcc
-# compile time: Sep  4 2018 15:16:58
-# compiled on: Linux jonas.physik.uni-augsburg.de 4.9.0-8-amd64 #1 SMP Debian 4.9.110-3+deb9u4 (2018-08-21) x86_64 GNU/Linux
-# git HEAD: 80e7dbec8127bce388f092a13690e94209c8ca84
+# compile time: Dec 17 2018 13:39:58
+# compiled on: Linux jonas.physik.uni-augsburg.de 4.9.0-8-amd64 #1 SMP Debian 4.9.130-2 (2018-10-27) x86_64 GNU/Linux
+# git HEAD: f62659b0a419a153c517c54ad1657f7d5df4e2fe
 # git branch: master
-# pid: 24186
-# start time: Tue Sep  4 15:26:34 2018
+# pid: 7649
+# start time: Mon Dec 17 14:30:58 2018
 #
 # LbyR = 0.0133333333333333
 # RbyL = 75
 # L = 2e-06
 # R = 0.00015
 # T = 300
+# using Matsubara spectrum decomposition (MSD)
 # cutoff = 1e-09
 # epsrel = 1e-06
 # iepsrel = 1e-08
 # ldim = 525
 # cores = 7
-# using Matsubara spectrum decomposition (MSD)
 # model = perfect reflectors
 #
-# xi=0, logdetD=-20.5414434024651, t=0.135882
-# xi=125.121224504047, logdetD=-0.697593024440509, t=12.1523
-# xi=250.242449008094, logdetD=-0.0258391838178472, t=12.6687
-# xi=375.363673512142, logdetD=-0.000959951405403435, t=11.862
-# xi=500.484898016189, logdetD=-3.56248230705423e-05, t=10.2416
-# xi=625.606122520236, logdetD=-1.31970430444605e-06, t=7.93809
+# xi=0, logdetD=-20.5414434056605, t=0.124541
+# xi=125.121224504047, logdetD=-0.697593024441683, t=10.5891
+# xi=250.242449008094, logdetD=-0.0258391838200906, t=10.7015
+# xi=375.363673512142, logdetD=-0.000959951407663542, t=10.0898
+# xi=500.484898016189, logdetD=-3.56248238853923e-05, t=8.87825
+# xi=625.606122520236, logdetD=-1.31970448193816e-06, t=7.02438
 #
-# 484 determinants computed
-# stop time: Tue Sep  4 15:27:29 2018
+# 486 determinants computed
+# stop time: Mon Dec 17 14:31:45 2018
 #
-# L/R, L, R, T, ldim, E*(L+R)/(ħc)
-0.01333333333333333, 2e-06, 0.00015, 300, 525, -437.907419604281
+# L/R, L, R, T, ldim, E*(L+R)/(hbar*c)
+0.01333333333333333, 2e-06, 0.00015, 300, 525, -437.9074196681792
 ```
+
+Documentation
+-------------
+
+Further documentation is available in `manual/`.
 
 Bugs, developing and contributing
 ---------------------------------
@@ -147,9 +130,9 @@ The code is licensed under GPLv2, see LICENSE.
 Also, libcasimir uses some third-party software:
  * [HODLR](https://github.com/sivaramambikasaran/HODLR) A fast direct solver
    and determinant computation for dense linear systems. (MPL2)
- * [libeigen](http://eigen.tuxfamily.org) HODLR depends on libeigen. However,
-   only header files are needed. (MPL2)
- * [cquadpack](https://github.com/ESSS/cquadpack) for integration. cquadpack is
+ * [libeigen](http://eigen.tuxfamily.org) Eigen is a C++ template library for
+   linear algebra (MPL2)
+ * [cquadpack](https://github.com/ESSS/cquadpack) cquadpack is
    a a C port of the QUADPACK software originally written in Fortran for
    solving integrals. (public domain)
  * [cephes](http://www.netlib.org/cephes/) is a software collection with
@@ -162,22 +145,25 @@ Also, libcasimir uses some third-party software:
    for small separations using HODLR is much faster. (Modified BSD)
  * [buf](https://github.com/skeeto/growable-buf) growable memory buffers for
    C99. (public domain)
+ * [argparse](https://github.com/cofyc/argparse) command line arguments parsing
+   library in C (MIT)
 
 
 Publications
 ------------
- * [Advancing numerics for the Casimir effect to experimentally relevant aspect ratios](https://arxiv.org/abs/1803.05791) (on arxiv)
+
+ * [Advancing numerics for the Casimir effect to experimentally relevant aspect ratios](https://doi.org/10.1088/1402-4896/aae34e) (on [arxiv](https://arxiv.org/abs/1803.05791))
    Michael Hartmann, Gert-Ludwig Ingold, Paulo A. Maia Neto,
-   accepted by Physica Scripta
+   Phys. Scr. 93, 114003 (2018), DOI: 10.1088/1402-4896/aae34e
 
  * [Plasma vs Drude modelling of the Casimir force: beyond the proximity force approximation](https://doi.org/10.1103/PhysRevLett.119.043901) (on [arxiv](https://arxiv.org/abs/1705.04196))
    Michael Hartmann, Gert-Ludwig Ingold, and Paulo A. Maia Neto,
-   Phys. Rev. Lett. **119**, 043901 (2017)
+   Phys. Rev. Lett. **119**, 043901 (2017), DOI: 10.1103/PhysRevLett.119.04390
 
- * [Disentangling geometric and dissipative origins of negative Casimir entropies](https://dx.doi.org/10.1103/PhysRevE.92.042125) (on [arxiv](http://arxiv.org/abs/1507.05891))
+ * [Disentangling geometric and dissipative origins of negative Casimir entropies](https://doi.org/10.1103/PhysRevE.92.042125) (on [arxiv](http://arxiv.org/abs/1507.05891))
    Stefan Umrath, Michael Hartmann, Gert-Ludwig Ingold, and Paulo A. Maia Neto,
-   Phys. Rev. E **92**, 042125 (2015)
+   Phys. Rev. E **92**, 042125 (2015), DOI: 10.1103/PhysRevE.92.042125
 
- * [Geometric origin of negative Casimir entropies: A scattering-channel analysis](https://dx.doi.org/10.1103/PhysRevE.91.033203) (on [arxiv](http://arxiv.org/abs/1411.1866))
+ * [Geometric origin of negative Casimir entropies: A scattering-channel analysis](https://doi.org/10.1103/PhysRevE.91.033203) (on [arxiv](http://arxiv.org/abs/1411.1866))
    Gert-Ludwig Ingold, Stefan Umrath, Michael Hartmann, Romain Guérout, Astrid Lambrecht, Serge Reynaud, and Kimball A. Milton,
-   Phys. Rev. E **91**, 033203 (2015)
+   Phys. Rev. E **91**, 033203 (2015). DOI: 10.1103/PhysRevE.91.033203
