@@ -52,9 +52,6 @@ double matrix_logdet_dense(matrix_t *A, double z, detalg_t detalg);
 double matrix_logdet_cholesky(matrix_t *A, char uplo);
 double matrix_logdet_lu(matrix_t *A);
 double matrix_logdet_qr(matrix_t *A);
-double matrix_logdetIdmM_eig(matrix_t *A, double z);
-
-bool matrix_check_diagonal_dominant(matrix_t *A);
 
 #ifdef __cplusplus
 }

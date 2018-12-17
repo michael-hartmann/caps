@@ -1,7 +1,7 @@
 /**
  * @file   matrix.c
  * @author Michael Hartmann <michael.hartmann@physik.uni-augsburg.de>
- * @date   April, 2018
+ * @date   December, 2018
  * @brief  matrix functions
  */
 
@@ -658,88 +658,4 @@ double matrix_logdet_qr(matrix_t *A)
     TERMINATE(info != 0, "dgeqrf returned %d", info);
 
     return matrix_logdet_triangular(A);
-}
-
-/**
- * @brief Calculate log(|det(Id+z*A)|) using eigenvalues
- *
- * Calculate eigenvalues of A and calculate log(|det(Id+z*A)|).
- *
- * @param [in,out] A matrix
- * @param [in] z factor
- * @retval logdet log(|det(A)|)
- */
-double matrix_logdetIdmM_eig(matrix_t *A, double z)
-{
-    int dim = A->dim;
-    char jobvl = 'N'; /* don't compute left eigenvectors */
-    char jobvr = 'N'; /* don't compute right eigenvectors */
-    double wr[dim]; /* real parts of eigenvalues */
-    double wi[dim]; /* imaginary parts of eigenvalues */
-    int lda = (int)A->lda;
-    int lwork = 100*dim;
-    double logdet[dim];
-    double *work = xmalloc(lwork*sizeof(double));
-    int info = 0;
-
-    dgeev_(
-        &jobvl, /* JOBVL */
-        &jobvr, /* JOBVR */
-        &dim,   /* N */
-        A->M,   /* A */
-        &lda,   /* LDA */
-        wr,     /* WR */
-        wi,     /* WI */
-        NULL,   /* VL */
-        &dim,   /* LDVL */
-        NULL,   /* VR */
-        &dim,   /* LDVR */
-        work,   /* WORK */
-        &lwork, /* LWORK */
-        &info   /* INFO */
-    );
-
-    xfree(work);
-
-    TERMINATE(info != 0, "dgeev returned %d", info);
-
-    for(int i = 0; i < dim; i++)
-    {
-        double lambda = wr[i];
-
-        if(lambda < -z)
-            logdet[i] = log1p(+z*lambda);
-        else
-            logdet[i] = log(fabs(1-z*lambda));
-    }
-
-    return kahan_sum(logdet, dim);
-}
-
-
-/**
- * @brief Check if matrix A is diagonal dominant
- *
- * @param [in] A matrix
- * @retval true if matrix is diagonal dominant
- * @retval true if matrix is not diagonal dominant
- */
-bool matrix_check_diagonal_dominant(matrix_t *A)
-{
-    int dim = A->dim;
-
-    for(int i = 0; i < dim; i++)
-    {
-        double sum = 0;
-        for(int j = 0; j < dim; j++)
-        {
-            if(i != j)
-                sum += fabs(matrix_get(A,i,j));
-        }
-
-        if(sum >= fabs(matrix_get(A,i,i)))
-            return false;
-    }
-
-    return true;
 }
