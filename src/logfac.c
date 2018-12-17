@@ -3,7 +3,7 @@
 /**
  * @file   logfac.c
  * @author Michael Hartmann <michael.hartmann@physik.uni-augsburg.de>
- * @date   September, 2018
+ * @date   December, 2018
  * @brief  computation of logarithm and factorial for integer arguments; created by logfac.py
  */
 
@@ -66622,7 +66622,7 @@ double lfac(unsigned int n)
     if(n < __lookup_logi_elems)
         return (n+0.5)*lookup_logi[n] - n + C + (1./12)/n;
     else
-        return (n+0.5)*logi(n) - n + C + (1./12)/n;
+        return (n+0.5)*log(n) - n + C + (1./12)/n;
 }
 
 /** @brief Calculate \f$\log(n!!)\f$
