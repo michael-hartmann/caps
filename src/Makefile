@@ -84,7 +84,7 @@ endif
 # Activate for profiling information using gprof.
 #CFLAGS += -pg
 
-CXXFLAGS = -Wall -Wextra -I include/
+CXXFLAGS = -std=c++14 -Wall -Wextra -I include/
 
 # ldflags
 LDFLAGS += -lm -L . -L libhodlr/ -lhodlr
@@ -139,8 +139,8 @@ casimir_tests: $(TESTS) libcasimir.so
 casimir: libcasimir.so
 	$(MPICC) $(CFLAGS) $(OPT) casimir.c -lcasimir $(LDFLAGS) -o casimir
 
-cylinder: libcasimir.so argparse.o
-	$(CXX) $(CXXFLAGS) $(OPT) $(LDFLAGS) argparse.o -lcasimir cylinder.cpp -o cylinder
+cylinder: libcasimir.so cylinder.o argparse.o
+	$(CXX) $(OPT) argparse.o cylinder.o -o cylinder -lcasimir $(LDFLAGS)
 
 
 clean:
