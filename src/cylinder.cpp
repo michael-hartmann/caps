@@ -211,7 +211,7 @@ int main(int argc, const char *argv[]) {
         OPT_DOUBLE('e', "epsrel", &epsrel, "relative error for integration", NULL, 0, 0),
         OPT_DOUBLE('n', "eta", &eta, "set eta", NULL, 0, 0),
         OPT_BOOLEAN('v', "verbose", &verbose, "be verbose", NULL, 0, 0),
-        OPT_STRING('D', "detalg", &detalg, "algorithm to compute determinants (HODLR, LU, QR or CHOLESKY", NULL, 0, 0),
+        OPT_STRING('D', "detalg", &detalg, "algorithm to compute determinants (HODLR, LU, QR or CHOLESKY)", NULL, 0, 0),
         OPT_END(),
     };
 
