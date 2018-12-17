@@ -152,7 +152,7 @@ Also, libcasimir uses some third-party software:
 Publications
 ------------
  * [Casimir effect in the plane-sphere geometry: Beyond the proximity force approximation](https://opus.bibliothek.uni-augsburg.de/opus4/44798)  
-   Michael Hartmann, PhD thesis (Universität Augsburg, 2011)
+   Michael Hartmann, PhD thesis (Universität Augsburg, 2018)
 
  * [Advancing numerics for the Casimir effect to experimentally relevant aspect ratios](https://doi.org/10.1088/1402-4896/aae34e) (on [arxiv](https://arxiv.org/abs/1803.05791))  
    Michael Hartmann, Gert-Ludwig Ingold, Paulo A. Maia Neto,  
