@@ -3,7 +3,7 @@ all: libhodlr
 
 OBJS = src/hodlr.o src/HODLR_Matrix.o src/HODLR_Node.o src/HODLR_Tree.o
 
-CXXFLAGS = -Wall -g -fPIC -I include/ -I src/
+CXXFLAGS = -std=c++11 -Wall -g -fPIC -I include/ -I src/
 
 # ignore omp pragmas
 CXXFLAGS += -Wno-unknown-pragmas
