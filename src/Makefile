@@ -84,7 +84,7 @@ endif
 # Activate for profiling information using gprof.
 #CFLAGS += -pg
 
-CXXFLAGS = -std=c++14 -Wall -Wextra -I include/
+CXXFLAGS = -std=c++11 -Wall -Wextra -I include/
 
 # ldflags
 LDFLAGS += -lm -L . -L libhodlr/ -lhodlr
