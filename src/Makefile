@@ -29,7 +29,6 @@ OBJS = \
     cquadpack/src/dqk15i.o \
     cquadpack/src/dqk21.o \
     cquadpack/src/dqsort.o \
-    argparse.o \
     bessel.o \
     fcqs.o \
     plm.o \
@@ -140,12 +139,12 @@ casimir_tests: $(TESTS) libcasimir.so
 casimir: libcasimir.so
 	$(MPICC) $(CFLAGS) $(OPT) casimir.c -lcasimir $(LDFLAGS) -o casimir
 
-cylinder: libcasimir.so
-	$(CXX) $(CXXFLAGS) $(OPT) $(LDFLAGS) -lcasimir cylinder.cpp -o cylinder_bla
+cylinder: libcasimir.so argparse.o
+	$(CXX) $(CXXFLAGS) $(OPT) $(LDFLAGS) argparse.o -lcasimir cylinder.cpp -o cylinder
 
 
 clean:
-	rm -f casimir_cylinder casimir_tests casimir_logdetD casimir *.o *.so cquadpack/src/*.o tests/*.o $(DEPEND_FILE)
+	rm -f cylinder casimir_tests casimir_logdetD casimir *.o *.so cquadpack/src/*.o tests/*.o $(DEPEND_FILE)
 	rm -rf doc
 	cd libhodlr; make clean
 
