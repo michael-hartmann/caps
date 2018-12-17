@@ -73,12 +73,16 @@ endif
 # enable warnings
 CFLAGS += -g -Wall -Wextra -Wmissing-prototypes -Wshadow -Wpointer-arith -Wcast-qual -Wwrite-strings -Wno-unused-parameter -fstrict-aliasing
 
-# this is necessary to get correct results when using icc
+# By default, icc violates strict IEEE floating point behaviour - similar to
+# GCC's --fast-math option. The code, however, relies on strict IEEE floating
+# point behaviour. The option "-fp-model precise" sets the correct floating
+# point behaviour.
+# Also, when using the math kernel library (MKL), use the non-threaded library.
 ifeq ($(CC),icc)
     CFLAGS += -fp-model precise -mkl=sequential
 endif
 
-# profiling
+# Activate for profiling information using gprof.
 #CFLAGS += -pg
 
 CXXFLAGS = -Wall -Wextra -I include/
@@ -87,17 +91,24 @@ CXXFLAGS = -Wall -Wextra -I include/
 LDFLAGS += -lm -L . -L libhodlr/ -lhodlr
 LDFLAGS += -lgfortran -lblas -llapack
 
-# clang supports various runtime checks. This will slow down the program, but
-# it's a good and easy way to find bugs.
+# clang supports various runtime checks. This will significantly slow down the
+# program, but the options are useful for debugging
 # https://clang.llvm.org/docs/UndefinedBehaviorSanitizer.html
 # CFLAGS   += -fsanitize=undefined -fno-omit-frame-pointer
 # LDFLAGS  += -lubsan
 
 # optimize
 OPT = -O3
-OPT += -march=native
 
-# link time optimization
+# If you are running your code on the same machine where you compile the code,
+# or the target machine supports the same instruction set, this option may
+# increase performance. When there are problems, the program will crash with a
+# message similar to "illegal instruction code".
+# On my Intel Core i7 machine, this option gives an performance boost of ~5%.
+#OPT += -march=native
+
+# Link time optimization. This might further improve performance. On my
+# machine, it has next to no impact on performance.
 #OPT += -flto
 
 # This file contains header dependencies. dependencies and dependencies_test will update this file.
