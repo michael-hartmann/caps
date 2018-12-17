@@ -42,7 +42,7 @@ If the shared libraries are not in the search path, you can still run the
 programs by specifying the directories that contain the shared libraries in
 `LD_LIBRARY_PATH`:
 ```
-$ LD_LIBRARY_PATH=$LD_LIBRARY_PATH:./libhodlr ./casimir -R 1 -L 0.01 -m 1 --nT 1
+$ LD_LIBRARY_PATH=$LD_LIBRARY_PATH:./libhodlr ./casimir_logdetD -R 1 -L 0.01 -m 1 --nT 1
 # ./casimir_logdetD, -R, 1, -L, 0.01, -m, 1, --nT, 1
 # L/R    = 0.01
 # ldim   = 500
@@ -50,7 +50,7 @@ $ LD_LIBRARY_PATH=$LD_LIBRARY_PATH:./libhodlr ./casimir -R 1 -L 0.01 -m 1 --nT 1
 # detalg = HODLR
 #
 # L, R, ξ*(L+R)/c, m, logdet(Id-M), ldim, time
-0.01, 1, 1, 1, -6.46397198784309, 500, 0.524163
+0.01, 1, 1, 1, -6.463971987842978, 500, 0.465298
 ```
 
 Besides gcc, the sources may also be compiled with icc or clang. You can
