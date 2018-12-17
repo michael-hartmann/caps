@@ -734,7 +734,7 @@ void master(int argc, char *argv[], const int cores)
             casimir_free(casimir);
 
             printf("#\n");
-            printf("# xi=0, logdetD=%.15g, t=%g\n", v[0], now()-t0);
+            printf("# xi*(L+R)/c=0, logdetD=%.15g, t=%g\n", v[0], now()-t0);
         }
 
 
@@ -754,7 +754,7 @@ void master(int argc, char *argv[], const int cores)
                 const double xi = psd_xi[n]*T_scaled/(2*M_PI);
                 const double t0 = now();
                 buf_push(v, psd_eta[n]*F_xi(xi, casimir_mpi));
-                printf("# xi=%.15g, logdetD=%.15g, t=%g\n", xi, v[n+1], now()-t0);
+                printf("# xi*(L+R)/c=%.15g, logdetD=%.15g, t=%g\n", xi, v[n+1], now()-t0);
             }
 
             xfree(psd_xi);
@@ -768,7 +768,7 @@ void master(int argc, char *argv[], const int cores)
                 const double t0 = now();
                 const double xi = n*T_scaled;
                 buf_push(v, F_xi(xi, casimir_mpi));
-                printf("# xi=%.15g, logdetD=%.15g, t=%g\n", xi, v[n], now()-t0);
+                printf("# xi*(L+R)/c=%.15g, logdetD=%.15g, t=%g\n", xi, v[n], now()-t0);
 
                 if(fabs(v[n]/v[0]) < epsrel)
                     break;
