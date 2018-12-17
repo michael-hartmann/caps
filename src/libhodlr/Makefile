@@ -1,16 +1,15 @@
 .PHONY: clean dependencies dependencies_test
 all: libhodlr
 
-OBJS = \
-    src/hodlr.o \
-    src/HODLR_Matrix.o \
-    src/HODLR_Node.o \
-    src/HODLR_Tree.o
+OBJS = src/hodlr.o src/HODLR_Matrix.o src/HODLR_Node.o src/HODLR_Tree.o
 
-CXXFLAGS = -Wall -Wno-unknown-pragmas -g -fPIC -I include/ -I src/
+CXXFLAGS = -Wall -g -fPIC -I include/ -I src/
+
+# ignore omp pragmas
+CXXFLAGS += -Wno-unknown-pragmas
 
 # The HODLR library works with -ffast-math but the performance gain is
-# negligible
+# negligible.
 #CXXFLAGS += -ffast-math
 
 # optimize
