@@ -28,10 +28,18 @@ if __name__ == "__main__":
 #ifndef LOGFAC_H
 #define LOGFAC_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 double lfac(unsigned int n) __attribute__ ((pure));
 double logi(unsigned int x) __attribute__ ((pure));
 
 double lfac2(unsigned int n) __attribute__ ((pure));
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif"""
 
@@ -50,7 +58,7 @@ double lfac2(unsigned int n) __attribute__ ((pure));
 
 #include "logfac.h"\n\n""" % (month, year)
 
-    with open("../logfac.h", "w") as f:
+    with open("../include/logfac.h", "w") as f:
         print(header, file=f)
 
     with open("../logfac.c", "w") as f:
@@ -116,7 +124,7 @@ double lfac(unsigned int n)
     if(n < __lookup_logi_elems)
         return (n+0.5)*lookup_logi[n] - n + C + (1./12)/n;
     else
-        return (n+0.5)*logi(n) - n + C + (1./12)/n;
+        return (n+0.5)*log(n) - n + C + (1./12)/n;
 }
 """ % (max_logi, max_lfac), file=f)
 
