@@ -16,28 +16,27 @@
 #include "utils.h"
 
 /**
- * @brief Associated Legendre polynomials for argument x > 1
+ * @brief Associated Legendre polynomials for argument \f$x>1\f$
  *
- * This function calculates associated Legendre functions for m >= 0 and x > 0.
+ * This function calculates associated Legendre functions for \f$m \ge 0\f$ and \f$x>1\f$.
  *
- * The associated Legendre polynomials for x>1 are defined as follows [1,2]
+ * The associated Legendre polynomials for x>1 are defined as follows (see
+ * references)
  * \f[
- *     P_l^m(x) = (x^2-1)^{m/2} \frac{d}{dx^m} P_l(x) .
+ *     P_l^m(x) = (x^2-1)^{m/2} \frac{\mathrm{d}}{\mathrm{d}x^m} P_l(x) .
  * \f]
- * Note that in contrast to the common choice in physics we omit the
- * Condon-Shortly phase \f$(-1)^m\f$, and commute the factors \f$x^2\f$ and
+ * Note that in contrast to the common choice in physics, we omit the
+ * Condon-Shortly phase \f$(-1)^m\f$, and interchange the factors \f$x^2\f$ and
  * \f$1\f$ in the first bracket after the equal sign. With this definition the
  * associated Legendre polynomials are real and positive functions.
  *
- * For (l-m) <= 200 we use an upwards recurrence relation, see \ref
+ * For \f$l-m \le 200\f$ we use an upwards recurrence relation, see \ref
  * lnPlm_upwards, otherwise we use a downwards recurrence relation, see
- * \ref Plm_downwards .
- *
- * See also https://en.wikipedia.org/wiki/Associated_Legendre_polynomials .
+ * \ref lnPlm_downwards .
  *
  * References:
- * [1] DLMF, §14.7.11, http://dlmf.nist.gov/14.7#E11
- * [2] Zhang, Jin, Computation of Special Functions, 1996
+ * - DLMF, §14.7.11, http://dlmf.nist.gov/14.7#E11
+ * - Zhang, Jin, Computation of Special Functions, 1996
  *
  * @param [in] l degree
  * @param [in] m order
@@ -57,9 +56,8 @@ double lnPlm(int l, int m, double x)
 /**
  * @brief Associated Legendre polynomials using upwards recurrence relation
  *
- * The values of Plm are calculated from \f$P_m^m(x)\f$ to \f$P_l^m(x)\f$.
- * The associated Legendre polynomials are calculated using the recurrence
- * relation http://dlmf.nist.gov/14.10.E3 with
+ * The values of \f$P_l^m(x)\f$ is computed using the recurrence relation
+ * http://dlmf.nist.gov/14.10.E3 in upwards direction starting from
  * \f[
  *      P_m^m(x) = \frac{(2m)!}{2^m m!} (x^2-1)^{m/2}
  * \f]
@@ -253,9 +251,9 @@ static double _Pl3(int l, double x)
 /**
  * @brief Compute Legendre polynomial \f$P_l(x)\f$
  *
- * Evaluation of \f$P_l(x)\f$ for x>=1.
+ * Evaluation of \f$P_l(x)\f$ for \f$x\ge1\f$.
  *
- * For l < 100 a recurrence relation is used (see _Pl3), otherwise asymptotic
+ * For \f$l < 100\f$ a recurrence relation is used (see _Pl3), otherwise asymptotic
  * expansions are used (see _Pl1 and _Pl2).
  *
  * The function returns \f$\log P_l(x)\f$.
@@ -284,9 +282,9 @@ double lnPl(int l, double x)
  * The fraction is computed using a continued fraction, see http://dlmf.nist.gov/14.14.E1 .
  *
  * To evaluate the continued fraction, we use http://dlmf.nist.gov/1.12#E5 and
- * http://dlmf.nist.gov/1.12#E6 .
+ * http://dlmf.nist.gov/1.12#E6.
  *
- * See also Numerical Recipes in C, ch. 5.2, Evaluation of Continued Fractions
+ * See also Numerical Recipes in C, chapter 5.2, Evaluation of Continued Fractions.
  *
  * @param [in] l degree
  * @param [in] m order
@@ -390,15 +388,16 @@ double lnPlm_downwards(int l, int m, double x)
 
 /** @brief Compute 1st and 2nd logarithmic derivative of associated Legendre polynomial
  *
- * Compute d/dx ln(Plm(x)) and d²/dx² ln(Plm(x)).
+ * Compute \f$\frac{\mathrm{d}}{\mathrm{d}x} \log P_l^m(x)\f$ and
+ * \f$\frac{\mathrm{d}^2}{\mathrm{d}x^2} \log P_l^m(x))\f$.
  *
  * If d2lnPlm is NULL, the 2nd logarithmic derivative will not be computed.
  *
  * @param [in] l degree
  * @param [in] m order
  * @param [in] x position
- * @param [out] d2lnPlm 2nd logarithmic derivative of Plm(x)
- * @retval dlnPlm first logarithmic derivative of Plm(x)
+ * @param [out] d2lnPlm 2nd logarithmic derivative of \f$P_l^m(x)\f$
+ * @retval dlnPlm first logarithmic derivative of \f$P_l^m(x)\f$
  */
 double dlnPlm(int l, int m, double x, double *d2lnPlm)
 {

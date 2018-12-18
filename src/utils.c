@@ -99,6 +99,8 @@ void time_as_string(char *s, size_t len)
 }
 
 /** @Disable buffering
+ *
+ * Disable buffering to stderr and stdout.
  */
 void disable_buffering(void)
 {

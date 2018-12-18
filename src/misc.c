@@ -65,7 +65,7 @@ double sqrtpm1(double x)
  *
  * @param [in] log_a number
  * @param [in] log_b number
- * @return log_sum \f$\log{\left[\exp{(\mathrm{log\_a})}+\exp{(log\_b)}\right]}\f$
+ * @return log_sum \f$\log{\left[\exp({\mathrm{log\_a}})+\exp{(\mathrm{log\_b})}\right]}\f$
  */
 double logadd(const double log_a, const double log_b)
 {

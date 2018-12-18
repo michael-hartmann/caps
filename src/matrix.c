@@ -462,19 +462,19 @@ double matrix_logdet_triangular(matrix_t *A)
 }
 
 /**
- * @brief Calculate \f$\log\det(\mathrm{Id}+z*M)\f$ for matrix M
+ * @brief Calculate \f$\log\det(\mathrm{Id}+zA)\f$ for matrix A
  *
- * Compute \f$\log\det(\mathrm{Id}+z*M)\f$ using LAPACK. The algorithm is
+ * Compute \f$\log\det(\mathrm{Id}+zA)\f$ using LAPACK. The algorithm is
  * chosen by detalg and may be DETALG_QR, DETALG_LU or DETALG_CHOLESKY.
  *
  * If the Frobenius norm of zA is smaller than 1, this function tries to
  * approximate logdet(A) using a mercator series if possible to reduce the
  * complexity for an NxN matrix A from O(N³) to O(N²).
  *
- * @param [in,out] M round trip matrix M; M will be overwritten.
- * @param [in]     z factor z in log(det(Id+z*M))
+ * @param [in,out] A round trip matrix A; A will be overwritten.
+ * @param [in]     z factor z
  * @param [in]     detalg algorithm to use (cholesky, lu or qr)
- * @retval logdet  \f$\log\det(\mathrm{Id}+z*M)\f$
+ * @retval logdet  \f$\log\det(\mathrm{Id}+zA)\f$
  */
 double matrix_logdet_dense(matrix_t *A, double z, detalg_t detalg)
 {
@@ -484,9 +484,9 @@ double matrix_logdet_dense(matrix_t *A, double z, detalg_t detalg)
     if(norm < 1)
     {
         /* log(det(Id+zA)) ≈ z*tr(A) - z²/2 tr(A²) + ... */
-        const double trM  = z*matrix_trace(A);
-        const double trM2 = pow_2(z)*matrix_trace2(A);
-        const double mercator = trM-trM2/2;
+        const double trA  = z*matrix_trace(A);
+        const double trA2 = pow_2(z)*matrix_trace2(A);
+        const double mercator = trA-trA2/2;
         const double error = fabs(pow_2(norm)/2+norm+log1p(-norm));
         const double rel_error = fabs(error/mercator);
 
@@ -494,7 +494,7 @@ double matrix_logdet_dense(matrix_t *A, double z, detalg_t detalg)
             return mercator;
     }
 
-    /* M = Id+z*M */
+    /* A = Id+z*A */
     {
         const size_t dim  = A->dim;
         const size_t dim2 = A->dim2;
