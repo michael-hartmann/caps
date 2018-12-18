@@ -39,14 +39,14 @@ double kahan_sum(double input[], size_t N)
     return sum;
 }
 
-/** @brief Compute \f$\sqrt(1+x)-1\f$
+/** @brief Compute \f$\sqrt{1+x}-1\f$
  *
- * If x is small, \f$\sqrt(1+x)\approx1\f$ and a loss of significance occures
- * when calculating \f$\sqrt(1+x)-1\f$.
+ * If x is small, \f$\sqrt{1+x}\approx1\f$ and a loss of significance occurs
+ * when calculating \f$\sqrt{1+x}-1\f$.
  *
  * For this reason we compute
  * \f[
- *     \sqrt(1+x)-1 = \frac{x}{\sqrt(1+x)+1}
+ *     \sqrt{1+x}-1 = \frac{x}{\sqrt{1+x}+1}
  * \f]
  * to avoid a loss of significance if x is small.
  *
