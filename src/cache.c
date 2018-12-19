@@ -1,3 +1,10 @@
+/**
+ * @file   cache.c
+ * @author Michael Hartmann <michael.hartmann@physik.uni-augsburg.de>
+ * @date   December, 2018
+ * @brief  implementation of a simple cache using a hash table
+ */
+
 #include <stdint.h>
 #include <math.h>
 
