@@ -66585,12 +66585,12 @@ static double lookup_lfac[] = { /* 8 kb */
 const size_t __lookup_logi_elems = sizeof(lookup_logi)/sizeof(lookup_logi[0]);
 const size_t __lookup_lfac_elems = sizeof(lookup_lfac)/sizeof(lookup_lfac[0]);
 
-/** @brief Calculate \f$\log(n)\f$ for integer n
+/** @brief Calculate \f$\log(n)\f$ for integer \f$n\f$
  *
- * This function uses a lookup table to avoid calling log() for n <= 65536
+ * This function uses a lookup table to avoid calling log() for \f$n \le 65536\f$
  *
  * @param [in] n integer
- * @retval log log(n)
+ * @retval logn \f$\log(n)\f$
  */
 double logi(unsigned int n)
 {
@@ -66604,8 +66604,8 @@ double logi(unsigned int n)
 
 /** @brief Calculate \f$\log(n!) = \log(\Gamma(n+1))\f$
  *
- * This function computes the logarithm of the factorial n!. This function uses
- * a lookup table for n <= 1024
+ * This function computes the logarithm of the factorial \f$n!\f$. This function uses
+ * a lookup table for \f$n \le 1024\f$
  *
  * @param [in] n integer
  * @retval lfac \f$\log(n!)\f$
@@ -66627,10 +66627,10 @@ double lfac(unsigned int n)
 
 /** @brief Calculate \f$\log(n!!)\f$
  *
- * This function computes the logarithm of the double factorial n!!.
+ * This function computes the logarithm of the double factorial \f$n!!\f$.
  *
  * @param [in] n argument
- * @retval lfac2 n!!
+ * @retval lfac2 \f$n!!\f$
  */
 double lfac2(unsigned int n)
 {
