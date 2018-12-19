@@ -42,14 +42,13 @@ static bool _parse(const char *line, const char *key, const char separator, doub
  * The material properties are read from the file given by filename.
  *
  * This function temporarily overwrites the value of LC_NUMERIC in the
- * environment and restores. The value is restored before returning from this
- * function.
+ * environment. LC_NUMERIC is restored before returning from the function.
  *
- * Be aware that this function does not check every corner case, so it might be
+ * Be aware that this function does not check every corner case, so it is
  * dangerous to read untrusted files.
  *
- * @param [in] filename
- * @param [in] calL L+R, separation between plane and center of sphere
+ * @param [in] filename path to material specification
+ * @param [in] calL \f$L+R\f$, separation between plane and center of sphere
  * @retval material
  */
 material_t *material_init(const char *filename, double calL)
@@ -153,6 +152,25 @@ out:
     return material;
 }
 
+/** @brief Get extrapolation parameters
+ *
+ * For frequencies where there is no tabulated data available, the value of the
+ * dielectric function will be extrapolated assuming Drude behaviour:
+ * \f[
+ *      \epsilon(\mathrm{i}\xi) = 1+\frac{\omega_\mathrm{P}^2}{\xi(\xi+\gamma)}
+ * \f]
+ *
+ * The parameters for the plasma frequency \f$\omega_\mathrm{P}\f$ and the
+ * relaxation frequency \f$\gamma\f$ for \f$\xi>\xi_\mathrm{max}\f$ and
+ * \f$\xi<\xi_\mathrm{min}\f$ will be stored into omegap_high, gamma_high, and
+ * omegap_low, gamma_low. If a pointer is NULL, the memory is not referenced.
+ *
+ * @param [in]  material material object
+ * @param [out] omegap_low plasma frequency for high-frequency extrapolation (in rad/s)
+ * @param [out] gamma_low relaxation frequency for high-frequency extrapolation (in rad/s)
+ * @param [out] omegap_high plasma frequency for low-frequency extrapolation (in rad/s)
+ * @param [out] gamma_high relaxation frequency for low-frequency extrapolation (in rad/s)
+ */
 void material_get_extrapolation(material_t *material, double *omegap_low, double *gamma_low, double *omegap_high, double *gamma_high)
 {
     if(omegap_low != NULL)
@@ -165,6 +183,10 @@ void material_get_extrapolation(material_t *material, double *omegap_low, double
         *gamma_high = material->gamma_high;
 }
 
+/** @brief Free material object
+ *
+ * @param material material object
+ */
 void material_free(material_t *material)
 {
     if(material != NULL)
@@ -175,6 +197,16 @@ void material_free(material_t *material)
     }
 }
 
+/** @brief Print information about object to stream
+ *
+ * Print information (filename, number of points, \f$\xi_\mathrm{min}\f$,
+ * \f$\xi_\mathrm{max}\f$, ...) to stream. If prefix is not NULL, each line
+ * will start with the string given in prefix.
+ *
+ * @param [in] material material object
+ * @param [in] stream output stream (e.g. stdout)
+ * @param [in] prefix prefix for each line or NULL
+ */
 void material_info(material_t *material, FILE *stream, const char *prefix)
 {
     if(prefix == NULL)
@@ -191,6 +223,16 @@ void material_info(material_t *material, FILE *stream, const char *prefix)
     fprintf(stream, "%somegap_low  = %geV\n",  prefix, CASIMIR_hbar_eV*material->omegap_low);
 }
 
+/** @brief Dielectric function for material
+ *
+ * Return the dielectric function \f$\epsilon(\mathrm{i}\xi)-1\f$ for material.
+ * For frequencies greater (smaller) than the maximum (minimum) tabulated
+ * frequency, an extrapolation using a Drude model is used. For the tabulated
+ * values linear interpolation is used.
+ *
+ * @param [in] xi_scaled scaled frequency \f$\xi_\mathrm{scaled} = \xi(L+R)/c\f$
+ * @param [in] args material (must be of type material_t *)
+ */
 double material_epsilonm1(double xi_scaled, void *args)
 {
     material_t *self = (material_t *)args;
