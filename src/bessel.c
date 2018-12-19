@@ -558,13 +558,13 @@ double bessel_logKn(int n, double x)
  * For \f$n=0\f$ and \f$n=1\f$ the function calls \ref bessel_logI0 or \ref
  * bessel_logI1.
  *
- * For \f$n>=100\f$ an asymptotic expansion is used, see \ref
+ * For \f$n\ge100\f$ an asymptotic expansion is used, see \ref
  * bessel_logInu_asymp.
  *
  * For \f$n<100\f$ and \f$x<5\sqrt{n}\f$ a series expansion is used, see \ref
  * bessel_logInu_series.
  *
- * Otherwise, the functions \f$I_n(x)\f$ is computed using the recurrence relation
+ * Otherwise, the function \f$I_n(x)\f$ is computed using the recurrence relation
  * \f[
  * I_{n-1}(x) = I_{n+1}(x) + \frac{2n}{x} I_n(x)
  * \f]
@@ -760,103 +760,103 @@ double bessel_logInu_series(double nu, double x)
  * @{
  */
 
-/** @brief Compute modified Bessel functions of first and second kind
+/** @brief Compute modified Bessel functions of first and second kind for half-integer orders
  *
  * This function computes the logarithm of the modified Bessel functions
- * \f$I_{\nu+1/2}(x)\f$ and \f$K_{\nu+1/2}(x)\f$. The results are saved in
- * logInu_p and logKnu_p.
+ * \f$I_{n+1/2}(x)\f$ and \f$K_{n+1/2}(x)\f$. The results are saved in logIn_p
+ * and logKn_p.
  *
- * If logInu_p or logKnu_p is NULL, the variable is not referenced.
+ * If logIn_p or logKn_p is NULL, the variable is not referenced.
  *
- * @param [in] nu order
+ * @param [in] n order
  * @param [in] x argument
- * @param [out] logInu_p pointer for \f$\log I_{\nu+1/2}(x)\f$
- * @param [out] logKnu_p pointer for \f$\log K_{\nu+1/2}(x)\f$
+ * @param [out] logIn_p pointer for \f$\log I_{n+1/2}(x)\f$
+ * @param [out] logKn_p pointer for \f$\log K_{n+1/2}(x)\f$
  */
-void bessel_logInuKnu_half(int nu, const double x, double *logInu_p, double *logKnu_p)
+void bessel_logInKn_half(int n, const double x, double *logIn_p, double *logKn_p)
 {
     const double logx = log(x);
     const double invx = 1/x;
 
-    double logKnu, logKnup;
-    double Knu = 1, Knup = 1+invx;
+    double logKn, logKnp;
+    double Kn = 1, Knp = 1+invx;
     double prefactor = -x+0.5*(log(M_PI/2)-logx);
 
-    /* calculate Knu, Knup */
-    if(nu == 0)
+    /* calculate Kn, Knp */
+    if(n == 0)
     {
-        logKnu  = prefactor+log(Knu);
-        logKnup = prefactor+log(Knup);
+        logKn  = prefactor+log(Kn);
+        logKnp = prefactor+log(Knp);
     }
-    else if(nu >= 100)
+    else if(n >= 100)
     {
         /* use asymptotic expansion */
-        logKnup = bessel_logKnu_asymp(nu+1.5, x);
-        logKnu  = bessel_logKnu_asymp(nu+0.5, x);
+        logKnp = bessel_logKnu_asymp(n+1.5, x);
+        logKn  = bessel_logKnu_asymp(n+0.5, x);
     }
     else
     {
         /* recurrence relation */
-        for(int l = 2; l <= nu+1; l++)
+        for(int l = 2; l <= n+1; l++)
         {
-            double Kn_new = (2*l-1)*Knup*invx + Knu;
-            Knu  = Knup;
-            Knup = Kn_new;
+            double Kn_new = (2*l-1)*Knp*invx + Kn;
+            Kn  = Knp;
+            Knp = Kn_new;
 
-            if(Knu > 1e100)
+            if(Kn > 1e100)
             {
-                Knu  *= 1e-100;
-                Knup *= 1e-100;
+                Kn  *= 1e-100;
+                Knp *= 1e-100;
                 prefactor += log(1e100);
             }
         }
 
-        logKnup = prefactor+log(Knup);
-        logKnu  = prefactor+log(Knu);
+        logKnp = prefactor+log(Knp);
+        logKn  = prefactor+log(Kn);
     }
 
-    if(logKnu_p != NULL)
-        *logKnu_p = logKnu;
+    if(logKn_p != NULL)
+        *logKn_p = logKn;
 
-    if(logInu_p != NULL)
+    if(logIn_p != NULL)
     {
-        if(nu >= 100)
-            *logInu_p = bessel_logInu_asymp(nu+0.5, x);
+        if(n >= 100)
+            *logIn_p = bessel_logInu_asymp(n+0.5, x);
         else
-            *logInu_p = -logx-logKnup-log1p(exp(logKnu-logKnup-log(bessel_ratioI(nu+0.5,x))));
+            *logIn_p = -logx-logKnp-log1p(exp(logKn-logKnp-log(bessel_ratioI(n+0.5,x))));
     }
 }
 
-/** @brief Compute \f$\log I_{\nu+1/2}(x)\f$
+/** @brief Compute \f$\log I_{n+1/2}(x)\f$
  *
  * Compute logarithm of modified Bessel function of the first kind
- * \f$I_{\nu+1/2}(x)\f$.
+ * for half-integer order \f$I_{n+1/2}(x)\f$.
  *
- * @param [in] nu order
+ * @param [in] n order
  * @param [in] x argument
- * @retval logI \f$\log I_{\nu+1/2}(x)\f$
+ * @retval logI \f$\log I_{n+1/2}(x)\f$
  */
-double bessel_logInu_half(int nu, double x)
+double bessel_logIn_half(int n, double x)
 {
-    double logInu;
-    bessel_logInuKnu_half(nu, x, &logInu, NULL);
-    return logInu;
+    double logIn;
+    bessel_logInKn_half(n, x, &logIn, NULL);
+    return logIn;
 }
 
-/** @brief Compute \f$\log K_{\nu+1/2}(x)\f$
+/** @brief Compute \f$\log K_{n+1/2}(x)\f$
  *
  * Compute logarithm of modified Bessel function of the second kind
- * \f$K_{\nu+1/2}(x)\f$.
+ * \f$K_{n+1/2}(x)\f$.
  *
- * @param [in] nu order
+ * @param [in] n order
  * @param [in] x argument
- * @retval logK \f$K_{\nu+1/2}(x)\f$
+ * @retval logK \f$K_{n+1/2}(x)\f$
  */
-double bessel_logKnu_half(int nu, double x)
+double bessel_logKn_half(int n, double x)
 {
-    double logKnu;
-    bessel_logInuKnu_half(nu, x, NULL, &logKnu);
-    return logKnu;
+    double logKn;
+    bessel_logInKn_half(n, x, NULL, &logKn);
+    return logKn;
 }
 
 /*@}*/
