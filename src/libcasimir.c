@@ -47,18 +47,18 @@ double casimir_lnLambda(int l1, int l2, int m)
     return (logi(2*l1+1)+logi(2*l2+1)-logi(l1)-logi(l1+1)-logi(l2)-logi(l2+1)+lfac(l1-m)+lfac(l2-m)-lfac(l1+m)-lfac(l2+m))/2.0;
 }
 
-/** @brief Estimate lmin and lmax
+/** @brief Estimate \f$\ell_\mathrm{min}\f$ and \f$\ell_\mathrm{max}\f$
  *
  * Estimate the vector space: The main contributions comes from the vicinity
- * l1=l2=X and only depend on geometry, L/R, and the quantum number m. This
- * function calculates X using the formula in the high-temperature limit and
- * calculates lmin, lmax.
+ * \f$\ell_1=\ell_2=X\f$ and only depend on geometry, \f$L/R\f$, and the quantum number \f$m\f$. This
+ * function calculates \f$X\f$ using the formula in the high-temperature limit and
+ * calculates \f$\ell_\mathrm{min}\f$, \f$\ell_\mathrm{max}\f$.
  *
  * @param [in] self Casimir object
  * @param [in] m quantum number
- * @param [out] lmin_p minimum value of l
- * @param [out] lmax_p maximum value of l
- * @retval X
+ * @param [out] lmin_p minimum value of \f$\ell\f$
+ * @param [out] lmax_p maximum value of \f$\ell\f$
+ * @retval l approximately the value of \f$\ell\f$ where \f$\mathcal{M}^m_{\ell\ell}\f$ is maximal
  */
 int casimir_estimate_lminmax(casimir_t *self, int m, size_t *lmin_p, size_t *lmax_p)
 {
@@ -126,11 +126,11 @@ double casimir_epsilonm1_perf(__attribute__((unused)) double xi_, __attribute__(
  *
  * Dielectric function for Drude
  * \f[
- *      \epsilon(\xi)-1 = \frac{\omega_P^2}{\xi(\xi+\gamma)}
+ *      \epsilon(\xi)-1 = \frac{\omega_\mathrm{P}^2}{\xi(\xi+\gamma)}
  * \f]
  *
- * The parameters \f$\omega_P\f$ and \f$\gamma\f$ must be provided by userdata:
- *  - userdata[0] = \f$\omega_P\mathcal{L}/\mathrm{c}\f$
+ * The parameters \f$\omega_\mathrm{P}\f$ and \f$\gamma\f$ must be provided by userdata:
+ *  - userdata[0] = \f$\omega_\mathrm{P}\mathcal{L}/\mathrm{c}\f$
  *  - userdata[1] = \f$\gamma\mathcal{L}/\mathrm{c}\f$
  *
  * @param [in] xi_ \f$\xi\mathcal{L}/\mathrm{c}\f$
@@ -155,11 +155,13 @@ double casimir_epsilonm1_drude(double xi_, void *userdata)
 /**
  * @brief Create a new Casimir object
  *
- * This function will initialize a Casimir object.  By default the dielectric
- * function corresponds to perfect reflectors, i.e. epsilon=inf.
+ * This function will initialize a Casimir object. By default the dielectric
+ * function corresponds to perfect reflectors, i.e. \f$\epsilon(\xi)=\infty\f$.
  *
- * By default, the value of ldim is chosen by:
- * ldim = ceil(max(CASIMIR_MINIMUM_LDIM, CASIMIR_FACTOR_LDIM/LbyR))
+ * By default, the value of \f$\ell_\mathrm{dim}\f$ is chosen by:
+ * \f[
+ *  \ell_\mathrm{dim} = \mathrm{ceil}\left(\mathrm{max}\left(\mathrm{CASIMIR\_MINIMUM\_LDIM}, \mathrm{CASIMIR\_FACTOR\_LDIM}\cdot \frac{R}{L}\right)\right)
+ * \f]
  *
  * Restrictions: \f$L/R > 0\f$
  *
@@ -211,7 +213,7 @@ void casimir_free(casimir_t *self)
 /**
  * @build Print information on build to stream
  *
- * The information contain compiler, build time, git head and git branch if
+ * The information contains compiler, build time, git head and git branch if
  * available. If prefix is not NULL, the string prefix will added in front of
  * each line.
  *
@@ -304,15 +306,15 @@ double casimir_get_epsrel(casimir_t *self)
  * Set dielectric function of material.
  *
  * The Fresnel coefficient and the Mie coefficient depend on the dielectric
- * function epsilon(i*xi). By default, perfect reflectors with a dielectric
- * function epsilon(i*xi)=inf are used.
+ * function \f$\epsilon(\mathrm{i}\xi)\f$. By default, perfect reflectors with
+ * a dielectric function \f$\epsilon(\mathrm{i}\xi)=\infty\f$ are used.
  *
- * However, you can also specify an arbitrary function for epsilon(i*xi).
- * userdata is an arbitrary pointer that will be given to the callback
- * function.
+ * However, you can also specify an arbitrary function for
+ * \f$\epsilon(\mathrm{i}\xi)\f$. userdata is an arbitrary pointer that will
+ * be given to the callback function.
  *
  * @param [in,out] self Casimir object
- * @param [in] epsilonm1  callback to the function that calculates epsilon(i*xi)-1
+ * @param [in] epsilonm1  callback to the function that calculates \f$\epsilon(\mathrm{i}\xi)-1\f$
  * @param [in] userdata   arbitrary pointer to data that is passwd to epsilonm1 whenever the function is called
  */
 void casimir_set_epsilonm1(casimir_t *self, double (*epsilonm1)(double xi_, void *userdata), void *userdata)
@@ -354,7 +356,7 @@ int casimir_set_detalg(casimir_t *self, detalg_t detalg)
  *
  * @param [in]  self Casimir object
  * @param [out] detalg algorithm to compute determinant
- * @retval 1
+ * @retval detalg
  */
 detalg_t casimir_get_detalg(casimir_t *self)
 {
@@ -467,13 +469,13 @@ void casimir_lnab_perf(casimir_t *self, double xi_, int l, double *lna, double *
  *
  * lna and lnb must be valid pointers.
  *
- * For generic metals we calculate the Mie coefficients \f$a_\ell\f$ und
+ * For generic metals, we calculate the Mie coefficients \f$a_\ell\f$ und
  * \f$b_\ell\f$ using the expressions taken from [1]. Ref. [1] is the erratum
  * to [2]. Please note that the equations (3.30) and (3.31) in [3] are wrong.
  * The formulas are corrected in [4].
  *
- * Note: If sla =~ slb or slc =~ sld, there is a loss of significance when
- * calculating sla-slb or slc-sld.
+ * Note: If sla \f$\approx\f$ slb or slc \f$\approx\f$ sld, there is a loss of
+ * significance when calculating sla-slb or slc-sld.
  *
  * The signs are given by \f$\mathrm{sgn}(a_\ell) = (-1)^\ell\f$, \f$\mathrm{sgn}(b_\ell) = (-1)^{\ell+1}\f$.
  *
@@ -769,8 +771,10 @@ void casimir_M_free(casimir_M_t *self)
 
 /** @brief Kernel for EE block
  *
- * Function that returns matrix elements of round-trip matrix M for \f$\xi=0\f$
- * and polarization p1=p2=E.
+ * Function that returns matrix elements of the round-trip matrix
+ * \f$\mathcal{M}\f$ for \f$\xi=0\f$ and polarization \f$p_1=p_2=\mathrm{E}\f$.
+ *
+ * See also \ref casimir_logdetD0.
  *
  * @param [in] i row (starting from 0)
  * @param [in] j column (starting from 0)
@@ -788,8 +792,10 @@ double casimir_kernel_M0_EE(int i, int j, void *args_)
 
 /** @brief Kernel for MM block (plasma model)
  *
- * Function that returns matrix elements of round-trip matrix M for \f$\xi=0\f$
- * and polarization p1=p2=M (plasma model).
+ * Function that returns matrix elements of round-trip matrix \f$\mathcal{M}\f$
+ * for \f$\xi=0\f$ and polarization \f$p_1=p_2=\mathrm{M}\f$ (plasma model).
+ *
+ * See also \ref casimir_logdetD0.
  *
  * @param [in] i row (starting from 0)
  * @param [in] j column (starting from 0)
@@ -823,8 +829,10 @@ double casimir_kernel_M0_MM_plasma(int i, int j, void *args_)
 
 /** @brief Kernel for MM block
  *
- * Function that returns matrix elements of round-trip matrix M for \f$\xi=0\f$
- * and polarization p1=p2=M.
+ * Function that returns matrix elements of round-trip matrix \f$\mathcal{M}\f$
+ * for \f$\xi=0\f$ and polarization \f$p_1=p_2=\mathrm{M}\f$.
+ *
+ * See also \ref casimir_logdetD0.
  *
  * @param [in] i row (starting from 0)
  * @param [in] j column (starting from 0)
@@ -847,11 +855,11 @@ double casimir_kernel_M0_MM(int i, int j, void *args_)
  */
 /*@{*/
 
-/** @brief Compute \f$\log\det\mathcal{D}^m\left(\frac{\xi\mathcal{L}}{\mathrm{c}}\right)\f$
+/** @brief Compute \f$\log\det\mathcal{D}^{(m)}\left(\frac{\xi\mathcal{L}}{\mathrm{c}}\right)\f$
  *
  * This function computes the logarithm of the determinant of the scattering
- * matrix for Matsubara frequency \f$\xi\mathcal{L}/\mathrm{c}\f$ and quantum
- * number \f$m\f$.
+ * matrix for the frequency \f$\xi\mathcal{L}/\mathrm{c}\f$ and quantum number
+ * \f$m\f$.
  *
  * For \f$\xi=0\f$ see \ref casimir_logdetD0.
  *
@@ -1006,13 +1014,13 @@ double casimir_logdetD0_plasma(casimir_t *casimir, double omegap_, double eps)
  * For Drude metals there exists an analytical formula to compute logdetD, see
  * \ref casimir_logdetD0_drude.
  *
- * For perfect reflectors see \ref casimir_logdetD0_perf.
+ * For perfect reflectors see also \ref casimir_logdetD0_perf.
  *
- * For the Plasma model see \ref casimir_logdetD0_plasma.
+ * For the Plasma model see also \ref casimir_logdetD0_plasma.
  *
  * @param [in]  self Casimir object
  * @param [in]  m quantum number \f$m\f$
- * @param [in]  omegap_ scaled plasma frequency, omegap*(L+R)/c (only used to compute MM_plasma)
+ * @param [in]  omegap_ scaled plasma frequency, \f$\omega_\mathrm{P} (L+R)/c\f$ (only used to compute MM_plasma)
  * @param [out] EE pointer to store contribution for EE block
  * @param [out] MM pointer to store contribution for MM block
  * @param [out] MM_plasma pointer to store contribution for MM block (Plasma model)
