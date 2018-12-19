@@ -35,9 +35,9 @@ double bessel_logInu_series(double nu, double x) __attribute__ ((pure));
 double bessel_logInu_asymp(double nu, double x) __attribute__ ((pure));
 double bessel_logKnu_asymp(double nu, double x) __attribute__ ((pure));
 
-void bessel_logInuKnu_half(int nu, const double x, double *logInu_p, double *logKnu_p);
-double bessel_logInu_half(int nu, double x) __attribute__ ((pure));
-double bessel_logKnu_half(int nu, double x) __attribute__ ((pure));
+void bessel_logInKn_half(int n, const double x, double *logIn_p, double *logKn_p);
+double bessel_logIn_half(int n, double x) __attribute__ ((pure));
+double bessel_logKn_half(int n, double x) __attribute__ ((pure));
 
 #ifdef __cplusplus
 }
