@@ -15,7 +15,8 @@
 
 /** @brief Wrapper for malloc
  *
- * This function is a wrapper for malloc. If malloc fails TERMINATE is called.
+ * This function is a wrapper for malloc. If malloc fails \ref TERMINATE is
+ * called.
  *
  * @param size size of bytes to allocate
  * @retval ptr pointer to memory
@@ -32,7 +33,8 @@ void *xmalloc(size_t size)
 
 /** @brief Wrapper for calloc
  *
- * This function is a wrapper for calloc. If calloc fails TERMINATE is called.
+ * This function is a wrapper for calloc. If calloc fails \ref TERMINATE is
+ * called.
  *
  * @param mnemb
  * @param size
@@ -50,7 +52,7 @@ void *xcalloc(size_t nmemb, size_t size)
 
 /** @brief Wrapper for realloc
  *
- * This function is a wrapper for realloc. If realloc fails TERMINATE is
+ * This function is a wrapper for realloc. If realloc fails \ref TERMINATE is
  * called.
  *
  * @param oldptr ptr to old memory
@@ -66,11 +68,11 @@ void *xrealloc(void *p, size_t size)
     return p2;
 }
 
-/** @brief Get time
+/** @brief Seconds since 01/01/1970
  *
  * This function returns the seconds since 1st Jan 1970 in µs precision.
  *
- * @retval time seconds sind 1st Jan 1970
+ * @retval time seconds since 1st Jan 1970
  */
 double now(void)
 {
@@ -87,7 +89,7 @@ double now(void)
  *
  * @param str array
  * @param len length of array
-  */
+ */
 void time_as_string(char *s, size_t len)
 {
     time_t rawtime;
@@ -98,9 +100,8 @@ void time_as_string(char *s, size_t len)
     strftime(s, len, "%c", info);
 }
 
-/** @Disable buffering
+/** @brief Disable buffering to stderr and stdout
  *
- * Disable buffering to stderr and stdout.
  */
 void disable_buffering(void)
 {
