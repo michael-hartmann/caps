@@ -10,10 +10,11 @@ extern "C" {
 
 #include "constants.h"
 
+/** represent number \f$v\f$ by its sign and \f$\log|v|\f$ */
 typedef struct
 {
-    sign_t s;
-    double v;
+    sign_t s; /**< sign of number*/
+    double v; /**< logarithm of absolute value of number */
 } log_t;
 
 double sqrtpm1(double x) __attribute__ ((pure));
