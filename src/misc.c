@@ -87,8 +87,9 @@ double logadd(const double log_a, const double log_b)
  * of elements of list must be N, the sign of the result will be stored in
  * sign.
  *
- * @param [in] list list of numbers given by logarithm and sign
- * @param [in] N number of elements of list
+ * @param [in]  list list of numbers given by logarithm and sign
+ * @param [in]  N number of elements of list
+ * @param [out] sign sign of the result
  * @return logsum log(sum_i list_i)
  */
 double logadd_ms(log_t list[], const int N, sign_t *sign)
