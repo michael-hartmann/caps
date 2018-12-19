@@ -11,13 +11,13 @@
 #include "misc.h"
 
 /**
- * @brief Sum elements in array
+ * @brief Compute sum of array elements
  *
  * This function calculates the sum of the elements of the array input. This
  * function uses the Kahan summation algorithm to reduce numerical error.
  *
  * The algorithm is taken from Wikipedia, see
- * https://en.wikipedia.org/wiki/Kahan_summation_algorithm
+ * https://en.wikipedia.org/wiki/Kahan_summation_algorithm.
  *
  * @param [in] input array
  * @param [in] N length of array
@@ -41,7 +41,7 @@ double kahan_sum(double input[], size_t N)
 
 /** @brief Compute \f$\sqrt{1+x}-1\f$
  *
- * If x is small, \f$\sqrt{1+x}\approx1\f$ and a loss of significance occurs
+ * If \f$x\f$ is small, \f$\sqrt{1+x}\approx1\f$ and a loss of significance occurs
  * when calculating \f$\sqrt{1+x}-1\f$.
  *
  * For this reason we compute
