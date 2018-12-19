@@ -345,7 +345,7 @@ double Plm_continued_fraction(const long l, const long m, const double x)
  * First, the fraction \f$P_l^m(x)/P_l^{m-1}(x)\f$ is computed using \ref
  * Plm_continued_fraction.  Then the downwards recurrence relation
  * http://dlmf.nist.gov/14.10.E6 is used from \f$P_l^m(x)\f$ to \f$P_l^0(x)\f$.
- * Together with \f$P_l(x)\f$ (see \ref Pl) one has the solution.
+ * Together with \f$P_l(x)\f$ (see \ref lnPl) one has the solution.
  *
  * This routine is efficient if \f$l \gg m\f$.
  *
