@@ -1,5 +1,8 @@
-/* exponentially convergent Fourier-Chebshev quadrature scheme for
- * semi-infinite intervals [0,inf] and finite intervals [a,b]
+/**
+ * @file   fcqs.c
+ * @author Michael Hartmann <michael.hartmann@physik.uni-augsburg.de>
+ * @date   December, 2018
+ * @brief  exponentially convergent Fourier-Chebshev quadrature scheme
  */
 
 #include <math.h>
@@ -18,7 +21,7 @@ static double cot2(double x) __attribute__ ((pure));
 static double wi_semiinf(double ti, double L, double N) __attribute__ ((pure));
 static double wi_finite(double ti, double N) __attribute__ ((pure));
 
-/* @brief Squared cotangent
+/** @brief Squared cotangent
  *
  * Compute square of cotangent of x, (cos(x)/sin(x))^2
  *
@@ -69,18 +72,19 @@ static double wi_finite(double ti, double N)
     return 4*sin(ti)/(N+1)*sum;
 }
 
-/* @brief Integrate function over interval [0,inf]
+/** @brief Integrate function \f$f(x)\f$ over interval \f$[0,\infty)\f$
  *
  * This method uses an exponentially convergent Fourier-Chebshev quadrature to
- * compute the integral over the interval [0,inf]. The method approximately
- * doubles the number of nodes until the desired accuracy is achieved.
+ * compute the integral over the interval \f$[0,\infty)\f$. The method
+ * approximately doubles the number of nodes until the desired accuracy is
+ * achieved.
  *
  * Values of ier after integration:
- *   ier=0: evaluation successful
- *   ier=1: relative accuracy epsrel must be positive
- *   ier=2: integrand returned NAN
- *   ier=3: integrand returned +inf or -inf
- *   ier=4: could not acchieve desired accuracy
+ * * ier=0: evaluation successful
+ * * ier=1: relative accuracy epsrel must be positive
+ * * ier=2: integrand returned NAN
+ * * ier=3: integrand returned +inf or -inf
+ * * ier=4: could not acchieve desired accuracy
  *
  * @param [in]     f integrand
  * @param [in]     args NULL pointer given to f when called
@@ -88,7 +92,7 @@ static double wi_finite(double ti, double N)
  * @param [in]     neval number of evaluations of integrand (may be set to NULL)
  * @param [in]     L boosting parameter
  * @param [out]    ier exit code
- * @retval I numerical value of integral
+ * @retval integral numerical value of integral
  */
 double fcqs_semiinf(double f(double, void *), void *args, double *epsrel, int *neval, double L, int *ier)
 {
@@ -168,18 +172,18 @@ double fcqs_semiinf(double f(double, void *), void *args, double *epsrel, int *n
     return Ilast;
 }
 
-/* @brief Integrate function over interval [a,b]
+/** @brief Integrate function \f$f(x)\f$ over interval \f$[a,b]\f$
  *
  * This method uses an exponentially convergent Fourier-Chebshev quadrature to
- * compute the integral over the interval [a,b]. The method approximately
+ * compute the integral over the interval \f$[a,b]\f$. The method approximately
  * doubles the number of nodes until the desired accuracy is achieved.
  *
  * Values of ier after integration:
- *   ier=0: evaluation successful
- *   ier=1: relative accuracy epsrel must be positive
- *   ier=2: integrand returned NAN
- *   ier=3: integrand returned +inf or -inf
- *   ier=4: could not acchieve desired accuracy
+ * * ier=0: evaluation successful
+ * * ier=1: relative accuracy epsrel must be positive
+ * * ier=2: integrand returned NAN
+ * * ier=3: integrand returned +inf or -inf
+ * * ier=4: could not acchieve desired accuracy
  *
  * @param [in]     f integrand
  * @param [in]     args NULL pointer given to f when called
@@ -188,7 +192,7 @@ double fcqs_semiinf(double f(double, void *), void *args, double *epsrel, int *n
  * @param [in,out] epsrel on begin desired accuracy, afterwards achieved accuracy
  * @param [in]     neval number of evaluations of integrand (may be set to NULL)
  * @param [out]    ier exit code
- * @retval I numerical value of integral
+ * @retval integral numerical value of integral
  */
 double fcqs_finite(double f(double, void *), void *args, double a, double b, double *epsrel, int *neval, int *ier)
 {
