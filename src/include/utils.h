@@ -26,11 +26,15 @@ extern "C" {
     #define COMPILER "unknown"
 #endif
 
-/*! macro similar to assert that prints a warning to stderr and aborts */
+#ifndef TERMINATE
+/*! Macro similar to assert that prints a warning to stderr and aborts */
 #define TERMINATE(cond, ...) if(cond) { fprintf(stderr, "Fatal error: "); fprintf(stderr, __VA_ARGS__); fprintf(stderr, " (in %s, %s:%d)\n", __func__, __FILE__, __LINE__); abort(); }
+#endif
 
+#ifndef WARN
 /*! macro similar to assert that prints a warning to stderr */
 #define WARN(cond, ...)      if(cond) { fprintf(stderr, "Warning: ");     fprintf(stderr, __VA_ARGS__); fprintf(stderr, " (in %s, %s:%d)\n", __func__, __FILE__, __LINE__); }
+#endif
 
 /*! macro for free that sets pointer p to NULL after freeing memory */
 #define xfree(p) do { free(p); p = NULL; } while(0)
