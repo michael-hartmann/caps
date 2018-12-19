@@ -1,3 +1,9 @@
+/**
+ * @file   libcasimir.h
+ * @author Michael Hartmann <michael.hartmann@physik.uni-augsburg.de>
+ * @date   December, 2017
+ */
+
 #ifndef __LIBCASIMIR_H
 #define __LIBCASIMIR_H
 
@@ -6,7 +12,7 @@ extern "C" {
 #endif
 
 /**
- * define fresnel_t as either TE or TM.
+ * typoe for polarization: either TE or TM.
  */
 typedef enum { TE, TM } polarization_t;
 
@@ -61,6 +67,9 @@ typedef struct casimir
 } casimir_t;
 
 
+/**
+ * object for integration over k in matrix elements of round-trip operator
+ */
 typedef struct {
     casimir_t *casimir;
     int m;
@@ -125,7 +134,7 @@ void casimir_rp(casimir_t *self, double xi_, double k, double *r_TE, double *r_T
 int casimir_estimate_lminmax(casimir_t *self, int m, size_t *lmin_p, size_t *lmax_p);
 
 double casimir_epsilonm1(casimir_t *self, double xi_);
-double casimir_epsilonm1_perf(double xi_, void *userdata);
+double casimir_epsilonm1_perf(__attribute__((unused)) double xi_, __attribute__((unused)) void *userdata);
 double casimir_epsilonm1_drude(double xi_, void *userdata);
 
 double casimir_logdetD0_drude(casimir_t *casimir);
