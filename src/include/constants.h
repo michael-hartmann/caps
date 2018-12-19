@@ -35,11 +35,11 @@ typedef signed char sign_t;
 #endif
 
 #ifndef M_LOG2
-#define M_LOG2 0.6931471805599453 /**< \f$log(2)\f$ */
+#define M_LOG2 0.6931471805599453 /**< \f$\log(2)\f$ */
 #endif
 
 #ifndef M_LOGPI
-#define M_LOGPI 1.1447298858494002 /**< \f$log(\pi)\f$ */
+#define M_LOGPI 1.1447298858494002 /**< \f$\log(\pi)\f$ */
 #endif
 
 #define CASIMIR_hbar    1.0545718e-34   /**< reduced Planck constant \f$\hbar\f$ [m² kg / s] */
