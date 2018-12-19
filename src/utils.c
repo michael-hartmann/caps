@@ -36,8 +36,8 @@ void *xmalloc(size_t size)
  * This function is a wrapper for calloc. If calloc fails \ref TERMINATE is
  * called.
  *
- * @param mnemb
- * @param size
+ * @param nmemb number of elements
+ * @param size size of each element
  * @retval ptr pointer to memory
  */
 void *xcalloc(size_t nmemb, size_t size)
@@ -55,7 +55,7 @@ void *xcalloc(size_t nmemb, size_t size)
  * This function is a wrapper for realloc. If realloc fails \ref TERMINATE is
  * called.
  *
- * @param oldptr ptr to old memory
+ * @param p ptr to old memory
  * @param size size
  * @retval newptr pointer to new memory
  */
@@ -87,8 +87,8 @@ double now(void)
  * Write current time in a human readable format into string s. The output is
  * similar to "Aug 30 2018 14:37:35".
  *
- * @param str array
- * @param len length of array
+ * @param s string
+ * @param len maximum length of array s
  */
 void time_as_string(char *s, size_t len)
 {
