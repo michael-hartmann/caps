@@ -1,3 +1,10 @@
+/**
+ * @file   psd.c
+ * @author Michael Hartmann <michael.hartmann@physik.uni-augsburg.de>
+ * @date   December, 2018
+ * @brief  expansion coefficients and poles for Pade spectrum decomposition
+ */
+
 #include <math.h>
 
 #include "psd.h"
@@ -9,8 +16,6 @@ int dstemr_(char *jobz, char *range, int *n, double *
     int *iu, int *m, double *w, double *z__, int *ldz, 
      int *nzc, int *isuppz, int *tryrac, double *work, 
     int *lwork, int *iwork, int *liwork, int *info);
-
-/* Hu, Xu, Yan, J. Chem. Phys. 133, 101106 (2010) */
 
 /* compute expansion coefficients eta according to the paragraph around
  * equations (12) and (13). */
@@ -50,15 +55,15 @@ static double _eta(int N, double z)
     return A/(2*dB);
 }
 
-/** @brief Compute poles and xi_j and expansion coefficients eta_j for PSD
+/** @brief Compute poles and \f$\xi_j\f$ and expansion coefficients \f$\eta_j\f$ for PSD
  *
- * This function computes the poles xi_j (at imaginary frequency) and the
- * expansion coefficients eta_j for the Pade spectrum decomposition of order N,
- * see reference [1].  The poles are stored in the array xi, the coefficients
- * are stored in the array eta.
+ * This function computes the poles \f$\xi_j\f$ (at imaginary frequency) and
+ * the expansion coefficients \f$\eta_j\f$ for the Pade spectrum decomposition
+ * of order \f$N\f$, see reference [1]. The poles are stored in the array xi,
+ * the coefficients are stored in the array eta.
  *
  * References:
- * [1] Hu, Xu, Yan, J. Chem. Phys. 133, 101106 (2010)
+ *  - Hu, Xu, Yan, J. Chem. Phys. 133, 101106 (2010)
  *
  * @param [in]  N   order
  * @param [out] xi  poles
