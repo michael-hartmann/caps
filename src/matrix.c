@@ -2,7 +2,7 @@
  * @file   matrix.c
  * @author Michael Hartmann <michael.hartmann@physik.uni-augsburg.de>
  * @date   December, 2018
- * @brief  matrix functions
+ * @brief  Matrix functions
  */
 
 #include <stdbool.h>
@@ -20,31 +20,34 @@
 #include "clapack.h"
 
 
-/** @brief Compute log det(Id-M)
+/** @brief Compute \f$\log \det(1-A)\f$
  *
- * This function computes \f$\log \det(1-M)\f$ using either the HODLR approach or
- * LU decomposition. The matrix M is given as a callback function. This
+ * This function computes \f$\log \det(1-A)\f$ using either the HODLR approach or
+ * LU decomposition. The matrix \f$A\f$ is given as a callback function. This
  * callback accepts two integers, the row and the column of the matrix entry
- * (starting from 0), and a pointer to args.
+ * (starting from 0), and a pointer to args. The callback returns the
+ * corresponding matrix element.
  *
- * If the matrix elements of M are small, i.e., if the modulus of the trace is
- * smaller than 1e-8, the trace will be used as an approximation to prevent a
- * loss of significance. If the modulus of the trace is larger than the modulus
- * of the value computed using HODLR, the trace approximation is returned.
+ * If the matrix elements of \f$A\f$ are small, i.e., if the modulus of the
+ * trace is smaller than 1e-8, the trace will be used as an approximation to
+ * prevent a loss of significance. If the modulus of the trace is larger than
+ * the modulus of the value computed using HODLR, the trace approximation is
+ * returned.
  *
- * If the library was compiled with LAPACK support and the algorithm to compute
- * the matrix is not HODLR, all matrix elements have to be computed. In this
- * case the round-trip matrix M may be written to the filesystem if the
- * environment variable CASIMIR_DUMP is set. If it is set, the matrix will be
- * stored in the path given in CASIMIR_DUMP as a two-dimensional numpy array
- * (npy). This option might be useful for debugging.
+ * If the determinant is not computed using the HODLR approach, all matrix
+ * elements have to be computed. In this case the matrix \f$A\f$ is written to
+ * the filesystem if the environment variable CASIMIR_DUMP is set. If the
+ * variable is set, the matrix will be stored in the path given by CASIMIR_DUMP
+ * as a two-dimensional numpy array (npy). This option might be useful for
+ * debugging. Also note that if detalg is CHOLESKY, only the upper half of the
+ * matrix will be initialized.
  *
  * @param [in] dim       dimension of matrix
- * @param [in] kernel    callback function that returns matrix elements of M
+ * @param [in] kernel    callback function that returns matrix elements of \f$A\f$
  * @param [in] args      pointer given to callback function kernel
- * @param [in] symmetric matrix symmetric / not symmetric
+ * @param [in] symmetric bool indicating whether matrix is symmetric
  * @param [in] detalg    algorithm (DETALG_HODLR, DETALG_LU, DETALG_QR, DETALG_CHOLESKY)
- * @retval logdet \f$\log \det(1-M)\f$
+ * @retval logdet \f$\log \det(1-A)\f$
  */
 double kernel_logdet(int dim, double (*kernel)(int,int,void *), void *args, int symmetric, detalg_t detalg)
 {
@@ -177,10 +180,7 @@ matrix_t *matrix_alloc(const size_t dim)
 /**
  * @brief Free matrix
  *
- * This function frees memory allocated for the matrix A.
- *
- * Note that you also have to call matrix_free on matrix views. see \ref
- * matrix_view.
+ * This function frees the memory allocated for the matrix A.
  *
  * @param [in,out] A matrix
  */
@@ -196,10 +196,8 @@ void matrix_free(matrix_t *A)
 /**
  * @brief Save matrix to stream
  *
- * This function saves the matrix A to the stream given by stream. The output
- * is in the numpy .npy format.
- *
- * This function does not support matrix views at the moment.
+ * This function saves the matrix \f$A\f$ to the stream given by stream. The
+ * output is in the numpy .npy format.
  *
  * @param [in] A matrix
  * @param [in] stream stream
@@ -232,8 +230,8 @@ int matrix_save_to_stream(matrix_t *A, FILE *stream)
 /**
  * @brief Save matrix to file
  *
- * Save matrix A to file filename. See \ref matrix_save_to_stream for more
- * information.
+ * Save matrix \f$A\f$ to file filename. See \ref matrix_save_to_stream for
+ * more information.
  *
  * @param [in] A matrix
  * @param [in] filename filename of output file
@@ -261,8 +259,6 @@ int matrix_save_to_file(matrix_t *A, const char *filename)
  *
  * The function will rudimentary parse the description string and abort if an
  * error occures. Do not use this function on untrusted data.
- *
- * This function does not support matrix views at the moment.
  *
  * @param [in] stream stream
  * @retval A matrix if successful
@@ -354,7 +350,7 @@ matrix_t *matrix_load_from_file(const char *filename)
 }
 
 /**
- * @brief Set all matrix elements to value z
+ * @brief Set all matrix elements to value \f$z\f$
  *
  * @param [in,out] A matrix
  * @param [in] z value
@@ -399,12 +395,15 @@ double matrix_trace(matrix_t *A)
 }
 
 /**
- * @brief Calculate trace of A²
+ * @brief Calculate trace of \f$A^2\f$
  *
  * This function uses kahan sumation to decrease rounding errors.
  *
+ * The function needs \f$\mathcal{O}(N^2)\f$ operation for an \f$N\times N\f$
+ * matrix.
+ *
  * @param [in] A matrix
- * @retval trace trace of A²
+ * @retval trace \f$\mathrm{tr} A^2\f$
  */
 double matrix_trace2(matrix_t *A)
 {
@@ -423,10 +422,10 @@ double matrix_trace2(matrix_t *A)
 }
 
 /**
- * @brief Calculate Frobenius norm of A
+ * @brief Calculate Frobenius norm of \f$A\f$
  *
  * @param [in] A matrix
- * @retval |A| Frobenius norm of A
+ * @retval |A| Frobenius norm of \f$A\f$
  */
 double matrix_norm_frobenius(matrix_t *A)
 {
@@ -442,13 +441,16 @@ double matrix_norm_frobenius(matrix_t *A)
 
 
 /**
- * @brief Calculate log(|det(A)|) for A triangular
+ * @brief Calculate \f$\log\det A\f$ for triangular matrix \f$A\f$
  *
- * This function calculates the logarithm of the determinant of the matrix A
- * assuming A is upper or lower triangular.
+ * This function calculates the logarithm of the determinant of the matrix
+ * \f$A\f$ assuming \f$A\f$ is upper or lower triangular:
+ * \f[
+ *   \log\det A = \log \prod_j A_{jj} = \sum_j \log A_{jj}
+ * \f]
  *
  * @param [in] A triangular matrix
- * @retval logdet log(|det(A)|)
+ * @retval logdet \f$\log\det A\f$
  */
 double matrix_logdet_triangular(matrix_t *A)
 {
@@ -462,19 +464,20 @@ double matrix_logdet_triangular(matrix_t *A)
 }
 
 /**
- * @brief Calculate \f$\log\det(\mathrm{Id}+zA)\f$ for matrix A
+ * @brief Calculate \f$\log\det(1+zA)\f$ for matrix \f$A\f$
  *
- * Compute \f$\log\det(\mathrm{Id}+zA)\f$ using LAPACK. The algorithm is
- * chosen by detalg and may be DETALG_QR, DETALG_LU or DETALG_CHOLESKY.
+ * Compute \f$\log\det(1+zA)\f$ using LAPACK. The algorithm is chosen by detalg
+ * and may be DETALG_QR, DETALG_LU or DETALG_CHOLESKY.
  *
- * If the Frobenius norm of zA is smaller than 1, this function tries to
- * approximate logdet(A) using a mercator series if possible to reduce the
- * complexity for an NxN matrix A from O(N³) to O(N²).
+ * If the Frobenius norm of \f$zA\f$ is smaller than 1, the function tries to
+ * approximate \f$\log\det A\f$ using a Mercator series (if possible) to reduce
+ * the complexity for an \f$N\times N\f$ matrix \f$A\f$ from
+ * \f$\mathcal{O}(N^3)\f$ to \f$\mathcal{O}(N^2)\f$.
  *
- * @param [in,out] A round trip matrix A; A will be overwritten.
- * @param [in]     z factor z
+ * @param [in,out] A matrix; will be overwritten.
+ * @param [in]     z factor \f$z\f$
  * @param [in]     detalg algorithm to use (cholesky, lu or qr)
- * @retval logdet  \f$\log\det(\mathrm{Id}+zA)\f$
+ * @retval logdet  \f$\log\det(1+zA)\f$
  */
 double matrix_logdet_dense(matrix_t *A, double z, detalg_t detalg)
 {
@@ -534,13 +537,13 @@ double matrix_logdet_dense(matrix_t *A, double z, detalg_t detalg)
 }
 
 /**
- * @brief Calculate log(|det(A)|) using LU decomposition
+ * @brief Calculate \f$\log\det A\f$ using LU decomposition
  *
- * Calculate LU decomposition of A and use \ref matrix_logdet_triangular to
- * calculate log(|det(A)|).
+ * Calculate LU decomposition of \f$A\f$ and use \ref matrix_logdet_triangular to
+ * calculate \f$\log\det A\f$.
  *
  * @param [in,out] A matrix
- * @retval logdet log(|det(A)|)
+ * @retval logdet \f$\log\det A\f$
  */
 double matrix_logdet_lu(matrix_t *A)
 {
@@ -568,17 +571,17 @@ double matrix_logdet_lu(matrix_t *A)
 
 
 /**
- * @brief Calculate log(|det(A)|) using Cholesky decomposition
+ * @brief Calculate \f$\log \det A\f$ using Cholesky decomposition
  *
- * Calculate QR decomposition of A and use \ref matrix_logdet_triangular to
- * calculate log(|det(A)|).
+ * Calculate Cholesky decomposition of \f$A\f$ and use \ref matrix_logdet_triangular to
+ * calculate \f$\log \det A\f$.
  *
  * Only the lower part of the matrix (uplo=L) or the upper part of the matrix
  * (uplo=U) are used.
  *
  * @param [in,out] A matrix
  * @param [in] uplo L or U
- * @retval logdet log(|det(A)|)
+ * @retval logdet \f$\log \det A\f$
  */
 double matrix_logdet_cholesky(matrix_t *A, char uplo)
 {
@@ -607,13 +610,13 @@ double matrix_logdet_cholesky(matrix_t *A, char uplo)
 
 
 /**
- * @brief Calculate log(|det(A)|) using QR decomposition
+ * @brief Calculate \f$\log\det A\f$ using QR decomposition
  *
- * Calculate QR decomposition of A and use \ref matrix_logdet_triangular to
- * calculate log(|det(A)|).
+ * Calculate QR decomposition of \f$A\f$ and use \ref matrix_logdet_triangular
+ * to calculate \f$\log\det A\f$.
  *
  * @param [in,out] A matrix
- * @retval logdet log(|det(A)|)
+ * @retval logdet \f$\log\det A\f$
  */
 double matrix_logdet_qr(matrix_t *A)
 {
