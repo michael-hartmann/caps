@@ -1,7 +1,7 @@
 /**
  * @file   constants.h
  * @author Michael Hartmann <michael.hartmann@physik.uni-augsburg.de>
- * @date   October, 2018
+ * @date   December, 2018
  * @brief  define macros and constants
  */
 
@@ -44,7 +44,7 @@ typedef signed char sign_t;
 
 #define CASIMIR_hbar    1.0545718e-34   /**< reduced Planck constant \f$\hbar\f$ [m² kg / s] */
 #define CASIMIR_hbar_eV 6.582119514e-16 /**< reduced Planck constant \f$\hbar\f$ [eV s/rad] */
-#define CASIMIR_kB      1.38064852e-23  /**< Boltzman constant \f$k_B\f$ [m² kg / ( K s² )] */
+#define CASIMIR_kB      1.38064852e-23  /**< Boltzman constant \f$k_\mathrm{B}\f$ [m² kg / ( K s² )] */
 #define CASIMIR_c       299792458.      /**< speed of light \f$c\f$ in vacuum [m/s] */
 
 #endif
