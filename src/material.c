@@ -1,3 +1,10 @@
+/**
+ * @file   material.c
+ * @author Michael Hartmann <michael.hartmann@physik.uni-augsburg.de>
+ * @date   December, 2018
+ * @brief  support for arbitrary dielectric functions
+ */
+
 #include <math.h>
 #include <stdbool.h>
 #include <stdio.h>
