@@ -32,8 +32,8 @@ int main(int argc, char *argv[])
     test_bessel_K1();
     test_bessel_logK1();
 
-    test_bessel_logInu_half();
-    test_bessel_logKnu_half();
+    test_bessel_logIn_half();
+    test_bessel_logKn_half();
 
     test_bessel_logIn();
     test_bessel_logKn();
