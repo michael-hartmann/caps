@@ -134,7 +134,7 @@ double K_estimate(int nu, int m, double alpha, double eps, double *a, double *b,
             *a = 1;
             *b = 1-log(eps)/alpha;
 
-            const double logt1 = 1.5*log(alpha)+log(2/M_PI)/2+bessel_logKnu_half(nu,alpha);
+            const double logt1 = 1.5*log(alpha)+log(2/M_PI)/2+bessel_logKn_half(nu,alpha);
             const double logt2 = -alpha+log(alpha+nu*(nu+1)/2.);
             const double arg = -exp(logt2-logt1);
 
