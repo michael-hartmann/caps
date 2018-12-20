@@ -186,7 +186,7 @@ int main(int argc, char *argv[])
     printf("\n");
 
     casimir_t *casimir;
-    casimir = casimir_init(L/R);
+    casimir = casimir_init(R,L);
 
     if(epsrel > 0)
         casimir_set_epsrel(casimir, epsrel);

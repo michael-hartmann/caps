@@ -279,7 +279,7 @@ double F_xi(double xi_, casimir_mpi_t *casimir_mpi)
     if(xi_ == 0)
     {
         /* compute Drude contribution */
-        casimir_t *casimir = casimir_init(casimir_mpi->L/casimir_mpi->R);
+        casimir_t *casimir = casimir_init(casimir_mpi->R, casimir_mpi->L);
         casimir_set_ldim(casimir, casimir_mpi->ldim);
         if(casimir_mpi->iepsrel > 0)
             casimir_set_epsrel(casimir, casimir_mpi->iepsrel);
@@ -689,7 +689,7 @@ void master(int argc, char *argv[], const int cores)
         {
             const double t0 = now();
 
-            casimir_t *casimir = casimir_init(LbyR);
+            casimir_t *casimir = casimir_init(R, L);
             casimir_set_ldim(casimir, ldim);
 
             if(material == NULL && isinf(omegap))
@@ -714,18 +714,20 @@ void master(int argc, char *argv[], const int cores)
             {
                 double omegap_low, gamma_low;
                 material_get_extrapolation(material, &omegap_low, &gamma_low, NULL, NULL);
+                omegap_low *= CASIMIR_hbar_eV; /* convert to rad/s */
+                gamma_low  *= CASIMIR_hbar_eV; /* convert to rad/s */
 
                 if(gamma_low == 0)
                 {
-                    F_HT(casimir_mpi, omegap_low*CASIMIR_hbar_eV, NULL, NULL, &plasma_HT);
+                    F_HT(casimir_mpi, omegap_low, NULL, NULL, &plasma_HT);
                     printf("# model = optical data (xi=0: Plasma)\n");
                     buf_push(v, plasma_HT);
                 }
                 else
                 {
-                    F_HT(casimir_mpi, omegap_low*CASIMIR_hbar_eV, &drude_HT, NULL, &plasma_HT);
+                    F_HT(casimir_mpi, omegap_low, &drude_HT, NULL, &plasma_HT);
                     printf("# model = optical data (xi=0: Drude)\n");
-                    printf("# plasma = %.15g (logdetD(xi=0) for plasma model with omegap=%geV)\n", plasma_HT, omegap_low*CASIMIR_hbar_eV);
+                    printf("# plasma = %.15g (logdetD(xi=0) for plasma model with omegap=%geV)\n", plasma_HT, omegap_low);
 
                     buf_push(v, drude_HT);
                 }
@@ -830,9 +832,9 @@ void slave(MPI_Comm master_comm, int rank)
         const double R = buf[2]; /* in m */
         const double LbyR = L/R;
 
-        /* material properties (scaled) */
-        const double omegap = buf[3]/(CASIMIR_hbar_eV*CASIMIR_c)*(L+R);
-        const double gamma_ = buf[4]/(CASIMIR_hbar_eV*CASIMIR_c)*(L+R);
+        /* material properties in rad/s */
+        const double omegap = buf[3]/CASIMIR_hbar_eV;
+        const double gamma_ = buf[4]/CASIMIR_hbar_eV;
 
         const int m          = (int)buf[5];
         const double iepsrel = buf[6];
@@ -841,7 +843,7 @@ void slave(MPI_Comm master_comm, int rank)
         /* get filename */
         MPI_Recv(filename, 512, MPI_CHAR, 0, 0, master_comm, &status);
 
-        casimir = casimir_init(LbyR);
+        casimir = casimir_init(R,L);
         TERMINATE(casimir == NULL, "casimir object is null");
         casimir_set_ldim(casimir, ldim);
 
