@@ -129,7 +129,7 @@ void casimir_M_free(casimir_M_t *self);
 
 double casimir_logdetD(casimir_t *self, double xi_, int m);
 
-void casimir_rp(casimir_t *self, double xi_, double k, double *r_TE, double *r_TM);
+void casimir_fresnel(casimir_t *self, double xi_, double k, double *r_TE, double *r_TM);
 
 int casimir_estimate_lminmax(casimir_t *self, int m, size_t *lmin_p, size_t *lmax_p);
 

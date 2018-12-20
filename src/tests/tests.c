@@ -18,7 +18,7 @@ int main(int argc, char *argv[])
     test_logi();
     test_casimir_lnLambda();
 
-    test_casimir_rp();
+    test_casimir_fresnel();
 
     test_bessel_I0();
     test_bessel_logI0();

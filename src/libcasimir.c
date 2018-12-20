@@ -555,7 +555,7 @@ void casimir_lnab(casimir_t *self, double xi_, int l, double *lna, double *lnb)
  * @param [in,out] r_TE  Fresnel coefficient for TE mode
  * @param [in,out] r_TM  Fresnel coefficient for TM mode
  */
-void casimir_rp(casimir_t *self, double xi_, double k_, double *r_TE, double *r_TM)
+void casimir_fresnel(casimir_t *self, double xi_, double k_, double *r_TE, double *r_TM)
 {
     const double epsilonm1 = casimir_epsilonm1(self, xi_);
 
