@@ -103,7 +103,8 @@ int casimir_estimate_lminmax(casimir_t *self, int m, size_t *lmin_p, size_t *lma
  */
 double casimir_epsilonm1_plate(casimir_t *self, double xi_)
 {
-    return self->epsilonm1_plate(xi_, self->userdata_plate);
+    double xi = xi_*CASIMIR_c/self->calL;
+    return self->epsilonm1_plate(xi, self->userdata_plate);
 }
 
 /** @brief Evaluate dielectric function of the sphere
@@ -114,7 +115,8 @@ double casimir_epsilonm1_plate(casimir_t *self, double xi_)
  */
 double casimir_epsilonm1_sphere(casimir_t *self, double xi_)
 {
-    return self->epsilonm1_sphere(xi_, self->userdata_sphere);
+    double xi = xi_*CASIMIR_c/self->calL;
+    return self->epsilonm1_sphere(xi, self->userdata_sphere);
 }
 
 /**
@@ -138,19 +140,19 @@ double casimir_epsilonm1_perf(__attribute__((unused)) double xi_, __attribute__(
  * \f]
  *
  * The parameters \f$\omega_\mathrm{P}\f$ and \f$\gamma\f$ must be provided by userdata:
- *  - userdata[0] = \f$\omega_\mathrm{P}\mathcal{L}/c\f$
- *  - userdata[1] = \f$\gamma\mathcal{L}/c\f$
+ *  - userdata[0] = \f$\omega_\mathrm{P}\f$ in rad/s
+ *  - userdata[1] = \f$\gamma\f$ in rad/s
  *
- * @param [in] xi_ \f$\xi\mathcal{L}/c\f$
+ * @param [in] xi frequency in rad/s
  * @param [in] userdata userdata
  * @retval epsilon epsilon(xi)
  */
-double casimir_epsilonm1_drude(double xi_, void *userdata)
+double casimir_epsilonm1_drude(double xi, void *userdata)
 {
     double *ptr = (double *)userdata;
     double omegap = ptr[0], gamma_ = ptr[1];
 
-    return pow_2(omegap)/(xi_*(xi_+gamma_));
+    return pow_2(omegap)/(xi*(xi+gamma_));
 }
 
 /*@}*/
@@ -178,15 +180,19 @@ double casimir_epsilonm1_drude(double xi_, void *userdata)
  * @retval object Casimir object if successful
  * @retval NULL   an error occured
  */
-casimir_t *casimir_init(double LbyR)
+casimir_t *casimir_init(double R, double L)
 {
-    if(LbyR <= 0)
+    const double LbyR = L/R;
+    if(L <= 0 || R <= 0)
         return NULL;
 
     casimir_t *self = xmalloc(sizeof(casimir_t));
 
     /* geometry */
     self->LbyR = LbyR;
+    self->L    = L;
+    self->R    = R;
+    self->calL = L+R;
     self->y = -M_LOG2-log1p(LbyR); /* log( (R/(L+R))/2 ) */
 
     /* dimension of vector space */
@@ -276,6 +282,8 @@ void casimir_info(casimir_t *self, FILE *stream, const char *prefix)
     }
 
     fprintf(stream, "%sL/R    = %.16g\n", prefix, self->LbyR);
+    fprintf(stream, "%sL      = %.16g\n", prefix, self->L);
+    fprintf(stream, "%sR      = %.16g\n", prefix, self->R);
     fprintf(stream, "%sldim   = %d\n",    prefix, self->ldim);
     fprintf(stream, "%sepsrel = %.1e\n",  prefix, self->epsrel);
     fprintf(stream, "%sdetalg = %s\n",    prefix, detalg_str);
@@ -596,7 +604,7 @@ void casimir_mie(casimir_t *self, double xi_, int l, double *lna, double *lnb)
  *
  * @param [in]     self  Casimir object
  * @param [in]     xi_   \f$\xi\mathcal{L}/c\f$
- * @param [in]     k     \f$k\mathcal{L}\f$
+ * @param [in]     k_    \f$k\mathcal{L}\f$
  * @param [in,out] r_TE  Fresnel coefficient for TE mode
  * @param [in,out] r_TM  Fresnel coefficient for TM mode
  */

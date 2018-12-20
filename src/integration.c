@@ -865,7 +865,7 @@ double casimir_integrate_C(integration_t *self, int l1, int l2, polarization_t p
     return C;
 }
 
-/** Compute integral \f$D_{\ell_1,\ell_2,p}^{(m)}(\alpha)\f$
+/** @brief Compute integral \f$D_{\ell_1,\ell_2,p}^{(m)}(\alpha)\f$
  *
  * Compute
  * \f[
@@ -886,9 +886,18 @@ double casimir_integrate_D(integration_t *self, int l1, int l2, polarization_t p
     return casimir_integrate_C(self, l2, l1, p, sign);
 }
 
-integration_plasma_t *casimir_integrate_plasma_init(casimir_t *casimir, double omegap_, double epsrel)
+/** @brief Inizialize integration for plasma high temperature \f$\xi=0\f$
+ *
+ * @param [in] casimir Casimir object
+ * @param [in] omegap plasma frequency in rad/s
+ * @param [in] epsrel relative error for integration
+ * @retval self plasma integration object
+ */
+integration_plasma_t *casimir_integrate_plasma_init(casimir_t *casimir, double omegap, double epsrel)
 {
     integration_plasma_t *self;
+
+    double omegap_ = omegap*casimir->calL/CASIMIR_c;
 
     self = (integration_plasma_t *)xmalloc(sizeof(integration_plasma_t));
     self->LbyR    = casimir->LbyR;

@@ -230,35 +230,30 @@ void material_info(material_t *material, FILE *stream, const char *prefix)
  * frequency, an extrapolation using a Drude model is used. For the tabulated
  * values linear interpolation is used.
  *
- * @param [in] xi_scaled scaled frequency \f$\xi_\mathrm{scaled} = \xi(L+R)/c\f$
+ * @param [in] xi frequency in rad/s
  * @param [in] args material (must be of type material_t *)
  */
-double material_epsilonm1(double xi_scaled, void *args)
+double material_epsilonm1(double xi, void *args)
 {
     material_t *self = (material_t *)args;
 
-    /* factor to convert between scaled and SI units */
-    const double calLbyc = self->calL/CASIMIR_c;
-
-    /* in SI units */
-    const double xi = xi_scaled/calLbyc;
     const double xi_min = self->xi_min, xi_max = self->xi_max;
 
     if(xi < xi_min)
     {
         /* in scaled units */
-        double omegap = self->omegap_low*calLbyc;
-        double gamma_ = self->gamma_low *calLbyc;
+        double omegap = self->omegap_low;
+        double gamma_ = self->gamma_low;
 
-        return pow_2(omegap)/(xi_scaled*(xi_scaled+gamma_));
+        return pow_2(omegap)/(xi*(xi+gamma_));
     }
     else if(xi > xi_max)
     {
         /* in scaled units */
-        double omegap = self->omegap_high*calLbyc;
-        double gamma_ = self->gamma_high*calLbyc;
+        double omegap = self->omegap_high;
+        double gamma_ = self->gamma_high;
 
-        return pow_2(omegap)/(xi_scaled*(xi_scaled+gamma_));
+        return pow_2(omegap)/(xi*(xi+gamma_));
     }
 
     /* do binary search */

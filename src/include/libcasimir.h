@@ -44,7 +44,10 @@ typedef struct casimir
      * @name geometry
      */
      /*@{*/
-    double LbyR; /**< \f$L/R\f$, where \f$R\f$ is the radius of the sphere and \f$L\f$ is the separation of plane and sphere. */
+    double L;    /**< separation of plane and sphere*/
+    double R;    /**< radius of sphere */
+    double calL; /**< \f$L+R\f$ */
+    double LbyR; /**< \f$L/R\f$ */
     double y;    /**< log(R/(R+L)/2) */
     /*@}*/
 
@@ -112,7 +115,7 @@ void casimir_info(casimir_t *self, FILE *stream, const char *prefix);
 
 double casimir_lnLambda(int l1, int l2, int m);
 
-casimir_t *casimir_init(double LbyR);
+casimir_t *casimir_init(double R, double L);
 void casimir_free(casimir_t *self);
 
 double casimir_epsilonm1_plate(casimir_t *self, double xi_);
