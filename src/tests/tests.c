@@ -40,8 +40,8 @@ int main(int argc, char *argv[])
 
     test_bessel_ratioI();
 
-    test_casimir_lnab_perf();
-    test_casimir_lnab();
+    test_casimir_mie_perf();
+    test_casimir_mie();
 
     test_lnPlm();
 

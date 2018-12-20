@@ -424,7 +424,7 @@ int casimir_get_ldim(casimir_t *self)
  * @param [out] ln_a logarithm of \f$a_\ell\f$
  * @param [out] ln_b logarithm of \f$b_\ell\f$
  */
-void casimir_lnab_perf(casimir_t *self, double xi_, int l, double *lna, double *lnb)
+void casimir_mie_perf(casimir_t *self, double xi_, int l, double *lna, double *lnb)
 {
     double logKlp,logKlm,logIlm,logIlp;
     /* χ = ξR/c = ξ(R+L)/c * R/(R+L) = xi_ 1/(1+L/R) */
@@ -465,7 +465,7 @@ void casimir_lnab_perf(casimir_t *self, double xi_, int l, double *lna, double *
  * @brief Return logarithm of Mie coefficients \f$a_\ell\f$, \f$b_\ell\f$ for arbitrary metals
  *
  * For \f$\omega_\mathrm{P} = \infty\f$ the Mie coefficient for perfect
- * reflectors are returned (see \ref casimir_lnab_perf).
+ * reflectors are returned (see \ref casimir_mie_perf).
  *
  * lna and lnb must be valid pointers.
  *
@@ -496,14 +496,14 @@ void casimir_lnab_perf(casimir_t *self, double xi_, int l, double *lna, double *
  * @param [out] lna logarithm of Mie coefficient \f$a_\ell\f$
  * @param [out] lnb logarithm of Mie coefficient \f$b_\ell\f$
  */
-void casimir_lnab(casimir_t *self, double xi_, int l, double *lna, double *lnb)
+void casimir_mie(casimir_t *self, double xi_, int l, double *lna, double *lnb)
 {
     const double epsilonm1 = casimir_epsilonm1(self, xi_); /* n²-1 */
 
     if(isinf(epsilonm1))
     {
         /* Mie coefficients for perfect reflectors */
-        casimir_lnab_perf(self, xi_, l, lna, lnb);
+        casimir_mie_perf(self, xi_, l, lna, lnb);
         return;
     }
 
@@ -690,10 +690,10 @@ double casimir_M_elem(casimir_M_t *self, int l1, int l2, char p1, char p2)
     integration_t *integration = self->integration;
 
     if(isnan(self->al[l1-lmin]))
-        casimir_lnab(casimir, xi_, l1, &self->al[l1-lmin], &self->bl[l1-lmin]);
+        casimir_mie(casimir, xi_, l1, &self->al[l1-lmin], &self->bl[l1-lmin]);
 
     if(isnan(self->al[l2-lmin]))
-        casimir_lnab(casimir, xi_, l2, &self->al[l2-lmin], &self->bl[l2-lmin]);
+        casimir_mie(casimir, xi_, l2, &self->al[l2-lmin], &self->bl[l2-lmin]);
 
     const double lnLambda = casimir_lnLambda(l1,l2,self->m);
     const double al1 = self->al[l1-lmin], bl1 = self->bl[l1-lmin];
