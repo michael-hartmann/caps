@@ -1,7 +1,7 @@
 /**
  * @file   libcasimir.c
  * @author Michael Hartmann <michael.hartmann@physik.uni-augsburg.de>
- * @date   November, 2017
+ * @date   December, 2017
  * @brief  library to calculate the free Casimir energy in the plane-sphere geometry
  */
 
@@ -176,9 +176,10 @@ double casimir_epsilonm1_drude(double xi, void *userdata)
  * Restrictions: \f$L/R > 0\f$
  *
  * @param [out] self Casimir object
- * @param [in]  LbyR \f$L/R > 0\f$
+ * @param [in]  R radius of sphere in m
+ * @param [in]  L smallest separation between sphere and plate in m
  * @retval object Casimir object if successful
- * @retval NULL   an error occured
+ * @retval NULL   if an error occured
  */
 casimir_t *casimir_init(double R, double L)
 {
@@ -1033,11 +1034,11 @@ double casimir_logdetD0_perf(casimir_t *casimir, double eps)
  * The abort criterion eps is the same as in \ref casimir_logdetD0_perf.
  *
  * @param [in] casimir Casimir object
- * @param [in] omegap_ scaled plasma frequency, omegap*(L+R)/c
+ * @param [in] omegap plasma frequency in rad/s
  * @param [in] eps abort criterion
  * @retval logdetD \f$\log\det\mathcal{D}(\xi=0)\f$ for plasma model
  */
-double casimir_logdetD0_plasma(casimir_t *casimir, double omegap_, double eps)
+double casimir_logdetD0_plasma(casimir_t *casimir, double omegap, double eps)
 {
     const double drude = casimir_logdetD0_drude(casimir);
     double MM_plasma = 0;
@@ -1045,7 +1046,7 @@ double casimir_logdetD0_plasma(casimir_t *casimir, double omegap_, double eps)
     for(int m = 0; true; m++)
     {
         double v;
-        casimir_logdetD0(casimir, m, omegap_, NULL, NULL, &v);
+        casimir_logdetD0(casimir, m, omegap, NULL, NULL, &v);
 
         if(m == 0)
             MM_plasma += v/2;
@@ -1073,12 +1074,12 @@ double casimir_logdetD0_plasma(casimir_t *casimir, double omegap_, double eps)
  *
  * @param [in]  self Casimir object
  * @param [in]  m quantum number \f$m\f$
- * @param [in]  omegap_ scaled plasma frequency, \f$\omega_\mathrm{P} (L+R)/c\f$ (only used to compute MM_plasma)
+ * @param [in]  omegap plasma frequency in rad/s (only used to compute MM_plasma)
  * @param [out] EE pointer to store contribution for EE block
  * @param [out] MM pointer to store contribution for MM block
  * @param [out] MM_plasma pointer to store contribution for MM block (Plasma model)
  */
-void casimir_logdetD0(casimir_t *self, int m, double omegap_, double *EE, double *MM, double *MM_plasma)
+void casimir_logdetD0(casimir_t *self, int m, double omegap, double *EE, double *MM, double *MM_plasma)
 {
     size_t lmin, lmax;
     const int is_symmetric = 1, ldim = self->ldim;
@@ -1105,7 +1106,7 @@ void casimir_logdetD0(casimir_t *self, int m, double omegap_, double *EE, double
 
     if(MM_plasma != NULL)
     {
-        args.integration_plasma = casimir_integrate_plasma_init(self, omegap_, self->epsrel);
+        args.integration_plasma = casimir_integrate_plasma_init(self, omegap, self->epsrel);
         *MM_plasma = kernel_logdet(ldim, &casimir_kernel_M0_MM_plasma, &args, is_symmetric, detalg);
         casimir_integrate_plasma_free(args.integration_plasma);
     }
