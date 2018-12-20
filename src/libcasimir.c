@@ -101,7 +101,7 @@ int casimir_estimate_lminmax(casimir_t *self, int m, size_t *lmin_p, size_t *lma
  * The dielectrict function set by \ref casimir_set_epsilonm1 will be called.
  *
  * @param [in] self Casimir object
- * @param [in] xi_ \f$\xi\mathcal{L}/\mathrm{c}\f$
+ * @param [in] xi_ \f$\xi\mathcal{L}/c\f$
  * @retval epsm1 \f$\epsilon(\xi)-1\f$
  */
 double casimir_epsilonm1(casimir_t *self, double xi_)
@@ -130,10 +130,10 @@ double casimir_epsilonm1_perf(__attribute__((unused)) double xi_, __attribute__(
  * \f]
  *
  * The parameters \f$\omega_\mathrm{P}\f$ and \f$\gamma\f$ must be provided by userdata:
- *  - userdata[0] = \f$\omega_\mathrm{P}\mathcal{L}/\mathrm{c}\f$
- *  - userdata[1] = \f$\gamma\mathcal{L}/\mathrm{c}\f$
+ *  - userdata[0] = \f$\omega_\mathrm{P}\mathcal{L}/c\f$
+ *  - userdata[1] = \f$\gamma\mathcal{L}/c\f$
  *
- * @param [in] xi_ \f$\xi\mathcal{L}/\mathrm{c}\f$
+ * @param [in] xi_ \f$\xi\mathcal{L}/c\f$
  * @param [in] userdata userdata
  * @retval epsilon epsilon(xi)
  */
@@ -412,14 +412,14 @@ int casimir_get_ldim(casimir_t *self)
  *
  * This function calculates the logarithms of the Mie coefficients
  * \f$a_\ell(i\chi)\f$ and \f$b_\ell(i\chi)\f$ for perfect reflectors. The Mie
- * coefficients are evaluated at the argument \f$\chi=\xi R/\mathrm{c}\f$.
+ * coefficients are evaluated at the argument \f$\chi=\xi R/c\f$.
  *
  * The signs are given by \f$\mathrm{sgn}(a_\ell) = (-1)^\ell\f$, \f$\mathrm{sgn}(b_\ell) = (-1)^{\ell+1}\f$.
  *
  * lna and lnb must be valid pointers and must not be NULL.
  *
  * @param [in,out] self Casimir object
- * @param [in] xi_ \f$\xi\mathcal{L}/\mathrm{c} > 0\f$
+ * @param [in] xi_ \f$\xi\mathcal{L}/c > 0\f$
  * @param [in] l angular momentum \f$\ell > 0\f$
  * @param [out] ln_a logarithm of \f$a_\ell\f$
  * @param [out] ln_b logarithm of \f$b_\ell\f$
@@ -491,7 +491,7 @@ void casimir_lnab_perf(casimir_t *self, double xi_, int l, double *lna, double *
  *       force approximation, Hartmann, 2018
  *
  * @param [in,out] self Casimir object
- * @param [in] xi_ \f$\xi\mathcal{L}/\mathrm{c}\f$
+ * @param [in] xi_ \f$\xi\mathcal{L}/c\f$
  * @param [in] l angular momentum \f$\ell\f$
  * @param [out] lna logarithm of Mie coefficient \f$a_\ell\f$
  * @param [out] lnb logarithm of Mie coefficient \f$b_\ell\f$
@@ -550,7 +550,7 @@ void casimir_lnab(casimir_t *self, double xi_, int l, double *lna, double *lnb)
  * for \f$p=\mathrm{TE},\mathrm{TM}\f$.
  *
  * @param [in]     self  Casimir object
- * @param [in]     xi_   \f$\xi\mathcal{L}/\mathrm{c}\f$
+ * @param [in]     xi_   \f$\xi\mathcal{L}/c\f$
  * @param [in]     k     \f$k\mathcal{L}\f$
  * @param [in,out] r_TE  Fresnel coefficient for TE mode
  * @param [in,out] r_TM  Fresnel coefficient for TM mode
@@ -855,16 +855,16 @@ double casimir_kernel_M0_MM(int i, int j, void *args_)
  */
 /*@{*/
 
-/** @brief Compute \f$\log\det\mathcal{D}^{(m)}\left(\frac{\xi\mathcal{L}}{\mathrm{c}}\right)\f$
+/** @brief Compute \f$\log\det\mathcal{D}^{(m)}\left(\frac{\xi\mathcal{L}}{c}\right)\f$
  *
  * This function computes the logarithm of the determinant of the scattering
- * matrix for the frequency \f$\xi\mathcal{L}/\mathrm{c}\f$ and quantum number
+ * matrix for the frequency \f$\xi\mathcal{L}/c\f$ and quantum number
  * \f$m\f$.
  *
  * For \f$\xi=0\f$ see \ref casimir_logdetD0.
  *
  * @param self Casimir object
- * @param xi_ \f$\xi\mathcal{L}/\mathrm{c} > 0\f$
+ * @param xi_ \f$\xi\mathcal{L}/c > 0\f$
  * @param m quantum number \f$m\f$
  * @retval logdetD
  */
