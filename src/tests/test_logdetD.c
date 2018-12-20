@@ -56,7 +56,7 @@ int test_logdetD()
 
     unittest_init(&test, "casimir_logdetD", "Computation of logdet", 1e-10);
 
-    casimir = casimir_init(0.01); /* R/L = 100 */
+    casimir = casimir_init(1,0.01); /* R/L = 100 */
     casimir_set_ldim(casimir, 500);
 
     for(size_t m=0; m < sizeof(v1)/sizeof(double); m++)
@@ -71,7 +71,7 @@ int test_logdetD()
     casimir_free(casimir);
 
 
-    casimir = casimir_init(0.001); /* R/L = 1000 */
+    casimir = casimir_init(1,0.001); /* R/L = 1000 */
     casimir_set_ldim(casimir, 10000);
 
     /* m = 1, xi*(L+R)=500.5 */
@@ -114,7 +114,7 @@ int test_logdetD0()
 
     unittest_init(&test, "casimir_logdetD0", "Computation of logdet for xi=0", 1e-10);
 
-    casimir = casimir_init(0.01); /* R/L=100 */
+    casimir = casimir_init(1,0.01); /* R/L=100 */
     casimir_set_ldim(casimir, 500);
 
     AssertAlmostEqual(&test, casimir_logdetD0_plasma(casimir, 0.01, eps), -14.569722716816960073);
@@ -129,7 +129,7 @@ int test_logdetD0()
 
     /* test against analytical results for m=0 */
     double EE,MM;
-    casimir = casimir_init(0.001); /* R/L=1000 */
+    casimir = casimir_init(1,0.001); /* R/L=1000 */
     casimir_set_ldim(casimir, 12000);
 
     casimir_logdetD0(casimir, 0, INFINITY, &EE, &MM, NULL);
