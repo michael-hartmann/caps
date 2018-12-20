@@ -114,15 +114,16 @@ int test_logdetD0()
 
     unittest_init(&test, "casimir_logdetD0", "Computation of logdet for xi=0", 1e-10);
 
-    casimir = casimir_init(1,0.01); /* R/L=100 */
+    const double R = 100e-6, L = 1e-6;
+    casimir = casimir_init(R,L); /* R/L=100 */
     casimir_set_ldim(casimir, 500);
 
-    AssertAlmostEqual(&test, casimir_logdetD0_plasma(casimir, 0.01, eps), -14.569722716816960073);
-    AssertAlmostEqual(&test, casimir_logdetD0_plasma(casimir, 0.1, eps), -14.569723099773346675);
-    AssertAlmostEqual(&test, casimir_logdetD0_plasma(casimir, 1, eps), -14.571258410941549499);
-    AssertAlmostEqual(&test, casimir_logdetD0_plasma(casimir, 10, eps), -14.868792120441892024);
-    AssertAlmostEqual(&test, casimir_logdetD0_plasma(casimir, 100, eps), -18.461022336857670467);
-    AssertAlmostEqual(&test, casimir_logdetD0_plasma(casimir, 1000, eps), -25.441820432119136797);
+    AssertAlmostEqual(&test, casimir_logdetD0_plasma(casimir, 0.01*CASIMIR_c/(L+R), eps), -14.569722716816960073);
+    AssertAlmostEqual(&test, casimir_logdetD0_plasma(casimir,  0.1*CASIMIR_c/(L+R), eps), -14.569723099773346675);
+    AssertAlmostEqual(&test, casimir_logdetD0_plasma(casimir,    1*CASIMIR_c/(L+R), eps), -14.571258410941549499);
+    AssertAlmostEqual(&test, casimir_logdetD0_plasma(casimir,   10*CASIMIR_c/(L+R), eps), -14.868792120441892024);
+    AssertAlmostEqual(&test, casimir_logdetD0_plasma(casimir,  100*CASIMIR_c/(L+R), eps), -18.461022336857670467);
+    AssertAlmostEqual(&test, casimir_logdetD0_plasma(casimir, 1000*CASIMIR_c/(L+R), eps), -25.441820432119136797);
 
     casimir_free(casimir);
 
