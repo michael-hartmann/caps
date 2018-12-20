@@ -10,7 +10,7 @@ int test_casimir_mie_perf(void)
     unittest_t test;
     unittest_init(&test, "casimir_mie_perf", "Mie functions (PR)", 1e-14);
 
-    casimir_t *self = casimir_init(1);
+    casimir_t *self = casimir_init(1,1);
 
     casimir_mie_perf(self, 6, 3, &lna, &lnb);
     AssertAlmostEqual(&test, lna, 1.69245030620195999527136501278285739542);
