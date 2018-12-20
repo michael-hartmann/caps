@@ -13,13 +13,15 @@ int test_casimir_mie(void)
 
     unittest_init(&test, "casimir_mie", "Mie coefficients (Drude)", 1e-11);
 
-    casimir = casimir_init(1);
-    userdata[0] = 50000; userdata[1] = 1;
+    double R = 100e-6, L = 100e-6;
+    casimir = casimir_init(R, L);
+    userdata[0] = 50000.*CASIMIR_c/(L+R); userdata[1] = CASIMIR_c/(L+R);
     casimir_set_epsilonm1(casimir, casimir_epsilonm1_drude, userdata);
 
     casimir_mie(casimir, 0.0001, 1, &lna, &lnb);
     AssertAlmostEqual(&test, lna, -30.1159277664814);
     AssertAlmostEqual(&test, lnb, -30.8210995465918);
+
 
     casimir_mie(casimir, 0.0001, 2, &lna, &lnb);
     AssertAlmostEqual(&test, lna, -52.9186351440535);
@@ -468,7 +470,7 @@ int test_casimir_mie(void)
 */
 
 
-    userdata[0] = 5000; userdata[1] = 1;
+    userdata[0] = 5000*CASIMIR_c/(L+R); userdata[1] = CASIMIR_c/(L+R);
     casimir_set_epsilonm1(casimir, casimir_epsilonm1_drude, userdata);
 
     casimir_mie(casimir, 0.0001, 1, &lna, &lnb);
@@ -908,7 +910,7 @@ int test_casimir_mie(void)
 */
 
 
-    userdata[0] = 500; userdata[1] = 1;
+    userdata[0] = 500*CASIMIR_c/(L+R); userdata[1] = CASIMIR_c/(L+R);
     casimir_set_epsilonm1(casimir, casimir_epsilonm1_drude, userdata);
 
     casimir_mie(casimir, 0.0001, 1, &lna, &lnb);
@@ -1348,7 +1350,7 @@ int test_casimir_mie(void)
 */
 
 
-    userdata[0] = 100; userdata[1] = 1;
+    userdata[0] = 100*CASIMIR_c/(L+R); userdata[1] = CASIMIR_c/(L+R);
     casimir_set_epsilonm1(casimir, casimir_epsilonm1_drude, userdata);
 
     casimir_mie(casimir, 0.0001, 1, &lna, &lnb);
