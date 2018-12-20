@@ -230,6 +230,7 @@ static double integrand(double x, void *args)
     return logdetD;
 }
 
+/* omegap in eV */
 void F_HT(casimir_mpi_t *casimir_mpi, double omegap, double *drude, double *pr, double *plasma)
 {
     const double omegap_orig = casimir_mpi->omegap;
@@ -714,8 +715,8 @@ void master(int argc, char *argv[], const int cores)
             {
                 double omegap_low, gamma_low;
                 material_get_extrapolation(material, &omegap_low, &gamma_low, NULL, NULL);
-                omegap_low *= CASIMIR_hbar_eV; /* convert to rad/s */
-                gamma_low  *= CASIMIR_hbar_eV; /* convert to rad/s */
+                omegap_low *= CASIMIR_hbar_eV; /* convert from rad/s to eV */
+                gamma_low  *= CASIMIR_hbar_eV; /* convert from rad/s to eV */
 
                 if(gamma_low == 0)
                 {
@@ -832,9 +833,8 @@ void slave(MPI_Comm master_comm, int rank)
         const double R = buf[2]; /* in m */
         const double LbyR = L/R;
 
-        /* material properties in rad/s */
-        const double omegap = buf[3]/CASIMIR_hbar_eV;
-        const double gamma_ = buf[4]/CASIMIR_hbar_eV;
+        const double omegap = buf[3]/CASIMIR_hbar_eV; /* plasma frequency in rad/s */
+        const double gamma_ = buf[4]/CASIMIR_hbar_eV; /* relaxation frequency in rad/s */
 
         const int m          = (int)buf[5];
         const double iepsrel = buf[6];
