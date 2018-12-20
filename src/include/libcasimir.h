@@ -49,11 +49,19 @@ typedef struct casimir
     /*@}*/
 
     /**
-     * @name reflection properties of the mirrors
+     * @name dielectric function of the plate
      */
      /*@{*/
-    double (*epsilonm1)(double xi_, void *userdata);
-    void *userdata;
+    double (*epsilonm1_plate)(double xi_, void *userdata);
+    void *userdata_plate;
+    /*@}*/
+
+    /**
+     * @name dielectric function of the plate
+     */
+     /*@{*/
+    double (*epsilonm1_sphere)(double xi_, void *userdata);
+    void *userdata_sphere;
     /*@}*/
 
     /**
@@ -107,7 +115,12 @@ double casimir_lnLambda(int l1, int l2, int m);
 casimir_t *casimir_init(double LbyR);
 void casimir_free(casimir_t *self);
 
+double casimir_epsilonm1_plate(casimir_t *self, double xi_);
+double casimir_epsilonm1_sphere(casimir_t *self, double xi_);
+
 void casimir_set_epsilonm1(casimir_t *self, double (*epsilonm1)(double xi_, void *userdata), void *userdata);
+void casimir_set_epsilonm1_plate(casimir_t *self, double (*epsilonm1)(double xi_, void *userdata), void *userdata);
+void casimir_set_epsilonm1_sphere(casimir_t *self, double (*epsilonm1)(double xi_, void *userdata), void *userdata);
 
 int casimir_get_ldim(casimir_t *self);
 int casimir_set_ldim(casimir_t *self, int ldim);
@@ -133,7 +146,6 @@ void casimir_fresnel(casimir_t *self, double xi_, double k, double *r_TE, double
 
 int casimir_estimate_lminmax(casimir_t *self, int m, size_t *lmin_p, size_t *lmax_p);
 
-double casimir_epsilonm1(casimir_t *self, double xi_);
 double casimir_epsilonm1_perf(__attribute__((unused)) double xi_, __attribute__((unused)) void *userdata);
 double casimir_epsilonm1_drude(double xi_, void *userdata);
 

@@ -719,8 +719,8 @@ integration_t *casimir_integrate_init(casimir_t *casimir, double xi_, int m, dou
         self->cache_K[1][i] = NAN;
     }
 
-    /* determine wether we have perfect reflectors or not */
-    if(isinf(casimir_epsilonm1(casimir, INFINITY)))
+    /* determine whether we have perfect reflectors or not */
+    if(isinf(casimir_epsilonm1_plate(casimir, INFINITY)))
         self->is_pr = true;
     else
         self->is_pr = false;

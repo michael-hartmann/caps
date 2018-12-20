@@ -95,18 +95,26 @@ int casimir_estimate_lminmax(casimir_t *self, int m, size_t *lmin_p, size_t *lma
 */
 /*@{*/
 
-/**
- * @brief Evaluate dielectric function
- *
- * The dielectrict function set by \ref casimir_set_epsilonm1 will be called.
+/** @brief Evaluate dielectric function of the plate
  *
  * @param [in] self Casimir object
  * @param [in] xi_ \f$\xi\mathcal{L}/c\f$
- * @retval epsm1 \f$\epsilon(\xi)-1\f$
+ * @retval epsm1 \f$\epsilon(\mathrm{i}\xi)\f$
  */
-double casimir_epsilonm1(casimir_t *self, double xi_)
+double casimir_epsilonm1_plate(casimir_t *self, double xi_)
 {
-    return self->epsilonm1(xi_, self->userdata);
+    return self->epsilonm1_plate(xi_, self->userdata_plate);
+}
+
+/** @brief Evaluate dielectric function of the sphere
+ *
+ * @param [in] self Casimir object
+ * @param [in] xi_ \f$\xi\mathcal{L}/c\f$
+ * @retval epsm1 \f$\epsilon(\mathrm{i}\xi)\f$
+ */
+double casimir_epsilonm1_sphere(casimir_t *self, double xi_)
+{
+    return self->epsilonm1_sphere(xi_, self->userdata_sphere);
 }
 
 /**
@@ -185,8 +193,10 @@ casimir_t *casimir_init(double LbyR)
     self->ldim = ceil(MAX(CASIMIR_MINIMUM_LDIM, CASIMIR_FACTOR_LDIM/LbyR));
 
     /* perfect reflectors */
-    self->epsilonm1 = casimir_epsilonm1_perf;
-    self->userdata  = NULL;
+    self->epsilonm1_plate  = casimir_epsilonm1_perf;
+    self->epsilonm1_sphere = casimir_epsilonm1_perf;
+    self->userdata_plate   = NULL;
+    self->userdata_sphere  = NULL;
 
     /* relative error for integration */
     self->epsrel = CASIMIR_EPSREL;
@@ -301,17 +311,10 @@ double casimir_get_epsrel(casimir_t *self)
 }
 
 /**
- * @brief Set material parameters for generic metals
+ * @brief Set dielectric function for plate and sphere
  *
- * Set dielectric function of material.
- *
- * The Fresnel coefficient and the Mie coefficient depend on the dielectric
- * function \f$\epsilon(\mathrm{i}\xi)\f$. By default, perfect reflectors with
- * a dielectric function \f$\epsilon(\mathrm{i}\xi)=\infty\f$ are used.
- *
- * However, you can also specify an arbitrary function for
- * \f$\epsilon(\mathrm{i}\xi)\f$. userdata is an arbitrary pointer that will
- * be given to the callback function.
+ * See also \ref casimir_set_epsilonm1_plate and \ref
+ * casimir_set_epsilonm1_sphere.
  *
  * @param [in,out] self Casimir object
  * @param [in] epsilonm1  callback to the function that calculates \f$\epsilon(\mathrm{i}\xi)-1\f$
@@ -319,8 +322,50 @@ double casimir_get_epsrel(casimir_t *self)
  */
 void casimir_set_epsilonm1(casimir_t *self, double (*epsilonm1)(double xi_, void *userdata), void *userdata)
 {
-    self->epsilonm1 = epsilonm1;
-    self->userdata  = userdata;
+    casimir_set_epsilonm1_plate (self, epsilonm1, userdata);
+    casimir_set_epsilonm1_sphere(self, epsilonm1, userdata);
+}
+
+/**
+ * @brief Set dielectric function of plate
+ *
+ * The Fresnel coefficient \f$r_p\f$ depend on the dielectric
+ * function \f$\epsilon(\mathrm{i}\xi)\f$. By default, perfect reflectors with
+ * a dielectric function \f$\epsilon(\mathrm{i}\xi)=\infty\f$ are used.
+ *
+ * However, you can also specify an arbitrary function for
+ * \f$\epsilon(\mathrm{i}\xi)\f$. userdata is an arbitrary pointer that will be
+ * given to the callback function.
+ *
+ * @param [in,out] self Casimir object
+ * @param [in] epsilonm1  callback to the function that calculates \f$\epsilon(\mathrm{i}\xi)-1\f$
+ * @param [in] userdata   arbitrary pointer to data that is passwd to epsilonm1 whenever the function is called
+ */
+void casimir_set_epsilonm1_plate(casimir_t *self, double (*epsilonm1)(double xi_, void *userdata), void *userdata)
+{
+    self->epsilonm1_plate = epsilonm1;
+    self->userdata_plate  = userdata;
+}
+
+/**
+ * @brief Set dielectric function of sphere
+ *
+ * The Mie coefficient \f$a_\ell,b_\ell\f$ depend on the dielectric function
+ * \f$\epsilon(\mathrm{i}\xi)\f$. By default, perfect reflectors with a
+ * dielectric function \f$\epsilon(\mathrm{i}\xi)=\infty\f$ are used.
+ *
+ * However, you can also specify an arbitrary function for
+ * \f$\epsilon(\mathrm{i}\xi)\f$. userdata is an arbitrary pointer that will be
+ * given to the callback function.
+ *
+ * @param [in,out] self Casimir object
+ * @param [in] epsilonm1  callback to the function that calculates \f$\epsilon(\mathrm{i}\xi)-1\f$
+ * @param [in] userdata   arbitrary pointer to data that is passwd to epsilonm1 whenever the function is called
+ */
+void casimir_set_epsilonm1_sphere(casimir_t *self, double (*epsilonm1)(double xi_, void *userdata), void *userdata)
+{
+    self->epsilonm1_sphere = epsilonm1;
+    self->userdata_sphere  = userdata;
 }
 
 /**
@@ -498,7 +543,7 @@ void casimir_mie_perf(casimir_t *self, double xi_, int l, double *lna, double *l
  */
 void casimir_mie(casimir_t *self, double xi_, int l, double *lna, double *lnb)
 {
-    const double epsilonm1 = casimir_epsilonm1(self, xi_); /* n²-1 */
+    const double epsilonm1 = casimir_epsilonm1_sphere(self, xi_); /* n²-1 */
 
     if(isinf(epsilonm1))
     {
@@ -557,7 +602,7 @@ void casimir_mie(casimir_t *self, double xi_, int l, double *lna, double *lnb)
  */
 void casimir_fresnel(casimir_t *self, double xi_, double k_, double *r_TE, double *r_TM)
 {
-    const double epsilonm1 = casimir_epsilonm1(self, xi_);
+    const double epsilonm1 = casimir_epsilonm1_plate(self, xi_);
 
     if(isinf(epsilonm1))
     {
