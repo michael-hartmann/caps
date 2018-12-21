@@ -1061,7 +1061,7 @@ double casimir_logdetD0_plasma(casimir_t *casimir, double omegap, double eps)
 }
 
 
-/** @brief Compute \f$\log\det\mathcal{D}(\xi=0)\f$ for EE and/or MM contribution
+/** @brief Compute \f$\log\det\mathcal{D}^{(m)}(\xi=0)\f$ for EE and/or MM contribution
  *
  * Compute numerically for a given value of \f$m\f$ the contribution of the
  * polarization block EE and/or MM. If EE, MM or MM_plasma is NULL, the value
