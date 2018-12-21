@@ -938,128 +938,6 @@ double casimir_logdetD(casimir_t *self, double xi_, int m)
     return logdet;
 }
 
-/** @brief Compute \f$\log\det\mathcal{D}(\xi=0)\f$ for Drude metals
- *
- * For Drude metals the Fresnel coefficients become \f$r_\mathrm{TM}=1\f$,
- * \f$r_\mathrm{TE}=0\f$ for \f$\xi\to 0\f$, i.e. only the EE polarization
- * block needs to be considered.
- *
- * For Drude the free energy for \f$\xi=0\f$ can be computed analytically. We
- * use Eq. (8) from Ref. [1] to compute the contribution.
- *
- * References:
- *  - [1] Bimonte, Emig, "Exact results for classical Casimir interactions:
- *    Dirichlet and Drude model in the sphere-sphere and sphere-plane geometry",
- *    Phys. Rev. Lett. 109 (2012), https://doi.org/10.1103/PhysRevLett.109.160403
- *
- * @param [in] casimir Casimir object
- * @retval logdetD \f$\log\det\mathcal{D}(\xi=0)\f$ for Drude metals
- */
-double casimir_logdetD0_drude(casimir_t *casimir)
-{
-    const double x  = casimir->LbyR; /* L/R */
-    const double x2 = pow_2(x);      /* (L/R)² */
-    const double Z  = (1+x)*(1-sqrt((x2+2*x)/(x2+2*x+1)));
-
-    double sum1 = 0, sum2 = 0;
-    for(int l = 1; true; l++)
-    {
-        const double a = pow(Z, 2*l); /* Z^(2l) */
-        const double b = a*Z;         /* Z^(2l+1) */
-        const double v1 = (2*l+1)*log1p(-b);
-        const double v2 = b*(1-a)/(1-b);
-
-        sum1 += v1;
-        sum2 += v2;
-
-        if(fabs(v1/sum1) < 1e-15 && fabs(v2/sum2) < 1e-15)
-            break;
-    }
-
-    return 0.5*(sum1 + log1p(-(1-pow_2(Z))*sum2));
-}
-
-
-/** @brief Compute \f$\log\det\mathcal{D}(\xi=0)\f$ for perfect reflectors
- *
- * For perfect reflectors the Fresnel coefficients become
- * \f$r_\mathrm{TM}=1\f$, \f$r_\mathrm{TE}=-1\f$ in the limit \f$\xi\to 0\f$,
- * and only the polarization blocks EE and MM need to be considered.
- *
- * The contribution for EE, i.e. Drude, can be computed analytically, see \ref
- * casimir_logdetD0_drude. For the MM block we numerically compute the
- * determinants up to \f$m = M\f$ until
- * \f[
- *      \frac{\log\det\mathcal{D}^{(M)}(0)}{{\sum_{m=0}^M}^\prime \log\det\mathcal{D}^{(m)}(0)} < \epsilon \,.
- * \f]
- * We use Ref. [1] to compute the contribution for \f$m = 0\f$.
- *
- * References:
- *  - [1] Bimonte, Classical Casimir interaction of perfectly conducting sphere
- *    and plate (2017), https://arxiv.org/abs/1701.06461
- *
- * @param [in] casimir Casimir object
- * @param [in] eps \f$\epsilon\f$ abort criterion
- * @retval logdetD \f$\log\det\mathcal{D}(\xi=0)\f$ for perfect conductors
- */
-double casimir_logdetD0_perf(casimir_t *casimir, double eps)
-{
-    const double LbyR = casimir->LbyR;
-    const double drude = casimir_logdetD0_drude(casimir);
-
-    double MM = 0;
-
-    /* m = 0, see Ref. [1] */
-    const double Z = 1./(1+LbyR+sqrt(LbyR*(2+LbyR))); /* Eq. (7) */
-    for(int l = 0; true; l++)
-    {
-        const double v = 0.5*log1p(-pow(Z,2*l+3)); /* Eq. (17) */
-        MM += v;
-        if(fabs(v/MM) < eps)
-            break;
-    }
-
-    for(int m = 1; true; m++)
-    {
-        double v;
-        casimir_logdetD0(casimir, m, 0, NULL, &v, NULL);
-
-        MM += v;
-
-        if(fabs(v/MM) < eps)
-            return drude+MM;
-    }
-}
-
-/** @brief Compute \f$\log\det\mathcal{D}(\xi=0)\f$ for plasma model
- *
- * The abort criterion eps is the same as in \ref casimir_logdetD0_perf.
- *
- * @param [in] casimir Casimir object
- * @param [in] omegap plasma frequency in rad/s
- * @param [in] eps abort criterion
- * @retval logdetD \f$\log\det\mathcal{D}(\xi=0)\f$ for plasma model
- */
-double casimir_logdetD0_plasma(casimir_t *casimir, double omegap, double eps)
-{
-    const double drude = casimir_logdetD0_drude(casimir);
-    double MM_plasma = 0;
-
-    for(int m = 0; true; m++)
-    {
-        double v;
-        casimir_logdetD0(casimir, m, omegap, NULL, NULL, &v);
-
-        if(m == 0)
-            MM_plasma += v/2;
-        else
-            MM_plasma += v;
-
-        if(fabs(v/MM_plasma) < eps)
-            return drude+MM_plasma;
-    }
-}
-
 
 /** @brief Compute \f$\log\det\mathcal{D}^{(m)}(\xi=0)\f$ for EE and/or MM contribution
  *
@@ -1068,11 +946,11 @@ double casimir_logdetD0_plasma(casimir_t *casimir, double omegap, double eps)
  * will not be computed.
  *
  * For Drude metals there exists an analytical formula to compute logdetD, see
- * \ref casimir_logdetD0_drude.
+ * \ref casimir_ht_drude.
  *
- * For perfect reflectors see also \ref casimir_logdetD0_perf.
+ * For perfect reflectors see also \ref casimir_ht_perf.
  *
- * For the Plasma model see also \ref casimir_logdetD0_plasma.
+ * For the Plasma model see also \ref casimir_ht_plasma.
  *
  * @param [in]  self Casimir object
  * @param [in]  m quantum number \f$m\f$
@@ -1111,6 +989,134 @@ void casimir_logdetD0(casimir_t *self, int m, double omegap, double *EE, double 
         args.integration_plasma = casimir_integrate_plasma_init(self, omegap, self->epsrel);
         *MM_plasma = kernel_logdet(ldim, &casimir_kernel_M0_MM_plasma, &args, is_symmetric, detalg);
         casimir_integrate_plasma_free(args.integration_plasma);
+    }
+}
+
+/*@}*/
+
+/**
+* @name high-temperature limit
+*/
+/*@{*/
+
+/** @brief Compute high-temperature limit for Drude metals
+ *
+ * For Drude metals the Fresnel coefficients become \f$r_\mathrm{TM}=1\f$,
+ * \f$r_\mathrm{TE}=0\f$ for \f$\xi\to 0\f$, i.e. only the EE polarization
+ * block needs to be considered.
+ *
+ * For Drude the free energy for \f$\xi=0\f$ can be computed analytically. We
+ * use Eq. (8) from Ref. [1] to compute the contribution.
+ *
+ * References:
+ *  - [1] Bimonte, Emig, "Exact results for classical Casimir interactions:
+ *    Dirichlet and Drude model in the sphere-sphere and sphere-plane geometry",
+ *    Phys. Rev. Lett. 109 (2012), https://doi.org/10.1103/PhysRevLett.109.160403
+ *
+ * @param [in] casimir Casimir object
+ * @retval F free energy in units of \f$k_\mathrm{B}T\f$
+ */
+double casimir_ht_drude(casimir_t *casimir)
+{
+    const double x  = casimir->LbyR; /* L/R */
+    const double x2 = pow_2(x);      /* (L/R)² */
+    const double Z  = (1+x)*(1-sqrt((x2+2*x)/(x2+2*x+1)));
+
+    double sum1 = 0, sum2 = 0;
+    for(int l = 1; true; l++)
+    {
+        const double a = pow(Z, 2*l); /* Z^(2l) */
+        const double b = a*Z;         /* Z^(2l+1) */
+        const double v1 = (2*l+1)*log1p(-b);
+        const double v2 = b*(1-a)/(1-b);
+
+        sum1 += v1;
+        sum2 += v2;
+
+        if(fabs(v1/sum1) < 1e-15 && fabs(v2/sum2) < 1e-15)
+            break;
+    }
+
+    return 0.5*(sum1 + log1p(-(1-pow_2(Z))*sum2));
+}
+
+/** @brief Compute free energy in the high-temperature limit for perfect reflectors
+ *
+ * For perfect reflectors the Fresnel coefficients become
+ * \f$r_\mathrm{TM}=1\f$, \f$r_\mathrm{TE}=-1\f$ in the limit \f$\xi\to 0\f$,
+ * and only the polarization blocks EE and MM need to be considered.
+ *
+ * The contribution for EE, i.e. Drude, can be computed analytically, see \ref
+ * casimir_ht_drude. For the MM block we numerically compute the determinants
+ * up to \f$m = M\f$ until
+ * \f[
+ *      \frac{\log\det\mathcal{D}^{(M)}(0)}{{\sum_{m=0}^M}^\prime \log\det\mathcal{D}^{(m)}(0)} < \epsilon \,.
+ * \f]
+ * We use Ref. [1] to compute the contribution for \f$m = 0\f$.
+ *
+ * References:
+ *  - [1] Bimonte, Classical Casimir interaction of perfectly conducting sphere
+ *    and plate (2017), https://arxiv.org/abs/1701.06461
+ *
+ * @param [in] casimir Casimir object
+ * @param [in] eps \f$\epsilon\f$ abort criterion
+ * @retval energy free energy in units of \f$k_\mathrm{B}T\f$
+ */
+double casimir_ht_perf(casimir_t *casimir, double eps)
+{
+    const double LbyR = casimir->LbyR;
+    const double drude = casimir_ht_drude(casimir);
+
+    double MM = 0;
+
+    /* m = 0, see Ref. [1] */
+    const double Z = 1./(1+LbyR+sqrt(LbyR*(2+LbyR))); /* Eq. (7) */
+    for(int l = 0; true; l++)
+    {
+        const double v = 0.5*log1p(-pow(Z,2*l+3)); /* Eq. (17) */
+        MM += v;
+        if(fabs(v/MM) < eps)
+            break;
+    }
+
+    for(int m = 1; true; m++)
+    {
+        double v;
+        casimir_logdetD0(casimir, m, 0, NULL, &v, NULL);
+
+        MM += v;
+
+        if(fabs(v/MM) < eps)
+            return drude+MM;
+    }
+}
+
+/** @brief Compute free energy in the high-temperature limit for plasma model
+ *
+ * The abort criterion eps is the same as in \ref casimir_ht_perf.
+ *
+ * @param [in] casimir Casimir object
+ * @param [in] omegap plasma frequency in rad/s
+ * @param [in] eps abort criterion
+ * @retval logdetD \f$\log\det\mathcal{D}(\xi=0)\f$ for plasma model
+ */
+double casimir_ht_plasma(casimir_t *casimir, double omegap, double eps)
+{
+    const double drude = casimir_ht_drude(casimir);
+    double MM_plasma = 0;
+
+    for(int m = 0; true; m++)
+    {
+        double v;
+        casimir_logdetD0(casimir, m, omegap, NULL, NULL, &v);
+
+        if(m == 0)
+            MM_plasma += v/2;
+        else
+            MM_plasma += v;
+
+        if(fabs(v/MM_plasma) < eps)
+            return drude+MM_plasma;
     }
 }
 

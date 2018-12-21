@@ -152,9 +152,9 @@ int casimir_estimate_lminmax(casimir_t *self, int m, size_t *lmin_p, size_t *lma
 double casimir_epsilonm1_perf(__attribute__((unused)) double xi_, __attribute__((unused)) void *userdata);
 double casimir_epsilonm1_drude(double xi_, void *userdata);
 
-double casimir_logdetD0_drude(casimir_t *casimir);
-double casimir_logdetD0_perf(casimir_t *casimir, double eps);
-double casimir_logdetD0_plasma(casimir_t *casimir, double omegap_, double eps);
+double casimir_ht_drude(casimir_t *casimir);
+double casimir_ht_perf(casimir_t *casimir, double eps);
+double casimir_ht_plasma(casimir_t *casimir, double omegap_, double eps);
 
 double casimir_kernel_M0_EE(int i, int j, void *args);
 double casimir_kernel_M0_MM(int i, int j, void *args);
