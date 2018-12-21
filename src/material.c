@@ -225,10 +225,10 @@ void material_info(material_t *material, FILE *stream, const char *prefix)
 
 /** @brief Dielectric function for material
  *
- * Return the dielectric function \f$\epsilon(\mathrm{i}\xi)-1\f$ for material.
- * For frequencies greater (smaller) than the maximum (minimum) tabulated
- * frequency, an extrapolation using a Drude model is used. For the tabulated
- * values linear interpolation is used.
+ * Return the dielectric function \f$\epsilon(\mathrm{i}\xi)-1\f$ for the
+ * material. For frequencies greater (smaller) than the maximum (minimum)
+ * tabulated frequency, an extrapolation using a Drude model is used. For the
+ * tabulated values linear interpolation is used.
  *
  * @param [in] xi frequency in rad/s
  * @param [in] args material (must be of type material_t *)
