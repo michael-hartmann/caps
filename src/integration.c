@@ -1,7 +1,7 @@
 /**
  * @file   integration.c
  * @author Michael Hartmann <michael.hartmann@physik.uni-augsburg.de>
- * @date   October, 2017
+ * @date   December, 2018
  * @brief  Perform integration for arbitrary materials
  */
 
@@ -20,7 +20,7 @@
 #include "logfac.h"
 #include "integration.h"
 
-/* arguments for integrand in function K_integrand */
+/** arguments for integrand in function K_integrand */
 typedef struct
 {
     int nu,m;
@@ -59,7 +59,7 @@ static double _f(double x, int nu, int m, double alpha)
 
 /** @brief Estimate position and width of peak
  *
- * We want to estimate the position and the width of the maximum of the peak of
+ * We want to estimate the position and the width of the peak of
  * the integrand for \f$m>0\f$
  * \f[
  *  \int_1^\infty \mathrm{d}x \, r_p \frac{e^{-\alpha x}}{x^2-1} P_\nu^{2m}(x) = \int_1^\infty \mathrm{d}x \, r_p g(x) = \int_1^\infty \mathrm{d}x \, r_p e^{-f(x)}
@@ -95,6 +95,7 @@ static double _f(double x, int nu, int m, double alpha)
  *
  * @param [in] nu parameter \f$\nu\f$
  * @param [in] m parameter \f$m\f$
+ * @param [in] alpha \f$\alpha\f$
  * @param [in] eps \f$\epsilon\f$
  * @param [out] a left border
  * @param [out] b right border
@@ -744,19 +745,19 @@ void casimir_integrate_free(integration_t *integration)
     }
 }
 
-/** Compute integral \f$A_{\ell_1,\ell_2,p}^{(m)}(\alpha)\f$
+/** Compute integral \f$A_{\ell_1,\ell_2,p}^{(m)}(\xi)\f$
  *
  * Compute the integral
  * \f[
- * A_{\ell_1,\ell_2,p}^{(m)}(\alpha) = \frac{m^2 \xi}{c} \int_0^\infty  \mathrm{d}k \frac{r_p}{k\kappa} e^{-2\kappa\mathcal{L}} P_{\ell_1}^m\left(\frac{\kappa c}{\xi}\right) P_{\ell_2}^m\left(\frac{\kappa c}{\xi}\right)
+ * A_{\ell_1,\ell_2,p}^{(m)}(\xi) = \frac{m^2 \xi}{c} \int_0^\infty  \mathrm{d}k \frac{r_p}{k\kappa} e^{-2\kappa\mathcal{L}} P_{\ell_1}^m\left(\frac{\kappa c}{\xi}\right) P_{\ell_2}^m\left(\frac{\kappa c}{\xi}\right)
  * \f]
  *
  * @param [in] self integration object
  * @param [in] l1 parameter
  * @param [in] l2 parameter
  * @param [in] p polarization; either TE or TM
- * @param [out] sign sign of integral \f$\mathrm{sgn}\left(A_{\ell_1,\ell_2,p}^{(m)}(\alpha)\right)\f$
- * @retval logA \f$\log\left|A_{\ell_1,\ell_2,p}^{(m)}(\alpha)\right|\f$
+ * @param [out] sign sign of integral \f$\mathrm{sgn}\left(A_{\ell_1,\ell_2,p}^{(m)}(\xi)\right)\f$
+ * @retval logA \f$\log\left|A_{\ell_1,\ell_2,p}^{(m)}(\xi)\right|\f$
  */
 double casimir_integrate_A(integration_t *self, int l1, int l2, polarization_t p, sign_t *sign)
 {
@@ -776,19 +777,19 @@ double casimir_integrate_A(integration_t *self, int l1, int l2, polarization_t p
     return A;
 }
 
-/** Compute integral \f$B_{\ell_1,\ell_2,p}^{(m)}(\alpha)\f$
+/** Compute integral \f$B_{\ell_1,\ell_2,p}^{(m)}(\xi)\f$
  *
  * Compute the integral
  * \f[
- * B_{\ell_1,\ell_2,p}^{(m)}(\alpha) = \frac{c^3}{\xi^3} \int_0^\infty  \mathrm{d}k \frac{k^3}{\kappa} r_p e^{-2\kappa\mathcal{L}} {P_{\ell_1}^m}^\prime\left(\frac{\kappa c}{\xi}\right) {P_{\ell_2}^m}^\prime\left(\frac{\kappa c}{\xi}\right)
+ * B_{\ell_1,\ell_2,p}^{(m)}(\xi) = \frac{c^3}{\xi^3} \int_0^\infty  \mathrm{d}k \frac{k^3}{\kappa} r_p e^{-2\kappa\mathcal{L}} {P_{\ell_1}^m}^\prime\left(\frac{\kappa c}{\xi}\right) {P_{\ell_2}^m}^\prime\left(\frac{\kappa c}{\xi}\right)
  * \f]
  *
  * @param [in] self integration object
  * @param [in] l1 parameter
  * @param [in] l2 parameter
  * @param [in] p polarization; either TE or TM
- * @param [out] sign sign of integral \f$\mathrm{sgn}\left(B_{\ell_1,\ell_2,p}^{(m)}(\alpha)\right)\f$
- * @retval logB \f$\log\left|B_{\ell_1,\ell_2,p}^{(m)}(\alpha)\right|\f$
+ * @param [out] sign sign of integral \f$\mathrm{sgn}\left(B_{\ell_1,\ell_2,p}^{(m)}(\xi)\right)\f$
+ * @retval logB \f$\log\left|B_{\ell_1,\ell_2,p}^{(m)}(\xi)\right|\f$
  */
 double casimir_integrate_B(integration_t *self, int l1, int l2, polarization_t p, sign_t *sign)
 {
@@ -824,19 +825,19 @@ double casimir_integrate_B(integration_t *self, int l1, int l2, polarization_t p
     return B;
 }
 
-/** Compute integral \f$C_{\ell_1,\ell_2,p}^{(m)}(\alpha)\f$
+/** Compute integral \f$C_{\ell_1,\ell_2,p}^{(m)}(\xi)\f$
  *
  * Compute the integral
  * \f[
- * C_{\ell_1,\ell_2,p}^{(m)}(\alpha) = \frac{mc}{\xi} \int_0^\infty \mathrm{d}k \frac{k}{\kappa} r_p e^{-2\kappa\mathcal{L}} P_{\ell_1}^m\left(\frac{\kappa c}{\xi}\right) {P_{\ell_2}^m}^\prime\left(\frac{\kappa c}{\xi}\right)
+ * C_{\ell_1,\ell_2,p}^{(m)}(\xi) = \frac{mc}{\xi} \int_0^\infty \mathrm{d}k \frac{k}{\kappa} r_p e^{-2\kappa\mathcal{L}} P_{\ell_1}^m\left(\frac{\kappa c}{\xi}\right) {P_{\ell_2}^m}^\prime\left(\frac{\kappa c}{\xi}\right)
  * \f]
  *
  * @param [in] self integration object
  * @param [in] l1 parameter
  * @param [in] l2 parameter
  * @param [in] p polarization; either TE or TM
- * @param [out] sign sign of integral \f$\mathrm{sgn}\left(C_{\ell_1,\ell_2,p}^{(m)}(\alpha)\right)\f$
- * @retval logC \f$\log\left|C_{\ell_1,\ell_2,p}^{(m)}(\alpha)\right|\f$
+ * @param [out] sign sign of integral \f$\mathrm{sgn}\left(C_{\ell_1,\ell_2,p}^{(m)}(\xi)\right)\f$
+ * @retval logC \f$\log\left|C_{\ell_1,\ell_2,p}^{(m)}(\xi)\right|\f$
  */
 double casimir_integrate_C(integration_t *self, int l1, int l2, polarization_t p, sign_t *sign)
 {
@@ -865,11 +866,11 @@ double casimir_integrate_C(integration_t *self, int l1, int l2, polarization_t p
     return C;
 }
 
-/** @brief Compute integral \f$D_{\ell_1,\ell_2,p}^{(m)}(\alpha)\f$
+/** @brief Compute integral \f$D_{\ell_1,\ell_2,p}^{(m)}(\xi)\f$
  *
  * Compute
  * \f[
- * D_{\ell_1,\ell_2,p}^{(m)}(\alpha) = C_{\ell_2,\ell_2,1}^{(m)}(\alpha)
+ * D_{\ell_1,\ell_2,p}^{(m)}(\xi) = C_{\ell_2,\ell_2,1}^{(m)}(\xi)
  * \f]
  *
  * This function calls \ref casimir_integrate_C.
@@ -878,15 +879,15 @@ double casimir_integrate_C(integration_t *self, int l1, int l2, polarization_t p
  * @param [in] l1 parameter
  * @param [in] l2 parameter
  * @param [in] p polarization; either TE or TM
- * @param [out] sign sign of integral \f$\mathrm{sgn}\left(D_{\ell_1,\ell_2,p}^{(m)}(\alpha)\right)\f$
- * @retval logD \f$\log\left|D_{\ell_1,\ell_2,p}^{(m)}(\alpha)\right|\f$
+ * @param [out] sign sign of integral \f$\mathrm{sgn}\left(D_{\ell_1,\ell_2,p}^{(m)}(\xi)\right)\f$
+ * @retval logD \f$\log\left|D_{\ell_1,\ell_2,p}^{(m)}(\xi)\right|\f$
  */
 double casimir_integrate_D(integration_t *self, int l1, int l2, polarization_t p, sign_t *sign)
 {
     return casimir_integrate_C(self, l2, l1, p, sign);
 }
 
-/** @brief Inizialize integration for plasma high temperature \f$\xi=0\f$
+/** @brief Initialize integration object for plasma high temperature limit (\f$\xi=0\f$)
  *
  * @param [in] casimir Casimir object
  * @param [in] omegap plasma frequency in rad/s
@@ -927,6 +928,29 @@ static double _integrand_plasma(double t, void *args_)
     return -rTE * exp(args->log_prefactor -t+args->nu*log(t));
 }
 
+/** @brief Compute integral for plasma high temperatures
+ *
+ * Compute the integral
+ * \f[
+ *      \int_0^\infty \mathrm{d}x \, x^{\ell_1+\ell_2} \mathrm{e}^{-x} r_\mathrm{TE}
+ * \f]
+ * where
+ * \f[
+ *      r_\mathrm{TE} = \frac{\sqrt{x^2+\beta^2}-x}{\sqrt{x^2+\beta^2}+x}
+ * \f]
+ * and \f$\beta=2\omega_\mathrm{P}(L+R)/c\f$.
+ *
+ * - If ratio1 is not NULL, ratio1 will be set to \f$I_{\ell_1-1/2}(\alpha)/I_{\ell_1+1/2}(\alpha)\f$ where \f$\alpha=2\xi(L+R)/c\f$.
+ * - If ratio2 is not NULL, ratio2 will be set to \f$I_{\ell_2-1/2}(\alpha)/I_{\ell_2+1/2}(\alpha)\f$ where \f$\alpha=2\xi(L+R)/c\f$.
+ *
+ * @param [in] self plasma integration object
+ * @param [in] l1 \f$\ell_1\f$
+ * @param [in] l2 \f$\ell_2\f$
+ * @param [in] m \f$m\f$
+ * @param [out] ratio1
+ * @param [out] ratio2
+ * @retval I value of integral
+ */
 double casimir_integrate_plasma(integration_plasma_t *self, int l1, int l2, int m, double *ratio1, double *ratio2)
 {
     const int nu = l1+l2;
@@ -995,6 +1019,10 @@ double casimir_integrate_plasma(integration_plasma_t *self, int l1, int l2, int 
     return I;
 }
 
+/** @brief Free plasma integration object
+ *
+ * @param [in,out] self plasma integration object
+ */
 void casimir_integrate_plasma_free(integration_plasma_t *self)
 {
     cache_free(self->cache);
