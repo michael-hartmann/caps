@@ -175,7 +175,6 @@ double casimir_epsilonm1_drude(double xi, void *userdata)
  *
  * Restrictions: \f$L/R > 0\f$
  *
- * @param [out] self Casimir object
  * @param [in]  R radius of sphere in m
  * @param [in]  L smallest separation between sphere and plate in m
  * @retval object Casimir object if successful
@@ -228,7 +227,7 @@ void casimir_free(casimir_t *self)
 }
 
 /**
- * @build Print information on build to stream
+ * @brief Print information on build to stream
  *
  * The information contains compiler, build time, git head and git branch if
  * available. If prefix is not NULL, the string prefix will added in front of
@@ -409,7 +408,6 @@ int casimir_set_detalg(casimir_t *self, detalg_t detalg)
  * @brief Get algorithm to calculate determinant
  *
  * @param [in]  self Casimir object
- * @param [out] detalg algorithm to compute determinant
  * @retval detalg
  */
 detalg_t casimir_get_detalg(casimir_t *self)
@@ -468,15 +466,16 @@ int casimir_get_ldim(casimir_t *self)
  * \f$a_\ell(i\chi)\f$ and \f$b_\ell(i\chi)\f$ for perfect reflectors. The Mie
  * coefficients are evaluated at the argument \f$\chi=\xi R/c\f$.
  *
- * The signs are given by \f$\mathrm{sgn}(a_\ell) = (-1)^\ell\f$, \f$\mathrm{sgn}(b_\ell) = (-1)^{\ell+1}\f$.
+ * The signs are given by \f$\mathrm{sgn}(a_\ell) = (-1)^\ell\f$,
+ * \f$\mathrm{sgn}(b_\ell) = (-1)^{\ell+1}\f$.
  *
  * lna and lnb must be valid pointers and must not be NULL.
  *
  * @param [in,out] self Casimir object
  * @param [in] xi_ \f$\xi\mathcal{L}/c > 0\f$
  * @param [in] l angular momentum \f$\ell > 0\f$
- * @param [out] ln_a logarithm of \f$a_\ell\f$
- * @param [out] ln_b logarithm of \f$b_\ell\f$
+ * @param [out] lna logarithm of \f$|a_\ell|\f$
+ * @param [out] lnb logarithm of \f$|b_\ell|\f$
  */
 void casimir_mie_perf(casimir_t *self, double xi_, int l, double *lna, double *lnb)
 {
@@ -664,7 +663,7 @@ void casimir_fresnel(casimir_t *self, double xi_, double k_, double *r_TE, doubl
  * @param [in] casimir Casimir object
  * @param [in] m azimuthal quantum number \f$m\f$
  * @param [in] xi_ \f$\xi\mathcal{L}/c\f$
- * @param obj casimir_M_t object that can be given to \ref casimir_kernel_M
+ * @retval obj casimir_M_t object that can be given to \ref casimir_kernel_M
  */
 casimir_M_t *casimir_M_init(casimir_t *casimir, int m, double xi_)
 {
@@ -832,7 +831,8 @@ void casimir_M_free(casimir_M_t *self)
  *
  * @param [in] i row (starting from 0)
  * @param [in] j column (starting from 0)
- * @param [in] args pointer to casimir_M_t object
+ * @param [in] args_ pointer to casimir_M_t object
+ * @retval Mij matrix element
  */
 double casimir_kernel_M0_EE(int i, int j, void *args_)
 {
@@ -853,7 +853,8 @@ double casimir_kernel_M0_EE(int i, int j, void *args_)
  *
  * @param [in] i row (starting from 0)
  * @param [in] j column (starting from 0)
- * @param [in] args pointer to casimir_M_t object
+ * @param [in] args_ pointer to casimir_M_t object
+ * @retval Mij matrix element
  */
 double casimir_kernel_M0_MM_plasma(int i, int j, void *args_)
 {
@@ -890,7 +891,8 @@ double casimir_kernel_M0_MM_plasma(int i, int j, void *args_)
  *
  * @param [in] i row (starting from 0)
  * @param [in] j column (starting from 0)
- * @param [in] args pointer to casimir_M_t object
+ * @param [in] args_ pointer to casimir_M_t object
+ * @retval Mij matrix element
  */
 double casimir_kernel_M0_MM(int i, int j, void *args_)
 {
