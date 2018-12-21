@@ -230,7 +230,7 @@ static double integrand(double x, void *args)
     return logdetD;
 }
 
-/* omegap in eV */
+/* omegap in eV; drude, pr and plasma in units of kB*T */
 void F_HT(casimir_mpi_t *casimir_mpi, double omegap, double *drude, double *pr, double *plasma)
 {
     const double omegap_orig = casimir_mpi->omegap;
