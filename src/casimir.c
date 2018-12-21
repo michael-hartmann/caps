@@ -284,7 +284,7 @@ double F_xi(double xi_, casimir_mpi_t *casimir_mpi)
         casimir_set_ldim(casimir, casimir_mpi->ldim);
         if(casimir_mpi->iepsrel > 0)
             casimir_set_epsrel(casimir, casimir_mpi->iepsrel);
-        drude_HT = casimir_logdetD0_drude(casimir);
+        drude_HT = casimir_ht_drude(casimir);
         casimir_free(casimir);
 
         if(!isinf(casimir_mpi->omegap) && casimir_mpi->gamma > 0)
