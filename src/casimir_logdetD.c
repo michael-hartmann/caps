@@ -22,7 +22,7 @@ static void usage(FILE *stream)
 "Mandatory options:\n"
 "    -L     separation L\n"
 "    -R     radius R\n"
-"    --nT   imaginary frequency ξ in units of (L+R)/c\n"
+"    --xi   imaginary frequency ξ in units of (L+R)/c\n"
 "    -m     value of m\n"
 "\n"
 "Further options:\n"
@@ -66,7 +66,7 @@ int main(int argc, char *argv[])
     char filename[512] = { 0 };
 
     /* geometry, Matsubara frequency */
-    double L = 0, R = 0, nT = -1;
+    double L = 0, R = 0, xi_ = -1;
     int m = -1;
 
     /* numerical parameters */
@@ -84,7 +84,7 @@ int main(int argc, char *argv[])
             { "epsrel",    required_argument, 0, 'e' },
             { "detalg",    required_argument, 0, 'd' },
             { "material",  required_argument, 0, 'f' },
-            { "nT",        required_argument, 0, 'T' },
+            { "xi",        required_argument, 0, 'x' },
             { "ldim",      required_argument, 0, 'l' },
 
             { 0, 0, 0, 0 }
@@ -108,8 +108,8 @@ int main(int argc, char *argv[])
             case 'R':
                 R = atof(optarg);
                 break;
-            case 'T':
-                nT = atof(optarg);
+            case 'x':
+                xi_ = atof(optarg);
                 break;
             case 'l':
                 ldim = atoi(optarg);
@@ -165,8 +165,8 @@ int main(int argc, char *argv[])
             fprintf(stderr, "-L must be positive.");
         if(R <= 0)
             fprintf(stderr, "-R must be positive.");
-        else if(nT < 0)
-            fprintf(stderr, "--nT must be non-negative value.");
+        else if(xi_ < 0)
+            fprintf(stderr, "--xi must be non-negative value.");
         else if(m < 0)
             fprintf(stderr, "m >= 0\n\n");
         else
@@ -214,14 +214,14 @@ int main(int argc, char *argv[])
     casimir_info(casimir, stdout, "# ");
     printf("#\n");
 
-    if(nT > 0)
+    if(xi_ > 0)
     {
-        double logdet = casimir_logdetD(casimir, nT, m);
+        double logdet = casimir_logdetD(casimir, xi_, m);
 
         printf("# L, R, ξ*(L+R)/c, m, logdet(Id-M), ldim, time\n");
-        printf("%g, %g, %g, %d, %.16g, %d, %g\n", L, R, nT, m, logdet, casimir_get_ldim(casimir), now()-start_time);
+        printf("%g, %g, %g, %d, %.16g, %d, %g\n", L, R, xi_, m, logdet, casimir_get_ldim(casimir), now()-start_time);
     }
-    else /* nT == 0 */
+    else /* xi_ == 0 */
     {
         double logdet_EE, logdet_MM;
         casimir_logdetD0(casimir, m, 0, &logdet_EE, &logdet_MM, NULL);
