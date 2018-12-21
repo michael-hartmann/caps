@@ -658,7 +658,7 @@ void master(int argc, char *argv[], const int cores)
         int ier, neval;
 
         if(fcqs)
-            printf("# quad = Fourier-Chebsheb quadrature scheme\n");
+            printf("# quad = Fourier-Chebshev quadrature scheme\n");
         else
             printf("# quad = adaptive Gauss-Kronrod\n");
         printf("#\n");
