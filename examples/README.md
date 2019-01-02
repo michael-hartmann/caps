@@ -10,7 +10,7 @@ AuAl.c
 ------
 
 Compute the Casimir free energy at T=300K for a sphere of radius R=50µm and a
-separation between sphere and plate of L=1µm. The sphere is consists of gold
+separation between sphere and plate of L=1µm. The sphere consists of gold
 (Drude model) and the plate consists of aluminium (Drude model). The program
 computes the free energy in units of k_B T.
 
