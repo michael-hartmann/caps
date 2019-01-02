@@ -10,6 +10,7 @@ version 0.4
 * New user manual
 * Improved computation of Bessel functions
 * Added many tests
+* Added examples to show how to use the library
 * Experimental support for Fourier-Chebshev quadrature
 * Experimental support for Pade Spectrum Decomposition (PSD)
 * Update of HODLR and libeigen to latest version
