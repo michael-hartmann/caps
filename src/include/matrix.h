@@ -15,9 +15,10 @@ typedef enum { DETALG_HODLR, DETALG_LU, DETALG_QR, DETALG_CHOLESKY } detalg_t;
 
 /** define matrix type */
 typedef struct {
-    size_t dim,dim2;
-    size_t lda;
-    double *M;
+    size_t dim;  /**< dimension of matrix */
+    size_t dim2; /**< square of dimension of matrix */
+    size_t lda;  /**< leading order */
+    double *M;   /**< pointer to data */
 } matrix_t;
 
 
