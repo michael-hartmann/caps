@@ -8,6 +8,11 @@ libcasimir is an implementation of the Casimir effect in the plane-sphere
 geometry. The geometry consists of a sphere of radius R separated by a
 distance L from an infinite plate.
 
+With libcasimir you can compute the free Casimir energy in the plane-sphere
+geometry for arbitrary materials at zero and finite temperature. The library is
+highly optimized and allows you - depending parameters and on your hardware -
+to compute aspect ratios of R/L~10'000.
+
 Features
 --------
  - Calculate the free energy for different separations and temperatures
@@ -40,18 +45,7 @@ If you want to run the programs, make sure that `libcasimir.so` and
 ```
 If the shared libraries are not in the search path, you can still run the
 programs by specifying the directories that contain the shared libraries in
-`LD_LIBRARY_PATH`:
-```
-$ LD_LIBRARY_PATH=$LD_LIBRARY_PATH:./libhodlr ./casimir_logdetD -R 1 -L 0.01 -m 1 --nT 1
-# ./casimir_logdetD, -R, 1, -L, 0.01, -m, 1, --nT, 1
-# L/R    = 0.01
-# ldim   = 500
-# epsrel = 1.0e-08
-# detalg = HODLR
-#
-# L, R, ξ*(L+R)/c, m, logdet(Id-M), ldim, time
-0.01, 1, 1, 1, -6.463971987842978, 500, 0.465298
-```
+`LD_LIBRARY_PATH`.
 
 Besides gcc, the sources may also be compiled with icc or clang. You can
 compile the sources for example with clang with:
@@ -104,7 +98,8 @@ $ mpirun -c 7 ./casimir -L 2e-6 -R 150e-6 -T 300
 Documentation
 -------------
 
-Further documentation is available in `manual/`.
+A user manual is available in `manual/`, the API is documented using doxygen.
+
 
 Bugs, developing and contributing
 ---------------------------------
