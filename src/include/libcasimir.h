@@ -60,7 +60,7 @@ typedef struct casimir
     /*@}*/
 
     /**
-     * @name dielectric function of the plate
+     * @name dielectric function of the sphere
      */
      /*@{*/
     double (*epsilonm1_sphere)(double xi_, void *userdata);
