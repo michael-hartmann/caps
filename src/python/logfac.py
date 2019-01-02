@@ -64,7 +64,8 @@ double lfac2(unsigned int n) __attribute__ ((pure));
     with open("../logfac.c", "w") as f:
         print(includes, file=f)
 
-        print("""static double lookup_logi[] = { /* %g kb */
+        print(r"""/** lookup table for \f$\log(n)\f$, see \ref logi */
+static double lookup_logi[] = { /* %g kb */
     -INFINITY, /* log(0) */""" % (max_logi*8/1024), file=f)
 
         for i in range(1,max_logi-1):
@@ -74,7 +75,8 @@ double lfac2(unsigned int n) __attribute__ ((pure));
         print("};\n\n", file=f);
 
 
-        print("static double lookup_lfac[] = { /* %g kb */" % (max_lfac*8/1024), file=f)
+        print(r"""/** lookup table for \f$n!\f$, see \ref lfac */
+static double lookup_lfac[] = { /* %g kb */""" % (max_lfac*8/1024), file=f)
 
         for i in range(max_lfac-1):
             print("    %s, /* lgamma(1+%d) */" % (lgamma(1+i),i), file=f)

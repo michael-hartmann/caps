@@ -3,7 +3,7 @@
 /**
  * @file   logfac.c
  * @author Michael Hartmann <michael.hartmann@physik.uni-augsburg.de>
- * @date   December, 2018
+ * @date   January, 2019
  * @brief  computation of logarithm and factorial for integer arguments; created by logfac.py
  */
 
@@ -13,6 +13,7 @@
 #include "logfac.h"
 
 
+/** lookup table for \f$\log(n)\f$, see \ref logi */
 static double lookup_logi[] = { /* 512 kb */
     -INFINITY, /* log(0) */
     0.0, /* log(1) */
@@ -65553,6 +65554,7 @@ static double lookup_logi[] = { /* 512 kb */
 };
 
 
+/** lookup table for \f$n!\f$, see \ref lfac */
 static double lookup_lfac[] = { /* 8 kb */
     0.0, /* lgamma(1+0) */
     0.0, /* lgamma(1+1) */
