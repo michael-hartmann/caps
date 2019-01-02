@@ -1,7 +1,7 @@
 /**
  * @file   matrix.c
  * @author Michael Hartmann <michael.hartmann@physik.uni-augsburg.de>
- * @date   December, 2018
+ * @date   January, 2019
  * @brief  Matrix functions
  */
 
@@ -329,7 +329,7 @@ matrix_t *matrix_load_from_stream(FILE *stream)
 /**
  * @brief Load matrix from file
  *
- * Load matrix matrix from file filename. See \ref matrix_load_from_file for
+ * Load matrix matrix from file filename. See \ref matrix_load_from_stream for
  * more information.
  *
  * @param [in] filename filename of output file
@@ -378,7 +378,8 @@ void matrix_setall(matrix_t *A, double z)
 /**
  * @brief Calculate trace of matrix
  *
- * This function uses kahan sumation to decrease rounding errors.
+ * This function uses Kahan sumation (see \ref kahan_sum) to reduce rounding
+ * errors.
  *
  * @param [in] A matrix
  * @retval trace trace of A
@@ -397,13 +398,14 @@ double matrix_trace(matrix_t *A)
 /**
  * @brief Calculate trace of \f$A^2\f$
  *
- * This function uses kahan sumation to decrease rounding errors.
+ * This function uses Kahan sumation (see \ref kahan_sum) to reduce rounding
+ * errors.
  *
  * The function needs \f$\mathcal{O}(N^2)\f$ operation for an \f$N\times N\f$
  * matrix.
  *
  * @param [in] A matrix
- * @retval trace \f$\mathrm{tr} A^2\f$
+ * @retval trace \f$\mathrm{tr}\left(A^2\right)\f$
  */
 double matrix_trace2(matrix_t *A)
 {
