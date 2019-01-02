@@ -10,15 +10,22 @@
 #include "psd.h"
 #include "utils.h"
 
-/* prototype for LAPACK routine */
+/** prototype for LAPACK routine */
 int dstemr_(char *jobz, char *range, int *n, double *
     d__, double *e, double *vl, double *vu, int *il, 
     int *iu, int *m, double *w, double *z__, int *ldz, 
      int *nzc, int *isuppz, int *tryrac, double *work, 
     int *lwork, int *iwork, int *liwork, int *info);
 
-/* compute expansion coefficients eta according to the paragraph around
- * equations (12) and (13). */
+/** @brief Compute expansion coefficients
+ *
+ * Compute expansion coefficient \f$\eta_j\f$ according to the paragraph around
+ * equations (12) and (13). See \ref psd.
+ *
+ * @param [in] N order
+ * @param [in] z \f$z=-\xi_j^2\f$
+ * @retval eta_j \f$\eta_j\f$
+ */
 static double _eta(int N, double z)
 {
     double Am = 1/4.; /* A1 */
@@ -55,7 +62,7 @@ static double _eta(int N, double z)
     return A/(2*dB);
 }
 
-/** @brief Compute poles and \f$\xi_j\f$ and expansion coefficients \f$\eta_j\f$ for PSD
+/** @brief Compute poles \f$\xi_j\f$ and expansion coefficients \f$\eta_j\f$ for PSD
  *
  * This function computes the poles \f$\xi_j\f$ (at imaginary frequency) and
  * the expansion coefficients \f$\eta_j\f$ for the Pade spectrum decomposition
