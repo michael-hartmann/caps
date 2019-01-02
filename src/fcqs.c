@@ -2,7 +2,7 @@
  * @file   fcqs.c
  * @author Michael Hartmann <michael.hartmann@physik.uni-augsburg.de>
  * @date   December, 2018
- * @brief  exponentially convergent Fourier-Chebshev quadrature scheme
+ * @brief  exponentially convergent Fourier-Chebshev quadrature scheme (experimental)
  */
 
 #include <math.h>
@@ -11,7 +11,7 @@
 #include "constants.h"
 #include "fcqs.h"
 
-/* MMIN and MMAX must be chosen in a way that there exists a positive
+/** MMIN and MMAX must be chosen in a way that there exists a positive
  * integer k such that MMAX = MMIN * 2**k.
  */
 #define MMIN 5
@@ -23,10 +23,10 @@ static double wi_finite(double ti, double N) __attribute__ ((pure));
 
 /** @brief Squared cotangent
  *
- * Compute square of cotangent of x, (cos(x)/sin(x))^2
+ * Compute square of cotangent of \f$x\f$, i.e. \f$(\cos x/\sin x)^2\f$
  *
  * @param [in] x argument
- * @retval cot(x)
+ * @retval cot2 \f$\mathrm{cot}^2(x)\f$
  */
 static double cot2(double x)
 {
@@ -35,10 +35,15 @@ static double cot2(double x)
 }
 
 
-/* @brief Weights for quadrature scheme
+/** @brief Weights for quadrature scheme (semiinfinite interval)
  *
  * The weights correspond to (3.2e) of [1]. Here we have used that
- * cos(j*pi)=(-1)**j.
+ * \f$\cos(j\pi)=(-1)^j\f$.
+ *
+ * References:
+ * - [1] Boyd, Exponentially Convergent Fourier-Chebychev Quadrature Schemes on
+ * Bounded and Infinite Intervals, Journal of Scientific Computing, Vol. 2, No.
+ * 2 (1987)
  *
  * @param [in] ti node
  * @param [in] L  boosting parameter
@@ -54,10 +59,15 @@ static double wi_semiinf(double ti, double L, double N)
     return 8*L*sin(ti)/pow_2(1-cos(ti))/(N+1)*sum;
 }
 
-/* @brief Weights for quadrature scheme
+/** @brief Weights for quadrature scheme (infinite interval)
  *
  * The weights correspond to (3.1e) of [1]. Here we have used that
- * cos(j*pi)=(-1)**j.
+ * \f$\cos(j\pi)=(-1)^j\f$.
+ *
+ * References:
+ * - [1] Boyd, Exponentially Convergent Fourier-Chebychev Quadrature Schemes on
+ * Bounded and Infinite Intervals, Journal of Scientific Computing, Vol. 2, No.
+ * 2 (1987)
  *
  * @param [in] ti node
  * @param [in] N  order / number of points
@@ -74,20 +84,20 @@ static double wi_finite(double ti, double N)
 
 /** @brief Integrate function \f$f(x)\f$ over interval \f$[0,\infty)\f$
  *
- * This method uses an exponentially convergent Fourier-Chebshev quadrature to
- * compute the integral over the interval \f$[0,\infty)\f$. The method
- * approximately doubles the number of nodes until the desired accuracy is
- * achieved.
+ * This method uses an adaptive exponentially convergent Fourier-Chebshev
+ * quadrature to compute the integral over the interval \f$[0,\infty)\f$. The
+ * method approximately doubles the number of nodes until the desired accuracy
+ * is achieved.
  *
  * Values of ier after integration:
  * * ier=0: evaluation successful
  * * ier=1: relative accuracy epsrel must be positive
  * * ier=2: integrand returned NAN
  * * ier=3: integrand returned +inf or -inf
- * * ier=4: could not acchieve desired accuracy
+ * * ier=4: could not achieve desired accuracy
  *
  * @param [in]     f integrand
- * @param [in]     args NULL pointer given to f when called
+ * @param [in]     args pointer given to f when called
  * @param [in,out] epsrel on begin desired accuracy, afterwards achieved accuracy
  * @param [in]     neval number of evaluations of integrand (may be set to NULL)
  * @param [in]     L boosting parameter
@@ -174,23 +184,24 @@ double fcqs_semiinf(double f(double, void *), void *args, double *epsrel, int *n
 
 /** @brief Integrate function \f$f(x)\f$ over interval \f$[a,b]\f$
  *
- * This method uses an exponentially convergent Fourier-Chebshev quadrature to
- * compute the integral over the interval \f$[a,b]\f$. The method approximately
- * doubles the number of nodes until the desired accuracy is achieved.
+ * This method uses an adaptive exponentially convergent Fourier-Chebshev
+ * quadrature to compute the integral over the interval \f$[a,b]\f$. The method
+ * approximately doubles the number of nodes until the desired accuracy is
+ * achieved.
  *
  * Values of ier after integration:
  * * ier=0: evaluation successful
  * * ier=1: relative accuracy epsrel must be positive
  * * ier=2: integrand returned NAN
  * * ier=3: integrand returned +inf or -inf
- * * ier=4: could not acchieve desired accuracy
+ * * ier=4: could not achieve desired accuracy
  *
  * @param [in]     f integrand
- * @param [in]     args NULL pointer given to f when called
+ * @param [in]     args pointer given to f when called
  * @param [in]     a left border of integration
  * @param [in]     b right border of integration
  * @param [in,out] epsrel on begin desired accuracy, afterwards achieved accuracy
- * @param [in]     neval number of evaluations of integrand (may be set to NULL)
+ * @param [out]    neval number of evaluations of integrand (may be set to NULL)
  * @param [out]    ier exit code
  * @retval integral numerical value of integral
  */
