@@ -12,14 +12,16 @@
 #include "bessel.h"
 
 /**
- * @name modified Bessel functions for orders n=0,1
+ * @name modified Bessel functions for orders \f$n=0,1\f$
  * @{
  */
 
-/* Chebyshev coefficients for exp(-x) sqrt(x) I0(x)
- * in the inverted interval [8,infinity].
+/** Chebyshev coefficients for \f$\exp(-x) \sqrt{x} I_0(x)\f$
+ * in the inverted interval \f$[8,\infty]\f$.
  *
- * lim(x->inf){ exp(-x) sqrt(x) I0(x) } = 1/sqrt(2pi).
+ * \f[
+ * \lim_{x\to\infty} \exp(-x) \sqrt{x} I_0(x) = 1/\sqrt{2\pi}.
+ * \f]
  */
 static double I0_coeffs[] =
 {
@@ -50,11 +52,13 @@ static double I0_coeffs[] =
      8.04490411014108831608E-1
 };
 
-/* Chebyshev coefficients for K0(x) + log(x/2) I0(x)
- * in the interval [0,2].  The odd order coefficients are all
- * zero; only the even order coefficients are listed.
+/** Chebyshev coefficients for \f$K_0(x) + \log(x/2) I_0(x)\f$ in the interval
+ * \f$[0,2]\f$. The odd order coefficients are all zero; only the even order
+ * coefficients are listed.
  *
- * lim(x->0){ K0(x) + log(x/2) I0(x) } = -EUL.
+ * \f[
+ * \lim_{x\to0} \left( K_0(x) + \log(x/2) I_0(x) \right) = -\gamma.
+ * \f]
  */
 static double K0_coeffsA[] =
 {
@@ -70,10 +74,12 @@ static double K0_coeffsA[] =
     -5.35327393233902768720E-1
 };
 
-/* Chebyshev coefficients for exp(x) sqrt(x) K0(x)
- * in the inverted interval [2,infinity].
+/** Chebyshev coefficients for \f$\exp(x) \sqrt{x} K_0(x)\f$ in the inverted
+ * interval \f$[2,\infty]\f$.
  *
- * lim(x->inf){ exp(x) sqrt(x) K0(x) } = sqrt(pi/2).
+ * \f[
+ * \lim_{x\to\infty} \exp(x) \sqrt{x} K_0(x) = \sqrt{\pi/2}.
+ * \f]
  */
 static double K0_coeffsB[] = {
      5.30043377268626276149E-18,
@@ -103,10 +109,12 @@ static double K0_coeffsB[] = {
      2.44030308206595545468E0
 };
 
-/* Chebyshev coefficients for exp(-x) sqrt(x) I1(x)
- * in the inverted interval [8,infinity].
+/** Chebyshev coefficients for \f$\exp(-x) \sqrt{x} I_1(x)\f$ in the inverted
+ * interval \f$[8,\infty]\f$.
  *
- * lim(x->inf){ exp(-x) sqrt(x) I1(x) } = 1/sqrt(2pi).
+ * \f[
+ * \lim_{x\to\infty} \exp(-x) \sqrt{x} I_1(x) = 1/\sqrt{2\pi}.
+ * \f]
  */
 static double I1_coeffs[] =
 {
@@ -137,10 +145,12 @@ static double I1_coeffs[] =
      7.78576235018280120474E-1
 };
 
-/* Chebyshev coefficients for x(K1(x) - log(x/2) I1(x))
- * in the interval [0,2].
+/** Chebyshev coefficients for \f$x\left(K_1(x) - \log(x/2) I_1(x)\right)\f$
+ * in the interval \f$[0,2]\f$.
  *
- * lim(x->0){ x(K1(x) - log(x/2) I1(x)) } = 1.
+ * \f[
+ * \lim_{x\to0} x \left( K_1(x) - \log(x/2) I_1(x) \right) = 1.
+ * \f]
  */
 static double K1_coeffsA[] =
 {
@@ -157,10 +167,12 @@ static double K1_coeffsA[] =
      1.52530022733894777053E0
 };
 
-/* Chebyshev coefficients for exp(x) sqrt(x) K1(x)
- * in the interval [2,infinity].
+/** Chebyshev coefficients for \f$\exp(x) \sqrt{x} K_1(x)\f$ in the interval
+ * \f$[2,\infty]\f$.
  *
- * lim(x->inf){ exp(x) sqrt(x) K1(x) } = sqrt(pi/2).
+ * \f[
+ * \lim_{x\to\infty} \exp(x) \sqrt{x} K_1(x) = \sqrt{\pi/2}.
+ * \f]
  */
 static double K1_coeffsB[] =
 {
@@ -194,32 +206,34 @@ static double K1_coeffsB[] =
 /** @brief Evaluate Chebyshev series
  *
  * Evaluates the series
- *      y = Sum'( coef[i] * T_i(x/2), from i=0 to N-1)
- * of Chebyshev polynomials Ti at argument x/2. The prime indicates that the
- * term for i=0 has to be weighted by a factor 1/2.
+ * \f[
+ *      y = \sum_{i=0}^{N-1} \mathrm{coef}[i] \cdot T_i(x/2)
+ * \f]
+ * of Chebyshev polynomials \f$T_i\f$ at argument \f$x/2\f$. The prime
+ * indicates that the term for \f$i=0\f$ has to be weighted by a factor
+ * \f$1/2\f$.
  *
  * Coefficients are stored in reverse order, i.e. the zero order term is last
- * in the array.
- * Note: n is the number of coefficients, not the order.
+ * in the array. Note: n is the number of coefficients, not the order.
  *
- * If coefficients are for the interval a to b, x must have been transformed to
- * x->2(2x-b-a)/(b-a) before entering the routine. This maps x from (a, b) to
- * (-1, 1), over which the Chebyshev polynomials are defined.
+ * If coefficients are for the interval \f$a\f$ to \f$b\f$, \f$x\f$ must have
+ * been transformed to \f$x\to2(2x-b-a)/(b-a)\f$ before entering the routine.
+ * This maps \f$x\f$ from \f$(a, b)\f$ to \f$(-1, 1)\f$, over which the
+ * Chebyshev polynomials are defined.
  *
- * If the coefficients are for the inverted interval, in which (a, b) is mapped
- * to (1/b, 1/a), the transformation required is x->2(2ab/x-b-a)/(b-a). If b is
- * infinity, this becomes x->4a/x-1.
+ * If the coefficients are for the inverted interval, in which \f$(a, b)\f$ is
+ * mapped to \f$(1/b, 1/a)\f$, the transformation required is
+ * \f$x\to2(2ab/x-b-a)/(b-a)\f$. If \f$b\f$ is infinity, this becomes
+ * \f$x\to4a/x-1\f$.
  *
- * SPEED:
- * Taking advantage of the recurrence properties of the
- * Chebyshev polynomials, the routine requires one more
- * addition per loop than evaluating a nested polynomial of
- * the same degree.
+ * Speed: Taking advantage of the recurrence properties of the Chebyshev
+ * polynomials, the routine requires one more addition per loop than evaluating
+ * a nested polynomial of the same degree.
  *
  * @param [in] x Chebyshev series is evaluated at this point
  * @param [in] array Chebyshev coefficients
  * @param [in] n number of Chebyshev coefficients, number of elements of array
- * @retval Chebychev series evaluated at x
+ * @retval eval Chebychev series evaluated at x
  */
 static double chbevl(double x, double array[], int n)
 {
@@ -253,19 +267,15 @@ double bessel_I0(double x)
 
 /** @brief Logarithm of modified Bessel function \f$I_0(x)\f$
  *
- * For \f$x<0\f$ NAN (not a number) is returned.
- *
- * For \f$x=0\f$ the value \f$\log I_0(0) = \log(1)=0\f$ is returned.
- *
- * For \f$0<x<8\f$ a series expansion is used, see \ref bessel_logInu_series.
- *
- * For \f$8\le x<800\f$ a Chebychev expansion is used.
- *
- * For \f$x\ge800\f$ the Hankel expansion
- * \f[
- * I_0(x) \approx \frac{e^x}{\sqrt{2\pi x}} \left( 1 + k + \frac{9}{2} k^2 + \frac{225}{6} k^3 \right), \quad k=\frac{1}{8x}
- * \f]
- * is used.
+ * - For \f$x<0\f$ NAN (not a number) is returned.
+ * - For \f$x=0\f$ the value \f$\log I_0(0) = \log(1)=0\f$ is returned.
+ * - For \f$0<x<8\f$ a series expansion is used, see \ref bessel_logInu_series.
+ * - For \f$8\le x<800\f$ a Chebychev expansion is used.
+ * - For \f$x\ge800\f$ the Hankel expansion
+ *   \f[
+ *   I_0(x) \approx \frac{e^x}{\sqrt{2\pi x}} \left( 1 + k + \frac{9}{2} k^2 + \frac{225}{6} k^3 \right), \quad k=\frac{1}{8x}
+ *   \f]
+ *   is used.
  *
  * @param [in] x argument
  * @retval logI0 \f$\log I_0(x)\f$
@@ -305,19 +315,20 @@ double bessel_K0(double x)
 
 /** @brief Logarithm of modified Bessel function \f$K_0(x)\f$
  *
- * For small arguments \f$0<x<10^{-8}\f$, the limiting form
- * \f$K_0(x) \approx -\log(x/2)-\gamma\f$ for \f$x\to0\f$ where \f$\gamma\f$
- * denotes the Euler-Mascheroni constant is used.
- *
- * For large arguments \f$x>800\f$, the Hankel expansion
- * \f[
- * K_0(x) \approx \sqrt{\frac{\pi}{2x}} e^{-x} \left(1-k+\frac{9}{2} k^2 - \frac{225}{6} k^3\right), \quad k=\frac{1}{8x}
- * \f]
- * is used.
- *
- * For intermediate values, the range is partitioned into the two intervals
- * \f$[10^{-8},2)\f$ and \f$(2,800)\f$ and Chebyshev polynomial expansions are
- * employed in each interval.
+ * - For small arguments \f$0<x<10^{-8}\f$, the limiting form
+ *   \f[
+ *   K_0(x) \approx -\log(x/2)-\gamma
+ *   \f]
+ *   for \f$x\to0\f$ where \f$\gamma\f$ denotes the Euler-Mascheroni constant
+ *   is used.
+ * - For large arguments \f$x\ge800\f$, the Hankel expansion
+ *   \f[
+ *   K_0(x) \approx \sqrt{\frac{\pi}{2x}} e^{-x} \left(1-k+\frac{9}{2} k^2 - \frac{225}{6} k^3\right), \quad k=\frac{1}{8x}
+ *   \f]
+ *   is used.
+ * - For intermediate values, the range is partitioned into the two intervals
+ *   \f$[10^{-8},2)\f$ and \f$(2,800)\f$ and Chebyshev polynomial expansions are
+ *   employed in each interval.
  *
  * @param [in] x argument
  * @retval logK0 \f$\log K_0(x)\f$
@@ -344,7 +355,6 @@ double bessel_logK0(double x)
          const double k = 1./8/x;
          return 0.5*log(M_PI/2/x) - x + log1p( k*(-1+9./2*k*(1-25./3*k)) );
     }
-
 }
 
 
@@ -363,17 +373,14 @@ double bessel_I1(double x)
 
 /** @brief Logarithm of modified Bessel function \f$I_1(x)\f$
  *
- * For \f$x<0\f$ NAN (not a number) is returned.
- *
- * For \f$0<x<8\f$ a series expansion is used, see \ref bessel_logInu_series.
- *
- * For \f$8\le x<800\f$ a Chebychev expansion is used.
- *
- * For \f$x\ge800\f$ the Hankel expansion
- * \f[
- * I_0(x) \approx \frac{e^x}{\sqrt{2\pi x}} \left( 1 - 3k - \frac{15}{2} k^2 - \frac{105}{2} k^3 \right), \quad k=\frac{1}{8x}
- * \f]
- * is used.
+ * - For \f$x<0\f$ NAN (not a number) is returned.
+ * - For \f$0<x<8\f$ a series expansion is used, see \ref bessel_logInu_series.
+ * - For \f$8\le x<800\f$ a Chebychev expansion is used.
+ * - For \f$x\ge800\f$ the Hankel expansion
+ *   \f[
+ *   I_0(x) \approx \frac{e^x}{\sqrt{2\pi x}} \left( 1 - 3k - \frac{15}{2} k^2 - \frac{105}{2} k^3 \right), \quad k=\frac{1}{8x}
+ *   \f]
+ *   is used.
  *
  * @param [in] x argument
  * @retval logI1 \f$\log I_1(x)\f$
@@ -409,18 +416,19 @@ double bessel_K1(double x)
 
 /** @brief Logarithm of modified Bessel function \f$K_1(x)\f$
  *
- * For small arguments \f$x<10^{-8}\f$, the limiting form
- * \f$K_1(x)\approx 1/x\f$ for \f$x\to0\f$ is used.
- *
- * For large arguments \f$x\le800\f$, the Hankel expansion
- * \f[
- * K_1(x) \approx \sqrt{\frac{\pi}{2x}} e^{-x} \left(1 + 3k - \frac{15}{2} k^2 + \frac{315}{6} k^3\right), \quad k = \frac{1}{8x}
- * \f]
- * is used.
- *
- * For intermediate values, the range is partitioned into the two intervals
- * \f$[10^{-8},8)\f$ and \f$[8,800)\f$ and Chebyshev polynomial expansions are
- * employed in each interval.
+ * - For small arguments \f$x<10^{-8}\f$, the limiting form
+ *   \f[
+ *   K_1(x)\approx 1/x
+ *   \f]
+ *   for \f$x\to0\f$ is used.
+ * - For large arguments \f$x\ge800\f$, the Hankel expansion
+ *   \f[
+ *   K_1(x) \approx \sqrt{\frac{\pi}{2x}} e^{-x} \left(1 + 3k - \frac{15}{2} k^2 + \frac{315}{6} k^3\right), \quad k = \frac{1}{8x}
+ *   \f]
+ *   is used.
+ * - For intermediate values, the range is partitioned into the two intervals
+ *   \f$[10^{-8},8)\f$ and \f$[8,800)\f$ and Chebyshev polynomial expansions are
+ *   employed in each interval.
  *
  * @param [in] x argument
  * @retval logK1 \f$\log K_1(x)\f$
@@ -486,14 +494,14 @@ double bessel_Kn(int n, double x)
  * The Bessel function \f$K_n(x)\f$ for integer order \f$n\f$ is computed using
  * the recurrence relation
  * \f[
- * K_{n+1}(x) = K_{n-1}(x) + \frac{2n}{x} K_n(x)
+ * K_{j+1}(x) = K_{j-1}(x) + \frac{2j}{x} K_j(x)
  * \f]
  * in upwards direction. The Bessel functions \f$K_0(x)\f$ and \f$K_1(x)\f$ are
  * computed using \ref bessel_logK0 and \ref bessel_logK1.
  *
- * @param [in]  n \f$n_\mathrm{max}\f$ maximum order
+ * @param [in]  n order
  * @param [in]  x argument
- * @retval logKn array of n+1 elements with the values of \f$K_0(x), K_1(x),\dots, K_{n_\mathrm{max}}(x)\f$
+ * @retval logKn \f$K_n(x)\f$
  */
 double bessel_logKn_recursive(int n, double x)
 {
@@ -524,14 +532,12 @@ double bessel_logKn_recursive(int n, double x)
 
 /** @brief Logarithm of modified Bessel function \f$K_n(x)\f$ for integer order \f$n\f$
  *
- * For \f$n=0\f$ and \f$n=1\f$ the function calls \ref bessel_logK0 or \ref
- * bessel_logK1.
- *
- * For \f$n\ge100\f$ an asymptotic expansion is used, see \ref
- * bessel_logKnu_asymp.
- *
- * Otherwise, the function is computed using a recursion relation, see \ref
- * bessel_logKn_recursive.
+ * - For \f$n=0\f$ and \f$n=1\f$ the function calls \ref bessel_logK0 or \ref
+ *   bessel_logK1.
+ * - For \f$n\ge100\f$ an asymptotic expansion is used, see \ref
+ *   bessel_logKnu_asymp.
+ * - Otherwise, the function is computed using a recursion relation, see \ref
+ *   bessel_logKn_recursive.
  *
  * @param [in]  n order
  * @param [in]  x argument
@@ -555,21 +561,20 @@ double bessel_logKn(int n, double x)
 
 /** @brief Logarithm of modified Bessel function \f$I_n(x)\f$ for integer order \f$n\f$
  *
- * For \f$n=0\f$ and \f$n=1\f$ the function calls \ref bessel_logI0 or \ref
- * bessel_logI1.
- *
- * For \f$n\ge100\f$ an asymptotic expansion is used, see \ref
- * bessel_logInu_asymp.
- *
- * For \f$n<100\f$ and \f$x<5\sqrt{n}\f$ a series expansion is used, see \ref
- * bessel_logInu_series.
- *
- * Otherwise, the function \f$I_n(x)\f$ is computed using the recurrence relation
- * \f[
- * I_{n-1}(x) = I_{n+1}(x) + \frac{2n}{x} I_n(x)
- * \f]
- * in downwards direction using Miller's algorithm. See also \ref bessel_logI0
- * and \ref bessel_ratioI.
+ * - For \f$n=0\f$ and \f$n=1\f$ the function calls \ref bessel_logI0 or \ref
+ *   bessel_logI1.
+ * - For \f$n\ge100\f$ an asymptotic expansion is used, see \ref
+ *   bessel_logInu_asymp.
+ * - For \f$n<100\f$ and \f$x<5\sqrt{n}\f$ a series expansion is used, see \ref
+ *   bessel_logInu_series.
+ * - Otherwise, the function \f$I_n(x)\f$ is computed using the recurrence relation
+ *   \f[
+ *   I_{n-1}(x) = I_{n+1}(x) + \frac{2n}{x} I_n(x)
+ *   \f]
+ *   in downwards direction using Miller's algorithm.
+ * 
+ * See also \ref bessel_logI0, \ref bessel_logI1, \ref bessel_logInu_asymp,
+ * \ref bessel_logInu_series, and \ref bessel_ratioI.
  *
  * @param [in]  n order
  * @param [in]  x argument
