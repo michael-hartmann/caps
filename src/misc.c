@@ -48,7 +48,7 @@ double kahan_sum(double input[], size_t N)
  * \f[
  *     \sqrt{1+x}-1 = \frac{x}{\sqrt{1+x}+1}
  * \f]
- * to avoid a loss of significance if x is small.
+ * to avoid a loss of significance if \f$x\f$ is small.
  *
  * @param [in] x
  * @retval sqrt(1+x)-1
