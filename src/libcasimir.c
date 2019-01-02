@@ -311,6 +311,8 @@ int casimir_set_epsrel(casimir_t *self, double epsrel)
 /**
  * @brief Get relative error for numerical integration
  *
+ * See \ref casimir_set_epsrel.
+ *
  * @retval epsrel relative error
  */
 double casimir_get_epsrel(casimir_t *self)
@@ -382,8 +384,7 @@ void casimir_set_epsilonm1_sphere(casimir_t *self, double (*epsilonm1)(double xi
  * The algorithm is given by detalg. Usually you don't want to change the
  * algorithm to compute the determinant.
  *
- * detalg may be: DETALG_HODLR or (needs LAPACK support) DETALG_LU, DETALG_QR,
- * DETALG_CHOLESKY.
+ * detalg may be: DETALG_HODLR or DETALG_LU, DETALG_QR, DETALG_CHOLESKY.
  *
  * If successul, the function returns 1. If the algorithm is not supported
  * because of missing LAPACK support, 0 is returned.
@@ -1098,7 +1099,7 @@ double casimir_ht_perf(casimir_t *casimir, double eps)
  * @param [in] casimir Casimir object
  * @param [in] omegap plasma frequency in rad/s
  * @param [in] eps abort criterion
- * @retval logdetD \f$\log\det\mathcal{D}(\xi=0)\f$ for plasma model
+ * @retval F free energy in units of \f$k_\mathrm{B}T\f$
  */
 double casimir_ht_plasma(casimir_t *casimir, double omegap, double eps)
 {
