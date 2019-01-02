@@ -1,7 +1,7 @@
 /**
  * @file   plm.c
  * @author Michael Hartmann <michael.hartmann@physik.uni-augsburg.de>
- * @date   April, 2018
+ * @date   January, 2019
  * @brief  computation of Legendre and associated Legendre polynomials
  */
 
@@ -18,10 +18,11 @@
 /**
  * @brief Associated Legendre polynomials for argument \f$x>1\f$
  *
- * This function calculates associated Legendre functions for \f$m \ge 0\f$ and \f$x>1\f$.
+ * This function calculates associated Legendre functions for \f$m \ge 0\f$ and
+ * \f$x>1\f$.
  *
- * The associated Legendre polynomials for x>1 are defined as follows (see
- * references)
+ * The associated Legendre polynomials for \f$x>1\f$ are defined as follows
+ * (see references)
  * \f[
  *     P_l^m(x) = (x^2-1)^{m/2} \frac{\mathrm{d}}{\mathrm{d}x^m} P_l(x) .
  * \f]
@@ -30,9 +31,9 @@
  * \f$1\f$ in the first bracket after the equal sign. With this definition the
  * associated Legendre polynomials are real and positive functions.
  *
- * For \f$l-m \le 200\f$ we use an upwards recurrence relation, see \ref
- * lnPlm_upwards, otherwise we use a downwards recurrence relation, see
- * \ref lnPlm_downwards .
+ * For \f$l-m \le 200\f$ we use an upwards recurrence relation in \f$m\f$, see
+ * \ref lnPlm_upwards, otherwise we use a downwards recurrence relation in
+ * \f$m\f$, see \ref lnPlm_downwards .
  *
  * References:
  * - DLMF, §14.7.11, http://dlmf.nist.gov/14.7#E11
@@ -41,7 +42,7 @@
  * @param [in] l degree
  * @param [in] m order
  * @param [in] x argument
- * @retval log(Plm(x))
+ * @retval logPlm \f$\log P_l^m(x)\f$
  */
 double lnPlm(int l, int m, double x)
 {
@@ -111,13 +112,23 @@ double lnPlm_upwards(int l, int m, double x)
 }
 
 
-/* Legendre polynomial Pl
+/** @brief Compute Legendre polynomial \f$\log P_l(x)\f$ for large \f$x\f$
  *
- * Evaluation of Pl(x) for x>=1 using an asymptotic expansion provided that
- *      (l+1)*sqrt((x+1)*(x-1)) >= 25.
+ * Evaluation of \f$\log P_l(x)\f$ for \f$x\ge1\f$ using an asymptotic expansion
+ * provided that
+ * \f[
+ * (l+1) \sqrt{(x+1)(x-1)} \ge 25.
+ * \f]
  *
- * O(1) computation of Legendre polynomials and Gauss-Legendre nodes and
- * weights for parallel computing, section 3.2.
+ * \f$\mathcal{O}(1)\f$ computation of Legendre polynomials and Gauss-Legendre
+ * nodes and weights for parallel computing, section 3.2.
+ *
+ * See \ref lnPl.
+ *
+ * @param [in] l degree
+ * @param [in] x argument
+ * @param [in] sinhxi \f$\sinh\xi = \sqrt{(x+1)(x-1)}\f$
+ * @retval logPl \f$\log P_l(x)\f$
  */
 static double _Pl1(int l, double x, double sinhxi)
 {
@@ -154,7 +165,7 @@ static double _Pl1(int l, double x, double sinhxi)
     return -(M_LOG2+M_LOGPI)/2 - log(sinhxi)/2 + log(sum) + (l+0.5)*xi;
 }
 
-/* equations (3.27)-(3.31) */
+/** see equations (3.27)-(3.31) */
 static double _fn(int n, double hn[13])
 {
     switch(n)
@@ -179,13 +190,22 @@ static double _fn(int n, double hn[13])
 }
 
 
-/* Legendre polynomial Pl
+/** @brief Compute Legendre polynomial \f$\log P_l(x)\f$ for small \f$x\f$
  *
- * Evaluation of Pl(x) for x>=1 using an asymptotic expansion provided that
- *      (l+1)*sqrt((x+1)*(x-1)) < 25.
+ * Evaluation of \f$\log P_l(x)\f$ for \f$\ge1\f$ using an asymptotic expansion
+ * provided that
+ * \f[
+ *      (l+1)\sqrt{(x+1)(x-1)} < 25.
+ * \f]
  *
- * O(1) computation of Legendre polynomials and Gauss-Legendre nodes and
- * weights for parallel computing, section 3.3.
+ * \f$\mathcal{O}(1)\f$ computation of Legendre polynomials and Gauss-Legendre
+ * nodes and weights for parallel computing, section 3.3.
+ *
+ * See \ref lnPl.
+ *
+ * @param [in] l
+ * @param [in] x
+ * @retval logPl \f$\log P_l(x)\f$
  */
 static double _Pl2(int l, double x)
 {
@@ -215,10 +235,19 @@ static double _Pl2(int l, double x)
 }
 
 
-/* Legendre polynomial Pl
+/** @brief Compute Legendre polynomial \f$\log P_l(x)\f$ using recurrence relation
  *
- * Evaluation of Pl(x) for x>=1 using the recurrence relation
+ * Evaluation of \f$\log P_l(x)\f$ for \f$x\ge1\f$ using the recurrence
+ * relation
+ * \f[
  *      (n+1) P_{n+1}(x) = (2n+1) x P_n(x) - n P_{n-1}(x).
+ * \f]
+ *
+ * See \ref lnPl.
+ *
+ * @param [in] l order
+ * @param [in] x argument
+ * @retval logPl \f$\log P_l(x)\f$
  */
 static double _Pl3(int l, double x)
 {
@@ -249,14 +278,19 @@ static double _Pl3(int l, double x)
 
 
 /**
- * @brief Compute Legendre polynomial \f$P_l(x)\f$
+ * @brief Compute Legendre polynomial \f$\log P_l(x)\f$
  *
- * Evaluation of \f$P_l(x)\f$ for \f$x\ge1\f$.
+ * Evaluation of \f$\log P_l(x)\f$ for \f$x\ge1\f$.
  *
- * For \f$l < 100\f$ a recurrence relation is used (see _Pl3), otherwise asymptotic
- * expansions are used (see _Pl1 and _Pl2).
+ * For \f$l < 100\f$ a recurrence relation is used (see \ref _Pl3), otherwise
+ * asymptotic expansions are used (see \ref _Pl1 and \ref _Pl2).
  *
  * The function returns \f$\log P_l(x)\f$.
+ *
+ * Reference:
+ * - Bogaert, Michiels, Fostier, O(1) Computation of Legendre Polynomials and
+ *   Gauss--Legendre Nodes and Weights for Parallel Computing, SIAM J. Sci.
+ *   Comput. 3, 34 (2012)
  *
  * @param [in] l degree
  * @param [in] x argument
@@ -345,7 +379,7 @@ double Plm_continued_fraction(const long l, const long m, const double x)
  * First, the fraction \f$P_l^m(x)/P_l^{m-1}(x)\f$ is computed using \ref
  * Plm_continued_fraction.  Then the downwards recurrence relation
  * http://dlmf.nist.gov/14.10.E6 is used from \f$P_l^m(x)\f$ to \f$P_l^0(x)\f$.
- * Together with \f$P_l(x)\f$ (see \ref lnPl) one has the solution.
+ * Together with \f$P_l(x)\f$ (see \ref lnPl) one can compute \f$P_l^m(x)\f$.
  *
  * This routine is efficient if \f$l \gg m\f$.
  *
@@ -389,13 +423,13 @@ double lnPlm_downwards(int l, int m, double x)
 /** @brief Compute 1st and 2nd logarithmic derivative of associated Legendre polynomial
  *
  * Compute \f$\frac{\mathrm{d}}{\mathrm{d}x} \log P_l^m(x)\f$ and
- * \f$\frac{\mathrm{d}^2}{\mathrm{d}x^2} \log P_l^m(x))\f$.
+ * \f$\frac{\mathrm{d}^2}{\mathrm{d}x^2} \log P_l^m(x)\f$.
  *
  * If d2lnPlm is NULL, the 2nd logarithmic derivative will not be computed.
  *
  * @param [in] l degree
  * @param [in] m order
- * @param [in] x position
+ * @param [in] x argument
  * @param [out] d2lnPlm 2nd logarithmic derivative of \f$P_l^m(x)\f$
  * @retval dlnPlm first logarithmic derivative of \f$P_l^m(x)\f$
  */
