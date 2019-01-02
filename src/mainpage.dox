@@ -7,5 +7,10 @@ scattering approach.
 
 This document describes the API of the libcasimir library. The compilation of
 the software and the usage of the programs are described in the user manual
-(manual.pdf).
+located in the directory manual/.
+
+The library is tuned for high performance. Often, input parameters of functions
+are not checked. In contrast, library functions usually abort the program if
+results are wrong or look fishy.
+
 */
