@@ -16,10 +16,18 @@
 #include "utils.h"
 #include "misc.h"
 
-/* Parse a string in the form of:
- *      key separator value
- * where key and value are of type double. If key or separator is not found,
- * false is returned. If the string is matched successfully, value is set.
+/** @brief Helper function to parse strings
+ *
+ * Parse a string in the form of "key separator value" where key and value
+ * represent floating numbers. If key or separator is not found, false is
+ * returned. If the string is matched successfully, value is set.
+ *
+ * @param [in]  line string to parse
+ * @param [in]  key key
+ * @param [in]  separator separator
+ * @param [out] value numerical value of the string "value"
+ * @retval true parsing successful
+ * @retval false parsing not successful
  */
 static bool _parse(const char *line, const char *key, const char separator, double *value)
 {
