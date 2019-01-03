@@ -112,8 +112,8 @@ Authors, license and credits
  * [Michael Hartmann](https://myweb.rz.uni-augsburg.de/~hartmmic/), michael.hartmann@physik.uni-augsburg.de
    main developer
 
- * [Gert-Ludwig Ingold](http://www.physik.uni-augsburg.de/theo1/ingold/), gert.ingold@physik.uni-augsburg.de
-   contributions to documentation, speedup of PFA calculation, bugfixes
+ * [Gert-Ludwig Ingold](https://www.physik.uni-augsburg.de/theo1/ingold/), gert.ingold@physik.uni-augsburg.de
+   contributions to documentation, bugfixes
 
 For a full list, see CREDITS.
 
@@ -122,17 +122,17 @@ The code is licensed under GPLv2, see LICENSE.
 Also, libcasimir uses some third-party software:
  * [HODLR](https://github.com/sivaramambikasaran/HODLR) A fast direct solver
    and determinant computation for dense linear systems. (MPL2)
- * [libeigen](http://eigen.tuxfamily.org) Eigen is a C++ template library for
+ * [libeigen](https://eigen.tuxfamily.org) Eigen is a C++ template library for
    linear algebra (MPL2)
  * [cquadpack](https://github.com/ESSS/cquadpack) cquadpack is
    a a C port of the QUADPACK software originally written in Fortran for
    solving integrals. (public domain)
- * [cephes](http://www.netlib.org/cephes/) is a software collection with
+ * [cephes](https://www.netlib.org/cephes/) is a software collection with
    special functions. libcasimir uses the implementation for the modified
-   Bessel functions [I0(x)](http://www.netlib.org/cephes/doubldoc.html#i0) and
-   [I1(x)](http://www.netlib.org/cephes/doubldoc.html#i1). Boths files have
+   Bessel functions [I0(x)](https://www.netlib.org/cephes/doubldoc.html#i0) and
+   [I1(x)](https://www.netlib.org/cephes/doubldoc.html#i1). Boths files have
    been slightly modified, see besselI.c. (No license, probably BSD licensed.)
- * [LAPACK](http://www.netlib.org/lapack/) Linear algebra library. LAPACK may
+ * [LAPACK](https://www.netlib.org/lapack/) Linear algebra library. LAPACK may
    be used to calculate the determinant of the scattering matrices. However,
    for small separations using HODLR is much faster. (Modified BSD)
  * [buf](https://github.com/skeeto/growable-buf) growable memory buffers for
@@ -154,10 +154,10 @@ Publications
    Michael Hartmann, Gert-Ludwig Ingold, and Paulo A. Maia Neto,  
    Phys. Rev. Lett. **119**, 043901 (2017), DOI: 10.1103/PhysRevLett.119.04390
 
- * [Disentangling geometric and dissipative origins of negative Casimir entropies](https://doi.org/10.1103/PhysRevE.92.042125) (on [arxiv](http://arxiv.org/abs/1507.05891))  
+ * [Disentangling geometric and dissipative origins of negative Casimir entropies](https://doi.org/10.1103/PhysRevE.92.042125) (on [arxiv](https://arxiv.org/abs/1507.05891))  
    Stefan Umrath, Michael Hartmann, Gert-Ludwig Ingold, and Paulo A. Maia Neto,  
    Phys. Rev. E **92**, 042125 (2015), DOI: 10.1103/PhysRevE.92.042125
 
- * [Geometric origin of negative Casimir entropies: A scattering-channel analysis](https://doi.org/10.1103/PhysRevE.91.033203) (on [arxiv](http://arxiv.org/abs/1411.1866))  
+ * [Geometric origin of negative Casimir entropies: A scattering-channel analysis](https://doi.org/10.1103/PhysRevE.91.033203) (on [arxiv](https://arxiv.org/abs/1411.1866))  
    Gert-Ludwig Ingold, Stefan Umrath, Michael Hartmann, Romain Guérout, Astrid Lambrecht, Serge Reynaud, and Kimball A. Milton,  
    Phys. Rev. E **91**, 033203 (2015). DOI: 10.1103/PhysRevE.91.033203
