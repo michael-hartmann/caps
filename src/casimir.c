@@ -746,9 +746,9 @@ void master(int argc, char *argv[], const int cores)
 
         if(psd_order > 0)
         {
-            /* Pade spectrum decomposition (PSD), see psd.c and [1]
-             * References:
-             *      [1] Hu, Xu, Yan, J. Chem. Phys. 133, 101106 (2010)
+            /* Pade spectrum decomposition (PSD), see psd.c.
+             * Reference: Hu, Xu, Yan, J. Chem. Phys. 133, 101106 (2010),
+             *            https://doi.org/10.1063/1.3602466
              */
             double *psd_xi  = xcalloc(psd_order, sizeof(double));
             double *psd_eta = xcalloc(psd_order, sizeof(double));
