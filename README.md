@@ -10,8 +10,8 @@ distance L from an infinite plate.
 
 With libcasimir you can compute the free Casimir energy in the plane-sphere
 geometry for arbitrary materials at zero and finite temperature. The library is
-highly optimized and allows you - depending on parameters and your hardware
-- to compute the free energy for aspect ratios of R/L~10'000.
+highly optimized and allows you - depending on parameters and your hardware - to
+compute the free energy for aspect ratios of R/L~10'000.
 
 Features
 --------
