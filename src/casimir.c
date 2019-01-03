@@ -569,7 +569,10 @@ void master(int argc, char *argv[], const int cores)
 
     if(cores < 2)
     {
-        fprintf(stderr, "need at least 2 cores\n");
+        fprintf(stderr, "This program needs at least 2 cores to run.\n");
+        fprintf(stderr, "Have you started the program using mpirun?\n");
+        fprintf(stderr, "Example using five cores:\n");
+        fprintf(stderr, "  $ mpirun -n 5 %s [OPTIONS]\n", argv[0]);
         EXIT();
     }
 
