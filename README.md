@@ -43,18 +43,18 @@ If you want to run the programs, make sure that `libcasimir.so` and
 ```
 ./casimir_logdetD: error while loading shared libraries: libcasimir.so: cannot open shared object file: No such file or directory
 ```
-If the shared libraries are not in the search path, you can still run the
-programs by specifying the directories that contain the shared libraries in
+If the shared libraries are not in the search path, you can run the programs
+by specifying the directories that contain the shared libraries in
 `LD_LIBRARY_PATH`:
 ```
-export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/path/to/libcasimir-dev/src/:/path/to/libcasimir-dev/src/libhodlr
+$ export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/path/to/libcasimir-dev/src/:/path/to/libcasimir-dev/src/libhodlr
 ```
 
 Usage
 -----
 To compute the Casimir free energy between a sphere of radius R=150µm and a
-plane separated by a distance L=2µm at room temperature T=300K, use the
-command:
+plane separated by a distance L=2µm at room temperature T=300K assuming
+that both objects are perfect reflectors, use the command:
 ```
 $ mpirun -c 7 ./casimir -L 2e-6 -R 150e-6 -T 300
 # compiler: gcc
