@@ -48,6 +48,8 @@ void *xcalloc(size_t nmemb, size_t size);
 
 void disable_buffering(void);
 
+void strrep(char *s, const char a, const char b);
+
 #ifdef __cplusplus
 }
 #endif

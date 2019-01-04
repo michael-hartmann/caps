@@ -111,3 +111,21 @@ void disable_buffering(void)
     setvbuf(stdout, NULL, _IONBF, 0);
     setvbuf(stderr, NULL, _IONBF, 0);
 }
+
+/** @brief Replace character by different character in string
+ *
+ * Replace occurence of a by b in the string s.
+ *
+ * @param [in,out] s string, terminated by \0
+ * @param [in] a    character to replace
+ * @param [in] b    substitute
+ */
+void strrep(char *s, const char a, const char b)
+{
+    while(*s != '\0')
+    {
+        if(*s == a)
+            *s = b;
+        s++;
+    }
+}
