@@ -308,29 +308,29 @@ free energy just like in the last example but at room temperature
     0.03999999999999999, 2e-06, 5e-05, 300, 176, -45.24539531432269
 
 For finite temperature the free energy is no longer given as an integral, but
-as a sum over the Matsubara frequencies :math:`\xi_n=2\pi n
-k_\mathrm{B}T/\hbar`. The summation is stopped once
+as a sum over the Matsubara frequencies :math:`\xi_n`.  The summation is
+stopped once
 
 .. math::
 
 	\frac{\log\mathrm{det}\left( 1-\mathcal{M}(\xi_n) \right)}{\log\mathrm{det}\left( 1-\mathcal{M}(0) \right)} < \mathrm{EPSREL} .
 
-By default, ``EPSREL`` is set to :math:`10^{-6}`. You can change the value of
+By default, ``EPSREL`` is :math:`10^{-6}`. You can change the value of
 ``EPSREL`` using the option ``--epsrel``.
 
 By default, the free energy is computed summing over the Matsubara frequencies
 :math:`\xi_n`, also called Matsubara spectrum decomposition (MSD). Another
 option is to compute the free energy using Padé spectrum decomposition (PSD).
 PSD is an optimal sum-over-poles expansion scheme, more information can be
-found in `Hu, Xu, Yan, " Padé spectrum decompositions of quantum distribution
+found in `Hu, Xu, Yan, "Padé spectrum decompositions of quantum distribution
 functions and optimal hierarchical equations of motion construction for quantum
-open systems ", J. Chem. Phys. 133, 101106 (2010)
+open systems", J. Chem. Phys. 133, 101106 (2010)
 <https://doi.org/10.1063/1.3602466>`_. The PSD requires less terms to be
 computed compared to the MSD. You can tell the program to use PSD with the flag
 ``--psd``. The order is determined automatically to achieve a relative error of
 the order specified by ``--epsrel``. You can also manually set the order using
-``--psd-order``. Since this option is not well tested yet, it is considered
-experimental.
+``--psd-order``. Since the automatic determination of the order is not well
+tested, this option is considered experimental.
 
 If you are only interested in the high-temperature limit, the flag ``--ht``
 will only compute :math:`\log\mathrm{det}(1-\mathcal{M}(0))` and output the
@@ -341,10 +341,10 @@ T`.
 Material parameters
 ^^^^^^^^^^^^^^^^^^^
 
-Up to this point, we have always assumed the objects to be perfect reflectors.
-If you want to model the sphere and the plate using the plasma model, you can
-set the plasma frequency using ``--omegap``. The plasma frequency is expected
-in units of :math:`\mathrm{eV}/\hbar`. For example, for
+Up to this point, we have assumed that the sphere and the plate are perfect
+reflectors.  If you want to model the sphere and the plate using the plasma
+model, you can set the plasma frequency using ``--omegap``. The plasma
+frequency is expected in units of :math:`\mathrm{eV}/\hbar`. For example, for
 :math:`R=50\mu\mathrm{m}`, :math:`L=800\mathrm{nm}`, :math:`T=300\mathrm{K}`,
 and gold (plasma frequency :math:`\omega_\mathrm{P}=9\mathrm{eV}/\hbar`), the
 Casimir free energy using the plasma model is:
@@ -441,7 +441,7 @@ the same example as above for Drude gives:
     0.02, 1e-06, 5e-05, 300, 351, -83.71300491448063
 
 The Casimir energy in the high-temperature limit for the Drude and the plasma
-difference differ by a factor of 2. This is the reason why in this example the
+model differ by a factor of 2. This is the reason why in this example the
 Casimir energy using the plasma model is considerably larger than using the
 Drude model.
 
@@ -467,24 +467,25 @@ to a material file. A material file has the following format:
     1.5038100000000000E+018   1.002504731170786
     1.5190000000000000E+018   1.002459773692494
 
-Each line either starts with a hash (#) or contains a frequency :math:`\xi` in
+Each line either starts with a pound (#) or contains a frequency :math:`\xi` in
 units of :math:`\mathrm{rad/s}` and the corresponding value of the dielectric
 function :math:`\epsilon(\mathrm{i}\xi)` separated by spaces. The frequencies
 have to be in ascending order. The dielectric function for an arbitrary
 frequency is then computed using linear interpolation. For frequencies smaller
 than the smallest frequency provided in the file, the dielectric function is
-either computed using a Drude model
+computed using the Drude model
 
 .. math::
 	\epsilon(\mathrm{i}\xi) = 1+\frac{\omega_\mathrm{P}^2}{\xi(\xi+\gamma)}
 
-using the plasma frequency given by ``omegap_low`` and the relaxation frequency
-given by ``gamma_low``. If ``omegap_low`` and ``gamma_low`` are not set, the
-dielectric function is assumed to be 1. The behaviour for frequencies larger
-than the largest provided frequency is analougous.
+with the plasma frequency given by ``omegap_low`` and the relaxation frequency
+given by ``gamma_low``. If ``omegap_low`` and ``gamma_low`` are not given in
+the file, the dielectric function is assumed to be 1. The behaviour for
+frequencies larger than the largest provided frequency is analougous.
 
-Here is an example to compute the Casimir energy for a sphere of :math:`R=50\mu\mathrm{m}` at
-separation :math:`L=1\mu\mathrm{m}` at room temperature :math:`T=300\mathrm{K}` for real gold:
+Here is an example that computes the Casimir energy for a sphere of
+:math:`R=50\mu\mathrm{m}` at separation :math:`L=1\mu\mathrm{m}` at room
+temperature :math:`T=300\mathrm{K}` for real gold:
 
 .. code-block:: console
 
@@ -533,19 +534,27 @@ The energy printed in the last line assumes a Drude model for the zero-th
 Matsubara frequency. If you want to use the plasma model for the zero-th
 Matsubara frequency, you can use the value given by ``# plasma =``. This
 number, i.e., -12.98... is given in units of :math:`k_\mathrm{B}T/2` and
-corresponds to the addition contribution in the high-temperature limit to the
-energy in the plasma model.
+corresponds to the additional contribution in the high-temperature limit to the
+energy in the plasma model. In this example, the free energy using the Drude
+model for zero-frequency is
 
+.. math::
+  \mathcal{F}_\mathrm{Drude} \approx -83.8 \frac{\hbar c}{L+R} \approx -5.19\times10^{-20}\mathrm{J},
 
-Truncation of vector space
-^^^^^^^^^^^^^^^^^^^^^^^^^^
+and assuming the plasma model for zero frequency
+
+.. math::
+  \mathcal{F}_\mathrm{plasma} \approx \mathcal{F}_\mathrm{Drude} + \frac{-12.98 k_\mathrm{B}T}{2} \approx -7.88 \times 10^{-20} \mathrm{J} .
+
+Truncation of the vector space
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 The truncation of the vector space is described in more detail in `Hartmann,
-Ingold, Maia Neto, "Advancing numerics for the Casimir effect to experimentally
-relevant aspect ratios", Phys. Scr. 93, 114003 (2018)
-<https://doi.org/10.1088/1402-4896/aae34e>`_. You can either specify the
-dimension of the vector space using ``--ldim``, or you choose the vector space
-using the parameter ``--eta``:
+"Casimir effect in the plane-sphere geometry: Beyond the proximity force
+approximation", phd thesis (2018)
+<https://opus.bibliothek.uni-augsburg.de/opus4/44798>`_.  You can either
+specify the dimension of the vector space using ``--ldim``, or you choose the
+vector space using the parameter ``--eta``:
 
 .. math::
 	\ell_\mathrm{dim} = \mathrm{max}\left(20, \left\lceil \eta R/L \right\rceil\right) .
@@ -564,7 +573,7 @@ Other options
 ^^^^^^^^^^^^^
 
 The computation of the matrix elements of the round-trip operator contain an
-integration. The relative error for this integration can be set using
+integration. The desired relative error for this integration can be set using
 ``--iepsrel``. The default value of :math:`10^{-8}` should be sufficient for
 almost all purposes. If you want to compute the Casimir energy to very high
 accuracy, to :math:`10^{-7}` or better, you might want to set a smaller value.
