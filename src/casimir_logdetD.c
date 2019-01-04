@@ -32,10 +32,6 @@ static void usage(FILE *stream)
 "    -f, --material FILENAME\n"
 "        Use material described by FILENAME.\n"
 "\n"
-"    -b, --buffering\n"
-"        Enable buffering. By default buffering for stderr and stdout is\n"
-"        disabled.\n"
-"\n"
 "    -d, --detalg DETALG\n"
 "        Compute the matrix using DETALG (LU, QR, CHOLESKY, HODLR)\n"
 "\n"
@@ -72,14 +68,10 @@ int main(int argc, char *argv[])
     /* numerical parameters */
     int ldim = 0;
 
-    /* flags */
-    bool buffering = false;
-
     while(1)
     {
         struct option long_options[] = {
             { "help",      no_argument,       0, 'h' },
-            { "buffering", no_argument,       0, 'b' },
 
             { "iepsrel",   required_argument, 0, 'i' },
             { "detalg",    required_argument, 0, 'd' },
@@ -120,9 +112,6 @@ int main(int argc, char *argv[])
             case 'f':
                 strncpy(filename, optarg, sizeof(filename)-sizeof(char));
                 break;
-            case 'b':
-                buffering = true;
-                break;
             case 'd':
                 if(strcasecmp(optarg, "HODLR") == 0)
                     detalg = DETALG_HODLR;
@@ -156,8 +145,7 @@ int main(int argc, char *argv[])
     }
 
     /* disable buffering */
-    if(!buffering)
-        disable_buffering();
+    disable_buffering();
 
     /* check parameters */
     do {
