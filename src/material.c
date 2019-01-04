@@ -101,6 +101,9 @@ material_t *material_init(const char *filename, double calL)
 
     while(fgets(line, sizeof(line)/sizeof(char), f) != NULL)
     {
+        /* replace each tab by a single space */
+        strrep(line, '\t', ' ');
+
         if(line[0] == '#')
         {
             _parse(line, "omegap_low",  '=', &material->omegap_low);
