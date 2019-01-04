@@ -1,6 +1,8 @@
 /**
 @mainpage libcasimir
 
+\section Overview
+
 libcasimir implements the numerics for the Casimir effect in the plane-sphere
 geometry for arbitrary materials at zero and finite temperature using the
 scattering approach.
@@ -12,5 +14,30 @@ located in the directory manual/.
 The library is tuned for high performance. Often, input parameters of functions
 are not checked. In contrast, library functions usually abort the program if
 results are wrong or look fishy.
+
+Also, a user manual is available in manuael/.
+
+\section Files
+
+file                   | description
+-----------------------| -----------------------------------------------------------------------------------------------------------
+casimir.c              | command line interface to libcasimir (see also user manual)
+casimir_logdetD.c      | command line interface to compute determinants of the scattering matrix (see also user manual)
+cylinder.cpp           | command line interface to compute Casimir interaction in the plane-cylinder geometry (see also user manual)
+cquadpack/src/*.c      | integration routines (CQUADPACK), see cquadpack/include/quadpack.h
+libhodlr/src/hodlr.cpp | C wrapper for the HODLR library (see libhodlr/include/hodlr.h)
+libcasimir.c           | main part of the library
+plm.c                  | routines to compute Legendre polynomials and associated Legendre polynomials
+bessel.c               | routines to compute modified Bessel functions
+matrix.c               | linear algebra functions; in particular computation of determinants
+integration.c          | routines to compute integrals that appear in the matrix elements of the round-trip operator
+fcqs.c                 | integration routines using adapative convergent Fourier-Chebshev quadrature scheme
+utils.c                | wrappers for malloc, calloc realloc, and a few more useful functions
+cache.c                | implementation of a simple cache using a hash table
+logfac.c               | fast computation of \f$\log(n)\f$, \f$\log(n!)\f$, and \f$\log(n!!)\f$ for integer \f$n\f$
+psd.c                  | weights and poles for Pade spectrum decomposition
+misc.c                 | various mathematical functions
+material.c             | support for arbitrary dielectric functions
+argparse.c             | library to parse command line parameters
 
 */
