@@ -56,8 +56,8 @@ Installation
 In the following, we assume the operating system to be Ubuntu 18.04. The
 commands should also work on other Debian-like systems.
 
-Getting the source and installing dependencies
-----------------------------------------------
+Compilation
+-----------
 
 The easiest way to get the source code is to use git. To install git, run
 
@@ -84,9 +84,6 @@ all dependencies with:
 	$ sudo apt install gcc g++ libc6-dev libc++-dev make libopenmpi-dev openmpi-bin liblapack-dev libgfortran-7-dev gfortran-7
 
 
-Compilation
------------
-
 In order to compile the code, run ``make`` in the directory ``libcasimir-dev/src/``:
 
 .. code-block:: console
@@ -110,25 +107,7 @@ search path, you have to add the directories to ``LD_LIBRARY_PATH``
 where we have assumed that the libcasimir repository is in the directory
 ``/home/hendrik``.
 
-
-Testing
--------
-
-In order to check whether the compilation was successful, you can build and run
-the unit tests in ``src/``:
-
-.. code-block:: console
-
-    $ make casimir_tests
-
-All tests should pass. Running the tests takes up about 7 minutes depending on
-your machine.
-
-
-Using different compilers
--------------------------
-
-It is possible to use different compilers than gcc. To compile the code with clang and clang++ run
+It is also possible to use different compilers than gcc. To compile the code with clang and clang++ run
 
 .. code-block:: console
 
@@ -144,15 +123,29 @@ and for Intel's compiler:
 
 Please make sure to run ``make clean`` first.
 
+Testing
+-------
+
+In order to check whether the compilation was successful, you can build and run
+the unit tests in ``src/``:
+
+.. code-block:: console
+
+    $ make casimir_tests
+
+All tests should pass. Running the tests takes up (depending on your hardware)
+about 7 minutes.
+
 
 Adapting the Makefile
 ---------------------
 
 In order to improve performance, it might be neccessary to tweak some compiler
-options in the ``Makefile``. The options are described in the file
-``src/Makefile``. The most interesting option is ``-mmarch=native`` which tells
-the compiler to optimize the code for the architecture the compiler is running
-on. This might improve performance by ~5%.
+options. The options are described in the file ``src/Makefile``. The most
+interesting option is ``-mmarch=native`` which tells the compiler to optimize
+the code for the architecture the compiler is running on. This might improve
+performance by ~5%.
+
 
 Programs
 ========
@@ -160,19 +153,28 @@ Programs
 casimir
 -------
 
-This program computes the free Casimir energy :math:`\mathcal{F}` for the
-plane-sphere geometry. The program supports a wide variety of options, you can
-get a summary of all options using ``casimir --help``. By default, the
-temperature is set to :math:`T=0` and the sphere and plane are assumed to be
-perfect reflectors.
+The program ``casimir`` computes the free Casimir energy :math:`\mathcal{F}`
+for the plane-sphere geometry as a sum
+
+.. math::
+  \mathcal{F} = \frac{k_\mathrm{B}T}{2} \sum_{n=-\infty}^\infty \sum_{m=-\infty}^\infty \log\mathrm{det}\left(1-\mathcal{M}^m(\xi_n)\right)
+
+over the Matsubara frequencies :math:`\xi_n=2\pi n k_\mathrm{B} T /\hbar`. For
+zero temperature :math:`T=0`, the sum over the Matsubara frequencies becomes an
+integration.
+
+The program supports a wide variety of options. You can get a summary of all
+options using ``casimir --help``. By default, the temperature is set to
+:math:`T=0`, and the sphere and plane are assumed to be perfect reflectors.
 
 Mandatory options
 ^^^^^^^^^^^^^^^^^
 
-There are only two mandatory options: the separation :math:`L` between sphere and plane and the 
-radius of the sphere :math:`R`. The program expects the length given in units of meters. As an example,
-the following command computes the Casimir interaction at :math:`T=0` for perfect reflectors for a
-sphere of radius :math:`R=50\mu\mathrm{m}` and a separation :math:`L=2\mu\mathrm{m}`:
+There are two mandatory options: the separation :math:`L` between sphere and
+plane, and the radius of the sphere :math:`R`. The program expects the lengths
+given in units of meters. As an example, the following command computes the
+Casimir interaction at :math:`T=0` for perfect reflectors for a sphere of
+radius :math:`R=50\mu\mathrm{m}` and a separation :math:`L=2\mu\mathrm{m}`:
 
 .. code-block:: console
 
@@ -219,28 +221,47 @@ N+1. The output of this command looks similar to:
     # L/R, L, R, T, ldim, E*(L+R)/(hbar*c)
     0.03999999999999999, 2e-06, 5e-05, 0, 176, -26.54248623166202
 
-Comments start with a pound (#). If the information is available, the program
-first outputs some information on the compilation, i.e., time of compilation,
-name of compiler, machine where it was compiled and so on. Then, information
-about the geometry (radius, seperation, aspect ratio and inverse of aspect
-ratio), numerical parameters (cutoff, epsrel, iepsrel, ldim, cores) are
-printed. We will discuss the numerical parameters in more detail later. The
-value of cores is the number of MPI processes that are used for this
-computation. Then, the determinant of the scattering matrix depending on the
-Matsubara frequency are printed. The line starting with ier gives the result of
-the integration and is 0 if the integration was successful. The program ends by
-printing the result of the computation as a comma separated list. The free
-energy is outputed in units of :math:`(L+R)/\hbar c`, i.e., in this case, the
-free energy is :math:`\mathcal{F}\approx-26.54 \hbar c
-/(50\mu\mathrm{m}+2\mu\mathrm{m})`.
+The output is in the format of a CSV file and additional comments start with a
+pound (#). The program first outputs some information on the compilation, i.e.,
+time of compilation, name of compiler, machine where it was compiled and so on.
+Then, information about the geometry (radius, seperation, aspect ratio and
+inverse of aspect ratio), numerical parameters (cutoff, epsrel, iepsrel, ldim,
+cores) are printed. We will discuss the numerical parameters in more detail
+later. The value of cores is the number of MPI processes that are used for the
+computation. Then, the determinant of the scattering matrix for different
+Matsubara frequencies are printed. The comment starting with ``ier`` gives the
+result of the integration and is 0 if the integration was successful. The
+program ends by printing the result of the computation. The free energy is
+outputed in units of :math:`(L+R)/\hbar c`, i.e., in this case, the free energy
+is
+
+.. math::
+  \mathcal{F}\approx \frac{-26.54 \hbar c}{50\mu\mathrm{m}+2\mu\mathrm{m}} \approx -1.61\times10^{-20} \mathrm{J}.
+
+The PFA result in this case is :math:`\mathcal{F}_\mathrm{PFA}\approx-1.64\times10^{-20} \mathrm{J}`.
+
+The desired relative accuracy of the integration over the Matsubara frequencies
+can be set using ``--epsrel``. By default, ``EPSREL`` is :math:`10^{-6}`.  Note
+that the integrand needs to be sufficiently smooth. In particular, for very low
+values of ``EPSREL`` you might need to decrease the value of ``CUTOFF`` using
+``--cutoff``. The value of ``CUTOFF`` determines when the summation over
+:math:`m` is stopped:
+
+.. math::
+    \frac{\log\mathrm{det}\left(1-\mathcal{M}^m(\xi)\right)}{\log\mathrm{det}\left(1-\mathcal{M}^0(\xi)\right)} < \mathrm{CUTOFF}
+
+The default value of ``CUTOFF`` is :math:`10^{-9}`. As a rule of thumb, in
+order that the integrand is sufficiently smooth for the integration routine,
+``CUTOFF`` should be at least two orders of magnitude smaller than ``EPSREL``.
 
 By default, the integration routine uses an adaptive Gauss-Kronrod method
 provided by CQUADPACK. For perfect reflectors it is sometimes faster to use an
-adaptive exponentially convergent Fourier-Chebshev quadrature schemes (FCQS),
+adaptive exponentially convergent Fourier-Chebshev quadrature scheme (FCQS),
 see `Boyd, "Exponentially convergent Fourier-Chebshev quadrature schemes on
 bounded and infinite intervals", JOSC 2, 2 (1987)
 <https://doi.org/10.1007/BF01061480>`_. You can use FCQS using the flag
-``--fcqs``. This option is considered experimental.
+``--fcqs``. Since the adaptive algorithm is not well tested, this option is
+considered experimental.
 
 Temperature
 ^^^^^^^^^^^
@@ -294,7 +315,7 @@ k_\mathrm{B}T/\hbar`. The summation is stopped once
 
 	\frac{\log\mathrm{det}\left( 1-\mathcal{M}(\xi_n) \right)}{\log\mathrm{det}\left( 1-\mathcal{M}(0) \right)} < \mathrm{EPSREL} .
 
-By default, ``EPSREL`` is set to :math:`10^{-9}`. You can change the value of
+By default, ``EPSREL`` is set to :math:`10^{-6}`. You can change the value of
 ``EPSREL`` using the option ``--epsrel``.
 
 By default, the free energy is computed summing over the Matsubara frequencies
@@ -511,7 +532,7 @@ separation :math:`L=1\mu\mathrm{m}` at room temperature :math:`T=300\mathrm{K}` 
 The energy printed in the last line assumes a Drude model for the zero-th
 Matsubara frequency. If you want to use the plasma model for the zero-th
 Matsubara frequency, you can use the value given by ``# plasma =``. This
-number, i.e., -12.98... is given in units of ::math::`k_\mathrm{B}T/2` and
+number, i.e., -12.98... is given in units of :math:`k_\mathrm{B}T/2` and
 corresponds to the addition contribution in the high-temperature limit to the
 energy in the plasma model.
 
