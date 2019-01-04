@@ -476,7 +476,7 @@ than the smallest frequency provided in the file, the dielectric function is
 computed using the Drude model
 
 .. math::
-	\epsilon(\mathrm{i}\xi) = 1+\frac{\omega_\mathrm{P}^2}{\xi(\xi+\gamma)}
+  \epsilon(\mathrm{i}\xi) = 1+\frac{\omega_\mathrm{P}^2}{\xi(\xi+\gamma)}
 
 with the plasma frequency given by ``omegap_low`` and the relaxation frequency
 given by ``gamma_low``. If ``omegap_low`` and ``gamma_low`` are not given in
@@ -489,7 +489,7 @@ temperature :math:`T=300\mathrm{K}` for real gold:
 
 .. code-block:: console
 
-  $ mpirun -n 8 ./casimir -R 50e-6 -L 1e-6 -T 300 --material ../data/materials/GoldDalvit.dat 
+  $ mpirun -n 8 ./casimir -R 50e-6 -L 1e-6 -T 300 --material ../data/materials/GoldDalvit.dat
   # compiler: gcc
   # compile time: Jan  2 2019 12:35:13
   # compiled on: Linux jonas.physik.uni-augsburg.de 4.9.0-8-amd64 #1 SMP Debian 4.9.130-2 (2018-10-27) x86_64 GNU/Linux
@@ -565,7 +565,7 @@ is given by:
 +-----------------+-----------------+-----------------+-----------------+-----------------+-----------------+-----------------+-----------------+
 | numerical error | :math:`10^{-2}` | :math:`10^{-3}` | :math:`10^{-4}` | :math:`10^{-5}` | :math:`10^{-6}` | :math:`10^{-7}` | :math:`10^{-8}` |
 +-----------------+-----------------+-----------------+-----------------+-----------------+-----------------+-----------------+-----------------+
-| eta             | 2.8             | 4               | 5.2             | 6.4             | 7.6             | 8.8             | 10              | 
+| eta             | 2.8             | 4               | 5.2             | 6.4             | 7.6             | 8.8             | 10              |
 +-----------------+-----------------+-----------------+-----------------+-----------------+-----------------+-----------------+-----------------+
 
 
@@ -578,11 +578,103 @@ integration. The desired relative error for this integration can be set using
 almost all purposes. If you want to compute the Casimir energy to very high
 accuracy, to :math:`10^{-7}` or better, you might want to set a smaller value.
 
+
 casimir_logdetD
 ---------------
 
+The program ``casimir_logdetD`` computes
+
+.. math::
+    \log\mathrm{det}\left(1-\mathcal{M}^m(\xi)\right) .
+
+depending on :math:`m`, :math:`\xi`, :math:`R`, and :math:`L` The options
+``-L``, ``-R``, ``--ldim``, ``--material``, and ``--iepsrel`` are the same as
+for the program ``casimir``.
+
+Besides ``-L`` and ``-R``, further mandatory options are ``-m`` and ``--xi``.
+The frequency given by ``--xi`` is expected in units of :math:`(L+R)/c`. In
+addition, you can specify the algorithm used to compute the determinant with
+``--detalg``. Valid options are HODLR, QR, LU, and Cholesky.
+
+A typical output looks like
+
+.. code-block:: console
+
+  $ ./casimir_logdetD -R 100e-6 -L 1e-6 -m 1 --xi 1.5
+  # ./casimir_logdetD, -R, 100e-6, -L, 1e-6, -m, 1, --xi, 1.5
+  # L/R    = 0.009999999999999998
+  # L      = 1e-06
+  # R      = 0.0001
+  # ldim   = 501
+  # epsrel = 1.0e-08
+  # detalg = HODLR
+  #
+  # L, R, ξ*(L+R)/c, m, logdet(Id-M), ldim, time
+  1e-06, 0.0001, 1.5, 1, -6.417998208796558, 501, 0.492086
+
+Sometimes, it is useful to output the round-trip matrix in numpy format. If the
+environment variable ``CASIMIR_DUMP`` is set and ``detalg`` is not HODLR, the
+round-trip matrix will be saved to the filename contained in ``CASIMIR_DUMP``.
+Also note that if ``detalg`` is Cholesky, only the upper half of the matrix is
+computed. Here is an example:
+
+.. code-block:: console
+
+  $ CASIMIR_DUMP=M.npy ./casimir_logdetD -R 100e-6 -L 1e-6 -m 1 --xi 1.5 --detalg LU
+  # ./casimir_logdetD, -R, 100e-6, -L, 1e-6, -m, 1, --xi, 1.5, --detalg, LU
+  # L/R    = 0.009999999999999998
+  # L      = 1e-06
+  # R      = 0.0001
+  # ldim   = 501
+  # epsrel = 1.0e-08
+  # detalg = LU
+  #
+  # L, R, ξ*(L+R)/c, m, logdet(Id-M), ldim, time
+  1e-06, 0.0001, 1.5, 1, -6.417998208796549, 501, 0.833277
+
+  $ ls -lah M.npy
+  -rw------- 1 hartmmic g-103665 7,7M Jan  4 15:16 M.npy
+
+  $ python
+  Python 3.6.5 | packaged by conda-forge | (default, Apr  6 2018, 13:39:56)
+  [GCC 4.8.2 20140120 (Red Hat 4.8.2-15)] on linux
+  Type "help", "copyright", "credits" or "license" for more information.
+  >>> import numpy as np
+  >>> M = np.load("M.npy")    # load matrix
+  >>> dim,_ = M.shape         # get dimension
+  >>> Id = np.eye(dim)        # identity matrix
+  >>> np.linalg.slogdet(Id-M) # compute determinant
+  (1.0, -6.417998208796572)
+
+
 cylinder
 --------
+
+The program  ``cylinder`` computes the Casimir interaction in the
+cylinder-plane geometry. The radius of the cylinder is given by ``-R`` and the
+separation between cylinder and plate is given by ``-d``. Both lengths are
+expected in meters. At the moment, only perfect reflectors at zero temperature
+is supported.
+
+This example computes the Casimir free energy for a cylinder of radius
+:math:`R=100\mu\mathrm{m}` and a separation of :math:`d=100\mathrm{nm}`:
+
+.. code-block:: console
+
+  $ ./cylinder -R 100e-6 -d 100e-9
+  # R/d = 1000
+  # d = 1e-07
+  # R = 0.0001
+  # T = 0
+  # lmax = 6000
+  # epsrel = 1e-08
+  #
+  # d/R, d, R, T, lmax, E_PFA/(L*hbar*c), E_D/E_PFA, E_N/E_PFA, E_EM/E_PFA
+  0.001, 1e-07, 0.0001, 0, 6000, -72220981652413.5, 0.500089151077922, 0.499432943796732, 0.999522094874654
+
+Here, :math:`L` denotes the length of the cylinder. ``E_D`` and ``E_N``
+correspond Dirichlet and Neumann boundary conditions, ``E_EM`` is the energy
+for the electromagnetic field, ``E_EM = E_D + E_N``.
 
 API Documentation
 =================
@@ -594,4 +686,5 @@ generated running
 
   $ make doc
 
-in the directory ``src/``. You need doxygen installed on your computer.
+in the directory ``src/``. The documentation will be generated in ``src/doc/``.
+You need doxygen installed on your computer.
