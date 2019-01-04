@@ -103,7 +103,7 @@ OPT = -O3
 # or the target machine supports the same instruction set, this option may
 # increase performance. When there are problems, the program will crash with a
 # message similar to "illegal instruction code".
-# On my Intel Core i7 machine, this option gives an performance boost of ~5%.
+# On my Intel Core i7 machine, this option gives a performance boost of ~5%.
 #OPT += -march=native
 
 # Link time optimization. This might further improve performance. On my
