@@ -37,13 +37,8 @@ class CasimirCP {
         int get_lmax() const { return lmax; }
         detalg_t get_detalg() const { return detalg; }
 
-        void set_lmax(int lmax) {
-            this->lmax = lmax;
-        }
-
-        void set_detalg(detalg_t detalg) {
-            this->detalg = detalg;
-        }
+        void set_lmax(int lmax) { this->lmax = lmax; }
+        void set_detalg(detalg_t detalg) { this->detalg = detalg; }
 
         double logdet_dirichlet(double q) {
             return this->logdet(q, 'D');
@@ -205,7 +200,7 @@ int main(int argc, const char *argv[]) {
         OPT_GROUP("Mandatory options"),
         OPT_DOUBLE('R', "radius",      &R, "radius of cylinder in m", NULL, 0, 0),
         OPT_DOUBLE('d', "separation",  &d, "seperation between cylinder and plate in m", NULL, 0, 0),
-        OPT_DOUBLE('T', "temperature", &T, "temperature in K", NULL, 0, 0),
+        OPT_DOUBLE('T', "temperature", &T, "temperature in K (not implemented yet)", NULL, 0, 0),
         OPT_GROUP("Further options"),
         OPT_INTEGER('l', "lmax", &lmax, "dimension of vector space", NULL, 0, 0),
         OPT_DOUBLE('e', "epsrel", &epsrel, "relative error for integration", NULL, 0, 0),
@@ -245,12 +240,19 @@ int main(int argc, const char *argv[]) {
         argparse_usage(&argparse);
         return 1;
     }
+    if(T != 0)
+    {
+        fprintf(stderr, "Sorry, but finite temperature is not implemented yet.\n");
+        return 1;
+    }
+    /*
     if(T < 0)
     {
         fprintf(stderr, "temperature must be non-negative\n\n");
         argparse_usage(&argparse);
         return 1;
     }
+    */
     if(epsrel <= 0)
     {
         fprintf(stderr, "epsrel must be positive\n\n");
