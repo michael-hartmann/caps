@@ -101,6 +101,9 @@ material_t *material_init(const char *filename, double calL)
 
     while(fgets(line, sizeof(line)/sizeof(char), f) != NULL)
     {
+        /* remove whitespace at beginning and end of line */
+        strim(line);
+
         /* replace each tab by a single space */
         strrep(line, '\t', ' ');
 
