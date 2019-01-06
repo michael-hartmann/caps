@@ -1,12 +1,13 @@
 /**
  * @file   utils.c
  * @author Michael Hartmann <michael.hartmann@physik.uni-augsburg.de>
- * @date   September, 2017
+ * @date   January, 2018
  * @brief  wrappers for malloc, calloc realloc, and a few more useful functions
  */
 
-#include <stdio.h>
+#include <ctype.h>
 #include <stdlib.h>
+#include <string.h>
 #include <sys/time.h>
 #include <time.h>
 #include <unistd.h>
@@ -128,4 +129,39 @@ void strrep(char *s, const char a, const char b)
             *s = b;
         s++;
     }
+}
+
+/** @brief Remove whitespace at beginng and end of string
+ *
+ * If str is NULL the function doesn't do anything. Otherwise, trailing
+ * whitespace and whitespace at the beginning of the string are removed.
+ *
+ * @param str string
+ */
+void strim(char *str)
+{
+    if(str == NULL)
+        return;
+
+    /* trim left */
+    size_t i, len = strlen(str);
+    for(i = 0; i < len; i++)
+        if(!isspace(str[i]))
+            break;
+
+    /* i is the number of whitespace characters at the beginning of str */
+    if(i)
+    {
+        memmove(str, str+i, len-i);
+        str[len-i] = '\0';
+    }
+
+    /* trim right */
+    len = strlen(str);
+    for(i = 0; i < len; i++)
+        if(!isspace(str[len-i-1]))
+            break;
+
+    /* i is the number of whitespace characters at the end of str */
+    str[len-i] = '\0';
 }
