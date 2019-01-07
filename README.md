@@ -13,7 +13,7 @@ geometry for arbitrary materials at zero and finite temperature. The library is
 highly optimized and allows you - depending on parameters and your hardware - to
 compute the free energy for aspect ratios of R/L~10'000.
 
-![experiments in the plane-sphere geometry](doc/images/overview.png)
+![experiments in the plane-sphere geometry](doc/manual/images/overview.png)
 
 The picture shows an overview of the experiments carried out in the plane-sphere
 geometry. The blue area denotes the aspect ratios that are accessible using
