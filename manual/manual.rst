@@ -489,14 +489,14 @@ temperature :math:`T=300\mathrm{K}` for real gold:
 
 .. code-block:: console
 
-  $ mpirun -n 8 ./casimir -R 50e-6 -L 1e-6 -T 300 --material ../data/materials/GoldDalvit.dat
+  $ mpirun -n 8 ./casimir -R 50e-6 -L 1e-6 -T 300 --material ../materials/gold.csv
   # compiler: gcc
-  # compile time: Jan  2 2019 12:35:13
+  # compile time: Jan  7 2019 10:28:24
   # compiled on: Linux jonas.physik.uni-augsburg.de 4.9.0-8-amd64 #1 SMP Debian 4.9.130-2 (2018-10-27) x86_64 GNU/Linux
-  # git HEAD: 51b8df47618d15747e59321aee77e1f86fab32a8
+  # git HEAD: 5c3f8f083f2af60bd680646adc94997b179c350c
   # git branch: master
-  # pid: 26164
-  # start time: Thu Jan  3 14:08:10 2019
+  # pid: 4840
+  # start time: Mon Jan  7 10:28:44 2019
   #
   # LbyR = 0.02
   # RbyL = 50
@@ -509,31 +509,31 @@ temperature :math:`T=300\mathrm{K}` for real gold:
   # iepsrel = 1e-08
   # ldim = 351
   # cores = 8
-  # filename = ../data/materials/GoldDalvit.dat
+  # filename = ../materials/gold.csv
   # model = optical data (xi=0: Drude)
   # plasma = -12.9879117939843 (logdetD(xi=0) for plasma model with omegap=9eV)
   #
-  # xi*(L+R)/c=0, logdetD=-7.09741176750412, t=0.347423
-  # xi*(L+R)/c=41.9814634849106, logdetD=-2.23671565687706, t=8.46615
-  # xi*(L+R)/c=83.9629269698212, logdetD=-0.397198209143505, t=8.72867
-  # xi*(L+R)/c=125.944390454732, logdetD=-0.0714429961178252, t=8.97971
-  # xi*(L+R)/c=167.925853939642, logdetD=-0.0128860192197612, t=8.94925
-  # xi*(L+R)/c=209.907317424553, logdetD=-0.00232743121335635, t=8.76096
-  # xi*(L+R)/c=251.888780909464, logdetD=-0.0004208797235257, t=8.81326
-  # xi*(L+R)/c=293.870244394374, logdetD=-7.62850679760849e-05, t=8.17316
-  # xi*(L+R)/c=335.851707879285, logdetD=-1.38130965079446e-05, t=7.38953
-  # xi*(L+R)/c=377.833171364195, logdetD=-2.50883086124893e-06, t=6.88574
+  # xi*(L+R)/c=0, logdetD=-7.09741176750412, t=0.352728
+  # xi*(L+R)/c=41.9814634849106, logdetD=-2.23788117126162, t=8.44477
+  # xi*(L+R)/c=83.9629269698212, logdetD=-0.397789450092019, t=8.8778
+  # xi*(L+R)/c=125.944390454732, logdetD=-0.0716100613017328, t=9.09214
+  # xi*(L+R)/c=167.925853939642, logdetD=-0.0129251607796874, t=9.02829
+  # xi*(L+R)/c=209.907317424553, logdetD=-0.00233585322790776, t=8.67091
+  # xi*(L+R)/c=251.888780909464, logdetD=-0.000422670611527527, t=8.18489
+  # xi*(L+R)/c=293.870244394374, logdetD=-7.65823629633713e-05, t=7.80386
+  # xi*(L+R)/c=335.851707879285, logdetD=-1.38953641418705e-05, t=7.10853
+  # xi*(L+R)/c=377.833171364195, logdetD=-2.52460509493263e-06, t=6.50239
   #
-  # 684 determinants computed
-  # stop time: Thu Jan  3 14:09:25 2019
+  # 682 determinants computed
+  # stop time: Mon Jan  7 10:29:58 2019
   #
   # L/R, L, R, T, ldim, E*(L+R)/(hbar*c)
-  0.02, 1e-06, 5e-05, 300, 351, -83.78391970580533
+  0.02, 1e-06, 5e-05, 300, 351, -83.81029275263388
 
 The energy printed in the last line assumes a Drude model for the zero-th
 Matsubara frequency. If you want to use the plasma model for the zero-th
 Matsubara frequency, you can use the value given by ``# plasma =``. This
-number, i.e., -12.98... is given in units of :math:`k_\mathrm{B}T/2` and
+number, i.e., -12.9879... is given in units of :math:`k_\mathrm{B}T/2` and
 corresponds to the additional contribution in the high-temperature limit to the
 energy in the plasma model. In this example, the free energy using the Drude
 model for zero-frequency is
