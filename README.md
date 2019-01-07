@@ -23,7 +23,7 @@ Features
 --------
  - Calculate the free energy for different separations and temperatures
  - Calculate the free energy in the high temperature limit
- - Full support for perfect conductors, Drude metals, and generic metals
+ - Full support for perfect reflectors, Drude metals, and generic metals
    described by a user-defined dielectric function
  - libcasimir is fast and reliable
  - ready to use programs: you don't have to modify the code
