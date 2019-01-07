@@ -1,7 +1,7 @@
 /**
  * @file   material.c
  * @author Michael Hartmann <michael.hartmann@physik.uni-augsburg.de>
- * @date   December, 2018
+ * @date   January, 2019
  * @brief  support for arbitrary dielectric functions
  */
 
@@ -57,7 +57,8 @@ static bool _parse(const char *line, const char *key, const char separator, doub
  *
  * @param [in] filename path to material specification
  * @param [in] calL \f$L+R\f$, separation between plane and center of sphere
- * @retval material
+ * @retval material if successful
+ * @retval NULL if file cannot be read or is in wrong format
  */
 material_t *material_init(const char *filename, double calL)
 {
