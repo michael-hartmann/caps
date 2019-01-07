@@ -101,7 +101,7 @@ $ mpirun -c 7 ./casimir -L 2e-6 -R 150e-6 -T 300
 Documentation
 -------------
 
-A user manual is available in `manual/`, the API is documented using doxygen.
+A user manual and the API documentation are available in `doc/`.
 
 
 Bugs, developing and contributing
