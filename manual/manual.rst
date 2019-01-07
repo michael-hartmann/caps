@@ -34,7 +34,7 @@ Features
 
  - Calculate the free energy for different separations and temperatures
  - Calculate the free energy in the high temperature limit
- - Full support for perfect conductors, Drude metals, and generic metals described by a user-defined dielectric function
+ - Full support for perfect reflectors, Drude metals, and generic metals described by a user-defined dielectric function
  - libcasimir is fast and reliable
  - ready to use programs: you don't have to modify the code
  - libcasimir is free software – you may use it or even modify it
@@ -232,10 +232,10 @@ cores) are printed. We will discuss the numerical parameters in more detail
 later. The value of cores is the number of MPI processes that are used for the
 computation. Then, the determinant of the scattering matrix for different
 Matsubara frequencies are printed. The comment starting with ``ier`` gives the
-result of the integration and is 0 if the integration was successful. The
-program ends by printing the result of the computation. The free energy is
-outputed in units of :math:`(L+R)/\hbar c`, i.e., in this case, the free energy
-is
+result of the integration and is and ``ier=0`` if the integration was
+successful. The program ends by printing the result of the computation. The
+free energy is outputed in units of :math:`(L+R)/\hbar c`, i.e., for this
+example the free energy is
 
 .. math::
   \mathcal{F}\approx \frac{-26.54 \hbar c}{50\mu\mathrm{m}+2\mu\mathrm{m}} \approx -1.61\times10^{-20} \mathrm{J}.
@@ -257,13 +257,13 @@ order that the integrand is sufficiently smooth for the integration routine,
 ``CUTOFF`` should be at least two orders of magnitude smaller than ``EPSREL``.
 
 By default, the integration routine uses an adaptive Gauss-Kronrod method
-provided by CQUADPACK. For perfect reflectors it is sometimes faster to use an
-adaptive exponentially convergent Fourier-Chebshev quadrature scheme (FCQS),
-see `Boyd, "Exponentially convergent Fourier-Chebshev quadrature schemes on
-bounded and infinite intervals", JOSC 2, 2 (1987)
-<https://doi.org/10.1007/BF01061480>`_. You can use FCQS using the flag
-``--fcqs``. Since the adaptive algorithm is not well tested, this option is
-considered experimental.
+provided by `CQUADPACK <https://github.com/ESSS/cquadpack>`_. For perfect
+reflectors it is sometimes faster to use an adaptive exponentially convergent
+Fourier-Chebshev quadrature scheme (FCQS), see `Boyd, "Exponentially convergent
+Fourier-Chebshev quadrature schemes on bounded and infinite intervals", JOSC 2,
+2 (1987) <https://doi.org/10.1007/BF01061480>`_. You can use FCQS using the
+flag ``--fcqs``. Since the adaptive algorithm is not well tested, this option
+is considered experimental.
 
 Temperature
 ^^^^^^^^^^^
