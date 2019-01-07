@@ -13,6 +13,13 @@ Welcome to libcasimir's documentation!
 Overview and Features
 =====================
 
+.. figure:: images/overview.png
+   :scale: 33 %
+
+   Experiments in the plane-sphere geometry. The blue area denotes the aspect
+   ratios that are accessible using libcasimir. The inset depicts the
+   plane-sphere geometry.
+
 libcasimir is an implementation of the Casimir effect in the plane-sphere
 geometry. The geometry consists of a sphere of radius :math:`R` separated by a
 distance :math:`L` from an infinite plate. The main goal of the library and the
@@ -21,11 +28,6 @@ on the radius of the sphere, the separation between sphere and plate, the
 temperature, and the dielectric properties of the objects. The library is
 highly optimized and allows you - depending on parameters and your hardware -
 to compute the free energy for aspect ratios up to :math:`R/L\sim 10\,000`.
-
-.. figure:: geometry.png
-   :scale: 33 %
-
-   plane-sphere geometry
 
 Features
 --------
