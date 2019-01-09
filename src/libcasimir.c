@@ -679,6 +679,7 @@ casimir_M_t *casimir_M_init(casimir_t *casimir, int m, double xi_)
     self->casimir = casimir;
     self->m = m;
     self->lmin = lmin;
+    self->ldim = ldim;
     self->integration = casimir_integrate_init(casimir, xi_, m, casimir->epsrel);
     self->integration_plasma = NULL;
     self->xi_ = xi_;
