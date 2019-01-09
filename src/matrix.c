@@ -45,11 +45,11 @@
  * @param [in] dim       dimension of matrix
  * @param [in] kernel    callback function that returns matrix elements of \f$A\f$
  * @param [in] args      pointer given to callback function kernel
- * @param [in] symmetric bool indicating whether matrix is symmetric
+ * @param [in] sym_spd   matrix is generic (0), symmetric (1), symmetric positive definite (2)
  * @param [in] detalg    algorithm (DETALG_HODLR, DETALG_LU, DETALG_QR, DETALG_CHOLESKY)
  * @retval logdet \f$\log \det(1-A)\f$
  */
-double kernel_logdet(int dim, double (*kernel)(int,int,void *), void *args, int symmetric, detalg_t detalg)
+double kernel_logdet(int dim, double (*kernel)(int,int,void *), void *args, int sym_spd, detalg_t detalg)
 {
     double logdet = NAN;
     double *diagonal = xmalloc(((size_t)(dim))*sizeof(double));
@@ -131,7 +131,7 @@ double kernel_logdet(int dim, double (*kernel)(int,int,void *), void *args, int 
         const double tolerance = fmax(1e-13, trace*1e-13);
 
         /* calculate log(det(D)) using HODLR approach */
-        logdet = hodlr_logdet_diagonal(dim, kernel, args, diagonal, nLeaf, tolerance, symmetric);
+        logdet = hodlr_logdet_diagonal(dim, kernel, args, diagonal, nLeaf, tolerance, sym_spd);
 
         xfree(diagonal);
 
