@@ -1,6 +1,12 @@
 Changelog
 =========
 
+HEAD
+----
+
+* Update of libeigen to 3.3.7
+
+
 version 0.4
 -----------
 
