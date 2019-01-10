@@ -712,26 +712,21 @@ casimir_M_t *casimir_M_init(casimir_t *casimir, int m, double xi_)
  */
 double casimir_kernel_M(int i, int j, void *args_)
 {
-    #if 1
-    /* variant A:
-     * round-trip matrix consists of many 2x2 blocks */
-    char p1 = 'E', p2 = 'E';
     casimir_M_t *args = (casimir_M_t *)args_;
     const int lmin = args->lmin;
+
+    #if 1
+    /* variant A: (faster)
+     * round-trip matrix consists of many 2x2 blocks */
     const int l1 = lmin+i/2, l2 = lmin+j/2;
 
-    if(i % 2)
-        p1 = 'M';
-    if(j % 2)
-        p2 = 'M';
+    char polarizations[2] = { 'E', 'M' };
+    char p1 = polarizations[i % 2], p2 = polarizations[j % 2];
     #else
-    /* variant B:
+    /* variant B: (slower)
      * round-trip matrix consists of 4 big polarization blocks, EE, EM, ME, MM */
-
-    casimir_M_t *args = (casimir_M_t *)args_;
-    const int lmin = args->lmin, ldim = args->ldim;
-    const int l1 = lmin + (i % ldim);
-    const int l2 = lmin + (j % ldim);
+    const int ldim = args->ldim;
+    const int l1 = lmin + (i % ldim), l2 = lmin + (j % ldim);
 
     char p1 = 'E', p2 = 'E';
     if(i >= ldim)
@@ -948,7 +943,7 @@ double casimir_logdetD(casimir_t *self, double xi_, int m)
 {
     TERMINATE(xi_ <= 0, "Matsubara frequency must be positive");
 
-    const int sym_spd = 1;
+    const int sym_spd = 2; /* matrix is symmetric and positive definite */
     const int dim = 2*self->ldim;
 
     casimir_M_t *args = casimir_M_init(self, m, xi_);
@@ -982,7 +977,8 @@ double casimir_logdetD(casimir_t *self, double xi_, int m)
 void casimir_logdetD0(casimir_t *self, int m, double omegap, double *EE, double *MM, double *MM_plasma)
 {
     size_t lmin, lmax;
-    const int sym_spd = 1, ldim = self->ldim;
+    const int sym_spd = 2; /* matrix is symmetric and positive definite */
+    const int ldim = self->ldim;
     detalg_t detalg = self->detalg;
 
     casimir_estimate_lminmax(self, m, &lmin, &lmax);
