@@ -101,7 +101,7 @@ typedef struct {
 typedef struct
 {
     casimir_t *casimir;
-    int m, lmin;
+    int m, lmin, ldim;
     integration_t *integration;
     integration_plasma_t *integration_plasma;
     double xi_;

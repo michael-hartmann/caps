@@ -679,6 +679,7 @@ casimir_M_t *casimir_M_init(casimir_t *casimir, int m, double xi_)
     self->casimir = casimir;
     self->m = m;
     self->lmin = lmin;
+    self->ldim = ldim;
     self->integration = casimir_integrate_init(casimir, xi_, m, casimir->epsrel);
     self->integration_plasma = NULL;
     self->xi_ = xi_;
@@ -711,15 +712,28 @@ casimir_M_t *casimir_M_init(casimir_t *casimir, int m, double xi_)
  */
 double casimir_kernel_M(int i, int j, void *args_)
 {
-    char p1 = 'E', p2 = 'E';
     casimir_M_t *args = (casimir_M_t *)args_;
     const int lmin = args->lmin;
+
+    #if 1
+    /* variant A: (faster)
+     * round-trip matrix consists of many 2x2 blocks */
     const int l1 = lmin+i/2, l2 = lmin+j/2;
 
-    if(i % 2)
+    char polarizations[2] = { 'E', 'M' };
+    char p1 = polarizations[i % 2], p2 = polarizations[j % 2];
+    #else
+    /* variant B: (slower)
+     * round-trip matrix consists of 4 big polarization blocks, EE, EM, ME, MM */
+    const int ldim = args->ldim;
+    const int l1 = lmin + (i % ldim), l2 = lmin + (j % ldim);
+
+    char p1 = 'E', p2 = 'E';
+    if(i >= ldim)
         p1 = 'M';
-    if(j % 2)
+    if(j >= ldim)
         p2 = 'M';
+    #endif
 
     return casimir_M_elem(args, l1, l2, p1, p2);
 }
@@ -929,11 +943,11 @@ double casimir_logdetD(casimir_t *self, double xi_, int m)
 {
     TERMINATE(xi_ <= 0, "Matsubara frequency must be positive");
 
-    const int is_symmetric = 1;
+    const int sym_spd = 2; /* matrix is symmetric and positive definite */
     const int dim = 2*self->ldim;
 
     casimir_M_t *args = casimir_M_init(self, m, xi_);
-    double logdet = kernel_logdet(dim, &casimir_kernel_M, args, is_symmetric, self->detalg);
+    double logdet = kernel_logdet(dim, &casimir_kernel_M, args, sym_spd, self->detalg);
     casimir_M_free(args);
 
     return logdet;
@@ -963,7 +977,8 @@ double casimir_logdetD(casimir_t *self, double xi_, int m)
 void casimir_logdetD0(casimir_t *self, int m, double omegap, double *EE, double *MM, double *MM_plasma)
 {
     size_t lmin, lmax;
-    const int is_symmetric = 1, ldim = self->ldim;
+    const int sym_spd = 2; /* matrix is symmetric and positive definite */
+    const int ldim = self->ldim;
     detalg_t detalg = self->detalg;
 
     casimir_estimate_lminmax(self, m, &lmin, &lmax);
@@ -980,15 +995,15 @@ void casimir_logdetD0(casimir_t *self, int m, double omegap, double *EE, double 
     };
 
     if(EE != NULL)
-        *EE = kernel_logdet(ldim, &casimir_kernel_M0_EE, &args, is_symmetric, detalg);
+        *EE = kernel_logdet(ldim, &casimir_kernel_M0_EE, &args, sym_spd, detalg);
 
     if(MM != NULL)
-        *MM = kernel_logdet(ldim, &casimir_kernel_M0_MM, &args, is_symmetric, detalg);
+        *MM = kernel_logdet(ldim, &casimir_kernel_M0_MM, &args, sym_spd, detalg);
 
     if(MM_plasma != NULL)
     {
         args.integration_plasma = casimir_integrate_plasma_init(self, omegap, self->epsrel);
-        *MM_plasma = kernel_logdet(ldim, &casimir_kernel_M0_MM_plasma, &args, is_symmetric, detalg);
+        *MM_plasma = kernel_logdet(ldim, &casimir_kernel_M0_MM_plasma, &args, sym_spd, detalg);
         casimir_integrate_plasma_free(args.integration_plasma);
     }
 }

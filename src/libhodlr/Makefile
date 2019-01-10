@@ -1,9 +1,9 @@
 .PHONY: clean dependencies dependencies_test
 all: libhodlr
 
-OBJS = src/hodlr.o src/HODLR_Matrix.o src/HODLR_Node.o src/HODLR_Tree.o
+OBJS = src/hodlr.o src/HODLR_Matrix.o src/HODLR_Node.o src/HODLR_Tree.o src/HODLR_Tree_NonSPD.o src/HODLR_Tree_SPD.o src/KDTree.o
 
-CXXFLAGS = -std=c++11 -Wall -g -fPIC -I include/ -I src/
+CXXFLAGS = -std=c++11 -Wall -g -fPIC -DUSE_DOUBLE -I include/ -I src/
 
 # Define the NDEBUG macro when compiling: this disables some run-time checks
 # which slightly speeds up your program. As the speedup is negligible, it is
