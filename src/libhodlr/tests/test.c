@@ -63,7 +63,7 @@ int main(int argc, char *argv[])
     char *status[] = { KGRN "ok" KNRM, KRED "failed" KNRM };
     unsigned int nLeaf = 100;
     double tolerance = 1e-10;
-    int is_symmetric = 1;
+    int sym_spd = 2;
     double eta = 10;
     double RbyL_start = 100;
     double RbyL_stop  = 100000;
@@ -102,7 +102,7 @@ int main(int argc, char *argv[])
             double dim = RbyL*eta;
             double y = log(0.5/(1+1./RbyL));
             double t = now();
-            double logdet = hodlr_logdet(dim, kernel, &y, nLeaf, tolerance, is_symmetric);
+            double logdet = hodlr_logdet(dim, kernel, &y, nLeaf, tolerance, sym_spd);
             t = now()-t;
             double exact = analytical(RbyL);
 

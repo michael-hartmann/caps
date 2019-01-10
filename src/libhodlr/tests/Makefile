@@ -1,7 +1,7 @@
 .PHONY: test
 
 OPT = -O3
-CXXFLAGS = -g -w -I ../include/ ../src/hodlr.cpp -I ../src/header/
+CXXFLAGS = -DUSE_DOUBLE -g -w -L .. -lhodlr -I ../include/
 
 # undefined behaviour sanitizer supported by clang++
 #CXXFLAGS += -fsanitize=undefined,unsigned-integer-overflow -fno-omit-frame-pointer
