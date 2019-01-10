@@ -5,7 +5,7 @@ library](https://github.com/sivaramambikasaran/HODLR) (commit
 [23784ba](https://github.com/sivaramambikasaran/HODLR/commit/23784ba433e345a751d94264fadc9c53e706f5d5))
 which implements the calculation of the logarithm of the determinant of a
 matrix D=Id-M. The only difference is that we `max_tries` in `HODLR_Matrix.cpp`
-is set to 100. In the vanilla sources `max_trie=10`. Here is a diff:
+is set to 100. In the vanilla sources `max_tries=10`. Here is a diff:
 ```
 diff --git a/src/libhodlr/src/HODLR_Matrix.cpp b/src/libhodlr/src/HODLR_Matrix.cpp
 index 0e8f02c..7e32ead 100644
