@@ -712,6 +712,9 @@ casimir_M_t *casimir_M_init(casimir_t *casimir, int m, double xi_)
  */
 double casimir_kernel_M(int i, int j, void *args_)
 {
+    #if 1
+    /* variant A:
+     * round-trip matrix consists of many 2x2 blocks */
     char p1 = 'E', p2 = 'E';
     casimir_M_t *args = (casimir_M_t *)args_;
     const int lmin = args->lmin;
@@ -721,6 +724,21 @@ double casimir_kernel_M(int i, int j, void *args_)
         p1 = 'M';
     if(j % 2)
         p2 = 'M';
+    #else
+    /* variant B:
+     * round-trip matrix consists of 4 big polarization blocks, EE, EM, ME, MM */
+
+    casimir_M_t *args = (casimir_M_t *)args_;
+    const int lmin = args->lmin, ldim = args->ldim;
+    const int l1 = lmin + (i % ldim);
+    const int l2 = lmin + (j % ldim);
+
+    char p1 = 'E', p2 = 'E';
+    if(i >= ldim)
+        p1 = 'M';
+    if(j >= ldim)
+        p2 = 'M';
+    #endif
 
     return casimir_M_elem(args, l1, l2, p1, p2);
 }
