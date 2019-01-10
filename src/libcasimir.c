@@ -948,11 +948,11 @@ double casimir_logdetD(casimir_t *self, double xi_, int m)
 {
     TERMINATE(xi_ <= 0, "Matsubara frequency must be positive");
 
-    const int is_symmetric = 1;
+    const int sym_spd = 1;
     const int dim = 2*self->ldim;
 
     casimir_M_t *args = casimir_M_init(self, m, xi_);
-    double logdet = kernel_logdet(dim, &casimir_kernel_M, args, is_symmetric, self->detalg);
+    double logdet = kernel_logdet(dim, &casimir_kernel_M, args, sym_spd, self->detalg);
     casimir_M_free(args);
 
     return logdet;
@@ -982,7 +982,7 @@ double casimir_logdetD(casimir_t *self, double xi_, int m)
 void casimir_logdetD0(casimir_t *self, int m, double omegap, double *EE, double *MM, double *MM_plasma)
 {
     size_t lmin, lmax;
-    const int is_symmetric = 1, ldim = self->ldim;
+    const int sym_spd = 1, ldim = self->ldim;
     detalg_t detalg = self->detalg;
 
     casimir_estimate_lminmax(self, m, &lmin, &lmax);
@@ -999,15 +999,15 @@ void casimir_logdetD0(casimir_t *self, int m, double omegap, double *EE, double 
     };
 
     if(EE != NULL)
-        *EE = kernel_logdet(ldim, &casimir_kernel_M0_EE, &args, is_symmetric, detalg);
+        *EE = kernel_logdet(ldim, &casimir_kernel_M0_EE, &args, sym_spd, detalg);
 
     if(MM != NULL)
-        *MM = kernel_logdet(ldim, &casimir_kernel_M0_MM, &args, is_symmetric, detalg);
+        *MM = kernel_logdet(ldim, &casimir_kernel_M0_MM, &args, sym_spd, detalg);
 
     if(MM_plasma != NULL)
     {
         args.integration_plasma = casimir_integrate_plasma_init(self, omegap, self->epsrel);
-        *MM_plasma = kernel_logdet(ldim, &casimir_kernel_M0_MM_plasma, &args, is_symmetric, detalg);
+        *MM_plasma = kernel_logdet(ldim, &casimir_kernel_M0_MM_plasma, &args, sym_spd, detalg);
         casimir_integrate_plasma_free(args.integration_plasma);
     }
 }
