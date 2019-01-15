@@ -126,31 +126,31 @@ For a full list, see CREDITS.
 The code is licensed under GPLv2, see LICENSE.
 
 Also, libcasimir uses some third-party software:
- * [HODLR](https://github.com/sivaramambikasaran/HODLR) A fast direct solver
-   and determinant computation for dense linear systems. (MPL2)
- * [libeigen](https://eigen.tuxfamily.org) Eigen is a C++ template library for
+ * [HODLR](https://github.com/sivaramambikasaran/HODLR): Fast direct solver
+   and determinant computation for dense linear systems (MPL2)
+ * [libeigen](https://eigen.tuxfamily.org): C++ template library for
    linear algebra (MPL2)
- * [cquadpack](https://github.com/ESSS/cquadpack) cquadpack is
-   a a C port of the QUADPACK software originally written in Fortran for
-   solving integrals. (public domain)
- * [cephes](https://www.netlib.org/cephes/) is a software collection with
+ * [cquadpack](https://github.com/ESSS/cquadpack): C port of the QUADPACK
+ * software originally written in Fortran for
+   solving integrals (public domain)
+ * [cephes](https://www.netlib.org/cephes/): Software collection with
    special functions. libcasimir uses the implementation for the modified
    Bessel functions [I0(x)](https://www.netlib.org/cephes/doubldoc.html#i0),
    [I1(x)](https://www.netlib.org/cephes/doubldoc.html#i1),
    [K0(x)](https://www.netlib.org/cephes/doubldoc.html#k0), and
    [K1(x)](https://www.netlib.org/cephes/doubldoc.html#k1) (see bessel.c). (No
    license, probably BSD licensed.)
- * [LAPACK](https://www.netlib.org/lapack/) Linear algebra library. LAPACK may
+ * [LAPACK](https://www.netlib.org/lapack/): Linear algebra library. LAPACK may
    be used to calculate the determinant of the scattering matrices. However,
    for small separations using HODLR is much faster. (Modified BSD)
- * [buf](https://github.com/skeeto/growable-buf) growable memory buffers for
+ * [buf](https://github.com/skeeto/growable-buf): Growable memory buffers for
    C99. (public domain)
- * [argparse](https://github.com/cofyc/argparse) command line arguments parsing
-   library in C (MIT)
+ * [argparse](https://github.com/cofyc/argparse): Command line arguments
+   parsing library in C (MIT)
 
 
-Publications
-------------
+Publications using libcasimir
+-----------------------------
  * [Casimir effect in the plane-sphere geometry: Beyond the proximity force approximation](https://opus.bibliothek.uni-augsburg.de/opus4/44798)  
    Michael Hartmann, PhD thesis (Universität Augsburg, 2018)
 
