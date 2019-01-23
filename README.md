@@ -18,7 +18,7 @@ highly optimized and allows you - depending on parameters and your hardware - to
 compute the free energy for aspect ratios up to R/L~10'000 (in some cases even
 higher!).
 
-![experiments in the plane-sphere geometry](images/overview.svg)
+<img src="images/overview.svg" align="left" height="100%" width="100%" >
 
 The picture shows an overview of the experiments carried out in the plane-sphere
 geometry. The blue area denotes the aspect ratios that are accessible using
