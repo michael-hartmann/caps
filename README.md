@@ -140,7 +140,7 @@ Also, libcasimir uses some third-party software:
  * [libeigen](https://eigen.tuxfamily.org): C++ template library for
    linear algebra (MPL2)
  * [cquadpack](https://github.com/ESSS/cquadpack): C port of the QUADPACK
- * software originally written in Fortran for
+   software originally written in Fortran for
    solving integrals (public domain)
  * [cephes](https://www.netlib.org/cephes/): Software collection with
    special functions. libcasimir uses the implementation for the modified
