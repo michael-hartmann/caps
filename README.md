@@ -39,7 +39,7 @@ Installation
 If you use Linux or Unix, you need the gcc and development libraries and header
 files for the standard C library, and MPI. On a Debian-like Linux the command
 ```
-$ sudo apt-get install gcc g++ libc6-dev libc++-dev make libopenmpi-dev openmpi-bin liblapack-dev libgfortran-7-dev gfortran-7
+$ sudo apt-get install gcc g++ libc6-dev libc++-dev cmake make libopenmpi-dev openmpi-bin liblapack-dev libgfortran-7-dev gfortran-7
 ```
 will install all dependencies. You can compile the sources with:
 ```
