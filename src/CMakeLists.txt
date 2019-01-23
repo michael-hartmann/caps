@@ -19,23 +19,36 @@ set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=c99 ${OPT} -g -Wall -Wextra -Wmissing-p
 # set CXXFLAGS
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 ${OPT} -Wall -g")
 
+# By default, icc violates strict IEEE floating point behaviour - similar to
+# GCC's --fast-math option. The code, however, relies on strict IEEE floating
+# point behaviour. The option "-fp-model precise" sets the correct floating
+# point behaviour.
+# Also, when using the math kernel library (MKL), use the non-threaded library.
+if ("${CMAKE_C_COMPILER_ID}" STREQUAL "Intel")
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fp-model precise -mkl=sequential")
+endif()
+if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Intel")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fp-model precise -mkl=sequential")
+endif()
 
 # libhodlr
 add_library(hodlr SHARED libhodlr/src/hodlr.cpp libhodlr/src/HODLR_Matrix.cpp libhodlr/src/HODLR_Node.cpp libhodlr/src/HODLR_Tree.cpp libhodlr/src/HODLR_Tree_NonSPD.cpp libhodlr/src/HODLR_Tree_SPD.cpp libhodlr/src/KDTree.cpp)
-set_target_properties(hodlr PROPERTIES COMPILE_FLAGS "-DUSE_DOUBLE -Wno-unknown-pragmas")
-
+target_compile_definitions(hodlr PRIVATE -DUSE_DOUBLE)
+set_target_properties(hodlr PROPERTIES COMPILE_FLAGS "-Wno-unknown-pragmas")
 
 # libcasimir
 add_library(casimir SHARED bessel.c cache.c fcqs.c integration.c libcasimir.c logfac.c material.c matrix.c misc.c plm.c psd.c utils.c cquadpack/src/dqage.c cquadpack/src/dqagi.c cquadpack/src/dqags.c cquadpack/src/dqext.c cquadpack/src/dqk15.c cquadpack/src/dqk15i.c cquadpack/src/dqk21.c cquadpack/src/dqk31.c cquadpack/src/dqk41.c cquadpack/src/dqk51.c cquadpack/src/dqk61.c cquadpack/src/dqsort.c)
 
-#execute_process(
-#  COMMAND uname -smnr
-#  WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
-#  OUTPUT_VARIABLE MACHINE
-#  OUTPUT_STRIP_TRAILING_WHITESPACE
-#)
-#add_definitions("-DMACHINE=${MACHINE}")
+# get machine name
+execute_process(
+  COMMAND uname -smnr
+  WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+  OUTPUT_VARIABLE MACHINE
+  OUTPUT_STRIP_TRAILING_WHITESPACE
+)
+target_compile_definitions(casimir PRIVATE -DMACHINE="${MACHINE}")
 
+# get GIT head and branch
 if(EXISTS "${CMAKE_SOURCE_DIR}/../.git")
   execute_process(
     COMMAND git rev-parse --abbrev-ref HEAD
@@ -51,10 +64,7 @@ if(EXISTS "${CMAKE_SOURCE_DIR}/../.git")
     OUTPUT_STRIP_TRAILING_WHITESPACE
   )
 
-  message("GIT_HEAD=${GIT_COMMIT_HASH}")
-  message("GIT_BRANCH=${GIT_BRANCH}")
-
-  add_definitions(casimir -DGIT_HEAD="${GIT_COMMIT_HASH}" -DGIT_BRANCH="{GIT_BRANCH}")
+  target_compile_definitions(casimir PRIVATE -DGIT_HEAD="${GIT_COMMIT_HASH}" -DGIT_BRANCH="${GIT_BRANCH}")
 endif(EXISTS "${CMAKE_SOURCE_DIR}/../.git")
 
 
@@ -81,9 +91,21 @@ target_link_libraries(casimir_logdetD ${CMAKE_SOURCE_DIR}/libhodlr.so)
 
 
 # cylinder
-#add_executable(cylinder cylinder.cpp argparse.c)
+add_executable(cylinder cylinder.cpp argparse.c)
+set_target_properties(cylinder PROPERTIES EXCLUDE_FROM_ALL 1)
 
-#target_link_libraries(cylinder ${BLAS_LIBRARIES})
-#target_link_libraries(cylinder ${LAPACK_LIBRARIES})
-#target_link_libraries(cylinder ${CMAKE_SOURCE_DIR}/libcasimir.so)
-#target_link_libraries(cylinder ${CMAKE_SOURCE_DIR}/libhodlr.so)
+target_link_libraries(cylinder ${BLAS_LIBRARIES})
+target_link_libraries(cylinder ${LAPACK_LIBRARIES})
+target_link_libraries(cylinder ${CMAKE_SOURCE_DIR}/libcasimir.so)
+target_link_libraries(cylinder ${CMAKE_SOURCE_DIR}/libhodlr.so)
+
+# tests
+add_executable(tests tests/test_bessels.c tests/test_fresnel.c tests/test_Lambda.c tests/test_lfac.c tests/test_logdetD.c tests/test_logi.c tests/test_mie.c tests/test_mie_drude.c tests/test_Plm.c tests/tests.c tests/unittest.c)
+set_target_properties(tests PROPERTIES EXCLUDE_FROM_ALL 1)
+set_target_properties(tests PROPERTIES OUTPUT_NAME "casimir_tests")
+
+target_link_libraries(tests m)
+target_link_libraries(tests ${BLAS_LIBRARIES})
+target_link_libraries(tests ${LAPACK_LIBRARIES})
+target_link_libraries(tests ${CMAKE_SOURCE_DIR}/libcasimir.so)
+target_link_libraries(tests ${CMAKE_SOURCE_DIR}/libhodlr.so)
