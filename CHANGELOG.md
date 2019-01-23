@@ -1,6 +1,13 @@
 Changelog
 =========
 
+development version
+-------------------
+
+* Add badges to RADME.md
+* Use cmake as build system
+
+
 version 0.4.1
 -------------
 
