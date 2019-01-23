@@ -14,10 +14,11 @@ def geometry():
     phi = 30        # Winkel für Pfeil für R
     dx = 0.1        # Abstand für Pfeile für L
     lend = 0.2      # Länge Strich für L
+    #black   = color.rgb.black
     cfill1  = crgb(250,200,10) # Farbe
-    cfill2  = crgb(178,178,255) # Farbe
-    cfill2  = crgb(178,178,255) # Farbe
-    cborder = crgb(0,0,178)
+    #cfill2  = crgb(178,178,255) # Farbe
+    #cfill2  = crgb(178,178,255) # Farbe
+    #cborder = crgb(0,0,178)
 
     c = canvas.canvas()
 
@@ -116,6 +117,9 @@ ticklen = 0.1
 
 text.set(text.LatexRunner)
 c = canvas.canvas()
+
+c.insert(geometry(), [trafo.translate(6,4.97)])
+
 nrscaling = partial(scaling, xmin=0, xmax=len(experiments), length=axislens[0])
 epsscaling = partial(scaling, xmin=epsinvmin, xmax=epsinvmax, length=axislens[1])
 
@@ -162,15 +166,14 @@ for nrexp, expdata in enumerate(experiments):
     c.stroke(path.rect(nrexp_sc-dy, aspectratiomin_sc, 2*dy, aspectratiomax_sc-aspectratiomin_sc), [deco.filled([color.cmyk.Maroon])])
 
     c.stroke(path.line(nrexp_sc, 0, nrexp_sc, -ticklen))
-    c.text(nrexp_sc, -1.7*ticklen, ref, [text.size.footnotesize, text.halign.center, text.valign.top])
+    c.text(nrexp_sc, -1.7*ticklen, ref, [text.size.footnotesize, text.halign.center, text.valign.top, color.rgb.black])
 
 for nrexp, expdata in enumerate(experiments, start=1):
     label = expdata["label"]
 
     dy = 0.37
-    c.text(width+0.8, 0.3+height-nrexp*dy, "[%d]" % nrexp, [text.size.footnotesize, text.halign.right])
-    c.text(width+0.9, 0.3+height-nrexp*dy, label, [text.size.footnotesize])
-
-c.insert(geometry(), [trafo.translate(6,4.97)])
+    c.text(width+0.8, 0.3+height-nrexp*dy, "[%d]" % nrexp, [text.size.footnotesize, text.halign.right, color.rgb.black])
+    c.text(width+0.9, 0.3+height-nrexp*dy, label, [text.size.footnotesize, color.rgb.black])
 
 c.writePDFfile()
+c.writeSVGfile()
