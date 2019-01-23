@@ -1,6 +1,10 @@
 libcasimir
 ==========
 
+[![Version 0.4.1](images/version.svg)](https://github.com/michael-hartmann/libcasimir-dev/releases/tag/v0.4.1)
+[![arXiv:1803.05791](images/arxiv.svg)](https://arxiv.org/abs/1803.05791)
+[![license: GPLv2](images/license.svg)](https://www.gnu.org/licenses/old-licenses/gpl-2.0.html)
+
 What is libcasimir?
 -------------------
 
