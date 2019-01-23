@@ -22,10 +22,10 @@ set(OPT "-O3")
 # set(OPT "-O3 -march=native -flto")
 
 # set CFLAGS
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=c99 ${OPT} -g -Wall -Wextra -Wmissing-prototypes -Wshadow -Wpointer-arith -Wcast-qual -Wwrite-strings -Wno-unused-parameter -fstrict-aliasing")
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=c99 ${OPT} -Wall -Wextra -Wmissing-prototypes -Wshadow -Wpointer-arith -Wcast-qual -Wwrite-strings -Wno-unused-parameter -fstrict-aliasing")
 
 # set CXXFLAGS
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 ${OPT} -Wall -g")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 ${OPT} -Wall")
 
 # By default, icc violates strict IEEE floating point behaviour - similar to
 # GCC's --fast-math option. The code, however, relies on strict IEEE floating
