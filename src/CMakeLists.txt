@@ -10,16 +10,10 @@ include_directories("include/")
 include_directories("cquadpack/include/")
 include_directories("libhodlr/include/")
 
-# Optimization:
-# If you are running your code on the same machine where you compile the code,
-# or the target machine supports the same instruction set, the option
-# -march=native may increase performance. When there are problems, the program
-# will crash with a message similar to "illegal instruction code". On my Intel
-# Core i7 machine, this option gives a performance boost of ~5%.
-# Similarily, link time optimization might also increase performance. However,
-# on my machine there is no difference in runtime.
-set(OPT "-O3")
-# set(OPT "-O3 -march=native -flto")
+# set standard optimization -O3
+if(NOT DEFINED OPT)
+    set(OPT "-O3")
+endif()
 
 # set CFLAGS
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=c99 ${OPT} -Wall -Wextra -Wmissing-prototypes -Wshadow -Wpointer-arith -Wcast-qual -Wwrite-strings -Wno-unused-parameter -fstrict-aliasing")
@@ -117,3 +111,22 @@ target_link_libraries(tests ${BLAS_LIBRARIES})
 target_link_libraries(tests ${LAPACK_LIBRARIES})
 target_link_libraries(tests ${CMAKE_BINARY_DIR}/libcasimir.so)
 target_link_libraries(tests ${CMAKE_BINARY_DIR}/libhodlr.so)
+
+
+message("")
+message("#################")
+message("# Build options #")
+message("#################")
+message("")
+message("optimization:      " ${OPT})
+message("C compiler:        " ${CMAKE_C_COMPILER})
+message("C flags:           " ${CMAKE_C_FLAGS})
+message("C++ compiler:      " ${CMAKE_CXX_COMPILER})
+message("C++ flags:         " ${CMAKE_CXX_FLAGS})
+message("blas libraries:    " ${BLAS_LIBRARIES})
+message("lapack libraries:  " ${LAPACK_LIBRARIES})
+message("latest git commit: " ${GIT_COMMIT_HASH})
+message("git branch:        " ${GIT_BRANCH})
+message("machine:           " ${MACHINE})
+message("build directory:   " ${CMAKE_BINARY_DIR})
+message("")
