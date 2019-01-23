@@ -241,6 +241,10 @@ void casimir_build(FILE *stream, const char *prefix)
     if(prefix == NULL)
         prefix = "";
 
+    #ifdef LIBCASIMIR_VERSION
+    fprintf(stream, "%sversion: %s\n", prefix, LIBCASIMIR_VERSION);
+    #endif
+
     fprintf(stream, "%scompiler: %s\n", prefix, COMPILER);
     fprintf(stream, "%scompile time: %s %s\n", prefix, __DATE__, __TIME__);
 
