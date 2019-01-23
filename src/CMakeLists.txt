@@ -10,8 +10,16 @@ include_directories("include/")
 include_directories("cquadpack/include/")
 include_directories("libhodlr/include/")
 
-# optimization
-set(OPT, "-O3")
+# Optimization:
+# If you are running your code on the same machine where you compile the code,
+# or the target machine supports the same instruction set, the option
+# -march=native may increase performance. When there are problems, the program
+# will crash with a message similar to "illegal instruction code". On my Intel
+# Core i7 machine, this option gives a performance boost of ~5%.
+# Similarily, link time optimization might also increase performance. However,
+# on my machine there is no difference in runtime.
+set(OPT "-O3")
+# set(OPT "-O3 -march=native -flto")
 
 # set CFLAGS
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=c99 ${OPT} -g -Wall -Wextra -Wmissing-prototypes -Wshadow -Wpointer-arith -Wcast-qual -Wwrite-strings -Wno-unused-parameter -fstrict-aliasing")
