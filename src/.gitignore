@@ -1,8 +1,1 @@
-*.o
-*.so
-.depend
 doc/
-casimir
-casimir_logdetD
-casimir_tests
-cylinder
