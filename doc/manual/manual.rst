@@ -695,7 +695,7 @@ generated running
 
 .. code-block:: console
 
-  $ make doc
+  $ doxygen  doxygen.conf
 
 in the directory ``src/``. The documentation will be generated in ``src/doc/``.
 You need doxygen installed on your computer.
