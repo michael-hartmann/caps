@@ -112,6 +112,10 @@ The latest version of libcasimir is available at
 create an [issue](https://github.com/michael-hartmann/libcasimir-dev/issues). If you have
 improvements, create a pull request.
 
+**You are working on your first Pull Request?** You can learn how from this
+*free* series [How to Contribute to an Open Source Project on
+GitHub](https://egghead.io/series/how-to-contribute-to-an-open-source-project-on-github).
+
 Authors, license and credits
 ----------------------------
 
