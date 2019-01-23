@@ -139,10 +139,23 @@ Improving performance
 ---------------------
 
 In order to improve performance, it might be neccessary to tweak some compiler
-options. The options are described in the file ``src/CMakeLists.txt``. The most
-interesting option is ``-mmarch=native`` which tells the compiler to optimize
-the code for the architecture the compiler is running on. This might improve
-performance by ~5%.
+options. Be default, the optimization level is ``-O3`` which should give
+reasonable performance.
+
+If you are running your code on the same machine where you compile the code,
+or the target machine supports the same instruction set, the option
+``-march=native`` may increase performance. When there are problems, the program
+will crash with a message similar to "illegal instruction code". On my Intel
+Core i7 machine, this option gives a performance boost of ~5%. To compile
+the code with this option, run:
+
+.. code-block:: console
+
+    $ cmake ../src -DOPT="-O3 -march=native"
+
+
+Similarily, link time optimization ``-flto`` might also increase performance.
+However, this option has basically no influence on the performance.
 
 
 Programs
