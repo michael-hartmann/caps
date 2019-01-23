@@ -99,7 +99,14 @@ followed by ``make``:
 
 This command compiles the HODLR library and the libcasimir library and builds
 the shared objects ``libhodlr.so`` and ``libcasimir.so``. Then, the programs
-``casimir`` and ``casimir_logdetD`` are built.
+``casimir`` and ``casimir_logdetD`` are built. Note that you can also specify
+different compilers setting the variables ``CC`` and ``CXX``. Here is an
+example how to use the Intel C and C++ compilers:
+
+.. code-block:: console
+
+    $ CC=icc CXX=icpc cmake ../src
+    $ make
 
 In order to run the programs, the system must be able to find the libraries
 ``libhodlr.so`` and ``libcasimir.so``. As the libraries are not in the default
