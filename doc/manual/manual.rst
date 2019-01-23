@@ -78,72 +78,61 @@ will get you the complete libcasimir repository and stores it in the directory
 
 The libcasimir library and the programs are written in C and C++ using LAPACK
 and MPI. In order to compile the source files, you need a C and C++ compiler,
-the development files for LAPACK and MPI, and the build tool make. You can install
-all dependencies with:
+the development files for LAPACK and MPI, and the build tools make and cmake.
+You can install all dependencies with:
 
 .. code-block:: console
 
-	$ sudo apt install gcc g++ libc6-dev libc++-dev make libopenmpi-dev openmpi-bin liblapack-dev libgfortran-7-dev gfortran-7
+	$ sudo apt install gcc g++ libc6-dev libc++-dev cmake make libopenmpi-dev openmpi-bin liblapack-dev libgfortran-7-dev gfortran-7
 
 
-In order to compile the code, run ``make`` in the directory ``libcasimir-dev/src/``:
+In order to compile the code, create a directory ``bin``, run ``cmake``
+followed by ``make``:
 
 .. code-block:: console
 
-    $ cd libcasimir-src/dev
+    $ cd libcasimir-src/
+    $ mkdir bin
+    $ cd bin/
+    $ cmake ../src
     $ make
 
-This command compiles the HODLR library and builds the shared object
-``libhodlr.so`` in the directory ``libhodlr/``. Then, the Makefile compiles the
-libcasimir library ``libcasimir.so`` and builds the programs ``casimir`` and
-``casimir_logdetD``.
+This command compiles the HODLR library and the libcasimir library and builds
+the shared objects ``libhodlr.so`` and ``libcasimir.so``. Then, the programs
+``casimir`` and ``casimir_logdetD`` are built.
 
 In order to run the programs, the system must be able to find the libraries
-``libhodlr.so`` and ``libcasimir.so``. As both libraries are not in the default
+``libhodlr.so`` and ``libcasimir.so``. As the libraries are not in the default
 search path, you have to add the directories to ``LD_LIBRARY_PATH``
 
 .. code-block:: console
 
-    $ export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/home/hendrik/libcasimir-dev/src:/home/hendrik/libcasimir-dev/src/libhodlr
+    $ export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/home/hendrik/libcasimir-dev/bin
 
 where we have assumed that the libcasimir repository is in the directory
 ``/home/hendrik``.
 
-It is also possible to use different compilers than gcc. To compile the code with clang and clang++ run
-
-.. code-block:: console
-
-    $ make clean
-    $ CC=clang CXX=clang++ make
-
-and for Intel's compiler:
-
-.. code-block:: console
-
-    $ make clean
-    $ CC=icc CXX=icpc make
-
-Please make sure to run ``make clean`` first.
 
 Testing
 -------
 
 In order to check whether the compilation was successful, you can build and run
-the unit tests in ``src/``:
+the unit tests in ``bin/``:
 
 .. code-block:: console
 
-    $ make casimir_tests
+    $ make tests
+    $ ./casimir_tests
 
 All tests should pass. Running the tests takes up (depending on your hardware)
 about 7 minutes.
 
 
-Adapting the Makefile
+Improving performance
 ---------------------
 
 In order to improve performance, it might be neccessary to tweak some compiler
-options. The options are described in the file ``src/Makefile``. The most
+options. The options are described in the file ``src/CMakeLists.txt``. The most
 interesting option is ``-mmarch=native`` which tells the compiler to optimize
 the code for the architecture the compiler is running on. This might improve
 performance by ~5%.

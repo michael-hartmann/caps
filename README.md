@@ -43,7 +43,9 @@ $ sudo apt-get install gcc g++ libc6-dev libc++-dev make libopenmpi-dev openmpi-
 ```
 will install all dependencies. You can compile the sources with:
 ```
-$ cd src/
+$ mkdir bin
+$ cd bin
+$ cmake ../src
 $ make
 ```
 This will build the shared objects `libhodlr.so` and `libcasimir.so`,
@@ -54,11 +56,11 @@ If you want to run the programs, make sure that `libcasimir.so` and
 ```
 ./casimir_logdetD: error while loading shared libraries: libcasimir.so: cannot open shared object file: No such file or directory
 ```
-If the shared libraries are not in the search path, you can run the programs
-by specifying the directories that contain the shared libraries in
+If the shared libraries are not in the search path, you can run the programs by
+specifying the directory that contains the shared libraries in
 `LD_LIBRARY_PATH`:
 ```
-$ export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/path/to/libcasimir-dev/src/:/path/to/libcasimir-dev/src/libhodlr
+$ export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/path/to/libcasimir-dev/bin
 ```
 
 Usage
