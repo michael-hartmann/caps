@@ -30,7 +30,7 @@ double dqags(dq_function_type f,double a,double b,double epsabs,
     double epsrel,double *abserr,int *neval,int *ier, void* user_data)
 {
     double abseps,alist[LIMIT],area,area1,area12,area2;
-    double a1,a2,blist[LIMIT],b1,b2,correc,defabs,defab1;
+    double a1,a2,blist[LIMIT],b1,b2,correc = 0,defabs,defab1;
     double defab2,dres,elist[LIMIT],erlarg,erlast,errbnd;
     double errmax,error1,error2,erro12,errsum,ertest;
     double resabs,reseps,result,res3la[3],rlist[LIMIT];
