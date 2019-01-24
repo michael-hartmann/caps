@@ -1,6 +1,12 @@
 Changelog
 =========
 
+development version
+-------------------
+
+* Removed warnings when compiling
+
+
 version 0.4.2
 -------------
 

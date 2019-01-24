@@ -41,7 +41,7 @@ set_target_properties(hodlr PROPERTIES COMPILE_FLAGS "-Wno-unknown-pragmas")
 # libcasimir
 add_library(casimir SHARED bessel.c cache.c fcqs.c integration.c libcasimir.c logfac.c material.c matrix.c misc.c plm.c psd.c utils.c cquadpack/src/dqage.c cquadpack/src/dqagi.c cquadpack/src/dqags.c cquadpack/src/dqext.c cquadpack/src/dqk15.c cquadpack/src/dqk15i.c cquadpack/src/dqk21.c cquadpack/src/dqk31.c cquadpack/src/dqk41.c cquadpack/src/dqk51.c cquadpack/src/dqk61.c cquadpack/src/dqsort.c)
 
-target_compile_definitions(casimir PRIVATE LIBCASIMIR_VERSION="0.4.2")
+target_compile_definitions(casimir PRIVATE LIBCASIMIR_VERSION="0.4.3-dev")
 
 # get machine name
 execute_process(
