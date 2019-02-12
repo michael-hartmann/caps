@@ -169,7 +169,7 @@ Publications using libcasimir
    Michael Hartmann, Gert-Ludwig Ingold, Paulo A. Maia Neto,  
    Phys. Scr. 93, 114003 (2018), DOI: 10.1088/1402-4896/aae34e
 
- * [Plasma vs Drude modelling of the Casimir force: beyond the proximity force approximation](https://doi.org/10.1103/PhysRevLett.119.043901) (on [arxiv](https://arxiv.org/abs/1705.04196))  
+ * [Plasma versus Drude Modeling of the Casimir Force: Beyond the Proximity Force Approximation](https://doi.org/10.1103/PhysRevLett.119.043901) (on [arxiv](https://arxiv.org/abs/1705.04196))  
    Michael Hartmann, Gert-Ludwig Ingold, and Paulo A. Maia Neto,  
    Phys. Rev. Lett. **119**, 043901 (2017), DOI: 10.1103/PhysRevLett.119.04390
 
