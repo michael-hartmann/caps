@@ -692,8 +692,8 @@ This example computes the Casimir free energy for a cylinder of radius
 
 Here, :math:`L` denotes the length of the cylinder. The matrix elements of the
 round-trip operator are correct assuming that :math:`L\gg R,d`.  ``E_D`` and
-``E_N`` correspond Dirichlet and Neumann boundary conditions, ``E_EM`` is the
-energy for the electromagnetic field, ``E_EM = E_D + E_N``.
+``E_N`` correspond to Dirichlet and Neumann boundary conditions, ``E_EM`` is
+the energy for the electromagnetic field, ``E_EM = E_D + E_N``.
 
 API Documentation
 =================
