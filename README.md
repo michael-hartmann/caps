@@ -70,7 +70,7 @@ To compute the Casimir free energy between a sphere of radius R=150µm and a
 plane separated by a distance L=2µm at room temperature T=300K assuming
 that both objects are perfect reflectors, use the command:
 ```
-$ mpirun -c 7 ./casimir -L 2e-6 -R 150e-6 -T 300
+$ mpirun -n 7 ./casimir -L 2e-6 -R 150e-6 -T 300
 # compiler: gcc
 # compile time: Dec 17 2018 13:39:58
 # compiled on: Linux jonas.physik.uni-augsburg.de 4.9.0-8-amd64 #1 SMP Debian 4.9.130-2 (2018-10-27) x86_64 GNU/Linux
