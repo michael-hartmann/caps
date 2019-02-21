@@ -123,8 +123,8 @@ improvements, create a pull request.
 *free* series [How to Contribute to an Open Source Project on
 GitHub](https://egghead.io/series/how-to-contribute-to-an-open-source-project-on-github).
 
-Authors, license and credits
-----------------------------
+Authors
+-------
 
  * [Michael Hartmann](https://myweb.rz.uni-augsburg.de/~hartmmic/), michael.hartmann@physik.uni-augsburg.de
    main developer
@@ -133,6 +133,10 @@ Authors, license and credits
    contributions to documentation, bugfixes
 
 For a full list, see CREDITS.
+
+
+License
+-------
 
 The code is licensed under GPLv2, see LICENSE.
 
