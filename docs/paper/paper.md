@@ -23,8 +23,14 @@ bibliography: paper.bib
 
 # Summary
 
+[@hartmann_prl_2017]
+[@hartmann_phd_2018]
+[@hartmann_phscr_2018]
 
-In conclusion, ``libcasimir`` has the following features:
+older @ingold_pre_2015, @umrath_pre_2015
+
+
+In summary, ``libcasimir`` has the following features:
 
  - Computation of the free energy for aspect ratios used in real experiments
  - Computation of the free energy in the high-temperature limit for perfect reflectors, and metals described by the Drude or plasma model
