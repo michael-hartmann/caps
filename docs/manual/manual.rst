@@ -22,13 +22,14 @@ Overview and Features
 
 libcasimir is an implementation of the Casimir effect in the plane-sphere
 geometry. The geometry consists of a sphere of radius :math:`R` separated by a
-distance :math:`L` from an infinite plate, see the inset of Figure 1. The main
-goal of the library and the associated programs is to compute the free energy
-:math:`\mathcal{F}` depending on the radius :math:`R` of the sphere, the
-separation :math:`L` between sphere and plate, the temperature :math:`T`, and
-the dielectric properties of the objects. The library is highly optimized and
-allows you - depending on parameters and your hardware - to compute the free
-energy for aspect ratios up to :math:`R/L\sim 10\,000`.
+distance :math:`L` from an infinite plate, see the inset of Figure 1. We assume
+that the sphere and the plane are in vacuum. The main goal of the library and
+the associated programs is to compute the free energy :math:`\mathcal{F}`
+depending on the radius :math:`R` of the sphere, the separation :math:`L`
+between sphere and plate, the temperature :math:`T`, and the dielectric
+properties of the objects. The library is highly optimized and allows you -
+depending on parameters and your hardware - to compute the free energy for
+aspect ratios up to :math:`R/L\sim 10\,000`.
 
 Features
 --------
@@ -68,14 +69,16 @@ The easiest way to get the source code is to use git. To install git, run
 
     $ sudo apt install git
 
-in a terminal. Once git is installed, the command
+in a terminal. Here, the dollar sign indicates the shell prompt. Once git is
+installed, the command
 
 .. code-block:: console
 
     $ git clone https://github.com/michael-hartmann/libcasimir-dev.git
 
 will get you the complete libcasimir repository and stores it in the directory
-``libcasimir-dev/``.
+``libcasimir-dev/``. As an alternative, you can also download and extract the
+zip- or taz.gz-archive of the latest release.
 
 The libcasimir library and the programs are written in C and C++ using LAPACK
 and MPI. In order to compile the source files, you need a C and C++ compiler,
@@ -84,11 +87,11 @@ You can install all dependencies with:
 
 .. code-block:: console
 
-	$ sudo apt install gcc g++ libc6-dev libc++-dev cmake make libopenmpi-dev openmpi-bin liblapack-dev libgfortran-7-dev gfortran-7
+	$ sudo apt install gcc g++ libc6-dev libc++-dev cmake make libopenmpi-dev openmpi-bin liblapack-dev
 
 
-In order to compile the code, create a directory ``bin``, run ``cmake``
-followed by ``make``:
+In order to compile the code, create a directory ``bin`` in the
+``libcasimir-dev/`` directory, run ``cmake`` followed by ``make``:
 
 .. code-block:: console
 
@@ -141,7 +144,7 @@ Improving performance
 ---------------------
 
 In order to improve performance, it might be necessary to tweak some compiler
-options. Be default, the optimization level is ``-O3`` which usually yields
+options. By default, the optimization level is ``-O3`` which usually yields
 reasonable performance.
 
 If you are either running your code on the same machine where you compile the
@@ -179,6 +182,12 @@ integration.
 The program supports a wide variety of options. You can get a summary of all
 options using ``casimir --help``. By default, the temperature is set to
 :math:`T=0`, and the sphere and plane are assumed to be perfect reflectors.
+
+Please note that due to parallelization, the number of terms computed in the
+summations over :math:`m` varies from run to run. As a consequence, the
+numerical value obtained for the free energy also varies from run to run. The
+abort criterion for the summation over :math:`m` can be changed by the option
+``--cutoff`` described in more detail later.
 
 Mandatory options
 ^^^^^^^^^^^^^^^^^
@@ -365,7 +374,7 @@ Casimir free energy using the plasma model is:
 
 .. code-block:: console
 
-    mpirun -n 8 ./casimir -R 50e-6 -L 1e-6 -T 300 --omegap 9
+    $ mpirun -n 8 ./casimir -R 50e-6 -L 1e-6 -T 300 --omegap 9
     # compiler: gcc
     # compile time: Jan  2 2019 12:35:13
     # compiled on: Linux jonas.physik.uni-augsburg.de 4.9.0-8-amd64 #1 SMP Debian 4.9.130-2 (2018-10-27) x86_64 GNU/Linux
@@ -413,7 +422,7 @@ the same example as above for Drude gives:
 
 .. code-block:: console
 
-    mpirun -n 8 ./casimir -R 50e-6 -L 1e-6 -T 300 --omegap 9 --gamma 0.035
+    $ mpirun -n 8 ./casimir -R 50e-6 -L 1e-6 -T 300 --omegap 9 --gamma 0.035
     # compiler: gcc
     # compile time: Jan  2 2019 12:35:13
     # compiled on: Linux jonas.physik.uni-augsburg.de 4.9.0-8-amd64 #1 SMP Debian 4.9.130-2 (2018-10-27) x86_64 GNU/Linux
