@@ -1,5 +1,5 @@
-Checklist for relase
-====================
+Checklist for release
+=====================
 
  * Update CHANGELOG.md
  * Update version badge

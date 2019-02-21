@@ -39,9 +39,10 @@ Installation
 If you use Linux or Unix, you need the gcc and development libraries and header
 files for the standard C library, and MPI. On a Debian-like Linux the command
 ```
-$ sudo apt-get install gcc g++ libc6-dev libc++-dev cmake make libopenmpi-dev openmpi-bin liblapack-dev libgfortran-7-dev gfortran-7
+$ sudo apt-get install gcc g++ libc6-dev libc++-dev cmake make libopenmpi-dev openmpi-bin liblapack-dev
 ```
-will install all dependencies. You can compile the sources with:
+will install all dependencies. Here, the dollar sign indicates the shell
+prompt. You can compile the sources with:
 ```
 $ mkdir bin
 $ cd bin
@@ -69,7 +70,7 @@ To compute the Casimir free energy between a sphere of radius R=150µm and a
 plane separated by a distance L=2µm at room temperature T=300K assuming
 that both objects are perfect reflectors, use the command:
 ```
-$ mpirun -c 7 ./casimir -L 2e-6 -R 150e-6 -T 300
+$ mpirun -n 7 ./casimir -L 2e-6 -R 150e-6 -T 300
 # compiler: gcc
 # compile time: Dec 17 2018 13:39:58
 # compiled on: Linux jonas.physik.uni-augsburg.de 4.9.0-8-amd64 #1 SMP Debian 4.9.130-2 (2018-10-27) x86_64 GNU/Linux
@@ -104,6 +105,7 @@ $ mpirun -c 7 ./casimir -L 2e-6 -R 150e-6 -T 300
 # L/R, L, R, T, ldim, E*(L+R)/(hbar*c)
 0.01333333333333333, 2e-06, 0.00015, 300, 525, -437.9074196681792
 ```
+Due to parallelization you might not get the exactly the exactly same result.
 
 Documentation
 -------------
