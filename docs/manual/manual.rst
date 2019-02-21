@@ -13,8 +13,8 @@ Welcome to libcasimir's documentation!
 Overview and Features
 =====================
 
-.. figure:: images/overview.png
-   :scale: 33 %
+.. figure:: images/overview.pdf
+   :scale: 100 %
 
    Experiments in the plane-sphere geometry. The blue area denotes the aspect
    ratios that are accessible using libcasimir. The inset depicts the
@@ -33,8 +33,8 @@ Features
 --------
 
  - Calculate the free energy for different separations and temperatures
- - Calculate the free energy in the high temperature limit
- - Full support for perfect reflectors, Drude metals, and generic metals described by a user-defined dielectric function
+ - Calculate the free energy in the high temperature limit for perfect reflectors, the Drude model, and the plasma model
+ - Full support for perfect reflectors, metals described by the Drude and plasma model, and generic metals described by a user-defined dielectric function
  - libcasimir is fast and reliable
  - ready to use programs: you don't have to modify the code
  - libcasimir is free software – you may use it or even modify it
