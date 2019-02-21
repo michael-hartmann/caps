@@ -1,12 +1,11 @@
 ---
 title: 'libcasimir: The Casimir effect in the plane-sphere geometry'
 tags:
-  - Casimir Effect
-  - Scattering
-  - Multipole
-  - Sphere
-  - Plane
-  - Hierarchical Matrices
+  - Casimir effect
+  - electromanetic scattering
+  - multipole basis
+  - plane-sphere geometry
+  - hierarchical matrices
 authors:
   - name: Michael Hartmann
     affiliation: 1
@@ -15,7 +14,7 @@ authors:
 affiliations:
   - name: Institut für Physik, Universität Augsburg, 86135 Augsburg, Germany
     index: 1
-date: 21th February 2019
+date: 27th February 2019
 bibliography: paper.bib
 ---
 
@@ -23,21 +22,26 @@ bibliography: paper.bib
 
 # Summary
 
-[@hartmann_prl_2017]
-[@hartmann_phd_2018]
-[@hartmann_phscr_2018]
+general description
 
-older @ingold_pre_2015, @umrath_pre_2015
+derivative expansion / asymptotic aproaches vs scattering theory
+
+performance improvements
+
+parallelization
+
+``libcasimir`` has been used to analyze negative Casimir entropies
+[@ingold_pre_2015; @umrath_pre_2015], and to study corrections to the commonly
+used proximity force approximation [@hartmann_prl_2017].
 
 
 In summary, ``libcasimir`` has the following features:
 
- - Computation of the free energy for aspect ratios used in real experiments
+ - Computation of the free energy for aspect ratios used in typical experiments
  - Computation of the free energy in the high-temperature limit for perfect reflectors, and metals described by the Drude or plasma model
  - Full support for perfect reflectors, metals described by the Drude and plasma model, and generic materials described by a user-defined dielectric function
  - Computation of the free energy at zero temperature for perfect reflectors in the plane-cylinder geometry
  - Support for parallelization using MPI
-
 
 ``libcasimir`` is released under the GPLv2 license.
 
