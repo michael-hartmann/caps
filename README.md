@@ -41,7 +41,8 @@ files for the standard C library, and MPI. On a Debian-like Linux the command
 ```
 $ sudo apt-get install gcc g++ libc6-dev libc++-dev cmake make libopenmpi-dev openmpi-bin liblapack-dev
 ```
-will install all dependencies. You can compile the sources with:
+will install all dependencies. Here, the dollar sign indicates the shell
+prompt. You can compile the sources with:
 ```
 $ mkdir bin
 $ cd bin
@@ -104,6 +105,7 @@ $ mpirun -c 7 ./casimir -L 2e-6 -R 150e-6 -T 300
 # L/R, L, R, T, ldim, E*(L+R)/(hbar*c)
 0.01333333333333333, 2e-06, 0.00015, 300, 525, -437.9074196681792
 ```
+Due to parallelization you might not get the exactly the exactly same result.
 
 Documentation
 -------------
