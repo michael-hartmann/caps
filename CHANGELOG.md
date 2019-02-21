@@ -5,6 +5,7 @@ development version
 -------------------
 
 * Removed warnings when compiling
+* Simplified cache cache.c
 
 
 version 0.4.2
