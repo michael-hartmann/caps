@@ -22,12 +22,13 @@ Overview and Features
 
 libcasimir is an implementation of the Casimir effect in the plane-sphere
 geometry. The geometry consists of a sphere of radius :math:`R` separated by a
-distance :math:`L` from an infinite plate. The main goal of the library and the
-associated programs is to compute the free energy :math:`\mathcal{F}` depending
-on the radius of the sphere, the separation between sphere and plate, the
-temperature, and the dielectric properties of the objects. The library is
-highly optimized and allows you - depending on parameters and your hardware -
-to compute the free energy for aspect ratios up to :math:`R/L\sim 10\,000`.
+distance :math:`L` from an infinite plate, see the inset of Figure 1. The main
+goal of the library and the associated programs is to compute the free energy
+:math:`\mathcal{F}` depending on the radius :math:`R` of the sphere, the
+separation :math:`L` between sphere and plate, the temperature :math:`T`, and
+the dielectric properties of the objects. The library is highly optimized and
+allows you - depending on parameters and your hardware - to compute the free
+energy for aspect ratios up to :math:`R/L\sim 10\,000`.
 
 Features
 --------
@@ -48,7 +49,7 @@ Ingold, Maia Neto, "Advancing numerics for the Casimir effect to experimentally
 relevant aspect ratios", Phys. Scr. 93, 114003 (2018)
 <https://doi.org/10.1088/1402-4896/aae34e>`_. A more detailed description can
 be found in `Hartmann, "Casimir effect in the plane-sphere geometry: Beyond the
-proximity force approximation", phd thesis (2018)
+proximity force approximation", PhD thesis (Universität Augsburg, 2018)
 <https://opus.bibliothek.uni-augsburg.de/opus4/44798>`_.
 
 
@@ -97,11 +98,12 @@ followed by ``make``:
     $ cmake ../src
     $ make
 
-This command compiles the HODLR library and the libcasimir library and builds
-the shared objects ``libhodlr.so`` and ``libcasimir.so``. Then, the programs
-``casimir`` and ``casimir_logdetD`` are built. Note that you can also specify
-different compilers setting the variables ``CC`` and ``CXX``. Here is an
-example how to use the Intel C and C++ compilers:
+This command compiles the `HODLR library
+<https://github.com/sivaramambikasaran/HODLR/>`_, the libcasimir library, and
+builds the shared objects ``libhodlr.so`` and ``libcasimir.so``. Then, the
+programs ``casimir`` and ``casimir_logdetD`` are built. Note that you can also
+specify different compilers setting the variables ``CC`` and ``CXX``. Here is
+an example how to use the Intel C and C++ compilers:
 
 .. code-block:: console
 
@@ -131,23 +133,22 @@ the unit tests in ``bin/``:
     $ make tests
     $ ./casimir_tests
 
-All tests should pass. Running the tests takes up (depending on your hardware)
+All tests should pass. Running the tests takes (depending on your hardware)
 about 7 minutes.
 
 
 Improving performance
 ---------------------
 
-In order to improve performance, it might be neccessary to tweak some compiler
-options. Be default, the optimization level is ``-O3`` which should give
+In order to improve performance, it might be necessary to tweak some compiler
+options. Be default, the optimization level is ``-O3`` which usually yields
 reasonable performance.
 
-If you are running your code on the same machine where you compile the code,
-or the target machine supports the same instruction set, the option
-``-march=native`` may increase performance. When there are problems, the program
-will crash with a message similar to "illegal instruction code". On my Intel
-Core i7 machine, this option gives a performance boost of ~5%. To compile
-the code with this option, run:
+If you are either running your code on the same machine where you compile the
+code, or the target machine supports the same instruction set, the option
+``-march=native`` may increase performance. On an Intel Core i7-2600 machine,
+this option gives a performance boost of about 5%. To compile the code with
+this option, run:
 
 .. code-block:: console
 
@@ -155,7 +156,8 @@ the code with this option, run:
 
 
 Similarily, link time optimization ``-flto`` might also increase performance.
-However, this option has basically no influence on the performance.
+However, a test on an Intel Core i7-2600 machine showed basically no
+performance gain.
 
 
 Programs
@@ -182,7 +184,7 @@ Mandatory options
 ^^^^^^^^^^^^^^^^^
 
 There are two mandatory options: the separation :math:`L` between sphere and
-plane, and the radius of the sphere :math:`R`. The program expects the lengths
+plane, and the radius :math:`R` of the sphere. The program expects the lengths
 given in units of meters. As an example, the following command computes the
 Casimir interaction at :math:`T=0` for perfect reflectors for a sphere of
 radius :math:`R=50\mu\mathrm{m}` and a separation :math:`L=2\mu\mathrm{m}`:
@@ -235,16 +237,16 @@ N+1. The output of this command looks similar to:
 The output is in the format of a CSV file and additional comments start with a
 pound (#). The program first outputs some information on the compilation, i.e.,
 time of compilation, name of compiler, machine where it was compiled and so on.
-Then, information about the geometry (radius, seperation, aspect ratio and
+Then, information about the geometry (radius, separation, aspect ratio and
 inverse of aspect ratio), numerical parameters (cutoff, epsrel, iepsrel, ldim,
 cores) are printed. We will discuss the numerical parameters in more detail
 later. The value of cores is the number of MPI processes that are used for the
 computation. Then, the determinant of the scattering matrix for different
 Matsubara frequencies are printed. The comment starting with ``ier`` gives the
-result of the integration and is and ``ier=0`` if the integration was
-successful. The program ends by printing the result of the computation. The
-free energy is outputed in units of :math:`(L+R)/\hbar c`, i.e., for this
-example the free energy is
+result of the integration and is ``ier=0`` if the integration was successful.
+The program ends by printing the result of the computation. The free energy is
+outputed in units of :math:`(L+R)/\hbar c`, i.e., for this example the free
+energy is
 
 .. math::
   \mathcal{F}\approx \frac{-26.54 \hbar c}{50\mu\mathrm{m}+2\mu\mathrm{m}} \approx -1.61\times10^{-20} \mathrm{J}.
@@ -271,8 +273,9 @@ reflectors it is sometimes faster to use an adaptive exponentially convergent
 Fourier-Chebshev quadrature scheme (FCQS), see `Boyd, "Exponentially convergent
 Fourier-Chebshev quadrature schemes on bounded and infinite intervals", JOSC 2,
 2 (1987) <https://doi.org/10.1007/BF01061480>`_. You can use FCQS using the
-flag ``--fcqs``. Since the adaptive algorithm is not well tested, this option
-is considered experimental.
+flag ``--fcqs``. Since the adaptive algorithm for FCQS is not well tested, this
+option is considered experimental. Moreover, it is not recommended to use FCQS
+for any other materials than perfect reflectors.
 
 Temperature
 ^^^^^^^^^^^
@@ -330,7 +333,7 @@ By default, ``EPSREL`` is :math:`10^{-6}`. You can change the value of
 ``EPSREL`` using the option ``--epsrel``.
 
 By default, the free energy is computed summing over the Matsubara frequencies
-:math:`\xi_n`, also called Matsubara spectrum decomposition (MSD). Another
+:math:`\xi_n`, which is called Matsubara spectrum decomposition (MSD). Another
 option is to compute the free energy using Padé spectrum decomposition (PSD).
 PSD is an optimal sum-over-poles expansion scheme, more information can be
 found in `Hu, Xu, Yan, "Padé spectrum decompositions of quantum distribution
@@ -492,7 +495,8 @@ computed using the Drude model
 with the plasma frequency given by ``omegap_low`` and the relaxation frequency
 given by ``gamma_low``. If ``omegap_low`` and ``gamma_low`` are not given in
 the file, the dielectric function is assumed to be 1. The behaviour for
-frequencies larger than the largest provided frequency is analougous.
+frequencies larger than the largest provided frequency is analougous using the
+parameters given by ``omegap_high`` and ``gamma_high``.
 
 Here is an example that computes the Casimir energy for a sphere of
 :math:`R=50\mu\mathrm{m}` at separation :math:`L=1\mu\mathrm{m}` at room
@@ -562,7 +566,7 @@ Truncation of the vector space
 
 The truncation of the vector space is described in more detail in `Hartmann,
 "Casimir effect in the plane-sphere geometry: Beyond the proximity force
-approximation", phd thesis (2018)
+approximation", PhD thesis (Universität Augsburg, 2018)
 <https://opus.bibliothek.uni-augsburg.de/opus4/44798>`_.  You can either
 specify the dimension of the vector space using ``--ldim``, or you choose the
 vector space using the parameter ``--eta``:
@@ -583,11 +587,12 @@ is given by:
 Other options
 ^^^^^^^^^^^^^
 
-The computation of the matrix elements of the round-trip operator contain an
+The computation of the matrix elements of the round-trip operator contains an
 integration. The desired relative error for this integration can be set using
 ``--iepsrel``. The default value of :math:`10^{-8}` should be sufficient for
 almost all purposes. If you want to compute the Casimir energy to very high
-accuracy, to :math:`10^{-7}` or better, you might want to set a smaller value.
+accuracy, to :math:`10^{-7}` or better, you might want to use a smaller value
+for ``IEPSREL``.
 
 
 casimir_logdetD
@@ -627,7 +632,9 @@ Sometimes, it is useful to output the round-trip matrix in numpy format. If the
 environment variable ``CASIMIR_DUMP`` is set and ``detalg`` is not HODLR, the
 round-trip matrix will be saved to the filename contained in ``CASIMIR_DUMP``.
 Also note that if ``detalg`` is Cholesky, only the upper half of the matrix is
-computed. Here is an example:
+computed.
+
+Here is an example to generate and save a round-trip matrix:
 
 .. code-block:: console
 
@@ -683,9 +690,10 @@ This example computes the Casimir free energy for a cylinder of radius
   # d/R, d, R, T, lmax, E_PFA/(L*hbar*c), E_D/E_PFA, E_N/E_PFA, E_EM/E_PFA
   0.001, 1e-07, 0.0001, 0, 6000, -72220981652413.5, 0.500089151077922, 0.499432943796732, 0.999522094874654
 
-Here, :math:`L` denotes the length of the cylinder. ``E_D`` and ``E_N``
-correspond Dirichlet and Neumann boundary conditions, ``E_EM`` is the energy
-for the electromagnetic field, ``E_EM = E_D + E_N``.
+Here, :math:`L` denotes the length of the cylinder. The matrix elements of the
+round-trip operator are correct assuming that :math:`L\gg R,d`.  ``E_D`` and
+``E_N`` correspond Dirichlet and Neumann boundary conditions, ``E_EM`` is the
+energy for the electromagnetic field, ``E_EM = E_D + E_N``.
 
 API Documentation
 =================
@@ -695,7 +703,7 @@ generated running
 
 .. code-block:: console
 
-  $ doxygen  doxygen.conf
+  $ doxygen doxygen.conf
 
-in the directory ``src/``. The documentation will be generated in ``src/doc/``.
+in the directory ``src/``. The documentation will be generated in ``docs/api/``.
 You need doxygen installed on your computer.
