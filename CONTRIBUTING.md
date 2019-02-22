@@ -1,7 +1,7 @@
 # How can I contribute to libcasimir?
 
 You want to contribute to libcasimir? That is great! We are always happy to get
-contributions! :)
+contributions and feedback! :)
 
 ## Issues
 
