@@ -108,7 +108,8 @@ $ mpirun -n 7 ./casimir -L 2e-6 -R 150e-6 -T 300
 # L/R, L, R, T, ldim, E*(L+R)/(hbar*c)
 0.01333333333333333, 2e-06, 0.00015, 300, 525, -437.9074196681792
 ```
-Due to parallelization you might not get the exactly the exactly same result.
+Due to parallelization you might not get the exactly same numerical value for
+the free energy.
 
 Documentation
 -------------
