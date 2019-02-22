@@ -22,38 +22,39 @@ bibliography: paper.bib
 
 # Summary
 
-In 1984 Hendrik Casimir considered two parallel and perfectly reflecting planes
-at zero temperature and found an attractive force pushing the planes together
-[@casimir_pr_1948]. While the Casimir effect has been measured in a number of
-historic experiments [@bordag_advances], accurate measurements are only
-available since the late 1990ies. In contrast to Casimir's original setup, to
-avoid misalignments between the planes, most modern experiments measure the
-Casimir effect in the plane-sphere geometry, as sketeched in Figure 1.
-Moreover, an accurate description of current experiments requires to take
-finite temperature and the material properties of the plane and the sphere into
-account.
+This package contains functionality to compute the Casimir free energy
+$\mathcal{F}$ for the geometry of a sphere with radius $R$ separated by a
+minimum distance $L$ from a plane as shown in Figure 1. We assume the plane and
+the sphere to be in vacuum. This geometry is important since the most sensitive
+experiments of the Casimir effect typically employ this configuration. In these
+experiments the aspect ratio $R/L$ is typically of the order $R/L\sim1000$.
 
 ![Geometry of the plane-sphere setup. A sphere with radius $R$ is separated by
 the smallest distance $L$ from an infintely extended plane.](geometry.pdf)
 
-``libcasimir`` allows to compute the Casimir free energy $\mathcal{F}$ in the
-plane-sphere geometry. The free energy $\mathcal{F}$ depends on the radius $R$
-of the sphere, the smallest separation $L$ between plane and sphere, the
-temperature $T$, and the optical properties of the plane and sphere. We assume
-the plane and the sphere to be in vacuum. The optical properties of the plane
-and the sphere can be modelled as perfect reflectors, using the Drude or plasma
-model, or by a user-defined dielectric function. The library also contains
-functions to compute the Casimir effect in the high-temperature limit for
-perfect reflectors, and the Drude and plasma model. Finally, there is support
-to compute the Casimir free energy in the plane-cylinder geometry for perfect
-reflectors at $T=0$.
+Within the scattering approach [@lambrecht_njp_2006; @emig_prl_2007], the
+Casimir free energy is given as a sum
+$$\mathcal{F} = \frac{k_\mathrm{B}T}{2} \sum_{n=-\infty}^\infty \sum_{m=-\infty}^\infty \log\det\left(1-\mathcal{M}^{(m)}(|\xi_n|)\right)$$
+over the Matsubara frequencies $\xi_n=2\pi n k_\mathrm{B}T/\hbar$. The
+round-trip operator $\mathcal{M}$ represents a complete round-trip on an
+electromagnetic wave between the sphere and the plane. Explicit expressions for
+the matrix elements of $\mathcal{M}^{(m)}$ are given in [@hartmann_phscr_2018;
+@hartmann_phd_2018].
 
-``libcasimir`` computes the free energy $\mathcal{F}$ using the scattering
-approach [@lambrecht_njp_2006; @emig_prl_2007; @rahi_prd_2009]. In contrast to
-other methods, the scattering approach is in exact. In particular, this means
-that the numerical error can be controlled.
+The free energy $\mathcal{F}$ depends on the radius $R$ of the sphere, the
+separation $L$ between plane and sphere, the temperature $T$, and the optical
+properties of the plane and sphere. The optical properties of the plane and the
+sphere can be modelled as perfect reflectors, using the Drude or plasma model,
+or by a user-defined dielectric function. The library also contains functions
+to compute the Casimir effect in the high-temperature limit for perfect
+reflectors, and the Drude and plasma model. In the Drude case, an analytical
+expression is used instead of a numerical evaluation [@bimonte_prl_2012].
 
-performance improvements Legendre [@bogaert_siam_2012] and HODLR
+``libcasimir`` allows a fast evaluation of the determinants appearing in
+$\mathcal{F}$ In contrast to other methods, the scattering approach is in
+exact. In particular, this means that the numerical error can be controlled.
+
+performance improvements due to symmetrization [@hartmann_phscr_2018], fast Legendre polynomials [@bogaert_siam_2012] and HODLR
 [@ambikasaran_josc_2013; @ambikasaran_arxiv_2014] using
 [@ambikasaran_joss_2019]
 
