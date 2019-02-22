@@ -64,6 +64,9 @@ specifying the directory that contains the shared libraries in
 $ export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/path/to/libcasimir-dev/bin
 ```
 
+You can find more information about building the software in the [user
+manual](https://github.com/michael-hartmann/libcasimir-dev#documentation).
+
 Usage
 -----
 To compute the Casimir free energy between a sphere of radius R=150µm and a
@@ -105,25 +108,30 @@ $ mpirun -n 7 ./casimir -L 2e-6 -R 150e-6 -T 300
 # L/R, L, R, T, ldim, E*(L+R)/(hbar*c)
 0.01333333333333333, 2e-06, 0.00015, 300, 525, -437.9074196681792
 ```
-Due to parallelization you might not get the exactly the exactly same result.
+Due to parallelization you might not get the exactly same numerical value for
+the free energy.
 
 Documentation
 -------------
 
-A user manual and the API documentation are available in `docs/`.
+A [user
+manual](https://github.com/michael-hartmann/libcasimir-dev/blob/master/docs/manual.pdf)
+and the [API
+documentation](https://github.com/michael-hartmann/libcasimir-dev/blob/master/docs/api.pdf)
+are available in `docs/`.
 
 
 Bugs, developing and contributing
 ---------------------------------
 
 The latest version of libcasimir is available at
-[github](https://github.com/michael-hartmann/libcasimir-dev). If you find a bug, please
-create an [issue](https://github.com/michael-hartmann/libcasimir-dev/issues). If you have
-improvements, create a pull request.
+[github](https://github.com/michael-hartmann/libcasimir-dev).
 
-**You are working on your first Pull Request?** You can learn how from this
-*free* series [How to Contribute to an Open Source Project on
-GitHub](https://egghead.io/series/how-to-contribute-to-an-open-source-project-on-github).
+We are always happy to get support and feedback from the community. If you find
+a bug, please create an
+[issue](https://github.com/michael-hartmann/libcasimir-dev/issues). If you have
+improvements, create a pull request.  For more details see
+[CONTRIBUTING.md](https://github.com/michael-hartmann/libcasimir-dev/blob/master/CONTRIBUTING.md).
 
 Authors
 -------
@@ -134,7 +142,7 @@ Authors
  * [Gert-Ludwig Ingold](https://www.physik.uni-augsburg.de/theo1/ingold/), gert.ingold@physik.uni-augsburg.de
    contributions to documentation, bugfixes
 
-For a full list, see CREDITS.
+For a full list, see [CREDITS](https://github.com/michael-hartmann/libcasimir-dev/blob/master/CREDITS).
 
 
 License

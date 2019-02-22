@@ -8,7 +8,7 @@ int test_casimir_mie_perf(void)
 {
     double lna, lnb;
     unittest_t test;
-    unittest_init(&test, "casimir_mie_perf", "Mie functions (PR)", 1e-14);
+    unittest_init(&test, "casimir_mie_perf", "Mie coefficients (PR)", 1e-14);
 
     casimir_t *self = casimir_init(1,1);
 

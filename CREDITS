@@ -8,7 +8,6 @@ D: Main developer.
 N: Gert-Ludwig Ingold
 E: <gert.ingold@physik.uni-augsburg.de>
 D: Correction of documentation
-D:
 D: Helped to find a bug that the round-trip matrix was filled in the wrong way.
 
 N: Romain Guerout

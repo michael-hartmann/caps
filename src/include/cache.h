@@ -5,19 +5,19 @@
 extern "C" {
 #endif
 
-#define CACHE_NUM_ENTRIES 262144
-#define CACHE_NUM_LOOKUP 50331653
-
 #include <stdint.h>
 
 typedef struct {
-    int head, tail, num_entries, num_lookup;
-    uint64_t *keys;
-    double *values;
-    uint64_t *table;
+    uint64_t key;
+    double value;
+} cache_entry_t;
+
+typedef struct {
+    unsigned int num_entries;
+    cache_entry_t *table;
 } cache_t;
 
-cache_t *cache_new(int entries, double filling);
+cache_t *cache_new(unsigned int entries);
 void cache_free(cache_t *cache);
 void cache_insert(cache_t *cache, uint64_t key, double value);
 double cache_lookup(cache_t *cache, uint64_t key);

@@ -1,11 +1,12 @@
 /**
  * @file   cache.c
  * @author Michael Hartmann <michael.hartmann@physik.uni-augsburg.de>
- * @date   December, 2018
+ * @date   February, 2019
  * @brief  implementation of a simple cache using a hash table
  */
 
 #include <stdint.h>
+#include <stdio.h>
 #include <math.h>
 
 #include "utils.h"
@@ -14,20 +15,15 @@
 /**
  * @brief Create a new cache
  *
- * Create a new cache instance. This cache is quite specific. You specifiy the
- * maximum number of entries and a filling level. The cache is implemented as a
- * hash map that maps keys (uint64_t) to doubles.
+ * Create a new cache instance.
  *
- * If the cache cannot contain more elements, the oldest entry will be thrown
- * away, similar to a FIFO. There is no logic to detect collisions. If there is
- * a collision, the old value will be overwritten. You can specifiy a filling
- * level (0 < filling < 1).
+ * The cache is implemented as a hash map. Collisions are not treated, the
+ * value will be overwritten.
  *
  * @param entries maximum number of entries the cache can store
- * @param filling filling level
  * @retval cache cache_t instance
  */
-cache_t *cache_new(int entries, double filling)
+cache_t *cache_new(unsigned int entries)
 {
     /* http://planetmath.org/goodhashtableprimes */
     const int primes[] = {
@@ -38,24 +34,23 @@ cache_t *cache_new(int entries, double filling)
 
     cache_t *cache = xmalloc(sizeof(cache_t));
 
-    int num_lookup;
+    /* determine number of entries */
+    unsigned int num_entries;
     for(unsigned int i = 0; i < sizeof(primes)/sizeof(primes[0]); i++)
     {
-        num_lookup = primes[i];
-        if(entries < num_lookup*filling)
+        num_entries = primes[i];
+        if(entries < num_entries)
             break;
     }
 
-    cache->num_entries = entries;
-    cache->num_lookup = num_lookup;
-    cache->head = entries-1;
-    cache->tail = 0;
-    cache->table  = xcalloc(num_lookup, sizeof(uint64_t));
-    cache->keys   = xcalloc(entries, sizeof(uint64_t));
-    cache->values = xcalloc(entries, sizeof(double));
+    cache->num_entries = num_entries;
+    cache->table = xmalloc(num_entries*sizeof(cache_entry_t));
 
-    for(int i = 0; i < entries; i++)
-        cache->keys[i] = 0;
+    for(unsigned int i = 0; i < num_entries; i++)
+    {
+        cache->table[i].key   = 0;
+        cache->table[i].value = NAN;
+    }
 
     return cache;
 }
@@ -67,8 +62,6 @@ cache_t *cache_new(int entries, double filling)
  */
 void cache_free(cache_t *cache)
 {
-    xfree(cache->values);
-    xfree(cache->keys);
     xfree(cache->table);
     xfree(cache);
 }
@@ -84,21 +77,10 @@ void cache_free(cache_t *cache)
  */
 void cache_insert(cache_t *cache, uint64_t key, double value)
 {
-    const int head = cache->head, tail = cache->tail;
-    const int num_entries = cache->num_entries, num_lookup = cache->num_lookup;
-    uint64_t *keys = cache->keys;
-    double *values = cache->values;
-    uint64_t *table = cache->table;
+    const unsigned int index = key % cache->num_entries;
 
-    cache->head = (head+1) % num_entries;
-    cache->tail = (tail+1) % num_entries;
-
-    const int64_t oldkey = keys[tail];
-    keys[tail]   = key;
-    values[tail] = value;
-
-    table[oldkey % num_lookup] = 0;
-    table[   key % num_lookup] = tail;
+    cache->table[index].key = key;
+    cache->table[index].value = value;
 }
 
 /**
@@ -111,10 +93,11 @@ void cache_insert(cache_t *cache, uint64_t key, double value)
  */
 double cache_lookup(cache_t *cache, uint64_t key)
 {
-    const int index = cache->table[key % cache->num_lookup];
+    const unsigned int index = key % cache->num_entries;
 
-    if(cache->keys[index] == key)
-        return cache->values[index];
+    cache_entry_t entry = cache->table[index];
+    if(entry.key == key)
+        return entry.value;
 
     return NAN;
 }

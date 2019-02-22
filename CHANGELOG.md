@@ -5,6 +5,9 @@ development version
 -------------------
 
 * Removed warnings when compiling
+* Simplified cache cache.c
+* Added CONTRIBUTIONS.md
+* Improvements to README.md and to the user manual
 
 
 version 0.4.2
