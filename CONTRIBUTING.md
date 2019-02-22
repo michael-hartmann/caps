@@ -26,6 +26,10 @@ If you want to contribute code, please fork the libcasimir-dev repository,
 implement the changes and create a [pull
 request](https://github.com/michael-hartmann/libcasimir-dev/pulls).
 
+**You are working on your first Pull Request?** You can learn how from this
+*free* series [How to Contribute to an Open Source Project on
+GitHub](https://egghead.io/series/how-to-contribute-to-an-open-source-project-on-github).
+
 Pull requests might involve:
 
    - Bug fixes
