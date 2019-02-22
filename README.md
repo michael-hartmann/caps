@@ -117,11 +117,12 @@ Bugs, developing and contributing
 ---------------------------------
 
 The latest version of libcasimir is available at
-[github](https://github.com/michael-hartmann/libcasimir-dev). If you find a bug, please
-create an [issue](https://github.com/michael-hartmann/libcasimir-dev/issues). If you have
-improvements, create a pull request.
+[github](https://github.com/michael-hartmann/libcasimir-dev).
 
-For more details see
+We are always happy to get support and feedback from the community. If you find
+a bug, please create an
+[issue](https://github.com/michael-hartmann/libcasimir-dev/issues). If you have
+improvements, create a pull request.  For more details see
 [CONTRIBUTING.md](https://github.com/michael-hartmann/libcasimir-dev/blob/master/CONTRIBUTING.md).
 
 Authors
@@ -133,7 +134,7 @@ Authors
  * [Gert-Ludwig Ingold](https://www.physik.uni-augsburg.de/theo1/ingold/), gert.ingold@physik.uni-augsburg.de
    contributions to documentation, bugfixes
 
-For a full list, see CREDITS.
+For a full list, see [CREDITS](https://github.com/michael-hartmann/libcasimir-dev/blob/master/CREDITS).
 
 
 License
