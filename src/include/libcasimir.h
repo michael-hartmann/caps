@@ -30,7 +30,7 @@ typedef enum { TE, TM } polarization_t;
 #define CASIMIR_FACTOR_LDIM 5   /**< by default: lmax=ceil(5/LbyR) */
 #define CASIMIR_EPSREL 1e-8  /**< default relative error for integration */
 
-#define CASIMIR_CACHE_ELEMS 1000000 /**< default number of elems of the cache for I integrals */
+#define CASIMIR_CACHE_ELEMS 10000000 /**< default number of elems of the cache for I integrals */
 
 /**
  * The Casimir object. This structure stores all essential information about

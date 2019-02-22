@@ -709,7 +709,7 @@ integration_t *casimir_integrate_init(casimir_t *casimir, double xi_, int m, dou
     if(s != NULL)
         elems = atoi(s);
 
-    self->cache_I = cache_new(elems, 0.3);
+    self->cache_I = cache_new(elems);
 
     self->elems_cache_K = 5*(casimir->ldim+2*m+100);
     self->cache_K[0] = xmalloc(self->elems_cache_K*sizeof(double));
@@ -907,8 +907,8 @@ integration_plasma_t *casimir_integrate_plasma_init(casimir_t *casimir, double o
     self->epsrel  = epsrel;
 
     const int ldim = casimir->ldim;
-    self->cache       = cache_new(3*ldim, 0.3);
-    self->cache_ratio = cache_new(3*ldim, 0.3);
+    self->cache       = cache_new(10*ldim);
+    self->cache_ratio = cache_new(10*ldim);
 
     return self;
 }
