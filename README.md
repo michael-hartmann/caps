@@ -64,6 +64,9 @@ specifying the directory that contains the shared libraries in
 $ export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/path/to/libcasimir-dev/bin
 ```
 
+You can find more information about building the software in the [user
+manual](https://github.com/michael-hartmann/libcasimir-dev#documentation).
+
 Usage
 -----
 To compute the Casimir free energy between a sphere of radius R=150µm and a
@@ -110,7 +113,11 @@ Due to parallelization you might not get the exactly the exactly same result.
 Documentation
 -------------
 
-A user manual and the API documentation are available in `docs/`.
+A [user
+manual](https://github.com/michael-hartmann/libcasimir-dev/blob/master/docs/manual.pdf)
+and the [API
+documentation](https://github.com/michael-hartmann/libcasimir-dev/blob/master/docs/api.pdf)
+are available in `docs/`.
 
 
 Bugs, developing and contributing
