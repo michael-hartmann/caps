@@ -22,24 +22,47 @@ bibliography: paper.bib
 
 # Summary
 
-This package contains functionality to compute the Casimir free energy
-$\mathcal{F}$ for the geometry of a sphere with radius $R$ separated by a
-minimum distance $L$ from a plane as shown in Figure 1. We assume the plane and
-the sphere to be in vacuum. This geometry is important since the most sensitive
-experiments of the Casimir effect typically employ this configuration. In these
-experiments the aspect ratio $R/L$ is typically of the order $R/L\sim1000$.
+CaPS allows you to compute the Casimir free energy $\mathcal{F}$ for the
+geometry of a sphere with radius $R$ separated by a minimum distance $L$ from a
+plane as sketched in Figure 1. We assume that the plane and the sphere are
+embedded in vacuum. The plane-sphere geometry is important since the most
+sensitive measurements of the Casimir effect employ this configuration.  In
+such experiments the aspect ratio $R/L$ is typically of the order
+$R/L\sim1000$.
 
 ![Geometry of the plane-sphere setup. A sphere with radius $R$ is separated by
-the smallest distance $L$ from an infintely extended plane.](geometry.pdf)
+the smallest distance $L$ from an infintely extended plane. The aspect ratio
+$R/L=2$ in this Figure is about three orders of magnitudes smaller than in
+typical experiments.](geometry.pdf)
 
 Within the scattering approach [@lambrecht_njp_2006; @emig_prl_2007], the
-Casimir free energy is given as a sum
-$$\mathcal{F} = \frac{k_\mathrm{B}T}{2} \sum_{n=-\infty}^\infty \sum_{m=-\infty}^\infty \log\det\left(1-\mathcal{M}^{(m)}(|\xi_n|)\right)$$
-over the Matsubara frequencies $\xi_n=2\pi n k_\mathrm{B}T/\hbar$. The
-round-trip operator $\mathcal{M}$ represents a complete round-trip on an
-electromagnetic wave between the sphere and the plane. Explicit expressions for
-the matrix elements of $\mathcal{M}^{(m)}$ are given in [@hartmann_phscr_2018;
-@hartmann_phd_2018].
+Casimir free energy is given as a sum $$\mathcal{F} = \frac{k_\mathrm{B}T}{2}
+\sum_{n=-\infty}^\infty \log\det\left(1-\mathcal{M}(|\xi_n|)\right)$$ over the
+Matsubara frequencies $\xi_n=2\pi n k_\mathrm{B}T/\hbar$. The round-trip
+operator $\mathcal{M}$ represents a complete round-trip of an electromagnetic
+wave between the sphere and the plane. Commonly, the determinants are evaluated
+using the multipole basis. The dimension of $\mathcal{M}$ in this basis is
+infinite and for a numerical evaluation the vector space need to be truncated.
+In order to achieve a sufficient accuracy, the vector space needs to have the
+dimension $\ell_\mathrm{dim}\sim R/L$ which results in huge matrices for aspect
+ratios employed in typical experiments. Moreover, the matrices are also
+ill-conditioned rendering a numerical evaluation difficult. For these reasons,
+numerical evaluations were limited to aspect ratios $R/L\lesssim100$
+[@Durand_phd].
+
+To overcome this problem, we use a symmetrized version of the round-trip
+operator $\mathcal{M}$ as described in [@hartmann_phscr_2018;
+@hartmann_phd_2018]. Moreover, it turns out that the matrices of the
+symmetrized round-trip operator are hierarchical off-diagonal low-rank (HODLR)
+matrices. HODLR matrices allow a fast computation of the determinant
+[@ambikasaran_josc_2013; @ambikasaran_arxiv_2014].
+
+CaPS evaluates the determinant of the scattering operator in the multipole
+basis.
+
+
+Explicit expressions for the matrix elements of $\mathcal{M}$ are given
+in [@hartmann_phscr_2018; @hartmann_phd_2018].
 
 The free energy $\mathcal{F}$ depends on the radius $R$ of the sphere, the
 separation $L$ between plane and sphere, the temperature $T$, and the optical
