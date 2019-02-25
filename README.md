@@ -1,28 +1,28 @@
-libcasimir
-==========
+CaPS
+====
 
-[![Version 0.4.2](images/version.svg)](https://github.com/michael-hartmann/libcasimir-dev/releases/tag/v0.4.2)
+[![Version 0.4.2](images/version.svg)](https://github.com/michael-hartmann/CaPS/releases/tag/v0.4.2)
 [![arXiv:1803.05791](images/arxiv.svg)](https://arxiv.org/abs/1803.05791)
 [![license: GPLv2](images/license.svg)](https://www.gnu.org/licenses/old-licenses/gpl-2.0.html)
 
-What is libcasimir?
--------------------
+What is CaPS?
+-------------
 
-libcasimir is an implementation of the Casimir effect in the plane-sphere
-geometry. The geometry consists of a sphere of radius R separated by a
-distance L from an infinite plate.
+CaPS is an implementation of the *Ca*simir effect in the *p*lane-*s*phere
+geometry. The geometry consists of a sphere of radius R separated by a distance
+L from an infinite plate.
 
-With libcasimir you can compute the free Casimir energy in the plane-sphere
-geometry for arbitrary materials at zero and finite temperature. The library is
-highly optimized and allows you - depending on parameters and your hardware - to
+With CaPS you can compute the free Casimir energy in the plane-sphere geometry
+for arbitrary dielectrics at zero and finite temperature. The code is highly
+optimized and allows you - depending on parameters and your hardware - to
 compute the free energy for aspect ratios up to R/L~10'000 (in some cases even
 higher!).
 
 <img src="images/overview.svg" align="left" height="100%" width="100%" >
 
-The picture shows an overview of the experiments carried out in the plane-sphere
-geometry. The blue area denotes the aspect ratios that are accessible using
-libcasimir. The inset depicts the plane-sphere geometry.
+The picture shows an overview of the experiments carried out in the
+plane-sphere geometry. The blue area denotes the aspect ratios that are
+accessible using CaPS. The inset depicts the plane-sphere geometry.
 
 Features
 --------
@@ -30,9 +30,9 @@ Features
  - Calculate the free energy in the high temperature limit
  - Full support for perfect reflectors, Drude metals, and generic materials
    described by a user-defined dielectric function
- - libcasimir is fast and reliable
+ - CaPS is fast and reliable
  - ready to use programs: you don't have to modify the code
- - libcasimir is free software – you may use it or even modify it
+ - CaPS is free software – you may use it or even modify it
 
 Installation
 ------------
@@ -49,23 +49,23 @@ $ cd bin
 $ cmake ../src
 $ make
 ```
-This will build the shared objects `libhodlr.so` and `libcasimir.so`,
-and the executables `casimir` and `casimir_logdetD`.
+This will build the shared objects `libhodlr.so` and `libcaps.so`, and the
+executables `caps` and `caps_logdetD`.
 
-If you want to run the programs, make sure that `libcasimir.so` and
-`libhodlr.so` are in the search path or you will get an error similar to:
+If you want to run the programs, make sure that `libcaps.so` and `libhodlr.so`
+are in the search path or you will get an error similar to:
 ```
-./casimir_logdetD: error while loading shared libraries: libcasimir.so: cannot open shared object file: No such file or directory
+./caps_logdetD: error while loading shared libraries: libcaps.so: cannot open shared object file: No such file or directory
 ```
 If the shared libraries are not in the search path, you can run the programs by
 specifying the directory that contains the shared libraries in
 `LD_LIBRARY_PATH`:
 ```
-$ export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/path/to/libcasimir-dev/bin
+$ export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/path/to/CaPS/bin
 ```
 
 You can find more information about building the software in the [user
-manual](https://github.com/michael-hartmann/libcasimir-dev#documentation).
+manual](https://github.com/michael-hartmann/CaPS#documentation).
 
 Usage
 -----
@@ -73,7 +73,7 @@ To compute the Casimir free energy between a sphere of radius R=150µm and a
 plane separated by a distance L=2µm at room temperature T=300K assuming
 that both objects are perfect reflectors, use the command:
 ```
-$ mpirun -n 7 ./casimir -L 2e-6 -R 150e-6 -T 300
+$ mpirun -n 7 ./caps -L 2e-6 -R 150e-6 -T 300
 # compiler: gcc
 # compile time: Dec 17 2018 13:39:58
 # compiled on: Linux jonas.physik.uni-augsburg.de 4.9.0-8-amd64 #1 SMP Debian 4.9.130-2 (2018-10-27) x86_64 GNU/Linux
@@ -115,23 +115,23 @@ Documentation
 -------------
 
 A [user
-manual](https://github.com/michael-hartmann/libcasimir-dev/blob/master/docs/manual.pdf)
+manual](https://github.com/michael-hartmann/CaPS/blob/master/docs/manual.pdf)
 and the [API
-documentation](https://github.com/michael-hartmann/libcasimir-dev/blob/master/docs/api.pdf)
+documentation](https://github.com/michael-hartmann/CaPS/blob/master/docs/api.pdf)
 are available in `docs/`.
 
 
 Bugs, developing and contributing
 ---------------------------------
 
-The latest version of libcasimir is available at
-[github](https://github.com/michael-hartmann/libcasimir-dev).
+The latest version of CaPS is available at
+[github](https://github.com/michael-hartmann/CaPS).
 
 We are always happy to get support and feedback from the community. If you find
 a bug, please create an
-[issue](https://github.com/michael-hartmann/libcasimir-dev/issues). If you have
+[issue](https://github.com/michael-hartmann/CaPS/issues). If you have
 improvements, create a pull request.  For more details see
-[CONTRIBUTING.md](https://github.com/michael-hartmann/libcasimir-dev/blob/master/CONTRIBUTING.md).
+[CONTRIBUTING.md](https://github.com/michael-hartmann/CaPS/blob/master/CONTRIBUTING.md).
 
 Authors
 -------
@@ -142,7 +142,7 @@ Authors
  * [Gert-Ludwig Ingold](https://www.physik.uni-augsburg.de/theo1/ingold/), gert.ingold@physik.uni-augsburg.de
    contributions to documentation, bugfixes
 
-For a full list, see [CREDITS](https://github.com/michael-hartmann/libcasimir-dev/blob/master/CREDITS).
+For a full list, see [CREDITS](https://github.com/michael-hartmann/CaPS/blob/master/CREDITS).
 
 
 License
@@ -150,7 +150,7 @@ License
 
 The code is licensed under GPLv2, see LICENSE.
 
-Also, libcasimir uses some third-party software:
+Also, CaPS uses some third-party software:
  * [HODLR](https://github.com/sivaramambikasaran/HODLR): Fast direct solver
    and determinant computation for dense linear systems (MPL2)
  * [libeigen](https://eigen.tuxfamily.org): C++ template library for
@@ -159,7 +159,7 @@ Also, libcasimir uses some third-party software:
    software originally written in Fortran for
    solving integrals (public domain)
  * [cephes](https://www.netlib.org/cephes/): Software collection with
-   special functions. libcasimir uses the implementation for the modified
+   special functions. CaPS uses the implementation for the modified
    Bessel functions [I0(x)](https://www.netlib.org/cephes/doubldoc.html#i0),
    [I1(x)](https://www.netlib.org/cephes/doubldoc.html#i1),
    [K0(x)](https://www.netlib.org/cephes/doubldoc.html#k0), and
@@ -174,8 +174,8 @@ Also, libcasimir uses some third-party software:
    parsing library in C (MIT)
 
 
-Publications using libcasimir
------------------------------
+Publications using CaPS
+-----------------------
  * [Casimir effect in the plane-sphere geometry: Beyond the proximity force approximation](https://opus.bibliothek.uni-augsburg.de/opus4/44798)  
    Michael Hartmann, PhD thesis (Universität Augsburg, 2018)
 
