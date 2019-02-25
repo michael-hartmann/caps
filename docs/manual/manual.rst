@@ -674,21 +674,21 @@ Here is an example to generate and save a round-trip matrix:
   (1.0, -6.417998208796572)
 
 
-cylinder
---------
+capc
+----
 
-The program  ``cylinder`` computes the Casimir interaction in the
-cylinder-plane geometry. The radius of the cylinder is given by ``-R`` and the
-separation between cylinder and plate is given by ``-d``. Both lengths are
-expected in meters. At the moment, only perfect reflectors at zero temperature
-is supported.
+The program  ``capc`` computes the Casimir interaction in the cylinder-plane
+geometry. The radius of the cylinder is given by ``-R`` and the separation
+between cylinder and plate is given by ``-d``. Both lengths are expected in
+meters. At the moment, only perfect reflectors at zero temperature is
+supported.
 
 This example computes the Casimir free energy for a cylinder of radius
 :math:`R=100\mu\mathrm{m}` and a separation of :math:`d=100\mathrm{nm}`:
 
 .. code-block:: console
 
-  $ ./cylinder -R 100e-6 -d 100e-9
+  $ ./capc -R 100e-6 -d 100e-9
   # R/d = 1000
   # d = 1e-07
   # R = 0.0001
@@ -700,7 +700,7 @@ This example computes the Casimir free energy for a cylinder of radius
   0.001, 1e-07, 0.0001, 0, 6000, -72220981652413.5, 0.500089151077922, 0.499432943796732, 0.999522094874654
 
 Here, :math:`L` denotes the length of the cylinder. The matrix elements of the
-round-trip operator are correct assuming that :math:`L\gg R,d`.  ``E_D`` and
+round-trip operator are correct assuming that :math:`L\gg R,d`. ``E_D`` and
 ``E_N`` correspond to Dirichlet and Neumann boundary conditions, ``E_EM`` is
 the energy for the electromagnetic field, ``E_EM = E_D + E_N``.
 
