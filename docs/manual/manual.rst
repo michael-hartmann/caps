@@ -1,10 +1,10 @@
-.. libcasimir documentation master file, created by
+.. CaPS documentation master file, created by
    sphinx-quickstart on Mon Dec 17 15:08:14 2018.
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Welcome to libcasimir's documentation!
-======================================
+Welcome to the documentation of CaPS!
+=====================================
 
 .. toctree::
    :maxdepth: 2
@@ -17,19 +17,19 @@ Overview and Features
    :scale: 100 %
 
    Experiments in the plane-sphere geometry. The blue area denotes the aspect
-   ratios that are accessible using libcasimir. The inset depicts the
+   ratios that are accessible using CaPS. The inset depicts the
    plane-sphere geometry.
 
-libcasimir is an implementation of the Casimir effect in the plane-sphere
-geometry. The geometry consists of a sphere of radius :math:`R` separated by a
-distance :math:`L` from an infinite plate, see the inset of Figure 1. We assume
-that the sphere and the plane are in vacuum. The main goal of the library and
-the associated programs is to compute the free energy :math:`\mathcal{F}`
-depending on the radius :math:`R` of the sphere, the separation :math:`L`
-between sphere and plate, the temperature :math:`T`, and the dielectric
-properties of the objects. The library is highly optimized and allows you -
-depending on parameters and your hardware - to compute the free energy for
-aspect ratios up to :math:`R/L\sim 10\,000`.
+CaPS is an implementation of the Casimir effect in the plane-sphere geometry.
+The geometry consists of a sphere of radius :math:`R` separated by a distance
+:math:`L` from an infinite plate, see the inset of Figure 1. We assume that the
+sphere and the plane are in vacuum. The main goal of the library and the
+associated programs is to compute the free energy :math:`\mathcal{F}` depending
+on the radius :math:`R` of the sphere, the separation :math:`L` between sphere
+and plate, the temperature :math:`T`, and the dielectric properties of the
+objects. The code is highly optimized and allows you - depending on parameters
+and your hardware - to compute the free energy for aspect ratios up to
+:math:`R/L\sim 10\,000`.
 
 Features
 --------
@@ -37,9 +37,9 @@ Features
  - Calculate the free energy for different separations and temperatures
  - Calculate the free energy in the high temperature limit for perfect reflectors, the Drude model, and the plasma model
  - Full support for perfect reflectors, metals described by the Drude and plasma model, and generic metals described by a user-defined dielectric function
- - libcasimir is fast and reliable
+ - CaPS is fast and reliable
  - ready to use programs: you don't have to modify the code
- - libcasimir is free software – you may use it or even modify it
+ - CaPS is free software – you may use it or even modify it
 
 
 Further reading
@@ -74,37 +74,37 @@ installed, the command
 
 .. code-block:: console
 
-    $ git clone https://github.com/michael-hartmann/libcasimir-dev.git
+    $ git clone https://github.com/michael-hartmann/caps.git
 
-will get you the complete libcasimir repository and stores it in the directory
-``libcasimir-dev/``. As an alternative, you can also download and extract the
-zip- or taz.gz-archive of the latest release.
+will get you the complete CaPS repository and stores it in the directory
+``caps/``. As an alternative, you can also download and extract the zip- or
+taz.gz-archive of the latest release.
 
-The libcasimir library and the programs are written in C and C++ using LAPACK
-and MPI. In order to compile the source files, you need a C and C++ compiler,
-the development files for LAPACK and MPI, and the build tools make and cmake.
-You can install all dependencies with:
+The CaPS library and the programs are written in C and C++ using LAPACK and
+MPI. In order to compile the source files, you need a C and C++ compiler, the
+development files for LAPACK and MPI, and the build tools make and cmake. You
+can install all dependencies with:
 
 .. code-block:: console
 
 	$ sudo apt install gcc g++ libc6-dev libc++-dev cmake make libopenmpi-dev openmpi-bin liblapack-dev
 
 
-In order to compile the code, create a directory ``bin`` in the
-``libcasimir-dev/`` directory, run ``cmake`` followed by ``make``:
+In order to compile the code, create a directory ``bin`` in the ``caps/``
+directory, run ``cmake`` followed by ``make``:
 
 .. code-block:: console
 
-    $ cd libcasimir-src/
+    $ cd caps/
     $ mkdir bin
     $ cd bin/
     $ cmake ../src
     $ make
 
 This command compiles the `HODLR library
-<https://github.com/sivaramambikasaran/HODLR/>`_, the libcasimir library, and
-builds the shared objects ``libhodlr.so`` and ``libcasimir.so``. Then, the
-programs ``casimir`` and ``casimir_logdetD`` are built. Note that you can also
+<https://github.com/sivaramambikasaran/HODLR/>`_, the libcaps library, and
+builds the shared objects ``libhodlr.so`` and ``libcaps.so``. Then, the
+programs ``caps`` and ``caps_logdetD`` are built. Note that you can also
 specify different compilers setting the variables ``CC`` and ``CXX``. Here is
 an example how to use the Intel C and C++ compilers:
 
@@ -114,14 +114,14 @@ an example how to use the Intel C and C++ compilers:
     $ make
 
 In order to run the programs, the system must be able to find the libraries
-``libhodlr.so`` and ``libcasimir.so``. As the libraries are not in the default
+``libhodlr.so`` and ``libcaps.so``. As the libraries are not in the default
 search path, you have to add the directories to ``LD_LIBRARY_PATH``
 
 .. code-block:: console
 
-    $ export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/home/hendrik/libcasimir-dev/bin
+    $ export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/home/hendrik/caps/bin
 
-where we have assumed that the libcasimir repository is in the directory
+where we have assumed that the CaPS repository is in the directory
 ``/home/hendrik``.
 
 
@@ -134,7 +134,7 @@ the unit tests in ``bin/``:
 .. code-block:: console
 
     $ make tests
-    $ ./casimir_tests
+    $ ./caps_tests
 
 All tests should pass. Running the tests takes (depending on your hardware)
 about 7 minutes.
@@ -166,11 +166,11 @@ performance gain.
 Programs
 ========
 
-casimir
--------
+caps
+----
 
-The program ``casimir`` computes the free Casimir energy :math:`\mathcal{F}`
-for the plane-sphere geometry as a sum
+The program ``caps`` computes the free Casimir energy :math:`\mathcal{F}` for
+the plane-sphere geometry as a sum
 
 .. math::
   \mathcal{F} = \frac{k_\mathrm{B}T}{2} \sum_{n=-\infty}^\infty \sum_{m=-\infty}^\infty \log\mathrm{det}\left(1-\mathcal{M}^m(\xi_n)\right)
@@ -180,7 +180,7 @@ zero temperature :math:`T=0`, the sum over the Matsubara frequencies becomes an
 integration.
 
 The program supports a wide variety of options. You can get a summary of all
-options using ``casimir --help``. By default, the temperature is set to
+options using ``caps --help``. By default, the temperature is set to
 :math:`T=0`, and the sphere and plane are assumed to be perfect reflectors.
 
 Please note that due to parallelization, the number of terms computed in the
@@ -200,7 +200,7 @@ radius :math:`R=50\mu\mathrm{m}` and a separation :math:`L=2\mu\mathrm{m}`:
 
 .. code-block:: console
 
-	$ mpirun -n 8 ./casimir -R 50e-6 -L 2e-6
+	$ mpirun -n 8 ./caps -R 50e-6 -L 2e-6
 
 The command ``mpirun`` will set up the environment for MPI and the flag ``-n``
 specifies how many processes the program should use. If you want to utilize the
@@ -295,7 +295,7 @@ free energy just like in the last example but at room temperature
 
 .. code-block:: console
 
-    $ mpirun -n 8 ./casimir -R 50e-6 -L 2e-6 -T 300
+    $ mpirun -n 8 ./caps -R 50e-6 -L 2e-6 -T 300
     # compiler: gcc
     # compile time: Jan  2 2019 12:35:13
     # compiled on: Linux jonas.physik.uni-augsburg.de 4.9.0-8-amd64 #1 SMP Debian 4.9.130-2 (2018-10-27) x86_64 GNU/Linux
@@ -374,7 +374,7 @@ Casimir free energy using the plasma model is:
 
 .. code-block:: console
 
-    $ mpirun -n 8 ./casimir -R 50e-6 -L 1e-6 -T 300 --omegap 9
+    $ mpirun -n 8 ./caps -R 50e-6 -L 1e-6 -T 300 --omegap 9
     # compiler: gcc
     # compile time: Jan  2 2019 12:35:13
     # compiled on: Linux jonas.physik.uni-augsburg.de 4.9.0-8-amd64 #1 SMP Debian 4.9.130-2 (2018-10-27) x86_64 GNU/Linux
@@ -422,7 +422,7 @@ the same example as above for Drude gives:
 
 .. code-block:: console
 
-    $ mpirun -n 8 ./casimir -R 50e-6 -L 1e-6 -T 300 --omegap 9 --gamma 0.035
+    $ mpirun -n 8 ./caps -R 50e-6 -L 1e-6 -T 300 --omegap 9 --gamma 0.035
     # compiler: gcc
     # compile time: Jan  2 2019 12:35:13
     # compiled on: Linux jonas.physik.uni-augsburg.de 4.9.0-8-amd64 #1 SMP Debian 4.9.130-2 (2018-10-27) x86_64 GNU/Linux
@@ -513,7 +513,7 @@ temperature :math:`T=300\mathrm{K}` for real gold:
 
 .. code-block:: console
 
-  $ mpirun -n 8 ./casimir -R 50e-6 -L 1e-6 -T 300 --material ../materials/gold.csv
+  $ mpirun -n 8 ./caps -R 50e-6 -L 1e-6 -T 300 --material ../materials/gold.csv
   # compiler: gcc
   # compile time: Jan  7 2019 10:28:24
   # compiled on: Linux jonas.physik.uni-augsburg.de 4.9.0-8-amd64 #1 SMP Debian 4.9.130-2 (2018-10-27) x86_64 GNU/Linux
@@ -604,17 +604,17 @@ accuracy, to :math:`10^{-7}` or better, you might want to use a smaller value
 for ``IEPSREL``.
 
 
-casimir_logdetD
----------------
+caps_logdetD
+------------
 
-The program ``casimir_logdetD`` computes
+The program ``caps_logdetD`` computes
 
 .. math::
     \log\mathrm{det}\left(1-\mathcal{M}^m(\xi)\right) .
 
 depending on :math:`m`, :math:`\xi`, :math:`R`, and :math:`L` The options
 ``-L``, ``-R``, ``--ldim``, ``--material``, and ``--iepsrel`` are the same as
-for the program ``casimir``.
+for the program ``caps``.
 
 Besides ``-L`` and ``-R``, further mandatory options are ``-m`` and ``--xi``.
 The frequency given by ``--xi`` is expected in units of :math:`(L+R)/c`. In
@@ -625,8 +625,8 @@ A typical output looks like
 
 .. code-block:: console
 
-  $ ./casimir_logdetD -R 100e-6 -L 1e-6 -m 1 --xi 1.5
-  # ./casimir_logdetD, -R, 100e-6, -L, 1e-6, -m, 1, --xi, 1.5
+  $ ./caps_logdetD -R 100e-6 -L 1e-6 -m 1 --xi 1.5
+  # ./caps_logdetD, -R, 100e-6, -L, 1e-6, -m, 1, --xi, 1.5
   # L/R    = 0.009999999999999998
   # L      = 1e-06
   # R      = 0.0001
@@ -647,8 +647,8 @@ Here is an example to generate and save a round-trip matrix:
 
 .. code-block:: console
 
-  $ CASIMIR_DUMP=M.npy ./casimir_logdetD -R 100e-6 -L 1e-6 -m 1 --xi 1.5 --detalg LU
-  # ./casimir_logdetD, -R, 100e-6, -L, 1e-6, -m, 1, --xi, 1.5, --detalg, LU
+  $ CASIMIR_DUMP=M.npy ./caps_logdetD -R 100e-6 -L 1e-6 -m 1 --xi 1.5 --detalg LU
+  # ./caps_logdetD, -R, 100e-6, -L, 1e-6, -m, 1, --xi, 1.5, --detalg, LU
   # L/R    = 0.009999999999999998
   # L      = 1e-06
   # R      = 0.0001
