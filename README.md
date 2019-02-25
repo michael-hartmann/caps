@@ -24,6 +24,9 @@ The picture shows an overview of the experiments carried out in the
 plane-sphere geometry. The blue area denotes the aspect ratios that are
 accessible using CaPS. The inset depicts the plane-sphere geometry.
 
+In addition, CaPS can compute the Casimir free energy for the plane-cylinder
+geometry at zero temperature for perfect reflectors.
+
 Features
 --------
  - Calculate the free energy for different separations and temperatures
