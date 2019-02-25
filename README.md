@@ -8,7 +8,7 @@ CaPS
 What is CaPS?
 -------------
 
-CaPS is an implementation of the *Ca*simir effect in the *p*lane-*s*phere
+CaPS is an implementation of the **Ca**simir effect in the **p**lane-**s**phere
 geometry. The geometry consists of a sphere of radius R separated by a distance
 L from an infinite plate.
 
