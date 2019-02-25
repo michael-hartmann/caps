@@ -638,8 +638,8 @@ A typical output looks like
   1e-06, 0.0001, 1.5, 1, -6.417998208796558, 501, 0.492086
 
 Sometimes, it is useful to output the round-trip matrix in numpy format. If the
-environment variable ``CASIMIR_DUMP`` is set and ``detalg`` is not HODLR, the
-round-trip matrix will be saved to the filename contained in ``CASIMIR_DUMP``.
+environment variable ``CAPS_DUMP`` is set and ``detalg`` is not HODLR, the
+round-trip matrix will be saved to the filename contained in ``CAPS_DUMP``.
 Also note that if ``detalg`` is Cholesky, only the upper half of the matrix is
 computed.
 
@@ -647,7 +647,7 @@ Here is an example to generate and save a round-trip matrix:
 
 .. code-block:: console
 
-  $ CASIMIR_DUMP=M.npy ./caps_logdetD -R 100e-6 -L 1e-6 -m 1 --xi 1.5 --detalg LU
+  $ CAPS_DUMP=M.npy ./caps_logdetD -R 100e-6 -L 1e-6 -m 1 --xi 1.5 --detalg LU
   # ./caps_logdetD, -R, 100e-6, -L, 1e-6, -m, 1, --xi, 1.5, --detalg, LU
   # L/R    = 0.009999999999999998
   # L      = 1e-06

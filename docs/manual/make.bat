@@ -9,7 +9,7 @@ if "%SPHINXBUILD%" == "" (
 )
 set SOURCEDIR=.
 set BUILDDIR=_build
-set SPHINXPROJ=libcasimir
+set SPHINXPROJ=CaPS
 
 if "%1" == "" goto help
 
