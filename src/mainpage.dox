@@ -1,15 +1,15 @@
 /**
-@mainpage libcasimir
+@mainpage CaPS
 
 \section Overview
 
-libcasimir implements the numerics for the Casimir effect in the plane-sphere
+CaPS implements the numerics for the Casimir effect in the plane-sphere
 geometry for arbitrary materials at zero and finite temperature using the
 scattering approach.
 
-This document describes the API of the libcasimir library. The compilation of
-the software and the usage of the programs are described in the user manual
-located in the directory docs/.
+This document describes the API of the CaPS library. The compilation of the
+software and the usage of the programs are described in the user manual located
+in the directory docs/.
 
 You can re-generate this documentation running doxygen doxygen.conf in src/.
 The output directory of the documentation is docs/api.
@@ -23,7 +23,7 @@ casimir_logdetD.c      | command line interface to compute determinants of the s
 cylinder.cpp           | command line interface to compute Casimir interaction in the plane-cylinder geometry (see also user manual and usage)
 cquadpack/src/*.c      | integration routines (CQUADPACK), see cquadpack/include/quadpack.h
 libhodlr/src/hodlr.cpp | C wrapper for the HODLR library (see libhodlr/include/hodlr.h)
-libcasimir.c           | main part of the library
+libcaps.c              | main part of the library
 plm.c                  | functions to compute Legendre polynomials and associated Legendre polynomials
 bessel.c               | functions to compute modified Bessel functions
 matrix.c               | linear algebra functions; in particular computation of determinants
