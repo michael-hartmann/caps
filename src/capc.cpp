@@ -188,7 +188,7 @@ int main(int argc, const char *argv[]) {
     const double T = 0;
     double epsrel = 1e-8, eta = 6, R = NAN, d = NAN;
     const char *detalg = NULL;
-    int verbose = 0, lmax = 0;
+    int lmax = 0;
 
     const char *const usage[] = {
         "capc [options] [[--] args]",
@@ -205,7 +205,6 @@ int main(int argc, const char *argv[]) {
         OPT_INTEGER('l', "lmax", &lmax, "dimension of vector space", NULL, 0, 0),
         OPT_DOUBLE('e', "epsrel", &epsrel, "relative error for integration", NULL, 0, 0),
         OPT_DOUBLE('n', "eta", &eta, "set eta", NULL, 0, 0),
-        OPT_BOOLEAN('v', "verbose", &verbose, "be verbose", NULL, 0, 0),
         OPT_STRING('D', "detalg", &detalg, "algorithm to compute determinants (HODLR, LU, QR or CHOLESKY)", NULL, 0, 0),
         OPT_END(),
     };
