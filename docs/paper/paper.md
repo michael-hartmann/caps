@@ -1,5 +1,5 @@
 ---
-title: 'libcasimir: The Casimir effect in the plane-sphere geometry'
+title: 'CaPS: The Casimir effect in the plane-sphere geometry'
 tags:
   - Casimir effect
   - electromanetic scattering
@@ -50,7 +50,7 @@ to compute the Casimir effect in the high-temperature limit for perfect
 reflectors, and the Drude and plasma model. In the Drude case, an analytical
 expression is used instead of a numerical evaluation [@bimonte_prl_2012].
 
-``libcasimir`` allows a fast evaluation of the determinants appearing in
+``CaPS`` allows a fast evaluation of the determinants appearing in
 $\mathcal{F}$ In contrast to other methods, the scattering approach is in
 exact. In particular, this means that the numerical error can be controlled.
 
@@ -58,12 +58,12 @@ performance improvements due to symmetrization [@hartmann_phscr_2018], fast Lege
 [@ambikasaran_josc_2013; @ambikasaran_arxiv_2014] using
 [@ambikasaran_joss_2019]
 
-``libcasimir`` has been used to analyze negative Casimir entropies
+``CaPS`` has been used to analyze negative Casimir entropies
 [@ingold_pre_2015; @umrath_pre_2015], and to study corrections to the widely
 used proximity force approximation for experimentally relevant parameters
 [@hartmann_prl_2017].
 
-In summary, ``libcasimir`` has the following features:
+In summary, ``CaPS`` has the following features:
 
  - Computation of the free energy for aspect ratios used in typical experiments
  - Computation of the free energy in the high-temperature limit for perfect reflectors, and metals described by the Drude or plasma model
@@ -71,7 +71,7 @@ In summary, ``libcasimir`` has the following features:
  - Computation of the free energy at zero temperature for perfect reflectors in the plane-cylinder geometry
  - Support for parallelization using MPI
 
-``libcasimir`` is released under the GPLv2 license.
+``CaPS`` is released under the GPLv2 license.
 
 # Acknowledgements
 
