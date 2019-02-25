@@ -46,7 +46,7 @@ prompt. You can compile the sources with:
 ```
 $ mkdir bin
 $ cd bin
-$ cmake ../src
+$ cmake ..
 $ make
 ```
 This will build the shared objects `libhodlr.so` and `libcaps.so`, and the

@@ -98,7 +98,7 @@ directory, run ``cmake`` followed by ``make``:
     $ cd caps/
     $ mkdir bin
     $ cd bin/
-    $ cmake ../src
+    $ cmake ..
     $ make
 
 This command compiles the `HODLR library
