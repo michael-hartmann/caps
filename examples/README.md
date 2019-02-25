@@ -1,9 +1,9 @@
 examples
 ========
 
-This directory contains examples that show how to use libcasimir. Every example
-is kept simple and well documented. You can compile the programs by running
-`make`.
+This directory contains examples that show how to use the CaPS API. Every
+example is kept simple and well documented. You can compile the programs by
+running `make`.
 
 
 AuAl.c

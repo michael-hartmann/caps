@@ -1,6 +1,6 @@
 #include <stdio.h>
 
-#include "libcasimir.h"
+#include "libcaps.h"
 
 /* Dielectric function epsilon(xi)-1 for gold: omegap=9eV, gamma=35meV.
  * The frequency xi is in rad/s.
