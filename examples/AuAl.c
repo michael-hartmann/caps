@@ -1,6 +1,6 @@
 #include <stdio.h>
 
-#include "libcasimir.h"
+#include "libcaps.h"
 
 /* Dielectric function epsilon(xi)-1 for gold: omegap=9eV, gamma=35meV.
  * The frequency xi is in rad/s.
@@ -8,7 +8,7 @@
 double epsm1_gold(double xi, void *args)
 {
     /* plasma frequency and relaxation frequency in rad/s */
-    double omegap = 9/CASIMIR_hbar_eV, gamma = 0.035/CASIMIR_hbar_eV;
+    double omegap = 9/CAPS_hbar_eV, gamma = 0.035/CAPS_hbar_eV;
 
     /* epsilon-1 = omegap²/(xi*(xi+gamma)) */
     return omegap*omegap/(xi*(xi+gamma));
@@ -20,7 +20,7 @@ double epsm1_gold(double xi, void *args)
 double epsm1_aluminium(double xi, void *args)
 {
     /* plasma frequency and relaxation frequency in rad/s */
-    double omegap = 11.5/CASIMIR_hbar_eV, gamma = 0.05/CASIMIR_hbar_eV;
+    double omegap = 11.5/CAPS_hbar_eV, gamma = 0.05/CAPS_hbar_eV;
 
     /* epsilon-1 = omegap²/(xi*(xi+gamma)) */
     return omegap*omegap/(xi*(xi+gamma));
@@ -32,8 +32,8 @@ int main(int argc, char *argv[])
     const double L = 1e-6;  /* separation L=1µm */
     const double T = 300;   /* temperature T=300K */
 
-    /* initialize casimir object */
-    casimir_t *casimir = casimir_init(R,L);
+    /* initialize caps object */
+    caps_t *caps = caps_init(R,L);
 
     /* Set dimension of vector space to 6.4*R/L; this gives an estimated error
      * of 1e-5 due the truncation of the vector space, see Table 5.1 in
@@ -41,21 +41,21 @@ int main(int argc, char *argv[])
      * proximity force approximation, phd thesis, 2018]
      */
     const int ldim = 6.4*R/L;
-    casimir_set_ldim(casimir, ldim);
+    caps_set_ldim(caps, ldim);
 
     /* we assume Drude metals; the sphere is made out of gold, the plate is
      * made out of aluminium
      */
-    casimir_set_epsilonm1_plate (casimir, epsm1_aluminium, NULL);
-    casimir_set_epsilonm1_sphere(casimir, epsm1_gold, NULL);
+    caps_set_epsilonm1_plate (caps, epsm1_aluminium, NULL);
+    caps_set_epsilonm1_sphere(caps, epsm1_gold, NULL);
 
     printf("# We assume Drude metals; sphere is gold, plate is aluminium\n#\n");
 
-    /* print information about the casimir object */
-    casimir_info(casimir, stdout, "# ");
+    /* print information about the caps object */
+    caps_info(caps, stdout, "# ");
 
     /* compute the high-temperature contribution; F is in units of kB*T */
-    double F = casimir_ht_drude(casimir);
+    double F = caps_ht_drude(caps);
 
     /* compute and sum the contributions from the Matsubara frequencies xi_n
      * with n>0
@@ -63,15 +63,15 @@ int main(int argc, char *argv[])
     for(int n = 1; 1; n++)
     {
         /* n-th Matsubara frequency */
-        double xi_n = 2*M_PI*n*CASIMIR_kB*T/CASIMIR_hbar;
+        double xi_n = 2*M_PI*n*CAPS_kB*T/CAPS_hbar;
 
-        double calLbyc = (L+R)/CASIMIR_c; /* (L+R)c */
+        double calLbyc = (L+R)/CAPS_c; /* (L+R)c */
 
         /* compute the sum over m */
         double sum_m = 0;
         for(int m = 0; 1; m++)
         {
-            double v = casimir_logdetD(casimir, xi_n*calLbyc, m);
+            double v = caps_logdetD(caps, xi_n*calLbyc, m);
 
             /* the contribution for +m and -m are identical, so for m>0 we have
              * the same contribution from -m
@@ -97,7 +97,7 @@ int main(int argc, char *argv[])
     printf("free energy: %.8g kb*T\n", F);
 
     /* free object and release allocated memory */
-    casimir_free(casimir);
+    caps_free(caps);
 
     return 0;
 }

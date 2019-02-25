@@ -19,7 +19,7 @@
 
 # -- Project information -----------------------------------------------------
 
-project = 'libcasimir'
+project = 'CaPS'
 copyright = '2018, Michael Hartmann'
 author = 'Michael Hartmann'
 
@@ -102,7 +102,7 @@ html_static_path = ['_static']
 # -- Options for HTMLHelp output ---------------------------------------------
 
 # Output file base name for HTML help builder.
-htmlhelp_basename = 'libcasimirdoc'
+htmlhelp_basename = 'capsdoc'
 
 
 # -- Options for LaTeX output ------------------------------------------------
@@ -129,7 +129,7 @@ latex_elements = {
 # (source start file, target name, title,
 #  author, documentclass [howto, manual, or own class]).
 latex_documents = [
-    (master_doc, 'libcasimir.tex', 'libcasimir Documentation',
+    (master_doc, 'caps.tex', 'CaPS Documentation',
      'Michael Hartmann', 'manual'),
 ]
 
@@ -139,7 +139,7 @@ latex_documents = [
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
 man_pages = [
-    (master_doc, 'libcasimir', 'libcasimir Documentation',
+    (master_doc, 'caps', 'CaPS Documentation',
      [author], 1)
 ]
 
@@ -150,8 +150,8 @@ man_pages = [
 # (source start file, target name, title, author,
 #  dir menu entry, description, category)
 texinfo_documents = [
-    (master_doc, 'libcasimir', 'libcasimir Documentation',
-     author, 'libcasimir', 'Casimir effect in the plane-sphere geometry.',
+    (master_doc, 'caps', 'CaPS Documentation',
+     author, 'CaPS', 'Casimir effect in the plane-sphere geometry.',
      'Miscellaneous'),
 ]
 

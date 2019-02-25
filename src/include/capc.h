@@ -1,5 +1,5 @@
-#ifndef __CASIMIR_CYLINDER
-#define __CASIMIR_CYLINDER
+#ifndef __CAPC
+#define __CAPC
 
 typedef struct {
     int lmax, type;

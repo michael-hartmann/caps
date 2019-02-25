@@ -6,7 +6,7 @@
 #include <strings.h>
 
 #include "material.h"
-#include "libcasimir.h"
+#include "libcaps.h"
 #include "misc.h"
 #include "utils.h"
 
@@ -15,7 +15,7 @@
 static void usage(FILE *stream)
 {
     fprintf(stream,
-"Usage: casimir_logdetD [OPTIONS]\n\n"
+"Usage: capc_logdetD [OPTIONS]\n\n"
 "This program will calculate the free Casimir energy for the plane-sphere\n"
 "geometry for given n,m,T,L/R.\n"
 "\n"
@@ -43,12 +43,12 @@ static void usage(FILE *stream)
 "\n"
 "\n"
 "Environment variables:\n"
-"   CASIMIR_DUMP:\n"
+"   CAPS_DUMP:\n"
 "        If this variable is set, the round-trip matrix will be dumped in numpy\n"
-"        format to the filename contained in CASIMIR_DUMP. Please note that the\n"
+"        format to the filename contained in CAPS_DUMP. Please note that the\n"
 "        round-trip matrix will only be dumped if detalg is QR, LU or CHOLESKY.\n"
 "\n"
-"   CASIMIR_CACHE_ELEMS:\n"
+"   CAPS_CACHE_ELEMS:\n"
 "        Determines the size of the cache for the integrals I."
 "\n");
 }
@@ -173,11 +173,11 @@ int main(int argc, char *argv[])
         printf(", %s", argv[i]);
     printf("\n");
 
-    casimir_t *casimir;
-    casimir = casimir_init(R,L);
+    caps_t *caps;
+    caps = caps_init(R,L);
 
     if(iepsrel > 0)
-        casimir_set_epsrel(casimir, iepsrel);
+        caps_set_epsrel(caps, iepsrel);
 
     material_t *material = NULL;
     if(strlen(filename) > 0)
@@ -190,35 +190,35 @@ int main(int argc, char *argv[])
             exit(1);
         }
 
-        casimir_set_epsilonm1(casimir, material_epsilonm1, material);
+        caps_set_epsilonm1(caps, material_epsilonm1, material);
     }
 
     /* set dimension of vector space */
     if(ldim)
-        casimir_set_ldim(casimir, ldim);
+        caps_set_ldim(caps, ldim);
 
-    casimir_set_detalg(casimir, detalg);
+    caps_set_detalg(caps, detalg);
 
-    casimir_info(casimir, stdout, "# ");
+    caps_info(caps, stdout, "# ");
     printf("#\n");
 
     if(xi_ > 0)
     {
-        double logdet = casimir_logdetD(casimir, xi_, m);
+        double logdet = caps_logdetD(caps, xi_, m);
 
         printf("# L, R, ξ*(L+R)/c, m, logdet(Id-M), ldim, time\n");
-        printf("%g, %g, %g, %d, %.16g, %d, %g\n", L, R, xi_, m, logdet, casimir_get_ldim(casimir), now()-start_time);
+        printf("%g, %g, %g, %d, %.16g, %d, %g\n", L, R, xi_, m, logdet, caps_get_ldim(caps), now()-start_time);
     }
     else /* xi_ == 0 */
     {
         double logdet_EE, logdet_MM;
-        casimir_logdetD0(casimir, m, 0, &logdet_EE, &logdet_MM, NULL);
+        caps_logdetD0(caps, m, 0, &logdet_EE, &logdet_MM, NULL);
 
         printf("# L, R, ξ*(L+R)/c, m, logdet(Id-EE), logdet(Id-MM), lmax, time\n");
-        printf("%g, %g, 0, %d, %.16g, %.16g, %d, %g\n", L, R, m, logdet_EE, logdet_MM, casimir_get_ldim(casimir), now()-start_time);
+        printf("%g, %g, 0, %d, %.16g, %.16g, %d, %g\n", L, R, m, logdet_EE, logdet_MM, caps_get_ldim(caps), now()-start_time);
     }
 
-    casimir_free(casimir);
+    caps_free(caps);
 
     if(material != NULL)
         material_free(material);

@@ -8,6 +8,7 @@ development version
 * Simplified cache cache.c
 * Added CONTRIBUTIONS.md
 * Improvements to README.md and to the user manual
+* Renamed project to CaPS
 
 
 version 0.4.2

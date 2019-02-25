@@ -36,8 +36,8 @@
  *
  * If the determinant is not computed using the HODLR approach, all matrix
  * elements have to be computed. In this case the matrix \f$A\f$ is written to
- * the filesystem if the environment variable CASIMIR_DUMP is set. If the
- * variable is set, the matrix will be stored in the path given by CASIMIR_DUMP
+ * the filesystem if the environment variable CAPS_DUMP is set. If the
+ * variable is set, the matrix will be stored in the path given by CAPS_DUMP
  * as a two-dimensional numpy array (npy). This option might be useful for
  * debugging. Also note that if detalg is CHOLESKY, only the upper half of the
  * matrix will be initialized.
@@ -100,7 +100,7 @@ double kernel_logdet(int dim, double (*kernel)(int,int,void *), void *args, int 
             }
 
         /* dump */
-        const char *filename = getenv("CASIMIR_DUMP");
+        const char *filename = getenv("CAPS_DUMP");
         if(filename != NULL)
             matrix_save_to_file(M, filename);
 

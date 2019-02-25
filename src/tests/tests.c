@@ -16,9 +16,9 @@ int main(int argc, char *argv[])
 {
     test_lfac();
     test_logi();
-    test_casimir_lnLambda();
+    test_caps_lnLambda();
 
-    test_casimir_fresnel();
+    test_caps_fresnel();
 
     test_bessel_I0();
     test_bessel_logI0();
@@ -40,8 +40,8 @@ int main(int argc, char *argv[])
 
     test_bessel_ratioI();
 
-    test_casimir_mie_perf();
-    test_casimir_mie();
+    test_caps_mie_perf();
+    test_caps_mie();
 
     test_lnPlm();
 

@@ -8,7 +8,7 @@
 #include "bessel.h"
 #include "matrix.h"
 
-#include "cylinder.h"
+#include "capc.h"
 
 #include "cquadpack/include/cquadpack.h"
 
@@ -170,28 +170,29 @@ static double __kernel(int i, int j, void *args_)
 
 static double __integrand_dirichlet(double x, void *args)
 {
-	CasimirCP *casimir = (CasimirCP *)args;
+	CasimirCP *capc = (CasimirCP *)args;
 
-    double q = x/(2*casimir->get_d());
-    return q*casimir->logdet_dirichlet(q);
+    double q = x/(2*capc->get_d());
+    return q*capc->logdet_dirichlet(q);
 }
 
 static double __integrand_neumann(double x, void *args)
 {
-	CasimirCP *casimir = (CasimirCP *)args;
+	CasimirCP *capc = (CasimirCP *)args;
 
-    double q = x/(2*casimir->get_d());
-    return q*casimir->logdet_neumann(q);
+    double q = x/(2*capc->get_d());
+    return q*capc->logdet_neumann(q);
 }
 
 int main(int argc, const char *argv[]) {
-    double epsrel = 1e-8, eta = 6, T = 0, R = NAN, d = NAN;
+    const double T = 0;
+    double epsrel = 1e-8, eta = 6, R = NAN, d = NAN;
     const char *detalg = NULL;
     int verbose = 0, lmax = 0;
 
     const char *const usage[] = {
-        "casimir_cylinder [options] [[--] args]",
-        "casimir_cylinder [options]",
+        "capc [options] [[--] args]",
+        "capc [options]",
         NULL,
     };
 
@@ -201,7 +202,6 @@ int main(int argc, const char *argv[]) {
         OPT_DOUBLE('R', "radius",      &R, "radius of cylinder in m", NULL, 0, 0),
         OPT_DOUBLE('d', "separation",  &d, "seperation between cylinder and plate in m", NULL, 0, 0),
         OPT_GROUP("Further options"),
-        OPT_DOUBLE('T', "temperature", &T, "temperature in K (not implemented yet)", NULL, 0, 0),
         OPT_INTEGER('l', "lmax", &lmax, "dimension of vector space", NULL, 0, 0),
         OPT_DOUBLE('e', "epsrel", &epsrel, "relative error for integration", NULL, 0, 0),
         OPT_DOUBLE('n', "eta", &eta, "set eta", NULL, 0, 0),
@@ -212,7 +212,7 @@ int main(int argc, const char *argv[]) {
 
     struct argparse argparse;
     argparse_init(&argparse, options, usage, 0);
-    argparse_describe(&argparse, "\nCompute the Casimir interaction in the cylinder-plane geometry.", NULL);
+    argparse_describe(&argparse, "\nCompute the Casimir interaction in the cylinder-plane geometry at T=0.", NULL);
     argc = argparse_parse(&argparse, argc, argv);
 
     /* check arguments */
@@ -271,19 +271,19 @@ int main(int argc, const char *argv[]) {
     /* PFA for EM in units of hbar*c*L, i.e., E_PFA^DN / (hbar*c*L) */
     double E_PFA = 2*E_PFA_DN;
 
-    CasimirCP casimir(R, d);
+    CasimirCP capc(R, d);
 
     // set lmax
     if(lmax > 0)
-        casimir.set_lmax(lmax);
+        capc.set_lmax(lmax);
     else
-        casimir.set_lmax(std::max(25,(int)ceil(eta/d*R)));
+        capc.set_lmax(std::max(25,(int)ceil(eta/d*R)));
 
     printf("# R/d = %.15g\n", R/d);
     printf("# d = %.15g\n", d);
     printf("# R = %.15g\n", R);
     printf("# T = %.15g\n", T);
-    printf("# lmax = %d\n", casimir.get_lmax());
+    printf("# lmax = %d\n", capc.get_lmax());
     printf("# epsrel = %g\n", epsrel);
 
     // set detalg
@@ -292,25 +292,25 @@ int main(int argc, const char *argv[]) {
         if(strcasecmp(detalg, "LU") == 0)
         {
             printf("# detalg = LU\n");
-            casimir.set_detalg(DETALG_LU);
+            capc.set_detalg(DETALG_LU);
         }
         else if(strcasecmp(detalg, "QR") == 0)
         {
             printf("# detalg = QR\n");
-            casimir.set_detalg(DETALG_QR);
+            capc.set_detalg(DETALG_QR);
         }
         else if(strcasecmp(detalg, "CHOLESKY") == 0)
         {
             printf("# detalg = CHOLESKY\n");
-            casimir.set_detalg(DETALG_CHOLESKY);
+            capc.set_detalg(DETALG_CHOLESKY);
         }
         else
             printf("# detalg = HODLR\n");
     }
 
     /* energy Dirichlet in units of hbar*c*L */
-    double E_D = casimir.energy('D', 0, epsrel);
-    double E_N = casimir.energy('N', 0, epsrel);
+    double E_D = capc.energy('D', 0, epsrel);
+    double E_N = capc.energy('N', 0, epsrel);
 
     /* energy EM in units of hbar*c*L */
     double E_EM = E_D+E_N;
@@ -318,7 +318,7 @@ int main(int argc, const char *argv[]) {
     printf("#\n");
 
     printf("# d/R, d, R, T, lmax, E_PFA/(L*hbar*c), E_D/E_PFA, E_N/E_PFA, E_EM/E_PFA\n");
-    printf("%.15g, %.15g, %.15g, %.15g, %d, %.15g, %.15g, %.15g, %.15g\n", d/R, d, R, T, casimir.get_lmax(), E_PFA, E_D/E_PFA, E_N/E_PFA, E_EM/E_PFA);
+    printf("%.15g, %.15g, %.15g, %.15g, %d, %.15g, %.15g, %.15g, %.15g\n", d/R, d, R, T, capc.get_lmax(), E_PFA, E_D/E_PFA, E_N/E_PFA, E_EM/E_PFA);
 
     return 0;
 }

@@ -17,7 +17,7 @@ if __name__ == "__main__":
 
     print("#include \"unittest.h\"")
     print("#include \"sfunc.h\"")
-    print("#include \"libcasimir.h\"")
+    print("#include \"libcaps.h\"")
     print()
     print("#include \"test_Plm.h\"")
     print()

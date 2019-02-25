@@ -16,7 +16,7 @@
 #include "plm.h"
 #include "utils.h"
 #include "misc.h"
-#include "libcasimir.h"
+#include "libcaps.h"
 #include "logfac.h"
 #include "integration.h"
 
@@ -26,7 +26,7 @@ typedef struct
     int nu,m;
     polarization_t p; /* TE or TM */
     double factor,alpha,log_normalization;
-    casimir_t *casimir;
+    caps_t *caps;
 } integrand_t;
 
 /* Create a hash from l1, l2 and p. The hash function breaks if l1 or l2 >
@@ -258,7 +258,7 @@ static double K_integrand(double x, void *args_)
 {
     double v, rTE, rTM;
     integrand_t *args = (integrand_t *)args_;
-    casimir_t *casimir = args->casimir;
+    caps_t *caps = args->caps;
 
     x *= args->factor;
 
@@ -274,7 +274,7 @@ static double K_integrand(double x, void *args_)
         v = exp(-log_normalization + lnPlm(nu,2,x)-alpha*x);
 
     /* compute Fresnel coefficients rTE, rTM */
-    casimir_fresnel(casimir, xi_tilde, xi_tilde*sqrt(x2m1), &rTE, &rTM);
+    caps_fresnel(caps, xi_tilde, xi_tilde*sqrt(x2m1), &rTE, &rTM);
 
     TERMINATE(isnan(v) || isinf(v), "x=%g, nu=%d, m=%d, alpha=%g, v=%g, log_normalization=%g, lnPlm=%g | %g", x, nu, m, alpha, v, log_normalization, lnPlm(nu,2*m,x),
     -log_normalization + lnPlm(nu,2*m,x)-alpha*x);
@@ -285,7 +285,7 @@ static double K_integrand(double x, void *args_)
         return rTM*v;
 }
 
-static double _casimir_integrate_K(integration_t *self, int nu, polarization_t p, sign_t *sign)
+static double _caps_integrate_K(integration_t *self, int nu, polarization_t p, sign_t *sign)
 {
     double xmax,log_normalization,a,b;
     const int m = self->m;
@@ -367,7 +367,7 @@ static double _casimir_integrate_K(integration_t *self, int nu, polarization_t p
         .p    = p,
         .alpha  = alpha,
         .factor = 1,
-        .casimir = self->casimir
+        .caps = self->caps
     };
 
     xmax = K_estimate(nu, m, alpha, eps, &a, &b, &log_normalization);
@@ -449,7 +449,7 @@ static double _casimir_integrate_K(integration_t *self, int nu, polarization_t p
  * @param [out] sign sign of \f$\mathcal{K}_{\nu,p}^{(m)}(\alpha)\f$
  * @retval logK \f$\log\left|\mathcal{K}_{\nu,p}^{(m)}(\alpha)\right|\f$
  */
-double casimir_integrate_K(integration_t *self, int nu, polarization_t p, sign_t *sign)
+double caps_integrate_K(integration_t *self, int nu, polarization_t p, sign_t *sign)
 {
     const size_t index = nu-2*self->m;
 
@@ -481,7 +481,7 @@ double casimir_integrate_K(integration_t *self, int nu, polarization_t p, sign_t
     if(isnan(K))
     {
         /* compute and save integral */
-        K = _casimir_integrate_K(self, nu, p, sign);
+        K = _caps_integrate_K(self, nu, p, sign);
         self->cache_K[p][index] = K;
     }
 
@@ -494,7 +494,7 @@ static double _alpha(double p, double n, double nu)
     return (((pow_2(p)-pow_2(n+nu+1))*(pow_2(p)-pow_2(n-nu)))/(4*pow_2(p)-1));
 }
 
-static double _casimir_integrate_I(integration_t *self, int l1, int l2, polarization_t p_, sign_t *sign)
+static double _caps_integrate_I(integration_t *self, int l1, int l2, polarization_t p_, sign_t *sign)
 {
     sign_t s;
 
@@ -520,7 +520,7 @@ static double _casimir_integrate_I(integration_t *self, int l1, int l2, polariza
     /* q = 0 */
     int q = 0;
     aq[q] = 1;
-    double K = casimir_integrate_K(self, l1pl2-2*q, p_, &s);
+    double K = caps_integrate_K(self, l1pl2-2*q, p_, &s);
     array[q].s = s;
     array[q].v = K;
 
@@ -531,7 +531,7 @@ static double _casimir_integrate_I(integration_t *self, int l1, int l2, polariza
     q = 1;
     /* eq. (29) */
     aq[q] = (n+nu-1.5)*(1-(2*n+2*nu-1)/(n4*(n4-1))*((m-n)*(m-n+1)/(2*n-1)+(m-nu)*(m-nu+1)/(2*nu-1)));
-    K = casimir_integrate_K(self, l1pl2-2*q, p_, &s);
+    K = caps_integrate_K(self, l1pl2-2*q, p_, &s);
     array[q].s = SGN(aq[q])*s;
     array[q].v = K+log(fabs(aq[q]));
     if(qmax == 1)
@@ -545,7 +545,7 @@ static double _casimir_integrate_I(integration_t *self, int l1, int l2, polariza
                 + (m-nu)*(m-nu+1)*(m-nu+2)*(m-nu+3)/(2*nu-1)/(2*nu-3) ) - (m-n)*(m-n+1)/(2*n-1) \
                 - (m-nu)*(m-nu+1)/(2*nu-1) ) +0.5);
 
-    K = casimir_integrate_K(self, l1pl2-2*q, p_, &s);
+    K = caps_integrate_K(self, l1pl2-2*q, p_, &s);
     array[q].s = SGN(aq[q])*s;
     array[q].v = K+log(fabs(aq[q]));
 
@@ -586,7 +586,7 @@ static double _casimir_integrate_I(integration_t *self, int l1, int l2, polariza
             aq[q] = SGN(aq[q]);
         }
 
-        K = casimir_integrate_K(self, l1pl2-2*q, p_, &s);
+        K = caps_integrate_K(self, l1pl2-2*q, p_, &s);
         array[q].s = SGN(aq[q])*s;
         array[q].v = log_scaling+K+log(fabs(aq[q]));
 
@@ -624,7 +624,7 @@ static double _casimir_integrate_I(integration_t *self, int l1, int l2, polariza
  * @param [out] sign sign of integral \f$\mathrm{sgn}\left(\mathcal{I}_{\ell_1,\ell_2,p}^{(m)}(\alpha)\right)\f$
  * @retval logI \f$\log\left| \mathcal{I}_{\ell_1,\ell_2,p}^{(m)}(\alpha) \right|\f$
  */
-double casimir_integrate_I(integration_t *self, int l1, int l2, polarization_t p, sign_t *sign)
+double caps_integrate_I(integration_t *self, int l1, int l2, polarization_t p, sign_t *sign)
 {
     const int m = self->m;
 
@@ -637,7 +637,7 @@ double casimir_integrate_I(integration_t *self, int l1, int l2, polarization_t p
     /* simplification for perfect conductors */
     if(self->is_pr && p == TE)
     {
-        const double v = casimir_integrate_I(self, l1, l2, TM, sign);
+        const double v = caps_integrate_I(self, l1, l2, TM, sign);
         *sign = -1;
         return v;
     }
@@ -663,7 +663,7 @@ double casimir_integrate_I(integration_t *self, int l1, int l2, polarization_t p
     if(isnan(I))
     {
         /* compute and save integral */
-        I = _casimir_integrate_I(self, l1, l2, p, sign);
+        I = _caps_integrate_I(self, l1, l2, p, sign);
         cache_insert(self->cache_I, key, I);
     }
 
@@ -674,44 +674,44 @@ double casimir_integrate_I(integration_t *self, int l1, int l2, polarization_t p
 /** @brief Initialize integration
  *
  * The aspect ratio L/R and the dielectric function of the metals
- * \f$\epsilon(i\xi)\f$ are taken from the casimir object. The integration is
+ * \f$\epsilon(i\xi)\f$ are taken from the caps object. The integration is
  * performed to a relative accuracy of epsrel.
  *
  * This function returns an object in order to compute the actual integrals.
  * The memory of this object has to be freed after use by a call to \ref
- * casimir_integrate_free.
+ * caps_integrate_free.
  *
  * The computation is sped up using caches. The number of elements of the cache
  * for the K integrals are proportional to ldim, the elements for the I
  * integrals are fixed. This value can be changed using the environmental
- * variable CASIMIR_CACHE_ELEMS.
+ * variable CAPS_CACHE_ELEMS.
  *
- * @param [in] casimir Casimir object
+ * @param [in] caps CaPS object
  * @param [in] xi_ \f$\xi\mathcal{L}/c\f$
  * @param [in] m magnetic quantum number
  * @param [in] epsrel relative accuracy of integration
  * @retval integration object
  */
-integration_t *casimir_integrate_init(casimir_t *casimir, double xi_, int m, double epsrel)
+integration_t *caps_integrate_init(caps_t *caps, double xi_, int m, double epsrel)
 {
     if(xi_ < 0 || m < 0 || epsrel <= 0)
         return NULL;
 
     integration_t *self = (integration_t *)xmalloc(sizeof(integration_t));
 
-    self->casimir = casimir;
+    self->caps = caps;
     self->m = m;
     self->alpha = 2*xi_;
     self->epsrel = epsrel;
 
-    int elems = CASIMIR_CACHE_ELEMS;
-    const char *s = getenv("CASIMIR_CACHE_ELEMS");
+    int elems = CAPS_CACHE_ELEMS;
+    const char *s = getenv("CAPS_CACHE_ELEMS");
     if(s != NULL)
         elems = atoi(s);
 
     self->cache_I = cache_new(elems);
 
-    self->elems_cache_K = 5*(casimir->ldim+2*m+100);
+    self->elems_cache_K = 5*(caps->ldim+2*m+100);
     self->cache_K[0] = xmalloc(self->elems_cache_K*sizeof(double));
     self->cache_K[1] = xmalloc(self->elems_cache_K*sizeof(double));
     for(size_t i = 0; i < self->elems_cache_K; i++)
@@ -721,7 +721,7 @@ integration_t *casimir_integrate_init(casimir_t *casimir, double xi_, int m, dou
     }
 
     /* determine whether we have perfect reflectors or not */
-    if(isinf(casimir_epsilonm1_plate(casimir, INFINITY)))
+    if(isinf(caps_epsilonm1_plate(caps, INFINITY)))
         self->is_pr = true;
     else
         self->is_pr = false;
@@ -734,7 +734,7 @@ integration_t *casimir_integrate_init(casimir_t *casimir, double xi_, int m, dou
  *
  * @param [in,out] integration integration object
  */
-void casimir_integrate_free(integration_t *integration)
+void caps_integrate_free(integration_t *integration)
 {
     if(integration != NULL)
     {
@@ -759,7 +759,7 @@ void casimir_integrate_free(integration_t *integration)
  * @param [out] sign sign of integral \f$\mathrm{sgn}\left(A_{\ell_1,\ell_2,p}^{(m)}(\xi)\right)\f$
  * @retval logA \f$\log\left|A_{\ell_1,\ell_2,p}^{(m)}(\xi)\right|\f$
  */
-double casimir_integrate_A(integration_t *self, int l1, int l2, polarization_t p, sign_t *sign)
+double caps_integrate_A(integration_t *self, int l1, int l2, polarization_t p, sign_t *sign)
 {
     const int m = self->m;
 
@@ -769,7 +769,7 @@ double casimir_integrate_A(integration_t *self, int l1, int l2, polarization_t p
         return -INFINITY;
     }
 
-    const double I1 = casimir_integrate_I(self, l1, l2, p, sign);
+    const double I1 = caps_integrate_I(self, l1, l2, p, sign);
     const double A0 = 2*logi(m);
 
     const double A = A0+I1;
@@ -791,13 +791,13 @@ double casimir_integrate_A(integration_t *self, int l1, int l2, polarization_t p
  * @param [out] sign sign of integral \f$\mathrm{sgn}\left(B_{\ell_1,\ell_2,p}^{(m)}(\xi)\right)\f$
  * @retval logB \f$\log\left|B_{\ell_1,\ell_2,p}^{(m)}(\xi)\right|\f$
  */
-double casimir_integrate_B(integration_t *self, int l1, int l2, polarization_t p, sign_t *sign)
+double caps_integrate_B(integration_t *self, int l1, int l2, polarization_t p, sign_t *sign)
 {
     const int m = self->m;
 
     if(m == 0)
     {
-        const double B = casimir_integrate_I(self, l1, l2, p, sign);
+        const double B = caps_integrate_I(self, l1, l2, p, sign);
 
         TERMINATE(!isfinite(B), "l1=%d, l2=%d, m=%d, p=%d, B=%g", l1,l2,m,p,B);
 
@@ -805,10 +805,10 @@ double casimir_integrate_B(integration_t *self, int l1, int l2, polarization_t p
     }
 
     sign_t sign1, sign2, sign3, sign4;
-    const double I1 = casimir_integrate_I(self, l1-1, l2-1, p, &sign1);
-    const double I2 = casimir_integrate_I(self, l1+1, l2-1, p, &sign2);
-    const double I3 = casimir_integrate_I(self, l1-1, l2+1, p, &sign3);
-    const double I4 = casimir_integrate_I(self, l1+1, l2+1, p, &sign4);
+    const double I1 = caps_integrate_I(self, l1-1, l2-1, p, &sign1);
+    const double I2 = caps_integrate_I(self, l1+1, l2-1, p, &sign2);
+    const double I3 = caps_integrate_I(self, l1-1, l2+1, p, &sign3);
+    const double I4 = caps_integrate_I(self, l1+1, l2+1, p, &sign4);
 
     double I;
     const double denom = (2*l1+1.)*(2*l2+1.);
@@ -839,7 +839,7 @@ double casimir_integrate_B(integration_t *self, int l1, int l2, polarization_t p
  * @param [out] sign sign of integral \f$\mathrm{sgn}\left(C_{\ell_1,\ell_2,p}^{(m)}(\xi)\right)\f$
  * @retval logC \f$\log\left|C_{\ell_1,\ell_2,p}^{(m)}(\xi)\right|\f$
  */
-double casimir_integrate_C(integration_t *self, int l1, int l2, polarization_t p, sign_t *sign)
+double caps_integrate_C(integration_t *self, int l1, int l2, polarization_t p, sign_t *sign)
 {
     const int m = self->m;
     if(m == 0)
@@ -851,8 +851,8 @@ double casimir_integrate_C(integration_t *self, int l1, int l2, polarization_t p
     const double C0 = logi(m);
 
     sign_t sign1, sign2;
-    const double I1 = casimir_integrate_I(self, l1, l2-1, p, &sign1);
-    const double I2 = casimir_integrate_I(self, l1, l2+1, p, &sign2);
+    const double I1 = caps_integrate_I(self, l1, l2-1, p, &sign1);
+    const double I2 = caps_integrate_I(self, l1, l2+1, p, &sign2);
 
     const double denom = 2*l2+1;
     double I;
@@ -873,7 +873,7 @@ double casimir_integrate_C(integration_t *self, int l1, int l2, polarization_t p
  * D_{\ell_1,\ell_2,p}^{(m)}(\xi) = C_{\ell_2,\ell_2,1}^{(m)}(\xi)
  * \f]
  *
- * This function calls \ref casimir_integrate_C.
+ * This function calls \ref caps_integrate_C.
  *
  * @param [in] self integration object
  * @param [in] l1 parameter
@@ -882,31 +882,31 @@ double casimir_integrate_C(integration_t *self, int l1, int l2, polarization_t p
  * @param [out] sign sign of integral \f$\mathrm{sgn}\left(D_{\ell_1,\ell_2,p}^{(m)}(\xi)\right)\f$
  * @retval logD \f$\log\left|D_{\ell_1,\ell_2,p}^{(m)}(\xi)\right|\f$
  */
-double casimir_integrate_D(integration_t *self, int l1, int l2, polarization_t p, sign_t *sign)
+double caps_integrate_D(integration_t *self, int l1, int l2, polarization_t p, sign_t *sign)
 {
-    return casimir_integrate_C(self, l2, l1, p, sign);
+    return caps_integrate_C(self, l2, l1, p, sign);
 }
 
 /** @brief Initialize integration object for plasma high temperature limit (\f$\xi=0\f$)
  *
- * @param [in] casimir Casimir object
+ * @param [in] caps CaPS object
  * @param [in] omegap plasma frequency in rad/s
  * @param [in] epsrel relative error for integration
  * @retval self plasma integration object
  */
-integration_plasma_t *casimir_integrate_plasma_init(casimir_t *casimir, double omegap, double epsrel)
+integration_plasma_t *caps_integrate_plasma_init(caps_t *caps, double omegap, double epsrel)
 {
     integration_plasma_t *self;
 
-    double omegap_ = omegap*casimir->calL/CASIMIR_c;
+    double omegap_ = omegap*caps->calL/CAPS_c;
 
     self = (integration_plasma_t *)xmalloc(sizeof(integration_plasma_t));
-    self->LbyR    = casimir->LbyR;
+    self->LbyR    = caps->LbyR;
     self->omegap_ = omegap_;
-    self->alpha   = omegap_/(1+casimir->LbyR);
+    self->alpha   = omegap_/(1+caps->LbyR);
     self->epsrel  = epsrel;
 
-    const int ldim = casimir->ldim;
+    const int ldim = caps->ldim;
     self->cache       = cache_new(10*ldim);
     self->cache_ratio = cache_new(10*ldim);
 
@@ -951,7 +951,7 @@ static double _integrand_plasma(double t, void *args_)
  * @param [out] ratio2
  * @retval I value of integral
  */
-double casimir_integrate_plasma(integration_plasma_t *self, int l1, int l2, int m, double *ratio1, double *ratio2)
+double caps_integrate_plasma(integration_plasma_t *self, int l1, int l2, int m, double *ratio1, double *ratio2)
 {
     const int nu = l1+l2;
 
@@ -1023,7 +1023,7 @@ double casimir_integrate_plasma(integration_plasma_t *self, int l1, int l2, int 
  *
  * @param [in,out] self plasma integration object
  */
-void casimir_integrate_plasma_free(integration_plasma_t *self)
+void caps_integrate_plasma_free(integration_plasma_t *self)
 {
     cache_free(self->cache);
     cache_free(self->cache_ratio);

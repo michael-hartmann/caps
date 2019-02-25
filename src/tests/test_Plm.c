@@ -1,7 +1,7 @@
 #include <math.h>
 #include "unittest.h"
 #include "plm.h"
-#include "libcasimir.h"
+#include "libcaps.h"
 
 #include "test_Plm.h"
 
