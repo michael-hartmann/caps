@@ -11,7 +11,7 @@ def runtime(LbyR, m, nT, detalg, repeat=3):
 
     for i in range(repeat):
         filename = "/tmp/" + ''.join(random.choice(string.ascii_uppercase + string.ascii_lowercase + string.digits) for _ in range(10)) + ".csv"
-        cmd = "./casimir_logdetD -L %g -R 1 --nT %g -m %d -d %s > %s" % (LbyR, nT, m, detalg, filename)
+        cmd = "./caps_logdetD -L %g -R 1 --nT %g -m %d -d %s > %s" % (LbyR, nT, m, detalg, filename)
         system(cmd)
         
         with open(filename) as f:

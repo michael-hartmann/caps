@@ -9,11 +9,11 @@
 #include <sys/types.h>
 #include <unistd.h>
 
-#include "casimir.h"
+#include "caps.h"
 
 #include "buf.h"
 #include "fcqs.h"
-#include "libcasimir.h"
+#include "libcaps.h"
 #include "material.h"
 #include "misc.h"
 #include "psd.h"
@@ -29,7 +29,7 @@
 #define STATE_RUNNING 1
 #define STATE_IDLE    0
 
-/* @brief Create casimir_mpi object
+/* @brief Create caps_mpi object
  *
  * @param [in] L separation between sphere and plate in meter
  * @param [in] R radius of sphere in meter
@@ -42,11 +42,11 @@
  * @param [in] iepsrel relative accuracy for integration of k for matrix elements
  * @param [in] cores number of cores to use
  * @param [in] verbose flag if verbose
- * @retval object casimir_mpi_t object
+ * @retval object caps_mpi_t object
  */
-casimir_mpi_t *casimir_mpi_init(double L, double R, double T, char *filename, double omegap, double gamma_, int ldim, double cutoff, double iepsrel, int cores, bool verbose)
+caps_mpi_t *caps_mpi_init(double L, double R, double T, char *filename, double omegap, double gamma_, int ldim, double cutoff, double iepsrel, int cores, bool verbose)
 {
-    casimir_mpi_t *self = xmalloc(sizeof(casimir_mpi_t));
+    caps_mpi_t *self = xmalloc(sizeof(caps_mpi_t));
 
     self->L       = L;
     self->R       = R;
@@ -58,7 +58,7 @@ casimir_mpi_t *casimir_mpi_init(double L, double R, double T, char *filename, do
     self->iepsrel = iepsrel;
     self->cores   = cores;
     self->verbose = verbose;
-    self->tasks   = xmalloc(cores*sizeof(casimir_task_t *));
+    self->tasks   = xmalloc(cores*sizeof(caps_task_t *));
     self->alpha   = 2*L/(L+R); /* used to scale integration if T=0 */
 
     /* number of determinants we have computed */
@@ -71,7 +71,7 @@ casimir_mpi_t *casimir_mpi_init(double L, double R, double T, char *filename, do
     self->tasks[0] = NULL;
     for(int i = 1; i < cores; i++)
     {
-        casimir_task_t *task = xmalloc(sizeof(casimir_task_t));
+        caps_task_t *task = xmalloc(sizeof(caps_task_t));
         task->index    = -1;
         task->state    = STATE_IDLE;
         self->tasks[i] = task;
@@ -93,9 +93,9 @@ static void _mpi_stop(int cores)
  *
  * Stop all running jobs and free allocated memory.
  *
- * @param [in] self casimir_mpit_t object
+ * @param [in] self caps_mpit_t object
  */
-void casimir_mpi_free(casimir_mpi_t *self)
+void caps_mpi_free(caps_mpi_t *self)
 {
     _mpi_stop(self->cores);
 
@@ -109,10 +109,10 @@ void casimir_mpi_free(casimir_mpi_t *self)
 
 /** @brief Get number of running jobs
  *
- * @param [in] self casimir_mpit_t object
+ * @param [in] self caps_mpit_t object
  * @retval running number of processes that are running
  */
-int casimir_mpi_get_running(casimir_mpi_t *self)
+int caps_mpi_get_running(caps_mpi_t *self)
 {
     int running = 0;
 
@@ -124,11 +124,11 @@ int casimir_mpi_get_running(casimir_mpi_t *self)
 }
 
 /* xi_ = ξ(L+R)/c */
-int casimir_mpi_submit(casimir_mpi_t *self, int index, double xi_, int m)
+int caps_mpi_submit(caps_mpi_t *self, int index, double xi_, int m)
 {
     for(int i = 1; i < self->cores; i++)
     {
-        casimir_task_t *task = self->tasks[i];
+        caps_task_t *task = self->tasks[i];
 
         if(task->state == STATE_IDLE)
         {
@@ -154,21 +154,21 @@ int casimir_mpi_submit(casimir_mpi_t *self, int index, double xi_, int m)
  *
  * Get the number of determinants that have been computed.
  *
- * @param [in] self casimir_mpit_t object
+ * @param [in] self caps_mpit_t object
  * @retval determinants number of computed determinants
  */
-int casimir_get_determinants(casimir_mpi_t *self)
+int caps_get_determinants(caps_mpi_t *self)
 {
     return self->determinants;
 }
 
-int casimir_mpi_retrieve(casimir_mpi_t *self, casimir_task_t **task_out)
+int caps_mpi_retrieve(caps_mpi_t *self, caps_task_t **task_out)
 {
     *task_out = NULL;
 
     for(int i = 1; i < self->cores; i++)
     {
-        casimir_task_t *task = self->tasks[i];
+        caps_task_t *task = self->tasks[i];
 
         if(task->state == STATE_RUNNING)
         {
@@ -200,8 +200,8 @@ static double integrand(double x, void *args)
 {
     double logdetD;
     const double t0 = now();
-    casimir_mpi_t *casimir_mpi = (casimir_mpi_t *)args;
-    const double xi_ = x/casimir_mpi->alpha; /* xi_=ξ(L+R)/c; α=2*L/(L+R) */
+    caps_mpi_t *caps_mpi = (caps_mpi_t *)args;
+    const double xi_ = x/caps_mpi->alpha; /* xi_=ξ(L+R)/c; α=2*L/(L+R) */
 
     /* For large values of ξ the integrand logdet(Id-M(ξ)) is almost 0, but the
      * actual computation of the matrix elements might yield warnings and
@@ -217,24 +217,24 @@ static double integrand(double x, void *args)
      * As ξ is assumed to be large, the argument of the polylog becomes small,
      * and we can use Li_3(x)=~x. With this, one finds the assumption above.
      */
-    const double LbyR = casimir_mpi->L/casimir_mpi->R;
+    const double LbyR = caps_mpi->L/caps_mpi->R;
     const double logdet_cutoff = 1e-100;
     const double xi_cutoff = -(1+1/LbyR)*log(2*LbyR*logdet_cutoff)/2;
 
     if(LbyR < 0.1 && xi_ > xi_cutoff)
         logdetD = 0;
     else
-        logdetD = F_xi(xi_, casimir_mpi);
+        logdetD = F_xi(xi_, caps_mpi);
 
     printf("# xi*(L+R)/c=%.15g, logdetD=%.15g, t=%g\n", xi_, logdetD, now()-t0);
     return logdetD;
 }
 
 /* omegap in eV; drude, pr and plasma in units of kB*T */
-void F_HT(casimir_mpi_t *casimir_mpi, double omegap, double *drude, double *pr, double *plasma)
+void F_HT(caps_mpi_t *caps_mpi, double omegap, double *drude, double *pr, double *plasma)
 {
-    const double omegap_orig = casimir_mpi->omegap;
-    const double gamma_orig  = casimir_mpi->gamma;
+    const double omegap_orig = caps_mpi->omegap;
+    const double gamma_orig  = caps_mpi->gamma;
 
     /* Drude
      * The actual value of omegap and gamma for the high-temperature limit are
@@ -242,52 +242,52 @@ void F_HT(casimir_mpi_t *casimir_mpi, double omegap, double *drude, double *pr, 
      */
     if(drude != NULL)
     {
-        casimir_mpi->omegap = 1;
-        casimir_mpi->gamma  = 1;
-        *drude = F_xi(0, casimir_mpi);
+        caps_mpi->omegap = 1;
+        caps_mpi->gamma  = 1;
+        *drude = F_xi(0, caps_mpi);
     }
 
     /* PR */
     if(pr != NULL)
     {
-        casimir_mpi->omegap = INFINITY;
-        casimir_mpi->gamma  = 0;
-        *pr = F_xi(0, casimir_mpi);
+        caps_mpi->omegap = INFINITY;
+        caps_mpi->gamma  = 0;
+        *pr = F_xi(0, caps_mpi);
     }
 
     /* plasma */
     if(plasma != NULL)
     {
-        casimir_mpi->omegap = omegap;
-        casimir_mpi->gamma  = 0;
-        *plasma = F_xi(0, casimir_mpi);
+        caps_mpi->omegap = omegap;
+        caps_mpi->gamma  = 0;
+        *plasma = F_xi(0, caps_mpi);
     }
 
-    casimir_mpi->omegap = omegap_orig;
-    casimir_mpi->gamma  = gamma_orig;
+    caps_mpi->omegap = omegap_orig;
+    caps_mpi->gamma  = gamma_orig;
 }
 
 /* xi_ = ξ(L+R)/c */
-double F_xi(double xi_, casimir_mpi_t *casimir_mpi)
+double F_xi(double xi_, caps_mpi_t *caps_mpi)
 {
     int m;
     double drude_HT = NAN;
     double terms[4096] = { NAN };
-    bool verbose = casimir_mpi->verbose;
+    bool verbose = caps_mpi->verbose;
     const double mmax = sizeof(terms)/sizeof(double);
-    const double cutoff = casimir_mpi->cutoff;
+    const double cutoff = caps_mpi->cutoff;
 
     if(xi_ == 0)
     {
         /* compute Drude contribution */
-        casimir_t *casimir = casimir_init(casimir_mpi->R, casimir_mpi->L);
-        casimir_set_ldim(casimir, casimir_mpi->ldim);
-        if(casimir_mpi->iepsrel > 0)
-            casimir_set_epsrel(casimir, casimir_mpi->iepsrel);
-        drude_HT = casimir_ht_drude(casimir);
-        casimir_free(casimir);
+        caps_t *caps = caps_init(caps_mpi->R, caps_mpi->L);
+        caps_set_ldim(caps, caps_mpi->ldim);
+        if(caps_mpi->iepsrel > 0)
+            caps_set_epsrel(caps, caps_mpi->iepsrel);
+        drude_HT = caps_ht_drude(caps);
+        caps_free(caps);
 
-        if(!isinf(casimir_mpi->omegap) && casimir_mpi->gamma > 0)
+        if(!isinf(caps_mpi->omegap) && caps_mpi->gamma > 0)
             /* omegap finite => Drude model */
             return drude_HT;
     }
@@ -297,14 +297,14 @@ double F_xi(double xi_, casimir_mpi_t *casimir_mpi)
     {
         while(1)
         {
-            casimir_task_t *task = NULL;
+            caps_task_t *task = NULL;
 
             /* send job */
-            if(casimir_mpi_submit(casimir_mpi, m, xi_, m))
+            if(caps_mpi_submit(caps_mpi, m, xi_, m))
                 break;
 
             /* retrieve jobs */
-            while(casimir_mpi_retrieve(casimir_mpi, &task))
+            while(caps_mpi_retrieve(caps_mpi, &task))
             {
                 double v = terms[task->m] = task->value;
 
@@ -324,11 +324,11 @@ double F_xi(double xi_, casimir_mpi_t *casimir_mpi)
     done:
 
     /* retrieve all remaining running jobs */
-    while(casimir_mpi_get_running(casimir_mpi) > 0)
+    while(caps_mpi_get_running(caps_mpi) > 0)
     {
-        casimir_task_t *task = NULL;
+        caps_task_t *task = NULL;
 
-        while(casimir_mpi_retrieve(casimir_mpi, &task))
+        while(caps_mpi_retrieve(caps_mpi, &task))
         {
             terms[task->m] = task->value;
             if(verbose)
@@ -374,7 +374,7 @@ void master(int argc, char *argv[], const int cores)
     int ldim = 0;
     double L = 0, R = 0, T = 0, omegap = INFINITY, gamma_ = 0;
     double cutoff = CUTOFF, epsrel = EPSREL, eta = ETA;
-    double iepsrel = CASIMIR_EPSREL;
+    double iepsrel = CAPS_EPSREL;
     material_t *material = NULL;
     char time_str[128];
     int psd_order = 0;
@@ -466,7 +466,7 @@ void master(int argc, char *argv[], const int cores)
                 psd_order = atoi(optarg);
                 break;
             case 'V':
-                casimir_build(stdout, NULL);
+                caps_build(stdout, NULL);
                 exit(0);
             case 'h':
                 usage(stdout);
@@ -580,7 +580,7 @@ void master(int argc, char *argv[], const int cores)
 
     if(psd_order < 0)
     {
-        const double Teff = 4*M_PI*CASIMIR_kB/CASIMIR_hbar/CASIMIR_c*T*L;
+        const double Teff = 4*M_PI*CAPS_kB/CAPS_hbar/CAPS_c*T*L;
         psd_order = ceil( (1-1.5*log10(epsrel))/sqrt(Teff) );
     }
 
@@ -593,7 +593,7 @@ void master(int argc, char *argv[], const int cores)
 
     time_as_string(time_str, sizeof(time_str)/sizeof(time_str[0]));
 
-    casimir_build(stdout, "# ");
+    caps_build(stdout, "# ");
     printf("# pid: %d\n", (int)getpid());
     printf("# start time: %s\n", time_str);
     printf("#\n");
@@ -628,7 +628,7 @@ void master(int argc, char *argv[], const int cores)
         printf("# gamma = %.15g\n", gamma_);
     }
 
-    casimir_mpi_t *casimir_mpi = casimir_mpi_init(L, R, T, filename, omegap, gamma_, ldim, cutoff, iepsrel, cores, verbose);
+    caps_mpi_t *caps_mpi = caps_mpi_init(L, R, T, filename, omegap, gamma_, ldim, cutoff, iepsrel, cores, verbose);
 
     /* high-temperature limit */
     if(ht)
@@ -637,20 +637,20 @@ void master(int argc, char *argv[], const int cores)
 
         if(!isinf(omegap))
         {
-            F_HT(casimir_mpi, omegap, &drude, &pr, &plasma);
+            F_HT(caps_mpi, omegap, &drude, &pr, &plasma);
             printf("#\n");
             printf("# L/R, L, R, ldim, omegap, F_Drude/(kB*T), F_PR/(kB*T), F_Plasma/(kB*T)\n");
             printf("%.16g, %.16g, %.16g, %d, %g, %.16g, %.16g, %.16g\n", LbyR, L, R, ldim, omegap, drude, pr, plasma);
         }
         else
         {
-            F_HT(casimir_mpi, 0, &drude, &pr, NULL);
+            F_HT(caps_mpi, 0, &drude, &pr, NULL);
             printf("#\n");
             printf("# L/R, L, R, ldim, F_Drude/(kB*T), F_PR/(kB*T)\n");
             printf("%.16g, %.16g, %.16g, %d, %.16g, %.16g\n", LbyR, L, R, ldim, drude, pr);
         }
 
-        casimir_mpi_free(casimir_mpi);
+        caps_mpi_free(caps_mpi);
         return;
     }
 
@@ -667,10 +667,10 @@ void master(int argc, char *argv[], const int cores)
         printf("#\n");
 
         if(fcqs)
-            integral = fcqs_semiinf(integrand, casimir_mpi, &epsrel, &neval, 1, &ier);
+            integral = fcqs_semiinf(integrand, caps_mpi, &epsrel, &neval, 1, &ier);
         else
         {
-            integral = dqagi(integrand, 0, 1, 0, epsrel, &abserr, &neval, &ier, casimir_mpi);
+            integral = dqagi(integrand, 0, 1, 0, epsrel, &abserr, &neval, &ier, caps_mpi);
             epsrel = fabs(abserr/integral);
         }
 
@@ -680,37 +680,37 @@ void master(int argc, char *argv[], const int cores)
         WARN(ier != 0, "ier=%d", ier);
 
         /* free energy for T=0 */
-        F = integral/casimir_mpi->alpha/M_PI;
+        F = integral/caps_mpi->alpha/M_PI;
     }
     else
     {
         /* finite temperature */
         double drude_HT = NAN, plasma_HT = NAN, pr_HT = NAN;
-        const double T_scaled = 2*M_PI*CASIMIR_kB*(R+L)*T/(CASIMIR_hbar*CASIMIR_c);
+        const double T_scaled = 2*M_PI*CAPS_kB*(R+L)*T/(CAPS_hbar*CAPS_c);
         double *v = NULL;
 
         /* xi = 0 */
         {
             const double t0 = now();
 
-            casimir_t *casimir = casimir_init(R, L);
-            casimir_set_ldim(casimir, ldim);
+            caps_t *caps = caps_init(R, L);
+            caps_set_ldim(caps, ldim);
 
             if(material == NULL && isinf(omegap))
             {
-                F_HT(casimir_mpi, 0, NULL, &pr_HT, NULL);
+                F_HT(caps_mpi, 0, NULL, &pr_HT, NULL);
                 printf("# model = perfect reflectors\n");
                 buf_push(v, pr_HT);
             }
             else if(material == NULL && gamma_ == 0)
             {
-                F_HT(casimir_mpi, omegap, NULL, NULL, &plasma_HT);
+                F_HT(caps_mpi, omegap, NULL, NULL, &plasma_HT);
                 printf("# model = plasma\n");
                 buf_push(v, plasma_HT);
             }
             else if(material == NULL)
             {
-                F_HT(casimir_mpi, 0, &drude_HT, NULL, NULL);
+                F_HT(caps_mpi, 0, &drude_HT, NULL, NULL);
                 printf("# model = drude\n");
                 buf_push(v, drude_HT);
             }
@@ -718,18 +718,18 @@ void master(int argc, char *argv[], const int cores)
             {
                 double omegap_low, gamma_low;
                 material_get_extrapolation(material, &omegap_low, &gamma_low, NULL, NULL);
-                omegap_low *= CASIMIR_hbar_eV; /* convert from rad/s to eV */
-                gamma_low  *= CASIMIR_hbar_eV; /* convert from rad/s to eV */
+                omegap_low *= CAPS_hbar_eV; /* convert from rad/s to eV */
+                gamma_low  *= CAPS_hbar_eV; /* convert from rad/s to eV */
 
                 if(gamma_low == 0)
                 {
-                    F_HT(casimir_mpi, omegap_low, NULL, NULL, &plasma_HT);
+                    F_HT(caps_mpi, omegap_low, NULL, NULL, &plasma_HT);
                     printf("# model = optical data (xi=0: Plasma)\n");
                     buf_push(v, plasma_HT);
                 }
                 else
                 {
-                    F_HT(casimir_mpi, omegap_low, &drude_HT, NULL, &plasma_HT);
+                    F_HT(caps_mpi, omegap_low, &drude_HT, NULL, &plasma_HT);
                     printf("# model = optical data (xi=0: Drude)\n");
                     printf("# plasma = %.15g (logdetD(xi=0) for plasma model with omegap=%geV)\n", plasma_HT, omegap_low);
 
@@ -737,7 +737,7 @@ void master(int argc, char *argv[], const int cores)
                 }
             }
 
-            casimir_free(casimir);
+            caps_free(caps);
 
             printf("#\n");
             printf("# xi*(L+R)/c=0, logdetD=%.15g, t=%g\n", v[0], now()-t0);
@@ -759,7 +759,7 @@ void master(int argc, char *argv[], const int cores)
             {
                 const double xi = psd_xi[n]*T_scaled/(2*M_PI);
                 const double t0 = now();
-                buf_push(v, psd_eta[n]*F_xi(xi, casimir_mpi));
+                buf_push(v, psd_eta[n]*F_xi(xi, caps_mpi));
                 printf("# xi*(L+R)/c=%.15g, logdetD=%.15g, t=%g\n", xi, v[n+1], now()-t0);
             }
 
@@ -773,7 +773,7 @@ void master(int argc, char *argv[], const int cores)
             {
                 const double t0 = now();
                 const double xi = n*T_scaled;
-                buf_push(v, F_xi(xi, casimir_mpi));
+                buf_push(v, F_xi(xi, caps_mpi));
                 printf("# xi*(L+R)/c=%.15g, logdetD=%.15g, t=%g\n", xi, v[n], now()-t0);
 
                 if(fabs(v[n]/v[0]) < epsrel)
@@ -790,7 +790,7 @@ void master(int argc, char *argv[], const int cores)
     time_as_string(time_str, sizeof(time_str)/sizeof(time_str[0]));
 
     printf("#\n");
-    printf("# %d determinants computed\n", casimir_get_determinants(casimir_mpi));
+    printf("# %d determinants computed\n", caps_get_determinants(caps_mpi));
     printf("# stop time: %s\n", time_str);
     printf("#\n");
     printf("# L/R, L, R, T, ldim, E*(L+R)/(hbar*c)\n");
@@ -799,7 +799,7 @@ void master(int argc, char *argv[], const int cores)
     if(material != NULL)
         material_free(material);
 
-    casimir_mpi_free(casimir_mpi);
+    caps_mpi_free(caps_mpi);
 }
 
 void slave(MPI_Comm master_comm, int rank)
@@ -815,7 +815,7 @@ void slave(MPI_Comm master_comm, int rank)
     {
         double logdet = NAN;
 
-        casimir_t  *casimir  = NULL;
+        caps_t  *caps  = NULL;
         material_t *material = NULL;
 
         memset(buf,      0, sizeof(buf));
@@ -836,8 +836,8 @@ void slave(MPI_Comm master_comm, int rank)
         const double R = buf[2]; /* in m */
         const double LbyR = L/R;
 
-        const double omegap = buf[3]/CASIMIR_hbar_eV; /* plasma frequency in rad/s */
-        const double gamma_ = buf[4]/CASIMIR_hbar_eV; /* relaxation frequency in rad/s */
+        const double omegap = buf[3]/CAPS_hbar_eV; /* plasma frequency in rad/s */
+        const double gamma_ = buf[4]/CAPS_hbar_eV; /* relaxation frequency in rad/s */
 
         const int m          = (int)buf[5];
         const double iepsrel = buf[6];
@@ -846,22 +846,22 @@ void slave(MPI_Comm master_comm, int rank)
         /* get filename */
         MPI_Recv(filename, 512, MPI_CHAR, 0, 0, master_comm, &status);
 
-        casimir = casimir_init(R,L);
-        TERMINATE(casimir == NULL, "casimir object is null");
-        casimir_set_ldim(casimir, ldim);
+        caps = caps_init(R,L);
+        TERMINATE(caps == NULL, "caps object is null");
+        caps_set_ldim(caps, ldim);
 
         if(iepsrel > 0)
-            casimir_set_epsrel(casimir, iepsrel);
+            caps_set_epsrel(caps, iepsrel);
 
         /* high-temperature case */
         if(xi_ == 0)
         {
             if(isinf(omegap))
                 /* MM mode of PR */
-                casimir_logdetD0(casimir, m, 0, NULL, &logdet, NULL);
+                caps_logdetD0(caps, m, 0, NULL, &logdet, NULL);
             else
                 /* plasma */
-                casimir_logdetD0(casimir, m, omegap, NULL, NULL, &logdet);
+                caps_logdetD0(caps, m, omegap, NULL, NULL, &logdet);
         }
         else
         {
@@ -870,21 +870,21 @@ void slave(MPI_Comm master_comm, int rank)
             {
                 material = material_init(filename, L+R);
                 TERMINATE(material == NULL, "material_init failed");
-                casimir_set_epsilonm1(casimir, material_epsilonm1, material);
+                caps_set_epsilonm1(caps, material_epsilonm1, material);
             }
             else if(!isinf(omegap))
             {
                 userdata[0] = omegap;
                 userdata[1] = gamma_;
-                casimir_set_epsilonm1(casimir, casimir_epsilonm1_drude, userdata);
+                caps_set_epsilonm1(caps, caps_epsilonm1_drude, userdata);
             }
 
-            logdet = casimir_logdetD(casimir, xi_, m);
+            logdet = caps_logdetD(caps, xi_, m);
             TERMINATE(isnan(logdet), "L/R=%.10g, xi_=%.15g, m=%d, ldim=%d", LbyR, xi_, m, ldim);
         }
 
         MPI_Isend(&logdet, 1, MPI_DOUBLE, 0, 0, master_comm, &request);
-        casimir_free(casimir);
+        caps_free(caps);
 
         if(material != NULL)
             material_free(material);
@@ -895,7 +895,7 @@ void slave(MPI_Comm master_comm, int rank)
 void usage(FILE *stream)
 {
     fprintf(stream,
-"Usage: casimir [OPTIONS]\n\n"
+"Usage: caps [OPTIONS]\n\n"
 "This program computes the free Casimir energy E(T,L,R) for the plane-sphere\n"
 "geometry. L denotes the smallest separation between sphere and plane, R is the\n"
 "radius of the sphere, and T is the temperature.\n"
@@ -984,5 +984,5 @@ void usage(FILE *stream)
 "\n"
 "    -h, --help\n"
 "        Show this help.\n",
-    LDIM_MIN, ETA, CUTOFF, EPSREL, CASIMIR_EPSREL);
+    LDIM_MIN, ETA, CUTOFF, EPSREL, CAPS_EPSREL);
 }

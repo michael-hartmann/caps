@@ -56,7 +56,7 @@ if __name__ == "__main__":
 
     print("/* This code was created by test_Mie_drude.py */")
     print("#include \"sfunc.h\"")
-    print("#include \"libcasimir.h\"")
+    print("#include \"libcaps.h\"")
     print("#include \"unittest.h\"")
     print()
     print("#include \"test_mie_drude.h\"")
@@ -66,24 +66,24 @@ if __name__ == "__main__":
     print("    double lna, lnb;")
     print("    double userdata[2];");
     print("    sign_t sign_a, sign_b;")
-    print("    casimir_t *casimir;")
+    print("    caps_t *caps;")
     print("    unittest_t test;")
     print()
     print("    unittest_init(&test, \"Mie (Drude)\", \"Test Mie coefficients for various parameters\");")
     print()
-    print("    casimir = casimir_init(%g);" % LbyR)
+    print("    caps = caps_init(%g);" % LbyR)
 
 
     for omegap,gamma in ((50000,1),(5000,1), (500,1), (100,1), (50,1), (1,1)):
         print("    userdata[0] = %g; userdata[1] = %g;" % (omegap,gamma))
-        print("    casimir_set_epsilonm1(casimir, casimir_epsilonm1_drude, userdata);")
+        print("    caps_set_epsilonm1(caps, caps_epsilonm1_drude, userdata);")
         print()
         for nT in (1e-4, 1e-3, 1e-2, 0.1, 0.5, 1, 2, 10, 100, 1000, 10000, 100000):
             for l in (1, 2, 3, 5, 10, 100, 500, 1000, 5000):
                 try:
                     lna, sign_a, lnb, sign_b = lnab(mpf(nT),l,mpf(LbyR),mpf(omegap),mpf(gamma))
 
-                    print("    casimir_lnab(casimir, %g, %d, &lna, &lnb, &sign_a, &sign_b);" % (nT,l))
+                    print("    caps_lnab(caps, %g, %d, &lna, &lnb, &sign_a, &sign_b);" % (nT,l))
                     print("    AssertEqual(&test, sign_a, %d);" % sign_a)
                     print("    AssertEqual(&test, sign_b, %d);" % sign_b)
                     print("    AssertAlmostEqual(&test, lna, %s);" % prettyprint(lna))
@@ -91,7 +91,7 @@ if __name__ == "__main__":
                     print()
                 except (ValueError, libmp.libhyper.NoConvergence):
                     print("/*")
-                    print("    casimir_lnab(casimir, %g, %d, &lna, &lnb, &sign_a, &sign_b);" % (nT,l))
+                    print("    caps_lnab(caps, %g, %d, &lna, &lnb, &sign_a, &sign_b);" % (nT,l))
                     print("    AssertEqual(&test, sign_a, %d);" % sign_a)
                     print("    AssertEqual(&test, sign_b, %d);" % sign_b)
                     print("    AssertAlmostEqual(&test, lna, %s);" % prettyprint(lna))
@@ -100,7 +100,7 @@ if __name__ == "__main__":
                     print()
         print()
 
-    print("    casimir_free(casimir);")
+    print("    caps_free(caps);")
     print()
     print("    return test_results(&test, stderr);")
     print("}")

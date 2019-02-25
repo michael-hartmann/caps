@@ -1,4 +1,4 @@
-#include "libcasimir.h"
+#include "libcaps.h"
 #include "misc.h"
 #include "unittest.h"
 
@@ -7,7 +7,7 @@
 int test_logdetD()
 {
     unittest_t test;
-    casimir_t *casimir;
+    caps_t *caps;
 
     /* xi=1 */
     double v1[] = {
@@ -54,54 +54,54 @@ int test_logdetD()
         -1.629918416194979  /* m=5 */
     };
 
-    unittest_init(&test, "casimir_logdetD", "Computation of logdet", 1e-10);
+    unittest_init(&test, "caps_logdetD", "Computation of logdet", 1e-10);
 
-    casimir = casimir_init(1,0.01); /* R/L = 100 */
-    casimir_set_ldim(casimir, 500);
+    caps = caps_init(1,0.01); /* R/L = 100 */
+    caps_set_ldim(caps, 500);
 
     for(size_t m=0; m < sizeof(v1)/sizeof(double); m++)
-        AssertAlmostEqual(&test, casimir_logdetD(casimir, 1, m), v1[m]);
+        AssertAlmostEqual(&test, caps_logdetD(caps, 1, m), v1[m]);
 
     for(size_t m=0; m < sizeof(v2)/sizeof(double); m++)
-        AssertAlmostEqual(&test, casimir_logdetD(casimir, 0.1, m), v2[m]);
+        AssertAlmostEqual(&test, caps_logdetD(caps, 0.1, m), v2[m]);
 
     for(size_t m=0; m < sizeof(v3)/sizeof(double); m++)
-        AssertAlmostEqual(&test, casimir_logdetD(casimir, 10, m), v3[m]);
+        AssertAlmostEqual(&test, caps_logdetD(caps, 10, m), v3[m]);
 
-    casimir_free(casimir);
+    caps_free(caps);
 
 
-    casimir = casimir_init(1,0.001); /* R/L = 1000 */
-    casimir_set_ldim(casimir, 10000);
+    caps = caps_init(1,0.001); /* R/L = 1000 */
+    caps_set_ldim(caps, 10000);
 
     /* m = 1, xi*(L+R)=500.5 */
-    AssertAlmostEqual(&test, casimir_logdetD(casimir, 500.5, 1), -6.483716215501811);
+    AssertAlmostEqual(&test, caps_logdetD(caps, 500.5, 1), -6.483716215501811);
 
     /* m = 0 */
-    AssertAlmostEqual(&test, casimir_logdetD(casimir, 1,    0), -30.8973328391624);
-    AssertAlmostEqual(&test, casimir_logdetD(casimir, 10,   0), -27.98449458128564);
-    AssertAlmostEqual(&test, casimir_logdetD(casimir, 50,   0), -22.56796136574511);
-    AssertAlmostEqual(&test, casimir_logdetD(casimir, 100,  0), -18.67356891192568);
-    AssertAlmostEqual(&test, casimir_logdetD(casimir, 500,  0), -6.479303087598992);
-    AssertAlmostEqual(&test, casimir_logdetD(casimir, 1000, 0), -2.178202346096343);
+    AssertAlmostEqual(&test, caps_logdetD(caps, 1,    0), -30.8973328391624);
+    AssertAlmostEqual(&test, caps_logdetD(caps, 10,   0), -27.98449458128564);
+    AssertAlmostEqual(&test, caps_logdetD(caps, 50,   0), -22.56796136574511);
+    AssertAlmostEqual(&test, caps_logdetD(caps, 100,  0), -18.67356891192568);
+    AssertAlmostEqual(&test, caps_logdetD(caps, 500,  0), -6.479303087598992);
+    AssertAlmostEqual(&test, caps_logdetD(caps, 1000, 0), -2.178202346096343);
 
     /* m = 1 */
-    AssertAlmostEqual(&test, casimir_logdetD(casimir, 1,    1), -28.9780689068129);
-    AssertAlmostEqual(&test, casimir_logdetD(casimir, 10,   1), -27.51188326787787);
-    AssertAlmostEqual(&test, casimir_logdetD(casimir, 50,   1), -22.56514836205272);
-    AssertAlmostEqual(&test, casimir_logdetD(casimir, 100,  1), -18.70411844448763);
-    AssertAlmostEqual(&test, casimir_logdetD(casimir, 500,  1), -6.49120287175491);
-    AssertAlmostEqual(&test, casimir_logdetD(casimir, 1000, 1), -2.182012419010837);
+    AssertAlmostEqual(&test, caps_logdetD(caps, 1,    1), -28.9780689068129);
+    AssertAlmostEqual(&test, caps_logdetD(caps, 10,   1), -27.51188326787787);
+    AssertAlmostEqual(&test, caps_logdetD(caps, 50,   1), -22.56514836205272);
+    AssertAlmostEqual(&test, caps_logdetD(caps, 100,  1), -18.70411844448763);
+    AssertAlmostEqual(&test, caps_logdetD(caps, 500,  1), -6.49120287175491);
+    AssertAlmostEqual(&test, caps_logdetD(caps, 1000, 1), -2.182012419010837);
 
     /* m = 10 */
-    AssertAlmostEqual(&test, casimir_logdetD(casimir, 1,    10), -10.26970523556247);
-    AssertAlmostEqual(&test, casimir_logdetD(casimir, 10,   10), -10.22460379504289);
-    AssertAlmostEqual(&test, casimir_logdetD(casimir, 50,   10), -9.586954072769368);
-    AssertAlmostEqual(&test, casimir_logdetD(casimir, 100,  10), -8.594078947559478);
-    AssertAlmostEqual(&test, casimir_logdetD(casimir, 500,  10), -3.493702985034492);
-    AssertAlmostEqual(&test, casimir_logdetD(casimir, 1000, 10), -1.218387445150732);
+    AssertAlmostEqual(&test, caps_logdetD(caps, 1,    10), -10.26970523556247);
+    AssertAlmostEqual(&test, caps_logdetD(caps, 10,   10), -10.22460379504289);
+    AssertAlmostEqual(&test, caps_logdetD(caps, 50,   10), -9.586954072769368);
+    AssertAlmostEqual(&test, caps_logdetD(caps, 100,  10), -8.594078947559478);
+    AssertAlmostEqual(&test, caps_logdetD(caps, 500,  10), -3.493702985034492);
+    AssertAlmostEqual(&test, caps_logdetD(caps, 1000, 10), -1.218387445150732);
 
-    casimir_free(casimir);
+    caps_free(caps);
 
     return test_results(&test, stderr);
 }
@@ -110,34 +110,34 @@ int test_logdetD0()
 {
     const double eps = 1e-13;
     unittest_t test;
-    casimir_t *casimir;
+    caps_t *caps;
 
-    unittest_init(&test, "casimir_logdetD0", "Computation of logdet for xi=0", 1e-10);
+    unittest_init(&test, "caps_logdetD0", "Computation of logdet for xi=0", 1e-10);
 
     const double R = 100e-6, L = 1e-6;
-    casimir = casimir_init(R,L); /* R/L=100 */
-    casimir_set_ldim(casimir, 500);
+    caps = caps_init(R,L); /* R/L=100 */
+    caps_set_ldim(caps, 500);
 
-    AssertAlmostEqual(&test, casimir_ht_plasma(casimir, 0.01*CASIMIR_c/(L+R), eps), -14.569722716816960073);
-    AssertAlmostEqual(&test, casimir_ht_plasma(casimir,  0.1*CASIMIR_c/(L+R), eps), -14.569723099773346675);
-    AssertAlmostEqual(&test, casimir_ht_plasma(casimir,    1*CASIMIR_c/(L+R), eps), -14.571258410941549499);
-    AssertAlmostEqual(&test, casimir_ht_plasma(casimir,   10*CASIMIR_c/(L+R), eps), -14.868792120441892024);
-    AssertAlmostEqual(&test, casimir_ht_plasma(casimir,  100*CASIMIR_c/(L+R), eps), -18.461022336857670467);
-    AssertAlmostEqual(&test, casimir_ht_plasma(casimir, 1000*CASIMIR_c/(L+R), eps), -25.441820432119136797);
+    AssertAlmostEqual(&test, caps_ht_plasma(caps, 0.01*CAPS_c/(L+R), eps), -14.569722716816960073);
+    AssertAlmostEqual(&test, caps_ht_plasma(caps,  0.1*CAPS_c/(L+R), eps), -14.569723099773346675);
+    AssertAlmostEqual(&test, caps_ht_plasma(caps,    1*CAPS_c/(L+R), eps), -14.571258410941549499);
+    AssertAlmostEqual(&test, caps_ht_plasma(caps,   10*CAPS_c/(L+R), eps), -14.868792120441892024);
+    AssertAlmostEqual(&test, caps_ht_plasma(caps,  100*CAPS_c/(L+R), eps), -18.461022336857670467);
+    AssertAlmostEqual(&test, caps_ht_plasma(caps, 1000*CAPS_c/(L+R), eps), -25.441820432119136797);
 
-    casimir_free(casimir);
+    caps_free(caps);
 
 
     /* test against analytical results for m=0 */
     double EE,MM;
-    casimir = casimir_init(1,0.001); /* R/L=1000 */
-    casimir_set_ldim(casimir, 12000);
+    caps = caps_init(1,0.001); /* R/L=1000 */
+    caps_set_ldim(caps, 12000);
 
-    casimir_logdetD0(casimir, 0, INFINITY, &EE, &MM, NULL);
+    caps_logdetD0(caps, 0, INFINITY, &EE, &MM, NULL);
     AssertAlmostEqual(&test, EE, -16.570869421880897);
     AssertAlmostEqual(&test, MM, -14.918081098098352);
 
-    casimir_free(casimir);
+    caps_free(caps);
 
     return test_results(&test, stderr);
 }

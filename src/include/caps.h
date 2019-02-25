@@ -1,5 +1,5 @@
-#ifndef CASIMIR_H
-#define CASIMIR_H
+#ifndef CAPS_H
+#define CAPS_H
 
 #include <stdbool.h>
 
@@ -10,28 +10,28 @@ typedef struct {
     double value;
     MPI_Request request;
     int state;
-} casimir_task_t;
+} caps_task_t;
 
 typedef struct {
     double L, R, T, omegap, gamma, cutoff, iepsrel, alpha;
     int ldim, cores;
     bool verbose;
-    casimir_task_t **tasks;
+    caps_task_t **tasks;
     int determinants;
     char filename[512];
-} casimir_mpi_t;
+} caps_mpi_t;
 
-casimir_mpi_t *casimir_mpi_init(double L, double R, double T, char *filename, double omegap, double gamma_, int ldim, double cutoff, double iepsrel, int cores, bool verbose);
-void casimir_mpi_free(casimir_mpi_t *self);
-int casimir_mpi_submit(casimir_mpi_t *self, int index, double xi, int m);
-int casimir_mpi_retrieve(casimir_mpi_t *self, casimir_task_t **task_out);
-int casimir_mpi_get_running(casimir_mpi_t *self);
-int casimir_get_determinants(casimir_mpi_t *self);
+caps_mpi_t *caps_mpi_init(double L, double R, double T, char *filename, double omegap, double gamma_, int ldim, double cutoff, double iepsrel, int cores, bool verbose);
+void caps_mpi_free(caps_mpi_t *self);
+int caps_mpi_submit(caps_mpi_t *self, int index, double xi, int m);
+int caps_mpi_retrieve(caps_mpi_t *self, caps_task_t **task_out);
+int caps_mpi_get_running(caps_mpi_t *self);
+int caps_get_determinants(caps_mpi_t *self);
 
 void usage(FILE *stream);
 
-void F_HT(casimir_mpi_t *casimir_mpi, double omegap, double *drude, double *pr, double *plasma);
-double F_xi(double xi, casimir_mpi_t *casimir_mpi);
+void F_HT(caps_mpi_t *caps_mpi, double omegap, double *drude, double *pr, double *plasma);
+double F_xi(double xi, caps_mpi_t *caps_mpi);
 void master(int argc, char *argv[], int cores);
 void slave(MPI_Comm master_comm, int rank);
 

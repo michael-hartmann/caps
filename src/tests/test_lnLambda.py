@@ -26,4 +26,4 @@ if __name__ == "__main__":
 
     for l1,l2,m in l:
         s = prettyprint(lnLambda(l1,l2,m))
-        print("AssertAlmostEqual(&test, casimir_lnLambda(%d,%d,%d), %s);" % (l1,l2,m,s))
+        print("AssertAlmostEqual(&test, caps_lnLambda(%d,%d,%d), %s);" % (l1,l2,m,s))

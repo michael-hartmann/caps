@@ -1,5 +1,5 @@
 /**
- * @file   libcasimir.c
+ * @file   libcaps.c
  * @author Michael Hartmann <michael.hartmann@physik.uni-augsburg.de>
  * @date   December, 2017
  * @brief  library to calculate the free Casimir energy in the plane-sphere geometry
@@ -16,7 +16,7 @@
 #include "constants.h"
 #include "bessel.h"
 #include "integration.h"
-#include "libcasimir.h"
+#include "libcaps.h"
 #include "matrix.h"
 #include "logfac.h"
 #include "misc.h"
@@ -42,7 +42,7 @@
  * @param [in]  m  m <= l1 and m <= l2
  * @retval lnLambda \f$\log{\Lambda_{\ell_1,\ell_2}^{(m)}}\f$
  */
-double casimir_lnLambda(int l1, int l2, int m)
+double caps_lnLambda(int l1, int l2, int m)
 {
     return (logi(2*l1+1)+logi(2*l2+1)-logi(l1)-logi(l1+1)-logi(l2)-logi(l2+1)+lfac(l1-m)+lfac(l2-m)-lfac(l1+m)-lfac(l2+m))/2.0;
 }
@@ -54,13 +54,13 @@ double casimir_lnLambda(int l1, int l2, int m)
  * function calculates \f$X\f$ using the formula in the high-temperature limit and
  * calculates \f$\ell_\mathrm{min}\f$, \f$\ell_\mathrm{max}\f$.
  *
- * @param [in] self Casimir object
+ * @param [in] self CaPS object
  * @param [in] m quantum number
  * @param [out] lmin_p minimum value of \f$\ell\f$
  * @param [out] lmax_p maximum value of \f$\ell\f$
  * @retval l approximately the value of \f$\ell\f$ where \f$\mathcal{M}^m_{\ell\ell}\f$ is maximal
  */
-int casimir_estimate_lminmax(casimir_t *self, int m, size_t *lmin_p, size_t *lmax_p)
+int caps_estimate_lminmax(caps_t *self, int m, size_t *lmin_p, size_t *lmax_p)
 {
     const int ldim = self->ldim;
 
@@ -97,25 +97,25 @@ int casimir_estimate_lminmax(casimir_t *self, int m, size_t *lmin_p, size_t *lma
 
 /** @brief Evaluate dielectric function of the plate
  *
- * @param [in] self Casimir object
+ * @param [in] self CaPS object
  * @param [in] xi_ \f$\xi\mathcal{L}/c\f$
  * @retval epsm1 \f$\epsilon(\mathrm{i}\xi)\f$
  */
-double casimir_epsilonm1_plate(casimir_t *self, double xi_)
+double caps_epsilonm1_plate(caps_t *self, double xi_)
 {
-    double xi = xi_*CASIMIR_c/self->calL;
+    double xi = xi_*CAPS_c/self->calL;
     return self->epsilonm1_plate(xi, self->userdata_plate);
 }
 
 /** @brief Evaluate dielectric function of the sphere
  *
- * @param [in] self Casimir object
+ * @param [in] self CaPS object
  * @param [in] xi_ \f$\xi\mathcal{L}/c\f$
  * @retval epsm1 \f$\epsilon(\mathrm{i}\xi)\f$
  */
-double casimir_epsilonm1_sphere(casimir_t *self, double xi_)
+double caps_epsilonm1_sphere(caps_t *self, double xi_)
 {
-    double xi = xi_*CASIMIR_c/self->calL;
+    double xi = xi_*CAPS_c/self->calL;
     return self->epsilonm1_sphere(xi, self->userdata_sphere);
 }
 
@@ -126,7 +126,7 @@ double casimir_epsilonm1_sphere(casimir_t *self, double xi_)
  * @param [in] userdata ignored
  * @retval inf \f$\epsilon(\xi) = \infty\f$
  */
-double casimir_epsilonm1_perf(__attribute__((unused)) double xi_, __attribute__((unused)) void *userdata)
+double caps_epsilonm1_perf(__attribute__((unused)) double xi_, __attribute__((unused)) void *userdata)
 {
     return INFINITY;
 }
@@ -147,7 +147,7 @@ double casimir_epsilonm1_perf(__attribute__((unused)) double xi_, __attribute__(
  * @param [in] userdata userdata
  * @retval epsilon epsilon(xi)
  */
-double casimir_epsilonm1_drude(double xi, void *userdata)
+double caps_epsilonm1_drude(double xi, void *userdata)
 {
     double *ptr = (double *)userdata;
     double omegap = ptr[0], gamma_ = ptr[1];
@@ -163,30 +163,30 @@ double casimir_epsilonm1_drude(double xi, void *userdata)
 /*@{*/
 
 /**
- * @brief Create a new Casimir object
+ * @brief Create a new CaPS object
  *
- * This function will initialize a Casimir object. By default the dielectric
+ * This function will initialize a CaPS object. By default the dielectric
  * function corresponds to perfect reflectors, i.e. \f$\epsilon(\xi)=\infty\f$.
  *
  * By default, the value of \f$\ell_\mathrm{dim}\f$ is chosen by:
  * \f[
- *  \ell_\mathrm{dim} = \mathrm{ceil}\left(\mathrm{max}\left(\mathrm{CASIMIR\_MINIMUM\_LDIM}, \mathrm{CASIMIR\_FACTOR\_LDIM}\cdot \frac{R}{L}\right)\right)
+ *  \ell_\mathrm{dim} = \mathrm{ceil}\left(\mathrm{max}\left(\mathrm{CAPS\_MINIMUM\_LDIM}, \mathrm{CAPS\_FACTOR\_LDIM}\cdot \frac{R}{L}\right)\right)
  * \f]
  *
  * Restrictions: \f$L/R > 0\f$
  *
  * @param [in]  R radius of sphere in m
  * @param [in]  L smallest separation between sphere and plate in m
- * @retval object Casimir object if successful
+ * @retval object CaPS object if successful
  * @retval NULL   if an error occured
  */
-casimir_t *casimir_init(double R, double L)
+caps_t *caps_init(double R, double L)
 {
     const double LbyR = L/R;
     if(L <= 0 || R <= 0)
         return NULL;
 
-    casimir_t *self = xmalloc(sizeof(casimir_t));
+    caps_t *self = xmalloc(sizeof(caps_t));
 
     /* geometry */
     self->LbyR = LbyR;
@@ -196,16 +196,16 @@ casimir_t *casimir_init(double R, double L)
     self->y = -M_LOG2-log1p(LbyR); /* log( (R/(L+R))/2 ) */
 
     /* dimension of vector space */
-    self->ldim = ceil(MAX(CASIMIR_MINIMUM_LDIM, CASIMIR_FACTOR_LDIM/LbyR));
+    self->ldim = ceil(MAX(CAPS_MINIMUM_LDIM, CAPS_FACTOR_LDIM/LbyR));
 
     /* perfect reflectors */
-    self->epsilonm1_plate  = casimir_epsilonm1_perf;
-    self->epsilonm1_sphere = casimir_epsilonm1_perf;
+    self->epsilonm1_plate  = caps_epsilonm1_perf;
+    self->epsilonm1_sphere = caps_epsilonm1_perf;
     self->userdata_plate   = NULL;
     self->userdata_sphere  = NULL;
 
     /* relative error for integration */
-    self->epsrel = CASIMIR_EPSREL;
+    self->epsrel = CAPS_EPSREL;
 
     /* use LU decomposition by default */
     self->detalg = DETALG_HODLR;
@@ -215,13 +215,13 @@ casimir_t *casimir_init(double R, double L)
 
 
 /**
- * @brief Free memory for Casimir object
+ * @brief Free memory for CaPS object
  *
- * Free allocated memory for the Casimir object self.
+ * Free allocated memory for the CaPS object self.
  *
- * @param [in,out] self Casimir object
+ * @param [in,out] self CaPS object
  */
-void casimir_free(casimir_t *self)
+void caps_free(caps_t *self)
 {
     xfree(self);
 }
@@ -236,13 +236,13 @@ void casimir_free(casimir_t *self)
  * @param stream output stream
  * @param prefix prefix of each line or NULL
  */
-void casimir_build(FILE *stream, const char *prefix)
+void caps_build(FILE *stream, const char *prefix)
 {
     if(prefix == NULL)
         prefix = "";
 
-    #ifdef LIBCASIMIR_VERSION
-    fprintf(stream, "%sversion: %s\n", prefix, LIBCASIMIR_VERSION);
+    #ifdef LIBCAPS_VERSION
+    fprintf(stream, "%sversion: %s\n", prefix, LIBCAPS_VERSION);
     #endif
 
     fprintf(stream, "%scompiler: %s\n", prefix, COMPILER);
@@ -265,12 +265,12 @@ void casimir_build(FILE *stream, const char *prefix)
  *
  * Print information about the object self to stream.
  *
- * @param self Casimir object
+ * @param self CaPS object
  * @param stream where to print the string
  * @param prefix if prefix != NULL: start every line with the string contained
  * in prefix
  */
-void casimir_info(casimir_t *self, FILE *stream, const char *prefix)
+void caps_info(caps_t *self, FILE *stream, const char *prefix)
 {
     const char *detalg_str;
     if(prefix == NULL)
@@ -298,12 +298,12 @@ void casimir_info(casimir_t *self, FILE *stream, const char *prefix)
  *
  * Set relative error for numerical integration.
  *
- * @param [in] self Casimir object
+ * @param [in] self CaPS object
  * @param [in] epsrel relative error
  * @retval 0 if an error occured
  * @retval 1 on success
  */
-int casimir_set_epsrel(casimir_t *self, double epsrel)
+int caps_set_epsrel(caps_t *self, double epsrel)
 {
     if(epsrel <= 0)
         return 0;
@@ -315,11 +315,11 @@ int casimir_set_epsrel(casimir_t *self, double epsrel)
 /**
  * @brief Get relative error for numerical integration
  *
- * See \ref casimir_set_epsrel.
+ * See \ref caps_set_epsrel.
  *
  * @retval epsrel relative error
  */
-double casimir_get_epsrel(casimir_t *self)
+double caps_get_epsrel(caps_t *self)
 {
     return self->epsrel;
 }
@@ -327,17 +327,17 @@ double casimir_get_epsrel(casimir_t *self)
 /**
  * @brief Set dielectric function for plate and sphere
  *
- * See also \ref casimir_set_epsilonm1_plate and \ref
- * casimir_set_epsilonm1_sphere.
+ * See also \ref caps_set_epsilonm1_plate and \ref
+ * caps_set_epsilonm1_sphere.
  *
- * @param [in,out] self Casimir object
+ * @param [in,out] self CaPS object
  * @param [in] epsilonm1  callback to the function that calculates \f$\epsilon(\mathrm{i}\xi)-1\f$
  * @param [in] userdata   arbitrary pointer to data that is passwd to epsilonm1 whenever the function is called
  */
-void casimir_set_epsilonm1(casimir_t *self, double (*epsilonm1)(double xi_, void *userdata), void *userdata)
+void caps_set_epsilonm1(caps_t *self, double (*epsilonm1)(double xi_, void *userdata), void *userdata)
 {
-    casimir_set_epsilonm1_plate (self, epsilonm1, userdata);
-    casimir_set_epsilonm1_sphere(self, epsilonm1, userdata);
+    caps_set_epsilonm1_plate (self, epsilonm1, userdata);
+    caps_set_epsilonm1_sphere(self, epsilonm1, userdata);
 }
 
 /**
@@ -351,11 +351,11 @@ void casimir_set_epsilonm1(casimir_t *self, double (*epsilonm1)(double xi_, void
  * \f$\epsilon(\mathrm{i}\xi)\f$. userdata is an arbitrary pointer that will be
  * given to the callback function.
  *
- * @param [in,out] self Casimir object
+ * @param [in,out] self CaPS object
  * @param [in] epsilonm1  callback to the function that calculates \f$\epsilon(\mathrm{i}\xi)-1\f$
  * @param [in] userdata   arbitrary pointer to data that is passwd to epsilonm1 whenever the function is called
  */
-void casimir_set_epsilonm1_plate(casimir_t *self, double (*epsilonm1)(double xi_, void *userdata), void *userdata)
+void caps_set_epsilonm1_plate(caps_t *self, double (*epsilonm1)(double xi_, void *userdata), void *userdata)
 {
     self->epsilonm1_plate = epsilonm1;
     self->userdata_plate  = userdata;
@@ -372,11 +372,11 @@ void casimir_set_epsilonm1_plate(casimir_t *self, double (*epsilonm1)(double xi_
  * \f$\epsilon(\mathrm{i}\xi)\f$. userdata is an arbitrary pointer that will be
  * given to the callback function.
  *
- * @param [in,out] self Casimir object
+ * @param [in,out] self CaPS object
  * @param [in] epsilonm1  callback to the function that calculates \f$\epsilon(\mathrm{i}\xi)-1\f$
  * @param [in] userdata   arbitrary pointer to data that is passwd to epsilonm1 whenever the function is called
  */
-void casimir_set_epsilonm1_sphere(casimir_t *self, double (*epsilonm1)(double xi_, void *userdata), void *userdata)
+void caps_set_epsilonm1_sphere(caps_t *self, double (*epsilonm1)(double xi_, void *userdata), void *userdata)
 {
     self->epsilonm1_sphere = epsilonm1;
     self->userdata_sphere  = userdata;
@@ -393,11 +393,11 @@ void casimir_set_epsilonm1_sphere(casimir_t *self, double (*epsilonm1)(double xi
  * If successul, the function returns 1. If the algorithm is not supported
  * because of missing LAPACK support, 0 is returned.
  *
- * @param [in,out] self Casimir object
+ * @param [in,out] self CaPS object
  * @param [in] detalg algorithm to compute determinant
  * @retval success 1 if successful, 0 if not successful
  */
-int casimir_set_detalg(casimir_t *self, detalg_t detalg)
+int caps_set_detalg(caps_t *self, detalg_t detalg)
 {
     if(detalg == DETALG_HODLR)
     {
@@ -412,10 +412,10 @@ int casimir_set_detalg(casimir_t *self, detalg_t detalg)
 /**
  * @brief Get algorithm to calculate determinant
  *
- * @param [in]  self Casimir object
+ * @param [in]  self CaPS object
  * @retval detalg
  */
-detalg_t casimir_get_detalg(casimir_t *self)
+detalg_t caps_get_detalg(caps_t *self)
 {
     return self->detalg;
 }
@@ -428,12 +428,12 @@ detalg_t casimir_get_detalg(casimir_t *self)
  * depends on the truncation of the vector space. ldim determines the dimension
  * in the angular momentum \f$\ell\f$ that is used.
  *
- * @param [in,out] self Casimir object
+ * @param [in,out] self CaPS object
  * @param [in] ldim dimension in angular momentum \f$\ell\f$
  * @retval 1 if successful
  * @retval 0 if ldim < 1
  */
-int casimir_set_ldim(casimir_t *self, int ldim)
+int caps_set_ldim(caps_t *self, int ldim)
 {
     if(ldim < 1)
         return 0;
@@ -446,12 +446,12 @@ int casimir_set_ldim(casimir_t *self, int ldim)
 /**
  * @brief Get dimension of vector space
  *
- * See \ref casimir_set_ldim.
+ * See \ref caps_set_ldim.
  *
- * @param [in,out] self Casimir object
+ * @param [in,out] self CaPS object
  * @retval ldim dimension of vector space
  */
-int casimir_get_ldim(casimir_t *self)
+int caps_get_ldim(caps_t *self)
 {
     return self->ldim;
 }
@@ -476,13 +476,13 @@ int casimir_get_ldim(casimir_t *self)
  *
  * lna and lnb must be valid pointers and must not be NULL.
  *
- * @param [in,out] self Casimir object
+ * @param [in,out] self CaPS object
  * @param [in] xi_ \f$\xi\mathcal{L}/c > 0\f$
  * @param [in] l angular momentum \f$\ell > 0\f$
  * @param [out] lna logarithm of \f$|a_\ell|\f$
  * @param [out] lnb logarithm of \f$|b_\ell|\f$
  */
-void casimir_mie_perf(casimir_t *self, double xi_, int l, double *lna, double *lnb)
+void caps_mie_perf(caps_t *self, double xi_, int l, double *lna, double *lnb)
 {
     double logKlp,logKlm,logIlm,logIlp;
     /* χ = ξR/c = ξ(R+L)/c * R/(R+L) = xi_ 1/(1+L/R) */
@@ -523,7 +523,7 @@ void casimir_mie_perf(casimir_t *self, double xi_, int l, double *lna, double *l
  * @brief Return logarithm of Mie coefficients \f$a_\ell\f$, \f$b_\ell\f$ for arbitrary metals
  *
  * For \f$\omega_\mathrm{P} = \infty\f$ the Mie coefficient for perfect
- * reflectors are returned (see \ref casimir_mie_perf).
+ * reflectors are returned (see \ref caps_mie_perf).
  *
  * lna and lnb must be valid pointers.
  *
@@ -548,20 +548,20 @@ void casimir_mie_perf(casimir_t *self, double xi_, int l, double *lna, double *l
  * - [4] Casimir effect in the plane-sphere geometry: Beyond the proximity
  *       force approximation, Hartmann, 2018
  *
- * @param [in,out] self Casimir object
+ * @param [in,out] self CaPS object
  * @param [in] xi_ \f$\xi\mathcal{L}/c\f$
  * @param [in] l angular momentum \f$\ell\f$
  * @param [out] lna logarithm of Mie coefficient \f$a_\ell\f$
  * @param [out] lnb logarithm of Mie coefficient \f$b_\ell\f$
  */
-void casimir_mie(casimir_t *self, double xi_, int l, double *lna, double *lnb)
+void caps_mie(caps_t *self, double xi_, int l, double *lna, double *lnb)
 {
-    const double epsilonm1 = casimir_epsilonm1_sphere(self, xi_); /* n²-1 */
+    const double epsilonm1 = caps_epsilonm1_sphere(self, xi_); /* n²-1 */
 
     if(isinf(epsilonm1))
     {
         /* Mie coefficients for perfect reflectors */
-        casimir_mie_perf(self, xi_, l, lna, lnb);
+        caps_mie_perf(self, xi_, l, lna, lnb);
         return;
     }
 
@@ -607,15 +607,15 @@ void casimir_mie(casimir_t *self, double xi_, int l, double *lna, double *lnb)
  * This function calculates the Fresnel coefficients \f$r_p = r_p(i\xi, k)\f$
  * for \f$p=\mathrm{TE},\mathrm{TM}\f$.
  *
- * @param [in]     self  Casimir object
+ * @param [in]     self  CaPS object
  * @param [in]     xi_   \f$\xi\mathcal{L}/c\f$
  * @param [in]     k_    \f$k\mathcal{L}\f$
  * @param [in,out] r_TE  Fresnel coefficient for TE mode
  * @param [in,out] r_TM  Fresnel coefficient for TM mode
  */
-void casimir_fresnel(casimir_t *self, double xi_, double k_, double *r_TE, double *r_TM)
+void caps_fresnel(caps_t *self, double xi_, double k_, double *r_TE, double *r_TM)
 {
-    const double epsilonm1 = casimir_epsilonm1_plate(self, xi_);
+    const double epsilonm1 = caps_epsilonm1_plate(self, xi_);
 
     if(isinf(epsilonm1))
     {
@@ -656,35 +656,35 @@ void casimir_fresnel(casimir_t *self, double xi_, double k_, double *r_TE, doubl
 /*@{*/
 
 /**
- * @brief Initialize casimir_M_t object
+ * @brief Initialize caps_M_t object
  *
  * This object contains all information necessary to compute the matrix
  * elements of the round-trip operator \f$\mathcal{M}^{(m)}(\xi)\f$. It also
  * contains a cache for the Mie coefficients.
  *
- * The returned object can be given to \ref casimir_kernel_M to compute the
+ * The returned object can be given to \ref caps_kernel_M to compute the
  * matrix elements of the round-trip operator.
  *
- * @param [in] casimir Casimir object
+ * @param [in] caps CaPS object
  * @param [in] m azimuthal quantum number \f$m\f$
  * @param [in] xi_ \f$\xi\mathcal{L}/c\f$
- * @retval obj casimir_M_t object that can be given to \ref casimir_kernel_M
+ * @retval obj caps_M_t object that can be given to \ref caps_kernel_M
  */
-casimir_M_t *casimir_M_init(casimir_t *casimir, int m, double xi_)
+caps_M_t *caps_M_init(caps_t *caps, int m, double xi_)
 {
     TERMINATE(xi_ <= 0, "Matsubara frequency must be positive");
 
     size_t lmin, lmax;
-    const int ldim = casimir->ldim;
-    casimir_M_t *self = xmalloc(sizeof(casimir_M_t));
+    const int ldim = caps->ldim;
+    caps_M_t *self = xmalloc(sizeof(caps_M_t));
 
-    casimir_estimate_lminmax(casimir, m, &lmin, &lmax);
+    caps_estimate_lminmax(caps, m, &lmin, &lmax);
 
-    self->casimir = casimir;
+    self->caps = caps;
     self->m = m;
     self->lmin = lmin;
     self->ldim = ldim;
-    self->integration = casimir_integrate_init(casimir, xi_, m, casimir->epsrel);
+    self->integration = caps_integrate_init(caps, xi_, m, caps->epsrel);
     self->integration_plasma = NULL;
     self->xi_ = xi_;
     self->al = xmalloc(ldim*sizeof(double));
@@ -707,16 +707,16 @@ casimir_M_t *casimir_M_init(casimir_t *casimir, int m, double xi_)
  *
  * This function is intended to be passed as a callback to \ref kernel_logdet. If you
  * want to compute matrix elements of the round-trip operator, it is probably simpler
- * to use \ref casimir_M_elem.
+ * to use \ref caps_M_elem.
  *
  * @param [in] i row
  * @param [in] j column
- * @param [in] args_ casimir_M_t object, see \ref casimir_M_init
+ * @param [in] args_ caps_M_t object, see \ref caps_M_init
  * @retval Mij \f$\mathcal{M}^{(m)}_{ij}(\xi)\f$
  */
-double casimir_kernel_M(int i, int j, void *args_)
+double caps_kernel_M(int i, int j, void *args_)
 {
-    casimir_M_t *args = (casimir_M_t *)args_;
+    caps_M_t *args = (caps_M_t *)args_;
     const int lmin = args->lmin;
 
     #if 1
@@ -739,7 +739,7 @@ double casimir_kernel_M(int i, int j, void *args_)
         p2 = 'M';
     #endif
 
-    return casimir_M_elem(args, l1, l2, p1, p2);
+    return caps_M_elem(args, l1, l2, p1, p2);
 }
 
 /**
@@ -747,27 +747,27 @@ double casimir_kernel_M(int i, int j, void *args_)
  *
  * This function computes matrix elements of the round-trip operator.
  *
- * @param [in] self casimir_M_t object, see \ref casimir_M_init
+ * @param [in] self caps_M_t object, see \ref caps_M_init
  * @param [in] l1 angular momentum \f$\ell_1\f$
  * @param [in] l2 angular momentum \f$\ell_2\f$
  * @param [in] p1 polarization \f$p_1\f$ (E or M)
  * @param [in] p2 polarization \f$p_2\f$ (E or M)
  * @retval elem \f$\mathcal{M}^{(m)}_{\ell_1,\ell_2}(p_1,p_2)\f$
  */
-double casimir_M_elem(casimir_M_t *self, int l1, int l2, char p1, char p2)
+double caps_M_elem(caps_M_t *self, int l1, int l2, char p1, char p2)
 {
     const double xi_ = self->xi_; /* xi_ = xi*(L+R)/c */
     const int lmin = self->lmin;
-    casimir_t *casimir = self->casimir;
+    caps_t *caps = self->caps;
     integration_t *integration = self->integration;
 
     if(isnan(self->al[l1-lmin]))
-        casimir_mie(casimir, xi_, l1, &self->al[l1-lmin], &self->bl[l1-lmin]);
+        caps_mie(caps, xi_, l1, &self->al[l1-lmin], &self->bl[l1-lmin]);
 
     if(isnan(self->al[l2-lmin]))
-        casimir_mie(casimir, xi_, l2, &self->al[l2-lmin], &self->bl[l2-lmin]);
+        caps_mie(caps, xi_, l2, &self->al[l2-lmin], &self->bl[l2-lmin]);
 
-    const double lnLambda = casimir_lnLambda(l1,l2,self->m);
+    const double lnLambda = caps_lnLambda(l1,l2,self->m);
     const double al1 = self->al[l1-lmin], bl1 = self->bl[l1-lmin];
     const double al2 = self->al[l2-lmin], bl2 = self->bl[l2-lmin];
 
@@ -776,8 +776,8 @@ double casimir_M_elem(casimir_M_t *self, int l1, int l2, char p1, char p2)
         if(p1 == 'E') /* EE */
         {
             sign_t signA_TE, signB_TM;
-            double log_A_TE = casimir_integrate_A(integration, l1, l2, TE, &signA_TE);
-            double log_B_TM = casimir_integrate_B(integration, l1, l2, TM, &signB_TM);
+            double log_A_TE = caps_integrate_A(integration, l1, l2, TE, &signA_TE);
+            double log_B_TM = caps_integrate_B(integration, l1, l2, TM, &signB_TM);
 
             /* √(a_l1*a_l2)*(B_TM - A_TE) */
             double mie = (al1+al2)/2;
@@ -786,8 +786,8 @@ double casimir_M_elem(casimir_M_t *self, int l1, int l2, char p1, char p2)
         else /* MM */
         {
             sign_t signA_TM, signB_TE;
-            double log_A_TM = casimir_integrate_A(integration, l1, l2, TM, &signA_TM);
-            double log_B_TE = casimir_integrate_B(integration, l1, l2, TE, &signB_TE);
+            double log_A_TM = caps_integrate_A(integration, l1, l2, TM, &signA_TM);
+            double log_B_TE = caps_integrate_B(integration, l1, l2, TE, &signB_TE);
 
             /* √(b_l1*b_l2)*(A_TM - B_TE) */
             double mie = (bl1+bl2)/2;
@@ -805,8 +805,8 @@ double casimir_M_elem(casimir_M_t *self, int l1, int l2, char p1, char p2)
         {
             sign_t signC_TE, signD_TM;
 
-            double log_C_TE = casimir_integrate_C(integration, l1, l2, TE, &signC_TE);
-            double log_D_TM = casimir_integrate_D(integration, l1, l2, TM, &signD_TM);
+            double log_C_TE = caps_integrate_C(integration, l1, l2, TE, &signC_TE);
+            double log_D_TM = caps_integrate_D(integration, l1, l2, TM, &signD_TM);
 
             /* D_TM - C_TE */
             double mie1 = (al1+bl2)/2;
@@ -816,8 +816,8 @@ double casimir_M_elem(casimir_M_t *self, int l1, int l2, char p1, char p2)
         {
             sign_t signC_TM, signD_TE;
 
-            double log_C_TM = casimir_integrate_C(integration, l1, l2, TM, &signC_TM);
-            double log_D_TE = casimir_integrate_D(integration, l1, l2, TE, &signD_TE);
+            double log_C_TM = caps_integrate_C(integration, l1, l2, TM, &signC_TM);
+            double log_D_TE = caps_integrate_D(integration, l1, l2, TE, &signD_TE);
 
             /* C_TM - D_TE */
             const double mie2 = (bl1+al2)/2;
@@ -827,17 +827,17 @@ double casimir_M_elem(casimir_M_t *self, int l1, int l2, char p1, char p2)
 }
 
 /**
- * @brief Free casimir_M_t object
+ * @brief Free caps_M_t object
  *
- * Frees memory allocated by \ref casimir_M_init.
+ * Frees memory allocated by \ref caps_M_init.
  *
- * @param [in,out] self casimir_M_t object
+ * @param [in,out] self caps_M_t object
  */
-void casimir_M_free(casimir_M_t *self)
+void caps_M_free(caps_M_t *self)
 {
     xfree(self->al);
     xfree(self->bl);
-    casimir_integrate_free(self->integration);
+    caps_integrate_free(self->integration);
     xfree(self);
 }
 
@@ -846,17 +846,17 @@ void casimir_M_free(casimir_M_t *self)
  * Function that returns matrix elements of the round-trip matrix
  * \f$\mathcal{M}\f$ for \f$\xi=0\f$ and polarization \f$p_1=p_2=\mathrm{E}\f$.
  *
- * See also \ref casimir_logdetD0.
+ * See also \ref caps_logdetD0.
  *
  * @param [in] i row (starting from 0)
  * @param [in] j column (starting from 0)
- * @param [in] args_ pointer to casimir_M_t object
+ * @param [in] args_ pointer to caps_M_t object
  * @retval Mij matrix element
  */
-double casimir_kernel_M0_EE(int i, int j, void *args_)
+double caps_kernel_M0_EE(int i, int j, void *args_)
 {
-    casimir_M_t *args = (casimir_M_t *)args_;
-    const double y = args->casimir->y;
+    caps_M_t *args = (caps_M_t *)args_;
+    const double y = args->caps->y;
     const int lmin = args->lmin;
     const int l1 = i+lmin, l2 = j+lmin, m = args->m;
 
@@ -868,19 +868,19 @@ double casimir_kernel_M0_EE(int i, int j, void *args_)
  * Function that returns matrix elements of round-trip matrix \f$\mathcal{M}\f$
  * for \f$\xi=0\f$ and polarization \f$p_1=p_2=\mathrm{M}\f$ (plasma model).
  *
- * See also \ref casimir_logdetD0.
+ * See also \ref caps_logdetD0.
  *
  * @param [in] i row (starting from 0)
  * @param [in] j column (starting from 0)
- * @param [in] args_ pointer to casimir_M_t object
+ * @param [in] args_ pointer to caps_M_t object
  * @retval Mij matrix element
  */
-double casimir_kernel_M0_MM_plasma(int i, int j, void *args_)
+double caps_kernel_M0_MM_plasma(int i, int j, void *args_)
 {
-    casimir_M_t *args = (casimir_M_t *)args_;
+    caps_M_t *args = (caps_M_t *)args_;
 
     /* geometry */
-    const double y = args->casimir->y;
+    const double y = args->caps->y;
 
     integration_plasma_t *integration_plasma = args->integration_plasma;
     const int lmin = args->lmin;
@@ -891,7 +891,7 @@ double casimir_kernel_M0_MM_plasma(int i, int j, void *args_)
      * ratio2 = I_{l2-1/2}/I_{l2+1/2}
      */
     double ratio1,ratio2;
-    double I = casimir_integrate_plasma(integration_plasma, l1, l2, m, &ratio1, &ratio2);
+    double I = caps_integrate_plasma(integration_plasma, l1, l2, m, &ratio1, &ratio2);
 
     double alpha = integration_plasma->alpha;
     double factor1 = 1-(2*l1+1.)/(alpha*ratio1);
@@ -906,17 +906,17 @@ double casimir_kernel_M0_MM_plasma(int i, int j, void *args_)
  * Function that returns matrix elements of round-trip matrix \f$\mathcal{M}\f$
  * for \f$\xi=0\f$ and polarization \f$p_1=p_2=\mathrm{M}\f$.
  *
- * See also \ref casimir_logdetD0.
+ * See also \ref caps_logdetD0.
  *
  * @param [in] i row (starting from 0)
  * @param [in] j column (starting from 0)
- * @param [in] args_ pointer to casimir_M_t object
+ * @param [in] args_ pointer to caps_M_t object
  * @retval Mij matrix element
  */
-double casimir_kernel_M0_MM(int i, int j, void *args_)
+double caps_kernel_M0_MM(int i, int j, void *args_)
 {
-    casimir_M_t *args = (casimir_M_t *)args_;
-    const double y = args->casimir->y;
+    caps_M_t *args = (caps_M_t *)args_;
+    const double y = args->caps->y;
     const int lmin = args->lmin;
     const int l1 = i+lmin, l2 = j+lmin, m = args->m;
 
@@ -936,23 +936,23 @@ double casimir_kernel_M0_MM(int i, int j, void *args_)
  * matrix for the frequency \f$\xi\mathcal{L}/c\f$ and quantum number
  * \f$m\f$.
  *
- * For \f$\xi=0\f$ see \ref casimir_logdetD0.
+ * For \f$\xi=0\f$ see \ref caps_logdetD0.
  *
- * @param self Casimir object
+ * @param self CaPS object
  * @param xi_ \f$\xi\mathcal{L}/c > 0\f$
  * @param m quantum number \f$m\f$
  * @retval logdetD
  */
-double casimir_logdetD(casimir_t *self, double xi_, int m)
+double caps_logdetD(caps_t *self, double xi_, int m)
 {
     TERMINATE(xi_ <= 0, "Matsubara frequency must be positive");
 
     const int sym_spd = 2; /* matrix is symmetric and positive definite */
     const int dim = 2*self->ldim;
 
-    casimir_M_t *args = casimir_M_init(self, m, xi_);
-    double logdet = kernel_logdet(dim, &casimir_kernel_M, args, sym_spd, self->detalg);
-    casimir_M_free(args);
+    caps_M_t *args = caps_M_init(self, m, xi_);
+    double logdet = kernel_logdet(dim, &caps_kernel_M, args, sym_spd, self->detalg);
+    caps_M_free(args);
 
     return logdet;
 }
@@ -965,30 +965,30 @@ double casimir_logdetD(casimir_t *self, double xi_, int m)
  * will not be computed.
  *
  * For Drude metals there exists an analytical formula to compute logdetD, see
- * \ref casimir_ht_drude.
+ * \ref caps_ht_drude.
  *
- * For perfect reflectors see also \ref casimir_ht_perf.
+ * For perfect reflectors see also \ref caps_ht_perf.
  *
- * For the Plasma model see also \ref casimir_ht_plasma.
+ * For the Plasma model see also \ref caps_ht_plasma.
  *
- * @param [in]  self Casimir object
+ * @param [in]  self CaPS object
  * @param [in]  m quantum number \f$m\f$
  * @param [in]  omegap plasma frequency in rad/s (only used to compute MM_plasma)
  * @param [out] EE pointer to store contribution for EE block
  * @param [out] MM pointer to store contribution for MM block
  * @param [out] MM_plasma pointer to store contribution for MM block (Plasma model)
  */
-void casimir_logdetD0(casimir_t *self, int m, double omegap, double *EE, double *MM, double *MM_plasma)
+void caps_logdetD0(caps_t *self, int m, double omegap, double *EE, double *MM, double *MM_plasma)
 {
     size_t lmin, lmax;
     const int sym_spd = 2; /* matrix is symmetric and positive definite */
     const int ldim = self->ldim;
     detalg_t detalg = self->detalg;
 
-    casimir_estimate_lminmax(self, m, &lmin, &lmax);
+    caps_estimate_lminmax(self, m, &lmin, &lmax);
 
-    casimir_M_t args = {
-        .casimir = self,
+    caps_M_t args = {
+        .caps = self,
         .m = m,
         .xi_ = 0,
         .integration = NULL,
@@ -999,16 +999,16 @@ void casimir_logdetD0(casimir_t *self, int m, double omegap, double *EE, double 
     };
 
     if(EE != NULL)
-        *EE = kernel_logdet(ldim, &casimir_kernel_M0_EE, &args, sym_spd, detalg);
+        *EE = kernel_logdet(ldim, &caps_kernel_M0_EE, &args, sym_spd, detalg);
 
     if(MM != NULL)
-        *MM = kernel_logdet(ldim, &casimir_kernel_M0_MM, &args, sym_spd, detalg);
+        *MM = kernel_logdet(ldim, &caps_kernel_M0_MM, &args, sym_spd, detalg);
 
     if(MM_plasma != NULL)
     {
-        args.integration_plasma = casimir_integrate_plasma_init(self, omegap, self->epsrel);
-        *MM_plasma = kernel_logdet(ldim, &casimir_kernel_M0_MM_plasma, &args, sym_spd, detalg);
-        casimir_integrate_plasma_free(args.integration_plasma);
+        args.integration_plasma = caps_integrate_plasma_init(self, omegap, self->epsrel);
+        *MM_plasma = kernel_logdet(ldim, &caps_kernel_M0_MM_plasma, &args, sym_spd, detalg);
+        caps_integrate_plasma_free(args.integration_plasma);
     }
 }
 
@@ -1033,12 +1033,12 @@ void casimir_logdetD0(casimir_t *self, int m, double omegap, double *EE, double 
  *    Dirichlet and Drude model in the sphere-sphere and sphere-plane geometry",
  *    Phys. Rev. Lett. 109 (2012), https://doi.org/10.1103/PhysRevLett.109.160403
  *
- * @param [in] casimir Casimir object
+ * @param [in] caps CaPS object
  * @retval F free energy in units of \f$k_\mathrm{B}T\f$
  */
-double casimir_ht_drude(casimir_t *casimir)
+double caps_ht_drude(caps_t *caps)
 {
-    const double x  = casimir->LbyR; /* L/R */
+    const double x  = caps->LbyR; /* L/R */
     const double x2 = pow_2(x);      /* (L/R)² */
     const double Z  = (1+x)*(1-sqrt((x2+2*x)/(x2+2*x+1)));
 
@@ -1067,7 +1067,7 @@ double casimir_ht_drude(casimir_t *casimir)
  * and only the polarization blocks EE and MM need to be considered.
  *
  * The contribution for EE, i.e. Drude, can be computed analytically, see \ref
- * casimir_ht_drude. For the MM block we numerically compute the determinants
+ * caps_ht_drude. For the MM block we numerically compute the determinants
  * up to \f$m = M\f$ until
  * \f[
  *      \frac{\log\det\mathcal{D}^{(M)}(0)}{{\sum_{m=0}^M}^\prime \log\det\mathcal{D}^{(m)}(0)} < \epsilon \,.
@@ -1078,14 +1078,14 @@ double casimir_ht_drude(casimir_t *casimir)
  *  - [1] Bimonte, Classical Casimir interaction of perfectly conducting sphere
  *    and plate (2017), https://arxiv.org/abs/1701.06461
  *
- * @param [in] casimir Casimir object
+ * @param [in] caps CaPS object
  * @param [in] eps \f$\epsilon\f$ abort criterion
  * @retval energy free energy in units of \f$k_\mathrm{B}T\f$
  */
-double casimir_ht_perf(casimir_t *casimir, double eps)
+double caps_ht_perf(caps_t *caps, double eps)
 {
-    const double LbyR = casimir->LbyR;
-    const double drude = casimir_ht_drude(casimir);
+    const double LbyR = caps->LbyR;
+    const double drude = caps_ht_drude(caps);
 
     double MM = 0;
 
@@ -1102,7 +1102,7 @@ double casimir_ht_perf(casimir_t *casimir, double eps)
     for(int m = 1; true; m++)
     {
         double v;
-        casimir_logdetD0(casimir, m, 0, NULL, &v, NULL);
+        caps_logdetD0(caps, m, 0, NULL, &v, NULL);
 
         MM += v;
 
@@ -1113,22 +1113,22 @@ double casimir_ht_perf(casimir_t *casimir, double eps)
 
 /** @brief Compute free energy in the high-temperature limit for plasma model
  *
- * The abort criterion eps is the same as in \ref casimir_ht_perf.
+ * The abort criterion eps is the same as in \ref caps_ht_perf.
  *
- * @param [in] casimir Casimir object
+ * @param [in] caps CaPS object
  * @param [in] omegap plasma frequency in rad/s
  * @param [in] eps abort criterion
  * @retval F free energy in units of \f$k_\mathrm{B}T\f$
  */
-double casimir_ht_plasma(casimir_t *casimir, double omegap, double eps)
+double caps_ht_plasma(caps_t *caps, double omegap, double eps)
 {
-    const double drude = casimir_ht_drude(casimir);
+    const double drude = caps_ht_drude(caps);
     double MM_plasma = 0;
 
     for(int m = 0; true; m++)
     {
         double v;
-        casimir_logdetD0(casimir, m, omegap, NULL, NULL, &v);
+        caps_logdetD0(caps, m, omegap, NULL, NULL, &v);
 
         if(m == 0)
             MM_plasma += v/2;

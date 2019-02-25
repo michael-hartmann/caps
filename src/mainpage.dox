@@ -18,9 +18,9 @@ The output directory of the documentation is docs/api.
 
 file                   | description
 -----------------------| -----------------------------------------------------------------------------------------------------------
-casimir.c              | command line interface to libcasimir (see also user manual and usage)
-casimir_logdetD.c      | command line interface to compute determinants of the scattering matrix (see also user manual and usage)
-cylinder.cpp           | command line interface to compute Casimir interaction in the plane-cylinder geometry (see also user manual and usage)
+caps.c                 | command line interface to libcaps (see also user manual and usage)
+caps_logdetD.c         | command line interface to compute determinants of the scattering matrix (see also user manual and usage)
+capc.cpp               | command line interface to compute Casimir interaction in the plane-cylinder geometry (see also user manual and usage)
 cquadpack/src/*.c      | integration routines (CQUADPACK), see cquadpack/include/quadpack.h
 libhodlr/src/hodlr.cpp | C wrapper for the HODLR library (see libhodlr/include/hodlr.h)
 libcaps.c              | main part of the library

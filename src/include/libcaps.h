@@ -1,11 +1,11 @@
 /**
- * @file   libcasimir.h
+ * @file   libcaps.h
  * @author Michael Hartmann <michael.hartmann@physik.uni-augsburg.de>
- * @date   December, 2017
+ * @date   February, 2019
  */
 
-#ifndef __LIBCASIMIR_H
-#define __LIBCASIMIR_H
+#ifndef __LIBCAPS_H
+#define __LIBCAPS_H
 
 #ifdef __cplusplus
 extern "C" {
@@ -26,19 +26,19 @@ typedef enum { TE, TM } polarization_t;
 
 
 /* default values */
-#define CASIMIR_MINIMUM_LDIM 20 /**< minimum value for lmax */
-#define CASIMIR_FACTOR_LDIM 5   /**< by default: lmax=ceil(5/LbyR) */
-#define CASIMIR_EPSREL 1e-8  /**< default relative error for integration */
+#define CAPS_MINIMUM_LDIM 20 /**< minimum value for lmax */
+#define CAPS_FACTOR_LDIM 5   /**< by default: lmax=ceil(5/LbyR) */
+#define CAPS_EPSREL 1e-8  /**< default relative error for integration */
 
-#define CASIMIR_CACHE_ELEMS 10000000 /**< default number of elems of the cache for I integrals */
+#define CAPS_CACHE_ELEMS 10000000 /**< default number of elems of the cache for I integrals */
 
 /**
- * The Casimir object. This structure stores all essential information about
+ * The CaPS object. This structure stores all essential information about
  * temperature, geometry and the reflection properties of the mirrors.
  *
  * Do not modify the attributes of the structure yourself!
  */
-typedef struct casimir
+typedef struct caps
 {
     /**
      * @name geometry
@@ -75,14 +75,14 @@ typedef struct casimir
     double epsrel;   /**< relative error for integration */
     detalg_t detalg; /**< algorithm to calculate determinant */
     /*@}*/
-} casimir_t;
+} caps_t;
 
 
 /**
  * object for integration over k in matrix elements of round-trip operator
  */
 typedef struct {
-    casimir_t *casimir;
+    caps_t *caps;
     int m;
     double alpha,epsrel;
     cache_t *cache_I;
@@ -100,67 +100,67 @@ typedef struct {
 
 typedef struct
 {
-    casimir_t *casimir;
+    caps_t *caps;
     int m, lmin, ldim;
     integration_t *integration;
     integration_plasma_t *integration_plasma;
     double xi_;
     double *al, *bl;
-} casimir_M_t;
+} caps_M_t;
 
 
 /* prototypes */
-void casimir_build(FILE *stream, const char *prefix);
-void casimir_info(casimir_t *self, FILE *stream, const char *prefix);
+void caps_build(FILE *stream, const char *prefix);
+void caps_info(caps_t *self, FILE *stream, const char *prefix);
 
-double casimir_lnLambda(int l1, int l2, int m);
+double caps_lnLambda(int l1, int l2, int m);
 
-casimir_t *casimir_init(double R, double L);
-void casimir_free(casimir_t *self);
+caps_t *caps_init(double R, double L);
+void caps_free(caps_t *self);
 
-double casimir_epsilonm1_plate(casimir_t *self, double xi_);
-double casimir_epsilonm1_sphere(casimir_t *self, double xi_);
+double caps_epsilonm1_plate(caps_t *self, double xi_);
+double caps_epsilonm1_sphere(caps_t *self, double xi_);
 
-void casimir_set_epsilonm1(casimir_t *self, double (*epsilonm1)(double xi_, void *userdata), void *userdata);
-void casimir_set_epsilonm1_plate(casimir_t *self, double (*epsilonm1)(double xi_, void *userdata), void *userdata);
-void casimir_set_epsilonm1_sphere(casimir_t *self, double (*epsilonm1)(double xi_, void *userdata), void *userdata);
+void caps_set_epsilonm1(caps_t *self, double (*epsilonm1)(double xi_, void *userdata), void *userdata);
+void caps_set_epsilonm1_plate(caps_t *self, double (*epsilonm1)(double xi_, void *userdata), void *userdata);
+void caps_set_epsilonm1_sphere(caps_t *self, double (*epsilonm1)(double xi_, void *userdata), void *userdata);
 
-int casimir_get_ldim(casimir_t *self);
-int casimir_set_ldim(casimir_t *self, int ldim);
+int caps_get_ldim(caps_t *self);
+int caps_set_ldim(caps_t *self, int ldim);
 
-detalg_t casimir_get_detalg(casimir_t *self);
-int casimir_set_detalg(casimir_t *self, detalg_t detalg);
+detalg_t caps_get_detalg(caps_t *self);
+int caps_set_detalg(caps_t *self, detalg_t detalg);
 
-double casimir_get_epsrel(casimir_t *self);
-int    casimir_set_epsrel(casimir_t *self, double epsrel);
+double caps_get_epsrel(caps_t *self);
+int    caps_set_epsrel(caps_t *self, double epsrel);
 
-void casimir_mie(casimir_t *self, double xi_, int l, double *lna, double *lnb);
-void casimir_mie_perf(casimir_t *self, double xi_, int l, double *lna, double *lnb);
+void caps_mie(caps_t *self, double xi_, int l, double *lna, double *lnb);
+void caps_mie_perf(caps_t *self, double xi_, int l, double *lna, double *lnb);
 
-double casimir_kernel_M(int i, int j, void *args_);
+double caps_kernel_M(int i, int j, void *args_);
 
-casimir_M_t *casimir_M_init(casimir_t *self, int m, double xi_);
-double casimir_M_elem(casimir_M_t *self, int l1, int l2, char p1, char p2);
-void casimir_M_free(casimir_M_t *self);
+caps_M_t *caps_M_init(caps_t *self, int m, double xi_);
+double caps_M_elem(caps_M_t *self, int l1, int l2, char p1, char p2);
+void caps_M_free(caps_M_t *self);
 
-double casimir_logdetD(casimir_t *self, double xi_, int m);
+double caps_logdetD(caps_t *self, double xi_, int m);
 
-void casimir_fresnel(casimir_t *self, double xi_, double k, double *r_TE, double *r_TM);
+void caps_fresnel(caps_t *self, double xi_, double k, double *r_TE, double *r_TM);
 
-int casimir_estimate_lminmax(casimir_t *self, int m, size_t *lmin_p, size_t *lmax_p);
+int caps_estimate_lminmax(caps_t *self, int m, size_t *lmin_p, size_t *lmax_p);
 
-double casimir_epsilonm1_perf(__attribute__((unused)) double xi_, __attribute__((unused)) void *userdata);
-double casimir_epsilonm1_drude(double xi_, void *userdata);
+double caps_epsilonm1_perf(__attribute__((unused)) double xi_, __attribute__((unused)) void *userdata);
+double caps_epsilonm1_drude(double xi_, void *userdata);
 
-double casimir_ht_drude(casimir_t *casimir);
-double casimir_ht_perf(casimir_t *casimir, double eps);
-double casimir_ht_plasma(casimir_t *casimir, double omegap_, double eps);
+double caps_ht_drude(caps_t *caps);
+double caps_ht_perf(caps_t *caps, double eps);
+double caps_ht_plasma(caps_t *caps, double omegap_, double eps);
 
-double casimir_kernel_M0_EE(int i, int j, void *args);
-double casimir_kernel_M0_MM(int i, int j, void *args);
-double casimir_kernel_M0_MM_plasma(int i, int j, void *args_);
+double caps_kernel_M0_EE(int i, int j, void *args);
+double caps_kernel_M0_MM(int i, int j, void *args);
+double caps_kernel_M0_MM_plasma(int i, int j, void *args_);
 
-void casimir_logdetD0(casimir_t *self, int m, double omegap, double *EE, double *MM, double *MM_plasma);
+void caps_logdetD0(caps_t *self, int m, double omegap, double *EE, double *MM, double *MM_plasma);
 
 #ifdef __cplusplus
 }
