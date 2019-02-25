@@ -124,6 +124,13 @@ search path, you have to add the directories to ``LD_LIBRARY_PATH``
 where we have assumed that the CaPS repository is in the directory
 ``/home/hendrik``.
 
+You can build the program ``capc`` that computes the Casimir free energy in the
+plane-cylinder geometry for perfect reflectors at :math:`T=0` with:
+
+.. code-block:: console
+
+    $ make capc
+
 
 Testing
 -------
