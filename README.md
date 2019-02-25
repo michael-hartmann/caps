@@ -1,7 +1,7 @@
 CaPS
 ====
 
-[![Version 0.4.2](images/version.svg)](https://github.com/michael-hartmann/CaPS/releases/tag/v0.4.2)
+[![Version 0.4.2](images/version.svg)](https://github.com/michael-hartmann/caps/releases/tag/v0.4.2)
 [![arXiv:1803.05791](images/arxiv.svg)](https://arxiv.org/abs/1803.05791)
 [![license: GPLv2](images/license.svg)](https://www.gnu.org/licenses/old-licenses/gpl-2.0.html)
 
@@ -61,11 +61,11 @@ If the shared libraries are not in the search path, you can run the programs by
 specifying the directory that contains the shared libraries in
 `LD_LIBRARY_PATH`:
 ```
-$ export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/path/to/CaPS/bin
+$ export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/path/to/caps/bin
 ```
 
 You can find more information about building the software in the [user
-manual](https://github.com/michael-hartmann/CaPS#documentation).
+manual](https://github.com/michael-hartmann/caps#documentation).
 
 Usage
 -----
@@ -115,9 +115,9 @@ Documentation
 -------------
 
 A [user
-manual](https://github.com/michael-hartmann/CaPS/blob/master/docs/manual.pdf)
+manual](https://github.com/michael-hartmann/caps/blob/master/docs/manual.pdf)
 and the [API
-documentation](https://github.com/michael-hartmann/CaPS/blob/master/docs/api.pdf)
+documentation](https://github.com/michael-hartmann/caps/blob/master/docs/api.pdf)
 are available in `docs/`.
 
 
@@ -125,13 +125,13 @@ Bugs, developing and contributing
 ---------------------------------
 
 The latest version of CaPS is available at
-[github](https://github.com/michael-hartmann/CaPS).
+[github](https://github.com/michael-hartmann/caps).
 
 We are always happy to get support and feedback from the community. If you find
 a bug, please create an
-[issue](https://github.com/michael-hartmann/CaPS/issues). If you have
+[issue](https://github.com/michael-hartmann/caps/issues). If you have
 improvements, create a pull request.  For more details see
-[CONTRIBUTING.md](https://github.com/michael-hartmann/CaPS/blob/master/CONTRIBUTING.md).
+[CONTRIBUTING.md](https://github.com/michael-hartmann/caps/blob/master/CONTRIBUTING.md).
 
 Authors
 -------
@@ -142,7 +142,7 @@ Authors
  * [Gert-Ludwig Ingold](https://www.physik.uni-augsburg.de/theo1/ingold/), gert.ingold@physik.uni-augsburg.de
    contributions to documentation, bugfixes
 
-For a full list, see [CREDITS](https://github.com/michael-hartmann/CaPS/blob/master/CREDITS).
+For a full list, see [CREDITS](https://github.com/michael-hartmann/caps/blob/master/CREDITS).
 
 
 License

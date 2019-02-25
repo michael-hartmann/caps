@@ -6,7 +6,7 @@ contributions and feedback! :)
 ## Issues
 
 You can file issues using the Github [issue
-tracker](https://github.com/michael-hartmann/CaPS/issues). Issues
+tracker](https://github.com/michael-hartmann/caps/issues). Issues
 can span a large variety of topics like:
 
    - Bug reports
@@ -24,7 +24,7 @@ plattform and operating system.
 
 If you want to contribute code, please fork the CaPS repository, implement the
 changes and create a [pull
-request](https://github.com/michael-hartmann/CaPS/pulls).
+request](https://github.com/michael-hartmann/caps/pulls).
 
 **You are working on your first Pull Request?** You can learn how from this
 *free* series [How to Contribute to an Open Source Project on
