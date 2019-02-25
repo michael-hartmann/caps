@@ -2,17 +2,24 @@ examples
 ========
 
 This directory contains examples that show how to use the CaPS API. Every
-example is kept simple and well documented. You can compile the programs by
-running `make`.
+example is kept simple and well documented.
 
 
 AuAl.c
 ------
 
-Compute the Casimir free energy at T=300K for a sphere of radius R=50µm and a
-separation between sphere and plate of L=1µm. The sphere consists of gold
-(Drude model) and the plate consists of aluminium (Drude model). The program
-computes the free energy in units of k_B T.
+Compile the program as:
+```
+mkdir bin/
+cmake ..
+make
+make AuAl
+```
+
+This example computes the Casimir free energy at T=300K for a sphere of radius
+R=50µm and a minimal separation between sphere and plate of L=1µm. The sphere
+consists of gold (Drude model) and the plate consists of aluminium (Drude
+model). The program computes the free energy in units of k_B T.
 
 Output (runtime: ~5mins):
 ```
