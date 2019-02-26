@@ -381,7 +381,39 @@ tested, this option is considered experimental.
 If you are only interested in the high-temperature limit, the flag ``--ht``
 will only compute :math:`\log\mathrm{det}(1-\mathcal{M}(0))` and output the
 Casimir energy in the limit :math:`T\to\infty` in units of :math:`k_\mathrm{B}
-T`.
+T`. For example, for a sphere of radius :math:`R=100\mu\mathrm{m}` and a
+smallest separation :math:`L=100\mathrm{nm}` one finds:
+
+.. code-block:: console
+
+    $ mpirun -n 8 ./caps -R 100e-6 -L 100e-9 --ht
+    # version: 0.4.3
+    # compiler: gcc
+    # compile time: Feb 26 2019 17:42:26
+    # compiled on: Linux jonas.physik.uni-augsburg.de 4.9.0-8-amd64 x86_64
+    # pid: 29426
+    # start time: Tue Feb 26 17:42:50 2019
+    #
+    # LbyR = 0.001
+    # RbyL = 1000
+    # L = 1e-07
+    # R = 0.0001
+    # high-temperature limit
+    # cutoff = 1e-09
+    # epsrel = 1e-06
+    # iepsrel = 1e-08
+    # ldim = 7001
+    # cores = 8
+    #
+    # L/R, L, R, ldim, E_Drude/(kB*T), E_PR/(kB*T)
+    0.0009999999999999998, 1e-07, 0.0001, 7001, -149.6981411829862, -296.4343145093178
+
+Numerically, it is considerably easier to compute the high-temperature limit of
+the Casimir free energy. For this example, the aspect ratio is
+:math:`R/L=1000`, but the computation time on a standard desktop computer using
+8 cores is only about 13 seconds. For the Drude result the analytical formula
+given in `Bimonte, Emig, PRL 109, 160403 (2012)
+<https://doi.org/10.1103/PhysRevLett.109.160403>`_ is used.
 
 
 Material parameters
