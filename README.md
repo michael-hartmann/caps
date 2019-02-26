@@ -73,41 +73,46 @@ manual](https://github.com/michael-hartmann/caps#documentation).
 Usage
 -----
 To compute the Casimir free energy between a sphere of radius R=150µm and a
-plane separated by a distance L=2µm at room temperature T=300K assuming
+plane separated by a distance L=1µm at room temperature T=300K assuming
 that both objects are perfect reflectors, use the command:
 ```
+$ mpirun -n 8 ./caps -R 150e-6 -L 1e-6 -T 300
 # version: 0.4.3
 # compiler: gcc
-# compile time: Feb 25 2019 14:03:27
+# compile time: Feb 26 2019 17:42:26
 # compiled on: Linux jonas.physik.uni-augsburg.de 4.9.0-8-amd64 x86_64
-# pid: 18440
-# start time: Tue Feb 26 09:26:33 2019
+# pid: 31601
+# start time: Tue Feb 26 18:38:29 2019
 #
-# LbyR = 0.0133333333333333
-# RbyL = 75
-# L = 2e-06
+# LbyR = 0.00666666666666667
+# RbyL = 150
+# L = 1e-06
 # R = 0.00015
 # T = 300
 # using Matsubara spectrum decomposition (MSD)
 # cutoff = 1e-09
 # epsrel = 1e-06
 # iepsrel = 1e-08
-# ldim = 525
-# cores = 7
+# ldim = 1050
+# cores = 8
 # model = perfect reflectors
 #
-# xi*(L+R)/c=0, logdetD=-20.5414434024671, t=0.132962
-# xi*(L+R)/c=125.121224504047, logdetD=-0.697593024444402, t=12.0525
-# xi*(L+R)/c=250.242449008094, logdetD=-0.0258391838215843, t=12.6367
-# xi*(L+R)/c=375.363673512142, logdetD=-0.000959951408860133, t=11.8394
-# xi*(L+R)/c=500.484898016189, logdetD=-3.56248250989872e-05, t=10.7413
-# xi*(L+R)/c=625.606122520236, logdetD=-1.31970503369943e-06, t=8.3677
+# xi*(L+R)/c=0, logdetD=-42.6002077863769, t=0.382796
+# xi*(L+R)/c=124.298058553363, logdetD=-7.39057412608673, t=36.3845
+# xi*(L+R)/c=248.596117106725, logdetD=-1.39750600947628, t=39.1666
+# xi*(L+R)/c=372.894175660088, logdetD=-0.268486066517477, t=43.2183
+# xi*(L+R)/c=497.192234213451, logdetD=-0.0517243967251137, t=42.6953
+# xi*(L+R)/c=621.490292766814, logdetD=-0.00996872229895378, t=41.6955
+# xi*(L+R)/c=745.788351320176, logdetD=-0.00192105745770975, t=39.2724
+# xi*(L+R)/c=870.086409873539, logdetD=-0.000370110014116469, t=37.9295
+# xi*(L+R)/c=994.384468426902, logdetD=-7.12799726128658e-05, t=34.4705
+# xi*(L+R)/c=1118.68252698026, logdetD=-1.37218303286995e-05, t=31.4842
 #
-# 484 determinants computed
-# stop time: Tue Feb 26 09:27:29 2019
+# 1126 determinants computed
+# stop time: Tue Feb 26 18:44:16 2019
 #
 # L/R, L, R, T, ldim, E*(L+R)/(hbar*c)
-0.01333333333333333, 2e-06, 0.00015, 300, 525, -437.907419604873
+0.006666666666666667, 1e-06, 0.00015, 300, 1050, -1203.605706428743
 ```
 Due to parallelization you might not get the exactly same numerical value for
 the free energy.
