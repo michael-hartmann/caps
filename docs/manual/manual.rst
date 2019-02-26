@@ -758,3 +758,11 @@ generated running
 
 in the directory ``src/``. The documentation will be generated in ``docs/api/``.
 You need doxygen installed on your computer.
+
+
+Examples
+========
+
+In the directory ``examples/`` you can find examples of simple programs that
+demonstrate how to use the CaPS API. The examples are kept simple and well
+documented.
