@@ -22,24 +22,23 @@ Overview and Features
 
 CaPS is an implementation of the Casimir effect in the plane-sphere geometry.
 The geometry consists of a sphere of radius :math:`R` separated by a distance
-:math:`L` from an infinite plate, see the inset of Figure 1. We assume that the
-sphere and the plane are in vacuum. The main goal of the library and the
-associated programs is to compute the free energy :math:`\mathcal{F}` depending
-on the radius :math:`R` of the sphere, the separation :math:`L` between sphere
-and plate, the temperature :math:`T`, and the dielectric properties of the
-objects. The code is highly optimized and allows you - depending on parameters
-and your hardware - to compute the free energy for aspect ratios up to
-:math:`R/L\sim 10\,000`.
+:math:`L` from an infinite plate as sketched in the inset of Figure 1. We
+assume that the sphere and the plane are in vacuum. The main goal of the
+library and the associated programs is to compute the free energy
+:math:`\mathcal{F}` depending on the radius :math:`R` of the sphere, the
+separation :math:`L` between sphere and plate, the temperature :math:`T`, and
+the dielectric properties of the sphere and the plane. The code is highly
+optimized and allows you -- depending on parameters and your hardware -- to
+compute the free energy for aspect ratios up to :math:`R/L\sim 10\,000`.
 
 Features
 --------
 
- - Calculate the free energy for different separations and temperatures
- - Calculate the free energy in the high temperature limit for perfect reflectors, the Drude model, and the plasma model
- - Full support for perfect reflectors, metals described by the Drude and plasma model, and generic metals described by a user-defined dielectric function
- - CaPS is fast and reliable
- - ready to use programs: you don't have to modify the code
- - CaPS is free software – you may use it or even modify it
+  - Computation of the free energy for aspect ratios used in typical experiments
+  - Computation of the free energy in the high-temperature limit for perfect reflectors, and metals described by the Drude or plasma model
+  - Full support for perfect reflectors, metals described by the Drude and plasma model, and generic materials described by a user-defined dielectric function
+  - Computation of the free energy at zero temperature for perfect reflectors in the plane-cylinder geometry
+  - Support for parallelization using MPI
 
 
 Further reading
@@ -81,7 +80,7 @@ will get you the complete CaPS repository and stores it in the directory
 taz.gz-archive of the latest release.
 
 The CaPS library and the programs are written in C and C++ using LAPACK and
-MPI. In order to compile the source files, you need a C and C++ compiler, the
+MPI. In order to compile the source code, you need a C and C++ compiler, the
 development files for LAPACK and MPI, and the build tools make and cmake. You
 can install all dependencies with:
 
@@ -154,11 +153,10 @@ In order to improve performance, it might be necessary to tweak some compiler
 options. By default, the optimization level is ``-O3`` which usually yields
 reasonable performance.
 
-If you are either running your code on the same machine where you compile the
-code, or the target machine supports the same instruction set, the option
-``-march=native`` may increase performance. On an Intel Core i7-2600 machine,
-this option gives a performance boost of about 5%. To compile the code with
-this option, run:
+If you either run and compile the code on the same machine, or the target
+machine supports the same instruction set, the option ``-march=native`` may
+increase performance. On an Intel Core i7-2600 machine, this option gives a
+performance boost of about 5%. To compile the code with this option, run:
 
 .. code-block:: console
 
@@ -203,11 +201,11 @@ There are two mandatory options: the separation :math:`L` between sphere and
 plane, and the radius :math:`R` of the sphere. The program expects the lengths
 given in units of meters. As an example, the following command computes the
 Casimir interaction at :math:`T=0` for perfect reflectors for a sphere of
-radius :math:`R=50\mu\mathrm{m}` and a separation :math:`L=2\mu\mathrm{m}`:
+radius :math:`R=50\mu\mathrm{m}` and a separation :math:`L=500\,\mathrm{nm}`:
 
 .. code-block:: console
 
-	$ mpirun -n 8 ./caps -R 50e-6 -L 2e-6
+    $ mpirun -n 8 ./caps -R 50e-6 -L 500e-9
 
 The command ``mpirun`` will set up the environment for MPI and the flag ``-n``
 specifies how many processes the program should use. If you want to utilize the
@@ -216,65 +214,72 @@ N+1. The output of this command looks similar to:
 
 .. code-block:: console
 
+    $ mpirun -n 8 ./caps -R 50e-6 -L 500e-9
+    # version: 0.4.3
     # compiler: gcc
-    # compile time: Jan  2 2019 12:35:13
-    # compiled on: Linux jonas.physik.uni-augsburg.de 4.9.0-8-amd64 #1 SMP Debian 4.9.130-2 (2018-10-27) x86_64 GNU/Linux
-    # git HEAD: 51b8df47618d15747e59321aee77e1f86fab32a8
-    # git branch: master
-    # pid: 23336
-    # start time: Thu Jan  3 12:27:38 2019
+    # compile time: Feb 25 2019 14:03:27
+    # compiled on: Linux jonas.physik.uni-augsburg.de 4.9.0-8-amd64 x86_64
+    # pid: 19299
+    # start time: Tue Feb 26 09:53:35 2019
     #
-    # LbyR = 0.04
-    # RbyL = 25
-    # L = 2e-06
+    # LbyR = 0.01
+    # RbyL = 100
+    # L = 5e-07
     # R = 5e-05
     # T = 0
     # cutoff = 1e-09
     # epsrel = 1e-06
     # iepsrel = 1e-08
-    # ldim = 176
+    # ldim = 701
     # cores = 8
     # quad = adaptive Gauss-Kronrod
     #
-    # xi*(L+R)/c=13, logdetD=-2.35165297953047, t=1.14694
-    # xi*(L+R)/c=3029.84719296933, logdetD=0, t=9.53674e-07
-    	...
-    # xi*(L+R)/c=61.4928297600332, logdetD=-0.0548151501755969, t=1.37253
-    # xi*(L+R)/c=51.8422518708047, logdetD=-0.115164831511918, t=1.38072
+    # xi*(L+R)/c=50.5, logdetD=-9.60686704239278, t=16.8099
+    # xi*(L+R)/c=11769.7910188424, logdetD=-5.19555884457593e-101, t=3.0027
+    # xi*(L+R)/c=0.216677594013123, logdetD=-27.8461616612113, t=14.3809
+    # xi*(L+R)/c=1934.09140996997, logdetD=-5.35151875501729e-16, t=5.90594
+    # xi*(L+R)/c=1.31857780188353, logdetD=-27.4908297269515, t=15.1216
+       ...
+    # xi*(L+R)/c=1.9476256940541, logdetD=-27.201610975434, t=14.9387
+    # xi*(L+R)/c=4.12332703671369, logdetD=-26.061368385508, t=14.979
+    # xi*(L+R)/c=2.63068289632324, logdetD=-26.8583901887955, t=14.8546
     #
-    # ier=0, integral=-6.41428305795366, neval=135, epsrel=2.91062e-07
+    # ier=0, integral=-26.6608254093275, neval=165, epsrel=4.22793e-07
     #
-    # 6154 determinants computed
-    # stop time: Thu Jan  3 12:30:01 2019
+    # 13525 determinants computed
+    # stop time: Tue Feb 26 10:36:20 2019
     #
     # L/R, L, R, T, ldim, E*(L+R)/(hbar*c)
-    0.03999999999999999, 2e-06, 5e-05, 0, 176, -26.54248623166202
+    0.009999999999999998, 5e-07, 5e-05, 0, 701, -428.5634172312517
 
 The output is in the format of a CSV file and additional comments start with a
 pound (#). The program first outputs some information on the compilation, i.e.,
-time of compilation, name of compiler, machine where it was compiled and so on.
-Then, information about the geometry (radius, separation, aspect ratio and
-inverse of aspect ratio), numerical parameters (cutoff, epsrel, iepsrel, ldim,
-cores) are printed. We will discuss the numerical parameters in more detail
-later. The value of cores is the number of MPI processes that are used for the
+version of CaPS, time of compilation, name of compiler, machine where it was
+compiled and so on. Then, information about the geometry (radius :math:`R`,
+minimal separation :math:`L`, aspect ratio :math:`R/L`, and inverse aspect
+ratio :math:`L/R`), numerical parameters (cutoff, epsrel, iepsrel, ldim, cores)
+are printed. We will discuss the numerical parameters in more detail later. The
+value of cores is the number of MPI processes that are used for the
 computation. Then, the determinant of the scattering matrix for different
 Matsubara frequencies are printed. The comment starting with ``ier`` gives the
-result of the integration and is ``ier=0`` if the integration was successful.
-The program ends by printing the result of the computation. The free energy is
-outputed in units of :math:`(L+R)/\hbar c`, i.e., for this example the free
-energy is
+result of the integration. If the integration was successful, the value is
+``ier=0``, see also the description of `dqags
+<http://www.netlib.org/quadpack/dqags.f>`_ of `QUADPACK
+<http://www.netlib.org/quadpack/>`_.  The program ends by printing the result
+of the computation. The free energy is outputed in units of :math:`(L+R)/\hbar
+c`, i.e., for this example the free energy is
 
 .. math::
-  \mathcal{F}\approx \frac{-26.54 \hbar c}{50\mu\mathrm{m}+2\mu\mathrm{m}} \approx -1.61\times10^{-20} \mathrm{J}.
+  \mathcal{F}\approx \frac{-428.6 \hbar c}{50\mu\mathrm{m}+500\mu\mathrm{nm}} \approx -2.68\times10^{-19} \mathrm{J}.
 
-The PFA result in this case is :math:`\mathcal{F}_\mathrm{PFA}\approx-1.64\times10^{-20} \mathrm{J}`.
+The PFA result in this case is :math:`\mathcal{F}_\mathrm{PFA} = \hbar c \pi^3 R/(720 L^2) \approx -2.72\times10^{-19} \mathrm{J}`.
 
 The desired relative accuracy of the integration over the Matsubara frequencies
 can be set using ``--epsrel``. By default, ``EPSREL`` is :math:`10^{-6}`.  Note
 that the integrand needs to be sufficiently smooth. In particular, for very low
 values of ``EPSREL`` you might need to decrease the value of ``CUTOFF`` using
 ``--cutoff``. The value of ``CUTOFF`` determines when the summation over
-:math:`m` is stopped:
+:math:`m` is stopped. The abort criterion is:
 
 .. math::
     \frac{\log\mathrm{det}\left(1-\mathcal{M}^m(\xi)\right)}{\log\mathrm{det}\left(1-\mathcal{M}^0(\xi)\right)} < \mathrm{CUTOFF}
@@ -302,48 +307,59 @@ free energy just like in the last example but at room temperature
 
 .. code-block:: console
 
-    $ mpirun -n 8 ./caps -R 50e-6 -L 2e-6 -T 300
+    $ mpirun -n 8 ./caps -R 50e-6 -L 500e-9 -T 300
+    # version: 0.4.3
     # compiler: gcc
-    # compile time: Jan  2 2019 12:35:13
-    # compiled on: Linux jonas.physik.uni-augsburg.de 4.9.0-8-amd64 #1 SMP Debian 4.9.130-2 (2018-10-27) x86_64 GNU/Linux
-    # git HEAD: 51b8df47618d15747e59321aee77e1f86fab32a8
-    # git branch: master
-    # pid: 24111
-    # start time: Thu Jan  3 12:51:15 2019
+    # compile time: Feb 25 2019 14:03:27
+    # compiled on: Linux jonas.physik.uni-augsburg.de 4.9.0-8-amd64 x86_64
+    # pid: 20396
+    # start time: Tue Feb 26 11:25:28 2019
     #
-    # LbyR = 0.04
-    # RbyL = 25
-    # L = 2e-06
+    # LbyR = 0.01
+    # RbyL = 100
+    # L = 5e-07
     # R = 5e-05
     # T = 300
     # using Matsubara spectrum decomposition (MSD)
     # cutoff = 1e-09
     # epsrel = 1e-06
     # iepsrel = 1e-08
-    # ldim = 176
+    # ldim = 701
     # cores = 8
     # model = perfect reflectors
     #
-    # xi*(L+R)/c=0, logdetD=-6.16165739556559, t=0.025461
-    # xi*(L+R)/c=42.8046294355951, logdetD=-0.230987113168236, t=1.22125
-    # xi*(L+R)/c=85.6092588711902, logdetD=-0.00858232692932167, t=1.186
-    # xi*(L+R)/c=128.413888306785, logdetD=-0.000319205031747869, t=1.10549
-    # xi*(L+R)/c=171.21851774238, logdetD=-1.18538336130793e-05, t=0.949226
-    # xi*(L+R)/c=214.023147177976, logdetD=-4.39335203111237e-07, t=0.77597
+    # xi*(L+R)/c=0, logdetD=-27.8619907991614, t=0.193124
+    # xi*(L+R)/c=41.5698805095683, logdetD=-11.5794516487266, t=16.6413
+    # xi*(L+R)/c=83.1397610191367, logdetD=-4.91948448017641, t=17.6647
+    # xi*(L+R)/c=124.709641528705, logdetD=-2.13175536619868, t=18.3457
+    # xi*(L+R)/c=166.279522038273, logdetD=-0.930897479022303, t=19.1386
+    # xi*(L+R)/c=207.849402547842, logdetD=-0.407803084237451, t=19.1952
+    # xi*(L+R)/c=249.41928305741, logdetD=-0.178887508701769, t=19.4133
+    # xi*(L+R)/c=290.989163566978, logdetD=-0.0785144339556277, t=19.431
+    # xi*(L+R)/c=332.559044076547, logdetD=-0.0344676750184605, t=19.1501
+    # xi*(L+R)/c=374.128924586115, logdetD=-0.015132238792835, t=19.1419
+    # xi*(L+R)/c=415.698805095683, logdetD=-0.00664345573274249, t=19.0193
+    # xi*(L+R)/c=457.268685605252, logdetD=-0.00291655594485503, t=18.7029
+    # xi*(L+R)/c=498.83856611482, logdetD=-0.00128033535183925, t=18.4298
+    # xi*(L+R)/c=540.408446624388, logdetD=-0.000562015614133802, t=17.8942
+    # xi*(L+R)/c=581.978327133957, logdetD=-0.000246682939573313, t=17.5315
+    # xi*(L+R)/c=623.548207643525, logdetD=-0.000108265748892663, t=17.0982
+    # xi*(L+R)/c=665.118088153093, logdetD=-4.75115918214971e-05, t=16.4634
+    # xi*(L+R)/c=706.687968662662, logdetD=-2.08477925150647e-05, t=15.5548
     #
-    # 302 determinants computed
-    # stop time: Thu Jan  3 12:51:21 2019
+    # 1686 determinants computed
+    # stop time: Tue Feb 26 11:30:37 2019
     #
     # L/R, L, R, T, ldim, E*(L+R)/(hbar*c)
-    0.03999999999999999, 2e-06, 5e-05, 300, 176, -45.24539531432269
+    0.009999999999999998, 5e-07, 5e-05, 300, 701, -452.7922092119535
 
 For finite temperature the free energy is no longer given as an integral, but
-as a sum over the Matsubara frequencies :math:`\xi_n`.  The summation is
-stopped once
+as a sum over the Matsubara frequencies :math:`\xi_n`. The summation over
+:math:`n` is stopped once
 
 .. math::
 
-	\frac{\log\mathrm{det}\left( 1-\mathcal{M}(\xi_n) \right)}{\log\mathrm{det}\left( 1-\mathcal{M}(0) \right)} < \mathrm{EPSREL} .
+    \frac{\log\mathrm{det}\left( 1-\mathcal{M}(\xi_n) \right)}{\log\mathrm{det}\left( 1-\mathcal{M}(0) \right)} < \mathrm{EPSREL} .
 
 By default, ``EPSREL`` is :math:`10^{-6}`. You can change the value of
 ``EPSREL`` using the option ``--epsrel``.
@@ -375,52 +391,58 @@ Up to this point, we have assumed that the sphere and the plate are perfect
 reflectors.  If you want to model the sphere and the plate using the plasma
 model, you can set the plasma frequency using ``--omegap``. The plasma
 frequency is expected in units of :math:`\mathrm{eV}/\hbar`. For example, for
-:math:`R=50\mu\mathrm{m}`, :math:`L=800\mathrm{nm}`, :math:`T=300\mathrm{K}`,
+:math:`R=50\mu\mathrm{m}`, :math:`L=500\mathrm{nm}`, :math:`T=300\mathrm{K}`,
 and gold (plasma frequency :math:`\omega_\mathrm{P}=9\mathrm{eV}/\hbar`), the
-Casimir free energy using the plasma model is:
+Casimir free energy assuming the plasma model is:
 
 .. code-block:: console
 
-    $ mpirun -n 8 ./caps -R 50e-6 -L 1e-6 -T 300 --omegap 9
+    $ mpirun -n 8 ./caps -R 50e-6 -L 500e-9 -T 300 --omegap 9
+    # version: 0.4.3
     # compiler: gcc
-    # compile time: Jan  2 2019 12:35:13
-    # compiled on: Linux jonas.physik.uni-augsburg.de 4.9.0-8-amd64 #1 SMP Debian 4.9.130-2 (2018-10-27) x86_64 GNU/Linux
-    # git HEAD: 51b8df47618d15747e59321aee77e1f86fab32a8
-    # git branch: master
-    # pid: 25590
-    # start time: Thu Jan  3 13:45:32 2019
+    # compile time: Feb 25 2019 14:03:27
+    # compiled on: Linux jonas.physik.uni-augsburg.de 4.9.0-8-amd64 x86_64
+    # pid: 20511
+    # start time: Tue Feb 26 11:31:38 2019
     #
-    # LbyR = 0.02
-    # RbyL = 50
-    # L = 1e-06
+    # LbyR = 0.01
+    # RbyL = 100
+    # L = 5e-07
     # R = 5e-05
     # T = 300
     # using Matsubara spectrum decomposition (MSD)
     # cutoff = 1e-09
     # epsrel = 1e-06
     # iepsrel = 1e-08
-    # ldim = 351
+    # ldim = 701
     # cores = 8
     # omegap = 9
     # gamma = 0
     # model = plasma
     #
-    # xi*(L+R)/c=0, logdetD=-12.9879117945873, t=0.386934
-    # xi*(L+R)/c=41.9814634849106, logdetD=-2.25212799211675, t=8.56138
-    # xi*(L+R)/c=83.9629269698212, logdetD=-0.399130249157291, t=8.79863
-    # xi*(L+R)/c=125.944390454732, logdetD=-0.0715772034739604, t=8.86131
-    # xi*(L+R)/c=167.925853939642, logdetD=-0.0128539503490175, t=8.90524
-    # xi*(L+R)/c=209.907317424553, logdetD=-0.00230798551800234, t=8.56306
-    # xi*(L+R)/c=251.888780909464, logdetD=-0.000414281644513791, t=8.18385
-    # xi*(L+R)/c=293.870244394374, logdetD=-7.43406394982715e-05, t=7.62512
-    # xi*(L+R)/c=335.851707879285, logdetD=-1.33358593258147e-05, t=6.89742
-    # xi*(L+R)/c=377.833171364195, logdetD=-2.39148466183249e-06, t=6.48929
+    # xi*(L+R)/c=0, logdetD=-26.6976344223495, t=1.0548
+    # xi*(L+R)/c=41.5698805095683, logdetD=-10.4687593311701, t=29.2239
+    # xi*(L+R)/c=83.1397610191367, logdetD=-4.17127445011799, t=30.5278
+    # xi*(L+R)/c=124.709641528705, logdetD=-1.69110879470416, t=31.9545
+    # xi*(L+R)/c=166.279522038273, logdetD=-0.68977177243457, t=32.2149
+    # xi*(L+R)/c=207.849402547842, logdetD=-0.28194807348852, t=33.1459
+    # xi*(L+R)/c=249.41928305741, logdetD=-0.115330010733512, t=33.0782
+    # xi*(L+R)/c=290.989163566978, logdetD=-0.0471851591737746, t=33.3165
+    # xi*(L+R)/c=332.559044076547, logdetD=-0.0193059198900916, t=36.3263
+    # xi*(L+R)/c=374.128924586115, logdetD=-0.00789924565082466, t=36.4202
+    # xi*(L+R)/c=415.698805095683, logdetD=-0.00323219686668301, t=33.851
+    # xi*(L+R)/c=457.268685605252, logdetD=-0.00132263206346751, t=31.1036
+    # xi*(L+R)/c=498.83856611482, logdetD=-0.000541279202385481, t=30.3951
+    # xi*(L+R)/c=540.408446624388, logdetD=-0.000221541550914926, t=29.6892
+    # xi*(L+R)/c=581.978327133957, logdetD=-9.06879127562377e-05, t=28.5112
+    # xi*(L+R)/c=623.548207643525, logdetD=-3.71288341482914e-05, t=27.586
+    # xi*(L+R)/c=665.118088153093, logdetD=-1.5203622898795e-05, t=26.199
     #
-    # 685 determinants computed
-    # stop time: Thu Jan  3 13:46:45 2019
+    # 1582 determinants computed
+    # stop time: Tue Feb 26 11:40:03 2019
     #
     # L/R, L, R, T, ldim, E*(L+R)/(hbar*c)
-    0.02, 1e-06, 5e-05, 300, 351, -123.3743917511159
+    0.009999999999999998, 5e-07, 5e-05, 300, 701, -408.1688659974158
 
 To describe the objects using the Drude model, you can additional specify the
 relaxation frequency :math:`\gamma` (also in units of
@@ -429,51 +451,57 @@ the same example as above for Drude gives:
 
 .. code-block:: console
 
-    $ mpirun -n 8 ./caps -R 50e-6 -L 1e-6 -T 300 --omegap 9 --gamma 0.035
+    $ mpirun -n 8 ./caps -R 50e-6 -L 500e-9 -T 300 --omegap 9 --gamma 0.035
+    # version: 0.4.3
     # compiler: gcc
-    # compile time: Jan  2 2019 12:35:13
-    # compiled on: Linux jonas.physik.uni-augsburg.de 4.9.0-8-amd64 #1 SMP Debian 4.9.130-2 (2018-10-27) x86_64 GNU/Linux
-    # git HEAD: 51b8df47618d15747e59321aee77e1f86fab32a8
-    # git branch: master
-    # pid: 25643
-    # start time: Thu Jan  3 13:48:50 2019
+    # compile time: Feb 25 2019 14:03:27
+    # compiled on: Linux jonas.physik.uni-augsburg.de 4.9.0-8-amd64 x86_64
+    # pid: 24336
+    # start time: Tue Feb 26 12:08:33 2019
     #
-    # LbyR = 0.02
-    # RbyL = 50
-    # L = 1e-06
+    # LbyR = 0.01
+    # RbyL = 100
+    # L = 5e-07
     # R = 5e-05
     # T = 300
     # using Matsubara spectrum decomposition (MSD)
     # cutoff = 1e-09
     # epsrel = 1e-06
     # iepsrel = 1e-08
-    # ldim = 351
+    # ldim = 701
     # cores = 8
     # omegap = 9
     # gamma = 0.035
     # model = drude
     #
-    # xi*(L+R)/c=0, logdetD=-7.09741176750412, t=0.000463963
-    # xi*(L+R)/c=41.9814634849106, logdetD=-2.23320258322643, t=8.40539
-    # xi*(L+R)/c=83.9629269698212, logdetD=-0.396003476948632, t=8.85682
-    # xi*(L+R)/c=125.944390454732, logdetD=-0.071024911146045, t=9.09324
-    # xi*(L+R)/c=167.925853939642, logdetD=-0.0127552647899639, t=8.74376
-    # xi*(L+R)/c=209.907317424553, logdetD=-0.00229031081195299, t=8.5974
-    # xi*(L+R)/c=251.888780909464, logdetD=-0.000411115126231591, t=8.13146
-    # xi*(L+R)/c=293.870244394374, logdetD=-7.3773492717613e-05, t=7.64662
-    # xi*(L+R)/c=335.851707879285, logdetD=-1.32343284458642e-05, t=7.20287
-    # xi*(L+R)/c=377.833171364195, logdetD=-2.37331945823411e-06, t=6.58019
+    # xi*(L+R)/c=0, logdetD=-14.5697227167729, t=0.000477076
+    # xi*(L+R)/c=41.5698805095683, logdetD=-10.3653815649851, t=29.2174
+    # xi*(L+R)/c=83.1397610191367, logdetD=-4.13628095371182, t=30.4618
+    # xi*(L+R)/c=124.709641528705, logdetD=-1.67763657179774, t=31.9241
+    # xi*(L+R)/c=166.279522038273, logdetD=-0.684394806814442, t=32.5905
+    # xi*(L+R)/c=207.849402547842, logdetD=-0.279773855516853, t=33.1029
+    # xi*(L+R)/c=249.41928305741, logdetD=-0.114446241958121, t=33.6549
+    # xi*(L+R)/c=290.989163566978, logdetD=-0.0468251449212843, t=33.7789
+    # xi*(L+R)/c=332.559044076547, logdetD=-0.0191591315699105, t=32.8368
+    # xi*(L+R)/c=374.128924586115, logdetD=-0.00783937539816867, t=34.304
+    # xi*(L+R)/c=415.698805095683, logdetD=-0.00320777554704996, t=33.1737
+    # xi*(L+R)/c=457.268685605252, logdetD=-0.00131267076024208, t=31.7234
+    # xi*(L+R)/c=498.83856611482, logdetD=-0.000537216353887839, t=30.7169
+    # xi*(L+R)/c=540.408446624388, logdetD=-0.000219884619851423, t=30.7112
+    # xi*(L+R)/c=581.978327133957, logdetD=-9.00122403077102e-05, t=29.2664
+    # xi*(L+R)/c=623.548207643525, logdetD=-3.685333004516e-05, t=27.5843
+    # xi*(L+R)/c=665.118088153093, logdetD=-1.50912958983084e-05, t=26.3201
+    # xi*(L+R)/c=706.687968662662, logdetD=-6.18096543194596e-06, t=24.9774
     #
-    # 627 determinants computed
-    # stop time: Thu Jan  3 13:50:03 2019
+    # 1603 determinants computed
+    # stop time: Tue Feb 26 12:17:19 2019
     #
     # L/R, L, R, T, ldim, E*(L+R)/(hbar*c)
-    0.02, 1e-06, 5e-05, 300, 351, -83.71300491448063
+    0.009999999999999998, 5e-07, 5e-05, 300, 701, -325.8011897578629
 
 The Casimir energy in the high-temperature limit for the Drude and the plasma
 model differ by a factor of 2. This is the reason why in this example the
-Casimir energy using the plasma model is considerably larger than using the
-Drude model.
+Casimir energy using the plasma model is larger than using the Drude model.
 
 General materials can be described using ``--material`` which expects the path
 to a material file. A material file has the following format:
@@ -512,70 +540,78 @@ with the plasma frequency given by ``omegap_low`` and the relaxation frequency
 given by ``gamma_low``. If ``omegap_low`` and ``gamma_low`` are not given in
 the file, the dielectric function is assumed to be 1. The behaviour for
 frequencies larger than the largest provided frequency is analougous using the
-parameters given by ``omegap_high`` and ``gamma_high``.
+parameters given by ``omegap_high`` and ``gamma_high``. More details can be
+found in the directory ``materials/``.
 
 Here is an example that computes the Casimir energy for a sphere of
-:math:`R=50\mu\mathrm{m}` at separation :math:`L=1\mu\mathrm{m}` at room
+:math:`R=50\mu\mathrm{m}` at separation :math:`L=500\mathrm{nm}` at room
 temperature :math:`T=300\mathrm{K}` for real gold:
 
 .. code-block:: console
 
-  $ mpirun -n 8 ./caps -R 50e-6 -L 1e-6 -T 300 --material ../materials/gold.csv
-  # compiler: gcc
-  # compile time: Jan  7 2019 10:28:24
-  # compiled on: Linux jonas.physik.uni-augsburg.de 4.9.0-8-amd64 #1 SMP Debian 4.9.130-2 (2018-10-27) x86_64 GNU/Linux
-  # git HEAD: 5c3f8f083f2af60bd680646adc94997b179c350c
-  # git branch: master
-  # pid: 4840
-  # start time: Mon Jan  7 10:28:44 2019
-  #
-  # LbyR = 0.02
-  # RbyL = 50
-  # L = 1e-06
-  # R = 5e-05
-  # T = 300
-  # using Matsubara spectrum decomposition (MSD)
-  # cutoff = 1e-09
-  # epsrel = 1e-06
-  # iepsrel = 1e-08
-  # ldim = 351
-  # cores = 8
-  # filename = ../materials/gold.csv
-  # model = optical data (xi=0: Drude)
-  # plasma = -12.9879117939843 (logdetD(xi=0) for plasma model with omegap=9eV)
-  #
-  # xi*(L+R)/c=0, logdetD=-7.09741176750412, t=0.352728
-  # xi*(L+R)/c=41.9814634849106, logdetD=-2.23788117126162, t=8.44477
-  # xi*(L+R)/c=83.9629269698212, logdetD=-0.397789450092019, t=8.8778
-  # xi*(L+R)/c=125.944390454732, logdetD=-0.0716100613017328, t=9.09214
-  # xi*(L+R)/c=167.925853939642, logdetD=-0.0129251607796874, t=9.02829
-  # xi*(L+R)/c=209.907317424553, logdetD=-0.00233585322790776, t=8.67091
-  # xi*(L+R)/c=251.888780909464, logdetD=-0.000422670611527527, t=8.18489
-  # xi*(L+R)/c=293.870244394374, logdetD=-7.65823629633713e-05, t=7.80386
-  # xi*(L+R)/c=335.851707879285, logdetD=-1.38953641418705e-05, t=7.10853
-  # xi*(L+R)/c=377.833171364195, logdetD=-2.52460509493263e-06, t=6.50239
-  #
-  # 682 determinants computed
-  # stop time: Mon Jan  7 10:29:58 2019
-  #
-  # L/R, L, R, T, ldim, E*(L+R)/(hbar*c)
-  0.02, 1e-06, 5e-05, 300, 351, -83.81029275263388
+    $ mpirun -n 8 ./caps -R 50e-6 -L 500e-9 -T 300 --material ../materials/gold.csv
+    # version: 0.4.3
+    # compiler: gcc
+    # compile time: Feb 25 2019 14:03:27
+    # compiled on: Linux jonas.physik.uni-augsburg.de 4.9.0-8-amd64 x86_64
+    # pid: 24642
+    # start time: Tue Feb 26 12:18:36 2019
+    #
+    # LbyR = 0.01
+    # RbyL = 100
+    # L = 5e-07
+    # R = 5e-05
+    # T = 300
+    # using Matsubara spectrum decomposition (MSD)
+    # cutoff = 1e-09
+    # epsrel = 1e-06
+    # iepsrel = 1e-08
+    # ldim = 701
+    # cores = 8
+    # filename = ../materials/gold.csv
+    # model = optical data (xi=0: Drude)
+    # plasma = -26.6976344217189 (logdetD(xi=0) for plasma model with omegap=9eV)
+    #
+    # xi*(L+R)/c=0, logdetD=-14.5697227167729, t=1.0434
+    # xi*(L+R)/c=41.5698805095683, logdetD=-10.3908796547603, t=29.5941
+    # xi*(L+R)/c=83.1397610191367, logdetD=-4.15625893810359, t=30.6949
+    # xi*(L+R)/c=124.709641528705, logdetD=-1.6919107999977, t=32.3372
+    # xi*(L+R)/c=166.279522038273, logdetD=-0.693653981851821, t=32.8614
+    # xi*(L+R)/c=207.849402547842, logdetD=-0.285378030697434, t=33.7248
+    # xi*(L+R)/c=249.41928305741, logdetD=-0.117672555842387, t=33.5534
+    # xi*(L+R)/c=290.989163566978, logdetD=-0.0486088504532428, t=33.1554
+    # xi*(L+R)/c=332.559044076547, logdetD=-0.0201151891681236, t=33.0375
+    # xi*(L+R)/c=374.128924586115, logdetD=-0.00833817561811858, t=32.8751
+    # xi*(L+R)/c=415.698805095683, logdetD=-0.00346241156603652, t=32.5475
+    # xi*(L+R)/c=457.268685605252, logdetD=-0.00144011362577151, t=31.6877
+    # xi*(L+R)/c=498.83856611482, logdetD=-0.000600031780813664, t=31.1144
+    # xi*(L+R)/c=540.408446624388, logdetD=-0.000250400886432969, t=31.9239
+    # xi*(L+R)/c=581.978327133957, logdetD=-0.000104657168106622, t=31.2511
+    # xi*(L+R)/c=623.548207643525, logdetD=-4.3804324287031e-05, t=28.8938
+    # xi*(L+R)/c=665.118088153093, logdetD=-1.83601183587417e-05, t=27.7136
+    # xi*(L+R)/c=706.687968662662, logdetD=-7.70510781683187e-06, t=26.0717
+    #
+    # 1681 determinants computed
+    # stop time: Tue Feb 26 12:27:30 2019
+    #
+    # L/R, L, R, T, ldim, E*(L+R)/(hbar*c)
+    0.009999999999999998, 5e-07, 5e-05, 300, 701, -326.8806691538941
 
 The energy printed in the last line assumes a Drude model for the zero-th
 Matsubara frequency. If you want to use the plasma model for the zero-th
 Matsubara frequency, you can use the value given by ``# plasma =``. This
-number, i.e., -12.9879... is given in units of :math:`k_\mathrm{B}T/2` and
+number, i.e., -26.69763... is given in units of :math:`k_\mathrm{B}T/2` and
 corresponds to the additional contribution in the high-temperature limit to the
 energy in the plasma model. In this example, the free energy using the Drude
 model for zero-frequency is
 
 .. math::
-  \mathcal{F}_\mathrm{Drude} \approx -83.8 \frac{\hbar c}{L+R} \approx -5.19\times10^{-20}\mathrm{J},
+  \mathcal{F}_\mathrm{Drude} \approx -326.88 \frac{\hbar c}{L+R} \approx -2.0464\times10^{-19}\mathrm{J},
 
 and assuming the plasma model for zero frequency
 
 .. math::
-  \mathcal{F}_\mathrm{plasma} \approx \mathcal{F}_\mathrm{Drude} + \frac{-12.98 k_\mathrm{B}T}{2} \approx -7.88 \times 10^{-20} \mathrm{J} .
+  \mathcal{F}_\mathrm{plasma} \approx \mathcal{F}_\mathrm{Drude} + \frac{-26.69763 k_\mathrm{B}T}{2} \approx -2.0257 \times 10^{-19} \mathrm{J} .
 
 Truncation of the vector space
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -583,20 +619,20 @@ Truncation of the vector space
 The truncation of the vector space is described in more detail in `Hartmann,
 "Casimir effect in the plane-sphere geometry: Beyond the proximity force
 approximation", PhD thesis (Universität Augsburg, 2018)
-<https://opus.bibliothek.uni-augsburg.de/opus4/44798>`_.  You can either
+<https://opus.bibliothek.uni-augsburg.de/opus4/44798>`_. You can either
 specify the dimension of the vector space using ``--ldim``, or you choose the
 vector space using the parameter ``--eta``:
 
 .. math::
-	\ell_\mathrm{dim} = \mathrm{max}\left(20, \left\lceil \eta R/L \right\rceil\right) .
+    \ell_\mathrm{dim} = \mathrm{max}\left(20, \left\lceil \eta R/L \right\rceil\right) .
 
-The estimated error due to the truncation of the vector space depending on eta
+The estimated error due to the truncation of the vector space depending on :math:`\eta`
 is given by:
 
 +-----------------+-----------------+-----------------+-----------------+-----------------+-----------------+-----------------+-----------------+
 | numerical error | :math:`10^{-2}` | :math:`10^{-3}` | :math:`10^{-4}` | :math:`10^{-5}` | :math:`10^{-6}` | :math:`10^{-7}` | :math:`10^{-8}` |
 +-----------------+-----------------+-----------------+-----------------+-----------------+-----------------+-----------------+-----------------+
-| eta             | 2.8             | 4               | 5.2             | 6.4             | 7.6             | 8.8             | 10              |
+| :math:`\eta`    | 2.8             | 4               | 5.2             | 6.4             | 7.6             | 8.8             | 10              |
 +-----------------+-----------------+-----------------+-----------------+-----------------+-----------------+-----------------+-----------------+
 
 
@@ -632,17 +668,17 @@ A typical output looks like
 
 .. code-block:: console
 
-  $ ./caps_logdetD -R 100e-6 -L 1e-6 -m 1 --xi 1.5
-  # ./caps_logdetD, -R, 100e-6, -L, 1e-6, -m, 1, --xi, 1.5
-  # L/R    = 0.009999999999999998
-  # L      = 1e-06
-  # R      = 0.0001
-  # ldim   = 501
-  # epsrel = 1.0e-08
-  # detalg = HODLR
-  #
-  # L, R, ξ*(L+R)/c, m, logdet(Id-M), ldim, time
-  1e-06, 0.0001, 1.5, 1, -6.417998208796558, 501, 0.492086
+    $ ./caps_logdetD -R 100e-6 -L 1e-6 -m 1 --xi 1
+    # ./caps_logdetD, -R, 100e-6, -L1e-6, -m, 1, --xi, 1
+    # L/R    = 0.009999999999999998
+    # L      = 1e-06
+    # R      = 0.0001
+    # ldim   = 501
+    # epsrel = 1.0e-08
+    # detalg = HODLR
+    #
+    # L, R, ξ*(L+R)/c, m, logdet(Id-M), ldim, time
+    1e-06, 0.0001, 1, 1, -6.463973151333013, 501, 0.548678
 
 Sometimes, it is useful to output the round-trip matrix in numpy format. If the
 environment variable ``CAPS_DUMP`` is set and ``detalg`` is not HODLR, the
@@ -654,57 +690,56 @@ Here is an example to generate and save a round-trip matrix:
 
 .. code-block:: console
 
-  $ CAPS_DUMP=M.npy ./caps_logdetD -R 100e-6 -L 1e-6 -m 1 --xi 1.5 --detalg LU
-  # ./caps_logdetD, -R, 100e-6, -L, 1e-6, -m, 1, --xi, 1.5, --detalg, LU
-  # L/R    = 0.009999999999999998
-  # L      = 1e-06
-  # R      = 0.0001
-  # ldim   = 501
-  # epsrel = 1.0e-08
-  # detalg = LU
-  #
-  # L, R, ξ*(L+R)/c, m, logdet(Id-M), ldim, time
-  1e-06, 0.0001, 1.5, 1, -6.417998208796549, 501, 0.833277
+    $ CAPS_DUMP=M.npy ./caps_logdetD -R 100e-6 -L 1e-6 -m 1 --xi 2 --detalg LU
+    # ./caps_logdetD, -R, 100e-6, -L, 1e-6, -m, 1, --xi, 2, --detalg, LU
+    # L/R    = 0.009999999999999998
+    # L      = 1e-06
+    # R      = 0.0001
+    # ldim   = 501
+    # epsrel = 1.0e-08
+    # detalg = LU
+    #
+    # L, R, ξ*(L+R)/c, m, logdet(Id-M), ldim, time
+    1e-06, 0.0001, 2, 1, -6.349155228127988, 501, 0.817265
 
-  $ ls -lah M.npy
-  -rw------- 1 hartmmic g-103665 7,7M Jan  4 15:16 M.npy
+    $ ls -lh M.npy 
+    -rw------- 1 hartmmic g-103665 7,7M Feb 26 13:26 M.npy
 
-  $ python
-  Python 3.6.5 | packaged by conda-forge | (default, Apr  6 2018, 13:39:56)
-  [GCC 4.8.2 20140120 (Red Hat 4.8.2-15)] on linux
-  Type "help", "copyright", "credits" or "license" for more information.
-  >>> import numpy as np
-  >>> M = np.load("M.npy")    # load matrix
-  >>> dim,_ = M.shape         # get dimension
-  >>> Id = np.eye(dim)        # identity matrix
-  >>> np.linalg.slogdet(Id-M) # compute determinant
-  (1.0, -6.417998208796572)
+    $ python
+    Python 3.6.5 | packaged by conda-forge | (default, Apr  6 2018, 13:39:56) 
+    [GCC 4.8.2 20140120 (Red Hat 4.8.2-15)] on linux
+    Type "help", "copyright", "credits" or "license" for more information.
+    >>> import numpy as np
+    >>> M = np.load("M.npy")    # load matrix
+    >>> dim,_ = M.shape         # get dimension
+    >>> Id = np.eye(dim)        # identity matrix
+    >>> np.linalg.slogdet(Id-M) # compute log of determinant
+    (1.0, -6.349155228128008)
 
 
 capc
 ----
 
 The program  ``capc`` computes the Casimir interaction in the cylinder-plane
-geometry. The radius of the cylinder is given by ``-R`` and the separation
-between cylinder and plate is given by ``-d``. Both lengths are expected in
-meters. At the moment, only perfect reflectors at zero temperature is
-supported.
+geometry. The radius of the cylinder is given by ``-R`` and the smallest
+separation between cylinder and plate is given by ``-d``. Both lengths are
+expected in meters. At the moment, only perfect reflectors at zero temperature
+are supported.
 
 This example computes the Casimir free energy for a cylinder of radius
 :math:`R=100\mu\mathrm{m}` and a separation of :math:`d=100\mathrm{nm}`:
 
 .. code-block:: console
 
-  $ ./capc -R 100e-6 -d 100e-9
-  # R/d = 1000
-  # d = 1e-07
-  # R = 0.0001
-  # T = 0
-  # lmax = 6000
-  # epsrel = 1e-08
-  #
-  # d/R, d, R, T, lmax, E_PFA/(L*hbar*c), E_D/E_PFA, E_N/E_PFA, E_EM/E_PFA
-  0.001, 1e-07, 0.0001, 0, 6000, -72220981652413.5, 0.500089151077922, 0.499432943796732, 0.999522094874654
+    # R/d = 1000
+    # d = 1e-07
+    # R = 0.0001
+    # T = 0
+    # lmax = 6000
+    # epsrel = 1e-08
+    #
+    # d/R, d, R, T, lmax, E_PFA/(L*hbar*c), E_D/E_PFA, E_N/E_PFA, E_EM/E_PFA
+    0.001, 1e-07, 0.0001, 0, 6000, -72220981652413.5, 0.500089151078031, 0.499432943796718, 0.999522094874749
 
 Here, :math:`L` denotes the length of the cylinder. The matrix elements of the
 round-trip operator are correct assuming that :math:`L\gg R,d`. ``E_D`` and
