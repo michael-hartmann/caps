@@ -109,7 +109,7 @@ an example how to use the Intel C and C++ compilers:
 
 .. code-block:: console
 
-    $ CC=icc CXX=icpc cmake ../src
+    $ CC=icc CXX=icpc cmake ..
     $ make
 
 In order to run the programs, the system must be able to find the libraries
@@ -160,7 +160,7 @@ performance boost of about 5%. To compile the code with this option, run:
 
 .. code-block:: console
 
-    $ cmake ../src -DOPT="-O3 -march=native"
+    $ cmake .. -DOPT="-O3 -march=native"
 
 
 Similarily, link time optimization ``-flto`` might also increase performance.
