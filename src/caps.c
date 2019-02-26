@@ -639,14 +639,14 @@ void master(int argc, char *argv[], const int cores)
         {
             F_HT(caps_mpi, omegap, &drude, &pr, &plasma);
             printf("#\n");
-            printf("# L/R, L, R, ldim, omegap, F_Drude/(kB*T), F_PR/(kB*T), F_Plasma/(kB*T)\n");
+            printf("# L/R, L, R, ldim, omegap, E_Drude/(kB*T), E_PR/(kB*T), E_Plasma/(kB*T)\n");
             printf("%.16g, %.16g, %.16g, %d, %g, %.16g, %.16g, %.16g\n", LbyR, L, R, ldim, omegap, drude, pr, plasma);
         }
         else
         {
             F_HT(caps_mpi, 0, &drude, &pr, NULL);
             printf("#\n");
-            printf("# L/R, L, R, ldim, F_Drude/(kB*T), F_PR/(kB*T)\n");
+            printf("# L/R, L, R, ldim, E_Drude/(kB*T), E_PR/(kB*T)\n");
             printf("%.16g, %.16g, %.16g, %d, %.16g, %.16g\n", LbyR, L, R, ldim, drude, pr);
         }
 
