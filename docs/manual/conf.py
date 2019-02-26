@@ -20,7 +20,7 @@
 # -- Project information -----------------------------------------------------
 
 project = 'CaPS'
-copyright = '2018, Michael Hartmann'
+copyright = '2019, Michael Hartmann'
 author = 'Michael Hartmann'
 
 # The short X.Y version
@@ -68,7 +68,6 @@ exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
 
 # The name of the Pygments (syntax highlighting) style to use.
 pygments_style = 'sphinx'
-
 
 # -- Options for HTML output -------------------------------------------------
 
@@ -118,7 +117,7 @@ latex_elements = {
 
     # Additional stuff for the LaTeX preamble.
     #
-    # 'preamble': '',
+    'preamble': '\definecolor{VerbatimBorderColor}{rgb}{1,1,1} \definecolor{VerbatimColor}{rgb}{0.95,0.95,0.95}',
 
     # Latex figure (float) alignment
     #
