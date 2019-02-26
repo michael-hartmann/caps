@@ -76,14 +76,12 @@ To compute the Casimir free energy between a sphere of radius R=150µm and a
 plane separated by a distance L=2µm at room temperature T=300K assuming
 that both objects are perfect reflectors, use the command:
 ```
-$ mpirun -n 7 ./caps -L 2e-6 -R 150e-6 -T 300
+# version: 0.4.3
 # compiler: gcc
-# compile time: Dec 17 2018 13:39:58
-# compiled on: Linux jonas.physik.uni-augsburg.de 4.9.0-8-amd64 #1 SMP Debian 4.9.130-2 (2018-10-27) x86_64 GNU/Linux
-# git HEAD: f62659b0a419a153c517c54ad1657f7d5df4e2fe
-# git branch: master
-# pid: 7649
-# start time: Mon Dec 17 14:30:58 2018
+# compile time: Feb 25 2019 14:03:27
+# compiled on: Linux jonas.physik.uni-augsburg.de 4.9.0-8-amd64 x86_64
+# pid: 18440
+# start time: Tue Feb 26 09:26:33 2019
 #
 # LbyR = 0.0133333333333333
 # RbyL = 75
@@ -98,18 +96,18 @@ $ mpirun -n 7 ./caps -L 2e-6 -R 150e-6 -T 300
 # cores = 7
 # model = perfect reflectors
 #
-# xi*(L+R)/c=0, logdetD=-20.5414434056605, t=0.124541
-# xi*(L+R)/c=125.121224504047, logdetD=-0.697593024441683, t=10.5891
-# xi*(L+R)/c=250.242449008094, logdetD=-0.0258391838200906, t=10.7015
-# xi*(L+R)/c=375.363673512142, logdetD=-0.000959951407663542, t=10.0898
-# xi*(L+R)/c=500.484898016189, logdetD=-3.56248238853923e-05, t=8.87825
-# xi*(L+R)/c=625.606122520236, logdetD=-1.31970448193816e-06, t=7.02438
+# xi*(L+R)/c=0, logdetD=-20.5414434024671, t=0.132962
+# xi*(L+R)/c=125.121224504047, logdetD=-0.697593024444402, t=12.0525
+# xi*(L+R)/c=250.242449008094, logdetD=-0.0258391838215843, t=12.6367
+# xi*(L+R)/c=375.363673512142, logdetD=-0.000959951408860133, t=11.8394
+# xi*(L+R)/c=500.484898016189, logdetD=-3.56248250989872e-05, t=10.7413
+# xi*(L+R)/c=625.606122520236, logdetD=-1.31970503369943e-06, t=8.3677
 #
-# 486 determinants computed
-# stop time: Mon Dec 17 14:31:45 2018
+# 484 determinants computed
+# stop time: Tue Feb 26 09:27:29 2019
 #
 # L/R, L, R, T, ldim, E*(L+R)/(hbar*c)
-0.01333333333333333, 2e-06, 0.00015, 300, 525, -437.9074196681792
+0.01333333333333333, 2e-06, 0.00015, 300, 525, -437.907419604873
 ```
 Due to parallelization you might not get the exactly same numerical value for
 the free energy.
