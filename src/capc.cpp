@@ -83,13 +83,13 @@ class CasimirCP {
 
                 for(int j = 1; j < lmax+1; j++)
                 {
-					/* denom = -2K'_j(x); K'_j(x) = -1/2*[ K_{j+1}(x) + K_{j-1}(x) ] */
-					double denom = K[2]+log1p(exp(K[0]-K[2]));
+                    /* denom = -2K'_j(x); K'_j(x) = -1/2*[ K_{j+1}(x) + K_{j-1}(x) ] */
+                    double denom = K[2]+log1p(exp(K[0]-K[2]));
 
-					/* num = 2I'_j(x); I'_j(x) = = 1/2*[ I_{j+1}(x) + I_{j-1}(x) ] = dI */
-					double num = I[0]+log1p(exp(I[2]-I[0]));
+                    /* num = 2I'_j(x); I'_j(x) = = 1/2*[ I_{j+1}(x) + I_{j-1}(x) ] = dI */
+                    double num = I[0]+log1p(exp(I[2]-I[0]));
 
-					args.cache_ratio[j] = num-denom;
+                    args.cache_ratio[j] = num-denom;
 
                     I[0] = I[1];
                     I[1] = I[2];
@@ -129,16 +129,16 @@ class CasimirCP {
 
             if(T == 0)
             {
-				double integral, abserr;
-				int neval, ier;
+                double integral, abserr;
+                int neval, ier;
 
                 if(p == 'D')
-				    integral = dqagi(__integrand_dirichlet, 0, 1, 0, epsrel, &abserr, &neval, &ier, this);
+                    integral = dqagi(__integrand_dirichlet, 0, 1, 0, epsrel, &abserr, &neval, &ier, this);
                 else
-				    integral = dqagi(__integrand_neumann, 0, 1, 0, epsrel, &abserr, &neval, &ier, this);
+                    integral = dqagi(__integrand_neumann, 0, 1, 0, epsrel, &abserr, &neval, &ier, this);
 
-				/* energy in units of hbar*c*L */
-				return integral/(4*M_PI*2*d);
+                /* energy in units of hbar*c*L */
+                return integral/(4*M_PI*2*d);
             }
             else
                 return NAN;
@@ -170,7 +170,7 @@ static double __kernel(int i, int j, void *args_)
 
 static double __integrand_dirichlet(double x, void *args)
 {
-	CasimirCP *capc = (CasimirCP *)args;
+    CasimirCP *capc = (CasimirCP *)args;
 
     double q = x/(2*capc->get_d());
     return q*capc->logdet_dirichlet(q);
@@ -178,7 +178,7 @@ static double __integrand_dirichlet(double x, void *args)
 
 static double __integrand_neumann(double x, void *args)
 {
-	CasimirCP *capc = (CasimirCP *)args;
+    CasimirCP *capc = (CasimirCP *)args;
 
     double q = x/(2*capc->get_d());
     return q*capc->logdet_neumann(q);
