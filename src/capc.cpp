@@ -308,8 +308,8 @@ int main(int argc, const char *argv[]) {
     }
 
     /* energy Dirichlet in units of hbar*c*L */
-    double E_D = capc.energy('D', 0, epsrel);
-    double E_N = capc.energy('N', 0, epsrel);
+    double E_D = capc.energy('D', T, epsrel);
+    double E_N = capc.energy('N', T, epsrel);
 
     /* energy EM in units of hbar*c*L */
     double E_EM = E_D+E_N;
