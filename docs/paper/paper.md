@@ -8,8 +8,10 @@ tags:
   - hierarchical matrices
 authors:
   - name: Michael Hartmann
+    orcid: 0000-0002-9245-8582
     affiliation: 1
   - name: Gert-Ludwig Ingold
+    orcid: 0000-0003-4851-2198
     affiliation: 1
 affiliations:
   - name: Institut für Physik, Universität Augsburg, 86135 Augsburg, Germany
