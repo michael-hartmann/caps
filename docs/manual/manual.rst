@@ -763,6 +763,7 @@ This example computes the Casimir free energy for a cylinder of radius
 
 .. code-block:: console
 
+    $ ./capc -R 100e-6 -d 100e-9
     # R/d = 1000
     # d = 1e-07
     # R = 0.0001
