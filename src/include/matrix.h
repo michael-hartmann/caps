@@ -54,6 +54,10 @@ double matrix_logdet_cholesky(matrix_t *A, char uplo);
 double matrix_logdet_lu(matrix_t *A);
 double matrix_logdet_qr(matrix_t *A);
 
+matrix_t *matrix_mult(matrix_t *A, matrix_t *B, double alpha);
+
+matrix_t *matrix_copy(matrix_t *A);
+
 #ifdef __cplusplus
 }
 #endif

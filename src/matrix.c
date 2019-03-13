@@ -664,3 +664,58 @@ double matrix_logdet_qr(matrix_t *A)
 
     return matrix_logdet_triangular(A);
 }
+
+
+/**
+ * @brief Compute the matrix multiplication alpha*A*B
+ *
+ * @param [in] A matrix
+ * @param [in] B matrix
+ * @param [in] alpha scalar
+ * @retval C C=alpha*A*B
+ */
+matrix_t *matrix_mult(matrix_t *A, matrix_t *B, double alpha)
+{
+    int dim = A->dim;
+    if(A->dim != B->dim)
+        return NULL;
+
+    matrix_t *C = matrix_alloc(dim);
+    matrix_setall(C, 0);
+
+    /* dGEMM ( TRANSA, TRANSB, M, N, K, ALPHA, A, LDA, B, LDB, BETA, C, LDC) */
+    char notrans = 'N';
+    dgemm_(&notrans, /* don't transpose/conjugate A */
+           &notrans, /* don't transpose/conjugate B */
+           &dim,     /* M: rows of A and C */
+           &dim,     /* N: columns of B and C */
+           &dim,     /* K: columns of A and rows of B */
+           &alpha,   /* alpha: scalar */
+           A->M,     /* A: matrix A */
+           &dim,     /* LDA: leading dimension of A (columns) */
+           B->M,     /* B: matrix B */
+           &dim,     /* LDB: leading dimension of B (columns) */
+           &alpha,   /* beta: scalar */
+           C->M,     /* C: matrix C */
+           &dim      /* LDC: leading dimension of C (columns) */
+	);
+
+    return C;
+}
+
+
+/**
+ * @brief Copy matrix
+ *
+ * The function returns a copy of the input matrix A.
+ *
+ * @param [in,out] A matrix
+ * @retval B copy of A
+ */
+matrix_t *matrix_copy(matrix_t *A)
+{
+    matrix_t *B = matrix_alloc(A->dim);
+    B->lda = A->lda;
+    memcpy(B->M, A->M, A->dim2*sizeof(double));
+    return B;
+}
