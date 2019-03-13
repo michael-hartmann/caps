@@ -215,7 +215,7 @@ static double integrand(double x, void *args)
      * Assuming perfect reflectors and that the PFA is valid, one finds
      *      logdet(Id-M(ξ)) = -1/2 R/L Li_3(exp(-ξL/c)).
      * As ξ is assumed to be large, the argument of the polylog becomes small,
-     * and we can use Li_3(x)=~x. With this, one finds the assumption above.
+     * and we can use Li_3(x)=~x. With this, one finds the estimate above.
      */
     const double LbyR = caps_mpi->L/caps_mpi->R;
     const double logdet_cutoff = 1e-100;
