@@ -747,6 +747,10 @@ double caps_kernel_M(int i, int j, void *args_)
  *
  * This function computes matrix elements of the round-trip operator.
  *
+ * Warning: Make sure that lmin <= l1,l2 <= lmax or otherwise the behavior of
+ * this function is undefined. You can get lmin and lmax using \ref
+ * caps_estimate_lminmax.
+ *
  * @param [in] self caps_M_t object, see \ref caps_M_init
  * @param [in] l1 angular momentum \f$\ell_1\f$
  * @param [in] l2 angular momentum \f$\ell_2\f$
