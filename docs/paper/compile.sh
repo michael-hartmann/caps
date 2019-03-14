@@ -81,10 +81,7 @@ done;
 paper=${@:$OPTIND:1}
 
 if [ ! "$paper" ]; then
-	echo "FILE not specified."
-	echo;
-	echo "$doc"
-	exit 1;
+	paper="paper.md"
 fi;
 
 # Check if pandoc and pandoc-citeproc are installed
