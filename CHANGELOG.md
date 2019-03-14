@@ -9,6 +9,7 @@ development version
 * Added CONTRIBUTIONS.md
 * Improvements to README.md and to the user manual
 * Renamed project to CaPS
+* Added cass to compute Casimir interaction in the sphere-sphere geometry
 
 
 version 0.4.2
