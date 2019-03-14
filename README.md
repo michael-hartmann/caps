@@ -187,7 +187,7 @@ Publications using CaPS
 
  * [Advancing numerics for the Casimir effect to experimentally relevant aspect ratios](https://doi.org/10.1088/1402-4896/aae34e) (on [arxiv](https://arxiv.org/abs/1803.05791))  
    Michael Hartmann, Gert-Ludwig Ingold, Paulo A. Maia Neto,  
-   Phys. Scr. 93, 114003 (2018), DOI: 10.1088/1402-4896/aae34e
+   Phys. Scr. **93**, 114003 (2018), DOI: 10.1088/1402-4896/aae34e
 
  * [Plasma versus Drude Modeling of the Casimir Force: Beyond the Proximity Force Approximation](https://doi.org/10.1103/PhysRevLett.119.043901) (on [arxiv](https://arxiv.org/abs/1705.04196))  
    Michael Hartmann, Gert-Ludwig Ingold, and Paulo A. Maia Neto,  
