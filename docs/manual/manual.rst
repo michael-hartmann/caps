@@ -123,12 +123,15 @@ search path, you have to add the directories to ``LD_LIBRARY_PATH``
 where we have assumed that the CaPS repository is in the directory
 ``/home/hendrik``.
 
-You can build the program ``capc`` that computes the Casimir free energy in the
-plane-cylinder geometry for perfect reflectors at :math:`T=0` with:
+You can build the programs ``capc`` (plane-cylinder geometry) and ``cass``
+(sphere-sphere geometry with equal radii) to compute the Casimir interaction
+for perfect reflectors at :math:`T=0` with:
 
 .. code-block:: console
 
+    $ make
     $ make capc
+    $ make cass
 
 
 Testing
@@ -778,6 +781,82 @@ Here, :math:`L` denotes the length of the cylinder. The matrix elements of the
 round-trip operator are correct assuming that :math:`L\gg R,d`. ``E_D`` and
 ``E_N`` correspond to Dirichlet and Neumann boundary conditions, ``E_EM`` is
 the energy for the electromagnetic field, ``E_EM = E_D + E_N``.
+
+
+cass
+----
+
+This program computes the Casimir free energy at :math:`T=0` in the
+sphere-sphere geometry for perfect reflectors. It is assumed that both spheres
+have the same radius :math:`R=R_1=R_2`.
+
+The round-trip operator in the sphere-sphere geometry is given as
+
+.. math::
+
+     \mathcal{M}_\mathrm{SS} = \mathcal{R}_1 \mathcal{T}_{12} \mathcal{R}_2 \mathcal{T}_{21} \,.
+
+Here, :math:`\mathcal{R}_j` denotes the reflection operator at sphere
+:math:`j`, and :math:`\mathcal{T}_{ij}` is the translation operator from object
+:math:`j` to object :math:`i`. After symmetrization and for equal radii, the
+round-trip operator is:
+
+.. math::
+
+     \widehat{\mathcal{M}}_\mathrm{SS} = \underbrace{\sqrt{\mathcal{R}} \mathcal{T} \sqrt{\mathcal{R}}}_{=A} \underbrace{\sqrt{\mathcal{R}} \mathcal{T} \sqrt{\mathcal{R}}}_{=A} = A^2
+
+Since for perfect reflectors the Fresnel coefficients are
+:math:`r_\mathrm{TM}=-r_\mathrm{TE}=1`, the operator :math:`A` can be expressed
+as :math:`A=\mathcal{M}_\mathrm{PS}` where :math:`\mathcal{M}_\mathrm{PS}` is
+the round-trip operator in the plane-sphere geometry. This idea is basically
+the method of image charges.
+
+You can compute the free energy using the program ``cass``. The smallest
+separation between the two spheres is denoted as :math:`d` and the radius of
+the spheres is :math:`R`. Here is an example to compute the Casimir energy for
+:math:`R_1=R_2=100\mu\mathrm{m}` and :math:`d=10\mu\mathrm{m}`:
+
+.. code-block:: console
+
+	$ ./cass -R 100e-6 -d 10e-6
+	# version: 0.4.3-dev
+	# compiler: gcc
+	# compile time: Mar 13 2019 22:10:53
+	# compiled on: Linux jonas.physik.uni-augsburg.de 4.9.0-8-amd64 x86_64
+	#
+	# sphere-sphere geometry
+	# model: perfect reflectors
+	# R1 = R2 = 0.0001
+	# d = 1e-05
+	# T = 0
+	# ldim = 50
+	# epsrel = 1e-06
+	# iepsrel = 1e-09
+	# cutoff = 1e-10
+	#
+	# xi*d/c=1, logdet=-0.303363189004
+	# xi*d/c=233.06516869, logdet=-3.13138917509e-204
+	# xi*d/c=0.004290645426, logdet=-1.68510617725
+		...
+	# xi*d/c=0.0385668454268, logdet=-1.65999004318
+	# xi*d/c=0.081650040331, logdet=-1.60322260646
+	# xi*d/c=0.0520927306203, logdet=-1.64443634206
+	#
+	# ier = 0, neval = 135
+	#
+	# R1, R2, L, E*d/(hbar*c), relative error (due to integration)
+	0.0001, 0.0001, 1e-05, -0.166155548334, 5.80089e-07
+
+The runtime of this program is about 4 minutes. For a full list of options see
+``cass --help``.
+
+The program uses a full matrix-matrix multiplication using LAPACK to compute
+:math:`\widehat{\mathcal{M}}_\mathrm{SS}` and an LU decomposition to compute
+the determinant of the scattering matrix. Also, the program does not support
+parallelization. For this reason, the program is limited to not too large
+values of :math:`R/d`.
+
+
 
 API Documentation
 =================
