@@ -8,6 +8,13 @@
 #include "libcaps.h"
 #include "misc.h"
 
+/* Compute the Casimir free energy at T=0 in the sphere-sphere geometry for
+ * perfect reflectors. It is assumed that both spheres have the same radius
+ * R=R1=R2.
+ *
+ * For more information see the user manual.
+ */
+
 typedef struct {
     double cutoff;
     caps_t *self;
@@ -22,6 +29,7 @@ static double logdetD2(caps_t *caps, int m, double xi_)
     matrix_t *M = matrix_alloc(2*ldim);
     matrix_setall(M, NAN);
 
+    /* compute the round-trip matrix M of the sphere-plane geometry */
     caps_M_t *self = caps_M_init(caps, m, xi_);
     for(int i = 0; i < ldim; i++)
     {
@@ -38,11 +46,11 @@ static double logdetD2(caps_t *caps, int m, double xi_)
     }
     caps_M_free(self);
 
-    /* M2 = M² = M*M */
+    /* M2 = M² = M*M: round-trip operator in the sphere-sphere geometry */
     matrix_t *M2 = matrix_mult(M, M, 1);
     matrix_free(M);
 
-    /* trace(M²) */
+    /* check if we can use the trace approximation: logdet(1-A) =~ trace(A) */
     double trace2 = matrix_trace(M2);
     if(trace2 < 1e-8)
         return -trace2;
