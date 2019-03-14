@@ -643,7 +643,7 @@ model for zero-frequency is
 and assuming the plasma model for zero frequency
 
 .. math::
-  \mathcal{F}_\mathrm{plasma} \approx \mathcal{F}_\mathrm{Drude} + \frac{-26.69763 k_\mathrm{B}T}{2} \approx -2.0257 \times 10^{-19} \mathrm{J} .
+  \mathcal{F}_\mathrm{plasma} \approx \mathcal{F}_\mathrm{Drude} + \frac{-26.69763 k_\mathrm{B}T}{2} \approx -2.5993 \times 10^{-19} \mathrm{J} .
 
 Truncation of the vector space
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -701,7 +701,7 @@ A typical output looks like
 .. code-block:: console
 
     $ ./caps_logdetD -R 100e-6 -L 1e-6 -m 1 --xi 1
-    # ./caps_logdetD, -R, 100e-6, -L1e-6, -m, 1, --xi, 1
+    # ./caps_logdetD, -R, 100e-6, -L, 1e-6, -m, 1, --xi, 1
     # L/R    = 0.009999999999999998
     # L      = 1e-06
     # R      = 0.0001
