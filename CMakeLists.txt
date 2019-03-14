@@ -103,6 +103,18 @@ target_link_libraries(capc ${LAPACK_LIBRARIES})
 target_link_libraries(capc ${CMAKE_BINARY_DIR}/libcaps.so)
 target_link_libraries(capc ${CMAKE_BINARY_DIR}/libhodlr.so)
 
+
+# cass
+add_executable(cass src/cass.c src/argparse.c)
+set_target_properties(cass PROPERTIES EXCLUDE_FROM_ALL 1)
+target_link_libraries(cass m)
+
+target_link_libraries(cass ${BLAS_LIBRARIES})
+target_link_libraries(cass ${LAPACK_LIBRARIES})
+target_link_libraries(cass ${CMAKE_BINARY_DIR}/libcaps.so)
+target_link_libraries(cass ${CMAKE_BINARY_DIR}/libhodlr.so)
+
+
 # tests
 add_executable(tests src/tests/test_bessels.c src/tests/test_fresnel.c src/tests/test_Lambda.c src/tests/test_lfac.c src/tests/test_logdetD.c src/tests/test_logi.c src/tests/test_mie.c src/tests/test_mie_drude.c src/tests/test_Plm.c src/tests/tests.c src/tests/unittest.c)
 set_target_properties(tests PROPERTIES EXCLUDE_FROM_ALL 1)
