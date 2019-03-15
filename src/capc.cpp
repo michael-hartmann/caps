@@ -17,7 +17,7 @@ static double __integrand_dirichlet(double x, void *args);
 static double __integrand_neumann(double x, void *args);
 
 class CasimirCP {
-    double R, d, calL;
+    double R, d;
     int lmax;
     detalg_t detalg;
 
@@ -26,14 +26,12 @@ class CasimirCP {
         CasimirCP(double R, double d, detalg_t detalg=DETALG_HODLR) {
             this->R = R;
             this->d = d;
-            this->calL = R+d;
             this->lmax = std::max(25, (int)(5*R/d));
             this->detalg = detalg;
         }
 
         double get_R() const { return R; }
         double get_d() const { return d; }
-        double get_calL() const { return calL; }
         int get_lmax() const { return lmax; }
         detalg_t get_detalg() const { return detalg; }
 
@@ -63,6 +61,7 @@ class CasimirCP {
             args.cache_ratio = new double[lmax+1];
             args.cache_K     = new double[2*(lmax+1)];
 
+            const double calL = d+R;
             for(int j = 0; j < 2*(lmax+1); j++)
                 args.cache_K[j] = bessel_logKn(j, 2*calL*q);
 
