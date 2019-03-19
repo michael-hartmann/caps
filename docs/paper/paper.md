@@ -45,22 +45,23 @@ operator $\mathcal{M}$ represents a complete round-trip of an electromagnetic
 wave between the sphere and the plane. Commonly, the round-trip operator is
 expressed in the multipole basis. The dimension of $\mathcal{M}$ in this basis
 is infinite and a numerical evaluation of the determinants requires a
-truncation of the vector space. In order to achieve a sufficient accuracy, one
-must scale the dimension of $\mathcal{M}$ with the aspect ratio $R/L$. Hence,
-the matrices for aspect ratios used in typical experiments are huge. Moreover,
-the matrices are ill-conditioned rendering a numerical evaluation difficult.
-For these reasons, numerical evaluations were limited to aspect ratios
-$R/L\lesssim100$ [@Durand_phd].
+truncation of the vector space. In order to achieve a sufficient accuracy, the
+dimension of $\mathcal{M}$ must be of the order of the aspect ratio $\sim R/L$.
+Hence, for parameters corresponding to typical experiments the dimension of
+$\mathcal{M}$ is of the order $10000$ or even large. Moreover, the matrices are
+ill-conditioned rendering a numerical evaluation difficult. For these reasons,
+numerical evaluations were limited to aspect ratios $R/L\lesssim100$
+[@Durand_phd].
 
-To overcome this problem, we use a symmetrized version of the round-trip
-operator $\mathcal{M}$ as described in [@hartmann_phscr_2018;
-@hartmann_phd_2018]. Moreover, it turns out that the matrices of the
-symmetrized round-trip operator are hierarchical off-diagonal low-rank (HODLR)
-matrices. HODLR matrices allow a fast computation of the determinant
-[@ambikasaran_josc_2013; @ambikasaran_arxiv_2014]. In particular, we use
-HODLRlib [@ambikasaran_joss_2019] to compute the determinants. Explicit
-expressions for the matrix elements of the symmetrized round-trip operator and
-further information can be found in [@hartmann_phscr_2018; @hartmann_phd_2018].
+To avoid ill-conditioned matrices, we use a symmetrized version of the
+round-trip operator $\mathcal{M}$ as described in [@hartmann_phscr_2018;
+@hartmann_phd_2018]. It turns out that the matrices of the symmetrized
+round-trip operator are hierarchical off-diagonal low-rank (HODLR) matrices
+which allow a fast computation of the determinant [@ambikasaran_josc_2013;
+@ambikasaran_arxiv_2014]. We use the package ``HODLRlib``
+[@ambikasaran_joss_2019] to compute the determinants. Explicit expressions for
+the matrix elements of the symmetrized round-trip operator can be found in
+[@hartmann_phscr_2018; @hartmann_phd_2018].
 
 The free energy $\mathcal{F}$ depends on the radius $R$ of the sphere, the
 separation $L$ between plane and sphere, the temperature $T$, and the optical
@@ -71,13 +72,19 @@ to compute the Casimir effect in the high-temperature limit for perfect
 reflectors, and the Drude and plasma model. In the Drude case, an analytical
 expression is used instead of a numerical evaluation [@bimonte_prl_2012].
 
+Even though the main focus of this package is on the plane-sphere geometry,
+``CaPS`` contains programs to compute the Casimir interaction in the
+plane-cylinder and the sphere-sphere geometry at zero temperature for perfect
+reflectors.
+
 In summary, ``CaPS`` has the following features:
 
- - Computation of the free energy for aspect ratios used in typical experiments
- - Computation of the free energy in the high-temperature limit for perfect reflectors, and metals described by the Drude or plasma model
- - Full support for perfect reflectors, metals described by the Drude and plasma model, and generic materials described by a user-defined dielectric function
- - Computation of the free energy at zero temperature for perfect reflectors in the plane-cylinder geometry
- - Support for parallelization using MPI
+ - Computation of the free energy for aspect ratios used in typical experiments.
+ - Computation of the free energy in the high-temperature limit for perfect reflectors, and metals described by the Drude or plasma model.
+ - Full support for perfect reflectors, metals described by the Drude and plasma model, and generic materials described by a user-defined dielectric function.
+ - Support for parallelization using MPI.
+ - Computation of the free energy at zero temperature for perfect reflectors in the plane-cylinder geometry.
+ - Computation of the free energy at zero temperature for perfect reflectors in the sphere-sphere geometry for equal radii.
 
 
 ``CaPS`` has been used to analyze negative Casimir entropies [@ingold_pre_2015;
