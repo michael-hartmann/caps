@@ -79,8 +79,10 @@ The computation of the high-temperature limit for the Drude model is based on
 Basic support for further geometries is provided for the special case of zero
 temperature and perfect reflectors:
 
- - Computation of the free energy in the plane-cylinder geometry [@emig_prl_2006].
+ - Computation of the free energy in the plane-cylinder geometry.
  - Computation of the free energy for two spheres with equal radii.
+
+The implementation for the plane-cylinder geometry is based on [@emig_prl_2006].
 
 ``CaPS`` has been used to analyze negative Casimir entropies [@ingold_pre_2015;
 @umrath_pre_2015], and to study corrections to the widely used proximity force
@@ -89,7 +91,8 @@ package is released under the GPLv2 license.
 
 # Acknowledgements
 
-The authors would like to thank Sivaram Ambikasaran and Shyam Sundar Sankaran
-for their help and support.
+The authors thank the DAAD for financial support through the PROBRAL program.
+Fruitful discussions with Paulo Maia Neto and the help provided by 
+Sivaram Ambikasaran and Shyam Sundar Sankaran are gratefully acknowledged.
 
 # References
