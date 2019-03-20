@@ -53,7 +53,7 @@ execute_process(
 target_compile_definitions(caps PRIVATE -DMACHINE="${MACHINE}")
 
 # get GIT head and branch
-if(EXISTS "${CMAKE_SOURCE_DIR}/../.git")
+if(EXISTS "${CMAKE_SOURCE_DIR}/.git")
   execute_process(
     COMMAND git rev-parse --abbrev-ref HEAD
     WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
@@ -69,7 +69,7 @@ if(EXISTS "${CMAKE_SOURCE_DIR}/../.git")
   )
 
   target_compile_definitions(caps PRIVATE -DGIT_HEAD="${GIT_COMMIT_HASH}" -DGIT_BRANCH="${GIT_BRANCH}")
-endif(EXISTS "${CMAKE_SOURCE_DIR}/../.git")
+endif(EXISTS "${CMAKE_SOURCE_DIR}/.git")
 
 
 # caps frontend exectuable
