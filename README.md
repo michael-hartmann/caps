@@ -56,7 +56,8 @@ $ make
 ```
 This will build the shared objects `libhodlr.so` and `libcaps.so`, and the
 executables `caps` and `caps_logdetD`. If you get errors building the package,
-please read the user manual.
+please read the [user
+manual](https://github.com/michael-hartmann/caps#documentation).
 
 If you want to run the programs, make sure that `libcaps.so` and `libhodlr.so`
 are in the search path or you will get an error similar to:
