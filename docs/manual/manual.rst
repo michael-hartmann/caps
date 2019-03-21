@@ -29,7 +29,7 @@ library and the associated programs is to compute the free energy
 separation :math:`L` between sphere and plate, the temperature :math:`T`, and
 the dielectric properties of the sphere and the plane. The code is highly
 optimized and allows you -- depending on parameters and your hardware -- to
-compute the free energy for aspect ratios up to :math:`R/L\sim 10\,000`.
+compute the free energy for aspect ratios up to :math:`R/L\sim 5\,000`.
 
 Features
 --------

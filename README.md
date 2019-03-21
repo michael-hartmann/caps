@@ -15,7 +15,7 @@ L from an infinite plate.
 With CaPS you can compute the free Casimir energy in the plane-sphere geometry
 for arbitrary dielectrics at zero and finite temperature. The code is highly
 optimized and allows you - depending on parameters and your hardware - to
-compute the free energy for aspect ratios up to R/L~10'000 (in some cases even
+compute the free energy for aspect ratios up to R/L~5'000 (in some cases even
 higher!).
 
 <img src="images/overview.svg" align="left" height="100%" width="100%" >
