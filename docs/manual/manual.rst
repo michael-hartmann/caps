@@ -34,11 +34,28 @@ compute the free energy for aspect ratios up to :math:`R/L\sim 10\,000`.
 Features
 --------
 
-  - Computation of the free energy for aspect ratios used in typical experiments
-  - Computation of the free energy in the high-temperature limit for perfect reflectors, and metals described by the Drude or plasma model
-  - Full support for perfect reflectors, metals described by the Drude and plasma model, and generic materials described by a user-defined dielectric function
-  - Computation of the free energy at zero temperature for perfect reflectors in the plane-cylinder geometry
-  - Support for parallelization using MPI
+CaPS provides the following main features:
+
+ - Computation of the free energy for aspect ratios used in typical experiments.
+ - Full support for perfect reflectors, metals described by the Drude and plasma model, and generic materials described by a user-defined dielectric function.
+ - Support for parallelization using MPI.
+ - Computation of the free energy in the high-temperature limit for perfect reflectors and metals described by the Drude or plasma model.
+
+The computation of the high-temperature limit for the Drude model is based on
+`Bimonte, Emig, "Exact Results for Classical Casimir Interactions: Dirichlet
+and Drude Model in the Sphere-Sphere and Sphere-Plane", Phys. Rev. Lett. 109,
+160403 (2012) <https://doi.org/10.1103/PhysRevLett.109.160403>`_.
+
+Basic support for further geometries is provided for the special case of zero
+temperature and perfect reflectors:
+
+ - Computation of the free energy in the plane-cylinder geometry.
+ - Computation of the free energy for two spheres with equal radii.
+
+The implementation for the plane-cylinder geometry is based on a symmetrized
+version of the matrix elements given in `Emig, Graham, Jaffe, Kardar, "Casimir
+Forces between Arbitrary Compact Objects", Phys. Rev. Lett. 99, 170403 (2007)
+<https://doi.org/10.1103/PhysRevLett.99.170403>`_.
 
 
 Further reading
@@ -86,7 +103,7 @@ can install all dependencies with:
 
 .. code-block:: console
 
-	$ sudo apt install gcc g++ libc6-dev libc++-dev cmake make libopenmpi-dev openmpi-bin liblapack-dev
+    $ sudo apt install gcc g++ libc6-dev libc++-dev cmake make libopenmpi-dev openmpi-bin liblapack-dev
 
 
 In order to compile the code, create a directory ``bin`` in the ``caps/``
@@ -132,6 +149,37 @@ for perfect reflectors at :math:`T=0` with:
     $ make
     $ make capc
     $ make cass
+
+On an Ubuntu 18.10 we found problems linking to `OpenBLAS
+<https://www.openblas.net/>`_ resulting in error messages similar to:
+
+.. code-block:: console
+
+    undefined reference to 'dgemm_'
+    undefined reference to 'dstemr_'
+    undefined reference to 'dpotrf_'
+    undefined reference to 'dgemm_'
+    undefined reference to 'dgetrf_'
+    undefined reference to 'dgeqrf_'
+    undefined reference to 'ddot_'
+
+In this case, we recommend using `Atlas <http://math-atlas.sourceforge.net/>`_
+as a `BLAS <https://en.wikipedia.org/wiki/Basic_Linear_Algebra_Subprograms>`_
+implementation. Make sure that you have Atlas installed
+
+.. code-block:: console
+
+    $ sudo apt install libatlas-dev libatlas3-base
+
+and compile the code using:
+
+.. code-block:: console
+
+    $ cd caps/
+    $ mkdir bin
+    $ cd bin/
+    $ cmake .. -DBLA_VENDOR=ATLAS
+    $ make
 
 
 Testing
