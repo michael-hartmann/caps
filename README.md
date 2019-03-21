@@ -35,9 +35,9 @@ Features
  - Support for parallelization using MPI.
  - Computation of the free energy in the plane-cylinder geometry at zero temperature for perfect reflectors.
  - Computation of the free energy for two spheres with equal radii at zero temperature for perfect reflectors.
- - CaPS is fast and reliable
- - ready to use programs: you don't have to modify the code
- - CaPS is free software – you may use it or even modify it
+ - CaPS is fast and reliable.
+ - ready to use programs: you don't have to modify the code.
+ - CaPS is free software – you may use it or even modify it.
 
 Installation
 ------------
