@@ -15,7 +15,7 @@ L from an infinite plate.
 With CaPS you can compute the free Casimir energy in the plane-sphere geometry
 for arbitrary dielectrics at zero and finite temperature. The code is highly
 optimized and allows you - depending on parameters and your hardware - to
-compute the free energy for aspect ratios up to R/L~10'000 (in some cases even
+compute the free energy for aspect ratios up to R/L~5'000 (in some cases even
 higher!).
 
 <img src="images/overview.svg" align="left" height="100%" width="100%" >
@@ -29,13 +29,15 @@ geometry at zero temperature for perfect reflectors.
 
 Features
 --------
- - Calculate the free energy for different separations and temperatures
- - Calculate the free energy in the high temperature limit
- - Full support for perfect reflectors, Drude metals, and generic materials
-   described by a user-defined dielectric function
- - CaPS is fast and reliable
- - ready to use programs: you don't have to modify the code
- - CaPS is free software – you may use it or even modify it
+ - Computation of the free energy for aspect ratios used in typical experiments.
+ - Full support for perfect reflectors, metals described by the Drude and plasma model, and generic materials described by a user-defined dielectric function.
+ - Calculate the free energy in the high temperature limit for perfect reflectors, the Drude and plasma model.
+ - Support for parallelization using MPI.
+ - Computation of the free energy in the plane-cylinder geometry at zero temperature for perfect reflectors.
+ - Computation of the free energy for two spheres with equal radii at zero temperature for perfect reflectors.
+ - CaPS is fast and reliable.
+ - ready to use programs: you don't have to modify the code.
+ - CaPS is free software – you may use it or even modify it.
 
 Installation
 ------------
@@ -53,7 +55,9 @@ $ cmake ..
 $ make
 ```
 This will build the shared objects `libhodlr.so` and `libcaps.so`, and the
-executables `caps` and `caps_logdetD`.
+executables `caps` and `caps_logdetD`. If you get errors building the package,
+please read the [user
+manual](https://github.com/michael-hartmann/caps/blob/master/docs/manual.pdf).
 
 If you want to run the programs, make sure that `libcaps.so` and `libhodlr.so`
 are in the search path or you will get an error similar to:
@@ -68,7 +72,7 @@ $ export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/path/to/caps/bin
 ```
 
 You can find more information about building the software in the [user
-manual](https://github.com/michael-hartmann/caps#documentation).
+manual](https://github.com/michael-hartmann/caps/blob/master/docs/manual.pdf).
 
 Usage
 -----
