@@ -180,6 +180,8 @@ dtype HODLR_Tree::logDeterminant()
         return this->logDeterminantNonSPD();
 }
 
+// disable this method
+#if 0
 // Creates a plot of the HODLR matrix represented.
 // Basically, this function shows the extent of "lowrankness" through
 // different intensity of colors in the plots.
@@ -205,3 +207,4 @@ void HODLR_Tree::plotTree()
     cout << "Plotting Tree..." << endl;
     system(COMMAND.c_str());
 }
+#endif
