@@ -10,7 +10,9 @@ development version
 * Improvements to README.md and to the user manual
 * Renamed project to CaPS
 * Added cass to compute Casimir interaction in the sphere-sphere geometry
-* Documented how to avoid errors when linking again OpenBLAS
+* Documented errors when linking again OpenBLAS
+* fixed a wrong reference in overview.svg/overview.pdf
+* removed method plotTree in the HODLRlib
 
 
 version 0.4.2
