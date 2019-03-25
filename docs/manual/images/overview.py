@@ -96,7 +96,7 @@ experiments = [
      "label": r"Bimonte \textit{et al.}~(2016)"},
     
     {"R": (50e-6,), "Lmin": 20e-9, "Lmax": 120e-9,
-     "label": r"Zwol \textit{et al.}~(2008)"},
+     "label": r"van Zwol \textit{et al.}~(2008)"},
     
     {"R": (20e-6,), "Lmin": 20e-9, "Lmax": 100e-9,
      "label": r"Munday \textit{et al.}~(2008)"},
