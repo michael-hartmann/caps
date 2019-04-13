@@ -26,7 +26,7 @@ version 0.4.1
 -------------
 
 * Update of libeigen to 3.3.7
-* Update to latest version of HODLRlib 
+* Update to latest version of HODLRlib
 
 
 version 0.4
