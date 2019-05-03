@@ -8,7 +8,7 @@ def crgb(r,g,b, v=255):
 
 def geometry():
     d = 0.2         # Dicke der Platte
-    R = 1           # Radius der Kugel
+    R = 0.9           # Radius der Kugel
     b = 2*R         # Breite der Platte
     LbyR = 0.5      # aspect ratio R/L
     phi = 30        # Winkel für Pfeil für R
@@ -38,7 +38,8 @@ def geometry():
     # label L, arrow and lines
     c.stroke(path.line(b/2+dx, -R,   b/2+dx+lend, -R))
     c.stroke(path.line(b/2+dx, -R*(1+LbyR), b/2+dx+lend, -R*(1+LbyR)))
-    c.stroke(path.line(b/2+dx+lend/2, -R, b/2+dx+lend/2, -R*(1+LbyR)), [deco.earrow, deco.barrow])
+    c.stroke(path.line(b/2+dx+lend/2, -R, b/2+dx+lend/2, -R*(1+LbyR)),
+            [deco.earrow.small, deco.barrow.small])
     c.text(b/2+dx+lend+0.1, -R*(1+LbyR/2), r"$L$", [text.valign.middle])
 
     c.stroke(path.line(-3*dx, -R, b/2+dx, -R), [style.linestyle.dashed])
