@@ -622,7 +622,7 @@ computed using the Drude model
 with the plasma frequency given by ``omegap_low`` and the relaxation frequency
 given by ``gamma_low``. If ``omegap_low`` and ``gamma_low`` are not given in
 the file, the dielectric function is assumed to be 1. The behaviour for
-frequencies larger than the largest provided frequency is analougous using the
+frequencies larger than the largest provided frequency is analogous using the
 parameters given by ``omegap_high`` and ``gamma_high``. More details can be
 found in the directory ``materials/``.
 
