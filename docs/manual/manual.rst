@@ -214,7 +214,7 @@ performance boost of about 5%. To compile the code with this option, run:
     $ cmake .. -DOPT="-O3 -march=native"
 
 
-Similarily, link time optimization ``-flto`` might also increase performance.
+Similarly, link time optimization ``-flto`` might also increase performance.
 However, a test on an Intel Core i7-2600 machine showed basically no
 performance gain.
 
