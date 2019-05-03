@@ -226,7 +226,7 @@ static double integrand(double x, void *args)
     else
         logdetD = F_xi(xi_, caps_mpi);
 
-    printf("# xi*(L+R)/c=%.15g, logdetD=%.15g, t=%g\n", xi_, logdetD, now()-t0);
+    printf("# xi*(L+R)/c=%.16g, logdetD=%.16g, t=%g\n", xi_, logdetD, now()-t0);
     return logdetD;
 }
 
@@ -309,7 +309,7 @@ double F_xi(double xi_, caps_mpi_t *caps_mpi)
                 double v = terms[task->m] = task->value;
 
                 if(verbose)
-                    fprintf(stderr, "# m=%d, xi_=%.12g, logdetD=%.12g\n", task->m, xi_, task->value);
+                    fprintf(stderr, "# m=%d, xi_=%.16g, logdetD=%.16g\n", task->m, xi_, task->value);
 
                 if(v == 0 || v/terms[0] < cutoff)
                     goto done;
@@ -332,7 +332,7 @@ double F_xi(double xi_, caps_mpi_t *caps_mpi)
         {
             terms[task->m] = task->value;
             if(verbose)
-                fprintf(stderr, "# m=%d, xi_=%.12g, logdetD=%.12g\n", task->m, xi_, task->value);
+                fprintf(stderr, "# m=%d, xi_=%.16g, logdetD=%.16g\n", task->m, xi_, task->value);
         }
 
         usleep(IDLE);
@@ -598,15 +598,15 @@ void master(int argc, char *argv[], const int cores)
     printf("# start time: %s\n", time_str);
     printf("#\n");
 
-    printf("# LbyR = %.15g\n", LbyR);
-    printf("# RbyL = %.15g\n", 1/LbyR);
-    printf("# L = %.15g\n", L);
-    printf("# R = %.15g\n", R);
+    printf("# LbyR = %.16g\n", LbyR);
+    printf("# RbyL = %.16g\n", 1/LbyR);
+    printf("# L = %.16g\n", L);
+    printf("# R = %.16g\n", R);
     if(ht)
         printf("# high-temperature limit\n");
     else
     {
-        printf("# T = %.15g\n", T);
+        printf("# T = %.16g\n", T);
         if(T > 0)
         {
             if(psd_order)
@@ -624,8 +624,8 @@ void master(int argc, char *argv[], const int cores)
         printf("# filename = %s\n", filename);
     else if(!isinf(omegap))
     {
-        printf("# omegap = %.15g\n", omegap);
-        printf("# gamma = %.15g\n", gamma_);
+        printf("# omegap = %.16g\n", omegap);
+        printf("# gamma = %.16g\n", gamma_);
     }
 
     caps_mpi_t *caps_mpi = caps_mpi_init(L, R, T, filename, omegap, gamma_, ldim, cutoff, iepsrel, cores, verbose);
@@ -675,7 +675,7 @@ void master(int argc, char *argv[], const int cores)
         }
 
         printf("#\n");
-        printf("# ier=%d, integral=%.15g, neval=%d, epsrel=%g\n", ier, integral, neval, epsrel);
+        printf("# ier=%d, integral=%.16g, neval=%d, epsrel=%g\n", ier, integral, neval, epsrel);
 
         WARN(ier != 0, "ier=%d", ier);
 
@@ -731,7 +731,7 @@ void master(int argc, char *argv[], const int cores)
                 {
                     F_HT(caps_mpi, omegap_low, &drude_HT, NULL, &plasma_HT);
                     printf("# model = optical data (xi=0: Drude)\n");
-                    printf("# plasma = %.15g (logdetD(xi=0) for plasma model with omegap=%geV)\n", plasma_HT, omegap_low);
+                    printf("# plasma = %.16g (logdetD(xi=0) for plasma model with omegap=%geV)\n", plasma_HT, omegap_low);
 
                     buf_push(v, drude_HT);
                 }
@@ -740,7 +740,7 @@ void master(int argc, char *argv[], const int cores)
             caps_free(caps);
 
             printf("#\n");
-            printf("# xi*(L+R)/c=0, logdetD=%.15g, t=%g\n", v[0], now()-t0);
+            printf("# xi*(L+R)/c=0, logdetD=%.16g, t=%g\n", v[0], now()-t0);
         }
 
 
@@ -760,7 +760,7 @@ void master(int argc, char *argv[], const int cores)
                 const double xi = psd_xi[n]*T_scaled/(2*M_PI);
                 const double t0 = now();
                 buf_push(v, psd_eta[n]*F_xi(xi, caps_mpi));
-                printf("# xi*(L+R)/c=%.15g, logdetD=%.15g, t=%g\n", xi, v[n+1], now()-t0);
+                printf("# xi*(L+R)/c=%.16g, logdetD=%.16g, t=%g\n", xi, v[n+1], now()-t0);
             }
 
             xfree(psd_xi);
@@ -774,7 +774,7 @@ void master(int argc, char *argv[], const int cores)
                 const double t0 = now();
                 const double xi = n*T_scaled;
                 buf_push(v, F_xi(xi, caps_mpi));
-                printf("# xi*(L+R)/c=%.15g, logdetD=%.15g, t=%g\n", xi, v[n], now()-t0);
+                printf("# xi*(L+R)/c=%.16g, logdetD=%.16g, t=%g\n", xi, v[n], now()-t0);
 
                 if(fabs(v[n]/v[0]) < epsrel)
                     break;
@@ -880,7 +880,7 @@ void slave(MPI_Comm master_comm, int rank)
             }
 
             logdet = caps_logdetD(caps, xi_, m);
-            TERMINATE(isnan(logdet), "L/R=%.10g, xi_=%.15g, m=%d, ldim=%d", LbyR, xi_, m, ldim);
+            TERMINATE(isnan(logdet), "L/R=%.16g, xi_=%.16g, m=%d, ldim=%d", LbyR, xi_, m, ldim);
         }
 
         MPI_Isend(&logdet, 1, MPI_DOUBLE, 0, 0, master_comm, &request);
