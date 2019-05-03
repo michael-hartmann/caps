@@ -214,7 +214,7 @@ performance boost of about 5%. To compile the code with this option, run:
     $ cmake .. -DOPT="-O3 -march=native"
 
 
-Similarily, link time optimization ``-flto`` might also increase performance.
+Similarly, link time optimization ``-flto`` might also increase performance.
 However, a test on an Intel Core i7-2600 machine showed basically no
 performance gain.
 
@@ -342,7 +342,7 @@ order that the integrand is sufficiently smooth for the integration routine,
 By default, the integration routine uses an adaptive Gauss-Kronrod method
 provided by `CQUADPACK <https://github.com/ESSS/cquadpack>`_. For perfect
 reflectors it is sometimes faster to use an adaptive exponentially convergent
-Fourier-Chebshev quadrature scheme (FCQS), see `Boyd, "Exponentially convergent
+Fourier-Chebyshev quadrature scheme (FCQS), see `Boyd, "Exponentially convergent
 Fourier-Chebshev quadrature schemes on bounded and infinite intervals", JOSC 2,
 2 (1987) <https://doi.org/10.1007/BF01061480>`_. You can use FCQS using the
 flag ``--fcqs``. Since the adaptive algorithm for FCQS is not well tested, this
@@ -621,8 +621,8 @@ computed using the Drude model
 
 with the plasma frequency given by ``omegap_low`` and the relaxation frequency
 given by ``gamma_low``. If ``omegap_low`` and ``gamma_low`` are not given in
-the file, the dielectric function is assumed to be 1. The behaviour for
-frequencies larger than the largest provided frequency is analougous using the
+the file, the dielectric function is assumed to be 1. The behavior for
+frequencies larger than the largest provided frequency is analogous using the
 parameters given by ``omegap_high`` and ``gamma_high``. More details can be
 found in the directory ``materials/``.
 
