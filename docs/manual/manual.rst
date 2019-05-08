@@ -729,6 +729,14 @@ almost all purposes. If you want to compute the Casimir energy to very high
 accuracy, to :math:`10^{-7}` or better, you might want to use a smaller value
 for ``IEPSREL``.
 
+If ``caps`` was interrupted and you have the partial output saved in a file,
+you can use the ``--resume`` option to continue the computation from that
+point. Interruptions may happen for example on a cluster if the program exceeds
+the time limit. Given the option ``--resume FILENAME``, ``caps`` reads the
+content of ``FILENAME`` and re-uses the computed values. Make sure that all
+other parameters given to ``caps`` exactly match the parameters used to
+generate ``FILENAME``.
+
 
 caps_logdetD
 ------------

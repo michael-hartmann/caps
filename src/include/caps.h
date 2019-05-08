@@ -19,9 +19,11 @@ typedef struct {
     caps_task_t **tasks;
     int determinants;
     char filename[512];
+    double cache[4096][2];
+    int cache_elems;
 } caps_mpi_t;
 
-caps_mpi_t *caps_mpi_init(double L, double R, double T, char *filename, double omegap, double gamma_, int ldim, double cutoff, double iepsrel, int cores, bool verbose);
+caps_mpi_t *caps_mpi_init(double L, double R, double T, char *filename, char *resume, double omegap, double gamma_, int ldim, double cutoff, double iepsrel, int cores, bool verbose);
 void caps_mpi_free(caps_mpi_t *self);
 int caps_mpi_submit(caps_mpi_t *self, int index, double xi, int m);
 int caps_mpi_retrieve(caps_mpi_t *self, caps_task_t **task_out);

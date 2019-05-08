@@ -35,6 +35,7 @@
  * @param [in] R radius of sphere in meter
  * @param [in] T temperature in Kelvin
  * @param [in] filename filename of material description or NULL
+ * @param [in] resume filename of partial output to be resumed
  * @param [in] omegap plasma frequency of the Drude model in eV
  * @param [in] gamma_ relaxation frequency of the Drude model eV
  * @param [in] ldim dimension of vector space
@@ -44,7 +45,7 @@
  * @param [in] verbose flag if verbose
  * @retval object caps_mpi_t object
  */
-caps_mpi_t *caps_mpi_init(double L, double R, double T, char *filename, double omegap, double gamma_, int ldim, double cutoff, double iepsrel, int cores, bool verbose)
+caps_mpi_t *caps_mpi_init(double L, double R, double T, char *filename, char *resume, double omegap, double gamma_, int ldim, double cutoff, double iepsrel, int cores, bool verbose)
 {
     caps_mpi_t *self = xmalloc(sizeof(caps_mpi_t));
 
@@ -67,6 +68,41 @@ caps_mpi_t *caps_mpi_init(double L, double R, double T, char *filename, double o
     TERMINATE(strlen(filename) > 511, "filename too long: %s", filename);
     memset(self->filename, '\0', sizeof(self->filename));
     strncpy(self->filename, filename, sizeof(self->filename)-sizeof(char));
+
+    /* cache for resume */
+    self->cache_elems = 0;
+    if(resume && strlen(resume) > 0)
+    {
+        char line[512];
+        FILE *fh = fopen(resume, "r");
+        TERMINATE(fh == NULL, "cannot open %s for reading", resume);
+
+        while(fgets(line, sizeof(line)/sizeof(char), fh) != NULL)
+        {
+            char *p1 = strstr(line, "# xi*(L+R)/c=");
+            char *p2 = strstr(line, "logdetD=");
+            if(p1 && p2)
+            {
+                char *p3;
+
+                p1 += 13;
+                p3 = strchr(p1, ',');
+                TERMINATE(p3 == NULL, "%s has wrong format", resume);
+                *p3 = '\0';
+                self->cache[self->cache_elems][0] = atof(p1); /* xi */
+
+                p2 += 8;
+                p3 = strchr(p2, ',');
+                TERMINATE(p3 == NULL, "%s has wrong format", resume);
+                *p3 = '\0';
+                self->cache[self->cache_elems][1] = atof(p2); /* logdetD */
+
+                self->cache_elems++;
+            }
+        }
+
+        fclose(fh);
+    }
 
     self->tasks[0] = NULL;
     for(int i = 1; i < cores; i++)
@@ -277,6 +313,19 @@ double F_xi(double xi_, caps_mpi_t *caps_mpi)
     const double mmax = sizeof(terms)/sizeof(double);
     const double cutoff = caps_mpi->cutoff;
 
+    /* look in cache if resumed */
+    for(int j = 0; j < caps_mpi->cache_elems; j++)
+    {
+        const double xi_cache = caps_mpi->cache[j][0];
+        //printf("xi_cache=%g vs xi=%g\n", xi_cache, xi);
+
+        if(xi_ == xi_cache || fabs(1-xi_cache/xi_) < 1e-11)
+        {
+            const double logdetD = caps_mpi->cache[j][1];
+            return logdetD;
+        }
+    }
+
     if(xi_ == 0)
     {
         /* compute Drude contribution */
@@ -371,6 +420,7 @@ void master(int argc, char *argv[], const int cores)
 {
     bool verbose = false, fcqs = false, ht = false;
     char filename[512] = { 0 };
+	char resume[512] = { 0 };
     int ldim = 0;
     double L = 0, R = 0, T = 0, omegap = INFINITY, gamma_ = 0;
     double cutoff = CUTOFF, epsrel = EPSREL, eta = ETA;
@@ -398,6 +448,7 @@ void master(int argc, char *argv[], const int cores)
             { "epsrel",      required_argument, 0, 'e' },
             { "iepsrel",     required_argument, 0, 'i' },
             { "material",    required_argument, 0, 'f' },
+			{ "resume",      required_argument, 0, 'r' },
             { "omegap",      required_argument, 0, 'w' },
             { "gamma",       required_argument, 0, 'g' },
             { "psd-order",   required_argument, 0, 'P' },
@@ -407,7 +458,7 @@ void master(int argc, char *argv[], const int cores)
         /* getopt_long stores the option index here. */
         int option_index = 0;
 
-        int c = getopt_long(argc, argv, "R:L:T:l:c:e:E:f:i:w:g:P:pFvVHh", long_options, &option_index);
+        int c = getopt_long(argc, argv, "R:L:T:l:c:e:E:f:r:i:w:g:P:pFvVHh", long_options, &option_index);
 
         /* Detect the end of the options. */
         if(c == -1)
@@ -458,6 +509,9 @@ void master(int argc, char *argv[], const int cores)
                 break;
             case 'f':
                 strncpy(filename, optarg, sizeof(filename)-sizeof(char));
+                break;
+            case 'r':
+                strncpy(resume, optarg, sizeof(resume)-sizeof(char));
                 break;
             case 'p':
                 psd_order = -1; /* auto */
@@ -627,8 +681,10 @@ void master(int argc, char *argv[], const int cores)
         printf("# omegap = %.16g\n", omegap);
         printf("# gamma = %.16g\n", gamma_);
     }
+	if(strlen(resume))
+        printf("# resume = %s\n", resume);
 
-    caps_mpi_t *caps_mpi = caps_mpi_init(L, R, T, filename, omegap, gamma_, ldim, cutoff, iepsrel, cores, verbose);
+    caps_mpi_t *caps_mpi = caps_mpi_init(L, R, T, filename, resume, omegap, gamma_, ldim, cutoff, iepsrel, cores, verbose);
 
     /* high-temperature limit */
     if(ht)
@@ -953,6 +1009,9 @@ void usage(FILE *stream)
 "    -f, --material FILENAME\n"
 "        Filename of the material description file. If set, --omegap and\n"
 "        --gamma will be ignored.\n"
+"\n"
+"    -r, --resume FILENAME\n"
+"        Resume the computation from a partial output file. (experimental)\n"
 "\n"
 "    --omegap OMEGAP\n"
 "        Model the metals using the Drude/Plasma model and set plasma\n"
