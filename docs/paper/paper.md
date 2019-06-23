@@ -37,9 +37,9 @@ make aspect ratios as large as $R/L\sim5000$ accessible. Higher aspect ratios
 are usually well covered by the proximity force approximation.
 
 ![Geometry of the plane-sphere setup. A sphere with radius $R$ is separated by
-the distance $L$ from an infinitely extended plate. The aspect ratio $R/L=2$ in
-this Figure is about three orders of magnitudes smaller than in typical
-experiments.](geometry.pdf)
+the distance $L$ from an infinitely extended plate. In typical experiments,
+the aspect ratio $R/L$ is about three orders of magnitude larger than
+shown here.](geometry.pdf)
 
 Within the scattering approach [@lambrecht_njp_2006; @emig_prl_2007], the
 Casimir free energy is given as a Matsubara sum
