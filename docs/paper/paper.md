@@ -42,20 +42,19 @@ the aspect ratio $R/L$ is about three orders of magnitude larger than
 shown here.](geometry.pdf)
 
 Within the scattering approach [@lambrecht_njp_2006; @emig_prl_2007], the
-Casimir free energy is given as a Matsubara sum
-$$\mathcal{F} = \frac{k_\mathrm{B}T}{2} \sum_{n=-\infty}^\infty \log\det\left(1-\mathcal{M}(|\xi_n|)\right)$$
-with $\xi_n=2\pi n k_\mathrm{B}T/\hbar$. $k_\mathrm{B}$ and $\hbar$ are the Boltzmann
-constant and Planck constant, respectively. The round-trip operator $\mathcal{M}$
-represents a complete round trip of an electromagnetic wave between the sphere
-and the plane. Commonly, the round-trip operator is expressed in the multipole
-basis. The dimension of $\mathcal{M}$ in this basis is infinite and a numerical
-evaluation of the determinants requires a truncation of the vector space. In
-order to achieve a sufficient accuracy, one must scale the dimension of
-$\mathcal{M}$ with the aspect ratio $R/L$. Hence, the matrices for aspect
-ratios used in typical experiments are huge. Moreover, the matrices are
-ill-conditioned rendering a numerical evaluation difficult. These problems
-limit the aspect ratios accessible in standard implementations to
-$R/L\lesssim100$ [@Durand_phd].
+Casimir free energy is given as a Matsubara sum $$\mathcal{F} =
+\frac{k_\mathrm{B}T}{2} \sum_{n=-\infty}^\infty
+\log\det\left(1-\mathcal{M}(|\xi_n|)\right)$$ with $\xi_n=2\pi n
+k_\mathrm{B}T/\hbar$. $k_\mathrm{B}$ and $\hbar$ are the Boltzmann constant and
+Planck constant, respectively. The round-trip operator $\mathcal{M}$ represents
+a complete round trip of an electromagnetic wave between the sphere and the
+plane. Commonly, the round-trip operator is expanded in the multipole basis.
+The numerical evaluation of the determinants demands a truncation of the
+originally infinite vector space. For a fixed accuracy, the required dimension
+scales linearly with the aspect ration $R/L$ and can become of the order of
+$10^4$ or larger. Moreover, the matrices are ill-conditioned rendering a
+numerical evaluation difficult. These problems limit the aspect ratios
+accessible in standard implementations to $R/L\lesssim100$ [@Durand_phd].
 
 CaPS addresses these issues by using a symmetrized version of the round-trip
 operator $\mathcal{M}$ as described in [@hartmann_phscr_2018;
