@@ -45,7 +45,7 @@ Within the scattering approach [@lambrecht_njp_2006; @emig_prl_2007], the
 Casimir free energy is given as a Matsubara sum
 $$\mathcal{F} = \frac{k_\mathrm{B}T}{2} \sum_{n=-\infty}^\infty \log\det\left(1-\mathcal{M}(|\xi_n|)\right)$$
 with $\xi_n=2\pi n k_\mathrm{B}T/\hbar$. The round-trip operator $\mathcal{M}$
-represents a complete round-trip of an electromagnetic wave between the sphere
+represents a complete round trip of an electromagnetic wave between the sphere
 and the plane. Commonly, the round-trip operator is expressed in the multipole
 basis. The dimension of $\mathcal{M}$ in this basis is infinite and a numerical
 evaluation of the determinants requires a truncation of the vector space. In
