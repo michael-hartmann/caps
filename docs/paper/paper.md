@@ -1,8 +1,8 @@
 ---
-title: 'CaPS: Casimir effect in the plane-sphere geometry'
+title: 'CaPS: Casimir Effect in the Plane-Sphere Geometry'
 tags:
   - Casimir effect
-  - electromanetic scattering
+  - electromagnetic scattering
   - multipole basis
   - plane-sphere geometry
   - hierarchical matrices
@@ -16,7 +16,7 @@ authors:
 affiliations:
   - name: Institut für Physik, Universität Augsburg, 86135 Augsburg, Germany
     index: 1
-date: 27th February 2019
+date: 23th June 2019
 bibliography: paper.bib
 ---
 
@@ -32,39 +32,40 @@ compute the Casimir free energy as a function of the sphere radius $R$, the
 minimal separation $L$ between sphere and plane, the temperature $T$, and the
 material properties of plane and sphere. It is assumed that both objects are
 non-magnetic and placed in vacuum. In typical experiments the aspect ratio
-$R/L$ is of the order $R/L\sim1000$. The main purpose of this package is to
-make aspect ratios as large as $R/L\sim5000$ accesible. Higher aspect ratios
+$R/L$ is of the order of 1000. The main purpose of this package is to
+make aspect ratios as large as $R/L\sim5000$ accessible. Higher aspect ratios
 are usually well covered by the proximity force approximation.
 
-![Geometry of the plane-sphere setup. A sphere with radius $R$ is separated by
-the distance $L$ from an infintely extended plane. The aspect ratio $R/L=2$ in
-this Figure is about three orders of magnitudes smaller than in typical
-experiments.](geometry.pdf)
+![Geometry of the plane-sphere setup: A sphere with radius $R$ is separated by
+the distance $L$ from an infinitely extended plate. In typical experiments,
+the aspect ratio $R/L$ is about three orders of magnitude larger than
+shown here.](geometry.pdf)
 
 Within the scattering approach [@lambrecht_njp_2006; @emig_prl_2007], the
-Casimir free energy is given as a Matsubara sum
-$$\mathcal{F} = \frac{k_\mathrm{B}T}{2} \sum_{n=-\infty}^\infty \log\det\left(1-\mathcal{M}(|\xi_n|)\right)$$
-with $\xi_n=2\pi n k_\mathrm{B}T/\hbar$. The round-trip operator $\mathcal{M}$
-represents a complete round-trip of an electromagnetic wave between the sphere
-and the plane. Commonly, the round-trip operator is expressed in the multipole
-basis. The dimension of $\mathcal{M}$ in this basis is infinite and a numerical
-evaluation of the determinants requires a truncation of the vector space. In
-order to achieve a sufficient accuracy, one must scale the dimension of
-$\mathcal{M}$ with the aspect ratio $R/L$. Hence, the matrices for aspect
-ratios used in typical experiments are huge. Moreover, the matrices are
-ill-conditioned rendering a numerical evaluation difficult. These problems
-limit the aspect ratios accessible in standard implementations to
-$R/L\lesssim100$ [@Durand_phd].
+Casimir free energy is given as a Matsubara sum $$\mathcal{F} =
+\frac{k_\mathrm{B}T}{2} \sum_{n=-\infty}^\infty
+\log\det\left(1-\mathcal{M}(|\xi_n|)\right)$$ with $\xi_n=2\pi n
+k_\mathrm{B}T/\hbar$. $k_\mathrm{B}$ and $\hbar$ are the Boltzmann constant and
+Planck constant, respectively. The round-trip operator $\mathcal{M}$ represents
+a complete round trip of an electromagnetic wave between the sphere and the
+plane. Commonly, the round-trip operator is expanded in the multipole basis.
+The numerical evaluation of the determinants demands a truncation of the
+originally infinite vector space. For a fixed accuracy, the required dimension
+scales linearly with the aspect ration $R/L$ and can become of the order of
+$10^4$ or larger. Moreover, the matrices are ill-conditioned rendering a
+numerical evaluation difficult. These problems limit the aspect ratios
+accessible in standard implementations to $R/L\lesssim100$ [@Durand_phd].
 
 CaPS addresses these issues by using a symmetrized version of the round-trip
-operator $\mathcal{M}$ as described in [@hartmann_phscr_2018;
-@hartmann_phd_2018]. The matrix representations of the symmetrized round-trip
-operator yield hierarchical off-diagonal low-rank (HODLR) matrices which allow
-for a fast computation of determinants [@ambikasaran_josc_2013;
-@ambikasaran_arxiv_2014]. Specifically, we use HODLRlib
-[@ambikasaran_joss_2019] for this purpose. Further information including
-explicit expressions for the matrix elements of the symmetrized round-trip
-operator can be found in [@hartmann_phscr_2018; @hartmann_phd_2018].
+operator $\mathcal{M}$ as described in [@hartmann_prl_2017;
+@hartmann_phscr_2018; @hartmann_phd_2018]. The matrix representation of the
+symmetrized round-trip operator yields hierarchical off-diagonal low-rank
+(HODLR) matrices which allow for a fast computation of determinants
+[@ambikasaran_josc_2013; @ambikasaran_arxiv_2014]. Specifically, we use
+HODLRlib [@ambikasaran_joss_2019] for this purpose. Further information
+including explicit expressions for the matrix elements of the symmetrized
+round-trip operator and a run-time analysis can be found in
+[@hartmann_phscr_2018; @hartmann_phd_2018].
 
 ``CaPS`` provides the following main features:
 
