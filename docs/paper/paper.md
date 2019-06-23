@@ -36,7 +36,7 @@ $R/L$ is of the order of 1000. The main purpose of this package is to
 make aspect ratios as large as $R/L\sim5000$ accessible. Higher aspect ratios
 are usually well covered by the proximity force approximation.
 
-![Geometry of the plane-sphere setup. A sphere with radius $R$ is separated by
+![Geometry of the plane-sphere setup: A sphere with radius $R$ is separated by
 the distance $L$ from an infinitely extended plate. In typical experiments,
 the aspect ratio $R/L$ is about three orders of magnitude larger than
 shown here.](geometry.pdf)
