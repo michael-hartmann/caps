@@ -57,14 +57,15 @@ numerical evaluation difficult. These problems limit the aspect ratios
 accessible in standard implementations to $R/L\lesssim100$ [@Durand_phd].
 
 CaPS addresses these issues by using a symmetrized version of the round-trip
-operator $\mathcal{M}$ as described in [@hartmann_prl_2017; @hartmann_phscr_2018;
-@hartmann_phd_2018]. The matrix representation of the symmetrized round-trip
-operator yields hierarchical off-diagonal low-rank (HODLR) matrices which allow
-for a fast computation of determinants [@ambikasaran_josc_2013;
-@ambikasaran_arxiv_2014]. Specifically, we use HODLRlib
-[@ambikasaran_joss_2019] for this purpose. Further information including
-explicit expressions for the matrix elements of the symmetrized round-trip
-operator can be found in [@hartmann_phscr_2018; @hartmann_phd_2018].
+operator $\mathcal{M}$ as described in [@hartmann_prl_2017;
+@hartmann_phscr_2018; @hartmann_phd_2018]. The matrix representation of the
+symmetrized round-trip operator yields hierarchical off-diagonal low-rank
+(HODLR) matrices which allow for a fast computation of determinants
+[@ambikasaran_josc_2013; @ambikasaran_arxiv_2014]. Specifically, we use
+HODLRlib [@ambikasaran_joss_2019] for this purpose. Further information
+including explicit expressions for the matrix elements of the symmetrized
+round-trip operator and a run-time analysis can be found in
+[@hartmann_phscr_2018; @hartmann_phd_2018].
 
 ``CaPS`` provides the following main features:
 
