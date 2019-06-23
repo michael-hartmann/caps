@@ -1,5 +1,5 @@
 ---
-title: 'CaPS: Casimir effect in the plane-sphere geometry'
+title: 'CaPS: Casimir Effect in the Plane-Sphere Geometry'
 tags:
   - Casimir effect
   - electromagnetic scattering
