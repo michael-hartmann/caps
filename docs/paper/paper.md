@@ -32,7 +32,7 @@ compute the Casimir free energy as a function of the sphere radius $R$, the
 minimal separation $L$ between sphere and plane, the temperature $T$, and the
 material properties of plane and sphere. It is assumed that both objects are
 non-magnetic and placed in vacuum. In typical experiments the aspect ratio
-$R/L$ is of the order $R/L\sim1000$. The main purpose of this package is to
+$R/L$ is of the order of 1000. The main purpose of this package is to
 make aspect ratios as large as $R/L\sim5000$ accessible. Higher aspect ratios
 are usually well covered by the proximity force approximation.
 
