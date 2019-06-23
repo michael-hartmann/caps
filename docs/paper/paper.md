@@ -59,8 +59,8 @@ $R/L\lesssim100$ [@Durand_phd].
 
 CaPS addresses these issues by using a symmetrized version of the round-trip
 operator $\mathcal{M}$ as described in [@hartmann_phscr_2018;
-@hartmann_phd_2018]. The matrix representations of the symmetrized round-trip
-operator yield hierarchical off-diagonal low-rank (HODLR) matrices which allow
+@hartmann_phd_2018]. The matrix representation of the symmetrized round-trip
+operator yields hierarchical off-diagonal low-rank (HODLR) matrices which allow
 for a fast computation of determinants [@ambikasaran_josc_2013;
 @ambikasaran_arxiv_2014]. Specifically, we use HODLRlib
 [@ambikasaran_joss_2019] for this purpose. Further information including
