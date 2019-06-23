@@ -2,7 +2,7 @@
 title: 'CaPS: Casimir effect in the plane-sphere geometry'
 tags:
   - Casimir effect
-  - electromanetic scattering
+  - electromagnetic scattering
   - multipole basis
   - plane-sphere geometry
   - hierarchical matrices
@@ -16,7 +16,7 @@ authors:
 affiliations:
   - name: Institut für Physik, Universität Augsburg, 86135 Augsburg, Germany
     index: 1
-date: 27th February 2019
+date: 23th June 2019
 bibliography: paper.bib
 ---
 
@@ -33,11 +33,11 @@ minimal separation $L$ between sphere and plane, the temperature $T$, and the
 material properties of plane and sphere. It is assumed that both objects are
 non-magnetic and placed in vacuum. In typical experiments the aspect ratio
 $R/L$ is of the order $R/L\sim1000$. The main purpose of this package is to
-make aspect ratios as large as $R/L\sim5000$ accesible. Higher aspect ratios
+make aspect ratios as large as $R/L\sim5000$ accessible. Higher aspect ratios
 are usually well covered by the proximity force approximation.
 
 ![Geometry of the plane-sphere setup. A sphere with radius $R$ is separated by
-the distance $L$ from an infintely extended plane. The aspect ratio $R/L=2$ in
+the distance $L$ from an infinitely extended plane. The aspect ratio $R/L=2$ in
 this Figure is about three orders of magnitudes smaller than in typical
 experiments.](geometry.pdf)
 
