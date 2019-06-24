@@ -317,7 +317,7 @@ result of the integration. If the integration was successful, the value is
 ``ier=0``, see also the description of `dqags
 <http://www.netlib.org/quadpack/dqags.f>`_ of `QUADPACK
 <http://www.netlib.org/quadpack/>`_.  The program ends by printing the result
-of the computation. The free energy is outputed in units of :math:`(L+R)/\hbar
+of the computation. The free energy is output in units of :math:`(L+R)/\hbar
 c`, i.e., for this example the free energy is
 
 .. math::
