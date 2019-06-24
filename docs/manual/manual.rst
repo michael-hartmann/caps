@@ -47,7 +47,7 @@ CaPS provides the following main features:
  - Computation of the free energy in the high-temperature limit for perfect reflectors and metals described by the Drude or plasma model.
 
 The computation of the high-temperature limit for the Drude model is based on
-`Bimonte, Emig, "Exact Results for Classical Casimir Interactions: Dirichlet
+`G. Bimonte, T. Emig, "Exact Results for Classical Casimir Interactions: Dirichlet
 and Drude Model in the Sphere-Sphere and Sphere-Plane", Phys. Rev. Lett. 109,
 160403 (2012) <https://doi.org/10.1103/PhysRevLett.109.160403>`_.
 
@@ -58,7 +58,7 @@ temperature and perfect reflectors:
  - Computation of the free energy for two spheres with equal radii.
 
 The implementation for the plane-cylinder geometry is based on a symmetrized
-version of the matrix elements given in `Emig, Graham, Jaffe, Kardar, "Casimir
+version of the matrix elements given in `T. Emig, N. Graham, R. L. Jaffe, M. Kardar, "Casimir
 Forces between Arbitrary Compact Objects", Phys. Rev. Lett. 99, 170403 (2007)
 <https://doi.org/10.1103/PhysRevLett.99.170403>`_.
 
@@ -66,11 +66,11 @@ Forces between Arbitrary Compact Objects", Phys. Rev. Lett. 99, 170403 (2007)
 Further reading
 ---------------
 
-Some of the numerical ideas used in this library are described in `Hartmann,
-Ingold, Maia Neto, "Advancing numerics for the Casimir effect to experimentally
+Some of the numerical ideas used in this library are described in `M. Hartmann,
+G.-L. Ingold, P. A. Maia Neto, "Advancing numerics for the Casimir effect to experimentally
 relevant aspect ratios", Phys. Scr. 93, 114003 (2018)
 <https://doi.org/10.1088/1402-4896/aae34e>`_. A more detailed description can
-be found in `Hartmann, "Casimir effect in the plane-sphere geometry: Beyond the
+be found in `M. Hartmann, "Casimir effect in the plane-sphere geometry: Beyond the
 proximity force approximation", PhD thesis (Universität Augsburg, 2018)
 <https://opus.bibliothek.uni-augsburg.de/opus4/44798>`_.
 
