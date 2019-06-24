@@ -84,7 +84,8 @@ commands should also work on other Debian-like systems.
 Compilation
 -----------
 
-The easiest way to get the source code is to use git. To install git, run
+The easiest way to get the source code is by cloning it from Github. If not
+already present, install git by running
 
 .. code-block:: console
 
@@ -97,7 +98,7 @@ installed, the command
 
     $ git clone https://github.com/michael-hartmann/caps.git
 
-will get you the complete CaPS repository and stores it in the directory
+will get you the complete CaPS repository and store it in the directory
 ``caps/``. As an alternative, you can also download and extract the zip- or
 taz.gz-archive of the latest release.
 
