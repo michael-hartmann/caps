@@ -27,9 +27,10 @@ compute the free energy for aspect ratios up to :math:`R/L\sim 5\,000`.
 .. figure:: images/overview.pdf
    :scale: 100 %
 
-   Experiments in the plane-sphere geometry. The blue area indicates the aspect
-   ratios that are accessible using CaPS. The inset depicts the
-   plane-sphere geometry.
+   The aspect ratio :math:`R/L` used in experiments in the plane-sphere geometry
+   is shown by the red stripes. The blue area indicates the aspect ratios that
+   are accessible using CaPS. The inset depicts the plane-sphere geometry where
+   a sphere of radius :math:`R` is placed at a distance :math:`L` from a plane.
 
 Features
 --------
