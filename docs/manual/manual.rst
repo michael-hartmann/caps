@@ -13,23 +13,28 @@ Welcome to the documentation of CaPS!
 Overview and Features
 =====================
 
+CaPS provides software to describe the Casimir effect in the plane-sphere
+geometry for arbitrary temperatures and arbitrary non-magnetic materials
+constituting sphere and plate. Both objects are assumed to be in vacuum. The
+plane-sphere geometry is sketched in :numref:`aspect_ratios` and is
+characterized by the sphere radius :math:`R` and the distance :math:`L` between
+sphere and infinite plane.
+
+The main goal of the library and the associated programs is to compute the free
+energy :math:`\mathcal{F}` as a function of the radius :math:`R` of the sphere,
+the separation :math:`L` between sphere and plate, the temperature :math:`T`,
+and the dielectric properties of the sphere and the plane. The code is highly
+optimized and -- depending on parameters and the available ressources -- allows
+to compute the free energy for aspect ratios up to :math:`R/L\sim 5\,000`.
+
+.. _aspect_ratios:
 .. figure:: images/overview.pdf
    :scale: 100 %
 
-   Experiments in the plane-sphere geometry. The blue area denotes the aspect
-   ratios that are accessible using CaPS. The inset depicts the
-   plane-sphere geometry.
-
-CaPS is an implementation of the Casimir effect in the plane-sphere geometry.
-The geometry consists of a sphere of radius :math:`R` separated by a distance
-:math:`L` from an infinite plate as sketched in the inset of Figure 1. We
-assume that the sphere and the plane are in vacuum. The main goal of the
-library and the associated programs is to compute the free energy
-:math:`\mathcal{F}` depending on the radius :math:`R` of the sphere, the
-separation :math:`L` between sphere and plate, the temperature :math:`T`, and
-the dielectric properties of the sphere and the plane. The code is highly
-optimized and allows you -- depending on parameters and your hardware -- to
-compute the free energy for aspect ratios up to :math:`R/L\sim 5\,000`.
+   The aspect ratio :math:`R/L` used in experiments in the plane-sphere geometry
+   is shown by the red stripes. The blue area indicates the aspect ratios that
+   are accessible using CaPS. The inset depicts the plane-sphere geometry where
+   a sphere of radius :math:`R` is placed at a distance :math:`L` from a plane.
 
 Features
 --------
@@ -42,7 +47,7 @@ CaPS provides the following main features:
  - Computation of the free energy in the high-temperature limit for perfect reflectors and metals described by the Drude or plasma model.
 
 The computation of the high-temperature limit for the Drude model is based on
-`Bimonte, Emig, "Exact Results for Classical Casimir Interactions: Dirichlet
+`G. Bimonte, T. Emig, "Exact Results for Classical Casimir Interactions: Dirichlet
 and Drude Model in the Sphere-Sphere and Sphere-Plane", Phys. Rev. Lett. 109,
 160403 (2012) <https://doi.org/10.1103/PhysRevLett.109.160403>`_.
 
@@ -53,7 +58,7 @@ temperature and perfect reflectors:
  - Computation of the free energy for two spheres with equal radii.
 
 The implementation for the plane-cylinder geometry is based on a symmetrized
-version of the matrix elements given in `Emig, Graham, Jaffe, Kardar, "Casimir
+version of the matrix elements given in `T. Emig, N. Graham, R. L. Jaffe, M. Kardar, "Casimir
 Forces between Arbitrary Compact Objects", Phys. Rev. Lett. 99, 170403 (2007)
 <https://doi.org/10.1103/PhysRevLett.99.170403>`_.
 
@@ -61,11 +66,11 @@ Forces between Arbitrary Compact Objects", Phys. Rev. Lett. 99, 170403 (2007)
 Further reading
 ---------------
 
-Some of the numerical ideas used in this library are described in `Hartmann,
-Ingold, Maia Neto, "Advancing numerics for the Casimir effect to experimentally
+Some of the numerical ideas used in this library are described in `M. Hartmann,
+G.-L. Ingold, P. A. Maia Neto, "Advancing numerics for the Casimir effect to experimentally
 relevant aspect ratios", Phys. Scr. 93, 114003 (2018)
 <https://doi.org/10.1088/1402-4896/aae34e>`_. A more detailed description can
-be found in `Hartmann, "Casimir effect in the plane-sphere geometry: Beyond the
+be found in `M. Hartmann, "Casimir effect in the plane-sphere geometry: Beyond the
 proximity force approximation", PhD thesis (Universität Augsburg, 2018)
 <https://opus.bibliothek.uni-augsburg.de/opus4/44798>`_.
 
@@ -79,7 +84,8 @@ commands should also work on other Debian-like systems.
 Compilation
 -----------
 
-The easiest way to get the source code is to use git. To install git, run
+The easiest way to get the source code is by cloning it from Github. If not
+already present, install git by running
 
 .. code-block:: console
 
@@ -92,9 +98,9 @@ installed, the command
 
     $ git clone https://github.com/michael-hartmann/caps.git
 
-will get you the complete CaPS repository and stores it in the directory
+will get you the complete CaPS repository and store it in the directory
 ``caps/``. As an alternative, you can also download and extract the zip- or
-taz.gz-archive of the latest release.
+tar.gz-archive of the latest release.
 
 The CaPS library and the programs are written in C and C++ using LAPACK and
 MPI. In order to compile the source code, you need a C and C++ compiler, the
@@ -317,7 +323,7 @@ result of the integration. If the integration was successful, the value is
 ``ier=0``, see also the description of `dqags
 <http://www.netlib.org/quadpack/dqags.f>`_ of `QUADPACK
 <http://www.netlib.org/quadpack/>`_.  The program ends by printing the result
-of the computation. The free energy is outputed in units of :math:`(L+R)/\hbar
+of the computation. The free energy is output in units of :math:`(L+R)/\hbar
 c`, i.e., for this example the free energy is
 
 .. math::
