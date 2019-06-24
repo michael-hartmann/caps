@@ -13,13 +13,6 @@ Welcome to the documentation of CaPS!
 Overview and Features
 =====================
 
-.. figure:: images/overview.pdf
-   :scale: 100 %
-
-   Experiments in the plane-sphere geometry. The blue area indicates the aspect
-   ratios that are accessible using CaPS. The inset depicts the
-   plane-sphere geometry.
-
 CaPS is an implementation of the Casimir effect in the plane-sphere geometry.
 The geometry consists of a sphere of radius :math:`R` separated by a distance
 :math:`L` from an infinite plate as sketched in the inset of Figure 1. We
@@ -30,6 +23,13 @@ separation :math:`L` between sphere and plate, the temperature :math:`T`, and
 the dielectric properties of the sphere and the plane. The code is highly
 optimized and allows you -- depending on parameters and your hardware -- to
 compute the free energy for aspect ratios up to :math:`R/L\sim 5\,000`.
+
+.. figure:: images/overview.pdf
+   :scale: 100 %
+
+   Experiments in the plane-sphere geometry. The blue area indicates the aspect
+   ratios that are accessible using CaPS. The inset depicts the
+   plane-sphere geometry.
 
 Features
 --------
