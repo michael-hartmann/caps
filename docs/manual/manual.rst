@@ -100,7 +100,7 @@ installed, the command
 
 will get you the complete CaPS repository and store it in the directory
 ``caps/``. As an alternative, you can also download and extract the zip- or
-taz.gz-archive of the latest release.
+tar.gz-archive of the latest release.
 
 The CaPS library and the programs are written in C and C++ using LAPACK and
 MPI. In order to compile the source code, you need a C and C++ compiler, the
