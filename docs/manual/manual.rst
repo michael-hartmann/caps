@@ -16,7 +16,7 @@ Overview and Features
 .. figure:: images/overview.pdf
    :scale: 100 %
 
-   Experiments in the plane-sphere geometry. The blue area denotes the aspect
+   Experiments in the plane-sphere geometry. The blue area indicates the aspect
    ratios that are accessible using CaPS. The inset depicts the
    plane-sphere geometry.
 
