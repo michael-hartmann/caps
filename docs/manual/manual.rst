@@ -15,15 +15,16 @@ Overview and Features
 
 CaPS is an implementation of the Casimir effect in the plane-sphere geometry.
 The geometry consists of a sphere of radius :math:`R` separated by a distance
-:math:`L` from an infinite plate as sketched in the inset of Figure 1. We
-assume that the sphere and the plane are in vacuum. The main goal of the
-library and the associated programs is to compute the free energy
-:math:`\mathcal{F}` depending on the radius :math:`R` of the sphere, the
+:math:`L` from an infinite plate as sketched in the inset of
+:numref:`aspect_ratios`. We assume that the sphere and the plane are in vacuum.
+The main goal of the library and the associated programs is to compute the free
+energy :math:`\mathcal{F}` depending on the radius :math:`R` of the sphere, the
 separation :math:`L` between sphere and plate, the temperature :math:`T`, and
 the dielectric properties of the sphere and the plane. The code is highly
 optimized and allows you -- depending on parameters and your hardware -- to
 compute the free energy for aspect ratios up to :math:`R/L\sim 5\,000`.
 
+.. _aspect_ratios:
 .. figure:: images/overview.pdf
    :scale: 100 %
 
