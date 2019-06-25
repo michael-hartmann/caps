@@ -155,15 +155,15 @@ the default search path, they need to be added to ``LD_LIBRARY_PATH``
 where we have assumed that the CaPS repository is in the directory
 ``/home/hendrik`` [#hendrik]_ .
 
-You can build the programs ``capc`` (plane-cylinder geometry) and ``cass``
-(sphere-sphere geometry with equal radii) to compute the Casimir interaction
-for perfect reflectors at :math:`T=0` with:
+After the previous steps, the programs ``capc`` (plane-cylinder geometry) and
+``cass`` (sphere-sphere geometry with equal radii) to compute the Casimir free
+energy for perfect reflectors at :math:`T=0` can be built with:
 
 .. code-block:: console
 
-    $ make
     $ make capc
     $ make cass
+
 
 On an Ubuntu 18.10 we found problems linking to `OpenBLAS
 <https://www.openblas.net/>`_ resulting in error messages similar to:
