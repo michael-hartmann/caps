@@ -134,7 +134,7 @@ The last command compiles the `HODLR library
 <https://github.com/sivaramambikasaran/HODLR/>`_, the libcaps library, and
 builds the shared objects ``libhodlr.so`` and ``libcaps.so``. Then, the
 programs ``caps`` and ``caps_logdetD`` are built. Note that you can also
-specify different compilers setting the variables ``CC`` and ``CXX``. Here is
+specify different compilers by setting the variables ``CC`` and ``CXX``. Here is
 an example how to use the Intel C and C++ compilers:
 
 .. code-block:: console
