@@ -26,6 +26,8 @@ the separation :math:`L` between sphere and plate, the temperature :math:`T`,
 and the dielectric properties of the sphere and the plane. The code is highly
 optimized and -- depending on parameters and the available ressources -- allows
 to compute the free energy for aspect ratios up to :math:`R/L\sim 5\,000`.
+An idea of typical aspect ratios used in Casimir experiments in the plane-sphere
+geometry can be obtained from :numref:`aspect_ratios`.
 
 .. _aspect_ratios:
 .. figure:: images/overview.pdf
