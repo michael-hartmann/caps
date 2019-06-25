@@ -100,7 +100,7 @@ installed, the command
 
     $ git clone https://github.com/michael-hartmann/caps.git
 
-will get you the complete CaPS repository and store it in the directory
+will download the complete CaPS repository and store it in the directory
 ``caps/``. As an alternative, you can also download and extract the zip- or
 tar.gz-archive of the latest release.
 
