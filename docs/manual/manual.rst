@@ -143,8 +143,8 @@ an example how to use the Intel C and C++ compilers:
     $ make
 
 In order to run the programs, the system must be able to find the libraries
-``libhodlr.so`` and ``libcaps.so``. As the libraries are not in the default
-search path, you have to add the directories to ``LD_LIBRARY_PATH``
+``libhodlr.so`` and ``libcaps.so``. As the corresponding directories are not in
+the default search path, they need to be added to ``LD_LIBRARY_PATH``
 
 .. code-block:: console
 
