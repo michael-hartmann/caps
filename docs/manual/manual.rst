@@ -151,7 +151,7 @@ the default search path, they need to be added to ``LD_LIBRARY_PATH``
     $ export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/home/hendrik/caps/bin
 
 where we have assumed that the CaPS repository is in the directory
-``/home/hendrik``.
+``/home/hendrik`` [#hendrik]_ .
 
 You can build the programs ``capc`` (plane-cylinder geometry) and ``cass``
 (sphere-sphere geometry with equal radii) to compute the Casimir interaction
@@ -947,3 +947,5 @@ Examples
 In the directory ``examples/`` you can find examples of simple programs that
 demonstrate how to use the CaPS API. The examples are kept simple and well
 documented.
+
+.. [#hendrik] In honor of Hendrik Brugt Gerhard Casimir (1909-2000).
