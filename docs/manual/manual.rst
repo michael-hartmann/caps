@@ -50,7 +50,7 @@ CaPS provides the following main features:
 
 The computation of the high-temperature limit for the Drude model is based on
 `G. Bimonte, T. Emig, "Exact Results for Classical Casimir Interactions: Dirichlet
-and Drude Model in the Sphere-Sphere and Sphere-Plane", Phys. Rev. Lett. 109,
+and Drude Model in the Sphere-Sphere and Sphere-Plane Geometry", Phys. Rev. Lett. 109,
 160403 (2012) <https://doi.org/10.1103/PhysRevLett.109.160403>`_.
 
 Basic support for further geometries is provided for the special case of zero
