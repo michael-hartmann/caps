@@ -133,9 +133,11 @@ directory and run ``cmake`` followed by ``make``:
 The last command compiles the `HODLR library
 <https://github.com/sivaramambikasaran/HODLR/>`_, the libcaps library, and
 builds the shared objects ``libhodlr.so`` and ``libcaps.so``. Then, the
-programs ``caps`` and ``caps_logdetD`` are built. Note that you can also
-specify different compilers by setting the variables ``CC`` and ``CXX``. Here is
-an example how to use the Intel C and C++ compilers:
+programs ``caps`` and ``caps_logdetD`` are built.
+
+Note that alternative compilers can be specified by setting the variables
+``CC`` and ``CXX``. For the Intel C and C++ compilers, the last two commands
+above should be replaced by:
 
 .. code-block:: console
 
