@@ -179,7 +179,7 @@ Under Ubuntu 18.10 we encountered problems linking to `OpenBLAS
 
 In this case, we recommend using `Atlas <http://math-atlas.sourceforge.net/>`_
 as a `BLAS <https://en.wikipedia.org/wiki/Basic_Linear_Algebra_Subprograms>`_
-implementation. Make sure that you have Atlas installed
+implementation. Make sure that Atlas is installed
 
 .. code-block:: console
 
