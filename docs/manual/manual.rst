@@ -130,7 +130,7 @@ directory and run ``cmake`` followed by ``make``:
     $ cmake ..
     $ make
 
-This command compiles the `HODLR library
+The last command compiles the `HODLR library
 <https://github.com/sivaramambikasaran/HODLR/>`_, the libcaps library, and
 builds the shared objects ``libhodlr.so`` and ``libcaps.so``. Then, the
 programs ``caps`` and ``caps_logdetD`` are built. Note that you can also
