@@ -164,8 +164,7 @@ energy for perfect reflectors at :math:`T=0` can be built with:
     $ make capc
     $ make cass
 
-
-On an Ubuntu 18.10 we found problems linking to `OpenBLAS
+Under Ubuntu 18.10 we encountered problems linking to `OpenBLAS
 <https://www.openblas.net/>`_ resulting in error messages similar to:
 
 .. code-block:: console
