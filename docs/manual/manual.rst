@@ -102,7 +102,8 @@ installed, the command
 
 will download the complete CaPS repository and store it in the directory
 ``caps/``. As an alternative, you can also download and extract the zip- or
-tar.gz-archive of the latest release.
+tar.gz-archive of the latest release by navigating to
+``https://github.com/michael-hartmann/caps/releases``.
 
 The CaPS library and the programs are written in C and C++ using LAPACK and
 MPI. In order to compile the source code, you need a C and C++ compiler, the
