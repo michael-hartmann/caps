@@ -120,7 +120,7 @@ These dependencies can be installed with:
 
 
 In order to compile the code, create a directory ``bin`` in the ``caps/``
-directory, run ``cmake`` followed by ``make``:
+directory and run ``cmake`` followed by ``make``:
 
 .. code-block:: console
 
