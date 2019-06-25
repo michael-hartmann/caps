@@ -26,6 +26,8 @@ the separation :math:`L` between sphere and plate, the temperature :math:`T`,
 and the dielectric properties of the sphere and the plane. The code is highly
 optimized and -- depending on parameters and the available ressources -- allows
 to compute the free energy for aspect ratios up to :math:`R/L\sim 5\,000`.
+An idea of typical aspect ratios used in Casimir experiments in the plane-sphere
+geometry can be obtained from :numref:`aspect_ratios`.
 
 .. _aspect_ratios:
 .. figure:: images/overview.pdf
@@ -48,7 +50,7 @@ CaPS provides the following main features:
 
 The computation of the high-temperature limit for the Drude model is based on
 `G. Bimonte, T. Emig, "Exact Results for Classical Casimir Interactions: Dirichlet
-and Drude Model in the Sphere-Sphere and Sphere-Plane", Phys. Rev. Lett. 109,
+and Drude Model in the Sphere-Sphere and Sphere-Plane Geometry", Phys. Rev. Lett. 109,
 160403 (2012) <https://doi.org/10.1103/PhysRevLett.109.160403>`_.
 
 Basic support for further geometries is provided for the special case of zero
@@ -84,8 +86,8 @@ commands should also work on other Debian-like systems.
 Compilation
 -----------
 
-The easiest way to get the source code is by cloning it from Github. If not
-already present, install git by running
+The easiest way to obtain the source code of the CaPS package is by cloning it
+from Github. If not already present, install git by running
 
 .. code-block:: console
 
@@ -98,14 +100,19 @@ installed, the command
 
     $ git clone https://github.com/michael-hartmann/caps.git
 
-will get you the complete CaPS repository and store it in the directory
+will download the complete CaPS repository and store it in the directory
 ``caps/``. As an alternative, you can also download and extract the zip- or
-tar.gz-archive of the latest release.
+tar.gz-archive of the latest release by navigating to
+``https://github.com/michael-hartmann/caps/releases``.
 
 The CaPS library and the programs are written in C and C++ using LAPACK and
-MPI. In order to compile the source code, you need a C and C++ compiler, the
-development files for LAPACK and MPI, and the build tools make and cmake. You
-can install all dependencies with:
+MPI. The requirements to compile the source code are
+
+ * a C and C++ compiler,
+ * the development files for LAPACK and MPI,
+ * the build tools make and cmake.
+   
+These dependencies can be installed with:
 
 .. code-block:: console
 
@@ -113,7 +120,7 @@ can install all dependencies with:
 
 
 In order to compile the code, create a directory ``bin`` in the ``caps/``
-directory, run ``cmake`` followed by ``make``:
+directory and run ``cmake`` followed by ``make``:
 
 .. code-block:: console
 
@@ -123,12 +130,14 @@ directory, run ``cmake`` followed by ``make``:
     $ cmake ..
     $ make
 
-This command compiles the `HODLR library
+The last command compiles the `HODLR library
 <https://github.com/sivaramambikasaran/HODLR/>`_, the libcaps library, and
 builds the shared objects ``libhodlr.so`` and ``libcaps.so``. Then, the
-programs ``caps`` and ``caps_logdetD`` are built. Note that you can also
-specify different compilers setting the variables ``CC`` and ``CXX``. Here is
-an example how to use the Intel C and C++ compilers:
+programs ``caps`` and ``caps_logdetD`` are built.
+
+Note that alternative compilers can be specified by setting the variables
+``CC`` and ``CXX``. For the Intel C and C++ compilers, the last two commands
+above should be replaced by:
 
 .. code-block:: console
 
@@ -136,27 +145,26 @@ an example how to use the Intel C and C++ compilers:
     $ make
 
 In order to run the programs, the system must be able to find the libraries
-``libhodlr.so`` and ``libcaps.so``. As the libraries are not in the default
-search path, you have to add the directories to ``LD_LIBRARY_PATH``
+``libhodlr.so`` and ``libcaps.so``. As the corresponding directories are not in
+the default search path, they need to be added to ``LD_LIBRARY_PATH``
 
 .. code-block:: console
 
     $ export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/home/hendrik/caps/bin
 
 where we have assumed that the CaPS repository is in the directory
-``/home/hendrik``.
+``/home/hendrik`` [#hendrik]_ .
 
-You can build the programs ``capc`` (plane-cylinder geometry) and ``cass``
-(sphere-sphere geometry with equal radii) to compute the Casimir interaction
-for perfect reflectors at :math:`T=0` with:
+After the previous steps, the programs ``capc`` (plane-cylinder geometry) and
+``cass`` (sphere-sphere geometry with equal radii) to compute the Casimir free
+energy for perfect reflectors at :math:`T=0` can be built with:
 
 .. code-block:: console
 
-    $ make
     $ make capc
     $ make cass
 
-On an Ubuntu 18.10 we found problems linking to `OpenBLAS
+Under Ubuntu 18.10 we encountered problems linking to `OpenBLAS
 <https://www.openblas.net/>`_ resulting in error messages similar to:
 
 .. code-block:: console
@@ -171,7 +179,7 @@ On an Ubuntu 18.10 we found problems linking to `OpenBLAS
 
 In this case, we recommend using `Atlas <http://math-atlas.sourceforge.net/>`_
 as a `BLAS <https://en.wikipedia.org/wiki/Basic_Linear_Algebra_Subprograms>`_
-implementation. Make sure that you have Atlas installed
+implementation. Make sure that Atlas is installed
 
 .. code-block:: console
 
@@ -940,3 +948,5 @@ Examples
 In the directory ``examples/`` you can find examples of simple programs that
 demonstrate how to use the CaPS API. The examples are kept simple and well
 documented.
+
+.. [#hendrik] In honor of Hendrik Brugt Gerhard Casimir (1909-2000).
