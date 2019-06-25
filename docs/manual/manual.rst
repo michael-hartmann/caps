@@ -106,9 +106,13 @@ tar.gz-archive of the latest release by navigating to
 ``https://github.com/michael-hartmann/caps/releases``.
 
 The CaPS library and the programs are written in C and C++ using LAPACK and
-MPI. In order to compile the source code, you need a C and C++ compiler, the
-development files for LAPACK and MPI, and the build tools make and cmake. You
-can install all dependencies with:
+MPI. The requirements to compile the source code are
+
+ * a C and C++ compiler,
+ * the development files for LAPACK and MPI,
+ * the build tools make and cmake.
+   
+These dependencies can be installed with:
 
 .. code-block:: console
 
