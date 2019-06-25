@@ -86,8 +86,8 @@ commands should also work on other Debian-like systems.
 Compilation
 -----------
 
-The easiest way to get the source code is by cloning it from Github. If not
-already present, install git by running
+The easiest way to obtain the source code of the CaPS package is by cloning it
+from Github. If not already present, install git by running
 
 .. code-block:: console
 
