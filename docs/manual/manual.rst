@@ -243,11 +243,11 @@ The program ``caps`` computes the Casimir free energy :math:`\mathcal{F}` for
 the plane-sphere geometry as a sum
 
 .. math::
-  \mathcal{F} = \frac{k_\mathrm{B}T}{2} \sum_{n=-\infty}^\infty \sum_{m=-\infty}^\infty \log\mathrm{det}\left(1-\mathcal{M}^m(\xi_n)\right)
+  \mathcal{F} = \frac{k_\mathrm{B}T}{2} \sum_{n=-\infty}^\infty \sum_{m=-\infty}^\infty \log\mathrm{det}\left(1-\mathcal{M}^{(m)}(\xi_n)\right)
 
 over the Matsubara frequencies :math:`\xi_n=2\pi n k_\mathrm{B} T /\hbar`. For
 zero temperature :math:`T=0`, the sum over the Matsubara frequencies becomes an
-integration. :math:`\mathcal{M}^m` denotes the round-trip operator associated with
+integration. :math:`\mathcal{M}^{(m)}` denotes the round-trip operator associated with
 the scattering of an electromagnetic wave propagating from the sphere to the
 plane and back. Due to the axial symmetry of the plane-sphere geometry, in the
 multipole basis the round-trip operator becomes block-diagonal in the
@@ -351,7 +351,7 @@ values of ``EPSREL`` you might need to decrease the value of ``CUTOFF`` using
 :math:`m` is stopped. The abort criterion is:
 
 .. math::
-    \frac{\log\mathrm{det}\left(1-\mathcal{M}^m(\xi)\right)}{\log\mathrm{det}\left(1-\mathcal{M}^0(\xi)\right)} < \mathrm{CUTOFF}
+    \frac{\log\mathrm{det}\left(1-\mathcal{M}^{(m)}(\xi)\right)}{\log\mathrm{det}\left(1-\mathcal{M}^0(\xi)\right)} < \mathrm{CUTOFF}
 
 The default value of ``CUTOFF`` is :math:`10^{-9}`. As a rule of thumb, in
 order that the integrand is sufficiently smooth for the integration routine,
@@ -762,7 +762,7 @@ caps_logdetD
 The program ``caps_logdetD`` computes
 
 .. math::
-    \log\mathrm{det}\left(1-\mathcal{M}^m(\xi)\right) .
+    \log\mathrm{det}\left(1-\mathcal{M}^{(m)}(\xi)\right) .
 
 depending on :math:`m`, :math:`\xi`, :math:`R`, and :math:`L` The options
 ``-L``, ``-R``, ``--ldim``, ``--material``, and ``--iepsrel`` are the same as
