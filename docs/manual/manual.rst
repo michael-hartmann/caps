@@ -220,8 +220,8 @@ reasonable performance.
 
 If you either run and compile the code on the same machine, or the target
 machine supports the same instruction set, the option ``-march=native`` may
-increase performance. On an Intel Core i7-2600 machine, this option gives a
-performance boost of about 5%. To compile the code with this option, run:
+increase performance. On an Intel Core i7-2600 machine, a performance boost
+of about 5% was found. To compile the code with this option, run:
 
 .. code-block:: console
 
