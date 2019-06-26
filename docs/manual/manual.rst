@@ -239,7 +239,7 @@ Programs
 caps
 ----
 
-The program ``caps`` computes the free Casimir energy :math:`\mathcal{F}` for
+The program ``caps`` computes the Casimir free energy :math:`\mathcal{F}` for
 the plane-sphere geometry as a sum
 
 .. math::
