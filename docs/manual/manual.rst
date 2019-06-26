@@ -345,7 +345,7 @@ the result of the computation. The free energy is given in units of
 :math:`(L+R)/\hbar c`. For the present example the free energy is
 
 .. math::
-  \mathcal{F}\approx \frac{-428.6 \hbar c}{50\mu\mathrm{m}+500\mu\mathrm{nm}} \approx -2.68\times10^{-19} \mathrm{J}.
+  \mathcal{F}\approx \frac{-428.6 \hbar c}{50\mu\mathrm{m}+500\mathrm{nm}} \approx -2.68\times10^{-19} \mathrm{J}.
 
 The PFA result in this case is :math:`\mathcal{F}_\mathrm{PFA} = \hbar c \pi^3 R/(720 L^2) \approx -2.72\times10^{-19} \mathrm{J}`.
 
