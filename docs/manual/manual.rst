@@ -364,12 +364,12 @@ order that the integrand is sufficiently smooth for the integration routine,
 By default, the integration routine uses an adaptive Gauss-Kronrod method
 provided by `CQUADPACK <https://github.com/ESSS/cquadpack>`_. For perfect
 reflectors it is sometimes faster to use an adaptive exponentially convergent
-Fourier-Chebyshev quadrature scheme (FCQS), see `Boyd, "Exponentially convergent
-Fourier-Chebshev quadrature schemes on bounded and infinite intervals", JOSC 2,
-2 (1987) <https://doi.org/10.1007/BF01061480>`_. You can use FCQS using the
-flag ``--fcqs``. Since the adaptive algorithm for FCQS is not well tested, this
-option is considered experimental. Moreover, it is not recommended to use FCQS
-for any other materials than perfect reflectors.
+Fourier-Chebyshev quadrature scheme (FCQS), see `Boyd, "Exponentially
+convergent Fourier-Chebshev quadrature schemes on bounded and infinite
+intervals", J. Sci. Comput. 2, 2 (1987) <https://doi.org/10.1007/BF01061480>`_.
+You can use FCQS using the flag ``--fcqs``. Since the adaptive algorithm for
+FCQS is not well tested, this option is considered experimental. Moreover, it
+is not recommended to use FCQS for any other materials than perfect reflectors.
 
 Temperature
 ^^^^^^^^^^^
