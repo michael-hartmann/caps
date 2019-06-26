@@ -199,7 +199,7 @@ and compile the code using:
 Testing
 -------
 
-In order to check whether the compilation was successful, you can build and run
+In order to verify that the compilation was successful, build and run
 the unit tests in ``bin/``:
 
 .. code-block:: console
