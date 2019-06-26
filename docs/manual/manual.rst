@@ -325,8 +325,8 @@ N+1. The output of this command looks similar to:
     # L/R, L, R, T, ldim, E*(L+R)/(hbar*c)
     0.009999999999999998, 5e-07, 5e-05, 0, 701, -428.5634172312517
 
-The output is in the format of a CSV file and additional comments start with a
-pound (#). The program first outputs some information on the compilation, i.e.,
+The output is in CSV format and additional comments start with a number sign
+(#). The program first outputs some information on the compilation, i.e.,
 version of CaPS, time of compilation, name of compiler, machine where it was
 compiled and so on. Then, information about the geometry (radius :math:`R`,
 minimal separation :math:`L`, aspect ratio :math:`R/L`, and inverse aspect
