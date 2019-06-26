@@ -325,22 +325,24 @@ N+1. The output of this command looks similar to:
     # L/R, L, R, T, ldim, E*(L+R)/(hbar*c)
     0.009999999999999998, 5e-07, 5e-05, 0, 701, -428.5634172312517
 
-The output is in CSV format and additional comments start with a number sign
-(#). The program first outputs some information on the compilation, i.e.,
-version of CaPS, time of compilation, name of compiler, machine where it was
-compiled and so on. Then, information about the geometry (radius :math:`R`,
-minimal separation :math:`L`, aspect ratio :math:`R/L`, and inverse aspect
-ratio :math:`L/R`), numerical parameters (cutoff, epsrel, iepsrel, ldim, cores)
-are printed. We will discuss the numerical parameters in more detail later. The
-value of cores is the number of MPI processes that are used for the
-computation. Then, the determinant of the scattering matrix for different
-Matsubara frequencies are printed. The comment starting with ``ier`` gives the
-result of the integration. If the integration was successful, the value is
-``ier=0``, see also the description of `dqags
-<http://www.netlib.org/quadpack/dqags.f>`_ of `QUADPACK
-<http://www.netlib.org/quadpack/>`_.  The program ends by printing the result
-of the computation. The free energy is output in units of :math:`(L+R)/\hbar
-c`, i.e., for this example the free energy is
+The output adopts the CSV format and additional comments start with a number
+sign (#). The first comment section contains information on the compilation
+like the version of CaPS, time of compilation, name of compiler, machine where
+it was compiled and so on.  A second comment secction gives information about
+the geometry (radius :math:`R`, minimal separation :math:`L`, aspect ratio
+:math:`R/L`, and inverse aspect ratio :math:`L/R`) as well as numerical
+parameters (cutoff, epsrel, iepsrel, ldim, cores). We will discuss the latter
+in more detail below. The value of the cores parameter is the number of MPI
+processes that were used for the computation.
+
+The following section lists the numerical results for the determinant of the
+scattering matrix printed for the different Matsubara frequencies at which it
+was evaluated. The comment starting with ``ier`` gives the result of the
+integration. If the integration was successful, the value is ``ier=0``, see
+also the description of `dqags <http://www.netlib.org/quadpack/dqags.f>`_ of
+`QUADPACK <http://www.netlib.org/quadpack/>`_.  The program ends by printing
+the result of the computation. The free energy is given in units of
+:math:`(L+R)/\hbar c`. For the present example the free energy is
 
 .. math::
   \mathcal{F}\approx \frac{-428.6 \hbar c}{50\mu\mathrm{m}+500\mu\mathrm{nm}} \approx -2.68\times10^{-19} \mathrm{J}.
