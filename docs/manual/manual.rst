@@ -247,7 +247,11 @@ the plane-sphere geometry as a sum
 
 over the Matsubara frequencies :math:`\xi_n=2\pi n k_\mathrm{B} T /\hbar`. For
 zero temperature :math:`T=0`, the sum over the Matsubara frequencies becomes an
-integration.
+integration. :math:`\mathcal{M}^m` denotes the round-trip operator associated with
+the scattering of an electromagnetic wave propagating from the sphere to the
+plane and back. Due to the axial symmetry of the plane-sphere geometry, in the
+multipole basis the round-trip operator becomes block-diagonal in the
+eigenvalues :math:`m` of the :math:`z`-component of the angular momentum.
 
 The program supports a wide variety of options. You can get a summary of all
 options using ``caps --help``. By default, the temperature is set to
