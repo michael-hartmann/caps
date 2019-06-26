@@ -253,24 +253,28 @@ plane and back. Due to the axial symmetry of the plane-sphere geometry, in the
 multipole basis the round-trip operator becomes block-diagonal in the
 eigenvalues :math:`m` of the :math:`z`-component of the angular momentum.
 
-The program supports a wide variety of options. You can get a summary of all
-options using ``caps --help``. By default, the temperature is set to
+The program supports a wide variety of options. A summary of all options can be
+obtained with ``caps --help``. By default, the temperature is set to
 :math:`T=0`, and the sphere and plane are assumed to be perfect reflectors.
 
 Please note that due to parallelization, the number of terms computed in the
 summations over :math:`m` varies from run to run. As a consequence, the
 numerical value obtained for the free energy also varies from run to run. The
 abort criterion for the summation over :math:`m` can be changed by the option
-``--cutoff`` described in more detail later.
+``--cutoff`` described in more detail below.
 
 Mandatory options
 ^^^^^^^^^^^^^^^^^
 
-There are two mandatory options: the separation :math:`L` between sphere and
-plane, and the radius :math:`R` of the sphere. The program expects the lengths
-given in units of meters. As an example, the following command computes the
-Casimir interaction at :math:`T=0` for perfect reflectors for a sphere of
-radius :math:`R=50\mu\mathrm{m}` and a separation :math:`L=500\,\mathrm{nm}`:
+There are two mandatory parameters:
+
+* separation :math:`L` between sphere and plane
+* radius :math:`R` of the sphere.
+  
+The program expects the lengths to be given in units of meters. As an example,
+the following command computes the Casimir interaction at :math:`T=0` for
+perfect reflectors for a sphere of radius :math:`R=50\mu\mathrm{m}` and a
+separation :math:`L=500\,\mathrm{nm}`:
 
 .. code-block:: console
 
