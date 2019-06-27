@@ -454,11 +454,17 @@ automatically to achieve a relative error of the order specified by
 the automatic determination of the order is not well tested, PSD is
 considered experimental.
 
-If you are only interested in the high-temperature limit, the flag ``--ht``
-will only compute :math:`\log\mathrm{det}(1-\mathcal{M}(0))` and output the
-Casimir energy in the limit :math:`T\to\infty` in units of :math:`k_\mathrm{B}
-T`. For example, for a sphere of radius :math:`R=100\mu\mathrm{m}` and a
-smallest separation :math:`L=100\mathrm{nm}` one finds:
+The high-temperature limit of the Casimir free energy requires only the
+evaluation of :math:`\log\mathrm{det}(1-\mathcal{M}(0))` and can be obtained by
+means of the flag ``--ht``. It will be determined for Drude metals and perfect
+reflectors. In contrast to the cases of zero and finite temperatures, the
+result is given in units of :math:`k_\mathrm{B} T`. While for perfect
+reflectors, no analytical result is know, for Drude metals the analytical
+formula given in `G.  Bimonte, T. Emig, PRL 109, 160403 (2012)
+<https://doi.org/10.1103/PhysRevLett.109.160403>`_ is used.
+
+For example, for a sphere of radius :math:`R=100\mu\mathrm{m}` and a smallest
+separation :math:`L=100\mathrm{nm}` one finds:
 
 .. code-block:: console
 
@@ -484,13 +490,10 @@ smallest separation :math:`L=100\mathrm{nm}` one finds:
     # L/R, L, R, ldim, E_Drude/(kB*T), E_PR/(kB*T)
     0.0009999999999999998, 1e-07, 0.0001, 7001, -149.6981411829862, -296.4343145093178
 
-Numerically, it is considerably easier to compute the high-temperature limit of
-the Casimir free energy. For this example, the aspect ratio is
-:math:`R/L=1000`, but the computation time on a standard desktop computer using
-8 cores is only about 13 seconds. For the Drude result the analytical formula
-given in `G. Bimonte, T. Emig, PRL 109, 160403 (2012)
-<https://doi.org/10.1103/PhysRevLett.109.160403>`_ is used.
-
+Compared to zero or finite temperatures, it is considerably less demanding to
+compute the high-temperature limit of the Casimir free energy. For the above
+example, the aspect ratio is :math:`R/L=1000`, but the computation time on a
+standard desktop computer using 8 cores is only about 13 seconds.
 
 Material parameters
 ^^^^^^^^^^^^^^^^^^^
