@@ -429,7 +429,7 @@ temperature :math:`T=300\mathrm{K}`:
     # L/R, L, R, T, ldim, E*(L+R)/(hbar*c)
     0.009999999999999998, 5e-07, 5e-05, 300, 701, -452.7922092119535
 
-For finite temperature the free energy is no longer given as an integral, but
+For finite temperatures, the free energy is no longer given as an integral, but
 as the sum :eq:`matsubara_sum` over Matsubara frequencies :math:`\xi_n`. The
 summation over :math:`n` is stopped once
 
@@ -437,8 +437,8 @@ summation over :math:`n` is stopped once
 
     \frac{\log\mathrm{det}\left( 1-\mathcal{M}(\xi_n) \right)}{\log\mathrm{det}\left( 1-\mathcal{M}(0) \right)} < \mathrm{EPSREL} .
 
-By default, ``EPSREL`` is :math:`10^{-6}`. You can change the value of
-``EPSREL`` using the option ``--epsrel``.
+By default, ``EPSREL`` is :math:`10^{-6}`. Its value can be modified by means
+of the option ``--epsrel``.
 
 By default, the free energy is computed summing over the Matsubara frequencies
 :math:`\xi_n`, which is called Matsubara spectrum decomposition (MSD). Another
