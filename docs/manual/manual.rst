@@ -244,6 +244,7 @@ the plane-sphere geometry as a sum
 
 .. math::
   \mathcal{F} = \frac{k_\mathrm{B}T}{2} \sum_{n=-\infty}^\infty \sum_{m=-\infty}^\infty \log\mathrm{det}\left(1-\mathcal{M}^{(m)}(\xi_n)\right)
+  :label: matsubara_sum
 
 over the Matsubara frequencies :math:`\xi_n=2\pi n k_\mathrm{B} T /\hbar`. For
 zero temperature :math:`T=0`, the sum over the Matsubara frequencies becomes an
@@ -429,8 +430,8 @@ temperature :math:`T=300\mathrm{K}`:
     0.009999999999999998, 5e-07, 5e-05, 300, 701, -452.7922092119535
 
 For finite temperature the free energy is no longer given as an integral, but
-as a sum over the Matsubara frequencies :math:`\xi_n`. The summation over
-:math:`n` is stopped once
+as the sum :eq:`matsubara_sum` over Matsubara frequencies :math:`\xi_n`. The
+summation over :math:`n` is stopped once
 
 .. math::
 
