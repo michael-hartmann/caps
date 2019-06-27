@@ -727,7 +727,7 @@ and assuming the plasma model for zero frequency
 Truncation of the vector space
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-The truncation of the vector space is described in more detail in `Hartmann,
+The truncation of the vector space is described in more detail in `M. Hartmann,
 "Casimir effect in the plane-sphere geometry: Beyond the proximity force
 approximation", PhD thesis (Universität Augsburg, 2018)
 <https://opus.bibliothek.uni-augsburg.de/opus4/44798>`_. You can either
