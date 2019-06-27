@@ -512,7 +512,8 @@ for the Drude model with
   \epsilon(\mathrm{i}\xi) = 1+\frac{\omega_\mathrm{P}^2}{\xi(\xi+\gamma)},
   :label: durde_model
 
-and for materials with a user-defined dielectric function.
+and for materials with a user-defined dielectric function. Both objects, sphere
+and plate, are assumed to consist of the same material.
 
 The plasma model allows to account for high-frequency transparency of the
 material and is characterized by the plasma frequency :math:`\omega_\mathrm{P}`
