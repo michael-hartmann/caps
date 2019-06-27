@@ -488,7 +488,7 @@ Numerically, it is considerably easier to compute the high-temperature limit of
 the Casimir free energy. For this example, the aspect ratio is
 :math:`R/L=1000`, but the computation time on a standard desktop computer using
 8 cores is only about 13 seconds. For the Drude result the analytical formula
-given in `Bimonte, Emig, PRL 109, 160403 (2012)
+given in `G. Bimonte, T. Emig, PRL 109, 160403 (2012)
 <https://doi.org/10.1103/PhysRevLett.109.160403>`_ is used.
 
 
