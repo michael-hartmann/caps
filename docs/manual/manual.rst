@@ -451,7 +451,7 @@ requires the evaluation of fewer terms as compared to the MSD. PSD can be
 enabled with the flag ``--psd``. The order is determined
 automatically to achieve a relative error of the order specified by
 ``--epsrel``, but can also be set manually using ``--psd-order``. Since
-the automatic determination of the order is not well tested, this option is
+the automatic determination of the order is not well tested, PSD is
 considered experimental.
 
 If you are only interested in the high-temperature limit, the flag ``--ht``
