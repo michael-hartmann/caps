@@ -498,13 +498,30 @@ standard desktop computer using 8 cores is only about 13 seconds.
 Material parameters
 ^^^^^^^^^^^^^^^^^^^
 
-Up to this point, we have assumed that the sphere and the plate are perfect
-reflectors.  If you want to model the sphere and the plate using the plasma
-model, you can set the plasma frequency using ``--omegap``. The plasma
-frequency is expected in units of :math:`\mathrm{eV}/\hbar`. For example, for
-:math:`R=50\mu\mathrm{m}`, :math:`L=500\mathrm{nm}`, :math:`T=300\mathrm{K}`,
-and gold (plasma frequency :math:`\omega_\mathrm{P}=9\mathrm{eV}/\hbar`), the
-Casimir free energy assuming the plasma model is:
+The examples presented so far where mostly for sphere and plate made of
+perfect reflectors. In addition, it is possible to do calculations for the
+plasma model with the imaginary-frequency dielectric function
+
+.. math::
+  \epsilon(\mathrm{i}\xi) = 1+\frac{\omega_\mathrm{P}^2}{\xi^2},
+  :label: plasma_model
+
+for the Drude model with
+
+.. math::
+  \epsilon(\mathrm{i}\xi) = 1+\frac{\omega_\mathrm{P}^2}{\xi(\xi+\gamma)},
+  :label: durde_model
+
+and for materials with a user-defined dielectric function.
+
+The plasma model allows to account for high-frequency transparency of the
+material and is characterized by the plasma frequency :math:`\omega_\mathrm{P}`
+appearing in :eq:`plasma_model`. This parameter can be set using ``--omegap``.
+and its value is expected to be given in units of :math:`\mathrm{eV}/\hbar`. For example,
+for :math:`R=50\mu\mathrm{m}`, :math:`L=500\mathrm{nm}`,
+:math:`T=300\mathrm{K}`, and plasma frequency
+:math:`\omega_\mathrm{P}=9\mathrm{eV}/\hbar` appropriate for gold, the Casimir
+free energy assuming the plasma model is:
 
 .. code-block:: console
 
