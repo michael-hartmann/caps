@@ -376,9 +376,9 @@ is not recommended to use FCQS for any other materials than perfect reflectors.
 Temperature
 ^^^^^^^^^^^
 
-You can set the temperature using ``-T``. The following program computes the
-free energy just like in the last example but at room temperature
-:math:`T=300\mathrm{K}`:
+The temperature in Kelvin can be set by using the flag ``-T``. The following
+call computes the free energy just like in the last example but at room
+temperature :math:`T=300\mathrm{K}`:
 
 .. code-block:: console
 
