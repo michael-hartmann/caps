@@ -636,13 +636,13 @@ to a material file. A material file has the following format:
     1.5038100000000000E+018   1.002504731170786
     1.5190000000000000E+018   1.002459773692494
 
-Each line either starts with a pound (#) or contains a frequency :math:`\xi` in
-units of :math:`\mathrm{rad/s}` and the corresponding value of the dielectric
-function :math:`\epsilon(\mathrm{i}\xi)` separated by spaces. The frequencies
-have to be in ascending order. The dielectric function for an arbitrary
-frequency is then computed using linear interpolation. For frequencies smaller
-than the smallest frequency provided in the file, the dielectric function is
-computed using the Drude model
+Each line either starts with a number sign (#) or contains a frequency
+:math:`\xi` in units of :math:`\mathrm{rad/s}` and the corresponding value of
+the dielectric function :math:`\epsilon(\mathrm{i}\xi)` separated by spaces.
+The frequencies have to be in ascending order. The dielectric function for an
+arbitrary frequency is then computed using linear interpolation. For
+frequencies smaller than the smallest frequency provided in the file, the
+dielectric function is computed using the Drude model
 
 .. math::
   \epsilon(\mathrm{i}\xi) = 1+\frac{\omega_\mathrm{P}^2}{\xi(\xi+\gamma)}
