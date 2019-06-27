@@ -440,19 +440,19 @@ summation over :math:`n` is stopped once
 By default, ``EPSREL`` is :math:`10^{-6}`. Its value can be modified by means
 of the option ``--epsrel``.
 
-By default, the free energy is computed summing over the Matsubara frequencies
-:math:`\xi_n`, which is called Matsubara spectrum decomposition (MSD). Another
-option is to compute the free energy using Padé spectrum decomposition (PSD).
-PSD is an optimal sum-over-poles expansion scheme, more information can be
-found in `J. Hu, M. Luo, F. Jiang, R.-X. Xu, Y. J. Yan, "Padé spectrum
-decompositions of quantum distribution functions and optimal hierarchical
-equations of motion construction for quantum open systems", J. Chem. Phys. 134,
-244106 (2010) <https://doi.org/10.1063/1.3602466>`_. The PSD requires less
-terms to be computed compared to the MSD. You can tell the program to use PSD
-with the flag ``--psd``. The order is determined automatically to achieve a
-relative error of the order specified by ``--epsrel``. You can also manually
-set the order using ``--psd-order``. Since the automatic determination of the
-order is not well tested, this option is considered experimental.
+By default, the free energy is computed by means of :eq:`matsubara_sum`
+referred to as Matsubara spectrum decomposition (MSD). An alternative approach
+is the Padé spectrum decomposition (PSD). PSD is an optimal sum-over-poles
+expansion scheme explained in `J.  Hu, M. Luo, F. Jiang, R.-X. Xu, Y. J. Yan,
+"Padé spectrum decompositions of quantum distribution functions and optimal
+hierarchical equations of motion construction for quantum open systems", J.
+Chem. Phys. 134, 244106 (2010) <https://doi.org/10.1063/1.3602466>`_. The PSD
+requires the evaluation of fewer terms as compared to the MSD. PSD can be
+enabled with the flag ``--psd``. The order is determined
+automatically to achieve a relative error of the order specified by
+``--epsrel``, but can also be set manually using ``--psd-order``. Since
+the automatic determination of the order is not well tested, this option is
+considered experimental.
 
 If you are only interested in the high-temperature limit, the flag ``--ht``
 will only compute :math:`\log\mathrm{det}(1-\mathcal{M}(0))` and output the
