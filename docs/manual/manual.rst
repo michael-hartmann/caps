@@ -360,7 +360,7 @@ values of ``EPSREL`` you might need to decrease the value of ``CUTOFF`` using
     \frac{\log\mathrm{det}\left(1-\mathcal{M}^{(m)}(\xi)\right)}{\log\mathrm{det}\left(1-\mathcal{M}^0(\xi)\right)} < \mathrm{CUTOFF}
 
 The default value of ``CUTOFF`` is :math:`10^{-9}`. As a rule of thumb, in
-order that the integrand is sufficiently smooth for the integration routine,
+order for the integrand to be sufficiently smooth for the integration routine,
 ``CUTOFF`` should be at least two orders of magnitude smaller than ``EPSREL``.
 
 By default, the integration routine uses an adaptive Gauss-Kronrod method
@@ -369,7 +369,7 @@ reflectors it is sometimes faster to use an adaptive exponentially convergent
 Fourier-Chebyshev quadrature scheme (FCQS), see `J. P. Boyd, "Exponentially
 convergent Fourier-Chebshev quadrature schemes on bounded and infinite
 intervals", J. Sci. Comput. 2, 99 (1987) <https://doi.org/10.1007/BF01061480>`_.
-You can use FCQS using the flag ``--fcqs``. Since the adaptive algorithm for
+FCQS can be enabled by the flag ``--fcqs``. Since the adaptive algorithm for
 FCQS is not well tested, this option is considered experimental. Moreover, it
 is not recommended to use FCQS for any other materials than perfect reflectors.
 
