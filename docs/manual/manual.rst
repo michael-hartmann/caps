@@ -630,10 +630,6 @@ extending the previous example to the Drude model yields:
     # L/R, L, R, T, ldim, E*(L+R)/(hbar*c)
     0.009999999999999998, 5e-07, 5e-05, 300, 701, -325.8011897578629
 
-The Casimir energy in the high-temperature limit for the Drude and the plasma
-model differ by a factor of 2. This is the reason why in this example the
-Casimir energy using the plasma model is larger than using the Drude model.
-
 General materials can be described using ``--material`` which expects the path
 to a material file. A material file has the following format:
 
