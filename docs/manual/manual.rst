@@ -749,10 +749,10 @@ The required dimension of the vector space
    \ell_\mathrm{dim} = \eta\frac{R}{L}
 
 scales linearly with the aspect ratio :math:`R/L` with a prefactor
-:math:`\eta` related to the estimated numerical error according to the following table:
+:math:`\eta` related to the estimated relative error according to the following table:
 
 +-----------------+-----------------+-----------------+-----------------+-----------------+-----------------+-----------------+-----------------+
-| numerical error | :math:`10^{-2}` | :math:`10^{-3}` | :math:`10^{-4}` | :math:`10^{-5}` | :math:`10^{-6}` | :math:`10^{-7}` | :math:`10^{-8}` |
+| relative error  | :math:`10^{-2}` | :math:`10^{-3}` | :math:`10^{-4}` | :math:`10^{-5}` | :math:`10^{-6}` | :math:`10^{-7}` | :math:`10^{-8}` |
 +-----------------+-----------------+-----------------+-----------------+-----------------+-----------------+-----------------+-----------------+
 | :math:`\eta`    | 2.8             | 4               | 5.2             | 6.4             | 7.6             | 8.8             | 10              |
 +-----------------+-----------------+-----------------+-----------------+-----------------+-----------------+-----------------+-----------------+
@@ -777,21 +777,20 @@ By default, the dimension of the vector space is determined from :eq:`eta`  with
 Other options
 ^^^^^^^^^^^^^
 
-The computation of the matrix elements of the round-trip operator contains an
+The computation of the matrix elements of the round-trip operator involves an
 integration. The desired relative error for this integration can be set using
 ``--iepsrel``. The default value of :math:`10^{-8}` should be sufficient for
-almost all purposes. If you want to compute the Casimir energy to very high
-accuracy, to :math:`10^{-7}` or better, you might want to use a smaller value
-for ``IEPSREL``.
+almost all purposes. If the Casimir energy needs to be determined to very high
+accuracy with a relative error of :math:`10^{-7}` or smaller, it is recommended
+to decrease ``IEPSREL`` accordingly.
 
-If ``caps`` was interrupted and you have the partial output saved in a file,
-you can use the ``--resume`` option to continue the computation from that
-point. Interruptions may happen for example on a cluster if the program exceeds
-the time limit. Given the option ``--resume FILENAME``, ``caps`` reads the
-content of ``FILENAME`` and re-uses the computed values. Make sure that all
-other parameters given to ``caps`` exactly match the parameters used to
-generate ``FILENAME``.
-
+If ``caps`` was interrupted, e.g. when the time limit was exceeded, the
+``--resume`` option can be used to resume the computation on the basis of the
+partial output created so far. If it is given the option ``--resume FILENAME``,
+``caps`` reads the content of ``FILENAME`` and re-uses the computed values.  It
+is the responsibility of the user to make sure that all other parameters given
+to ``caps`` exactly match the parameters used to generate ``FILENAME`` in a
+previous run.
 
 caps_logdetD
 ------------
