@@ -498,7 +498,7 @@ standard desktop computer using 8 cores is only about 13 seconds.
 Material parameters
 ^^^^^^^^^^^^^^^^^^^
 
-The examples presented so far where mostly for sphere and plate made of
+The examples presented so far were mostly for sphere and plate made of
 perfect reflectors. In addition, it is possible to do calculations for the
 plasma model with the imaginary-frequency dielectric function
 
