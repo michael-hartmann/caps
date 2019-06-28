@@ -667,7 +667,7 @@ frequencies larger than the largest provided frequency is analogous using the
 parameters given by ``omegap_high`` and ``gamma_high``. More details can be
 found in the directory ``materials/``.
 
-Here is an example that computes the Casimir energy for a sphere of
+The following example computes the Casimir energy for a sphere of
 :math:`R=50\mu\mathrm{m}` at separation :math:`L=500\mathrm{nm}` at room
 temperature :math:`T=300\mathrm{K}` for real gold:
 
@@ -721,21 +721,22 @@ temperature :math:`T=300\mathrm{K}` for real gold:
     # L/R, L, R, T, ldim, E*(L+R)/(hbar*c)
     0.009999999999999998, 5e-07, 5e-05, 300, 701, -326.8806691538941
 
-The energy printed in the last line assumes a Drude model for the zero-th
-Matsubara frequency. If you want to use the plasma model for the zero-th
-Matsubara frequency, you can use the value given by ``# plasma =``. This
-number, i.e., -26.69763... is given in units of :math:`k_\mathrm{B}T/2` and
-corresponds to the additional contribution in the high-temperature limit to the
-energy in the plasma model. In this example, the free energy using the Drude
-model for zero-frequency is
+As indicated in the comment line referring to the model used, a Drude model is
+used to evaluate the zeroth Matsubara frequency. In order to obtain the
+corresponding result where the plasma model is used instead for the zeroth
+Matsubara frequency, the value given in the comment line starting with ``#
+plasma =`` can be used. The value given there, i.e. -26.69... in our example,
+is given in units of :math:`k_\mathrm{B}T/2` and corresponds to the additional
+contribution in the high-temperature limit to the energy in the plasma model.
+In our example, the free energy using the Drude model at zero frequency is
 
 .. math::
   \mathcal{F}_\mathrm{Drude} \approx -326.88 \frac{\hbar c}{L+R} \approx -2.0464\times10^{-19}\mathrm{J},
 
-and assuming the plasma model for zero frequency
+while assuming the plasma model for zero frequency we find
 
 .. math::
-  \mathcal{F}_\mathrm{plasma} \approx \mathcal{F}_\mathrm{Drude} + \frac{-26.69763 k_\mathrm{B}T}{2} \approx -2.5993 \times 10^{-19} \mathrm{J} .
+  \mathcal{F}_\mathrm{plasma} \approx \mathcal{F}_\mathrm{Drude} - 26.69763 \frac{k_\mathrm{B}T}{2} \approx -2.5993 \times 10^{-19} \mathrm{J} .
 
 Truncation of the vector space
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
