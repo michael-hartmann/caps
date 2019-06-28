@@ -510,7 +510,7 @@ for the Drude model with
 
 .. math::
   \epsilon(\mathrm{i}\xi) = 1+\frac{\omega_\mathrm{P}^2}{\xi(\xi+\gamma)},
-  :label: durde_model
+  :label: drude_model
 
 and for materials with a user-defined dielectric function. Both objects, sphere
 and plate, are assumed to consist of the same material.
@@ -573,10 +573,12 @@ free energy assuming the plasma model is:
     # L/R, L, R, T, ldim, E*(L+R)/(hbar*c)
     0.009999999999999998, 5e-07, 5e-05, 300, 701, -408.1688659974158
 
-To describe the objects using the Drude model, you can additional specify the
-relaxation frequency :math:`\gamma` (also in units of
-:math:`\mathrm{eV}/\hbar`). For gold, :math:`\gamma=35\mathrm{meV}/\hbar`, so
-the same example as above for Drude gives:
+The Drude model :eq:`drude_model` not only accounts for the high-frequency
+cutoff but also a finite zero-frequency conductivity :math:`\sigma_0 =
+\omega_\mathrm{P}^2/\gamma`.  The additional parameter :math:`\gamma` can be
+specified by the flag ``--gamma`` with a value given in units of
+:math:`\mathrm{eV}/\hbar`. For gold, :math:`\gamma=35\mathrm{meV}/\hbar` and
+extending the previous example to the Drude model yields:
 
 .. code-block:: console
 
