@@ -741,24 +741,37 @@ while assuming the plasma model for zero frequency we find
 Truncation of the vector space
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-The truncation of the vector space is described in more detail in `M. Hartmann,
-"Casimir effect in the plane-sphere geometry: Beyond the proximity force
-approximation", PhD thesis (Universität Augsburg, 2018)
-<https://opus.bibliothek.uni-augsburg.de/opus4/44798>`_. You can either
-specify the dimension of the vector space using ``--ldim``, or you choose the
-vector space using the parameter ``--eta``:
+The required dimension of the vector space
 
 .. math::
-    \ell_\mathrm{dim} = \mathrm{max}\left(20, \left\lceil \eta R/L \right\rceil\right) .
+   :label: eta
 
-The estimated error due to the truncation of the vector space depending on :math:`\eta`
-is given by:
+   \ell_\mathrm{dim} = \eta\frac{R}{L}
+
+scales linearly with the aspect ratio :math:`R/L` with a prefactor
+:math:`\eta` related to the estimated numerical error according to the following table:
 
 +-----------------+-----------------+-----------------+-----------------+-----------------+-----------------+-----------------+-----------------+
 | numerical error | :math:`10^{-2}` | :math:`10^{-3}` | :math:`10^{-4}` | :math:`10^{-5}` | :math:`10^{-6}` | :math:`10^{-7}` | :math:`10^{-8}` |
 +-----------------+-----------------+-----------------+-----------------+-----------------+-----------------+-----------------+-----------------+
 | :math:`\eta`    | 2.8             | 4               | 5.2             | 6.4             | 7.6             | 8.8             | 10              |
 +-----------------+-----------------+-----------------+-----------------+-----------------+-----------------+-----------------+-----------------+
+
+The truncation of the vector space is discussed in more detail in `M. Hartmann,
+"Casimir effect in the plane-sphere geometry: Beyond the proximity force
+approximation", PhD thesis (Universität Augsburg, 2018)
+<https://opus.bibliothek.uni-augsburg.de/opus4/44798>`_.
+
+The dimension of the vector space can be specified by means of the flag
+``--ldim`` fixing :math:`\ell_\mathrm{dim}`. Alternatively, the flag ``--eta`` can
+be used from which the dimension is obtained according to
+
+.. math::
+    \ell_\mathrm{dim} = \mathrm{max}\left(20, \left\lceil \eta R/L \right\rceil\right) 
+
+where :math:`\lceil x\rceil` denotes the smallest integer larger than :math:`x`.
+By default, the dimension of the vector space is determined from :eq:`eta`  with
+:math:`\eta=7`.
 
 
 Other options
