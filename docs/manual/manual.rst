@@ -630,8 +630,9 @@ extending the previous example to the Drude model yields:
     # L/R, L, R, T, ldim, E*(L+R)/(hbar*c)
     0.009999999999999998, 5e-07, 5e-05, 300, 701, -325.8011897578629
 
-General materials can be described using ``--material`` which expects the path
-to a material file. A material file has the following format:
+General materials can be defined by the user and specified by the flag
+``--material``. Its parameter should be a path to a file describing
+the material in the following format:
 
 .. code-block:: console
 
@@ -658,11 +659,7 @@ the dielectric function :math:`\epsilon(\mathrm{i}\xi)` separated by spaces.
 The frequencies have to be in ascending order. The dielectric function for an
 arbitrary frequency is then computed using linear interpolation. For
 frequencies smaller than the smallest frequency provided in the file, the
-dielectric function is computed using the Drude model
-
-.. math::
-  \epsilon(\mathrm{i}\xi) = 1+\frac{\omega_\mathrm{P}^2}{\xi(\xi+\gamma)}
-
+dielectric function is computed using the Drude model :eq:`drude_model`
 with the plasma frequency given by ``omegap_low`` and the relaxation frequency
 given by ``gamma_low``. If ``omegap_low`` and ``gamma_low`` are not given in
 the file, the dielectric function is assumed to be 1. The behavior for
