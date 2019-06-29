@@ -655,7 +655,7 @@ the material in the following format:
 
 Each line either starts with a number sign (#) or contains a frequency
 :math:`\xi` in units of :math:`\mathrm{rad/s}` and the corresponding value of
-the dielectric function :math:`\epsilon(\mathrm{i}\xi)` separated by spaces.
+the dielectric function :math:`\epsilon(\mathrm{i}\xi)` separated by either tabs or spaces.
 The frequencies have to be in ascending order. The dielectric function for an
 arbitrary frequency is then computed using linear interpolation. For
 frequencies smaller than the smallest frequency provided in the file, the
