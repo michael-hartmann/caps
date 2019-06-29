@@ -24,7 +24,7 @@ The main goal of the library and the associated programs is to compute the free
 energy :math:`\mathcal{F}` as a function of the radius :math:`R` of the sphere,
 the separation :math:`L` between sphere and plate, the temperature :math:`T`,
 and the dielectric properties of the sphere and the plane. The code is highly
-optimized and -- depending on parameters and the available ressources -- allows
+optimized and -- depending on parameters and the available resources -- allows
 to compute the free energy for aspect ratios up to :math:`R/L\sim 5\,000`.
 An idea of typical aspect ratios used in Casimir experiments in the plane-sphere
 geometry can be obtained from :numref:`aspect_ratios`.
@@ -329,7 +329,7 @@ N+1. The output of this command looks similar to:
 The output adopts the CSV format and additional comments start with a number
 sign (#). The first comment section contains information on the compilation
 like the version of CaPS, time of compilation, name of compiler, machine where
-it was compiled and so on.  A second comment secction gives information about
+it was compiled and so on.  A second comment section gives information about
 the geometry (radius :math:`R`, minimal separation :math:`L`, aspect ratio
 :math:`R/L`, and inverse aspect ratio :math:`L/R`) as well as numerical
 parameters (cutoff, epsrel, iepsrel, ldim, cores). We will discuss the latter
