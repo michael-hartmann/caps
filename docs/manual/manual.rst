@@ -199,7 +199,7 @@ and compile the code using:
 Testing
 -------
 
-In order to check whether the compilation was successful, you can build and run
+In order to verify that the compilation was successful, build and run
 the unit tests in ``bin/``:
 
 .. code-block:: console
@@ -220,8 +220,8 @@ reasonable performance.
 
 If you either run and compile the code on the same machine, or the target
 machine supports the same instruction set, the option ``-march=native`` may
-increase performance. On an Intel Core i7-2600 machine, this option gives a
-performance boost of about 5%. To compile the code with this option, run:
+increase performance. On an Intel Core i7-2600 machine, a performance boost
+of about 5% was found. To compile the code with this option, run:
 
 .. code-block:: console
 
@@ -239,34 +239,43 @@ Programs
 caps
 ----
 
-The program ``caps`` computes the free Casimir energy :math:`\mathcal{F}` for
+The program ``caps`` computes the Casimir free energy :math:`\mathcal{F}` for
 the plane-sphere geometry as a sum
 
 .. math::
-  \mathcal{F} = \frac{k_\mathrm{B}T}{2} \sum_{n=-\infty}^\infty \sum_{m=-\infty}^\infty \log\mathrm{det}\left(1-\mathcal{M}^m(\xi_n)\right)
+  \mathcal{F} = \frac{k_\mathrm{B}T}{2} \sum_{n=-\infty}^\infty \sum_{m=-\infty}^\infty \log\mathrm{det}\left(1-\mathcal{M}^{(m)}(\xi_n)\right)
+  :label: matsubara_sum
 
 over the Matsubara frequencies :math:`\xi_n=2\pi n k_\mathrm{B} T /\hbar`. For
 zero temperature :math:`T=0`, the sum over the Matsubara frequencies becomes an
-integration.
+integration. :math:`\mathcal{M}^{(m)}` denotes the round-trip operator associated with
+the scattering of an electromagnetic wave propagating from the sphere to the
+plane and back. Due to the axial symmetry of the plane-sphere geometry, in the
+multipole basis the round-trip operator becomes block-diagonal in the
+eigenvalues :math:`m` of the :math:`z`-component of the angular momentum.
 
-The program supports a wide variety of options. You can get a summary of all
-options using ``caps --help``. By default, the temperature is set to
+The program supports a wide variety of options. A summary of all options can be
+obtained with ``caps --help``. By default, the temperature is set to
 :math:`T=0`, and the sphere and plane are assumed to be perfect reflectors.
 
 Please note that due to parallelization, the number of terms computed in the
 summations over :math:`m` varies from run to run. As a consequence, the
 numerical value obtained for the free energy also varies from run to run. The
 abort criterion for the summation over :math:`m` can be changed by the option
-``--cutoff`` described in more detail later.
+``--cutoff`` described in more detail below.
 
 Mandatory options
 ^^^^^^^^^^^^^^^^^
 
-There are two mandatory options: the separation :math:`L` between sphere and
-plane, and the radius :math:`R` of the sphere. The program expects the lengths
-given in units of meters. As an example, the following command computes the
-Casimir interaction at :math:`T=0` for perfect reflectors for a sphere of
-radius :math:`R=50\mu\mathrm{m}` and a separation :math:`L=500\,\mathrm{nm}`:
+There are two mandatory parameters:
+
+* separation :math:`L` between sphere and plane
+* radius :math:`R` of the sphere.
+  
+The program expects the lengths to be given in units of meters. As an example,
+the following command computes the Casimir interaction at :math:`T=0` for
+perfect reflectors for a sphere of radius :math:`R=50\mu\mathrm{m}` and a
+separation :math:`L=500\,\mathrm{nm}`:
 
 .. code-block:: console
 
@@ -317,27 +326,29 @@ N+1. The output of this command looks similar to:
     # L/R, L, R, T, ldim, E*(L+R)/(hbar*c)
     0.009999999999999998, 5e-07, 5e-05, 0, 701, -428.5634172312517
 
-The output is in the format of a CSV file and additional comments start with a
-pound (#). The program first outputs some information on the compilation, i.e.,
-version of CaPS, time of compilation, name of compiler, machine where it was
-compiled and so on. Then, information about the geometry (radius :math:`R`,
-minimal separation :math:`L`, aspect ratio :math:`R/L`, and inverse aspect
-ratio :math:`L/R`), numerical parameters (cutoff, epsrel, iepsrel, ldim, cores)
-are printed. We will discuss the numerical parameters in more detail later. The
-value of cores is the number of MPI processes that are used for the
-computation. Then, the determinant of the scattering matrix for different
-Matsubara frequencies are printed. The comment starting with ``ier`` gives the
-result of the integration. If the integration was successful, the value is
-``ier=0``, see also the description of `dqags
-<http://www.netlib.org/quadpack/dqags.f>`_ of `QUADPACK
-<http://www.netlib.org/quadpack/>`_.  The program ends by printing the result
-of the computation. The free energy is output in units of :math:`(L+R)/\hbar
-c`, i.e., for this example the free energy is
+The output adopts the CSV format and additional comments start with a number
+sign (#). The first comment section contains information on the compilation
+like the version of CaPS, time of compilation, name of compiler, machine where
+it was compiled and so on.  A second comment secction gives information about
+the geometry (radius :math:`R`, minimal separation :math:`L`, aspect ratio
+:math:`R/L`, and inverse aspect ratio :math:`L/R`) as well as numerical
+parameters (cutoff, epsrel, iepsrel, ldim, cores). We will discuss the latter
+in more detail below. The value of the cores parameter is the number of MPI
+processes that were used for the computation.
+
+The following section lists the numerical results for the determinant of the
+scattering matrix printed for the different Matsubara frequencies at which it
+was evaluated. The comment starting with ``ier`` gives the result of the
+integration. If the integration was successful, the value is ``ier=0``, see
+also the description of `dqags <http://www.netlib.org/quadpack/dqags.f>`_ of
+`QUADPACK <http://www.netlib.org/quadpack/>`_.  The program ends by printing
+the result of the computation. The free energy is given in units of
+:math:`(L+R)/\hbar c`. For the present example the free energy is
 
 .. math::
-  \mathcal{F}\approx \frac{-428.6 \hbar c}{50\mu\mathrm{m}+500\mu\mathrm{nm}} \approx -2.68\times10^{-19} \mathrm{J}.
+  \mathcal{F}\approx \frac{-428.6 \hbar c}{50\mu\mathrm{m}+500\mathrm{nm}} \approx -2.68\times10^{-19} \mathrm{J}.
 
-The PFA result in this case is :math:`\mathcal{F}_\mathrm{PFA} = \hbar c \pi^3 R/(720 L^2) \approx -2.72\times10^{-19} \mathrm{J}`.
+The PFA result in this case is :math:`\mathcal{F}_\mathrm{PFA} = \hbar c \pi^3 R/720 L^2 \approx -2.72\times10^{-19} \mathrm{J}`.
 
 The desired relative accuracy of the integration over the Matsubara frequencies
 can be set using ``--epsrel``. By default, ``EPSREL`` is :math:`10^{-6}`.  Note
@@ -347,28 +358,28 @@ values of ``EPSREL`` you might need to decrease the value of ``CUTOFF`` using
 :math:`m` is stopped. The abort criterion is:
 
 .. math::
-    \frac{\log\mathrm{det}\left(1-\mathcal{M}^m(\xi)\right)}{\log\mathrm{det}\left(1-\mathcal{M}^0(\xi)\right)} < \mathrm{CUTOFF}
+    \frac{\log\mathrm{det}\left(1-\mathcal{M}^{(m)}(\xi)\right)}{\log\mathrm{det}\left(1-\mathcal{M}^0(\xi)\right)} < \mathrm{CUTOFF}
 
 The default value of ``CUTOFF`` is :math:`10^{-9}`. As a rule of thumb, in
-order that the integrand is sufficiently smooth for the integration routine,
+order for the integrand to be sufficiently smooth for the integration routine,
 ``CUTOFF`` should be at least two orders of magnitude smaller than ``EPSREL``.
 
 By default, the integration routine uses an adaptive Gauss-Kronrod method
 provided by `CQUADPACK <https://github.com/ESSS/cquadpack>`_. For perfect
 reflectors it is sometimes faster to use an adaptive exponentially convergent
-Fourier-Chebyshev quadrature scheme (FCQS), see `Boyd, "Exponentially convergent
-Fourier-Chebshev quadrature schemes on bounded and infinite intervals", JOSC 2,
-2 (1987) <https://doi.org/10.1007/BF01061480>`_. You can use FCQS using the
-flag ``--fcqs``. Since the adaptive algorithm for FCQS is not well tested, this
-option is considered experimental. Moreover, it is not recommended to use FCQS
-for any other materials than perfect reflectors.
+Fourier-Chebyshev quadrature scheme (FCQS), see `J. P. Boyd, "Exponentially
+convergent Fourier-Chebshev quadrature schemes on bounded and infinite
+intervals", J. Sci. Comput. 2, 99 (1987) <https://doi.org/10.1007/BF01061480>`_.
+FCQS can be enabled by the flag ``--fcqs``. Since the adaptive algorithm for
+FCQS is not well tested, this option is considered experimental. Moreover, it
+is not recommended to use FCQS for any other materials than perfect reflectors.
 
 Temperature
 ^^^^^^^^^^^
 
-You can set the temperature using ``-T``. The following program computes the
-free energy just like in the last example but at room temperature
-:math:`T=300\mathrm{K}`:
+The temperature in Kelvin can be set by using the flag ``-T``. The following
+call computes the free energy just like in the last example but at room
+temperature :math:`T=300\mathrm{K}`:
 
 .. code-block:: console
 
@@ -418,36 +429,42 @@ free energy just like in the last example but at room temperature
     # L/R, L, R, T, ldim, E*(L+R)/(hbar*c)
     0.009999999999999998, 5e-07, 5e-05, 300, 701, -452.7922092119535
 
-For finite temperature the free energy is no longer given as an integral, but
-as a sum over the Matsubara frequencies :math:`\xi_n`. The summation over
-:math:`n` is stopped once
+For finite temperatures, the free energy is no longer given as an integral, but
+as the sum :eq:`matsubara_sum` over Matsubara frequencies :math:`\xi_n`. The
+summation over :math:`n` is stopped once
 
 .. math::
 
     \frac{\log\mathrm{det}\left( 1-\mathcal{M}(\xi_n) \right)}{\log\mathrm{det}\left( 1-\mathcal{M}(0) \right)} < \mathrm{EPSREL} .
 
-By default, ``EPSREL`` is :math:`10^{-6}`. You can change the value of
-``EPSREL`` using the option ``--epsrel``.
+By default, ``EPSREL`` is :math:`10^{-6}`. Its value can be modified by means
+of the option ``--epsrel``.
 
-By default, the free energy is computed summing over the Matsubara frequencies
-:math:`\xi_n`, which is called Matsubara spectrum decomposition (MSD). Another
-option is to compute the free energy using Padé spectrum decomposition (PSD).
-PSD is an optimal sum-over-poles expansion scheme, more information can be
-found in `Hu, Xu, Yan, "Padé spectrum decompositions of quantum distribution
-functions and optimal hierarchical equations of motion construction for quantum
-open systems", J. Chem. Phys. 133, 101106 (2010)
-<https://doi.org/10.1063/1.3602466>`_. The PSD requires less terms to be
-computed compared to the MSD. You can tell the program to use PSD with the flag
-``--psd``. The order is determined automatically to achieve a relative error of
-the order specified by ``--epsrel``. You can also manually set the order using
-``--psd-order``. Since the automatic determination of the order is not well
-tested, this option is considered experimental.
+By default, the free energy is computed by means of :eq:`matsubara_sum`
+referred to as Matsubara spectrum decomposition (MSD). An alternative approach
+is the Padé spectrum decomposition (PSD). PSD is an optimal sum-over-poles
+expansion scheme explained in `J.  Hu, M. Luo, F. Jiang, R.-X. Xu, Y. J. Yan,
+"Padé spectrum decompositions of quantum distribution functions and optimal
+hierarchical equations of motion construction for quantum open systems", J.
+Chem. Phys. 134, 244106 (2010) <https://doi.org/10.1063/1.3602466>`_. The PSD
+requires the evaluation of fewer terms as compared to the MSD. PSD can be
+enabled with the flag ``--psd``. The order is determined
+automatically to achieve a relative error of the order specified by
+``--epsrel``, but can also be set manually using ``--psd-order``. Since
+the automatic determination of the order is not well tested, PSD is
+considered experimental.
 
-If you are only interested in the high-temperature limit, the flag ``--ht``
-will only compute :math:`\log\mathrm{det}(1-\mathcal{M}(0))` and output the
-Casimir energy in the limit :math:`T\to\infty` in units of :math:`k_\mathrm{B}
-T`. For example, for a sphere of radius :math:`R=100\mu\mathrm{m}` and a
-smallest separation :math:`L=100\mathrm{nm}` one finds:
+The high-temperature limit of the Casimir free energy requires only the
+evaluation of :math:`\log\mathrm{det}(1-\mathcal{M}(0))` and can be obtained by
+means of the flag ``--ht``. It will be determined for Drude metals and perfect
+reflectors. In contrast to the cases of zero and finite temperatures, the
+result is given in units of :math:`k_\mathrm{B} T`. While for perfect
+reflectors, no analytical result is know, for Drude metals the analytical
+formula given in `G.  Bimonte, T. Emig, PRL 109, 160403 (2012)
+<https://doi.org/10.1103/PhysRevLett.109.160403>`_ is used.
+
+For example, for a sphere of radius :math:`R=100\mu\mathrm{m}` and a smallest
+separation :math:`L=100\mathrm{nm}` one finds:
 
 .. code-block:: console
 
@@ -473,24 +490,39 @@ smallest separation :math:`L=100\mathrm{nm}` one finds:
     # L/R, L, R, ldim, E_Drude/(kB*T), E_PR/(kB*T)
     0.0009999999999999998, 1e-07, 0.0001, 7001, -149.6981411829862, -296.4343145093178
 
-Numerically, it is considerably easier to compute the high-temperature limit of
-the Casimir free energy. For this example, the aspect ratio is
-:math:`R/L=1000`, but the computation time on a standard desktop computer using
-8 cores is only about 13 seconds. For the Drude result the analytical formula
-given in `Bimonte, Emig, PRL 109, 160403 (2012)
-<https://doi.org/10.1103/PhysRevLett.109.160403>`_ is used.
-
+Compared to zero or finite temperatures, it is considerably less demanding to
+compute the high-temperature limit of the Casimir free energy. For the above
+example, the aspect ratio is :math:`R/L=1000`, but the computation time on a
+standard desktop computer using 8 cores is only about 13 seconds.
 
 Material parameters
 ^^^^^^^^^^^^^^^^^^^
 
-Up to this point, we have assumed that the sphere and the plate are perfect
-reflectors.  If you want to model the sphere and the plate using the plasma
-model, you can set the plasma frequency using ``--omegap``. The plasma
-frequency is expected in units of :math:`\mathrm{eV}/\hbar`. For example, for
-:math:`R=50\mu\mathrm{m}`, :math:`L=500\mathrm{nm}`, :math:`T=300\mathrm{K}`,
-and gold (plasma frequency :math:`\omega_\mathrm{P}=9\mathrm{eV}/\hbar`), the
-Casimir free energy assuming the plasma model is:
+The examples presented so far were mostly for sphere and plate made of
+perfect reflectors. In addition, it is possible to do calculations for the
+plasma model with the imaginary-frequency dielectric function
+
+.. math::
+  \epsilon(\mathrm{i}\xi) = 1+\frac{\omega_\mathrm{P}^2}{\xi^2},
+  :label: plasma_model
+
+for the Drude model with
+
+.. math::
+  \epsilon(\mathrm{i}\xi) = 1+\frac{\omega_\mathrm{P}^2}{\xi(\xi+\gamma)},
+  :label: drude_model
+
+and for materials with a user-defined dielectric function. Both objects, sphere
+and plate, are assumed to consist of the same material.
+
+The plasma model allows to account for high-frequency transparency of the
+material and is characterized by the plasma frequency :math:`\omega_\mathrm{P}`
+appearing in :eq:`plasma_model`. This parameter can be set using ``--omegap``.
+and its value is expected to be given in units of :math:`\mathrm{eV}/\hbar`. For example,
+for :math:`R=50\mu\mathrm{m}`, :math:`L=500\mathrm{nm}`,
+:math:`T=300\mathrm{K}`, and plasma frequency
+:math:`\omega_\mathrm{P}=9\mathrm{eV}/\hbar` appropriate for gold, the Casimir
+free energy assuming the plasma model is:
 
 .. code-block:: console
 
@@ -541,10 +573,12 @@ Casimir free energy assuming the plasma model is:
     # L/R, L, R, T, ldim, E*(L+R)/(hbar*c)
     0.009999999999999998, 5e-07, 5e-05, 300, 701, -408.1688659974158
 
-To describe the objects using the Drude model, you can additional specify the
-relaxation frequency :math:`\gamma` (also in units of
-:math:`\mathrm{eV}/\hbar`). For gold, :math:`\gamma=35\mathrm{meV}/\hbar`, so
-the same example as above for Drude gives:
+The Drude model :eq:`drude_model` not only accounts for the high-frequency
+cutoff but also a finite zero-frequency conductivity :math:`\sigma_0 =
+\omega_\mathrm{P}^2/\gamma`.  The additional parameter :math:`\gamma` can be
+specified by the flag ``--gamma`` with a value given in units of
+:math:`\mathrm{eV}/\hbar`. For gold, :math:`\gamma=35\mathrm{meV}/\hbar` and
+extending the previous example to the Drude model yields:
 
 .. code-block:: console
 
@@ -596,12 +630,9 @@ the same example as above for Drude gives:
     # L/R, L, R, T, ldim, E*(L+R)/(hbar*c)
     0.009999999999999998, 5e-07, 5e-05, 300, 701, -325.8011897578629
 
-The Casimir energy in the high-temperature limit for the Drude and the plasma
-model differ by a factor of 2. This is the reason why in this example the
-Casimir energy using the plasma model is larger than using the Drude model.
-
-General materials can be described using ``--material`` which expects the path
-to a material file. A material file has the following format:
+General materials can be defined by the user and specified by the flag
+``--material``. Its parameter should be a path to a file describing
+the material in the following format:
 
 .. code-block:: console
 
@@ -622,17 +653,13 @@ to a material file. A material file has the following format:
     1.5038100000000000E+018   1.002504731170786
     1.5190000000000000E+018   1.002459773692494
 
-Each line either starts with a pound (#) or contains a frequency :math:`\xi` in
-units of :math:`\mathrm{rad/s}` and the corresponding value of the dielectric
-function :math:`\epsilon(\mathrm{i}\xi)` separated by spaces. The frequencies
-have to be in ascending order. The dielectric function for an arbitrary
-frequency is then computed using linear interpolation. For frequencies smaller
-than the smallest frequency provided in the file, the dielectric function is
-computed using the Drude model
-
-.. math::
-  \epsilon(\mathrm{i}\xi) = 1+\frac{\omega_\mathrm{P}^2}{\xi(\xi+\gamma)}
-
+Each line either starts with a number sign (#) or contains a frequency
+:math:`\xi` in units of :math:`\mathrm{rad/s}` and the corresponding value of
+the dielectric function :math:`\epsilon(\mathrm{i}\xi)` separated by spaces.
+The frequencies have to be in ascending order. The dielectric function for an
+arbitrary frequency is then computed using linear interpolation. For
+frequencies smaller than the smallest frequency provided in the file, the
+dielectric function is computed using the Drude model :eq:`drude_model`
 with the plasma frequency given by ``omegap_low`` and the relaxation frequency
 given by ``gamma_low``. If ``omegap_low`` and ``gamma_low`` are not given in
 the file, the dielectric function is assumed to be 1. The behavior for
@@ -640,7 +667,7 @@ frequencies larger than the largest provided frequency is analogous using the
 parameters given by ``omegap_high`` and ``gamma_high``. More details can be
 found in the directory ``materials/``.
 
-Here is an example that computes the Casimir energy for a sphere of
+The following example computes the Casimir energy for a sphere of
 :math:`R=50\mu\mathrm{m}` at separation :math:`L=500\mathrm{nm}` at room
 temperature :math:`T=300\mathrm{K}` for real gold:
 
@@ -694,63 +721,76 @@ temperature :math:`T=300\mathrm{K}` for real gold:
     # L/R, L, R, T, ldim, E*(L+R)/(hbar*c)
     0.009999999999999998, 5e-07, 5e-05, 300, 701, -326.8806691538941
 
-The energy printed in the last line assumes a Drude model for the zero-th
-Matsubara frequency. If you want to use the plasma model for the zero-th
-Matsubara frequency, you can use the value given by ``# plasma =``. This
-number, i.e., -26.69763... is given in units of :math:`k_\mathrm{B}T/2` and
-corresponds to the additional contribution in the high-temperature limit to the
-energy in the plasma model. In this example, the free energy using the Drude
-model for zero-frequency is
+As indicated in the comment line referring to the model used, a Drude model is
+used to evaluate the zeroth Matsubara frequency. In order to obtain the
+corresponding result where the plasma model is used instead for the zeroth
+Matsubara frequency, the value given in the comment line starting with ``#
+plasma =`` can be used. The value given there, i.e. -26.69... in our example,
+is given in units of :math:`k_\mathrm{B}T/2` and corresponds to the additional
+contribution in the high-temperature limit to the energy in the plasma model.
+In our example, the free energy using the Drude model at zero frequency is
 
 .. math::
   \mathcal{F}_\mathrm{Drude} \approx -326.88 \frac{\hbar c}{L+R} \approx -2.0464\times10^{-19}\mathrm{J},
 
-and assuming the plasma model for zero frequency
+while assuming the plasma model for zero frequency we find
 
 .. math::
-  \mathcal{F}_\mathrm{plasma} \approx \mathcal{F}_\mathrm{Drude} + \frac{-26.69763 k_\mathrm{B}T}{2} \approx -2.5993 \times 10^{-19} \mathrm{J} .
+  \mathcal{F}_\mathrm{plasma} \approx \mathcal{F}_\mathrm{Drude} - 26.69763 \frac{k_\mathrm{B}T}{2} \approx -2.5993 \times 10^{-19} \mathrm{J} .
 
 Truncation of the vector space
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-The truncation of the vector space is described in more detail in `Hartmann,
-"Casimir effect in the plane-sphere geometry: Beyond the proximity force
-approximation", PhD thesis (Universität Augsburg, 2018)
-<https://opus.bibliothek.uni-augsburg.de/opus4/44798>`_. You can either
-specify the dimension of the vector space using ``--ldim``, or you choose the
-vector space using the parameter ``--eta``:
+The required dimension of the vector space
 
 .. math::
-    \ell_\mathrm{dim} = \mathrm{max}\left(20, \left\lceil \eta R/L \right\rceil\right) .
+   :label: eta
 
-The estimated error due to the truncation of the vector space depending on :math:`\eta`
-is given by:
+   \ell_\mathrm{dim} = \eta\frac{R}{L}
+
+scales linearly with the aspect ratio :math:`R/L` with a prefactor
+:math:`\eta` related to the estimated relative error according to the following table:
 
 +-----------------+-----------------+-----------------+-----------------+-----------------+-----------------+-----------------+-----------------+
-| numerical error | :math:`10^{-2}` | :math:`10^{-3}` | :math:`10^{-4}` | :math:`10^{-5}` | :math:`10^{-6}` | :math:`10^{-7}` | :math:`10^{-8}` |
+| relative error  | :math:`10^{-2}` | :math:`10^{-3}` | :math:`10^{-4}` | :math:`10^{-5}` | :math:`10^{-6}` | :math:`10^{-7}` | :math:`10^{-8}` |
 +-----------------+-----------------+-----------------+-----------------+-----------------+-----------------+-----------------+-----------------+
 | :math:`\eta`    | 2.8             | 4               | 5.2             | 6.4             | 7.6             | 8.8             | 10              |
 +-----------------+-----------------+-----------------+-----------------+-----------------+-----------------+-----------------+-----------------+
+
+The truncation of the vector space is discussed in more detail in `M. Hartmann,
+"Casimir effect in the plane-sphere geometry: Beyond the proximity force
+approximation", PhD thesis (Universität Augsburg, 2018)
+<https://opus.bibliothek.uni-augsburg.de/opus4/44798>`_.
+
+The dimension of the vector space can be specified by means of the flag
+``--ldim`` fixing :math:`\ell_\mathrm{dim}`. Alternatively, the flag ``--eta`` can
+be used from which the dimension is obtained according to
+
+.. math::
+    \ell_\mathrm{dim} = \mathrm{max}\left(20, \left\lceil \eta R/L \right\rceil\right) 
+
+where :math:`\lceil x\rceil` denotes the smallest integer larger than :math:`x`.
+By default, the dimension of the vector space is determined from :eq:`eta`  with
+:math:`\eta=7`.
 
 
 Other options
 ^^^^^^^^^^^^^
 
-The computation of the matrix elements of the round-trip operator contains an
+The computation of the matrix elements of the round-trip operator involves an
 integration. The desired relative error for this integration can be set using
 ``--iepsrel``. The default value of :math:`10^{-8}` should be sufficient for
-almost all purposes. If you want to compute the Casimir energy to very high
-accuracy, to :math:`10^{-7}` or better, you might want to use a smaller value
-for ``IEPSREL``.
+almost all purposes. If the Casimir energy needs to be determined to very high
+accuracy with a relative error of :math:`10^{-7}` or smaller, it is recommended
+to decrease ``IEPSREL`` accordingly.
 
-If ``caps`` was interrupted and you have the partial output saved in a file,
-you can use the ``--resume`` option to continue the computation from that
-point. Interruptions may happen for example on a cluster if the program exceeds
-the time limit. Given the option ``--resume FILENAME``, ``caps`` reads the
-content of ``FILENAME`` and re-uses the computed values. Make sure that all
-other parameters given to ``caps`` exactly match the parameters used to
-generate ``FILENAME``.
-
+If ``caps`` was interrupted, e.g. when the time limit was exceeded, the
+``--resume`` option can be used to resume the computation on the basis of the
+partial output created so far. If it is given the option ``--resume FILENAME``,
+``caps`` reads the content of ``FILENAME`` and re-uses the computed values.  It
+is the responsibility of the user to make sure that all other parameters given
+to ``caps`` exactly match the parameters used to generate ``FILENAME`` in a
+previous run.
 
 caps_logdetD
 ------------
@@ -758,7 +798,7 @@ caps_logdetD
 The program ``caps_logdetD`` computes
 
 .. math::
-    \log\mathrm{det}\left(1-\mathcal{M}^m(\xi)\right) .
+    \log\mathrm{det}\left(1-\mathcal{M}^{(m)}(\xi)\right) .
 
 depending on :math:`m`, :math:`\xi`, :math:`R`, and :math:`L` The options
 ``-L``, ``-R``, ``--ldim``, ``--material``, and ``--iepsrel`` are the same as

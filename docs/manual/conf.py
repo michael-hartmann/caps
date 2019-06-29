@@ -109,7 +109,7 @@ htmlhelp_basename = 'capsdoc'
 latex_elements = {
     # The paper size ('letterpaper' or 'a4paper').
     #
-    # 'papersize': 'letterpaper',
+    'papersize': 'a4paper',
 
     # The font size ('10pt', '11pt' or '12pt').
     #
@@ -122,6 +122,8 @@ latex_elements = {
     # Latex figure (float) alignment
     #
     # 'figure_align': 'htbp',
+
+    'extraclassoptions': 'openany',
 }
 
 # Grouping the document tree into LaTeX files. List of tuples
