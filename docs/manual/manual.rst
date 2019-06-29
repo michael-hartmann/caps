@@ -24,7 +24,7 @@ The main goal of the library and the associated programs is to compute the free
 energy :math:`\mathcal{F}` as a function of the radius :math:`R` of the sphere,
 the separation :math:`L` between sphere and plate, the temperature :math:`T`,
 and the dielectric properties of the sphere and the plane. The code is highly
-optimized and -- depending on parameters and the available ressources -- allows
+optimized and -- depending on parameters and the available resources -- allows
 to compute the free energy for aspect ratios up to :math:`R/L\sim 5\,000`.
 An idea of typical aspect ratios used in Casimir experiments in the plane-sphere
 geometry can be obtained from :numref:`aspect_ratios`.
@@ -111,7 +111,7 @@ MPI. The requirements to compile the source code are
  * a C and C++ compiler,
  * the development files for LAPACK and MPI,
  * the build tools make and cmake.
-   
+
 These dependencies can be installed with:
 
 .. code-block:: console
@@ -271,7 +271,7 @@ There are two mandatory parameters:
 
 * separation :math:`L` between sphere and plane
 * radius :math:`R` of the sphere.
-  
+
 The program expects the lengths to be given in units of meters. As an example,
 the following command computes the Casimir interaction at :math:`T=0` for
 perfect reflectors for a sphere of radius :math:`R=50\mu\mathrm{m}` and a
@@ -330,7 +330,7 @@ The output of the above command looks similar to:
 The output adopts the CSV format and additional comments start with a number
 sign (#). The first comment section contains information on the compilation
 like the version of CaPS, time of compilation, name of compiler, machine where
-it was compiled and so on.  A second comment secction gives information about
+it was compiled and so on. A second comment section gives information about
 the geometry (radius :math:`R`, minimal separation :math:`L`, aspect ratio
 :math:`R/L`, and inverse aspect ratio :math:`L/R`) as well as numerical
 parameters (cutoff, epsrel, iepsrel, ldim, cores). We will discuss the latter
@@ -342,7 +342,7 @@ scattering matrix printed for the different Matsubara frequencies at which it
 was evaluated. The comment starting with ``ier`` gives the result of the
 integration. If the integration was successful, the value is ``ier=0``, see
 also the description of `dqags <http://www.netlib.org/quadpack/dqags.f>`_ of
-`QUADPACK <http://www.netlib.org/quadpack/>`_.  The program ends by printing
+`QUADPACK <http://www.netlib.org/quadpack/>`_. The program ends by printing
 the result of the computation. The free energy is given in units of
 :math:`(L+R)/\hbar c`. For the present example the free energy is
 
@@ -352,7 +352,7 @@ the result of the computation. The free energy is given in units of
 The PFA result in this case is :math:`\mathcal{F}_\mathrm{PFA} = \hbar c \pi^3 R/720 L^2 \approx -2.72\times10^{-19} \mathrm{J}`.
 
 The desired relative accuracy of the integration over the Matsubara frequencies
-can be set using ``--epsrel``. By default, ``EPSREL`` is :math:`10^{-6}`.  Note
+can be set using ``--epsrel``. By default, ``EPSREL`` is :math:`10^{-6}`. Note
 that the integrand needs to be sufficiently smooth. In particular, for very low
 values of ``EPSREL`` you might need to decrease the value of ``CUTOFF`` using
 ``--cutoff``. The value of ``CUTOFF`` determines when the summation over
@@ -444,7 +444,7 @@ of the option ``--epsrel``.
 By default, the free energy is computed by means of :eq:`matsubara_sum`
 referred to as Matsubara spectrum decomposition (MSD). An alternative approach
 is the Padé spectrum decomposition (PSD). PSD is an optimal sum-over-poles
-expansion scheme explained in `J.  Hu, M. Luo, F. Jiang, R.-X. Xu, Y. J. Yan,
+expansion scheme explained in `J. Hu, M. Luo, F. Jiang, R.-X. Xu, Y. J. Yan,
 "Padé spectrum decompositions of quantum distribution functions and optimal
 hierarchical equations of motion construction for quantum open systems", J.
 Chem. Phys. 134, 244106 (2010) <https://doi.org/10.1063/1.3602466>`_. The PSD
@@ -461,7 +461,7 @@ means of the flag ``--ht``. It will be determined for Drude metals and perfect
 reflectors. In contrast to the cases of zero and finite temperatures, the
 result is given in units of :math:`k_\mathrm{B} T`. While for perfect
 reflectors, no analytical result is know, for Drude metals the analytical
-formula given in `G.  Bimonte, T. Emig, PRL 109, 160403 (2012)
+formula given in `G. Bimonte, T. Emig, PRL 109, 160403 (2012)
 <https://doi.org/10.1103/PhysRevLett.109.160403>`_ is used.
 
 For example, for a sphere of radius :math:`R=100\mu\mathrm{m}` and a smallest
@@ -576,7 +576,7 @@ free energy assuming the plasma model is:
 
 The Drude model :eq:`drude_model` not only accounts for the high-frequency
 cutoff but also a finite zero-frequency conductivity :math:`\sigma_0 =
-\omega_\mathrm{P}^2/\gamma`.  The additional parameter :math:`\gamma` can be
+\omega_\mathrm{P}^2/\gamma`. The additional parameter :math:`\gamma` can be
 specified by the flag ``--gamma`` with a value given in units of
 :math:`\mathrm{eV}/\hbar`. For gold, :math:`\gamma=35\mathrm{meV}/\hbar` and
 extending the previous example to the Drude model yields:
@@ -768,10 +768,10 @@ The dimension of the vector space can be specified by means of the flag
 be used from which the dimension is obtained according to
 
 .. math::
-    \ell_\mathrm{dim} = \mathrm{max}\left(20, \left\lceil \eta R/L \right\rceil\right) 
+    \ell_\mathrm{dim} = \mathrm{max}\left(20, \left\lceil \eta R/L \right\rceil\right)
 
 where :math:`\lceil x\rceil` denotes the smallest integer larger than :math:`x`.
-By default, the dimension of the vector space is determined from :eq:`eta`  with
+By default, the dimension of the vector space is determined from :eq:`eta` with
 :math:`\eta=7`.
 
 
@@ -788,7 +788,7 @@ to decrease ``IEPSREL`` accordingly.
 If ``caps`` was interrupted, e.g. when the time limit was exceeded, the
 ``--resume`` option can be used to resume the computation on the basis of the
 partial output created so far. If it is given the option ``--resume FILENAME``,
-``caps`` reads the content of ``FILENAME`` and re-uses the computed values.  It
+``caps`` reads the content of ``FILENAME`` and re-uses the computed values. It
 is the responsibility of the user to make sure that all other parameters given
 to ``caps`` exactly match the parameters used to generate ``FILENAME`` in a
 previous run.
@@ -848,11 +848,11 @@ Here is an example to generate and save a round-trip matrix:
     # L, R, ξ*(L+R)/c, m, logdet(Id-M), ldim, time
     1e-06, 0.0001, 2, 1, -6.349155228127988, 501, 0.817265
 
-    $ ls -lh M.npy 
+    $ ls -lh M.npy
     -rw------- 1 hartmmic g-103665 7,7M Feb 26 13:26 M.npy
 
     $ python
-    Python 3.6.5 | packaged by conda-forge | (default, Apr  6 2018, 13:39:56) 
+    Python 3.6.5 | packaged by conda-forge | (default, Apr  6 2018, 13:39:56)
     [GCC 4.8.2 20140120 (Red Hat 4.8.2-15)] on linux
     Type "help", "copyright", "credits" or "license" for more information.
     >>> import numpy as np
@@ -866,7 +866,7 @@ Here is an example to generate and save a round-trip matrix:
 capc
 ----
 
-The program  ``capc`` computes the Casimir interaction in the cylinder-plane
+The program ``capc`` computes the Casimir interaction in the cylinder-plane
 geometry. The radius of the cylinder is given by ``-R`` and the smallest
 separation between cylinder and plate is given by ``-d``. Both lengths are
 expected in meters. At the moment, only perfect reflectors at zero temperature
