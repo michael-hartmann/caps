@@ -282,9 +282,10 @@ separation :math:`L=500\,\mathrm{nm}`:
     $ mpirun -n 8 ./caps -R 50e-6 -L 500e-9
 
 The command ``mpirun`` will set up the environment for MPI and the flag ``-n``
-specifies how many processes the program should use. If you want to utilize the
-full capacity of your machine and your processor has N cores, set ``-n`` to
-N+1. The output of this command looks similar to:
+specifies how many processes the program should use. To fully utilize the
+computational power of a computer with N processor cores, set ``-n`` to N+1.
+
+The output of the above command looks similar to:
 
 .. code-block:: console
 
