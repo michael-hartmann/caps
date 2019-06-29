@@ -785,13 +785,13 @@ almost all purposes. If the Casimir energy needs to be determined to very high
 accuracy with a relative error of :math:`10^{-7}` or smaller, it is recommended
 to decrease ``IEPSREL`` accordingly.
 
-If ``caps`` was interrupted, e.g. when the time limit was exceeded, the
-``--resume`` option can be used to resume the computation on the basis of the
-partial output created so far. If it is given the option ``--resume FILENAME``,
-``caps`` reads the content of ``FILENAME`` and re-uses the computed values. It
-is the responsibility of the user to make sure that all other parameters given
-to ``caps`` exactly match the parameters used to generate ``FILENAME`` in a
-previous run.
+If ``caps`` was interrupted, e.g. when the time limit on a compute cluster was
+exceeded, the ``--resume`` option can be used to resume the computation on the
+basis of the partial output created so far. If it is given the option
+``--resume FILENAME``, ``caps`` reads the content of ``FILENAME`` and re-uses
+the computed values. It is the responsibility of the user to make sure that all
+other parameters given to ``caps`` exactly match the parameters used to
+generate ``FILENAME`` in a previous run.
 
 caps_logdetD
 ------------
