@@ -20,8 +20,7 @@
 # -- Project information -----------------------------------------------------
 
 project = 'CaPS'
-copyright = '2019, Michael Hartmann'
-author = 'Michael Hartmann'
+author = 'Michael Hartmann, Gert-Ludwig Ingold'
 
 # The short X.Y version
 version = ''
@@ -131,7 +130,7 @@ latex_elements = {
 #  author, documentclass [howto, manual, or own class]).
 latex_documents = [
     (master_doc, 'caps.tex', 'CaPS Documentation',
-     'Michael Hartmann', 'manual'),
+     'Michael Hartmann, Gert-Ludwig Ingold', 'manual'),
 ]
 
 
