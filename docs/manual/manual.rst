@@ -836,7 +836,7 @@ round-trip matrix will be saved to the filename contained in ``CAPS_DUMP``.
 Also note that if ``detalg`` is Cholesky, only the upper half of the matrix is
 computed.
 
-Here is an example to generate and save a round-trip matrix:
+The following example demonstrates how to generate and save a round-trip matrix:
 
 .. code-block:: console
 
