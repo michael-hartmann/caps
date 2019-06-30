@@ -236,6 +236,8 @@ performance gain.
 Programs
 ========
 
+.. _caps:
+
 caps
 ----
 
@@ -796,19 +798,21 @@ generate ``FILENAME`` in a previous run.
 caps_logdetD
 ------------
 
-The program ``caps_logdetD`` computes
+The program ``caps_logdetD`` computes the building block of :eq:`matsubara_sum`
 
 .. math::
-    \log\mathrm{det}\left(1-\mathcal{M}^{(m)}(\xi)\right) .
+    \log\mathrm{det}\left(1-\mathcal{M}^{(m)}(\xi)\right) 
 
-depending on :math:`m`, :math:`\xi`, :math:`R`, and :math:`L` The options
-``-L``, ``-R``, ``--ldim``, ``--material``, and ``--iepsrel`` are the same as
-for the program ``caps``.
+which, in addition to the parameters introduced above, depends on :math:`m` and
+:math:`\xi`. Accordingly, there exist two additional mandatory options besides
+``-L`` and ``-R``, namely ``-m`` and ``--xi``. The frequency given by ``--xi``
+is expected in units of :math:`c/(L+R)`.
 
-Besides ``-L`` and ``-R``, further mandatory options are ``-m`` and ``--xi``.
-The frequency given by ``--xi`` is expected in units of :math:`(L+R)/c`. In
-addition, you can specify the algorithm used to compute the determinant with
-``--detalg``. Valid options are HODLR, QR, LU, and Cholesky.
+
+The options ``-L``, ``-R``, ``--ldim``, ``--material``, and ``--iepsrel`` are
+the same as described in :numref:`caps` for the program ``caps``. In addition,
+the algorithm used to compute the determinant can be specified with ``--detalg``.
+Valid values are HODLR, QR, LU, and Cholesky.
 
 A typical output looks like
 
@@ -826,13 +830,13 @@ A typical output looks like
     # L, R, ξ*(L+R)/c, m, logdet(Id-M), ldim, time
     1e-06, 0.0001, 1, 1, -6.463973151333013, 501, 0.548678
 
-Sometimes, it is useful to output the round-trip matrix in numpy format. If the
+Sometimes, it is useful to dump the round-trip matrix in Numpy format. If the
 environment variable ``CAPS_DUMP`` is set and ``detalg`` is not HODLR, the
 round-trip matrix will be saved to the filename contained in ``CAPS_DUMP``.
 Also note that if ``detalg`` is Cholesky, only the upper half of the matrix is
 computed.
 
-Here is an example to generate and save a round-trip matrix:
+The following example demonstrates how to generate and save a round-trip matrix:
 
 .. code-block:: console
 
