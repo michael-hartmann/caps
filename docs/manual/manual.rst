@@ -806,7 +806,7 @@ depending on :math:`m`, :math:`\xi`, :math:`R`, and :math:`L` The options
 for the program ``caps``.
 
 Besides ``-L`` and ``-R``, further mandatory options are ``-m`` and ``--xi``.
-The frequency given by ``--xi`` is expected in units of :math:`(L+R)/c`. In
+The frequency given by ``--xi`` is expected in units of :math:`c/(L+R)`. In
 addition, you can specify the algorithm used to compute the determinant with
 ``--detalg``. Valid options are HODLR, QR, LU, and Cholesky.
 
