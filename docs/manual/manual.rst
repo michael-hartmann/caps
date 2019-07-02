@@ -995,7 +995,7 @@ You need doxygen installed on your computer.
 Examples
 ========
 
-In the directory ``examples/`` you can find examples of simple programs that
+In the directory ``examples/`` examples of simple programs can be found that
 demonstrate how to use the CaPS API. The examples are kept simple and well
 documented.
 
