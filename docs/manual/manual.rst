@@ -871,13 +871,16 @@ capc
 ----
 
 The program ``capc`` computes the Casimir interaction in the cylinder-plane
-geometry. The radius of the cylinder is given by ``-R`` and the smallest
-separation between cylinder and plate is given by ``-d``. Both lengths are
-expected in meters. At the moment, only perfect reflectors at zero temperature
-are supported.
+geometry for perfect reflectors at zero temperature. The radius of the cylinder
+is specified by means of the flag ``-R`` and the smallest separation between
+cylinder and plate is specified by ``-d``. Both lengths are expected to be
+given in meters. The length :math:`L` of the cylinder is assumed to be large
+compared to the cylinder radius :math:`R` and the cylinder-plate distance
+:math:`d` so that the cylinder can be assumed to be infinitely long.
 
-This example computes the Casimir free energy for a cylinder of radius
-:math:`R=100\mu\mathrm{m}` and a separation of :math:`d=100\mathrm{nm}`:
+The following example computes the Casimir free energy per unit length
+for a cylinder of radius :math:`R=100\mu\mathrm{m}` and a separation of
+:math:`d=100\mathrm{nm}`:
 
 .. code-block:: console
 
@@ -892,10 +895,10 @@ This example computes the Casimir free energy for a cylinder of radius
     # d/R, d, R, T, lmax, E_PFA/(L*hbar*c), E_D/E_PFA, E_N/E_PFA, E_EM/E_PFA
     0.001, 1e-07, 0.0001, 0, 6000, -72220981652413.5, 0.500089151078031, 0.499432943796718, 0.999522094874749
 
-Here, :math:`L` denotes the length of the cylinder. The matrix elements of the
-round-trip operator are correct assuming that :math:`L\gg R,d`. ``E_D`` and
-``E_N`` correspond to Dirichlet and Neumann boundary conditions, ``E_EM`` is
-the energy for the electromagnetic field, ``E_EM = E_D + E_N``.
+``E_D`` and ``E_N`` correspond to Dirichlet and Neumann boundary conditions, respectively,
+and ``E_EM`` is the energy for the electromagnetic field with ``E_EM = E_D + E_N``.
+All results are given as ratios with respect to the free energy per unit length calculated
+within the proximity-force approximation.
 
 
 cass
