@@ -284,8 +284,12 @@ separation :math:`L=500\,\mathrm{nm}`:
     $ mpirun -n 8 ./caps -R 50e-6 -L 500e-9
 
 The command ``mpirun`` will set up the environment for MPI and the flag ``-n``
-specifies how many processes the program should use. To fully utilize the
-computational power of a computer with N processor cores, set ``-n`` to N+1.
+specifies how many processes the program should use. The first process is the
+master process. It delegates works to the other minion processes and collects
+the results once they are available. Due to this design, ``caps`` needs at
+least two processes to be able to start. As the master process does not consume
+much CPU time, set ``-n`` to N+1 to fully utilize the computational power of a
+computer with N processor cores.
 
 The output of the above command looks similar to:
 
