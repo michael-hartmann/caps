@@ -875,13 +875,16 @@ capc
 ----
 
 The program ``capc`` computes the Casimir interaction in the cylinder-plane
-geometry. The radius of the cylinder is given by ``-R`` and the smallest
-separation between cylinder and plate is given by ``-d``. Both lengths are
-expected in meters. At the moment, only perfect reflectors at zero temperature
-are supported.
+geometry for perfect reflectors at zero temperature. The radius of the cylinder
+is specified by means of the flag ``-R`` and the smallest separation between
+cylinder and plate is specified by ``-d``. Both lengths are expected to be
+given in meters. The length :math:`L` of the cylinder is assumed to be large
+compared to the cylinder radius :math:`R` and the cylinder-plate distance
+:math:`d` so that the cylinder can be assumed to be infinitely long.
 
-This example computes the Casimir free energy for a cylinder of radius
-:math:`R=100\mu\mathrm{m}` and a separation of :math:`d=100\mathrm{nm}`:
+The following example computes the Casimir energy per unit length for an
+infinitely long cylinder of radius :math:`R=100\mu\mathrm{m}` and a separation
+of :math:`d=100\mathrm{nm}`:
 
 .. code-block:: console
 
@@ -896,18 +899,22 @@ This example computes the Casimir free energy for a cylinder of radius
     # d/R, d, R, T, lmax, E_PFA/(L*hbar*c), E_D/E_PFA, E_N/E_PFA, E_EM/E_PFA
     0.001, 1e-07, 0.0001, 0, 6000, -72220981652413.5, 0.500089151078031, 0.499432943796718, 0.999522094874749
 
-Here, :math:`L` denotes the length of the cylinder. The matrix elements of the
-round-trip operator are correct assuming that :math:`L\gg R,d`. ``E_D`` and
-``E_N`` correspond to Dirichlet and Neumann boundary conditions, ``E_EM`` is
-the energy for the electromagnetic field, ``E_EM = E_D + E_N``.
+``E_D`` and ``E_N`` correspond to Dirichlet and Neumann boundary conditions, respectively,
+and ``E_EM`` is the energy for the electromagnetic field with ``E_EM = E_D + E_N``.
+All results are given as ratios with respect to the free energy per unit length calculated
+within the proximity-force approximation.
+
+A full list of options accepted by ``capc`` can be obtained by ``capc --help``. 
 
 
 cass
 ----
 
-This program computes the Casimir free energy at :math:`T=0` in the
-sphere-sphere geometry for perfect reflectors. It is assumed that both spheres
-have the same radius :math:`R=R_1=R_2`.
+The program ``cass`` computes the Casimir energy in the sphere-sphere geometry
+for perfect reflectors at zero temperature. It is assumed that both spheres have the
+same radius :math:`R=R_1=R_2`. The radius is specified by means of the flag ``-R`` and
+the smallest distance between the two spheres is specified by ``-d``. Both lengths are
+expected to be given in units of meters.
 
 The round-trip operator in the sphere-sphere geometry is given as
 
@@ -916,24 +923,22 @@ The round-trip operator in the sphere-sphere geometry is given as
      \mathcal{M}_\mathrm{SS} = \mathcal{R}_1 \mathcal{T}_{12} \mathcal{R}_2 \mathcal{T}_{21} \,.
 
 Here, :math:`\mathcal{R}_j` denotes the reflection operator at sphere
-:math:`j`, and :math:`\mathcal{T}_{ij}` is the translation operator from object
-:math:`j` to object :math:`i`. After symmetrization and for equal radii, the
-round-trip operator is:
+:math:`j`, and :math:`\mathcal{T}_{ij}` is the translation operator from sphere
+:math:`j` to sphere :math:`i`. After symmetrization and for equal radii, the
+round-trip operator can be written as:
 
 .. math::
 
-     \widehat{\mathcal{M}}_\mathrm{SS} = \underbrace{\sqrt{\mathcal{R}} \mathcal{T} \sqrt{\mathcal{R}}}_{=A} \underbrace{\sqrt{\mathcal{R}} \mathcal{T} \sqrt{\mathcal{R}}}_{=A} = A^2
+     \widehat{\mathcal{M}}_\mathrm{SS} = \underbrace{\sqrt{\mathcal{R}} \mathcal{T} \sqrt{\mathcal{R}}}_{=A} \underbrace{\sqrt{\mathcal{R}} \mathcal{T} \sqrt{\mathcal{R}}}_{=A} = A^2 \,.
 
 Since for perfect reflectors the Fresnel coefficients are
 :math:`r_\mathrm{TM}=-r_\mathrm{TE}=1`, the operator :math:`A` can be expressed
 as :math:`A=\mathcal{M}_\mathrm{PS}` where :math:`\mathcal{M}_\mathrm{PS}` is
-the round-trip operator in the plane-sphere geometry. This idea is basically
-the method of image charges.
+the symmetrized round-trip operator in the plane-sphere geometry. This idea is
+basically amounts to using the method of image charges.
 
-You can compute the free energy using the program ``cass``. The smallest
-separation between the two spheres is denoted as :math:`d` and the radius of
-the spheres is :math:`R`. Here is an example to compute the Casimir energy for
-:math:`R_1=R_2=100\mu\mathrm{m}` and :math:`d=10\mu\mathrm{m}`:
+The following example computes the Casimir energy in the sphere-sphere geometry
+for :math:`R_1=R_2=100\mu\mathrm{m}` and :math:`d=10\mu\mathrm{m}`:
 
 .. code-block:: console
 
@@ -969,11 +974,11 @@ the spheres is :math:`R`. Here is an example to compute the Casimir energy for
 The runtime of this program is about 4 minutes. For a full list of options see
 ``cass --help``.
 
-The program uses a full matrix-matrix multiplication using LAPACK to compute
-:math:`\widehat{\mathcal{M}}_\mathrm{SS}` and an LU decomposition to compute
-the determinant of the scattering matrix. Also, the program does not support
-parallelization. For this reason, the program is limited to not too large
-values of :math:`R/d`.
+The program ``cass`` carries out a full matrix-matrix multiplication using LAPACK to
+compute :math:`\widehat{\mathcal{M}}_\mathrm{SS}` and a LU decomposition to compute
+the determinant of the scattering matrix. Note that this program does not support
+parallelization. Therefore, the program is useful only for not too large
+aspect ratios :math:`R/d`.
 
 
 
@@ -994,7 +999,7 @@ You need doxygen installed on your computer.
 Examples
 ========
 
-In the directory ``examples/`` you can find examples of simple programs that
+In the directory ``examples/`` examples of simple programs can be found that
 demonstrate how to use the CaPS API. The examples are kept simple and well
 documented.
 
