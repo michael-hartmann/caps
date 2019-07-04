@@ -30,7 +30,7 @@ An idea of typical aspect ratios used in Casimir experiments in the plane-sphere
 geometry can be obtained from :numref:`aspect_ratios`.
 
 .. _aspect_ratios:
-.. figure:: images/overview.pdf
+.. figure:: images/overview.*
    :scale: 100 %
 
    The aspect ratio :math:`R/L` used in experiments in the plane-sphere geometry
