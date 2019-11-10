@@ -48,7 +48,7 @@ double lfac2(unsigned int n) __attribute__ ((pure));
 
 /**
  * @file   logfac.c
- * @author Michael Hartmann <michael.hartmann@physik.uni-augsburg.de>
+ * @author Michael Hartmann <caps@speicherleck.de>
  * @date   %s, %d
  * @brief  computation of logarithm and factorial for integer arguments; created by logfac.py
  */

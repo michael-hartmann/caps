@@ -1,7 +1,7 @@
 /**
  * @file   bessel.c
  * @author Stephen L. Moshier, Cephes Math Library Release 2.8, June 2000
- * @author Michael Hartmann <michael.hartmann@physik.uni-augsburg.de>
+ * @author Michael Hartmann <caps@speicherleck.de>
  * @date   October, 2019
  * @brief  Computation of Bessel functions
  */

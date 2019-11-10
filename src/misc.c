@@ -1,6 +1,6 @@
 /**
  * @file   misc.c
- * @author Michael Hartmann <michael.hartmann@physik.uni-augsburg.de>
+ * @author Michael Hartmann <caps@speicherleck.de>
  * @date   July, 2017
  * @brief  various mathematical functions
  */

@@ -1,6 +1,6 @@
 /**
  * @file   utils.h
- * @author Michael Hartmann <michael.hartmann@physik.uni-augsburg.de>
+ * @author Michael Hartmann <caps@speicherleck.de>
  * @date   July, 2017
  * @brief  wrappers for malloc, calloc and realloc, assert-like macros, now()-function
  */

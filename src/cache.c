@@ -1,6 +1,6 @@
 /**
  * @file   cache.c
- * @author Michael Hartmann <michael.hartmann@physik.uni-augsburg.de>
+ * @author Michael Hartmann <caps@speicherleck.de>
  * @date   February, 2019
  * @brief  implementation of a simple cache using a hash table
  */

@@ -1,6 +1,6 @@
 /**
  * @file   matrix.c
- * @author Michael Hartmann <michael.hartmann@physik.uni-augsburg.de>
+ * @author Michael Hartmann <caps@speicherleck.de>
  * @date   January, 2019
  * @brief  Matrix functions
  */

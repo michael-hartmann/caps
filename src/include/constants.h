@@ -1,6 +1,6 @@
 /**
  * @file   constants.h
- * @author Michael Hartmann <michael.hartmann@physik.uni-augsburg.de>
+ * @author Michael Hartmann <caps@speicherleck.de>
  * @date   December, 2018
  * @brief  define macros and constants
  */
