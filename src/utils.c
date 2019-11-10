@@ -1,6 +1,6 @@
 /**
  * @file   utils.c
- * @author Michael Hartmann <michael.hartmann@physik.uni-augsburg.de>
+ * @author Michael Hartmann <caps@speicherleck.de>
  * @date   January, 2018
  * @brief  wrappers for malloc, calloc realloc, and a few more useful functions
  */

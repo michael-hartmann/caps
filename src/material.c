@@ -1,6 +1,6 @@
 /**
  * @file   material.c
- * @author Michael Hartmann <michael.hartmann@physik.uni-augsburg.de>
+ * @author Michael Hartmann <caps@speicherleck.de>
  * @date   January, 2019
  * @brief  support for arbitrary dielectric functions
  */

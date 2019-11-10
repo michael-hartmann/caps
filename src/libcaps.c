@@ -1,6 +1,6 @@
 /**
  * @file   libcaps.c
- * @author Michael Hartmann <michael.hartmann@physik.uni-augsburg.de>
+ * @author Michael Hartmann <caps@speicherleck.de>
  * @date   December, 2017
  * @brief  library to calculate the free Casimir energy in the plane-sphere geometry
  */
