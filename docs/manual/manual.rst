@@ -936,7 +936,7 @@ round-trip operator can be written as:
 Since for perfect reflectors the Fresnel coefficients are
 :math:`r_\mathrm{TM}=-r_\mathrm{TE}=1`, the operator :math:`A` can be expressed
 as :math:`A=\mathcal{M}_\mathrm{PS}` where :math:`\mathcal{M}_\mathrm{PS}` is
-the symmetrized round-trip operator in the plane-sphere geometry. This idea is
+the symmetrized round-trip operator in the plane-sphere geometry. This idea
 basically amounts to using the method of image charges.
 
 The following example computes the Casimir energy in the sphere-sphere geometry
