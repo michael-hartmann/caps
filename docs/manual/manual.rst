@@ -73,7 +73,7 @@ G.-L. Ingold, P. A. Maia Neto, "Advancing numerics for the Casimir effect to exp
 relevant aspect ratios", Phys. Scr. 93, 114003 (2018)
 <https://doi.org/10.1088/1402-4896/aae34e>`_. A more detailed description can
 be found in `M. Hartmann, "Casimir effect in the plane-sphere geometry: Beyond the
-proximity force approximation", PhD thesis (Universität Augsburg, 2018)
+proximity force approximation", Ph.D. thesis (Universität Augsburg, 2018)
 <https://opus.bibliothek.uni-augsburg.de/opus4/44798>`_.
 
 
