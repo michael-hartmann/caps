@@ -16,7 +16,7 @@ Overview and Features
 CaPS provides software to describe the Casimir effect in the plane-sphere
 geometry for arbitrary temperatures and arbitrary non-magnetic materials
 constituting sphere and plate. Both objects are assumed to be in vacuum. The
-plane-sphere geometry is sketched in :numref:`aspect_ratios` and is
+plane-sphere geometry is sketched in the inset of :numref:`aspect_ratios` and is
 characterized by the sphere radius :math:`R` and the distance :math:`L` between
 sphere and infinite plane.
 
