@@ -117,6 +117,7 @@ latex_elements = {
     # Additional stuff for the LaTeX preamble.
     #
     'preamble': '\definecolor{VerbatimBorderColor}{rgb}{1,1,1} \definecolor{VerbatimColor}{rgb}{0.95,0.95,0.95}',
+    'fontenc': r'\usepackage[LGR,T1]{fontenc}',
 
     # Latex figure (float) alignment
     #
