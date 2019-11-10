@@ -337,12 +337,13 @@ The output of the above command looks similar to:
 The output adopts the CSV format and additional comments start with a number
 sign (#). The first comment section contains information on the compilation
 like the version of CaPS, time of compilation, name of compiler, machine where
-it was compiled and so on. A second comment section gives information about
-the geometry (radius :math:`R`, minimal separation :math:`L`, aspect ratio
+it was compiled and so on. A second comment section gives information about the
+geometry (radius :math:`R`, minimal separation :math:`L`, aspect ratio
 :math:`R/L`, and inverse aspect ratio :math:`L/R`) as well as numerical
-parameters (cutoff, epsrel, iepsrel, ldim, cores). We will discuss the latter
-in more detail below. The value of the cores parameter is the number of MPI
-processes that were used for the computation.
+parameters and the employed integration technique (cutoff, epsrel, iepsrel,
+ldim, cores, quad). We will discuss the latter in more detail below. The value
+of the cores parameter is the number of MPI processes that were used for the
+computation.
 
 The following section lists the numerical results for the determinant of the
 scattering matrix printed for the different Matsubara frequencies at which it
