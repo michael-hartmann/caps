@@ -730,9 +730,9 @@ temperature :math:`T=300\mathrm{K}` for real gold:
     # L/R, L, R, T, ldim, E*(L+R)/(hbar*c)
     0.009999999999999998, 5e-07, 5e-05, 300, 701, -326.8806691538941
 
-As indicated in the comment line referring to the model used, a Drude model is
-used to evaluate the zeroth Matsubara frequency. In order to obtain the
-corresponding result where the plasma model is used instead for the zeroth
+As indicated in the comment line referring to the model used, the zeroth
+Matsubara frequency is evaluated by means of a Drude model.  In order to obtain
+the corresponding result where the plasma model is used instead for the zeroth
 Matsubara frequency, the value given in the comment line starting with ``#
 plasma =`` can be used. The value given there, i.e. -26.69... in our example,
 is given in units of :math:`k_\mathrm{B}T/2` and corresponds to the additional
