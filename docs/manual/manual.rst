@@ -365,7 +365,7 @@ values of ``EPSREL`` you might need to decrease the value of ``CUTOFF`` using
 :math:`m` is stopped. The abort criterion is:
 
 .. math::
-    \frac{\log\mathrm{det}\left(1-\mathcal{M}^{(m)}(\xi)\right)}{\log\mathrm{det}\left(1-\mathcal{M}^0(\xi)\right)} < \mathrm{CUTOFF}
+    \frac{\log\mathrm{det}\left(1-\mathcal{M}^{(m)}(\xi)\right)}{\log\mathrm{det}\left(1-\mathcal{M}^{(0)}(\xi)\right)} < \mathrm{CUTOFF}
 
 The default value of ``CUTOFF`` is :math:`10^{-9}`. As a rule of thumb, in
 order for the integrand to be sufficiently smooth for the integration routine,
@@ -466,7 +466,7 @@ evaluation of :math:`\log\mathrm{det}(1-\mathcal{M}(0))` and can be obtained by
 means of the flag ``--ht``. It will be determined for Drude metals and perfect
 reflectors. In contrast to the cases of zero and finite temperatures, the
 result is given in units of :math:`k_\mathrm{B} T`. While for perfect
-reflectors, no analytical result is know, for Drude metals the analytical
+reflectors, no analytical result is known, for Drude metals the analytical
 formula given in `G. Bimonte, T. Emig, PRL 109, 160403 (2012)
 <https://doi.org/10.1103/PhysRevLett.109.160403>`_ is used.
 
