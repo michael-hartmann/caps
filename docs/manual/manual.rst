@@ -261,10 +261,11 @@ obtained with ``caps --help``. By default, the temperature is set to
 :math:`T=0`, and the sphere and plane are assumed to be perfect reflectors.
 
 Please note that due to parallelization, the number of terms computed in the
-summations over :math:`m` varies from run to run. As a consequence, the
-numerical value obtained for the free energy also varies from run to run. The
-abort criterion for the summation over :math:`m` can be changed by the option
-``--cutoff`` described in more detail below.
+summation over :math:`m` may vary from run to run. As a consequence, the
+numerical value obtained for the free energy also may vary from run to run
+while respecting the prescribed relative error. The abort criterion for the
+summation over :math:`m` can be changed by the option ``--cutoff`` described in
+more detail below.
 
 Mandatory options
 ^^^^^^^^^^^^^^^^^
