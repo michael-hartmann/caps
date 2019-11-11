@@ -16,7 +16,7 @@ Overview and Features
 CaPS provides software to describe the Casimir effect in the plane-sphere
 geometry for arbitrary temperatures and arbitrary non-magnetic materials
 constituting sphere and plate. Both objects are assumed to be in vacuum. The
-plane-sphere geometry is sketched in :numref:`aspect_ratios` and is
+plane-sphere geometry is sketched in the inset of :numref:`aspect_ratios` and is
 characterized by the sphere radius :math:`R` and the distance :math:`L` between
 sphere and infinite plane.
 
@@ -73,7 +73,7 @@ G.-L. Ingold, P. A. Maia Neto, "Advancing numerics for the Casimir effect to exp
 relevant aspect ratios", Phys. Scr. 93, 114003 (2018)
 <https://doi.org/10.1088/1402-4896/aae34e>`_. A more detailed description can
 be found in `M. Hartmann, "Casimir effect in the plane-sphere geometry: Beyond the
-proximity force approximation", PhD thesis (Universität Augsburg, 2018)
+proximity force approximation", Ph.D. thesis (Universität Augsburg, 2018)
 <https://opus.bibliothek.uni-augsburg.de/opus4/44798>`_.
 
 
@@ -261,10 +261,11 @@ obtained with ``caps --help``. By default, the temperature is set to
 :math:`T=0`, and the sphere and plane are assumed to be perfect reflectors.
 
 Please note that due to parallelization, the number of terms computed in the
-summations over :math:`m` varies from run to run. As a consequence, the
-numerical value obtained for the free energy also varies from run to run. The
-abort criterion for the summation over :math:`m` can be changed by the option
-``--cutoff`` described in more detail below.
+summation over :math:`m` may vary from run to run. As a consequence, the
+numerical value obtained for the free energy also may vary from run to run
+while respecting the prescribed relative error. The abort criterion for the
+summation over :math:`m` can be changed by the option ``--cutoff`` described in
+more detail below.
 
 Mandatory options
 ^^^^^^^^^^^^^^^^^
@@ -336,12 +337,13 @@ The output of the above command looks similar to:
 The output adopts the CSV format and additional comments start with a number
 sign (#). The first comment section contains information on the compilation
 like the version of CaPS, time of compilation, name of compiler, machine where
-it was compiled and so on. A second comment section gives information about
-the geometry (radius :math:`R`, minimal separation :math:`L`, aspect ratio
+it was compiled and so on. A second comment section gives information about the
+geometry (radius :math:`R`, minimal separation :math:`L`, aspect ratio
 :math:`R/L`, and inverse aspect ratio :math:`L/R`) as well as numerical
-parameters (cutoff, epsrel, iepsrel, ldim, cores). We will discuss the latter
-in more detail below. The value of the cores parameter is the number of MPI
-processes that were used for the computation.
+parameters and the employed integration technique (cutoff, epsrel, iepsrel,
+ldim, cores, quad). We will discuss the latter in more detail below. The value
+of the cores parameter is the number of MPI processes that were used for the
+computation.
 
 The following section lists the numerical results for the determinant of the
 scattering matrix printed for the different Matsubara frequencies at which it
@@ -365,7 +367,7 @@ values of ``EPSREL`` you might need to decrease the value of ``CUTOFF`` using
 :math:`m` is stopped. The abort criterion is:
 
 .. math::
-    \frac{\log\mathrm{det}\left(1-\mathcal{M}^{(m)}(\xi)\right)}{\log\mathrm{det}\left(1-\mathcal{M}^0(\xi)\right)} < \mathrm{CUTOFF}
+    \frac{\log\mathrm{det}\left(1-\mathcal{M}^{(m)}(\xi)\right)}{\log\mathrm{det}\left(1-\mathcal{M}^{(0)}(\xi)\right)} < \mathrm{CUTOFF}
 
 The default value of ``CUTOFF`` is :math:`10^{-9}`. As a rule of thumb, in
 order for the integrand to be sufficiently smooth for the integration routine,
@@ -466,7 +468,7 @@ evaluation of :math:`\log\mathrm{det}(1-\mathcal{M}(0))` and can be obtained by
 means of the flag ``--ht``. It will be determined for Drude metals and perfect
 reflectors. In contrast to the cases of zero and finite temperatures, the
 result is given in units of :math:`k_\mathrm{B} T`. While for perfect
-reflectors, no analytical result is know, for Drude metals the analytical
+reflectors, no analytical result is known, for Drude metals the analytical
 formula given in `G. Bimonte, T. Emig, PRL 109, 160403 (2012)
 <https://doi.org/10.1103/PhysRevLett.109.160403>`_ is used.
 
@@ -728,9 +730,9 @@ temperature :math:`T=300\mathrm{K}` for real gold:
     # L/R, L, R, T, ldim, E*(L+R)/(hbar*c)
     0.009999999999999998, 5e-07, 5e-05, 300, 701, -326.8806691538941
 
-As indicated in the comment line referring to the model used, a Drude model is
-used to evaluate the zeroth Matsubara frequency. In order to obtain the
-corresponding result where the plasma model is used instead for the zeroth
+As indicated in the comment line referring to the model used, the zeroth
+Matsubara frequency is evaluated by means of a Drude model.  In order to obtain
+the corresponding result where the plasma model is used instead for the zeroth
 Matsubara frequency, the value given in the comment line starting with ``#
 plasma =`` can be used. The value given there, i.e. -26.69... in our example,
 is given in units of :math:`k_\mathrm{B}T/2` and corresponds to the additional
@@ -934,7 +936,7 @@ round-trip operator can be written as:
 Since for perfect reflectors the Fresnel coefficients are
 :math:`r_\mathrm{TM}=-r_\mathrm{TE}=1`, the operator :math:`A` can be expressed
 as :math:`A=\mathcal{M}_\mathrm{PS}` where :math:`\mathcal{M}_\mathrm{PS}` is
-the symmetrized round-trip operator in the plane-sphere geometry. This idea is
+the symmetrized round-trip operator in the plane-sphere geometry. This idea
 basically amounts to using the method of image charges.
 
 The following example computes the Casimir energy in the sphere-sphere geometry
