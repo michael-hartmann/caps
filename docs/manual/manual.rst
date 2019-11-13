@@ -89,14 +89,14 @@ Compilation
 The easiest way to obtain the source code of the CaPS package is by cloning it
 from Github. If not already present, install git by running
 
-.. code-block:: console
+.. code-block:: none
 
     $ sudo apt install git
 
 in a terminal. Here, the dollar sign indicates the shell prompt. Once git is
 installed, the command
 
-.. code-block:: console
+.. code-block:: none
 
     $ git clone https://github.com/michael-hartmann/caps.git
 
@@ -114,7 +114,7 @@ MPI. The requirements to compile the source code are
 
 These dependencies can be installed with:
 
-.. code-block:: console
+.. code-block:: none
 
     $ sudo apt install gcc g++ libc6-dev libc++-dev cmake make libopenmpi-dev openmpi-bin liblapack-dev
 
@@ -122,7 +122,7 @@ These dependencies can be installed with:
 In order to compile the code, create a directory ``bin`` in the ``caps/``
 directory and run ``cmake`` followed by ``make``:
 
-.. code-block:: console
+.. code-block:: none
 
     $ cd caps/
     $ mkdir bin
@@ -139,7 +139,7 @@ Note that alternative compilers can be specified by setting the variables
 ``CC`` and ``CXX``. For the Intel C and C++ compilers, the last two commands
 above should be replaced by:
 
-.. code-block:: console
+.. code-block:: none
 
     $ CC=icc CXX=icpc cmake ..
     $ make
@@ -148,7 +148,7 @@ In order to run the programs, the system must be able to find the libraries
 ``libhodlr.so`` and ``libcaps.so``. As the corresponding directories are not in
 the default search path, they need to be added to ``LD_LIBRARY_PATH``
 
-.. code-block:: console
+.. code-block:: none
 
     $ export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/home/hendrik/caps/bin
 
@@ -159,7 +159,7 @@ After the previous steps, the programs ``capc`` (plane-cylinder geometry) and
 ``cass`` (sphere-sphere geometry with equal radii) to compute the Casimir free
 energy for perfect reflectors at :math:`T=0` can be built with:
 
-.. code-block:: console
+.. code-block:: none
 
     $ make capc
     $ make cass
@@ -167,7 +167,7 @@ energy for perfect reflectors at :math:`T=0` can be built with:
 Under Ubuntu 18.10 we encountered problems linking to `OpenBLAS
 <https://www.openblas.net/>`_ resulting in error messages similar to:
 
-.. code-block:: console
+.. code-block:: none
 
     undefined reference to 'dgemm_'
     undefined reference to 'dstemr_'
@@ -181,13 +181,13 @@ In this case, we recommend using `Atlas <http://math-atlas.sourceforge.net/>`_
 as a `BLAS <https://en.wikipedia.org/wiki/Basic_Linear_Algebra_Subprograms>`_
 implementation. Make sure that Atlas is installed
 
-.. code-block:: console
+.. code-block:: none
 
     $ sudo apt install libatlas-dev libatlas3-base
 
 and compile the code using:
 
-.. code-block:: console
+.. code-block:: none
 
     $ cd caps/
     $ mkdir bin
@@ -202,7 +202,7 @@ Testing
 In order to verify that the compilation was successful, build and run
 the unit tests in ``bin/``:
 
-.. code-block:: console
+.. code-block:: none
 
     $ make tests
     $ ./caps_tests
@@ -223,7 +223,7 @@ machine supports the same instruction set, the option ``-march=native`` may
 increase performance. On an Intel Core i7-2600 machine, a performance boost
 of about 5% was found. To compile the code with this option, run:
 
-.. code-block:: console
+.. code-block:: none
 
     $ cmake .. -DOPT="-O3 -march=native"
 
@@ -280,7 +280,7 @@ the following command computes the Casimir interaction at :math:`T=0` for
 perfect reflectors for a sphere of radius :math:`R=50\mu\mathrm{m}` and a
 separation :math:`L=500\,\mathrm{nm}`:
 
-.. code-block:: console
+.. code-block:: none
 
     $ mpirun -n 8 ./caps -R 50e-6 -L 500e-9
 
@@ -294,7 +294,7 @@ computer with N processor cores.
 
 The output of the above command looks similar to:
 
-.. code-block:: console
+.. code-block:: none
 
     $ mpirun -n 8 ./caps -R 50e-6 -L 500e-9
     # version: 0.4.3
@@ -390,7 +390,7 @@ The temperature in Kelvin can be set by using the flag ``-T``. The following
 call computes the free energy just like in the last example but at room
 temperature :math:`T=300\mathrm{K}`:
 
-.. code-block:: console
+.. code-block:: none
 
     $ mpirun -n 8 ./caps -R 50e-6 -L 500e-9 -T 300
     # version: 0.4.3
@@ -475,7 +475,7 @@ formula given in `G. Bimonte, T. Emig, PRL 109, 160403 (2012)
 For example, for a sphere of radius :math:`R=100\mu\mathrm{m}` and a smallest
 separation :math:`L=100\mathrm{nm}` one finds:
 
-.. code-block:: console
+.. code-block:: none
 
     $ mpirun -n 8 ./caps -R 100e-6 -L 100e-9 --ht
     # version: 0.4.3
@@ -533,7 +533,7 @@ for :math:`R=50\mu\mathrm{m}`, :math:`L=500\mathrm{nm}`,
 :math:`\omega_\mathrm{P}=9\mathrm{eV}/\hbar` appropriate for gold, the Casimir
 free energy assuming the plasma model is:
 
-.. code-block:: console
+.. code-block:: none
 
     $ mpirun -n 8 ./caps -R 50e-6 -L 500e-9 -T 300 --omegap 9
     # version: 0.4.3
@@ -589,7 +589,7 @@ specified by the flag ``--gamma`` with a value given in units of
 :math:`\mathrm{eV}/\hbar`. For gold, :math:`\gamma=35\mathrm{meV}/\hbar` and
 extending the previous example to the Drude model yields:
 
-.. code-block:: console
+.. code-block:: none
 
     $ mpirun -n 8 ./caps -R 50e-6 -L 500e-9 -T 300 --omegap 9 --gamma 0.035
     # version: 0.4.3
@@ -643,7 +643,7 @@ General materials can be defined by the user and specified by the flag
 ``--material``. Its parameter should be a path to a file describing
 the material in the following format:
 
-.. code-block:: console
+.. code-block:: none
 
     # Drude parameters for low frequencies
     # omegap_low = 9.0eV
@@ -680,7 +680,7 @@ The following example computes the Casimir energy for a sphere of
 :math:`R=50\mu\mathrm{m}` at separation :math:`L=500\mathrm{nm}` at room
 temperature :math:`T=300\mathrm{K}` for real gold:
 
-.. code-block:: console
+.. code-block:: none
 
     $ mpirun -n 8 ./caps -R 50e-6 -L 500e-9 -T 300 --material ../materials/gold.csv
     # version: 0.4.3
@@ -822,7 +822,7 @@ Valid values are HODLR, QR, LU, and Cholesky.
 
 A typical output looks like
 
-.. code-block:: console
+.. code-block:: none
 
     $ ./caps_logdetD -R 100e-6 -L 1e-6 -m 1 --xi 1
     # ./caps_logdetD, -R, 100e-6, -L, 1e-6, -m, 1, --xi, 1
@@ -844,7 +844,7 @@ computed.
 
 The following example demonstrates how to generate and save a round-trip matrix:
 
-.. code-block:: console
+.. code-block:: none
 
     $ CAPS_DUMP=M.npy ./caps_logdetD -R 100e-6 -L 1e-6 -m 1 --xi 2 --detalg LU
     # ./caps_logdetD, -R, 100e-6, -L, 1e-6, -m, 1, --xi, 2, --detalg, LU
@@ -888,7 +888,7 @@ The following example computes the Casimir energy per unit length for an
 infinitely long cylinder of radius :math:`R=100\mu\mathrm{m}` and a separation
 of :math:`d=100\mathrm{nm}`:
 
-.. code-block:: console
+.. code-block:: none
 
     $ ./capc -R 100e-6 -d 100e-9
     # R/d = 1000
@@ -942,7 +942,7 @@ basically amounts to using the method of image charges.
 The following example computes the Casimir energy in the sphere-sphere geometry
 for :math:`R_1=R_2=100\mu\mathrm{m}` and :math:`d=10\mu\mathrm{m}`:
 
-.. code-block:: console
+.. code-block:: none
 
 	$ ./cass -R 100e-6 -d 10e-6
 	# version: 0.4.3
@@ -990,7 +990,7 @@ API Documentation
 The documentation of the API is available at ``manual/api.pdf`` or can be
 generated running
 
-.. code-block:: console
+.. code-block:: none
 
   $ doxygen doxygen.conf
 
