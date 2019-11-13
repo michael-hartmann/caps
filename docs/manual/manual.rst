@@ -945,7 +945,7 @@ for :math:`R_1=R_2=100\mu\mathrm{m}` and :math:`d=10\mu\mathrm{m}`:
 .. code-block:: console
 
 	$ ./cass -R 100e-6 -d 10e-6
-	# version: 0.4.3-dev
+	# version: 0.4.3
 	# compiler: gcc
 	# compile time: Mar 13 2019 22:10:53
 	# compiled on: Linux jonas.physik.uni-augsburg.de 4.9.0-8-amd64 x86_64
