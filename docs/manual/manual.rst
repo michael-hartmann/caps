@@ -60,9 +60,9 @@ temperature and perfect reflectors:
  - Computation of the free energy for two spheres with equal radii.
 
 The implementation for the plane-cylinder geometry is based on a symmetrized
-version of the matrix elements given in `T. Emig, N. Graham, R. L. Jaffe, M. Kardar, "Casimir
-Forces between Arbitrary Compact Objects", Phys. Rev. Lett. 99, 170403 (2007)
-<https://doi.org/10.1103/PhysRevLett.99.170403>`_.
+version of the matrix elements given in `T. Emig, R. L. Jaffe, M. Kardar, and
+A. Scardicchio, "Casimir Interaction between a Plate and a Cylinder", Phys.
+Rev. Lett. 96, 080403 (2006) <https://doi.org/10.1103/PhysRevLett.96.080403>`_.
 
 
 Further reading
