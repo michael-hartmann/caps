@@ -858,8 +858,10 @@ The following example demonstrates how to generate and save a round-trip matrix:
     # L, R, ξ*(L+R)/c, m, logdet(Id-M), ldim, time
     1e-06, 0.0001, 2, 1, -6.349155228127988, 501, 0.817265
 
-    $ ls -lh M.npy
-    -rw------- 1 hartmmic g-103665 7,7M Feb 26 13:26 M.npy
+The newly created file ``M.npy`` containing the NumPy dump of the round-trip matrix
+can be read back into a Python session as follows:
+
+.. code-block:: none
 
     $ python
     Python 3.6.5 | packaged by conda-forge | (default, Apr  6 2018, 13:39:56)
