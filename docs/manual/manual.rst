@@ -300,7 +300,7 @@ The output of the above command looks similar to:
     # version: 0.4.3
     # compiler: gcc
     # compile time: Feb 25 2019 14:03:27
-    # compiled on: Linux jonas.physik.uni-augsburg.de 4.9.0-8-amd64 x86_64
+    # compiled on: Linux host.name 4.9.0-8-amd64 x86_64
     # pid: 19299
     # start time: Tue Feb 26 09:53:35 2019
     #
@@ -396,7 +396,7 @@ temperature :math:`T=300\mathrm{K}`:
     # version: 0.4.3
     # compiler: gcc
     # compile time: Feb 25 2019 14:03:27
-    # compiled on: Linux jonas.physik.uni-augsburg.de 4.9.0-8-amd64 x86_64
+    # compiled on: Linux host.name 4.9.0-8-amd64 x86_64
     # pid: 20396
     # start time: Tue Feb 26 11:25:28 2019
     #
@@ -481,7 +481,7 @@ separation :math:`L=100\mathrm{nm}` one finds:
     # version: 0.4.3
     # compiler: gcc
     # compile time: Feb 26 2019 17:42:26
-    # compiled on: Linux jonas.physik.uni-augsburg.de 4.9.0-8-amd64 x86_64
+    # compiled on: Linux host.name 4.9.0-8-amd64 x86_64
     # pid: 29426
     # start time: Tue Feb 26 17:42:50 2019
     #
@@ -539,7 +539,7 @@ free energy assuming the plasma model is:
     # version: 0.4.3
     # compiler: gcc
     # compile time: Feb 25 2019 14:03:27
-    # compiled on: Linux jonas.physik.uni-augsburg.de 4.9.0-8-amd64 x86_64
+    # compiled on: Linux host.name 4.9.0-8-amd64 x86_64
     # pid: 20511
     # start time: Tue Feb 26 11:31:38 2019
     #
@@ -595,7 +595,7 @@ extending the previous example to the Drude model yields:
     # version: 0.4.3
     # compiler: gcc
     # compile time: Feb 25 2019 14:03:27
-    # compiled on: Linux jonas.physik.uni-augsburg.de 4.9.0-8-amd64 x86_64
+    # compiled on: Linux host.name 4.9.0-8-amd64 x86_64
     # pid: 24336
     # start time: Tue Feb 26 12:08:33 2019
     #
@@ -686,7 +686,7 @@ temperature :math:`T=300\mathrm{K}` for real gold:
     # version: 0.4.3
     # compiler: gcc
     # compile time: Feb 25 2019 14:03:27
-    # compiled on: Linux jonas.physik.uni-augsburg.de 4.9.0-8-amd64 x86_64
+    # compiled on: Linux host.name 4.9.0-8-amd64 x86_64
     # pid: 24642
     # start time: Tue Feb 26 12:18:36 2019
     #
@@ -858,8 +858,10 @@ The following example demonstrates how to generate and save a round-trip matrix:
     # L, R, ξ*(L+R)/c, m, logdet(Id-M), ldim, time
     1e-06, 0.0001, 2, 1, -6.349155228127988, 501, 0.817265
 
-    $ ls -lh M.npy
-    -rw------- 1 hartmmic g-103665 7,7M Feb 26 13:26 M.npy
+The newly created file ``M.npy`` containing the NumPy dump of the round-trip matrix
+can be read back into a Python session as follows:
+
+.. code-block:: none
 
     $ python
     Python 3.6.5 | packaged by conda-forge | (default, Apr  6 2018, 13:39:56)
@@ -948,7 +950,7 @@ for :math:`R_1=R_2=100\mu\mathrm{m}` and :math:`d=10\mu\mathrm{m}`:
 	# version: 0.4.3
 	# compiler: gcc
 	# compile time: Mar 13 2019 22:10:53
-	# compiled on: Linux jonas.physik.uni-augsburg.de 4.9.0-8-amd64 x86_64
+	# compiled on: Linux host.name 4.9.0-8-amd64 x86_64
 	#
 	# sphere-sphere geometry
 	# model: perfect reflectors
