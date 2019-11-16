@@ -84,7 +84,7 @@ $ mpirun -n 8 ./caps -R 150e-6 -L 1e-6 -T 300
 # version: 0.4.3
 # compiler: gcc
 # compile time: Feb 26 2019 17:42:26
-# compiled on: Linux jonas.physik.uni-augsburg.de 4.9.0-8-amd64 x86_64
+# compiled on: Linux host.name 4.9.0-8-amd64 x86_64
 # pid: 31601
 # start time: Tue Feb 26 18:38:29 2019
 #
@@ -146,7 +146,7 @@ improvements, create a pull request.  For more details see
 Authors
 -------
 
- * [Michael Hartmann](https://myweb.rz.uni-augsburg.de/~hartmmic/), michael.hartmann@physik.uni-augsburg.de
+ * [Michael Hartmann](https://www.speicherleck.de/michael/academic.html), michael@speicherleck.de
    main developer
 
  * [Gert-Ludwig Ingold](https://www.physik.uni-augsburg.de/theo1/ingold/), gert.ingold@physik.uni-augsburg.de
@@ -173,8 +173,8 @@ Also, CaPS uses some third-party software:
    Bessel functions [I0(x)](https://www.netlib.org/cephes/doubldoc.html#i0),
    [I1(x)](https://www.netlib.org/cephes/doubldoc.html#i1),
    [K0(x)](https://www.netlib.org/cephes/doubldoc.html#k0), and
-   [K1(x)](https://www.netlib.org/cephes/doubldoc.html#k1) (see bessel.c). (No
-   license, probably BSD licensed.)
+   [K1(x)](https://www.netlib.org/cephes/doubldoc.html#k1) (see src/bessel.c).
+   (No license, probably BSD licensed.)
  * [LAPACK](https://www.netlib.org/lapack/): Linear algebra library. LAPACK may
    be used to calculate the determinant of the scattering matrices. However,
    for small separations using HODLR is much faster. (Modified BSD)
