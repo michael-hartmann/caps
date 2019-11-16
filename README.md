@@ -146,7 +146,7 @@ improvements, create a pull request.  For more details see
 Authors
 -------
 
- * [Michael Hartmann](https://myweb.rz.uni-augsburg.de/~hartmmic/), michael.hartmann@physik.uni-augsburg.de
+ * [Michael Hartmann](https://www.speicherleck.de/michael/academic.html), michael@speicherleck.de
    main developer
 
  * [Gert-Ludwig Ingold](https://www.physik.uni-augsburg.de/theo1/ingold/), gert.ingold@physik.uni-augsburg.de
