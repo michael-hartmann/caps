@@ -84,7 +84,7 @@ $ mpirun -n 8 ./caps -R 150e-6 -L 1e-6 -T 300
 # version: 0.4.3
 # compiler: gcc
 # compile time: Feb 26 2019 17:42:26
-# compiled on: Linux jonas.physik.uni-augsburg.de 4.9.0-8-amd64 x86_64
+# compiled on: Linux host.name 4.9.0-8-amd64 x86_64
 # pid: 31601
 # start time: Tue Feb 26 18:38:29 2019
 #
