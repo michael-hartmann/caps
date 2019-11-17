@@ -1,15 +1,16 @@
 Changelog
 =========
 
-development version
--------------------
+version 0.5
+-----------
 
+* Renamed project from libcasimir to CaPS
 * Removed warnings when compiling
-* Simplified cache cache.c
+* Simplified cache src/cache.c
 * Added CONTRIBUTIONS.md
+* Added JOSS paper
 * Improvements to README.md and to the user manual
-* Renamed project to CaPS
-* Added cass to compute Casimir interaction in the sphere-sphere geometry
+* Added cass to compute Casimir interaction in the sphere-sphere geometry for equal radii
 * Documented errors when linking again OpenBLAS
 * fixed a wrong reference in overview.svg/overview.pdf
 * removed method plotTree in the HODLRlib
