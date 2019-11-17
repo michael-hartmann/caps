@@ -1,7 +1,7 @@
 CaPS
 ====
 
-[![Version 0.4.2](images/version.svg)](https://github.com/michael-hartmann/caps/releases/tag/v0.4.2)
+[![Version 0.5](images/version.svg)](https://github.com/michael-hartmann/caps/releases/tag/v0.5)
 [![arXiv:1803.05791](images/arxiv.svg)](https://arxiv.org/abs/1803.05791)
 [![license: GPLv2](images/license.svg)](https://www.gnu.org/licenses/old-licenses/gpl-2.0.html)
 
@@ -81,7 +81,7 @@ plane separated by a distance L=1µm at room temperature T=300K assuming
 that both objects are perfect reflectors, use the command:
 ```
 $ mpirun -n 8 ./caps -R 150e-6 -L 1e-6 -T 300
-# version: 0.4.3
+# version: 0.5
 # compiler: gcc
 # compile time: Feb 26 2019 17:42:26
 # compiled on: Linux host.name 4.9.0-8-amd64 x86_64
