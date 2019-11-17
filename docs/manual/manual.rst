@@ -297,7 +297,7 @@ The output of the above command looks similar to:
 .. code-block:: none
 
     $ mpirun -n 8 ./caps -R 50e-6 -L 500e-9
-    # version: 0.4.3
+    # version: 0.5
     # compiler: gcc
     # compile time: Feb 25 2019 14:03:27
     # compiled on: Linux host.name 4.9.0-8-amd64 x86_64
@@ -393,7 +393,7 @@ temperature :math:`T=300\mathrm{K}`:
 .. code-block:: none
 
     $ mpirun -n 8 ./caps -R 50e-6 -L 500e-9 -T 300
-    # version: 0.4.3
+    # version: 0.5
     # compiler: gcc
     # compile time: Feb 25 2019 14:03:27
     # compiled on: Linux host.name 4.9.0-8-amd64 x86_64
@@ -478,7 +478,7 @@ separation :math:`L=100\mathrm{nm}` one finds:
 .. code-block:: none
 
     $ mpirun -n 8 ./caps -R 100e-6 -L 100e-9 --ht
-    # version: 0.4.3
+    # version: 0.5
     # compiler: gcc
     # compile time: Feb 26 2019 17:42:26
     # compiled on: Linux host.name 4.9.0-8-amd64 x86_64
@@ -536,7 +536,7 @@ free energy assuming the plasma model is:
 .. code-block:: none
 
     $ mpirun -n 8 ./caps -R 50e-6 -L 500e-9 -T 300 --omegap 9
-    # version: 0.4.3
+    # version: 0.5
     # compiler: gcc
     # compile time: Feb 25 2019 14:03:27
     # compiled on: Linux host.name 4.9.0-8-amd64 x86_64
@@ -592,7 +592,7 @@ extending the previous example to the Drude model yields:
 .. code-block:: none
 
     $ mpirun -n 8 ./caps -R 50e-6 -L 500e-9 -T 300 --omegap 9 --gamma 0.035
-    # version: 0.4.3
+    # version: 0.5
     # compiler: gcc
     # compile time: Feb 25 2019 14:03:27
     # compiled on: Linux host.name 4.9.0-8-amd64 x86_64
@@ -683,7 +683,7 @@ temperature :math:`T=300\mathrm{K}` for real gold:
 .. code-block:: none
 
     $ mpirun -n 8 ./caps -R 50e-6 -L 500e-9 -T 300 --material ../materials/gold.csv
-    # version: 0.4.3
+    # version: 0.5
     # compiler: gcc
     # compile time: Feb 25 2019 14:03:27
     # compiled on: Linux host.name 4.9.0-8-amd64 x86_64
@@ -947,7 +947,7 @@ for :math:`R_1=R_2=100\mu\mathrm{m}` and :math:`d=10\mu\mathrm{m}`:
 .. code-block:: none
 
 	$ ./cass -R 100e-6 -d 10e-6
-	# version: 0.4.3
+	# version: 0.5
 	# compiler: gcc
 	# compile time: Mar 13 2019 22:10:53
 	# compiled on: Linux host.name 4.9.0-8-amd64 x86_64
