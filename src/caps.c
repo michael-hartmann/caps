@@ -694,6 +694,10 @@ void master(int argc, char *argv[], const int cores)
         if(!isinf(omegap))
         {
             F_HT(caps_mpi, omegap, &drude, &pr, &plasma);
+
+            time_as_string(time_str, sizeof(time_str)/sizeof(time_str[0]));
+            printf("#\n");
+            printf("# stop time: %s\n", time_str);
             printf("#\n");
             printf("# L/R, L, R, ldim, omegap, E_Drude/(kB*T), E_PR/(kB*T), E_Plasma/(kB*T)\n");
             printf("%.16g, %.16g, %.16g, %d, %g, %.16g, %.16g, %.16g\n", LbyR, L, R, ldim, omegap, drude, pr, plasma);
@@ -701,6 +705,10 @@ void master(int argc, char *argv[], const int cores)
         else
         {
             F_HT(caps_mpi, 0, &drude, &pr, NULL);
+
+            time_as_string(time_str, sizeof(time_str)/sizeof(time_str[0]));
+            printf("#\n");
+            printf("# stop time: %s\n", time_str);
             printf("#\n");
             printf("# L/R, L, R, ldim, E_Drude/(kB*T), E_PR/(kB*T)\n");
             printf("%.16g, %.16g, %.16g, %d, %.16g, %.16g\n", LbyR, L, R, ldim, drude, pr);
