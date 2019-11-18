@@ -126,11 +126,19 @@ the free energy.
 Documentation
 -------------
 
-A [user
-manual](https://github.com/michael-hartmann/caps/blob/master/docs/manual.pdf)
-and the [API
-documentation](https://github.com/michael-hartmann/caps/blob/master/docs/api.pdf)
-are available in `docs/`.
+CaPS is documented by a user manual and an API documentation.
+
+The user manual describes how to build and use the programs that come with
+CaPS. The user manual is available online as
+[html](https://www.speicherleck.de/michael/caps/manual/manual.html) or
+[PDF](https://www.speicherleck.de/michael/caps/manual.pdf). You can also build
+the user manual using Makefile provided in `docs/manual`.
+
+The API of CaPS are documented using doxygen. The API documentation is
+available online as
+[html](https://www.speicherleck.de/michael/caps/api/index.html) or
+[PDF](https://www.speicherleck.de/michael/caps/api.pdf). You can also build the
+API documentation using the `doxygen.conf` file provided in `src/`.
 
 
 Bugs, developing and contributing

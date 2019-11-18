@@ -819,7 +819,7 @@ caps_logdetD
 The program ``caps_logdetD`` computes the building block of :eq:`matsubara_sum`
 
 .. math::
-    \log\mathrm{det}\left(1-\mathcal{M}^{(m)}(\xi)\right) 
+    \log\mathrm{det}\left(1-\mathcal{M}^{(m)}(\xi)\right)
 
 which, in addition to the parameters introduced above, depends on :math:`m` and
 :math:`\xi`. Accordingly, there exist two additional mandatory options besides
@@ -920,7 +920,7 @@ and ``E_EM`` is the energy for the electromagnetic field with ``E_EM = E_D + E_N
 All results are given as ratios with respect to the free energy per unit length calculated
 within the proximity-force approximation.
 
-A full list of options accepted by ``capc`` can be obtained by ``capc --help``. 
+A full list of options accepted by ``capc`` can be obtained by ``capc --help``.
 
 
 cass
@@ -1003,8 +1003,10 @@ aspect ratios :math:`R/d`.
 API Documentation
 =================
 
-The documentation of the API is available at ``manual/api.pdf`` or can be
-generated running
+The API documentation of the API is available online as
+`html <https://www.speicherleck.de/michael/caps/api/index.html>`_ or
+`PDF <https://www.speicherleck.de/michael/caps/api.pdf>`_. You can also
+generate the API documentation running
 
 .. code-block:: none
 
