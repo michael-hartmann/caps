@@ -299,12 +299,14 @@ The output of the above command looks similar to:
     $ mpirun -n 8 ./caps -R 50e-6 -L 500e-9
     # version: 0.5
     # compiler: gcc
-    # compile time: Feb 25 2019 14:03:27
-    # compiled on: Linux host.name 4.9.0-8-amd64 x86_64
-    # pid: 19299
-    # start time: Tue Feb 26 09:53:35 2019
+    # compile time: Nov 18 2019 06:58:55
+    # compiled on: Linux host.name 5.0.0-36-generic x86_64
+    # git HEAD: a7e8abd
+    # git branch: master
+    # pid: 8816
+    # start time: Mon Nov 18 07:11:26 2019
     #
-    # LbyR = 0.01
+    # LbyR = 0.009999999999999998
     # RbyL = 100
     # L = 5e-07
     # R = 5e-05
@@ -316,23 +318,23 @@ The output of the above command looks similar to:
     # cores = 8
     # quad = adaptive Gauss-Kronrod
     #
-    # xi*(L+R)/c=50.5, logdetD=-9.60686704239278, t=16.8099
-    # xi*(L+R)/c=11769.7910188424, logdetD=-5.19555884457593e-101, t=3.0027
-    # xi*(L+R)/c=0.216677594013123, logdetD=-27.8461616612113, t=14.3809
-    # xi*(L+R)/c=1934.09140996997, logdetD=-5.35151875501729e-16, t=5.90594
-    # xi*(L+R)/c=1.31857780188353, logdetD=-27.4908297269515, t=15.1216
+    # xi*(L+R)/c=50.5, logdetD=-9.606867042703382, t=16.748
+    # xi*(L+R)/c=11769.79101884239, logdetD=-5.195558844576977e-101, t=2.54115
+    # xi*(L+R)/c=0.216677594013123, logdetD=-27.84616165794131, t=14.2098
+    # xi*(L+R)/c=1934.091409969965, logdetD=-5.351518755017293e-16, t=5.30664
+    # xi*(L+R)/c=1.318577801883526, logdetD=-27.490829731263, t=14.5494
        ...
-    # xi*(L+R)/c=1.9476256940541, logdetD=-27.201610975434, t=14.9387
-    # xi*(L+R)/c=4.12332703671369, logdetD=-26.061368385508, t=14.979
-    # xi*(L+R)/c=2.63068289632324, logdetD=-26.8583901887955, t=14.8546
+    # xi*(L+R)/c=1.947625694054103, logdetD=-27.20161097974516, t=14.6707
+    # xi*(L+R)/c=4.123327036713686, logdetD=-26.06136838981697, t=14.9208
+    # xi*(L+R)/c=2.630682896323236, logdetD=-26.85839019124925, t=14.8417
     #
-    # ier=0, integral=-26.6608254093275, neval=165, epsrel=4.22793e-07
+    # ier=0, integral=-26.66082541075548, neval=165, epsrel=4.22789e-07
     #
-    # 13525 determinants computed
-    # stop time: Tue Feb 26 10:36:20 2019
+    # 13687 determinants computed
+    # stop time: Mon Nov 18 07:53:31 2019
     #
     # L/R, L, R, T, ldim, E*(L+R)/(hbar*c)
-    0.009999999999999998, 5e-07, 5e-05, 0, 701, -428.5634172312517
+    0.009999999999999998, 5e-07, 5e-05, 0, 701, -428.5634172542063
 
 The output adopts the CSV format and additional comments start with a number
 sign (#). The first comment section contains information on the compilation
@@ -395,12 +397,14 @@ temperature :math:`T=300\mathrm{K}`:
     $ mpirun -n 8 ./caps -R 50e-6 -L 500e-9 -T 300
     # version: 0.5
     # compiler: gcc
-    # compile time: Feb 25 2019 14:03:27
-    # compiled on: Linux host.name 4.9.0-8-amd64 x86_64
-    # pid: 20396
-    # start time: Tue Feb 26 11:25:28 2019
+    # compile time: Nov 18 2019 06:58:55
+    # compiled on: Linux host.name 5.0.0-36-generic x86_64
+    # git HEAD: a7e8abd
+    # git branch: master
+    # pid: 10689
+    # start time: Mon Nov 18 07:54:55 2019
     #
-    # LbyR = 0.01
+    # LbyR = 0.009999999999999998
     # RbyL = 100
     # L = 5e-07
     # R = 5e-05
@@ -413,30 +417,30 @@ temperature :math:`T=300\mathrm{K}`:
     # cores = 8
     # model = perfect reflectors
     #
-    # xi*(L+R)/c=0, logdetD=-27.8619907991614, t=0.193124
-    # xi*(L+R)/c=41.5698805095683, logdetD=-11.5794516487266, t=16.6413
-    # xi*(L+R)/c=83.1397610191367, logdetD=-4.91948448017641, t=17.6647
-    # xi*(L+R)/c=124.709641528705, logdetD=-2.13175536619868, t=18.3457
-    # xi*(L+R)/c=166.279522038273, logdetD=-0.930897479022303, t=19.1386
-    # xi*(L+R)/c=207.849402547842, logdetD=-0.407803084237451, t=19.1952
-    # xi*(L+R)/c=249.41928305741, logdetD=-0.178887508701769, t=19.4133
-    # xi*(L+R)/c=290.989163566978, logdetD=-0.0785144339556277, t=19.431
-    # xi*(L+R)/c=332.559044076547, logdetD=-0.0344676750184605, t=19.1501
-    # xi*(L+R)/c=374.128924586115, logdetD=-0.015132238792835, t=19.1419
-    # xi*(L+R)/c=415.698805095683, logdetD=-0.00664345573274249, t=19.0193
-    # xi*(L+R)/c=457.268685605252, logdetD=-0.00291655594485503, t=18.7029
-    # xi*(L+R)/c=498.83856611482, logdetD=-0.00128033535183925, t=18.4298
-    # xi*(L+R)/c=540.408446624388, logdetD=-0.000562015614133802, t=17.8942
-    # xi*(L+R)/c=581.978327133957, logdetD=-0.000246682939573313, t=17.5315
-    # xi*(L+R)/c=623.548207643525, logdetD=-0.000108265748892663, t=17.0982
-    # xi*(L+R)/c=665.118088153093, logdetD=-4.75115918214971e-05, t=16.4634
-    # xi*(L+R)/c=706.687968662662, logdetD=-2.08477925150647e-05, t=15.5548
+    # xi*(L+R)/c=0, logdetD=-27.86199079699379, t=0.217287
+    # xi*(L+R)/c=41.56988050956833, logdetD=-11.57945164872656, t=16.3904
+    # xi*(L+R)/c=83.13976101913666, logdetD=-4.919484480176409, t=17.4001
+    # xi*(L+R)/c=124.709641528705, logdetD=-2.131755366198671, t=18.1506
+    # xi*(L+R)/c=166.2795220382733, logdetD=-0.9308974790223026, t=18.6908
+    # xi*(L+R)/c=207.8494025478416, logdetD=-0.4078030842242257, t=18.8725
+    # xi*(L+R)/c=249.41928305741, logdetD=-0.1788875087017671, t=19.0952
+    # xi*(L+R)/c=290.9891635669783, logdetD=-0.07851443395562838, t=18.956
+    # xi*(L+R)/c=332.5590440765466, logdetD=-0.03446767502060717, t=19.1627
+    # xi*(L+R)/c=374.128924586115, logdetD=-0.01513223879283446, t=18.9359
+    # xi*(L+R)/c=415.6988050956833, logdetD=-0.006643455732743601, t=18.6485
+    # xi*(L+R)/c=457.2686856052516, logdetD=-0.00291655594485459, t=18.444
+    # xi*(L+R)/c=498.83856611482, logdetD=-0.001280335351840918, t=18.162
+    # xi*(L+R)/c=540.4084466243883, logdetD=-0.0005620156141146819, t=17.8208
+    # xi*(L+R)/c=581.9783271339566, logdetD=-0.0002466829395738677, t=17.121
+    # xi*(L+R)/c=623.548207643525, logdetD=-0.0001082657488926631, t=17.108
+    # xi*(L+R)/c=665.1180881530933, logdetD=-4.751159181908004e-05, t=15.9656
+    # xi*(L+R)/c=706.6879686626615, logdetD=-2.084779251432432e-05, t=15.0527
     #
-    # 1686 determinants computed
-    # stop time: Tue Feb 26 11:30:37 2019
+    # 1683 determinants computed
+    # stop time: Mon Nov 18 07:59:59 2019
     #
     # L/R, L, R, T, ldim, E*(L+R)/(hbar*c)
-    0.009999999999999998, 5e-07, 5e-05, 300, 701, -452.7922092119535
+    0.009999999999999998, 5e-07, 5e-05, 300, 701, -452.7922091974657
 
 For finite temperatures, the free energy is no longer given as an integral, but
 as the sum :eq:`matsubara_sum` over Matsubara frequencies :math:`\xi_n`. The
@@ -480,12 +484,14 @@ separation :math:`L=100\mathrm{nm}` one finds:
     $ mpirun -n 8 ./caps -R 100e-6 -L 100e-9 --ht
     # version: 0.5
     # compiler: gcc
-    # compile time: Feb 26 2019 17:42:26
-    # compiled on: Linux host.name 4.9.0-8-amd64 x86_64
-    # pid: 29426
-    # start time: Tue Feb 26 17:42:50 2019
+    # compile time: Nov 18 2019 06:58:55
+    # compiled on: Linux host.name 5.0.0-36-generic x86_64
+    # git HEAD: a7e8abd
+    # git branch: master
+    # pid: 10901
+    # start time: Mon Nov 18 08:01:34 2019
     #
-    # LbyR = 0.001
+    # LbyR = 0.0009999999999999998
     # RbyL = 1000
     # L = 1e-07
     # R = 0.0001
@@ -538,12 +544,14 @@ free energy assuming the plasma model is:
     $ mpirun -n 8 ./caps -R 50e-6 -L 500e-9 -T 300 --omegap 9
     # version: 0.5
     # compiler: gcc
-    # compile time: Feb 25 2019 14:03:27
-    # compiled on: Linux host.name 4.9.0-8-amd64 x86_64
-    # pid: 20511
-    # start time: Tue Feb 26 11:31:38 2019
+    # compile time: Nov 18 2019 06:58:55
+    # compiled on: Linux host.name 5.0.0-36-generic x86_64
+    # git HEAD: a7e8abd
+    # git branch: master
+    # pid: 10988
+    # start time: Mon Nov 18 08:03:02 2019
     #
-    # LbyR = 0.01
+    # LbyR = 0.009999999999999998
     # RbyL = 100
     # L = 5e-07
     # R = 5e-05
@@ -558,29 +566,29 @@ free energy assuming the plasma model is:
     # gamma = 0
     # model = plasma
     #
-    # xi*(L+R)/c=0, logdetD=-26.6976344223495, t=1.0548
-    # xi*(L+R)/c=41.5698805095683, logdetD=-10.4687593311701, t=29.2239
-    # xi*(L+R)/c=83.1397610191367, logdetD=-4.17127445011799, t=30.5278
-    # xi*(L+R)/c=124.709641528705, logdetD=-1.69110879470416, t=31.9545
-    # xi*(L+R)/c=166.279522038273, logdetD=-0.68977177243457, t=32.2149
-    # xi*(L+R)/c=207.849402547842, logdetD=-0.28194807348852, t=33.1459
-    # xi*(L+R)/c=249.41928305741, logdetD=-0.115330010733512, t=33.0782
-    # xi*(L+R)/c=290.989163566978, logdetD=-0.0471851591737746, t=33.3165
-    # xi*(L+R)/c=332.559044076547, logdetD=-0.0193059198900916, t=36.3263
-    # xi*(L+R)/c=374.128924586115, logdetD=-0.00789924565082466, t=36.4202
-    # xi*(L+R)/c=415.698805095683, logdetD=-0.00323219686668301, t=33.851
-    # xi*(L+R)/c=457.268685605252, logdetD=-0.00132263206346751, t=31.1036
-    # xi*(L+R)/c=498.83856611482, logdetD=-0.000541279202385481, t=30.3951
-    # xi*(L+R)/c=540.408446624388, logdetD=-0.000221541550914926, t=29.6892
-    # xi*(L+R)/c=581.978327133957, logdetD=-9.06879127562377e-05, t=28.5112
-    # xi*(L+R)/c=623.548207643525, logdetD=-3.71288341482914e-05, t=27.586
-    # xi*(L+R)/c=665.118088153093, logdetD=-1.5203622898795e-05, t=26.199
+    # xi*(L+R)/c=0, logdetD=-26.69763442281914, t=0.997097
+    # xi*(L+R)/c=41.56988050956833, logdetD=-10.46875933145602, t=28.0664
+    # xi*(L+R)/c=83.13976101913666, logdetD=-4.171274450117993, t=29.1975
+    # xi*(L+R)/c=124.709641528705, logdetD=-1.691108794704161, t=30.2682
+    # xi*(L+R)/c=166.2795220382733, logdetD=-0.6897717724345741, t=30.5765
+    # xi*(L+R)/c=207.8494025478416, logdetD=-0.2819480734885185, t=31.4948
+    # xi*(L+R)/c=249.41928305741, logdetD=-0.1153300107335112, t=31.8762
+    # xi*(L+R)/c=290.9891635669783, logdetD=-0.04718515917377312, t=31.8926
+    # xi*(L+R)/c=332.5590440765466, logdetD=-0.01930591989009091, t=31.7388
+    # xi*(L+R)/c=374.128924586115, logdetD=-0.007899245650576751, t=31.072
+    # xi*(L+R)/c=415.6988050956833, logdetD=-0.00323219686668101, t=30.9696
+    # xi*(L+R)/c=457.2686856052516, logdetD=-0.001322632063466512, t=30.2518
+    # xi*(L+R)/c=498.83856611482, logdetD=-0.0005412792023858141, t=29.5332
+    # xi*(L+R)/c=540.4084466243883, logdetD=-0.0002215415508830627, t=28.231
+    # xi*(L+R)/c=581.9783271339566, logdetD=-9.068791275557157e-05, t=27.8686
+    # xi*(L+R)/c=623.548207643525, logdetD=-3.712883414740327e-05, t=26.6126
+    # xi*(L+R)/c=665.1180881530933, logdetD=-1.5203622898573e-05, t=25.0134
     #
-    # 1582 determinants computed
-    # stop time: Tue Feb 26 11:40:03 2019
+    # 1580 determinants computed
+    # stop time: Mon Nov 18 08:10:57 2019
     #
     # L/R, L, R, T, ldim, E*(L+R)/(hbar*c)
-    0.009999999999999998, 5e-07, 5e-05, 300, 701, -408.1688659974158
+    0.009999999999999998, 5e-07, 5e-05, 300, 701, -408.1688660043022
 
 The Drude model :eq:`drude_model` not only accounts for the high-frequency
 cutoff but also a finite zero-frequency conductivity :math:`\sigma_0 =
@@ -594,12 +602,14 @@ extending the previous example to the Drude model yields:
     $ mpirun -n 8 ./caps -R 50e-6 -L 500e-9 -T 300 --omegap 9 --gamma 0.035
     # version: 0.5
     # compiler: gcc
-    # compile time: Feb 25 2019 14:03:27
-    # compiled on: Linux host.name 4.9.0-8-amd64 x86_64
-    # pid: 24336
-    # start time: Tue Feb 26 12:08:33 2019
+    # compile time: Nov 18 2019 06:58:55
+    # compiled on: Linux host.name 5.0.0-36-generic x86_64
+    # git HEAD: a7e8abd
+    # git branch: master
+    # pid: 12151
+    # start time: Mon Nov 18 10:14:33 2019
     #
-    # LbyR = 0.01
+    # LbyR = 0.009999999999999998
     # RbyL = 100
     # L = 5e-07
     # R = 5e-05
@@ -614,30 +624,30 @@ extending the previous example to the Drude model yields:
     # gamma = 0.035
     # model = drude
     #
-    # xi*(L+R)/c=0, logdetD=-14.5697227167729, t=0.000477076
-    # xi*(L+R)/c=41.5698805095683, logdetD=-10.3653815649851, t=29.2174
-    # xi*(L+R)/c=83.1397610191367, logdetD=-4.13628095371182, t=30.4618
-    # xi*(L+R)/c=124.709641528705, logdetD=-1.67763657179774, t=31.9241
-    # xi*(L+R)/c=166.279522038273, logdetD=-0.684394806814442, t=32.5905
-    # xi*(L+R)/c=207.849402547842, logdetD=-0.279773855516853, t=33.1029
-    # xi*(L+R)/c=249.41928305741, logdetD=-0.114446241958121, t=33.6549
-    # xi*(L+R)/c=290.989163566978, logdetD=-0.0468251449212843, t=33.7789
-    # xi*(L+R)/c=332.559044076547, logdetD=-0.0191591315699105, t=32.8368
-    # xi*(L+R)/c=374.128924586115, logdetD=-0.00783937539816867, t=34.304
-    # xi*(L+R)/c=415.698805095683, logdetD=-0.00320777554704996, t=33.1737
-    # xi*(L+R)/c=457.268685605252, logdetD=-0.00131267076024208, t=31.7234
-    # xi*(L+R)/c=498.83856611482, logdetD=-0.000537216353887839, t=30.7169
-    # xi*(L+R)/c=540.408446624388, logdetD=-0.000219884619851423, t=30.7112
-    # xi*(L+R)/c=581.978327133957, logdetD=-9.00122403077102e-05, t=29.2664
-    # xi*(L+R)/c=623.548207643525, logdetD=-3.685333004516e-05, t=27.5843
-    # xi*(L+R)/c=665.118088153093, logdetD=-1.50912958983084e-05, t=26.3201
-    # xi*(L+R)/c=706.687968662662, logdetD=-6.18096543194596e-06, t=24.9774
+    # xi*(L+R)/c=0, logdetD=-14.56972271677286, t=5.91278e-05
+    # xi*(L+R)/c=41.56988050956833, logdetD=-10.36538156526362, t=27.6398
+    # xi*(L+R)/c=83.13976101913666, logdetD=-4.136280953711821, t=32.2039
+    # xi*(L+R)/c=124.709641528705, logdetD=-1.677636571797743, t=32.745
+    # xi*(L+R)/c=166.2795220382733, logdetD=-0.6843948068144456, t=32.3712
+    # xi*(L+R)/c=207.8494025478416, logdetD=-0.2797738555246083, t=33.3351
+    # xi*(L+R)/c=249.41928305741, logdetD=-0.1144462419581209, t=33.8076
+    # xi*(L+R)/c=290.9891635669783, logdetD=-0.04682514492128204, t=32.6435
+    # xi*(L+R)/c=332.5590440765466, logdetD=-0.01915913156991313, t=32.6817
+    # xi*(L+R)/c=374.128924586115, logdetD=-0.007839375398166228, t=32.2618
+    # xi*(L+R)/c=415.6988050956833, logdetD=-0.003207775547051069, t=32.0442
+    # xi*(L+R)/c=457.2686856052516, logdetD=-0.001312670760241527, t=31.6889
+    # xi*(L+R)/c=498.83856611482, logdetD=-0.0005372163538879504, t=30.4185
+    # xi*(L+R)/c=540.4084466243883, logdetD=-0.0002198846198504241, t=29.254
+    # xi*(L+R)/c=581.9783271339566, logdetD=-9.001224030793225e-05, t=28.6272
+    # xi*(L+R)/c=623.548207643525, logdetD=-3.685333004404979e-05, t=26.779
+    # xi*(L+R)/c=665.1180881530933, logdetD=-1.50912958984194e-05, t=25.6237
+    # xi*(L+R)/c=706.6879686626615, logdetD=-6.180965431945956e-06, t=24.0002
     #
-    # 1603 determinants computed
-    # stop time: Tue Feb 26 12:17:19 2019
+    # 1605 determinants computed
+    # stop time: Mon Nov 18 10:23:11 2019
     #
     # L/R, L, R, T, ldim, E*(L+R)/(hbar*c)
-    0.009999999999999998, 5e-07, 5e-05, 300, 701, -325.8011897578629
+    0.009999999999999998, 5e-07, 5e-05, 300, 701, -325.8011897616507
 
 General materials can be defined by the user and specified by the flag
 ``--material``. Its parameter should be a path to a file describing
@@ -685,12 +695,14 @@ temperature :math:`T=300\mathrm{K}` for real gold:
     $ mpirun -n 8 ./caps -R 50e-6 -L 500e-9 -T 300 --material ../materials/gold.csv
     # version: 0.5
     # compiler: gcc
-    # compile time: Feb 25 2019 14:03:27
-    # compiled on: Linux host.name 4.9.0-8-amd64 x86_64
-    # pid: 24642
-    # start time: Tue Feb 26 12:18:36 2019
+    # compile time: Nov 18 2019 06:58:55
+    # compiled on: Linux host.name 5.0.0-36-generic x86_64
+    # git HEAD: a7e8abd
+    # git branch: master
+    # pid: 12528
+    # start time: Mon Nov 18 10:29:46 2019
     #
-    # LbyR = 0.01
+    # LbyR = 0.009999999999999998
     # RbyL = 100
     # L = 5e-07
     # R = 5e-05
@@ -703,32 +715,32 @@ temperature :math:`T=300\mathrm{K}` for real gold:
     # cores = 8
     # filename = ../materials/gold.csv
     # model = optical data (xi=0: Drude)
-    # plasma = -26.6976344217189 (logdetD(xi=0) for plasma model with omegap=9eV)
+    # plasma = -26.69763442234945 (logdetD(xi=0) for plasma model with omegap=9eV)
     #
-    # xi*(L+R)/c=0, logdetD=-14.5697227167729, t=1.0434
-    # xi*(L+R)/c=41.5698805095683, logdetD=-10.3908796547603, t=29.5941
-    # xi*(L+R)/c=83.1397610191367, logdetD=-4.15625893810359, t=30.6949
-    # xi*(L+R)/c=124.709641528705, logdetD=-1.6919107999977, t=32.3372
-    # xi*(L+R)/c=166.279522038273, logdetD=-0.693653981851821, t=32.8614
-    # xi*(L+R)/c=207.849402547842, logdetD=-0.285378030697434, t=33.7248
-    # xi*(L+R)/c=249.41928305741, logdetD=-0.117672555842387, t=33.5534
-    # xi*(L+R)/c=290.989163566978, logdetD=-0.0486088504532428, t=33.1554
-    # xi*(L+R)/c=332.559044076547, logdetD=-0.0201151891681236, t=33.0375
-    # xi*(L+R)/c=374.128924586115, logdetD=-0.00833817561811858, t=32.8751
-    # xi*(L+R)/c=415.698805095683, logdetD=-0.00346241156603652, t=32.5475
-    # xi*(L+R)/c=457.268685605252, logdetD=-0.00144011362577151, t=31.6877
-    # xi*(L+R)/c=498.83856611482, logdetD=-0.000600031780813664, t=31.1144
-    # xi*(L+R)/c=540.408446624388, logdetD=-0.000250400886432969, t=31.9239
-    # xi*(L+R)/c=581.978327133957, logdetD=-0.000104657168106622, t=31.2511
-    # xi*(L+R)/c=623.548207643525, logdetD=-4.3804324287031e-05, t=28.8938
-    # xi*(L+R)/c=665.118088153093, logdetD=-1.83601183587417e-05, t=27.7136
-    # xi*(L+R)/c=706.687968662662, logdetD=-7.70510781683187e-06, t=26.0717
+    # xi*(L+R)/c=0, logdetD=-14.56972271677286, t=0.986975
+    # xi*(L+R)/c=41.56988050956833, logdetD=-10.39087965476027, t=28.3849
+    # xi*(L+R)/c=83.13976101913666, logdetD=-4.156258938103592, t=29.4192
+    # xi*(L+R)/c=124.709641528705, logdetD=-1.691910799997694, t=30.6499
+    # xi*(L+R)/c=166.2795220382733, logdetD=-0.6936539818518235, t=31.1129
+    # xi*(L+R)/c=207.8494025478416, logdetD=-0.2853780306974359, t=32.1065
+    # xi*(L+R)/c=249.41928305741, logdetD=-0.1176725558423893, t=32.0842
+    # xi*(L+R)/c=290.9891635669783, logdetD=-0.04860885045324241, t=32.2575
+    # xi*(L+R)/c=332.5590440765466, logdetD=-0.02011518916812526, t=32.1692
+    # xi*(L+R)/c=374.128924586115, logdetD=-0.008338175617856349, t=31.7953
+    # xi*(L+R)/c=415.6988050956833, logdetD=-0.003462411566035189, t=31.8069
+    # xi*(L+R)/c=457.2686856052516, logdetD=-0.001440113625772619, t=30.6612
+    # xi*(L+R)/c=498.83856611482, logdetD=-0.0006000317807945225, t=30.6105
+    # xi*(L+R)/c=540.4084466243883, logdetD=-0.0002504008864329687, t=29.151
+    # xi*(L+R)/c=581.9783271339566, logdetD=-0.0001046571681066221, t=28.2663
+    # xi*(L+R)/c=623.548207643525, logdetD=-4.380432428803017e-05, t=27.5338
+    # xi*(L+R)/c=665.1180881530933, logdetD=-1.836011835885276e-05, t=25.7766
+    # xi*(L+R)/c=706.6879686626615, logdetD=-7.705107816276758e-06, t=24.594
     #
-    # 1681 determinants computed
-    # stop time: Tue Feb 26 12:27:30 2019
+    # 1680 determinants computed
+    # stop time: Mon Nov 18 10:38:16 2019
     #
     # L/R, L, R, T, ldim, E*(L+R)/(hbar*c)
-    0.009999999999999998, 5e-07, 5e-05, 300, 701, -326.8806691538941
+    0.009999999999999998, 5e-07, 5e-05, 300, 701, -326.8806691538903
 
 As indicated in the comment line referring to the model used, the zeroth
 Matsubara frequency is evaluated by means of a Drude model.  In order to obtain
@@ -834,7 +846,7 @@ A typical output looks like
     # detalg = HODLR
     #
     # L, R, ξ*(L+R)/c, m, logdet(Id-M), ldim, time
-    1e-06, 0.0001, 1, 1, -6.463973151333013, 501, 0.548678
+    1e-06, 0.0001, 1, 1, -6.463973151333012, 501, 0.500394
 
 Sometimes, it is useful to dump the round-trip matrix in Numpy format. If the
 environment variable ``CAPS_DUMP`` is set and ``detalg`` is not HODLR, the
@@ -856,7 +868,7 @@ The following example demonstrates how to generate and save a round-trip matrix:
     # detalg = LU
     #
     # L, R, ξ*(L+R)/c, m, logdet(Id-M), ldim, time
-    1e-06, 0.0001, 2, 1, -6.349155228127988, 501, 0.817265
+    1e-06, 0.0001, 2, 1, -6.349155228127988, 501, 0.758627
 
 The newly created file ``M.npy`` containing the NumPy dump of the round-trip matrix
 can be read back into a Python session as follows:
@@ -864,15 +876,15 @@ can be read back into a Python session as follows:
 .. code-block:: none
 
     $ python
-    Python 3.6.5 | packaged by conda-forge | (default, Apr  6 2018, 13:39:56)
-    [GCC 4.8.2 20140120 (Red Hat 4.8.2-15)] on linux
+    Python 3.7.3 (default, Mar 27 2019, 22:11:17)
+    [GCC 7.3.0] :: Anaconda, Inc. on linux
     Type "help", "copyright", "credits" or "license" for more information.
     >>> import numpy as np
     >>> M = np.load("M.npy")    # load matrix
-    >>> dim,_ = M.shape         # get dimension
+    >>> dim, _ = M.shape        # get dimension
     >>> Id = np.eye(dim)        # identity matrix
     >>> np.linalg.slogdet(Id-M) # compute log of determinant
-    (1.0, -6.349155228128008)
+    (1.0, -6.349155228128016)
 
 
 capc
@@ -892,7 +904,7 @@ of :math:`d=100\mathrm{nm}`:
 
 .. code-block:: none
 
-    $ ./capc -R 100e-6 -d 100e-9
+    ./capc -R 100e-6 -d 100e-9
     # R/d = 1000
     # d = 1e-07
     # R = 0.0001
@@ -901,7 +913,7 @@ of :math:`d=100\mathrm{nm}`:
     # epsrel = 1e-08
     #
     # d/R, d, R, T, lmax, E_PFA/(L*hbar*c), E_D/E_PFA, E_N/E_PFA, E_EM/E_PFA
-    0.001, 1e-07, 0.0001, 0, 6000, -72220981652413.5, 0.500089151078031, 0.499432943796718, 0.999522094874749
+    0.001, 1e-07, 0.0001, 0, 6000, -72220981652413.5, 0.500089151077938, 0.499432943796738, 0.999522094874677
 
 ``E_D`` and ``E_N`` correspond to Dirichlet and Neumann boundary conditions, respectively,
 and ``E_EM`` is the energy for the electromagnetic field with ``E_EM = E_D + E_N``.
@@ -946,34 +958,36 @@ for :math:`R_1=R_2=100\mu\mathrm{m}` and :math:`d=10\mu\mathrm{m}`:
 
 .. code-block:: none
 
-	$ ./cass -R 100e-6 -d 10e-6
-	# version: 0.5
-	# compiler: gcc
-	# compile time: Mar 13 2019 22:10:53
-	# compiled on: Linux host.name 4.9.0-8-amd64 x86_64
-	#
-	# sphere-sphere geometry
-	# model: perfect reflectors
-	# R1 = R2 = 0.0001
-	# d = 1e-05
-	# T = 0
-	# ldim = 50
-	# epsrel = 1e-06
-	# iepsrel = 1e-09
-	# cutoff = 1e-10
-	#
-	# xi*d/c=1, logdet=-0.303363189004
-	# xi*d/c=233.06516869, logdet=-3.13138917509e-204
-	# xi*d/c=0.004290645426, logdet=-1.68510617725
-		...
-	# xi*d/c=0.0385668454268, logdet=-1.65999004318
-	# xi*d/c=0.081650040331, logdet=-1.60322260646
-	# xi*d/c=0.0520927306203, logdet=-1.64443634206
-	#
-	# ier = 0, neval = 135
-	#
-	# R1, R2, L, E*d/(hbar*c), relative error (due to integration)
-	0.0001, 0.0001, 1e-05, -0.166155548334, 5.80089e-07
+    $ ./cass -R 100e-6 -d 10e-6
+    # version: 0.5
+    # compiler: gcc
+    # compile time: Nov 18 2019 06:58:55
+    # compiled on: Linux host.name 5.0.0-36-generic x86_64
+    # git HEAD: a7e8abd
+    # git branch: master
+    #
+    # sphere-sphere geometry
+    # model: perfect reflectors
+    # R1 = R2 = 0.0001
+    # d = 1e-05
+    # T = 0
+    # ldim = 50
+    # epsrel = 1e-06
+    # iepsrel = 1e-09
+    # cutoff = 1e-10
+    #
+    # xi*d/c=1, logdet=-0.303363189004
+    # xi*d/c=233.06516869, logdet=-3.13138917509e-204
+    # xi*d/c=0.004290645426, logdet=-1.68510617725
+    ...
+    # xi*d/c=0.0385668454268, logdet=-1.65999004318
+    # xi*d/c=0.081650040331, logdet=-1.60322260646
+    # xi*d/c=0.0520927306203, logdet=-1.64443634206
+    #
+    # ier = 0, neval = 135
+    #
+    # R1, R2, L, E*d/(hbar*c), relative error (due to integration)
+    0.0001, 0.0001, 1e-05, -0.166155548334, 5.80089e-07
 
 The runtime of this program is about 4 minutes. For a full list of options see
 ``cass --help``.

@@ -83,12 +83,14 @@ that both objects are perfect reflectors, use the command:
 $ mpirun -n 8 ./caps -R 150e-6 -L 1e-6 -T 300
 # version: 0.5
 # compiler: gcc
-# compile time: Feb 26 2019 17:42:26
-# compiled on: Linux host.name 4.9.0-8-amd64 x86_64
-# pid: 31601
-# start time: Tue Feb 26 18:38:29 2019
+# compile time: Nov 18 2019 06:58:55
+# compiled on: Linux host.name 5.0.0-36-generic x86_64
+# git HEAD: a7e8abd
+# git branch: master
+# pid: 13701
+# start time: Mon Nov 18 11:06:21 2019
 #
-# LbyR = 0.00666666666666667
+# LbyR = 0.006666666666666667
 # RbyL = 150
 # L = 1e-06
 # R = 0.00015
@@ -101,22 +103,22 @@ $ mpirun -n 8 ./caps -R 150e-6 -L 1e-6 -T 300
 # cores = 8
 # model = perfect reflectors
 #
-# xi*(L+R)/c=0, logdetD=-42.6002077863769, t=0.382796
-# xi*(L+R)/c=124.298058553363, logdetD=-7.39057412608673, t=36.3845
-# xi*(L+R)/c=248.596117106725, logdetD=-1.39750600947628, t=39.1666
-# xi*(L+R)/c=372.894175660088, logdetD=-0.268486066517477, t=43.2183
-# xi*(L+R)/c=497.192234213451, logdetD=-0.0517243967251137, t=42.6953
-# xi*(L+R)/c=621.490292766814, logdetD=-0.00996872229895378, t=41.6955
-# xi*(L+R)/c=745.788351320176, logdetD=-0.00192105745770975, t=39.2724
-# xi*(L+R)/c=870.086409873539, logdetD=-0.000370110014116469, t=37.9295
-# xi*(L+R)/c=994.384468426902, logdetD=-7.12799726128658e-05, t=34.4705
-# xi*(L+R)/c=1118.68252698026, logdetD=-1.37218303286995e-05, t=31.4842
+# xi*(L+R)/c=0, logdetD=-42.60020778315535, t=0.467272
+# xi*(L+R)/c=124.2980585533627, logdetD=-7.390574126086722, t=36.2681
+# xi*(L+R)/c=248.5961171067254, logdetD=-1.397506009518922, t=39.4774
+# xi*(L+R)/c=372.8941756600882, logdetD=-0.2684860665174822, t=40.6776
+# xi*(L+R)/c=497.1922342134509, logdetD=-0.05172439672511808, t=41.2012
+# xi*(L+R)/c=621.4902927668136, logdetD=-0.009968722298957337, t=40.4532
+# xi*(L+R)/c=745.7883513201764, logdetD=-0.001921057457711198, t=39.8435
+# xi*(L+R)/c=870.0864098735391, logdetD=-0.0003701100141162466, t=37.0048
+# xi*(L+R)/c=994.3844684269018, logdetD=-7.127997261297687e-05, t=34.944
+# xi*(L+R)/c=1118.682526980265, logdetD=-1.372183032744117e-05, t=30.5043
 #
-# 1126 determinants computed
-# stop time: Tue Feb 26 18:44:16 2019
+# 1125 determinants computed
+# stop time: Mon Nov 18 11:12:02 2019
 #
 # L/R, L, R, T, ldim, E*(L+R)/(hbar*c)
-0.006666666666666667, 1e-06, 0.00015, 300, 1050, -1203.605706428743
+0.006666666666666667, 1e-06, 0.00015, 300, 1050, -1203.6057063667
 ```
 Due to parallelization you might not get the exactly same numerical value for
 the free energy.
