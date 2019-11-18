@@ -132,13 +132,13 @@ The user manual describes how to build and use the programs that come with
 CaPS. The user manual is available online as
 [html](https://www.speicherleck.de/michael/caps/manual/manual.html) or
 [PDF](https://www.speicherleck.de/michael/caps/manual.pdf). You can also build
-it yourself using the `Makefile` provided in `docs/manual`.
+the user manual using Makefile provided in `docs/manual`.
 
 The API of CaPS are documented using doxygen. The API documentation is
 available online as
 [html](https://www.speicherleck.de/michael/caps/api/index.html) or
-[PDF](https://www.speicherleck.de/michael/caps/api.pdf). You can also buildit
-yourself using the `doxygen.conf` file provided in `src/`.
+[PDF](https://www.speicherleck.de/michael/caps/api.pdf). You can also build the
+API documentation using the `doxygen.conf` file provided in `src/`.
 
 
 Bugs, developing and contributing
