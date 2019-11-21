@@ -16,7 +16,7 @@ authors:
 affiliations:
   - name: Institut für Physik, Universität Augsburg, 86135 Augsburg, Germany
     index: 1
-date: 23th June 2019
+date: 21st November 2019
 bibliography: paper.bib
 ---
 
