@@ -26,16 +26,16 @@ bibliography: paper.bib
 
 CaPS is a package for the analysis of the Casimir effect in the plane-sphere
 geometry. The Casimir force arises due to quantum and thermal fluctuations of
-the electromagnetic field and is closely related to the van der Waals forces
-[@bordag_advances]. As an observable consequence of vacuum fluctuations in the
-macroscopic world, the Casimir effect is linked to the problem of zero-point
-energy and the cosmological constant problem. The Casimir force is the dominant
-force between neutral non-magnetic materials in the nanometre to micrometre
-range. As such, a precise knowledge of the Casimir force is crucial in order to
-detect possible deviations from the gravitational interaction, and thus to
-either exclude or possibly support proposed mechanisms a fifth fundamental
-interaction. From a technological point of view, the Casimir effect has been
-shown to play an important role for micro- and nano-electromechanical systems.
+the electromagnetic field and is closely related to the van der Waals force
+[@bordag_advances]. It is the dominant force between neutral non-magnetic
+materials in the nanometre to micrometre range and plays an important role in
+colloidal systems. Of technological relevance are applications to micro- and
+nano-electromechanical systems where the Casimir force can lead to stiction and
+thus constitute a failure mechanism. On a more fundamental level, the Casimir
+effect is linked to the zero-point energy and the cosmological constant
+problem. A precise knowledge of the Casimir force is crucial for the search for
+possible deviations from Newton's law of gravitation which could arise from a
+fifth fundamental interaction.
 
 CaPS allows to compute the Casimir interaction in the plane-sphere geometry as
 shown in Fig. 1. The plane-sphere geometry is most commonly used in precision
