@@ -40,13 +40,13 @@ shown to play an important role for micro- and nano-electromechanical systems.
 CaPS allows to compute the Casimir interaction in the plane-sphere geometry as
 shown in Fig. 1. The plane-sphere geometry is most commonly used in precision
 measurements of the Casimir force. Specifically, CaPS allows to compute the
-Casimir free energy as a function of the sphere radius $R$, the minimal
-separation $L$ between sphere and plane, the temperature $T$, and the material
-properties of plane and sphere. It is assumed that both objects are
-non-magnetic and placed in vacuum. In typical experiments the aspect ratio
-$R/L$ is of the order of 1000. The main purpose of this package is to make
-aspect ratios as large as $R/L\sim5000$ accessible. Higher aspect ratios are
-usually well covered by the proximity force approximation.
+Casimir free energy and thus the Casimir force as a function of the sphere
+radius $R$, the minimal separation $L$ between sphere and plane, the
+temperature $T$, and the material properties of plane and sphere. It is assumed
+that both objects are non-magnetic and placed in vacuum. In typical experiments
+the aspect ratio $R/L$ is of the order of 1000. The main purpose of this
+package is to make aspect ratios as large as $R/L\sim5000$ accessible. Higher
+aspect ratios are usually well covered by the proximity force approximation.
 
 ![Geometry of the plane-sphere setup: A sphere with radius $R$ is separated by
 the distance $L$ from an infinitely extended plate. In typical experiments,
