@@ -100,7 +100,7 @@ The implementation for the plane-cylinder geometry is based on [@emig_prl_2006].
 ``CaPS`` has been used to analyze negative Casimir entropies [@ingold_pre_2015;
 @umrath_pre_2015], and to study corrections to the widely used proximity force
 approximation for experimentally relevant parameters [@hartmann_prl_2017]. In
-addition, data generated using ``CaPS`` was used to analyze the experiments in
+addition, data generated using ``CaPS`` were used to analyze the experiments in
 Ref. [@liu_prb_2019] and Ref. [@liu_pra_2019]. The package is released under
 the GPLv2 license.
 
