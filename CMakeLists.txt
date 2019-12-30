@@ -53,7 +53,9 @@ endif()
 # libhodlr
 add_library(hodlr SHARED src/libhodlr/src/hodlr.cpp src/libhodlr/src/HODLR_Matrix.cpp src/libhodlr/src/HODLR_Node.cpp src/libhodlr/src/HODLR_Tree.cpp src/libhodlr/src/HODLR_Tree_NonSPD.cpp src/libhodlr/src/HODLR_Tree_SPD.cpp src/libhodlr/src/KDTree.cpp)
 target_compile_definitions(hodlr PRIVATE -DUSE_DOUBLE)
-set_target_properties(hodlr PROPERTIES COMPILE_FLAGS "-Wno-unknown-pragmas")
+if(NOT MSVC)
+    set_target_properties(hodlr PROPERTIES COMPILE_FLAGS "-Wno-unknown-pragmas")
+endif()
 
 # libcaps
 add_library(caps SHARED src/bessel.c src/cache.c src/fcqs.c src/integration.c src/libcaps.c src/logfac.c src/material.c src/matrix.c src/misc.c src/plm.c src/psd.c src/utils.c src/cquadpack/src/dqage.c src/cquadpack/src/dqagi.c src/cquadpack/src/dqags.c src/cquadpack/src/dqext.c src/cquadpack/src/dqk15.c src/cquadpack/src/dqk15i.c src/cquadpack/src/dqk21.c src/cquadpack/src/dqk31.c src/cquadpack/src/dqk41.c src/cquadpack/src/dqk51.c src/cquadpack/src/dqk61.c src/cquadpack/src/dqsort.c)
@@ -95,8 +97,7 @@ if(${LIBM})
 endif()
 target_link_libraries(caps ${BLAS_LIBRARIES})
 target_link_libraries(caps ${LAPACK_LIBRARIES})
-target_link_libraries(caps_frontend caps)
-target_link_libraries(caps_frontend hodlr)
+target_link_libraries(caps hodlr)
 
 
 # caps frontend exectuable
