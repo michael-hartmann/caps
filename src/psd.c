@@ -77,7 +77,7 @@ static double _eta(int N, double z)
  * @param [out] eta expansion coefficients
  * @retval success 0 if successful
  */
-int psd(int N, double xi[N], double eta[N])
+int psd(int N, double *xi, double *eta)
 {
     char jobz  = 'N';    /* compute eigenvalues only */
     char range = 'I';    /* find IL-th through IU-th eigenvalues */
