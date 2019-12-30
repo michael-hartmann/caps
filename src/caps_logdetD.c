@@ -3,7 +3,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <strings.h>
 
 #include "material.h"
 #include "libcaps.h"
@@ -113,13 +112,13 @@ int main(int argc, char *argv[])
                 strncpy(filename, optarg, sizeof(filename)-sizeof(char));
                 break;
             case 'd':
-                if(strcasecmp(optarg, "HODLR") == 0)
+                if(strcaseequal(optarg, "HODLR"))
                     detalg = DETALG_HODLR;
-                else if(strcasecmp(optarg, "LU") == 0)
+                else if(strcaseequal(optarg, "LU"))
                     detalg = DETALG_LU;
-                else if(strcasecmp(optarg, "QR") == 0)
+                else if(strcaseequal(optarg, "QR"))
                     detalg = DETALG_QR;
-                else if(strcasecmp(optarg, "CHOLESKY") == 0)
+                else if(strcaseequal(optarg, "CHOLESKY"))
                     detalg = DETALG_CHOLESKY;
                 else
                 {

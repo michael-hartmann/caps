@@ -2,7 +2,6 @@
 #include <string>
 
 #include <stdio.h>
-#include <strings.h>
 
 #include "argparse.h"
 #include "bessel.h"
@@ -277,34 +276,43 @@ int main(int argc, const char *argv[]) {
     else
         capc.set_lmax(std::max(25,(int)ceil(eta/d*R)));
 
+    // set detalg
+    if(detalg != NULL)
+    {
+        if(strcaseequal(detalg, "HODLR"))
+        {
+            printf("# detalg = HODLR\n");
+            capc.set_detalg(DETALG_HODLR);
+        }
+        else if(strcaseequal(detalg, "LU"))
+        {
+            printf("# detalg = LU\n");
+            capc.set_detalg(DETALG_LU);
+        }
+        else if(strcaseequal(detalg, "QR"))
+        {
+            printf("# detalg = QR\n");
+            capc.set_detalg(DETALG_QR);
+        }
+        else if(strcaseequal(detalg, "CHOLESKY"))
+        {
+            printf("# detalg = CHOLESKY\n");
+            capc.set_detalg(DETALG_CHOLESKY);
+        }
+        else
+        {
+            fprintf(stderr, "Unknown value for --detalg: %s\n\n", detalg);
+            argparse_usage(&argparse);
+            return 1;
+        }
+    }
+
     printf("# R/d = %.15g\n", R/d);
     printf("# d = %.15g\n", d);
     printf("# R = %.15g\n", R);
     printf("# T = %.15g\n", T);
     printf("# lmax = %d\n", capc.get_lmax());
     printf("# epsrel = %g\n", epsrel);
-
-    // set detalg
-    if(detalg != NULL)
-    {
-        if(strcasecmp(detalg, "LU") == 0)
-        {
-            printf("# detalg = LU\n");
-            capc.set_detalg(DETALG_LU);
-        }
-        else if(strcasecmp(detalg, "QR") == 0)
-        {
-            printf("# detalg = QR\n");
-            capc.set_detalg(DETALG_QR);
-        }
-        else if(strcasecmp(detalg, "CHOLESKY") == 0)
-        {
-            printf("# detalg = CHOLESKY\n");
-            capc.set_detalg(DETALG_CHOLESKY);
-        }
-        else
-            printf("# detalg = HODLR\n");
-    }
 
     /* energy Dirichlet in units of hbar*c*L */
     double E_D = capc.energy('D', T, epsrel);
