@@ -497,16 +497,19 @@ static double _alpha(double p, double n, double nu)
 static double _caps_integrate_I(integration_t *self, int l1, int l2, polarization_t p_, sign_t *sign)
 {
     sign_t s;
+    double *aq = NULL;
+    log_t *array = NULL;
 
     const int m_ = self->m > 0 ? self->m : 1;
     const double n  = l1, nu = l2, m = m_;
     const double n4 = l1+l2-2*m_;
     const int l1pl2 = l1+l2;
 
-    /* eq. (24) */
-    const int qmax = MIN(MIN(n,nu), (l1pl2-2*m_)/2);
+    TERMINATE((l1pl2-2*m_) < 0, "l1=%d, l2=%d, m=%d\n", l1, l2, self->m);
 
-    TERMINATE(qmax < 0, "l1=%d, l2=%d, m=%d\n", l1, l2, self->m);
+    /* eq. (24) */
+    const size_t qmax = MIN(MIN(l1,l2), (l1pl2-2*m_)/2);
+
 
     /* eq. (28) */
     const double Ap = -2*m*(n-nu)*(n+nu+1);
@@ -514,11 +517,12 @@ static double _caps_integrate_I(integration_t *self, int l1, int l2, polarizatio
     /* eq. (20) */
     const double log_a0 = lfac(2*l1)-lfac(l1)+lfac(2*l2)-lfac(l2)+lfac(l1+l2)-lfac(2*l1pl2)+lfac(l1pl2-2*m_)-lfac(l1-m_)-lfac(l2-m_);
 
-    double aq[qmax+1];
-    log_t array[qmax+1];
+    /* allocate memory */
+    aq    = xmalloc((qmax+1)*sizeof(double));
+    array = xmalloc((qmax+1)*sizeof(log_t));
 
     /* q = 0 */
-    int q = 0;
+    size_t q = 0;
     aq[q] = 1;
     double K = caps_integrate_K(self, l1pl2-2*q, p_, &s);
     array[q].s = s;
@@ -604,6 +608,9 @@ static double _caps_integrate_I(integration_t *self, int l1, int l2, polarizatio
     log_I = log_a0+logadd_ms(array, MIN(q,qmax)+1, sign);
     TERMINATE(!isfinite(log_I), "l1=%d, l2=%d, m=%d, p=%d, alpha=%g, log_I=%g", l1, l2, self->m, p_, self->alpha, log_I);
     //TERMINATE((*sign == 1 && p_ != TM) || (*sign==-1 && p_ != TE), "l1=%d, l2=%d, p=%d, sign=%d, log_I=%g, q=%d", l1, l2, p_, *sign, log_I, q);
+
+    xfree(aq);
+    xfree(array);
 
     return log_I;
 }
