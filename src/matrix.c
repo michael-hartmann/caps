@@ -16,7 +16,12 @@
 #include "misc.h"
 #include "utils.h"
 
-#include "clapack.h"
+/* prototypes for LAPACK functions */
+double ddot_(int *n, double *dx, int *incx, double *dy, int *incy);
+int dgetrf_(int *m, int *n, double *a, int *lda, int *ipiv, int *info);
+int dpotrf_(char *uplo, int *n, double *a, int *lda, int *info);
+int dgeqrf_(int *m, int *n, double *a, int *lda, double *tau, double *work, int *lwork, int *info);
+int dgemm_(char *transa, char *transb, int *m, int *n, int *k, double *alpha, double *a, int *lda, double *b, int *ldb, double *beta, double *c__, int *ldc);
 
 
 /** @brief Compute \f$\log \det(1-A)\f$
