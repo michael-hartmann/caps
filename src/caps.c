@@ -6,8 +6,12 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <sys/types.h>
+
+#ifdef _WIN32
+#include <Windows.h>
+#else
 #include <unistd.h>
+#endif
 
 #include "caps.h"
 
@@ -24,10 +28,30 @@
 #define CUTOFF 1e-9 /**< default value for --cutoff */
 #define LDIM_MIN 20 /**< minimum value for --ldim */
 #define ETA 7.      /**< default value for --eta */
-#define IDLE 25     /**< idle time in ms */
+#define IDLE 1      /**< idle time in ms */
 
 #define STATE_RUNNING 1
 #define STATE_IDLE    0
+
+/* sleep for ms miliseconds */
+static void msleep(unsigned int ms)
+{
+#ifdef _WIN32
+    Sleep(ms);
+#else
+    usleep(ms*1000);
+#endif
+}
+
+static bool is_readable(const char *filename)
+{
+    FILE *f = fopen(filename, "r");
+    if(f == NULL)
+        return false;
+
+    fclose(f);
+    return true;
+}
 
 /* @brief Create caps_mpi object
  *
@@ -364,7 +388,7 @@ double F_xi(double xi_, caps_mpi_t *caps_mpi)
                     goto done;
             }
 
-            usleep(IDLE);
+            msleep(IDLE);
         }
     }
 
@@ -384,7 +408,7 @@ double F_xi(double xi_, caps_mpi_t *caps_mpi)
                 fprintf(stderr, "# m=%d, xi_=%.16g, logdetD=%.16g\n", task->m, xi_, task->value);
         }
 
-        usleep(IDLE);
+        msleep(IDLE);
     }
 
     terms[0] /= 2; /* m = 0 */
@@ -585,7 +609,7 @@ void master(int argc, char *argv[], const int cores)
             usage(stderr);
             EXIT();
         }
-        if(access(filename, R_OK) != 0)
+        if(!is_readable(filename))
         {
             fprintf(stderr, "file %s does not exist or is not readable.\n\n", filename);
             usage(stderr);
@@ -648,7 +672,6 @@ void master(int argc, char *argv[], const int cores)
     time_as_string(time_str, sizeof(time_str)/sizeof(time_str[0]));
 
     caps_build(stdout, "# ");
-    printf("# pid: %d\n", (int)getpid());
     printf("# start time: %s\n", time_str);
     printf("#\n");
 
