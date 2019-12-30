@@ -131,6 +131,25 @@ void strrep(char *s, const char a, const char b)
     }
 }
 
+/** @brief Check if strings are equal
+ *
+ * Check if the the strings s1 and s2 are equal (case insensitive).
+ *
+ * @param [in] s1   first string
+ * @param [in] s2   second string
+ */
+int strcaseequal(const char *s1, const char *s2)
+{
+    if(strlen(s1) != strlen(s2))
+        return 0;
+
+    for(size_t i = 0; i < strlen(s1); i++)
+        if(tolower(s1[i]) != tolower(s2[i]))
+            return 0;
+
+    return 1;
+}
+
 /** @brief Remove whitespace at beginng and end of string
  *
  * If str is NULL the function doesn't do anything. Otherwise, trailing

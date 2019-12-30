@@ -50,6 +50,7 @@ void *xcalloc(size_t nmemb, size_t size);
 
 void disable_buffering(void);
 
+int strcaseequal(const char *s1, const char *s2);
 void strrep(char *s, const char a, const char b);
 void strim(char *str);
 
