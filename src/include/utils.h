@@ -17,11 +17,13 @@ extern "C" {
 
 /*! name of compile */
 #if defined(__clang__)
-    #define COMPILER "clang/llvm"
+    #define COMPILER "clang"
 #elif defined(__ICC) || defined(__INTEL_COMPILER)
     #define COMPILER "icc"
 #elif defined(__GNUC__) || defined(__GNUG__)
     #define COMPILER "gcc"
+#elif defined(_MSC_VER)
+    #define COMPILER "msvc"
 #else
     #define COMPILER "unknown"
 #endif
