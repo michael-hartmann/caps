@@ -21,8 +21,13 @@ if(NOT CMAKE_BUILD_TYPE)
   set(CMAKE_BUILD_TYPE Release)
 endif()
 
-set(CMAKE_C_FLAGS_DEBUG "-g")
-set(CMAKE_C_FLAGS_RELEASE "-O3")
+if(MSVC)
+    set(CMAKE_C_FLAGS_RELEASE "/O3")
+    set(CMAKE_C_FLAGS_DEBUG "/g")
+else()
+    set(CMAKE_C_FLAGS_RELEASE "-O3")
+    set(CMAKE_C_FLAGS_DEBUG "-g")
+endif()
 
 # set warnings
 if(MSVC)
@@ -84,6 +89,14 @@ if(EXISTS "${CMAKE_SOURCE_DIR}/.git" AND ${GIT_FOUND})
 
   target_compile_definitions(caps PRIVATE -DGIT_HEAD="${GIT_COMMIT_HASH}" -DGIT_BRANCH="${GIT_BRANCH}")
 endif()
+
+if(${LIBM})
+    target_link_libraries(caps m)
+endif()
+target_link_libraries(caps ${BLAS_LIBRARIES})
+target_link_libraries(caps ${LAPACK_LIBRARIES})
+target_link_libraries(caps_frontend caps)
+target_link_libraries(caps_frontend hodlr)
 
 
 # caps frontend exectuable
