@@ -1,12 +1,10 @@
-CaPS
-====
+# CaPS
 
 [![Version 0.5](images/version.svg)](https://github.com/michael-hartmann/caps/releases/tag/v0.5)
 [![arXiv:1803.05791](images/arxiv.svg)](https://arxiv.org/abs/1803.05791)
 [![license: GPLv2](images/license.svg)](https://www.gnu.org/licenses/old-licenses/gpl-2.0.html)
 
-What is CaPS?
--------------
+## What is CaPS?
 
 CaPS is an implementation of the **Ca**simir effect in the **p**lane-**s**phere
 geometry. The geometry consists of a sphere of radius R separated by a distance
@@ -27,8 +25,8 @@ accessible using CaPS. The inset depicts the plane-sphere geometry.
 In addition, CaPS can compute the Casimir free energy for the plane-cylinder
 geometry at zero temperature for perfect reflectors.
 
-Features
---------
+## Features
+
  - Computation of the free energy for aspect ratios used in typical experiments.
  - Full support for perfect reflectors, metals described by the Drude and plasma model, and generic materials described by a user-defined dielectric function.
  - Calculate the free energy in the high temperature limit for perfect reflectors, the Drude and plasma model.
@@ -39,8 +37,8 @@ Features
  - ready to use programs: you don't have to modify the code.
  - CaPS is free software – you may use it or even modify it.
 
-Installation
-------------
+## Installation
+
 If you use Linux or Unix, you need the gcc and development libraries and header
 files for the standard C library, and MPI. On a Debian-like Linux the command
 ```
@@ -74,8 +72,8 @@ $ export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/path/to/caps/bin
 You can find more information about building the software in the [user
 manual](https://www.speicherleck.de/michael/caps/manual/manual.html).
 
-Usage
------
+## Usage
+
 To compute the Casimir free energy between a sphere of radius R=150µm and a
 plane separated by a distance L=1µm at room temperature T=300K assuming
 that both objects are perfect reflectors, use the command:
@@ -123,8 +121,7 @@ $ mpirun -n 8 ./caps -R 150e-6 -L 1e-6 -T 300
 Due to parallelization you might not get the exactly same numerical value for
 the free energy.
 
-Documentation
--------------
+## Documentation
 
 CaPS is documented by a user manual and an API documentation.
 
@@ -141,8 +138,7 @@ available online as
 API documentation using the `doxygen.conf` file provided in `src/`.
 
 
-Bugs, developing and contributing
----------------------------------
+## Bugs, developing and contributing
 
 The latest version of CaPS is available at
 [github](https://github.com/michael-hartmann/caps).
@@ -153,20 +149,18 @@ a bug, please create an
 improvements, create a pull request.  For more details see
 [CONTRIBUTING.md](https://github.com/michael-hartmann/caps/blob/master/CONTRIBUTING.md).
 
-Authors
--------
+## Authors
 
  * [Michael Hartmann](https://www.speicherleck.de/michael/academic.html), caps@speicherleck.de
    main developer
 
  * [Gert-Ludwig Ingold](https://www.physik.uni-augsburg.de/theo1/ingold/), gert.ingold@physik.uni-augsburg.de
-   contributions to documentation, bugfixes
+   ideas, documentation, JOSS paper, testing, bugfixes
 
 For a full list, see [CREDITS](https://github.com/michael-hartmann/caps/blob/master/CREDITS).
 
 
-License
--------
+## License
 
 The code is licensed under GPLv2, see LICENSE.
 
@@ -194,8 +188,8 @@ Also, CaPS uses some third-party software:
    parsing library in C (MIT)
 
 
-Publications using CaPS
------------------------
+## Publications using CaPS
+
  * [Casimir effect in the plane-sphere geometry: Beyond the proximity force approximation](https://opus.bibliothek.uni-augsburg.de/opus4/44798)  
    Michael Hartmann, PhD thesis (Universität Augsburg, 2018)
 
