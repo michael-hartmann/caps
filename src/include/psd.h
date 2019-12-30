@@ -5,7 +5,7 @@
 extern "C" {
 #endif
 
-int psd(int N, double xi[N], double eta[N]);
+int psd(int N, double *xi, double *eta);
 
 #ifdef __cplusplus
 }
