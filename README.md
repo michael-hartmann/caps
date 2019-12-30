@@ -42,7 +42,7 @@ geometry at zero temperature for perfect reflectors.
 If you use Linux or Unix, you need the gcc and development libraries and header
 files for the standard C library, and MPI. On a Debian-like Linux the command
 ```
-$ sudo apt-get install gcc g++ libc6-dev libc++-dev cmake make libopenmpi-dev openmpi-bin liblapack-dev
+$ sudo apt-get install gcc g++ libc-dev libc++-dev cmake make libopenmpi-dev openmpi-bin liblapack-dev
 ```
 will install all dependencies. Here, the dollar sign indicates the shell
 prompt. You can compile the sources with:
