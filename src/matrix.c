@@ -9,7 +9,6 @@
 #include <stdint.h>
 #include <stdio.h>
 #include <string.h>
-#include <strings.h>
 
 #include <hodlr.h>
 
@@ -387,12 +386,14 @@ void matrix_setall(matrix_t *A, double z)
 double matrix_trace(matrix_t *A)
 {
     const size_t dim = A->dim;
-    double array[dim];
+    double *array = xmalloc(dim*sizeof(double));
 
     for(size_t i = 0; i < dim; i++)
         array[i] = matrix_get(A, i,i);
 
-    return kahan_sum(array, dim);
+    double trace = kahan_sum(array, dim);
+    xfree(array);
+    return trace;
 }
 
 /**
@@ -411,16 +412,16 @@ double matrix_trace2(matrix_t *A)
 {
     const size_t dim = A->dim;
     double *M = A->M;
-    double array[dim];
+    double *array = xmalloc(dim*sizeof(double));
 
-    int N = dim;
-    int incx = 1;
-    int incy = N;
+    int N = dim, incx = 1, incy = N;
 
     for(size_t i = 0; i < dim; i++)
         array[i] = ddot_(&N, &M[dim*i], &incx, &M[i], &incy);
 
-    return kahan_sum(array, dim);
+    double trace2 = kahan_sum(array, dim);
+    xfree(array);
+    return trace2;
 }
 
 /**
@@ -457,12 +458,14 @@ double matrix_norm_frobenius(matrix_t *A)
 double matrix_logdet_triangular(matrix_t *A)
 {
     size_t dim = A->dim;
-    double logdet[dim];
+    double *array = xmalloc(dim*sizeof(double));
 
     for(size_t i = 0; i < dim; i++)
-        logdet[i] = log(fabs(matrix_get(A, i, i)));
+        array[i] = log(fabs(matrix_get(A, i, i)));
 
-    return kahan_sum(logdet, dim);
+    double logdet = kahan_sum(array, dim);
+    xfree(array);
+    return logdet;
 }
 
 /**
@@ -554,7 +557,7 @@ double matrix_logdet_lu(matrix_t *A)
     if(dim <= 0)
         return NAN;
     int lda = (int)A->lda;
-    int ipiv[dim];
+    int *ipiv = xmalloc(dim*sizeof(int));
     double *a = A->M;
 
     dgetrf_(
@@ -567,7 +570,7 @@ double matrix_logdet_lu(matrix_t *A)
     );
 
     TERMINATE(info != 0, "dgetrf returned %d", info);
-
+    xfree(ipiv);
     return matrix_logdet_triangular(A);
 }
 
@@ -623,7 +626,7 @@ double matrix_logdet_cholesky(matrix_t *A, char uplo)
 double matrix_logdet_qr(matrix_t *A)
 {
     int dim = (int)A->dim;
-    double tau[dim];
+    double *tau = xmalloc(dim*sizeof(double));
     int lda = A->lda;
     int info = 0;
     int lwork = -1;
@@ -658,6 +661,7 @@ double matrix_logdet_qr(matrix_t *A)
         &info
     );
 
+    xfree(tau);
     xfree(work);
 
     TERMINATE(info != 0, "dgeqrf returned %d", info);
