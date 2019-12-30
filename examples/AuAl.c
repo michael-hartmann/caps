@@ -5,7 +5,7 @@
 /* Dielectric function epsilon(xi)-1 for gold: omegap=9eV, gamma=35meV.
  * The frequency xi is in rad/s.
  */
-double epsm1_gold(double xi, void *args)
+static double epsm1_gold(double xi, void *args)
 {
     /* plasma frequency and relaxation frequency in rad/s */
     double omegap = 9/CAPS_hbar_eV, gamma = 0.035/CAPS_hbar_eV;
@@ -17,7 +17,7 @@ double epsm1_gold(double xi, void *args)
 /* Dielectric function epsilon(xi)-1 for aluminium: omegap=11.5eV, gamma=50meV.
  * The frequency xi is in rad/s.
  */
-double epsm1_aluminium(double xi, void *args)
+static double epsm1_aluminium(double xi, void *args)
 {
     /* plasma frequency and relaxation frequency in rad/s */
     double omegap = 11.5/CAPS_hbar_eV, gamma = 0.05/CAPS_hbar_eV;
