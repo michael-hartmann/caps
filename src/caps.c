@@ -12,6 +12,7 @@
 #ifdef _WIN32
 #include <Windows.h>
 #else
+#include <sys/types.h>
 #include <unistd.h>
 #endif
 
@@ -694,6 +695,9 @@ void master(int argc, char *argv[], const int cores)
     time_as_string(time_str, sizeof(time_str)/sizeof(time_str[0]));
 
     caps_build(stdout, "# ");
+#ifndef _WIN32
+    printf("# pid: %d\n", getpid());
+#endif
     printf("# start time: %s\n", time_str);
     printf("#\n");
 
@@ -917,9 +921,6 @@ void slave(MPI_Comm master_comm, int rank)
     double userdata[2] = { 0 };
     double buf[8] = { 0 };
 
-    MPI_Status status;
-    MPI_Request request;
-
     while(1)
     {
         double logdet = NAN;
@@ -931,6 +932,7 @@ void slave(MPI_Comm master_comm, int rank)
         memset(filename, 0, sizeof(filename));
         memset(userdata, 0, sizeof(userdata));
 
+        MPI_Status status;
         MPI_Recv(buf, 8, MPI_DOUBLE, 0, 0, master_comm, &status);
 
         /* Matsubara frequency; xi_ = ξ(L+R)/c */
@@ -992,11 +994,12 @@ void slave(MPI_Comm master_comm, int rank)
             TERMINATE(isnan(logdet), "L/R=%.16g, xi_=%.16g, m=%d, ldim=%d", LbyR, xi_, m, ldim);
         }
 
-        MPI_Isend(&logdet, 1, MPI_DOUBLE, 0, 0, master_comm, &request);
         caps_free(caps);
-
         if(material != NULL)
             material_free(material);
+
+        MPI_Request request;
+        MPI_Isend(&logdet, 1, MPI_DOUBLE, 0, 0, master_comm, &request);
         MPI_Wait(&request, &status);
     }
 }
