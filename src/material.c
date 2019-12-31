@@ -37,7 +37,7 @@ static bool _parse(const char *line, const char *key, const char separator, doub
         p = strchr(p+strlen(key), separator); /* find separator */
         if(p != NULL)
         {
-            *value = atof(p+1);
+            *value = strtodouble(p+1);
             return true;
         }
     }
@@ -62,12 +62,8 @@ static bool _parse(const char *line, const char *key, const char separator, doub
  */
 material_t *material_init(const char *filename, double calL)
 {
-    /* prototype for setenv to avoid gcc warning */
-    int setenv(const char *name, const char *value, int overwrite);
-
-    char backup_lc_numeric[512] = { 0 };
     size_t points = 0;
-    size_t size = 128; /* max number of elems of array */
+    size_t size = 128; /* number of elems of array */
     char line[2048];
     FILE *f = fopen(filename, "r");
 
@@ -90,16 +86,6 @@ material_t *material_init(const char *filename, double calL)
     material->xi    = xmalloc(size*sizeof(double));
     material->epsm1 = xmalloc(size*sizeof(double));
 
-    /* copy environment value of LC_NUMERIC */
-    {
-        const char *p = getenv("LC_NUMERIC");
-        if(p != NULL)
-        {
-            strncpy(backup_lc_numeric, p, sizeof(backup_lc_numeric)-sizeof(char));
-            setenv("LC_NUMERIC", "C", 1);
-        }
-    }
-
     while(fgets(line, sizeof(line)/sizeof(char), f) != NULL)
     {
         /* remove whitespace at beginning and end of line */
@@ -121,7 +107,7 @@ material_t *material_init(const char *filename, double calL)
         const char *p = strchr(line, ' ');
         if(p != NULL)
         {
-            double xi = atof(line), epsm1 = atof(p)-1;
+            double xi = strtodouble(line), epsm1 = strtodouble(p)-1;
 
             /* increase buffer */
             if(points >= size)
@@ -157,10 +143,6 @@ material_t *material_init(const char *filename, double calL)
     material->gamma_high  /= CAPS_hbar_eV;
 
 out:
-    /* restore environment value of LC_NUMERIC */
-    if(strlen(backup_lc_numeric))
-        setenv("LC_NUMERIC", backup_lc_numeric, 1);
-
     if(f != NULL)
         fclose(f);
 
