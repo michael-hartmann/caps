@@ -28,7 +28,6 @@ if __name__ == "__main__":
 
     print("#include \"libcaps.h\"")
     print("#include \"misc.h\"")
-    print("#include \"constants.h\"")
     print("#include \"unittest.h\"")
     print()
     print("#include \"test_fresnel.h\"")
@@ -47,8 +46,8 @@ if __name__ == "__main__":
 
     for omegap_eV in (0.01, 0.1, 1, 2, 5, 7, 8, 9, 10, 20, 50, 100, 1000):
         for gamma_eV in (1e-5, 1e-4, 0.001, 0.003, 0.035, 0.05, 0.1, 0.5, 1):
-            print("    userdata[0] = %g/CAPS_hbar_eV; /* %geV */" % (omegap_eV,omegap_eV))
-            print("    userdata[1] = %g/CAPS_hbar_eV; /* %geV */" % (gamma_eV,gamma_eV))
+            print("    userdata[0] = %g/CAPS_HBAR_EV; /* %geV */" % (omegap_eV,omegap_eV))
+            print("    userdata[1] = %g/CAPS_HBAR_EV; /* %geV */" % (gamma_eV,gamma_eV))
 
             print("    caps_set_epsilonm1(caps, caps_epsilonm1_drude, userdata);")
             print()

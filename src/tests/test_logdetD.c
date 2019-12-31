@@ -118,12 +118,12 @@ int test_logdetD0()
     caps = caps_init(R,L); /* R/L=100 */
     caps_set_ldim(caps, 500);
 
-    AssertAlmostEqual(&test, caps_ht_plasma(caps, 0.01*CAPS_c/(L+R), eps), -14.569722716816960073);
-    AssertAlmostEqual(&test, caps_ht_plasma(caps,  0.1*CAPS_c/(L+R), eps), -14.569723099773346675);
-    AssertAlmostEqual(&test, caps_ht_plasma(caps,    1*CAPS_c/(L+R), eps), -14.571258410941549499);
-    AssertAlmostEqual(&test, caps_ht_plasma(caps,   10*CAPS_c/(L+R), eps), -14.868792120441892024);
-    AssertAlmostEqual(&test, caps_ht_plasma(caps,  100*CAPS_c/(L+R), eps), -18.461022336857670467);
-    AssertAlmostEqual(&test, caps_ht_plasma(caps, 1000*CAPS_c/(L+R), eps), -25.441820432119136797);
+    AssertAlmostEqual(&test, caps_ht_plasma(caps, 0.01*CAPS_C/(L+R), eps), -14.569722716816960073);
+    AssertAlmostEqual(&test, caps_ht_plasma(caps,  0.1*CAPS_C/(L+R), eps), -14.569723099773346675);
+    AssertAlmostEqual(&test, caps_ht_plasma(caps,    1*CAPS_C/(L+R), eps), -14.571258410941549499);
+    AssertAlmostEqual(&test, caps_ht_plasma(caps,   10*CAPS_C/(L+R), eps), -14.868792120441892024);
+    AssertAlmostEqual(&test, caps_ht_plasma(caps,  100*CAPS_C/(L+R), eps), -18.461022336857670467);
+    AssertAlmostEqual(&test, caps_ht_plasma(caps, 1000*CAPS_C/(L+R), eps), -25.441820432119136797);
 
     caps_free(caps);
 
