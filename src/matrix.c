@@ -16,6 +16,10 @@
 #include "misc.h"
 #include "utils.h"
 
+#ifndef POW_2
+#define POW_2(x) ((x)*(x))
+#endif
+
 /* prototypes for LAPACK functions */
 double ddot_(int *n, double *dx, int *incx, double *dy, int *incy);
 int dgetrf_(int *m, int *n, double *a, int *lda, int *ipiv, int *info);
@@ -441,7 +445,7 @@ double matrix_norm_frobenius(matrix_t *A)
     double *M = A->M;
 
     for(size_t i = 0; i < A->dim2; i++)
-        norm += pow_2(M[i]);
+        norm += POW_2(M[i]);
 
     return sqrt(norm);
 }
@@ -498,9 +502,9 @@ double matrix_logdet_dense(matrix_t *A, double z, detalg_t detalg)
     {
         /* log(det(Id+zA)) ≈ z*tr(A) - z²/2 tr(A²) + ... */
         const double trA  = z*matrix_trace(A);
-        const double trA2 = pow_2(z)*matrix_trace2(A);
+        const double trA2 = POW_2(z)*matrix_trace2(A);
         const double mercator = trA-trA2/2;
-        const double error = fabs(pow_2(norm)/2+norm+log1p(-norm));
+        const double error = fabs(POW_2(norm)/2+norm+log1p(-norm));
         const double rel_error = fabs(error/mercator);
 
         if(rel_error < 1e-8)

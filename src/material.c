@@ -11,7 +11,6 @@
 #include <string.h>
 #include <stdlib.h>
 
-#include "constants.h"
 #include "material.h"
 #include "utils.h"
 #include "misc.h"
@@ -137,10 +136,10 @@ material_t *material_init(const char *filename, double calL)
     material->points = points;
 
     /* convert from eV to rad/s */
-    material->omegap_low  /= CAPS_hbar_eV;
-    material->omegap_high /= CAPS_hbar_eV;
-    material->gamma_low   /= CAPS_hbar_eV;
-    material->gamma_high  /= CAPS_hbar_eV;
+    material->omegap_low  /= CAPS_HBAR_EV;
+    material->omegap_high /= CAPS_HBAR_EV;
+    material->gamma_low   /= CAPS_HBAR_EV;
+    material->gamma_high  /= CAPS_HBAR_EV;
 
 out:
     if(f != NULL)
@@ -214,10 +213,10 @@ void material_info(material_t *material, FILE *stream, const char *prefix)
     fprintf(stream, "%scalL        = %gm\n",   prefix, material->calL);
     fprintf(stream, "%sxi_min      = %g/m\n",  prefix, material->xi_min);
     fprintf(stream, "%sxi_max      = %g/m\n",  prefix, material->xi_max);
-    fprintf(stream, "%somegap_high = %geV\n",  prefix, CAPS_hbar_eV*material->omegap_high);
-    fprintf(stream, "%sgamma_high  = %geV\n",  prefix, CAPS_hbar_eV*material->gamma_high);
-    fprintf(stream, "%sgamma_low   = %geV\n",  prefix, CAPS_hbar_eV*material->gamma_low);
-    fprintf(stream, "%somegap_low  = %geV\n",  prefix, CAPS_hbar_eV*material->omegap_low);
+    fprintf(stream, "%somegap_high = %geV\n",  prefix, CAPS_HBAR_EV*material->omegap_high);
+    fprintf(stream, "%sgamma_high  = %geV\n",  prefix, CAPS_HBAR_EV*material->gamma_high);
+    fprintf(stream, "%sgamma_low   = %geV\n",  prefix, CAPS_HBAR_EV*material->gamma_low);
+    fprintf(stream, "%somegap_low  = %geV\n",  prefix, CAPS_HBAR_EV*material->omegap_low);
 }
 
 /** @brief Dielectric function for material
@@ -242,7 +241,7 @@ double material_epsilonm1(double xi, void *args)
         double omegap = self->omegap_low;
         double gamma_ = self->gamma_low;
 
-        return pow_2(omegap)/(xi*(xi+gamma_));
+        return POW_2(omegap)/(xi*(xi+gamma_));
     }
     else if(xi > xi_max)
     {
@@ -250,7 +249,7 @@ double material_epsilonm1(double xi, void *args)
         double omegap = self->omegap_high;
         double gamma_ = self->gamma_high;
 
-        return pow_2(omegap)/(xi*(xi+gamma_));
+        return POW_2(omegap)/(xi*(xi+gamma_));
     }
 
     /* do binary search */

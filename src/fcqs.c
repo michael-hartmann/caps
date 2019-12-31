@@ -8,7 +8,6 @@
 #include <math.h>
 #include <stdio.h>
 
-#include "constants.h"
 #include "fcqs.h"
 
 /** MMIN and MMAX must be chosen in a way that there exists a positive
@@ -16,6 +15,12 @@
  */
 #define MMIN 5
 #define MMAX 2560
+
+#define POW_2(x) ((x)*(x))
+
+#ifndef M_PI
+#define M_PI 3.14159265358979323846
+#endif
 
 static double cot2(double x) __attribute__ ((pure));
 static double wi_semiinf(double ti, double L, double N) __attribute__ ((pure));
@@ -56,7 +61,7 @@ static double wi_semiinf(double ti, double L, double N)
     for(int j = 1; j <= N; j+=2)
         sum += sin(j*ti)/j;
 
-    return 8*L*sin(ti)/pow_2(1-cos(ti))/(N+1)*sum;
+    return 8*L*sin(ti)/POW_2(1-cos(ti))/(N+1)*sum;
 }
 
 /** @brief Weights for quadrature scheme (infinite interval)

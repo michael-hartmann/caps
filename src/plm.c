@@ -8,7 +8,6 @@
 #include <math.h>
 #include <stdbool.h>
 
-#include "constants.h"
 #include "plm.h"
 #include "logfac.h"
 #include "misc.h"
@@ -164,11 +163,11 @@ static double _Pl1(int l, double x, double sinhxi)
 
         sinhxi_m *= sinhxi;
         expxi_m  *= expxi;
-        Clm *= pow_2(m+0.5)/((2*m+2)*(l+1.5+m));
+        Clm *= POW_2(m+0.5)/((2*m+2)*(l+1.5+m));
     }
     sum += Clm*(expxi_m+exp(-(2*l+M-1+1)*xi))/sinhxi_m; /* m=M-1 */
 
-    return -(M_LOG2+M_LOGPI)/2 - log(sinhxi)/2 + log(sum) + (l+0.5)*xi;
+    return -(CAPS_LOG2+CAPS_LOGPI)/2 - log(sinhxi)/2 + log(sum) + (l+0.5)*xi;
 }
 
 /** see equations (3.27)-(3.31) */

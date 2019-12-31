@@ -680,7 +680,7 @@ void master(int argc, char *argv[], const int cores)
 
     if(psd_order < 0)
     {
-        const double Teff = 4*M_PI*CAPS_kB/CAPS_hbar/CAPS_c*T*L;
+        const double Teff = 4*M_PI*CAPS_KB/CAPS_HBAR/CAPS_C*T*L;
         psd_order = ceil( (1-1.5*log10(epsrel))/sqrt(Teff) );
     }
 
@@ -795,7 +795,7 @@ void master(int argc, char *argv[], const int cores)
     {
         /* finite temperature */
         double drude_HT = NAN, plasma_HT = NAN, pr_HT = NAN;
-        const double T_scaled = 2*M_PI*CAPS_kB*(R+L)*T/(CAPS_hbar*CAPS_c);
+        const double T_scaled = 2*M_PI*CAPS_KB*(R+L)*T/(CAPS_HBAR*CAPS_C);
         double *v = NULL;
 
         /* xi = 0 */
@@ -827,8 +827,8 @@ void master(int argc, char *argv[], const int cores)
             {
                 double omegap_low, gamma_low;
                 material_get_extrapolation(material, &omegap_low, &gamma_low, NULL, NULL);
-                omegap_low *= CAPS_hbar_eV; /* convert from rad/s to eV */
-                gamma_low  *= CAPS_hbar_eV; /* convert from rad/s to eV */
+                omegap_low *= CAPS_HBAR_EV; /* convert from rad/s to eV */
+                gamma_low  *= CAPS_HBAR_EV; /* convert from rad/s to eV */
 
                 if(gamma_low == 0)
                 {
@@ -945,8 +945,8 @@ void slave(MPI_Comm master_comm, int rank)
         const double R = buf[2]; /* in m */
         const double LbyR = L/R;
 
-        const double omegap = buf[3]/CAPS_hbar_eV; /* plasma frequency in rad/s */
-        const double gamma_ = buf[4]/CAPS_hbar_eV; /* relaxation frequency in rad/s */
+        const double omegap = buf[3]/CAPS_HBAR_EV; /* plasma frequency in rad/s */
+        const double gamma_ = buf[4]/CAPS_HBAR_EV; /* relaxation frequency in rad/s */
 
         const int m          = (int)buf[5];
         const double iepsrel = buf[6];
