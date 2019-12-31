@@ -6,11 +6,15 @@
  */
 
 #include <ctype.h>
+#include <math.h>
 #include <stdlib.h>
 #include <string.h>
 #include <sys/time.h>
 #include <time.h>
+#ifdef _WIN32
+#else
 #include <unistd.h>
+#endif
 
 #include "utils.h"
 
@@ -77,28 +81,14 @@ void *xrealloc(void *p, size_t size)
  */
 double now(void)
 {
+#ifdef _WIN32
+    return time(NULL);
+#else
     struct timeval tv;
     gettimeofday(&tv, NULL);
 
     return tv.tv_sec + tv.tv_usec*1e-6;
-}
-
-/** @brief Write time into string
- *
- * Write current time in a human readable format into string s. The output is
- * similar to "Aug 30 2018 14:37:35".
- *
- * @param s string
- * @param len maximum length of array s
- */
-void time_as_string(char *s, size_t len)
-{
-    time_t rawtime;
-    struct tm *info;
-
-    time(&rawtime);
-    info = localtime(&rawtime);
-    strftime(s, len, "%c", info);
+#endif
 }
 
 /** @brief Disable buffering to stderr and stdout
@@ -183,4 +173,128 @@ void strim(char *str)
 
     /* i is the number of whitespace characters at the end of str */
     str[len-i] = '\0';
+}
+
+/**
+ * @brief Convert string to float
+ *
+ * Convert the string str to a double.
+ *
+ * @param [in]  str         string to parse
+ * @retval      value       converted value
+ */
+double strtodouble(const char *str)
+{
+    double intpart = 0, fracpart = 0, exponent = 0;
+    int sign = +1, len = 0, conversion = 0;
+
+    // skip whitespace
+    while(isspace(*str))
+        str++;
+
+    // check for sign (optional; either + or -)
+    if(*str == '-')
+    {
+        sign = -1;
+        str++;
+    }
+    else if(*str == '+')
+        str++;
+
+    // check for nan and inf
+    if(tolower(str[0]) == 'n' && tolower(str[1]) == 'a' && tolower(str[2]) == 'n')
+        return NAN;
+    if(tolower(str[0]) == 'i' && tolower(str[1]) == 'n' && tolower(str[2]) == 'f')
+        return sign*INFINITY;
+
+    // find number of digits before decimal point
+    {
+        const char *p = str;
+        len = 0;
+        while(isdigit(*p))
+        {
+            p++;
+            len++;
+        }
+    }
+
+    if(len)
+        conversion = 1;
+
+    // convert intpart part of decimal point to a float
+    {
+        double f = 1;
+        for(int i = 0; i < len; i++)
+        {
+            int v = str[len-1-i] - '0';
+            intpart += v*f;
+            f *= 10;
+        }
+        str += len;
+    }
+
+    // check for decimal point (optional)
+    if(*str == '.')
+    {
+        const char *p = ++str;
+
+        // find number of digits after decimal point
+        len = 0;
+        while(isdigit(*p))
+        {
+            p++;
+            len++;
+        }
+
+        if(len)
+            conversion = 1;
+
+        // convert fracpart part of decimal point to a float
+        double f = 0.1;
+        for(int i = 0; i < len; i++)
+        {
+            int v = str[i] - '0';
+            fracpart += v*f;
+            f *= 0.1;
+        }
+
+        str = p;
+    }
+
+    if(conversion && (*str == 'e' || *str == 'E'))
+    {
+        int expsign = +1;
+        const char *p = ++str;
+
+        if(*p == '+')
+            p++;
+        else if(*p == '-')
+        {
+            expsign = -1;
+            p++;
+        }
+
+        str = p;
+        len = 0;
+        while(isdigit(*p))
+        {
+            len++;
+            p++;
+        }
+
+        int f = 1;
+        for(int i = 0; i < len; i++)
+        {
+            int v = str[len-1-i]-'0';
+            exponent += v*f;
+            f *= 10;
+        }
+
+        exponent *= expsign;
+    }
+
+    if(!conversion)
+        return NAN;
+
+    return sign*(intpart+fracpart)*pow(10, exponent);
 }

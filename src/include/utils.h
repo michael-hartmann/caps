@@ -53,6 +53,7 @@ void disable_buffering(void);
 int strcaseequal(const char *s1, const char *s2);
 void strrep(char *s, const char a, const char b);
 void strim(char *str);
+double strtodouble(const char *str);
 
 #ifdef __cplusplus
 }
