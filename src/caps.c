@@ -6,6 +6,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/time.h>
+#include <time.h>
 
 #ifdef _WIN32
 #include <Windows.h>
@@ -32,6 +34,26 @@
 
 #define STATE_RUNNING 1
 #define STATE_IDLE    0
+
+
+/** @brief Write time into string
+ *
+ * Write current time in a human readable format into string s. The output is
+ * similar to "Aug 30 2018 14:37:35".
+ *
+ * @param s string
+ * @param len maximum length of array s
+ */
+static void time_as_string(char *s, size_t len)
+{
+    time_t rawtime;
+    struct tm *info;
+
+    time(&rawtime);
+    info = localtime(&rawtime);
+    strftime(s, len, "%c", info);
+}
+
 
 /* sleep for ms miliseconds */
 static void msleep(unsigned int ms)
@@ -113,13 +135,13 @@ caps_mpi_t *caps_mpi_init(double L, double R, double T, char *filename, char *re
                 p3 = strchr(p1, ',');
                 TERMINATE(p3 == NULL, "%s has wrong format", resume);
                 *p3 = '\0';
-                self->cache[self->cache_elems][0] = atof(p1); /* xi */
+                self->cache[self->cache_elems][0] = strtodouble(p1); /* xi */
 
                 p2 += 8;
                 p3 = strchr(p2, ',');
                 TERMINATE(p3 == NULL, "%s has wrong format", resume);
                 *p3 = '\0';
-                self->cache[self->cache_elems][1] = atof(p2); /* logdetD */
+                self->cache[self->cache_elems][1] = strtodouble(p2); /* logdetD */
 
                 self->cache_elems++;
             }
@@ -493,34 +515,34 @@ void master(int argc, char *argv[], const int cores)
             case 0:
                 break;
             case 'L':
-                L = atof(optarg);
+                L = strtodouble(optarg);
                 break;
             case 'R':
-                R = atof(optarg);
+                R = strtodouble(optarg);
                 break;
             case 'T':
-                T = atof(optarg);
+                T = strtodouble(optarg);
                 break;
             case 'l':
                 ldim = atoi(optarg);
                 break;
             case 'E':
-                eta = atof(optarg);
+                eta = strtodouble(optarg);
                 break;
             case 'c':
-                cutoff = atof(optarg);
+                cutoff = strtodouble(optarg);
                 break;
             case 'i':
-                iepsrel = atof(optarg);
+                iepsrel = strtodouble(optarg);
                 break;
             case 'e':
-                epsrel = atof(optarg);
+                epsrel = strtodouble(optarg);
                 break;
             case 'w':
-                omegap = atof(optarg);
+                omegap = strtodouble(optarg);
                 break;
             case 'g':
-                gamma_ = atof(optarg);
+                gamma_ = strtodouble(optarg);
                 break;
             case 'F':
                 fcqs = true;
