@@ -7,9 +7,15 @@
 #include "bessel.h"
 #include "matrix.h"
 
-#include "capc.h"
-
 #include "cquadpack/include/cquadpack.h"
+
+typedef struct {
+    int lmax, type;
+    char DN;
+    double alpha; /* 2/rho */
+    double *cache_ratio, *cache_K;
+} kernel_args_t;
+
 
 static double __kernel(int i, int j, void *args_);
 static double __integrand_dirichlet(double x, void *args);
