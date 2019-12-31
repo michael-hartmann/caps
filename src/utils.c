@@ -9,10 +9,12 @@
 #include <math.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdint.h>
+#ifdef _WIN32
+#include <Windows.h>
+#else
 #include <sys/time.h>
 #include <time.h>
-#ifdef _WIN32
-#else
 #include <unistd.h>
 #endif
 
@@ -82,7 +84,23 @@ void *xrealloc(void *p, size_t size)
 double now(void)
 {
 #ifdef _WIN32
-    return time(NULL);
+    // This magic number is the number of 100 nanosecond intervals since January 1, 1601 (UTC)
+    // until 00:00:00 January 1, 1970
+    static const uint64_t EPOCH = ((uint64_t) 116444736000000000ULL);
+
+    SYSTEMTIME system_time;
+    FILETIME file_time;
+    uint64_t time;
+
+    GetSystemTime(&system_time);
+    SystemTimeToFileTime( &system_time, &file_time );
+    time =  ((uint64_t)file_time.dwLowDateTime )      ;
+    time += ((uint64_t)file_time.dwHighDateTime) << 32;
+
+    uint64_t sec  = (uint64_t)((time - EPOCH) / 10000000L);
+    uint64_t usec = (uint64_t)(system_time.wMilliseconds * 1000);
+    return sec + usec*1e-6;
+}
 #else
     struct timeval tv;
     gettimeofday(&tv, NULL);
