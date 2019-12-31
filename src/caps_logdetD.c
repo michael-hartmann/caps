@@ -94,13 +94,13 @@ int main(int argc, char *argv[])
             case 0:
                 break;
             case 'L':
-                L = atof(optarg);
+                L = strtodouble(optarg);
                 break;
             case 'R':
-                R = atof(optarg);
+                R = strtodouble(optarg);
                 break;
             case 'x':
-                xi_ = atof(optarg);
+                xi_ = strtodouble(optarg);
                 break;
             case 'l':
                 ldim = atoi(optarg);
@@ -128,7 +128,7 @@ int main(int argc, char *argv[])
                 }
                 break;
             case 'i':
-                iepsrel = atof(optarg);
+                iepsrel = strtodouble(optarg);
                 break;
             case 'h':
                 usage(stdout);
