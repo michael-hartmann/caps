@@ -8,6 +8,7 @@ extern "C" {
 #include <stdlib.h>
 #include <math.h>
 
+#include "attributes.h"
 #include "constants.h"
 
 /** represent number \f$v\f$ by its sign and \f$\log|v|\f$ */

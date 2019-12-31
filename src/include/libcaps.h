@@ -20,6 +20,7 @@ typedef enum { TE, TM } polarization_t;
 #include <stdbool.h>
 #include <stdio.h>
 
+#include "attributes.h"
 #include "cache.h"
 #include "matrix.h"
 #include "constants.h"
