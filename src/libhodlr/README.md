@@ -25,3 +25,7 @@ index 0e8f02c..7e32ead 100644
 The HODLR library depends on Eigen. Eigen is a C++ template library for linear
 algebra. In order to reduce dependencies and to improve compability, we include
 [Eigen](https://eigen.tuxfamily.org) in version 3.3.7.
+
+In `tests/` is a small testing program that checks determinants computed by
+HODLR with analytical values. The program works as a simple test suite to make
+sure that the library is working correctly.
