@@ -22,9 +22,9 @@
 #define M_PI 3.14159265358979323846
 #endif
 
-static double cot2(double x) __attribute__ ((pure));
-static double wi_semiinf(double ti, double L, double N) __attribute__ ((pure));
-static double wi_finite(double ti, double N) __attribute__ ((pure));
+static double cot2(double x);
+static double wi_semiinf(double ti, double L, double N);
+static double wi_finite(double ti, double N);
 
 /** @brief Squared cotangent
  *
