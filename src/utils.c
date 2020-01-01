@@ -100,7 +100,6 @@ double now(void)
     uint64_t sec  = (uint64_t)((time - EPOCH) / 10000000L);
     uint64_t usec = (uint64_t)(system_time.wMilliseconds * 1000);
     return sec + usec*1e-6;
-}
 #else
     struct timeval tv;
     gettimeofday(&tv, NULL);
