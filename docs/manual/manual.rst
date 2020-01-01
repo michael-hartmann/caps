@@ -116,7 +116,7 @@ These dependencies can be installed with:
 
 .. code-block:: none
 
-    $ sudo apt install gcc g++ libc6-dev libc++-dev cmake make libopenmpi-dev openmpi-bin liblapack-dev
+    $ sudo apt install gcc g++ libc-dev libc++-dev cmake make libopenmpi-dev openmpi-bin liblapack-dev
 
 
 In order to compile the code, create a directory ``bin`` in the ``caps/``
@@ -208,7 +208,8 @@ the unit tests in ``bin/``:
     $ ./caps_tests
 
 All tests should pass. Running the tests takes (depending on your hardware)
-about 7 minutes.
+about 9 minutes. We noticed that compiling the tests with `clang` took several
+minutes.
 
 
 Improving performance

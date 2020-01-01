@@ -11,7 +11,6 @@
 
 #include "quadpack.h"
 
-#include "constants.h"
 #include "bessel.h"
 #include "plm.h"
 #include "utils.h"
@@ -101,7 +100,7 @@ static double _f(double x, int nu, int m, double alpha)
  * @param [out] b right border
  * @param [out] approx logarithm of estimated value of integral
  */
-double K_estimate(int nu, int m, double alpha, double eps, double *a, double *b, double *approx)
+static double K_estimate(int nu, int m, double alpha, double eps, double *a, double *b, double *approx)
 {
     const int maxiter = 75;
     const int mpos = (m > 0) ? 1 : 0;
@@ -135,7 +134,7 @@ double K_estimate(int nu, int m, double alpha, double eps, double *a, double *b,
             *a = 1;
             *b = 1-log(eps)/alpha;
 
-            const double logt1 = 1.5*log(alpha)+log(2/M_PI)/2+bessel_logKn_half(nu,alpha);
+            const double logt1 = 1.5*log(alpha)+log(2/CAPS_PI)/2+bessel_logKn_half(nu,alpha);
             const double logt2 = -alpha+log(alpha+nu*(nu+1)/2.);
             const double arg = -exp(logt2-logt1);
 
@@ -163,10 +162,10 @@ double K_estimate(int nu, int m, double alpha, double eps, double *a, double *b,
     {
         int l = nu/2;
         double ratio = (l-1)/alpha;
-        xmax = ratio + sqrt(1+pow_2(ratio));
+        xmax = ratio + sqrt(1+POW_2(ratio));
     }
     else
-        xmax = sqrt(1+pow_2((nu+0.5)/alpha));
+        xmax = sqrt(1+POW_2((nu+0.5)/alpha));
 
     /* find position of peak: we use Newton's method to find the root of f'(x) */
     int i;
@@ -177,7 +176,7 @@ double K_estimate(int nu, int m, double alpha, double eps, double *a, double *b,
         d = dlnPlm(nu, 2*m_, xmax, &d2);
 
         fp  = alpha -d  +mpos*2*xmax/x2m1;
-        fpp =       -d2 -mpos*2*(xmax*xmax+1)/pow_2(x2m1);
+        fpp =       -d2 -mpos*2*(xmax*xmax+1)/POW_2(x2m1);
 
         xmax = xmax-fp/fpp;
 
@@ -200,7 +199,7 @@ double K_estimate(int nu, int m, double alpha, double eps, double *a, double *b,
 
     {
         /* approximation using Laplace's method */
-        *approx = log(2*M_PI/fpp)/2-fxmax;
+        *approx = log(2*CAPS_PI/fpp)/2-fxmax;
 
         /* estimate width, left and right borders */
         const double width = -log(eps)/sqrt(fpp);
@@ -309,7 +308,7 @@ static double _caps_integrate_K(integration_t *self, int nu, polarization_t p, s
              * integral: 2*exp(-α) + sqrt(2/(pi*α)) [ (ν+1)(ν+2)K_{ν+1/2}(α) - 2α K_(ν+3/2)(α) ]
              *           \- t0 --/   \----- C ----/   \------- t1 ---------/   \---- t2 -----/
              */
-            const double logC = log(2/(alpha*M_PI))/2;
+            const double logC = log(2/(alpha*CAPS_PI))/2;
 
             log_t terms[3];
 
@@ -329,9 +328,9 @@ static double _caps_integrate_K(integration_t *self, int nu, polarization_t p, s
             return logadd_ms(terms, 3, &dummy);
         }
         else if(nu == (2*m))
-            return -0.5*log(M_PI)+(m-0.5)*log(2/alpha)+lfac(m-1)+lfac2(4*m-1)+bessel_logKnu_half(m-1,alpha);
+            return -0.5*log(CAPS_PI)+(m-0.5)*log(2/alpha)+lfac(m-1)+lfac2(4*m-1)+bessel_logKnu_half(m-1,alpha);
         else if(nu == (2*m+1))
-            return -0.5*log(M_PI)+(m-0.5)*log(2/alpha)+lfac(m-1)+lfac2(4*m-1)+bessel_logKnu_half(m,alpha)+logi(4*m+1);
+            return -0.5*log(CAPS_PI)+(m-0.5)*log(2/alpha)+lfac(m-1)+lfac2(4*m-1)+bessel_logKnu_half(m,alpha)+logi(4*m+1);
         else if(m == 1)
         {
             /* use analytical result for m=1 and PR
@@ -339,7 +338,7 @@ static double _caps_integrate_K(integration_t *self, int nu, polarization_t p, s
              * integral: α^(3/2)*sqrt(2/pi) K_(ν+½)(α) - exp(-α) [α + ν(ν+1)/2]
              *           \---------- t1 -------------/   \-------- t2 --------/
              */
-            const double mu = 4*pow_2(nu+0.5);
+            const double mu = 4*POW_2(nu+0.5);
             const double ae1 =     (mu-1) /(  8*alpha);
             const double ae2 = ae1*(mu-9) /(2*8*alpha);
             const double ae3 = ae2*(mu-25)/(3*8*alpha);
@@ -353,7 +352,7 @@ static double _caps_integrate_K(integration_t *self, int nu, polarization_t p, s
                 /* integral: α*exp(-α)*( ae1 + ae2 + ae3 + ... -ν(ν+1)/(2α)) */
                 return log(alpha)-alpha+log(ae1+ae2+ae3-nu*(nu+1.)/(2*alpha));
 
-            const double logt1 = 1.5*log(alpha)+log(2/M_PI)/2+bessel_logKnu_half(nu,alpha);
+            const double logt1 = 1.5*log(alpha)+log(2/CAPS_PI)/2+bessel_logKnu_half(nu,alpha);
             const double logt2 = -alpha+log(alpha+nu*(nu+1.)/2.);
 
             return logt1 + log1p(-exp(logt2-logt1));
@@ -491,22 +490,25 @@ double caps_integrate_K(integration_t *self, int nu, polarization_t p, sign_t *s
 /* eq. (3) */
 static double _alpha(double p, double n, double nu)
 {
-    return (((pow_2(p)-pow_2(n+nu+1))*(pow_2(p)-pow_2(n-nu)))/(4*pow_2(p)-1));
+    return (((POW_2(p)-POW_2(n+nu+1))*(POW_2(p)-POW_2(n-nu)))/(4*POW_2(p)-1));
 }
 
 static double _caps_integrate_I(integration_t *self, int l1, int l2, polarization_t p_, sign_t *sign)
 {
     sign_t s;
+    double *aq = NULL;
+    log_t *array = NULL;
 
     const int m_ = self->m > 0 ? self->m : 1;
     const double n  = l1, nu = l2, m = m_;
     const double n4 = l1+l2-2*m_;
     const int l1pl2 = l1+l2;
 
-    /* eq. (24) */
-    const int qmax = MIN(MIN(n,nu), (l1pl2-2*m_)/2);
+    TERMINATE((l1pl2-2*m_) < 0, "l1=%d, l2=%d, m=%d\n", l1, l2, self->m);
 
-    TERMINATE(qmax < 0, "l1=%d, l2=%d, m=%d\n", l1, l2, self->m);
+    /* eq. (24) */
+    const size_t qmax = MIN(MIN(l1,l2), (l1pl2-2*m_)/2);
+
 
     /* eq. (28) */
     const double Ap = -2*m*(n-nu)*(n+nu+1);
@@ -514,11 +516,12 @@ static double _caps_integrate_I(integration_t *self, int l1, int l2, polarizatio
     /* eq. (20) */
     const double log_a0 = lfac(2*l1)-lfac(l1)+lfac(2*l2)-lfac(l2)+lfac(l1+l2)-lfac(2*l1pl2)+lfac(l1pl2-2*m_)-lfac(l1-m_)-lfac(l2-m_);
 
-    double aq[qmax+1];
-    log_t array[qmax+1];
+    /* allocate memory */
+    aq    = xmalloc((qmax+1)*sizeof(double));
+    array = xmalloc((qmax+1)*sizeof(log_t));
 
     /* q = 0 */
-    int q = 0;
+    size_t q = 0;
     aq[q] = 1;
     double K = caps_integrate_K(self, l1pl2-2*q, p_, &s);
     array[q].s = s;
@@ -604,6 +607,9 @@ static double _caps_integrate_I(integration_t *self, int l1, int l2, polarizatio
     log_I = log_a0+logadd_ms(array, MIN(q,qmax)+1, sign);
     TERMINATE(!isfinite(log_I), "l1=%d, l2=%d, m=%d, p=%d, alpha=%g, log_I=%g", l1, l2, self->m, p_, self->alpha, log_I);
     //TERMINATE((*sign == 1 && p_ != TM) || (*sign==-1 && p_ != TE), "l1=%d, l2=%d, p=%d, sign=%d, log_I=%g, q=%d", l1, l2, p_, *sign, log_I, q);
+
+    xfree(aq);
+    xfree(array);
 
     return log_I;
 }
@@ -898,7 +904,7 @@ integration_plasma_t *caps_integrate_plasma_init(caps_t *caps, double omegap, do
 {
     integration_plasma_t *self;
 
-    double omegap_ = omegap*caps->calL/CAPS_c;
+    double omegap_ = omegap*caps->calL/CAPS_C;
 
     self = (integration_plasma_t *)xmalloc(sizeof(integration_plasma_t));
     self->LbyR    = caps->LbyR;
@@ -922,7 +928,7 @@ static double _integrand_plasma(double t, void *args_)
 {
     integrand_plasma_t *args = (integrand_plasma_t *)args_;
 
-    const double betam1 = sqrtpm1(pow_2(2*args->omegap/t));
+    const double betam1 = sqrtpm1(POW_2(2*args->omegap/t));
     const double rTE = -betam1/(2+betam1);
 
     return -rTE * exp(args->log_prefactor -t+args->nu*log(t));

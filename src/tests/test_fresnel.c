@@ -1,6 +1,5 @@
 #include "libcaps.h"
 #include "misc.h"
-#include "constants.h"
 #include "unittest.h"
 
 #include "test_fresnel.h"
@@ -16,8 +15,8 @@ int test_caps_fresnel()
 
     caps = caps_init(1.000000e-04,1.000000e-06);
 
-    userdata[0] = 0.01/CAPS_hbar_eV; /* 0.01eV */
-    userdata[1] = 1e-05/CAPS_hbar_eV; /* 1e-05eV */
+    userdata[0] = 0.01/CAPS_HBAR_EV; /* 0.01eV */
+    userdata[1] = 1e-05/CAPS_HBAR_EV; /* 1e-05eV */
     caps_set_epsilonm1(caps, caps_epsilonm1_drude, userdata);
 
     caps_fresnel(caps, 1e-06, 1e-06, &rTE, &rTM);
@@ -644,8 +643,8 @@ int test_caps_fresnel()
     AssertAlmostEqual(&test, rTE, -3.274762625096877e-12);
     AssertAlmostEqual(&test, rTM, 9.824287875204839e-12);
 
-    userdata[0] = 0.01/CAPS_hbar_eV; /* 0.01eV */
-    userdata[1] = 0.0001/CAPS_hbar_eV; /* 0.0001eV */
+    userdata[0] = 0.01/CAPS_HBAR_EV; /* 0.01eV */
+    userdata[1] = 0.0001/CAPS_HBAR_EV; /* 0.0001eV */
     caps_set_epsilonm1(caps, caps_epsilonm1_drude, userdata);
 
     caps_fresnel(caps, 1e-06, 1e-06, &rTE, &rTM);
@@ -1272,8 +1271,8 @@ int test_caps_fresnel()
     AssertAlmostEqual(&test, rTE, -3.274762474242741e-12);
     AssertAlmostEqual(&test, rTM, 9.824287422642434e-12);
 
-    userdata[0] = 0.01/CAPS_hbar_eV; /* 0.01eV */
-    userdata[1] = 0.001/CAPS_hbar_eV; /* 0.001eV */
+    userdata[0] = 0.01/CAPS_HBAR_EV; /* 0.01eV */
+    userdata[1] = 0.001/CAPS_HBAR_EV; /* 0.001eV */
     caps_set_epsilonm1(caps, caps_epsilonm1_drude, userdata);
 
     caps_fresnel(caps, 1e-06, 1e-06, &rTE, &rTM);
@@ -1900,8 +1899,8 @@ int test_caps_fresnel()
     AssertAlmostEqual(&test, rTE, -3.274760965702154e-12);
     AssertAlmostEqual(&test, rTM, 9.82428289702067e-12);
 
-    userdata[0] = 0.01/CAPS_hbar_eV; /* 0.01eV */
-    userdata[1] = 0.003/CAPS_hbar_eV; /* 0.003eV */
+    userdata[0] = 0.01/CAPS_HBAR_EV; /* 0.01eV */
+    userdata[1] = 0.003/CAPS_HBAR_EV; /* 0.003eV */
     caps_set_epsilonm1(caps, caps_epsilonm1_drude, userdata);
 
     caps_fresnel(caps, 1e-06, 1e-06, &rTE, &rTM);
@@ -2528,8 +2527,8 @@ int test_caps_fresnel()
     AssertAlmostEqual(&test, rTE, -3.274757613394713e-12);
     AssertAlmostEqual(&test, rTM, 9.824272840098349e-12);
 
-    userdata[0] = 0.01/CAPS_hbar_eV; /* 0.01eV */
-    userdata[1] = 0.035/CAPS_hbar_eV; /* 0.035eV */
+    userdata[0] = 0.01/CAPS_HBAR_EV; /* 0.01eV */
+    userdata[1] = 0.035/CAPS_HBAR_EV; /* 0.035eV */
     caps_set_epsilonm1(caps, caps_epsilonm1_drude, userdata);
 
     caps_fresnel(caps, 1e-06, 1e-06, &rTE, &rTM);
@@ -3156,8 +3155,8 @@ int test_caps_fresnel()
     AssertAlmostEqual(&test, rTE, -3.274703977409062e-12);
     AssertAlmostEqual(&test, rTM, 9.824111932141399e-12);
 
-    userdata[0] = 0.01/CAPS_hbar_eV; /* 0.01eV */
-    userdata[1] = 0.05/CAPS_hbar_eV; /* 0.05eV */
+    userdata[0] = 0.01/CAPS_HBAR_EV; /* 0.01eV */
+    userdata[1] = 0.05/CAPS_HBAR_EV; /* 0.05eV */
     caps_set_epsilonm1(caps, caps_epsilonm1_drude, userdata);
 
     caps_fresnel(caps, 1e-06, 1e-06, &rTE, &rTM);
@@ -3784,8 +3783,8 @@ int test_caps_fresnel()
     AssertAlmostEqual(&test, rTE, -3.274678836145598e-12);
     AssertAlmostEqual(&test, rTM, 9.824036508351009e-12);
 
-    userdata[0] = 0.01/CAPS_hbar_eV; /* 0.01eV */
-    userdata[1] = 0.1/CAPS_hbar_eV; /* 0.1eV */
+    userdata[0] = 0.01/CAPS_HBAR_EV; /* 0.01eV */
+    userdata[1] = 0.1/CAPS_HBAR_EV; /* 0.1eV */
     caps_set_epsilonm1(caps, caps_epsilonm1_drude, userdata);
 
     caps_fresnel(caps, 1e-06, 1e-06, &rTE, &rTM);
@@ -4412,8 +4411,8 @@ int test_caps_fresnel()
     AssertAlmostEqual(&test, rTE, -3.274595034722047e-12);
     AssertAlmostEqual(&test, rTM, 9.82378510408036e-12);
 
-    userdata[0] = 0.01/CAPS_hbar_eV; /* 0.01eV */
-    userdata[1] = 0.5/CAPS_hbar_eV; /* 0.5eV */
+    userdata[0] = 0.01/CAPS_HBAR_EV; /* 0.01eV */
+    userdata[1] = 0.5/CAPS_HBAR_EV; /* 0.5eV */
     caps_set_epsilonm1(caps, caps_epsilonm1_drude, userdata);
 
     caps_fresnel(caps, 1e-06, 1e-06, &rTE, &rTM);
@@ -5040,8 +5039,8 @@ int test_caps_fresnel()
     AssertAlmostEqual(&test, rTE, -3.273924777708889e-12);
     AssertAlmostEqual(&test, rTM, 9.821774333040921e-12);
 
-    userdata[0] = 0.01/CAPS_hbar_eV; /* 0.01eV */
-    userdata[1] = 1/CAPS_hbar_eV; /* 1eV */
+    userdata[0] = 0.01/CAPS_HBAR_EV; /* 0.01eV */
+    userdata[1] = 1/CAPS_HBAR_EV; /* 1eV */
     caps_set_epsilonm1(caps, caps_epsilonm1_drude, userdata);
 
     caps_fresnel(caps, 1e-06, 1e-06, &rTE, &rTM);
@@ -5668,8 +5667,8 @@ int test_caps_fresnel()
     AssertAlmostEqual(&test, rTE, -3.273087342193001e-12);
     AssertAlmostEqual(&test, rTM, 9.8192620264933e-12);
 
-    userdata[0] = 0.1/CAPS_hbar_eV; /* 0.1eV */
-    userdata[1] = 1e-05/CAPS_hbar_eV; /* 1e-05eV */
+    userdata[0] = 0.1/CAPS_HBAR_EV; /* 0.1eV */
+    userdata[1] = 1e-05/CAPS_HBAR_EV; /* 1e-05eV */
     caps_set_epsilonm1(caps, caps_epsilonm1_drude, userdata);
 
     caps_fresnel(caps, 1e-06, 1e-06, &rTE, &rTM);
@@ -6296,8 +6295,8 @@ int test_caps_fresnel()
     AssertAlmostEqual(&test, rTE, -3.274762622973511e-10);
     AssertAlmostEqual(&test, rTM, 9.824287860341279e-10);
 
-    userdata[0] = 0.1/CAPS_hbar_eV; /* 0.1eV */
-    userdata[1] = 0.0001/CAPS_hbar_eV; /* 0.0001eV */
+    userdata[0] = 0.1/CAPS_HBAR_EV; /* 0.1eV */
+    userdata[1] = 0.0001/CAPS_HBAR_EV; /* 0.0001eV */
     caps_set_epsilonm1(caps, caps_epsilonm1_drude, userdata);
 
     caps_fresnel(caps, 1e-06, 1e-06, &rTE, &rTM);
@@ -6924,8 +6923,8 @@ int test_caps_fresnel()
     AssertAlmostEqual(&test, rTE, -3.274762472119376e-10);
     AssertAlmostEqual(&test, rTM, 9.824287407778875e-10);
 
-    userdata[0] = 0.1/CAPS_hbar_eV; /* 0.1eV */
-    userdata[1] = 0.001/CAPS_hbar_eV; /* 0.001eV */
+    userdata[0] = 0.1/CAPS_HBAR_EV; /* 0.1eV */
+    userdata[1] = 0.001/CAPS_HBAR_EV; /* 0.001eV */
     caps_set_epsilonm1(caps, caps_epsilonm1_drude, userdata);
 
     caps_fresnel(caps, 1e-06, 1e-06, &rTE, &rTM);
@@ -7552,8 +7551,8 @@ int test_caps_fresnel()
     AssertAlmostEqual(&test, rTE, -3.27476096357879e-10);
     AssertAlmostEqual(&test, rTM, 9.824282882157126e-10);
 
-    userdata[0] = 0.1/CAPS_hbar_eV; /* 0.1eV */
-    userdata[1] = 0.003/CAPS_hbar_eV; /* 0.003eV */
+    userdata[0] = 0.1/CAPS_HBAR_EV; /* 0.1eV */
+    userdata[1] = 0.003/CAPS_HBAR_EV; /* 0.003eV */
     caps_set_epsilonm1(caps, caps_epsilonm1_drude, userdata);
 
     caps_fresnel(caps, 1e-06, 1e-06, &rTE, &rTM);
@@ -8180,8 +8179,8 @@ int test_caps_fresnel()
     AssertAlmostEqual(&test, rTE, -3.274757611271354e-10);
     AssertAlmostEqual(&test, rTM, 9.824272825234834e-10);
 
-    userdata[0] = 0.1/CAPS_hbar_eV; /* 0.1eV */
-    userdata[1] = 0.035/CAPS_hbar_eV; /* 0.035eV */
+    userdata[0] = 0.1/CAPS_HBAR_EV; /* 0.1eV */
+    userdata[1] = 0.035/CAPS_HBAR_EV; /* 0.035eV */
     caps_set_epsilonm1(caps, caps_epsilonm1_drude, userdata);
 
     caps_fresnel(caps, 1e-06, 1e-06, &rTE, &rTM);
@@ -8808,8 +8807,8 @@ int test_caps_fresnel()
     AssertAlmostEqual(&test, rTE, -3.274703975285772e-10);
     AssertAlmostEqual(&test, rTM, 9.82411191727837e-10);
 
-    userdata[0] = 0.1/CAPS_hbar_eV; /* 0.1eV */
-    userdata[1] = 0.05/CAPS_hbar_eV; /* 0.05eV */
+    userdata[0] = 0.1/CAPS_HBAR_EV; /* 0.1eV */
+    userdata[1] = 0.05/CAPS_HBAR_EV; /* 0.05eV */
     caps_set_epsilonm1(caps, caps_epsilonm1_drude, userdata);
 
     caps_fresnel(caps, 1e-06, 1e-06, &rTE, &rTM);
@@ -9436,8 +9435,8 @@ int test_caps_fresnel()
     AssertAlmostEqual(&test, rTE, -3.274678834022342e-10);
     AssertAlmostEqual(&test, rTM, 9.824036493488208e-10);
 
-    userdata[0] = 0.1/CAPS_hbar_eV; /* 0.1eV */
-    userdata[1] = 0.1/CAPS_hbar_eV; /* 0.1eV */
+    userdata[0] = 0.1/CAPS_HBAR_EV; /* 0.1eV */
+    userdata[1] = 0.1/CAPS_HBAR_EV; /* 0.1eV */
     caps_set_epsilonm1(caps, caps_epsilonm1_drude, userdata);
 
     caps_fresnel(caps, 1e-06, 1e-06, &rTE, &rTM);
@@ -10064,8 +10063,8 @@ int test_caps_fresnel()
     AssertAlmostEqual(&test, rTE, -3.274595032598899e-10);
     AssertAlmostEqual(&test, rTM, 9.823785089218322e-10);
 
-    userdata[0] = 0.1/CAPS_hbar_eV; /* 0.1eV */
-    userdata[1] = 0.5/CAPS_hbar_eV; /* 0.5eV */
+    userdata[0] = 0.1/CAPS_HBAR_EV; /* 0.1eV */
+    userdata[1] = 0.5/CAPS_HBAR_EV; /* 0.5eV */
     caps_set_epsilonm1(caps, caps_epsilonm1_drude, userdata);
 
     caps_fresnel(caps, 1e-06, 1e-06, &rTE, &rTM);
@@ -10692,8 +10691,8 @@ int test_caps_fresnel()
     AssertAlmostEqual(&test, rTE, -3.27392477558661e-10);
     AssertAlmostEqual(&test, rTM, 9.821774318184965e-10);
 
-    userdata[0] = 0.1/CAPS_hbar_eV; /* 0.1eV */
-    userdata[1] = 1/CAPS_hbar_eV; /* 1eV */
+    userdata[0] = 0.1/CAPS_HBAR_EV; /* 0.1eV */
+    userdata[1] = 1/CAPS_HBAR_EV; /* 1eV */
     caps_set_epsilonm1(caps, caps_epsilonm1_drude, userdata);
 
     caps_fresnel(caps, 1e-06, 1e-06, &rTE, &rTM);
@@ -11320,8 +11319,8 @@ int test_caps_fresnel()
     AssertAlmostEqual(&test, rTE, -3.273087340071807e-10);
     AssertAlmostEqual(&test, rTM, 9.819262011644943e-10);
 
-    userdata[0] = 1/CAPS_hbar_eV; /* 1eV */
-    userdata[1] = 1e-05/CAPS_hbar_eV; /* 1e-05eV */
+    userdata[0] = 1/CAPS_HBAR_EV; /* 1eV */
+    userdata[1] = 1e-05/CAPS_HBAR_EV; /* 1e-05eV */
     caps_set_epsilonm1(caps, caps_epsilonm1_drude, userdata);
 
     caps_fresnel(caps, 1e-06, 1e-06, &rTE, &rTM);
@@ -11948,8 +11947,8 @@ int test_caps_fresnel()
     AssertAlmostEqual(&test, rTE, -3.274762410636937e-08);
     AssertAlmostEqual(&test, rTM, 9.824286373985391e-08);
 
-    userdata[0] = 1/CAPS_hbar_eV; /* 1eV */
-    userdata[1] = 0.0001/CAPS_hbar_eV; /* 0.0001eV */
+    userdata[0] = 1/CAPS_HBAR_EV; /* 1eV */
+    userdata[1] = 0.0001/CAPS_HBAR_EV; /* 0.0001eV */
     caps_set_epsilonm1(caps, caps_epsilonm1_drude, userdata);
 
     caps_fresnel(caps, 1e-06, 1e-06, &rTE, &rTM);
@@ -12576,8 +12575,8 @@ int test_caps_fresnel()
     AssertAlmostEqual(&test, rTE, -3.274762259782822e-08);
     AssertAlmostEqual(&test, rTM, 9.824285921423122e-08);
 
-    userdata[0] = 1/CAPS_hbar_eV; /* 1eV */
-    userdata[1] = 0.001/CAPS_hbar_eV; /* 0.001eV */
+    userdata[0] = 1/CAPS_HBAR_EV; /* 1eV */
+    userdata[1] = 0.001/CAPS_HBAR_EV; /* 0.001eV */
     caps_set_epsilonm1(caps, caps_epsilonm1_drude, userdata);
 
     caps_fresnel(caps, 1e-06, 1e-06, &rTE, &rTM);
@@ -13204,8 +13203,8 @@ int test_caps_fresnel()
     AssertAlmostEqual(&test, rTE, -3.274760751242432e-08);
     AssertAlmostEqual(&test, rTM, 9.824281395802743e-08);
 
-    userdata[0] = 1/CAPS_hbar_eV; /* 1eV */
-    userdata[1] = 0.003/CAPS_hbar_eV; /* 0.003eV */
+    userdata[0] = 1/CAPS_HBAR_EV; /* 1eV */
+    userdata[1] = 0.003/CAPS_HBAR_EV; /* 0.003eV */
     caps_set_epsilonm1(caps, caps_epsilonm1_drude, userdata);
 
     caps_fresnel(caps, 1e-06, 1e-06, &rTE, &rTM);
@@ -13832,8 +13831,8 @@ int test_caps_fresnel()
     AssertAlmostEqual(&test, rTE, -3.27475739893543e-08);
     AssertAlmostEqual(&test, rTM, 9.824271338883494e-08);
 
-    userdata[0] = 1/CAPS_hbar_eV; /* 1eV */
-    userdata[1] = 0.035/CAPS_hbar_eV; /* 0.035eV */
+    userdata[0] = 1/CAPS_HBAR_EV; /* 1eV */
+    userdata[1] = 0.035/CAPS_HBAR_EV; /* 0.035eV */
     caps_set_epsilonm1(caps, caps_epsilonm1_drude, userdata);
 
     caps_fresnel(caps, 1e-06, 1e-06, &rTE, &rTM);
@@ -14460,8 +14459,8 @@ int test_caps_fresnel()
     AssertAlmostEqual(&test, rTE, -3.274703762956804e-08);
     AssertAlmostEqual(&test, rTM, 9.824110430975719e-08);
 
-    userdata[0] = 1/CAPS_hbar_eV; /* 1eV */
-    userdata[1] = 0.05/CAPS_hbar_eV; /* 0.05eV */
+    userdata[0] = 1/CAPS_HBAR_EV; /* 1eV */
+    userdata[1] = 0.05/CAPS_HBAR_EV; /* 0.05eV */
     caps_set_epsilonm1(caps, caps_epsilonm1_drude, userdata);
 
     caps_fresnel(caps, 1e-06, 1e-06, &rTE, &rTM);
@@ -15088,8 +15087,8 @@ int test_caps_fresnel()
     AssertAlmostEqual(&test, rTE, -3.274678621696633e-08);
     AssertAlmostEqual(&test, rTM, 9.82403500720838e-08);
 
-    userdata[0] = 1/CAPS_hbar_eV; /* 1eV */
-    userdata[1] = 0.1/CAPS_hbar_eV; /* 0.1eV */
+    userdata[0] = 1/CAPS_HBAR_EV; /* 1eV */
+    userdata[1] = 0.1/CAPS_HBAR_EV; /* 0.1eV */
     caps_set_epsilonm1(caps, caps_epsilonm1_drude, userdata);
 
     caps_fresnel(caps, 1e-06, 1e-06, &rTE, &rTM);
@@ -15716,8 +15715,8 @@ int test_caps_fresnel()
     AssertAlmostEqual(&test, rTE, -3.274594820284058e-08);
     AssertAlmostEqual(&test, rTM, 9.823783603014561e-08);
 
-    userdata[0] = 1/CAPS_hbar_eV; /* 1eV */
-    userdata[1] = 0.5/CAPS_hbar_eV; /* 0.5eV */
+    userdata[0] = 1/CAPS_HBAR_EV; /* 1eV */
+    userdata[1] = 0.5/CAPS_HBAR_EV; /* 0.5eV */
     caps_set_epsilonm1(caps, caps_epsilonm1_drude, userdata);
 
     caps_fresnel(caps, 1e-06, 1e-06, &rTE, &rTM);
@@ -16344,8 +16343,8 @@ int test_caps_fresnel()
     AssertAlmostEqual(&test, rTE, -3.273924563358675e-08);
     AssertAlmostEqual(&test, rTM, 9.821772832589547e-08);
 
-    userdata[0] = 1/CAPS_hbar_eV; /* 1eV */
-    userdata[1] = 1/CAPS_hbar_eV; /* 1eV */
+    userdata[0] = 1/CAPS_HBAR_EV; /* 1eV */
+    userdata[1] = 1/CAPS_HBAR_EV; /* 1eV */
     caps_set_epsilonm1(caps, caps_epsilonm1_drude, userdata);
 
     caps_fresnel(caps, 1e-06, 1e-06, &rTE, &rTM);
@@ -16972,8 +16971,8 @@ int test_caps_fresnel()
     AssertAlmostEqual(&test, rTE, -3.273087127952429e-08);
     AssertAlmostEqual(&test, rTM, 9.819260526809426e-08);
 
-    userdata[0] = 2/CAPS_hbar_eV; /* 2eV */
-    userdata[1] = 1e-05/CAPS_hbar_eV; /* 1e-05eV */
+    userdata[0] = 2/CAPS_HBAR_EV; /* 2eV */
+    userdata[1] = 1e-05/CAPS_HBAR_EV; /* 1e-05eV */
     caps_set_epsilonm1(caps, caps_epsilonm1_drude, userdata);
 
     caps_fresnel(caps, 1e-06, 1e-06, &rTE, &rTM);
@@ -17600,8 +17599,8 @@ int test_caps_fresnel()
     AssertAlmostEqual(&test, rTE, -1.309904706877194e-07);
     AssertAlmostEqual(&test, rTM, 3.92971274795185e-07);
 
-    userdata[0] = 2/CAPS_hbar_eV; /* 2eV */
-    userdata[1] = 0.0001/CAPS_hbar_eV; /* 0.0001eV */
+    userdata[0] = 2/CAPS_HBAR_EV; /* 2eV */
+    userdata[1] = 0.0001/CAPS_HBAR_EV; /* 0.0001eV */
     caps_set_epsilonm1(caps, caps_epsilonm1_drude, userdata);
 
     caps_fresnel(caps, 1e-06, 1e-06, &rTE, &rTM);
@@ -18228,8 +18227,8 @@ int test_caps_fresnel()
     AssertAlmostEqual(&test, rTE, -1.309904646535572e-07);
     AssertAlmostEqual(&test, rTM, 3.929712566927109e-07);
 
-    userdata[0] = 2/CAPS_hbar_eV; /* 2eV */
-    userdata[1] = 0.001/CAPS_hbar_eV; /* 0.001eV */
+    userdata[0] = 2/CAPS_HBAR_EV; /* 2eV */
+    userdata[1] = 0.001/CAPS_HBAR_EV; /* 0.001eV */
     caps_set_epsilonm1(caps, caps_epsilonm1_drude, userdata);
 
     caps_fresnel(caps, 1e-06, 1e-06, &rTE, &rTM);
@@ -18856,8 +18855,8 @@ int test_caps_fresnel()
     AssertAlmostEqual(&test, rTE, -1.309904043119653e-07);
     AssertAlmostEqual(&test, rTM, 3.929710756680617e-07);
 
-    userdata[0] = 2/CAPS_hbar_eV; /* 2eV */
-    userdata[1] = 0.003/CAPS_hbar_eV; /* 0.003eV */
+    userdata[0] = 2/CAPS_HBAR_EV; /* 2eV */
+    userdata[1] = 0.003/CAPS_HBAR_EV; /* 0.003eV */
     caps_set_epsilonm1(caps, caps_epsilonm1_drude, userdata);
 
     caps_fresnel(caps, 1e-06, 1e-06, &rTE, &rTM);
@@ -19484,8 +19483,8 @@ int test_caps_fresnel()
     AssertAlmostEqual(&test, rTE, -1.309902702197379e-07);
     AssertAlmostEqual(&test, rTM, 3.929706733916606e-07);
 
-    userdata[0] = 2/CAPS_hbar_eV; /* 2eV */
-    userdata[1] = 0.035/CAPS_hbar_eV; /* 0.035eV */
+    userdata[0] = 2/CAPS_HBAR_EV; /* 2eV */
+    userdata[1] = 0.035/CAPS_HBAR_EV; /* 0.035eV */
     caps_set_epsilonm1(caps, caps_epsilonm1_drude, userdata);
 
     caps_fresnel(caps, 1e-06, 1e-06, &rTE, &rTM);
@@ -20112,8 +20111,8 @@ int test_caps_fresnel()
     AssertAlmostEqual(&test, rTE, -1.30988124781436e-07);
     AssertAlmostEqual(&test, rTM, 3.929642370812512e-07);
 
-    userdata[0] = 2/CAPS_hbar_eV; /* 2eV */
-    userdata[1] = 0.05/CAPS_hbar_eV; /* 0.05eV */
+    userdata[0] = 2/CAPS_HBAR_EV; /* 2eV */
+    userdata[1] = 0.05/CAPS_HBAR_EV; /* 0.05eV */
     caps_set_epsilonm1(caps, caps_epsilonm1_drude, userdata);
 
     caps_fresnel(caps, 1e-06, 1e-06, &rTE, &rTM);
@@ -20740,8 +20739,8 @@ int test_caps_fresnel()
     AssertAlmostEqual(&test, rTE, -1.309871191314243e-07);
     AssertAlmostEqual(&test, rTM, 3.929612201333239e-07);
 
-    userdata[0] = 2/CAPS_hbar_eV; /* 2eV */
-    userdata[1] = 0.1/CAPS_hbar_eV; /* 0.1eV */
+    userdata[0] = 2/CAPS_HBAR_EV; /* 2eV */
+    userdata[1] = 0.1/CAPS_HBAR_EV; /* 0.1eV */
     caps_set_epsilonm1(caps, caps_epsilonm1_drude, userdata);
 
     caps_fresnel(caps, 1e-06, 1e-06, &rTE, &rTM);
@@ -21368,8 +21367,8 @@ int test_caps_fresnel()
     AssertAlmostEqual(&test, rTE, -1.309837670762385e-07);
     AssertAlmostEqual(&test, rTM, 3.929511639747916e-07);
 
-    userdata[0] = 2/CAPS_hbar_eV; /* 2eV */
-    userdata[1] = 0.5/CAPS_hbar_eV; /* 0.5eV */
+    userdata[0] = 2/CAPS_HBAR_EV; /* 2eV */
+    userdata[1] = 0.5/CAPS_HBAR_EV; /* 0.5eV */
     caps_set_epsilonm1(caps, caps_epsilonm1_drude, userdata);
 
     caps_fresnel(caps, 1e-06, 1e-06, &rTE, &rTM);
@@ -21996,8 +21995,8 @@ int test_caps_fresnel()
     AssertAlmostEqual(&test, rTE, -1.309569568097572e-07);
     AssertAlmostEqual(&test, rTM, 3.928707332315294e-07);
 
-    userdata[0] = 2/CAPS_hbar_eV; /* 2eV */
-    userdata[1] = 1/CAPS_hbar_eV; /* 1eV */
+    userdata[0] = 2/CAPS_HBAR_EV; /* 2eV */
+    userdata[1] = 1/CAPS_HBAR_EV; /* 1eV */
     caps_set_epsilonm1(caps, caps_epsilonm1_drude, userdata);
 
     caps_fresnel(caps, 1e-06, 1e-06, &rTE, &rTM);
@@ -22624,8 +22623,8 @@ int test_caps_fresnel()
     AssertAlmostEqual(&test, rTE, -1.309234594066659e-07);
     AssertAlmostEqual(&test, rTM, 3.927702410924338e-07);
 
-    userdata[0] = 5/CAPS_hbar_eV; /* 5eV */
-    userdata[1] = 1e-05/CAPS_hbar_eV; /* 1e-05eV */
+    userdata[0] = 5/CAPS_HBAR_EV; /* 5eV */
+    userdata[1] = 1e-05/CAPS_HBAR_EV; /* 1e-05eV */
     caps_set_epsilonm1(caps, caps_epsilonm1_drude, userdata);
 
     caps_fresnel(caps, 1e-06, 1e-06, &rTE, &rTM);
@@ -23252,8 +23251,8 @@ int test_caps_fresnel()
     AssertAlmostEqual(&test, rTE, -8.186893157735435e-07);
     AssertAlmostEqual(&test, rTM, 2.456062585316234e-06);
 
-    userdata[0] = 5/CAPS_hbar_eV; /* 5eV */
-    userdata[1] = 0.0001/CAPS_hbar_eV; /* 0.0001eV */
+    userdata[0] = 5/CAPS_HBAR_EV; /* 5eV */
+    userdata[1] = 0.0001/CAPS_HBAR_EV; /* 0.0001eV */
     caps_set_epsilonm1(caps, caps_epsilonm1_drude, userdata);
 
     caps_fresnel(caps, 1e-06, 1e-06, &rTE, &rTM);
@@ -23880,8 +23879,8 @@ int test_caps_fresnel()
     AssertAlmostEqual(&test, rTE, -8.186892780601332e-07);
     AssertAlmostEqual(&test, rTM, 2.456062472176497e-06);
 
-    userdata[0] = 5/CAPS_hbar_eV; /* 5eV */
-    userdata[1] = 0.001/CAPS_hbar_eV; /* 0.001eV */
+    userdata[0] = 5/CAPS_HBAR_EV; /* 5eV */
+    userdata[1] = 0.001/CAPS_HBAR_EV; /* 0.001eV */
     caps_set_epsilonm1(caps, caps_epsilonm1_drude, userdata);
 
     caps_fresnel(caps, 1e-06, 1e-06, &rTE, &rTM);
@@ -24508,8 +24507,8 @@ int test_caps_fresnel()
     AssertAlmostEqual(&test, rTE, -8.186889009262213e-07);
     AssertAlmostEqual(&test, rTM, 2.456061340779702e-06);
 
-    userdata[0] = 5/CAPS_hbar_eV; /* 5eV */
-    userdata[1] = 0.003/CAPS_hbar_eV; /* 0.003eV */
+    userdata[0] = 5/CAPS_HBAR_EV; /* 5eV */
+    userdata[1] = 0.003/CAPS_HBAR_EV; /* 0.003eV */
     caps_set_epsilonm1(caps, caps_epsilonm1_drude, userdata);
 
     caps_fresnel(caps, 1e-06, 1e-06, &rTE, &rTM);
@@ -25136,8 +25135,8 @@ int test_caps_fresnel()
     AssertAlmostEqual(&test, rTE, -8.186880628521055e-07);
     AssertAlmostEqual(&test, rTM, 2.456058826568332e-06);
 
-    userdata[0] = 5/CAPS_hbar_eV; /* 5eV */
-    userdata[1] = 0.035/CAPS_hbar_eV; /* 0.035eV */
+    userdata[0] = 5/CAPS_HBAR_EV; /* 5eV */
+    userdata[1] = 0.035/CAPS_HBAR_EV; /* 0.035eV */
     caps_set_epsilonm1(caps, caps_epsilonm1_drude, userdata);
 
     caps_fresnel(caps, 1e-06, 1e-06, &rTE, &rTM);
@@ -25764,8 +25763,8 @@ int test_caps_fresnel()
     AssertAlmostEqual(&test, rTE, -8.186746538996034e-07);
     AssertAlmostEqual(&test, rTM, 2.456018599886468e-06);
 
-    userdata[0] = 5/CAPS_hbar_eV; /* 5eV */
-    userdata[1] = 0.05/CAPS_hbar_eV; /* 0.05eV */
+    userdata[0] = 5/CAPS_HBAR_EV; /* 5eV */
+    userdata[1] = 0.05/CAPS_HBAR_EV; /* 0.05eV */
     caps_set_epsilonm1(caps, caps_epsilonm1_drude, userdata);
 
     caps_fresnel(caps, 1e-06, 1e-06, &rTE, &rTM);
@@ -26392,8 +26391,8 @@ int test_caps_fresnel()
     AssertAlmostEqual(&test, rTE, -8.186683686043198e-07);
     AssertAlmostEqual(&test, rTM, 2.455999744082946e-06);
 
-    userdata[0] = 5/CAPS_hbar_eV; /* 5eV */
-    userdata[1] = 0.1/CAPS_hbar_eV; /* 0.1eV */
+    userdata[0] = 5/CAPS_HBAR_EV; /* 5eV */
+    userdata[1] = 0.1/CAPS_HBAR_EV; /* 0.1eV */
     caps_set_epsilonm1(caps, caps_epsilonm1_drude, userdata);
 
     caps_fresnel(caps, 1e-06, 1e-06, &rTE, &rTM);
@@ -27020,8 +27019,8 @@ int test_caps_fresnel()
     AssertAlmostEqual(&test, rTE, -8.186474183170363e-07);
     AssertAlmostEqual(&test, rTM, 2.455936893495513e-06);
 
-    userdata[0] = 5/CAPS_hbar_eV; /* 5eV */
-    userdata[1] = 0.5/CAPS_hbar_eV; /* 0.5eV */
+    userdata[0] = 5/CAPS_HBAR_EV; /* 5eV */
+    userdata[1] = 0.5/CAPS_HBAR_EV; /* 0.5eV */
     caps_set_epsilonm1(caps, caps_epsilonm1_drude, userdata);
 
     caps_fresnel(caps, 1e-06, 1e-06, &rTE, &rTM);
@@ -27648,8 +27647,8 @@ int test_caps_fresnel()
     AssertAlmostEqual(&test, rTE, -8.184798546123919e-07);
     AssertAlmostEqual(&test, rTM, 2.455434204576156e-06);
 
-    userdata[0] = 5/CAPS_hbar_eV; /* 5eV */
-    userdata[1] = 1/CAPS_hbar_eV; /* 1eV */
+    userdata[0] = 5/CAPS_HBAR_EV; /* 5eV */
+    userdata[1] = 1/CAPS_HBAR_EV; /* 1eV */
     caps_set_epsilonm1(caps, caps_epsilonm1_drude, userdata);
 
     caps_fresnel(caps, 1e-06, 1e-06, &rTE, &rTM);
@@ -28276,8 +28275,8 @@ int test_caps_fresnel()
     AssertAlmostEqual(&test, rTE, -8.182704964187524e-07);
     AssertAlmostEqual(&test, rTM, 2.454806132736565e-06);
 
-    userdata[0] = 7/CAPS_hbar_eV; /* 7eV */
-    userdata[1] = 1e-05/CAPS_hbar_eV; /* 1e-05eV */
+    userdata[0] = 7/CAPS_HBAR_EV; /* 7eV */
+    userdata[1] = 1e-05/CAPS_HBAR_EV; /* 1e-05eV */
     caps_set_epsilonm1(caps, caps_epsilonm1_drude, userdata);
 
     caps_fresnel(caps, 1e-06, 1e-06, &rTE, &rTM);
@@ -28904,8 +28903,8 @@ int test_caps_fresnel()
     AssertAlmostEqual(&test, rTE, -1.604628536630103e-06);
     AssertAlmostEqual(&test, rTM, 4.813865011327544e-06);
 
-    userdata[0] = 7/CAPS_hbar_eV; /* 7eV */
-    userdata[1] = 0.0001/CAPS_hbar_eV; /* 0.0001eV */
+    userdata[0] = 7/CAPS_HBAR_EV; /* 7eV */
+    userdata[1] = 0.0001/CAPS_HBAR_EV; /* 0.0001eV */
     caps_set_epsilonm1(caps, caps_epsilonm1_drude, userdata);
 
     caps_fresnel(caps, 1e-06, 1e-06, &rTE, &rTM);
@@ -29532,8 +29531,8 @@ int test_caps_fresnel()
     AssertAlmostEqual(&test, rTE, -1.604628462712051e-06);
     AssertAlmostEqual(&test, rTM, 4.813864789575287e-06);
 
-    userdata[0] = 7/CAPS_hbar_eV; /* 7eV */
-    userdata[1] = 0.001/CAPS_hbar_eV; /* 0.001eV */
+    userdata[0] = 7/CAPS_HBAR_EV; /* 7eV */
+    userdata[1] = 0.001/CAPS_HBAR_EV; /* 0.001eV */
     caps_set_epsilonm1(caps, caps_epsilonm1_drude, userdata);
 
     caps_fresnel(caps, 1e-06, 1e-06, &rTE, &rTM);
@@ -30160,8 +30159,8 @@ int test_caps_fresnel()
     AssertAlmostEqual(&test, rTE, -1.604627723531908e-06);
     AssertAlmostEqual(&test, rTM, 4.813862572053834e-06);
 
-    userdata[0] = 7/CAPS_hbar_eV; /* 7eV */
-    userdata[1] = 0.003/CAPS_hbar_eV; /* 0.003eV */
+    userdata[0] = 7/CAPS_HBAR_EV; /* 7eV */
+    userdata[1] = 0.003/CAPS_HBAR_EV; /* 0.003eV */
     caps_set_epsilonm1(caps, caps_epsilonm1_drude, userdata);
 
     caps_fresnel(caps, 1e-06, 1e-06, &rTE, &rTM);
@@ -30788,8 +30787,8 @@ int test_caps_fresnel()
     AssertAlmostEqual(&test, rTE, -1.604626080911805e-06);
     AssertAlmostEqual(&test, rTM, 4.813857644235698e-06);
 
-    userdata[0] = 7/CAPS_hbar_eV; /* 7eV */
-    userdata[1] = 0.035/CAPS_hbar_eV; /* 0.035eV */
+    userdata[0] = 7/CAPS_HBAR_EV; /* 7eV */
+    userdata[1] = 0.035/CAPS_HBAR_EV; /* 0.035eV */
     caps_set_epsilonm1(caps, caps_epsilonm1_drude, userdata);
 
     caps_fresnel(caps, 1e-06, 1e-06, &rTE, &rTM);
@@ -31416,8 +31415,8 @@ int test_caps_fresnel()
     AssertAlmostEqual(&test, rTE, -1.604599799447523e-06);
     AssertAlmostEqual(&test, rTM, 4.813778800517591e-06);
 
-    userdata[0] = 7/CAPS_hbar_eV; /* 7eV */
-    userdata[1] = 0.05/CAPS_hbar_eV; /* 0.05eV */
+    userdata[0] = 7/CAPS_HBAR_EV; /* 7eV */
+    userdata[1] = 0.05/CAPS_HBAR_EV; /* 0.05eV */
     caps_set_epsilonm1(caps, caps_epsilonm1_drude, userdata);
 
     caps_fresnel(caps, 1e-06, 1e-06, &rTE, &rTM);
@@ -32044,8 +32043,8 @@ int test_caps_fresnel()
     AssertAlmostEqual(&test, rTE, -1.604587480307494e-06);
     AssertAlmostEqual(&test, rTM, 4.813741843413779e-06);
 
-    userdata[0] = 7/CAPS_hbar_eV; /* 7eV */
-    userdata[1] = 0.1/CAPS_hbar_eV; /* 0.1eV */
+    userdata[0] = 7/CAPS_HBAR_EV; /* 7eV */
+    userdata[1] = 0.1/CAPS_HBAR_EV; /* 0.1eV */
     caps_set_epsilonm1(caps, caps_epsilonm1_drude, userdata);
 
     caps_fresnel(caps, 1e-06, 1e-06, &rTE, &rTM);
@@ -32672,8 +32671,8 @@ int test_caps_fresnel()
     AssertAlmostEqual(&test, rTE, -1.604546417873504e-06);
     AssertAlmostEqual(&test, rTM, 4.813618657166001e-06);
 
-    userdata[0] = 7/CAPS_hbar_eV; /* 7eV */
-    userdata[1] = 0.5/CAPS_hbar_eV; /* 0.5eV */
+    userdata[0] = 7/CAPS_HBAR_EV; /* 7eV */
+    userdata[1] = 0.5/CAPS_HBAR_EV; /* 0.5eV */
     caps_set_epsilonm1(caps, caps_epsilonm1_drude, userdata);
 
     caps_fresnel(caps, 1e-06, 1e-06, &rTE, &rTM);
@@ -33300,8 +33299,8 @@ int test_caps_fresnel()
     AssertAlmostEqual(&test, rTE, -1.60421799404473e-06);
     AssertAlmostEqual(&test, rTM, 4.812633394110294e-06);
 
-    userdata[0] = 7/CAPS_hbar_eV; /* 7eV */
-    userdata[1] = 1/CAPS_hbar_eV; /* 1eV */
+    userdata[0] = 7/CAPS_HBAR_EV; /* 7eV */
+    userdata[1] = 1/CAPS_HBAR_EV; /* 1eV */
     caps_set_epsilonm1(caps, caps_epsilonm1_drude, userdata);
 
     caps_fresnel(caps, 1e-06, 1e-06, &rTE, &rTM);
@@ -33928,8 +33927,8 @@ int test_caps_fresnel()
     AssertAlmostEqual(&test, rTE, -1.603807653274716e-06);
     AssertAlmostEqual(&test, rTM, 4.811402382331246e-06);
 
-    userdata[0] = 8/CAPS_hbar_eV; /* 8eV */
-    userdata[1] = 1e-05/CAPS_hbar_eV; /* 1e-05eV */
+    userdata[0] = 8/CAPS_HBAR_EV; /* 8eV */
+    userdata[1] = 1e-05/CAPS_HBAR_EV; /* 1e-05eV */
     caps_set_epsilonm1(caps, caps_epsilonm1_drude, userdata);
 
     caps_fresnel(caps, 1e-06, 1e-06, &rTE, &rTM);
@@ -34556,8 +34555,8 @@ int test_caps_fresnel()
     AssertAlmostEqual(&test, rTE, -2.095839294963409e-06);
     AssertAlmostEqual(&test, rTM, 6.287482744772369e-06);
 
-    userdata[0] = 8/CAPS_hbar_eV; /* 8eV */
-    userdata[1] = 0.0001/CAPS_hbar_eV; /* 0.0001eV */
+    userdata[0] = 8/CAPS_HBAR_EV; /* 8eV */
+    userdata[1] = 0.0001/CAPS_HBAR_EV; /* 0.0001eV */
     caps_set_epsilonm1(caps, caps_epsilonm1_drude, userdata);
 
     caps_fresnel(caps, 1e-06, 1e-06, &rTE, &rTM);
@@ -35184,8 +35183,8 @@ int test_caps_fresnel()
     AssertAlmostEqual(&test, rTE, -2.095839198417572e-06);
     AssertAlmostEqual(&test, rTM, 6.287482455138096e-06);
 
-    userdata[0] = 8/CAPS_hbar_eV; /* 8eV */
-    userdata[1] = 0.001/CAPS_hbar_eV; /* 0.001eV */
+    userdata[0] = 8/CAPS_HBAR_EV; /* 8eV */
+    userdata[1] = 0.001/CAPS_HBAR_EV; /* 0.001eV */
     caps_set_epsilonm1(caps, caps_epsilonm1_drude, userdata);
 
     caps_fresnel(caps, 1e-06, 1e-06, &rTE, &rTM);
@@ -35812,8 +35811,8 @@ int test_caps_fresnel()
     AssertAlmostEqual(&test, rTE, -2.09583823295969e-06);
     AssertAlmostEqual(&test, rTM, 6.287479558796823e-06);
 
-    userdata[0] = 8/CAPS_hbar_eV; /* 8eV */
-    userdata[1] = 0.003/CAPS_hbar_eV; /* 0.003eV */
+    userdata[0] = 8/CAPS_HBAR_EV; /* 8eV */
+    userdata[1] = 0.003/CAPS_HBAR_EV; /* 0.003eV */
     caps_set_epsilonm1(caps, caps_epsilonm1_drude, userdata);
 
     caps_fresnel(caps, 1e-06, 1e-06, &rTE, &rTM);
@@ -36440,8 +36439,8 @@ int test_caps_fresnel()
     AssertAlmostEqual(&test, rTE, -2.095836087500914e-06);
     AssertAlmostEqual(&test, rTM, 6.28747312249244e-06);
 
-    userdata[0] = 8/CAPS_hbar_eV; /* 8eV */
-    userdata[1] = 0.035/CAPS_hbar_eV; /* 0.035eV */
+    userdata[0] = 8/CAPS_HBAR_EV; /* 8eV */
+    userdata[1] = 0.035/CAPS_HBAR_EV; /* 0.035eV */
     caps_set_epsilonm1(caps, caps_epsilonm1_drude, userdata);
 
     caps_fresnel(caps, 1e-06, 1e-06, &rTE, &rTM);
@@ -37068,8 +37067,8 @@ int test_caps_fresnel()
     AssertAlmostEqual(&test, rTE, -2.095801760757868e-06);
     AssertAlmostEqual(&test, rTM, 6.287370143414375e-06);
 
-    userdata[0] = 8/CAPS_hbar_eV; /* 8eV */
-    userdata[1] = 0.05/CAPS_hbar_eV; /* 0.05eV */
+    userdata[0] = 8/CAPS_HBAR_EV; /* 8eV */
+    userdata[1] = 0.05/CAPS_HBAR_EV; /* 0.05eV */
     caps_set_epsilonm1(caps, caps_epsilonm1_drude, userdata);
 
     caps_fresnel(caps, 1e-06, 1e-06, &rTE, &rTM);
@@ -37696,8 +37695,8 @@ int test_caps_fresnel()
     AssertAlmostEqual(&test, rTE, -2.09578567048414e-06);
     AssertAlmostEqual(&test, rTM, 6.287321873132734e-06);
 
-    userdata[0] = 8/CAPS_hbar_eV; /* 8eV */
-    userdata[1] = 0.1/CAPS_hbar_eV; /* 0.1eV */
+    userdata[0] = 8/CAPS_HBAR_EV; /* 8eV */
+    userdata[1] = 0.1/CAPS_HBAR_EV; /* 0.1eV */
     caps_set_epsilonm1(caps, caps_epsilonm1_drude, userdata);
 
     caps_fresnel(caps, 1e-06, 1e-06, &rTE, &rTM);
@@ -38324,8 +38323,8 @@ int test_caps_fresnel()
     AssertAlmostEqual(&test, rTE, -2.095732038022671e-06);
     AssertAlmostEqual(&test, rTM, 6.287160977546723e-06);
 
-    userdata[0] = 8/CAPS_hbar_eV; /* 8eV */
-    userdata[1] = 0.5/CAPS_hbar_eV; /* 0.5eV */
+    userdata[0] = 8/CAPS_HBAR_EV; /* 8eV */
+    userdata[1] = 0.5/CAPS_HBAR_EV; /* 0.5eV */
     caps_set_epsilonm1(caps, caps_epsilonm1_drude, userdata);
 
     caps_fresnel(caps, 1e-06, 1e-06, &rTE, &rTM);
@@ -38952,8 +38951,8 @@ int test_caps_fresnel()
     AssertAlmostEqual(&test, rTE, -2.095303077129842e-06);
     AssertAlmostEqual(&test, rTM, 6.28587410925042e-06);
 
-    userdata[0] = 8/CAPS_hbar_eV; /* 8eV */
-    userdata[1] = 1/CAPS_hbar_eV; /* 1eV */
+    userdata[0] = 8/CAPS_HBAR_EV; /* 8eV */
+    userdata[1] = 1/CAPS_HBAR_EV; /* 1eV */
     caps_set_epsilonm1(caps, caps_epsilonm1_drude, userdata);
 
     caps_fresnel(caps, 1e-06, 1e-06, &rTE, &rTM);
@@ -39580,8 +39579,8 @@ int test_caps_fresnel()
     AssertAlmostEqual(&test, rTE, -2.094767122891059e-06);
     AssertAlmostEqual(&test, rTM, 6.28426626449939e-06);
 
-    userdata[0] = 9/CAPS_hbar_eV; /* 9eV */
-    userdata[1] = 1e-05/CAPS_hbar_eV; /* 1e-05eV */
+    userdata[0] = 9/CAPS_HBAR_EV; /* 9eV */
+    userdata[1] = 1e-05/CAPS_HBAR_EV; /* 1e-05eV */
     caps_set_epsilonm1(caps, caps_epsilonm1_drude, userdata);
 
     caps_fresnel(caps, 1e-06, 1e-06, &rTE, &rTM);
@@ -40208,8 +40207,8 @@ int test_caps_fresnel()
     AssertAlmostEqual(&test, rTE, -2.652543654314177e-06);
     AssertAlmostEqual(&test, rTM, 7.957574675487742e-06);
 
-    userdata[0] = 9/CAPS_hbar_eV; /* 9eV */
-    userdata[1] = 0.0001/CAPS_hbar_eV; /* 0.0001eV */
+    userdata[0] = 9/CAPS_HBAR_EV; /* 9eV */
+    userdata[1] = 0.0001/CAPS_HBAR_EV; /* 0.0001eV */
     caps_set_epsilonm1(caps, caps_epsilonm1_drude, userdata);
 
     caps_fresnel(caps, 1e-06, 1e-06, &rTE, &rTM);
@@ -40836,8 +40835,8 @@ int test_caps_fresnel()
     AssertAlmostEqual(&test, rTE, -2.652543532123624e-06);
     AssertAlmostEqual(&test, rTM, 7.95757430892127e-06);
 
-    userdata[0] = 9/CAPS_hbar_eV; /* 9eV */
-    userdata[1] = 0.001/CAPS_hbar_eV; /* 0.001eV */
+    userdata[0] = 9/CAPS_HBAR_EV; /* 9eV */
+    userdata[1] = 0.001/CAPS_HBAR_EV; /* 0.001eV */
     caps_set_epsilonm1(caps, caps_epsilonm1_drude, userdata);
 
     caps_fresnel(caps, 1e-06, 1e-06, &rTE, &rTM);
@@ -41464,8 +41463,8 @@ int test_caps_fresnel()
     AssertAlmostEqual(&test, rTE, -2.652542310218713e-06);
     AssertAlmostEqual(&test, rTM, 7.957570643258394e-06);
 
-    userdata[0] = 9/CAPS_hbar_eV; /* 9eV */
-    userdata[1] = 0.003/CAPS_hbar_eV; /* 0.003eV */
+    userdata[0] = 9/CAPS_HBAR_EV; /* 9eV */
+    userdata[1] = 0.003/CAPS_HBAR_EV; /* 0.003eV */
     caps_set_epsilonm1(caps, caps_epsilonm1_drude, userdata);
 
     caps_fresnel(caps, 1e-06, 1e-06, &rTE, &rTM);
@@ -42092,8 +42091,8 @@ int test_caps_fresnel()
     AssertAlmostEqual(&test, rTE, -2.652539594878496e-06);
     AssertAlmostEqual(&test, rTM, 7.957562497352982e-06);
 
-    userdata[0] = 9/CAPS_hbar_eV; /* 9eV */
-    userdata[1] = 0.035/CAPS_hbar_eV; /* 0.035eV */
+    userdata[0] = 9/CAPS_HBAR_EV; /* 9eV */
+    userdata[1] = 0.035/CAPS_HBAR_EV; /* 0.035eV */
     caps_set_epsilonm1(caps, caps_epsilonm1_drude, userdata);
 
     caps_fresnel(caps, 1e-06, 1e-06, &rTE, &rTM);
@@ -42720,8 +42719,8 @@ int test_caps_fresnel()
     AssertAlmostEqual(&test, rTE, -2.652496150191072e-06);
     AssertAlmostEqual(&test, rTM, 7.957432165134494e-06);
 
-    userdata[0] = 9/CAPS_hbar_eV; /* 9eV */
-    userdata[1] = 0.05/CAPS_hbar_eV; /* 0.05eV */
+    userdata[0] = 9/CAPS_HBAR_EV; /* 9eV */
+    userdata[1] = 0.05/CAPS_HBAR_EV; /* 0.05eV */
     caps_set_epsilonm1(caps, caps_epsilonm1_drude, userdata);
 
     caps_fresnel(caps, 1e-06, 1e-06, &rTE, &rTM);
@@ -43348,8 +43347,8 @@ int test_caps_fresnel()
     AssertAlmostEqual(&test, rTE, -2.652475785983731e-06);
     AssertAlmostEqual(&test, rTM, 7.957371073376711e-06);
 
-    userdata[0] = 9/CAPS_hbar_eV; /* 9eV */
-    userdata[1] = 0.1/CAPS_hbar_eV; /* 0.1eV */
+    userdata[0] = 9/CAPS_HBAR_EV; /* 9eV */
+    userdata[1] = 0.1/CAPS_HBAR_EV; /* 0.1eV */
     caps_set_epsilonm1(caps, caps_epsilonm1_drude, userdata);
 
     caps_fresnel(caps, 1e-06, 1e-06, &rTE, &rTM);
@@ -43976,8 +43975,8 @@ int test_caps_fresnel()
     AssertAlmostEqual(&test, rTE, -2.652407907550832e-06);
     AssertAlmostEqual(&test, rTM, 7.95716744095868e-06);
 
-    userdata[0] = 9/CAPS_hbar_eV; /* 9eV */
-    userdata[1] = 0.5/CAPS_hbar_eV; /* 0.5eV */
+    userdata[0] = 9/CAPS_HBAR_EV; /* 9eV */
+    userdata[1] = 0.5/CAPS_HBAR_EV; /* 0.5eV */
     caps_set_epsilonm1(caps, caps_epsilonm1_drude, userdata);
 
     caps_fresnel(caps, 1e-06, 1e-06, &rTE, &rTM);
@@ -44604,8 +44603,8 @@ int test_caps_fresnel()
     AssertAlmostEqual(&test, rTE, -2.651865005129607e-06);
     AssertAlmostEqual(&test, rTM, 7.955538756732348e-06);
 
-    userdata[0] = 9/CAPS_hbar_eV; /* 9eV */
-    userdata[1] = 1/CAPS_hbar_eV; /* 1eV */
+    userdata[0] = 9/CAPS_HBAR_EV; /* 9eV */
+    userdata[1] = 1/CAPS_HBAR_EV; /* 1eV */
     caps_set_epsilonm1(caps, caps_epsilonm1_drude, userdata);
 
     caps_fresnel(caps, 1e-06, 1e-06, &rTE, &rTM);
@@ -45232,8 +45231,8 @@ int test_caps_fresnel()
     AssertAlmostEqual(&test, rTE, -2.651186689556056e-06);
     AssertAlmostEqual(&test, rTM, 7.953503838788494e-06);
 
-    userdata[0] = 10/CAPS_hbar_eV; /* 10eV */
-    userdata[1] = 1e-05/CAPS_hbar_eV; /* 1e-05eV */
+    userdata[0] = 10/CAPS_HBAR_EV; /* 10eV */
+    userdata[1] = 1e-05/CAPS_HBAR_EV; /* 1e-05eV */
     caps_set_epsilonm1(caps, caps_epsilonm1_drude, userdata);
 
     caps_fresnel(caps, 1e-06, 1e-06, &rTE, &rTM);
@@ -45860,8 +45859,8 @@ int test_caps_fresnel()
     AssertAlmostEqual(&test, rTE, -3.274741177153415e-06);
     AssertAlmostEqual(&test, rTM, 9.824137740864854e-06);
 
-    userdata[0] = 10/CAPS_hbar_eV; /* 10eV */
-    userdata[1] = 0.0001/CAPS_hbar_eV; /* 0.0001eV */
+    userdata[0] = 10/CAPS_HBAR_EV; /* 10eV */
+    userdata[1] = 0.0001/CAPS_HBAR_EV; /* 0.0001eV */
     caps_set_epsilonm1(caps, caps_epsilonm1_drude, userdata);
 
     caps_fresnel(caps, 1e-06, 1e-06, &rTE, &rTM);
@@ -46488,8 +46487,8 @@ int test_caps_fresnel()
     AssertAlmostEqual(&test, rTE, -3.274741026301256e-06);
     AssertAlmostEqual(&test, rTM, 9.824137288316281e-06);
 
-    userdata[0] = 10/CAPS_hbar_eV; /* 10eV */
-    userdata[1] = 0.001/CAPS_hbar_eV; /* 0.001eV */
+    userdata[0] = 10/CAPS_HBAR_EV; /* 10eV */
+    userdata[1] = 0.001/CAPS_HBAR_EV; /* 0.001eV */
     caps_set_epsilonm1(caps, caps_epsilonm1_drude, userdata);
 
     caps_fresnel(caps, 1e-06, 1e-06, &rTE, &rTM);
@@ -47116,8 +47115,8 @@ int test_caps_fresnel()
     AssertAlmostEqual(&test, rTE, -3.274739517780429e-06);
     AssertAlmostEqual(&test, rTM, 9.824132762832838e-06);
 
-    userdata[0] = 10/CAPS_hbar_eV; /* 10eV */
-    userdata[1] = 0.003/CAPS_hbar_eV; /* 0.003eV */
+    userdata[0] = 10/CAPS_HBAR_EV; /* 10eV */
+    userdata[1] = 0.003/CAPS_HBAR_EV; /* 0.003eV */
     caps_set_epsilonm1(caps, caps_epsilonm1_drude, userdata);
 
     caps_fresnel(caps, 1e-06, 1e-06, &rTE, &rTM);
@@ -47744,8 +47743,8 @@ int test_caps_fresnel()
     AssertAlmostEqual(&test, rTE, -3.274736165516899e-06);
     AssertAlmostEqual(&test, rTM, 9.82412270621789e-06);
 
-    userdata[0] = 10/CAPS_hbar_eV; /* 10eV */
-    userdata[1] = 0.035/CAPS_hbar_eV; /* 0.035eV */
+    userdata[0] = 10/CAPS_HBAR_EV; /* 10eV */
+    userdata[1] = 0.035/CAPS_HBAR_EV; /* 0.035eV */
     caps_set_epsilonm1(caps, caps_epsilonm1_drude, userdata);
 
     caps_fresnel(caps, 1e-06, 1e-06, &rTE, &rTM);
@@ -48372,8 +48371,8 @@ int test_caps_fresnel()
     AssertAlmostEqual(&test, rTE, -3.274682530233813e-06);
     AssertAlmostEqual(&test, rTM, 9.823961803178829e-06);
 
-    userdata[0] = 10/CAPS_hbar_eV; /* 10eV */
-    userdata[1] = 0.05/CAPS_hbar_eV; /* 0.05eV */
+    userdata[0] = 10/CAPS_HBAR_EV; /* 10eV */
+    userdata[1] = 0.05/CAPS_HBAR_EV; /* 0.05eV */
     caps_set_epsilonm1(caps, caps_epsilonm1_drude, userdata);
 
     caps_fresnel(caps, 1e-06, 1e-06, &rTE, &rTM);
@@ -49000,8 +48999,8 @@ int test_caps_fresnel()
     AssertAlmostEqual(&test, rTE, -3.274657389299664e-06);
     AssertAlmostEqual(&test, rTM, 9.823886381693616e-06);
 
-    userdata[0] = 10/CAPS_hbar_eV; /* 10eV */
-    userdata[1] = 0.1/CAPS_hbar_eV; /* 0.1eV */
+    userdata[0] = 10/CAPS_HBAR_EV; /* 10eV */
+    userdata[1] = 0.1/CAPS_HBAR_EV; /* 0.1eV */
     caps_set_epsilonm1(caps, caps_epsilonm1_drude, userdata);
 
     caps_fresnel(caps, 1e-06, 1e-06, &rTE, &rTM);
@@ -49628,8 +49627,8 @@ int test_caps_fresnel()
     AssertAlmostEqual(&test, rTE, -3.274573588973776e-06);
     AssertAlmostEqual(&test, rTM, 9.823634985106507e-06);
 
-    userdata[0] = 10/CAPS_hbar_eV; /* 10eV */
-    userdata[1] = 0.5/CAPS_hbar_eV; /* 0.5eV */
+    userdata[0] = 10/CAPS_HBAR_EV; /* 10eV */
+    userdata[1] = 0.5/CAPS_HBAR_EV; /* 0.5eV */
     caps_set_epsilonm1(caps, caps_epsilonm1_drude, userdata);
 
     caps_fresnel(caps, 1e-06, 1e-06, &rTE, &rTM);
@@ -50256,8 +50255,8 @@ int test_caps_fresnel()
     AssertAlmostEqual(&test, rTE, -3.273903340738884e-06);
     AssertAlmostEqual(&test, rTM, 9.821624275514156e-06);
 
-    userdata[0] = 10/CAPS_hbar_eV; /* 10eV */
-    userdata[1] = 1/CAPS_hbar_eV; /* 1eV */
+    userdata[0] = 10/CAPS_HBAR_EV; /* 10eV */
+    userdata[1] = 1/CAPS_HBAR_EV; /* 1eV */
     caps_set_epsilonm1(caps, caps_epsilonm1_drude, userdata);
 
     caps_fresnel(caps, 1e-06, 1e-06, &rTE, &rTM);
@@ -50884,8 +50883,8 @@ int test_caps_fresnel()
     AssertAlmostEqual(&test, rTE, -3.27306591618825e-06);
     AssertAlmostEqual(&test, rTM, 9.819112045722352e-06);
 
-    userdata[0] = 20/CAPS_hbar_eV; /* 20eV */
-    userdata[1] = 1e-05/CAPS_hbar_eV; /* 1e-05eV */
+    userdata[0] = 20/CAPS_HBAR_EV; /* 20eV */
+    userdata[1] = 1e-05/CAPS_HBAR_EV; /* 1e-05eV */
     caps_set_epsilonm1(caps, caps_epsilonm1_drude, userdata);
 
     caps_fresnel(caps, 1e-06, 1e-06, &rTE, &rTM);
@@ -51512,8 +51511,8 @@ int test_caps_fresnel()
     AssertAlmostEqual(&test, rTE, -1.309870734146287e-05);
     AssertAlmostEqual(&test, rTM, 3.929474946925257e-05);
 
-    userdata[0] = 20/CAPS_hbar_eV; /* 20eV */
-    userdata[1] = 0.0001/CAPS_hbar_eV; /* 0.0001eV */
+    userdata[0] = 20/CAPS_HBAR_EV; /* 20eV */
+    userdata[1] = 0.0001/CAPS_HBAR_EV; /* 0.0001eV */
     caps_set_epsilonm1(caps, caps_epsilonm1_drude, userdata);
 
     caps_fresnel(caps, 1e-06, 1e-06, &rTE, &rTM);
@@ -52140,8 +52139,8 @@ int test_caps_fresnel()
     AssertAlmostEqual(&test, rTE, -1.309870673807794e-05);
     AssertAlmostEqual(&test, rTM, 3.929474765922425e-05);
 
-    userdata[0] = 20/CAPS_hbar_eV; /* 20eV */
-    userdata[1] = 0.001/CAPS_hbar_eV; /* 0.001eV */
+    userdata[0] = 20/CAPS_HBAR_EV; /* 20eV */
+    userdata[1] = 0.001/CAPS_HBAR_EV; /* 0.001eV */
     caps_set_epsilonm1(caps, caps_epsilonm1_drude, userdata);
 
     caps_fresnel(caps, 1e-06, 1e-06, &rTE, &rTM);
@@ -52768,8 +52767,8 @@ int test_caps_fresnel()
     AssertAlmostEqual(&test, rTE, -1.309870070423175e-05);
     AssertAlmostEqual(&test, rTM, 3.929472955895014e-05);
 
-    userdata[0] = 20/CAPS_hbar_eV; /* 20eV */
-    userdata[1] = 0.003/CAPS_hbar_eV; /* 0.003eV */
+    userdata[0] = 20/CAPS_HBAR_EV; /* 20eV */
+    userdata[1] = 0.003/CAPS_HBAR_EV; /* 0.003eV */
     caps_set_epsilonm1(caps, caps_epsilonm1_drude, userdata);
 
     caps_fresnel(caps, 1e-06, 1e-06, &rTE, &rTM);
@@ -53396,8 +53395,8 @@ int test_caps_fresnel()
     AssertAlmostEqual(&test, rTE, -1.309868729570454e-05);
     AssertAlmostEqual(&test, rTM, 3.92946893361785e-05);
 
-    userdata[0] = 20/CAPS_hbar_eV; /* 20eV */
-    userdata[1] = 0.035/CAPS_hbar_eV; /* 0.035eV */
+    userdata[0] = 20/CAPS_HBAR_EV; /* 20eV */
+    userdata[1] = 0.035/CAPS_HBAR_EV; /* 0.035eV */
     caps_set_epsilonm1(caps, caps_epsilonm1_drude, userdata);
 
     caps_fresnel(caps, 1e-06, 1e-06, &rTE, &rTM);
@@ -54024,8 +54023,8 @@ int test_caps_fresnel()
     AssertAlmostEqual(&test, rTE, -1.309847276300256e-05);
     AssertAlmostEqual(&test, rTM, 3.929404578303109e-05);
 
-    userdata[0] = 20/CAPS_hbar_eV; /* 20eV */
-    userdata[1] = 0.05/CAPS_hbar_eV; /* 0.05eV */
+    userdata[0] = 20/CAPS_HBAR_EV; /* 20eV */
+    userdata[1] = 0.05/CAPS_HBAR_EV; /* 0.05eV */
     caps_set_epsilonm1(caps, caps_epsilonm1_drude, userdata);
 
     caps_fresnel(caps, 1e-06, 1e-06, &rTE, &rTM);
@@ -54652,8 +54651,8 @@ int test_caps_fresnel()
     AssertAlmostEqual(&test, rTE, -1.309837220321756e-05);
     AssertAlmostEqual(&test, rTM, 3.929374412474964e-05);
 
-    userdata[0] = 20/CAPS_hbar_eV; /* 20eV */
-    userdata[1] = 0.1/CAPS_hbar_eV; /* 0.1eV */
+    userdata[0] = 20/CAPS_HBAR_EV; /* 20eV */
+    userdata[1] = 0.1/CAPS_HBAR_EV; /* 0.1eV */
     caps_set_epsilonm1(caps, caps_epsilonm1_drude, userdata);
 
     caps_fresnel(caps, 1e-06, 1e-06, &rTE, &rTM);
@@ -55280,8 +55279,8 @@ int test_caps_fresnel()
     AssertAlmostEqual(&test, rTE, -1.309803701508532e-05);
     AssertAlmostEqual(&test, rTM, 3.929273863059458e-05);
 
-    userdata[0] = 20/CAPS_hbar_eV; /* 20eV */
-    userdata[1] = 0.5/CAPS_hbar_eV; /* 0.5eV */
+    userdata[0] = 20/CAPS_HBAR_EV; /* 20eV */
+    userdata[1] = 0.5/CAPS_HBAR_EV; /* 0.5eV */
     caps_set_epsilonm1(caps, caps_epsilonm1_drude, userdata);
 
     caps_fresnel(caps, 1e-06, 1e-06, &rTE, &rTM);
@@ -55908,8 +55907,8 @@ int test_caps_fresnel()
     AssertAlmostEqual(&test, rTE, -1.309535612747987e-05);
     AssertAlmostEqual(&test, rTM, 3.928469652951749e-05);
 
-    userdata[0] = 20/CAPS_hbar_eV; /* 20eV */
-    userdata[1] = 1/CAPS_hbar_eV; /* 1eV */
+    userdata[0] = 20/CAPS_HBAR_EV; /* 20eV */
+    userdata[1] = 1/CAPS_HBAR_EV; /* 1eV */
     caps_set_epsilonm1(caps, caps_epsilonm1_drude, userdata);
 
     caps_fresnel(caps, 1e-06, 1e-06, &rTE, &rTM);
@@ -56536,8 +56535,8 @@ int test_caps_fresnel()
     AssertAlmostEqual(&test, rTE, -1.309200656085408e-05);
     AssertAlmostEqual(&test, rTM, 3.927464853132928e-05);
 
-    userdata[0] = 50/CAPS_hbar_eV; /* 50eV */
-    userdata[1] = 1e-05/CAPS_hbar_eV; /* 1e-05eV */
+    userdata[0] = 50/CAPS_HBAR_EV; /* 50eV */
+    userdata[1] = 1e-05/CAPS_HBAR_EV; /* 1e-05eV */
     caps_set_epsilonm1(caps, caps_epsilonm1_drude, userdata);
 
     caps_fresnel(caps, 1e-06, 1e-06, &rTE, &rTM);
@@ -57164,8 +57163,8 @@ int test_caps_fresnel()
     AssertAlmostEqual(&test, rTE, -8.185566328317079e-05);
     AssertAlmostEqual(&test, rTM, 0.000245513400212466);
 
-    userdata[0] = 50/CAPS_hbar_eV; /* 50eV */
-    userdata[1] = 0.0001/CAPS_hbar_eV; /* 0.0001eV */
+    userdata[0] = 50/CAPS_HBAR_EV; /* 50eV */
+    userdata[1] = 0.0001/CAPS_HBAR_EV; /* 0.0001eV */
     caps_set_epsilonm1(caps, caps_epsilonm1_drude, userdata);
 
     caps_fresnel(caps, 1e-06, 1e-06, &rTE, &rTM);
@@ -57792,8 +57791,8 @@ int test_caps_fresnel()
     AssertAlmostEqual(&test, rTE, -8.185565951305205e-05);
     AssertAlmostEqual(&test, rTM, 0.0002455133889070457);
 
-    userdata[0] = 50/CAPS_hbar_eV; /* 50eV */
-    userdata[1] = 0.001/CAPS_hbar_eV; /* 0.001eV */
+    userdata[0] = 50/CAPS_HBAR_EV; /* 50eV */
+    userdata[1] = 0.001/CAPS_HBAR_EV; /* 0.001eV */
     caps_set_epsilonm1(caps, caps_epsilonm1_drude, userdata);
 
     caps_fresnel(caps, 1e-06, 1e-06, &rTE, &rTM);
@@ -58420,8 +58419,8 @@ int test_caps_fresnel()
     AssertAlmostEqual(&test, rTE, -8.185562181188385e-05);
     AssertAlmostEqual(&test, rTM, 0.0002455132758528998);
 
-    userdata[0] = 50/CAPS_hbar_eV; /* 50eV */
-    userdata[1] = 0.003/CAPS_hbar_eV; /* 0.003eV */
+    userdata[0] = 50/CAPS_HBAR_EV; /* 50eV */
+    userdata[1] = 0.003/CAPS_HBAR_EV; /* 0.003eV */
     caps_set_epsilonm1(caps, caps_epsilonm1_drude, userdata);
 
     caps_fresnel(caps, 1e-06, 1e-06, &rTE, &rTM);
@@ -59048,8 +59047,8 @@ int test_caps_fresnel()
     AssertAlmostEqual(&test, rTE, -8.18555380316344e-05);
     AssertAlmostEqual(&test, rTM, 0.0002455130246218371);
 
-    userdata[0] = 50/CAPS_hbar_eV; /* 50eV */
-    userdata[1] = 0.035/CAPS_hbar_eV; /* 0.035eV */
+    userdata[0] = 50/CAPS_HBAR_EV; /* 50eV */
+    userdata[1] = 0.035/CAPS_HBAR_EV; /* 0.035eV */
     caps_set_epsilonm1(caps, caps_epsilonm1_drude, userdata);
 
     caps_fresnel(caps, 1e-06, 1e-06, &rTE, &rTM);
@@ -59676,8 +59675,8 @@ int test_caps_fresnel()
     AssertAlmostEqual(&test, rTE, -8.185419757096688e-05);
     AssertAlmostEqual(&test, rTM, 0.0002455090049947597);
 
-    userdata[0] = 50/CAPS_hbar_eV; /* 50eV */
-    userdata[1] = 0.05/CAPS_hbar_eV; /* 0.05eV */
+    userdata[0] = 50/CAPS_HBAR_EV; /* 50eV */
+    userdata[1] = 0.05/CAPS_HBAR_EV; /* 0.05eV */
     caps_set_epsilonm1(caps, caps_epsilonm1_drude, userdata);
 
     caps_fresnel(caps, 1e-06, 1e-06, &rTE, &rTM);
@@ -60304,8 +60303,8 @@ int test_caps_fresnel()
     AssertAlmostEqual(&test, rTE, -8.18535692451418e-05);
     AssertAlmostEqual(&test, rTM, 0.0002455071208398761);
 
-    userdata[0] = 50/CAPS_hbar_eV; /* 50eV */
-    userdata[1] = 0.1/CAPS_hbar_eV; /* 0.1eV */
+    userdata[0] = 50/CAPS_HBAR_EV; /* 50eV */
+    userdata[1] = 0.1/CAPS_HBAR_EV; /* 0.1eV */
     caps_set_epsilonm1(caps, caps_epsilonm1_drude, userdata);
 
     caps_fresnel(caps, 1e-06, 1e-06, &rTE, &rTM);
@@ -60932,8 +60931,8 @@ int test_caps_fresnel()
     AssertAlmostEqual(&test, rTE, -8.185147489539055e-05);
     AssertAlmostEqual(&test, rTM, 0.0002455008405324573);
 
-    userdata[0] = 50/CAPS_hbar_eV; /* 50eV */
-    userdata[1] = 0.5/CAPS_hbar_eV; /* 0.5eV */
+    userdata[0] = 50/CAPS_HBAR_EV; /* 50eV */
+    userdata[1] = 0.5/CAPS_HBAR_EV; /* 0.5eV */
     caps_set_epsilonm1(caps, caps_epsilonm1_drude, userdata);
 
     caps_fresnel(caps, 1e-06, 1e-06, &rTE, &rTM);
@@ -61560,8 +61559,8 @@ int test_caps_fresnel()
     AssertAlmostEqual(&test, rTE, -8.183472395486691e-05);
     AssertAlmostEqual(&test, rTM, 0.0002454506096379927);
 
-    userdata[0] = 50/CAPS_hbar_eV; /* 50eV */
-    userdata[1] = 1/CAPS_hbar_eV; /* 1eV */
+    userdata[0] = 50/CAPS_HBAR_EV; /* 50eV */
+    userdata[1] = 1/CAPS_HBAR_EV; /* 1eV */
     caps_set_epsilonm1(caps, caps_epsilonm1_drude, userdata);
 
     caps_fresnel(caps, 1e-06, 1e-06, &rTE, &rTM);
@@ -62188,8 +62187,8 @@ int test_caps_fresnel()
     AssertAlmostEqual(&test, rTE, -8.181379491824241e-05);
     AssertAlmostEqual(&test, rTM, 0.0002453878499180803);
 
-    userdata[0] = 100/CAPS_hbar_eV; /* 100eV */
-    userdata[1] = 1e-05/CAPS_hbar_eV; /* 1e-05eV */
+    userdata[0] = 100/CAPS_HBAR_EV; /* 100eV */
+    userdata[1] = 1e-05/CAPS_HBAR_EV; /* 1e-05eV */
     caps_set_epsilonm1(caps, caps_epsilonm1_drude, userdata);
 
     caps_fresnel(caps, 1e-06, 1e-06, &rTE, &rTM);
@@ -62816,8 +62815,8 @@ int test_caps_fresnel()
     AssertAlmostEqual(&test, rTE, -0.0003272619565398874);
     AssertAlmostEqual(&test, rTM, 0.0009809299068861922);
 
-    userdata[0] = 100/CAPS_hbar_eV; /* 100eV */
-    userdata[1] = 0.0001/CAPS_hbar_eV; /* 0.0001eV */
+    userdata[0] = 100/CAPS_HBAR_EV; /* 100eV */
+    userdata[1] = 0.0001/CAPS_HBAR_EV; /* 0.0001eV */
     caps_set_epsilonm1(caps, caps_epsilonm1_drude, userdata);
 
     caps_fresnel(caps, 1e-06, 1e-06, &rTE, &rTM);
@@ -63444,8 +63443,8 @@ int test_caps_fresnel()
     AssertAlmostEqual(&test, rTE, -0.00032726194147421);
     AssertAlmostEqual(&test, rTM, 0.0009809298617679311);
 
-    userdata[0] = 100/CAPS_hbar_eV; /* 100eV */
-    userdata[1] = 0.001/CAPS_hbar_eV; /* 0.001eV */
+    userdata[0] = 100/CAPS_HBAR_EV; /* 100eV */
+    userdata[1] = 0.001/CAPS_HBAR_EV; /* 0.001eV */
     caps_set_epsilonm1(caps, caps_epsilonm1_drude, userdata);
 
     caps_fresnel(caps, 1e-06, 1e-06, &rTE, &rTM);
@@ -64072,8 +64071,8 @@ int test_caps_fresnel()
     AssertAlmostEqual(&test, rTE, -0.0003272617908175133);
     AssertAlmostEqual(&test, rTM, 0.0009809294105855479);
 
-    userdata[0] = 100/CAPS_hbar_eV; /* 100eV */
-    userdata[1] = 0.003/CAPS_hbar_eV; /* 0.003eV */
+    userdata[0] = 100/CAPS_HBAR_EV; /* 100eV */
+    userdata[1] = 0.003/CAPS_HBAR_EV; /* 0.003eV */
     caps_set_epsilonm1(caps, caps_epsilonm1_drude, userdata);
 
     caps_fresnel(caps, 1e-06, 1e-06, &rTE, &rTM);
@@ -64700,8 +64699,8 @@ int test_caps_fresnel()
     AssertAlmostEqual(&test, rTE, -0.0003272614560253506);
     AssertAlmostEqual(&test, rTM, 0.0009809284079595156);
 
-    userdata[0] = 100/CAPS_hbar_eV; /* 100eV */
-    userdata[1] = 0.035/CAPS_hbar_eV; /* 0.035eV */
+    userdata[0] = 100/CAPS_HBAR_EV; /* 100eV */
+    userdata[1] = 0.035/CAPS_HBAR_EV; /* 0.035eV */
     caps_set_epsilonm1(caps, caps_epsilonm1_drude, userdata);
 
     caps_fresnel(caps, 1e-06, 1e-06, &rTE, &rTM);
@@ -65328,8 +65327,8 @@ int test_caps_fresnel()
     AssertAlmostEqual(&test, rTE, -0.0003272560994439048);
     AssertAlmostEqual(&test, rTM, 0.0009809123662217398);
 
-    userdata[0] = 100/CAPS_hbar_eV; /* 100eV */
-    userdata[1] = 0.05/CAPS_hbar_eV; /* 0.05eV */
+    userdata[0] = 100/CAPS_HBAR_EV; /* 100eV */
+    userdata[1] = 0.05/CAPS_HBAR_EV; /* 0.05eV */
     caps_set_epsilonm1(caps, caps_epsilonm1_drude, userdata);
 
     caps_fresnel(caps, 1e-06, 1e-06, &rTE, &rTM);
@@ -65956,8 +65955,8 @@ int test_caps_fresnel()
     AssertAlmostEqual(&test, rTE, -0.0003272535886067144);
     AssertAlmostEqual(&test, rTM, 0.0009809048468377712);
 
-    userdata[0] = 100/CAPS_hbar_eV; /* 100eV */
-    userdata[1] = 0.1/CAPS_hbar_eV; /* 0.1eV */
+    userdata[0] = 100/CAPS_HBAR_EV; /* 100eV */
+    userdata[1] = 0.1/CAPS_HBAR_EV; /* 0.1eV */
     caps_set_epsilonm1(caps, caps_epsilonm1_drude, userdata);
 
     caps_fresnel(caps, 1e-06, 1e-06, &rTE, &rTM);
@@ -66584,8 +66583,8 @@ int test_caps_fresnel()
     AssertAlmostEqual(&test, rTE, -0.0003272452194276658);
     AssertAlmostEqual(&test, rTM, 0.0009808797830571198);
 
-    userdata[0] = 100/CAPS_hbar_eV; /* 100eV */
-    userdata[1] = 0.5/CAPS_hbar_eV; /* 0.5eV */
+    userdata[0] = 100/CAPS_HBAR_EV; /* 100eV */
+    userdata[1] = 0.5/CAPS_HBAR_EV; /* 0.5eV */
     caps_set_epsilonm1(caps, caps_epsilonm1_drude, userdata);
 
     caps_fresnel(caps, 1e-06, 1e-06, &rTE, &rTM);
@@ -67212,8 +67211,8 @@ int test_caps_fresnel()
     AssertAlmostEqual(&test, rTE, -0.0003271782814025222);
     AssertAlmostEqual(&test, rTM, 0.0009806793189128815);
 
-    userdata[0] = 100/CAPS_hbar_eV; /* 100eV */
-    userdata[1] = 1/CAPS_hbar_eV; /* 1eV */
+    userdata[0] = 100/CAPS_HBAR_EV; /* 100eV */
+    userdata[1] = 1/CAPS_HBAR_EV; /* 1eV */
     caps_set_epsilonm1(caps, caps_epsilonm1_drude, userdata);
 
     caps_fresnel(caps, 1e-06, 1e-06, &rTE, &rTM);
@@ -67840,8 +67839,8 @@ int test_caps_fresnel()
     AssertAlmostEqual(&test, rTE, -0.0003270946473704986);
     AssertAlmostEqual(&test, rTM, 0.0009804288539290908);
 
-    userdata[0] = 1000/CAPS_hbar_eV; /* 1000eV */
-    userdata[1] = 1e-05/CAPS_hbar_eV; /* 1e-05eV */
+    userdata[0] = 1000/CAPS_HBAR_EV; /* 1000eV */
+    userdata[1] = 1e-05/CAPS_HBAR_EV; /* 1e-05eV */
     caps_set_epsilonm1(caps, caps_epsilonm1_drude, userdata);
 
     caps_fresnel(caps, 1e-06, 1e-06, &rTE, &rTM);
@@ -68468,8 +68467,8 @@ int test_caps_fresnel()
     AssertAlmostEqual(&test, rTE, -0.03076373994129392);
     AssertAlmostEqual(&test, rTM, 0.08535967865244831);
 
-    userdata[0] = 1000/CAPS_hbar_eV; /* 1000eV */
-    userdata[1] = 0.0001/CAPS_hbar_eV; /* 0.0001eV */
+    userdata[0] = 1000/CAPS_HBAR_EV; /* 1000eV */
+    userdata[1] = 0.0001/CAPS_HBAR_EV; /* 0.0001eV */
     caps_set_epsilonm1(caps, caps_epsilonm1_drude, userdata);
 
     caps_fresnel(caps, 1e-06, 1e-06, &rTE, &rTM);
@@ -69096,8 +69095,8 @@ int test_caps_fresnel()
     AssertAlmostEqual(&test, rTE, -0.03076373860873308);
     AssertAlmostEqual(&test, rTM, 0.08535967522988967);
 
-    userdata[0] = 1000/CAPS_hbar_eV; /* 1000eV */
-    userdata[1] = 0.001/CAPS_hbar_eV; /* 0.001eV */
+    userdata[0] = 1000/CAPS_HBAR_EV; /* 1000eV */
+    userdata[1] = 0.001/CAPS_HBAR_EV; /* 0.001eV */
     caps_set_epsilonm1(caps, caps_epsilonm1_drude, userdata);
 
     caps_fresnel(caps, 1e-06, 1e-06, &rTE, &rTM);
@@ -69724,8 +69723,8 @@ int test_caps_fresnel()
     AssertAlmostEqual(&test, rTE, -0.030763725283131);
     AssertAlmostEqual(&test, rTM, 0.08535964100431837);
 
-    userdata[0] = 1000/CAPS_hbar_eV; /* 1000eV */
-    userdata[1] = 0.003/CAPS_hbar_eV; /* 0.003eV */
+    userdata[0] = 1000/CAPS_HBAR_EV; /* 1000eV */
+    userdata[1] = 0.003/CAPS_HBAR_EV; /* 0.003eV */
     caps_set_epsilonm1(caps, caps_epsilonm1_drude, userdata);
 
     caps_fresnel(caps, 1e-06, 1e-06, &rTE, &rTM);
@@ -70352,8 +70351,8 @@ int test_caps_fresnel()
     AssertAlmostEqual(&test, rTE, -0.03076369567072331);
     AssertAlmostEqual(&test, rTM, 0.08535956494759167);
 
-    userdata[0] = 1000/CAPS_hbar_eV; /* 1000eV */
-    userdata[1] = 0.035/CAPS_hbar_eV; /* 0.035eV */
+    userdata[0] = 1000/CAPS_HBAR_EV; /* 1000eV */
+    userdata[1] = 0.035/CAPS_HBAR_EV; /* 0.035eV */
     caps_set_epsilonm1(caps, caps_epsilonm1_drude, userdata);
 
     caps_fresnel(caps, 1e-06, 1e-06, &rTE, &rTM);
@@ -70980,8 +70979,8 @@ int test_caps_fresnel()
     AssertAlmostEqual(&test, rTE, -0.03076322187996065);
     AssertAlmostEqual(&test, rTM, 0.08535834805843227);
 
-    userdata[0] = 1000/CAPS_hbar_eV; /* 1000eV */
-    userdata[1] = 0.05/CAPS_hbar_eV; /* 0.05eV */
+    userdata[0] = 1000/CAPS_HBAR_EV; /* 1000eV */
+    userdata[1] = 0.05/CAPS_HBAR_EV; /* 0.05eV */
     caps_set_epsilonm1(caps, caps_epsilonm1_drude, userdata);
 
     caps_fresnel(caps, 1e-06, 1e-06, &rTE, &rTM);
@@ -71608,8 +71607,8 @@ int test_caps_fresnel()
     AssertAlmostEqual(&test, rTE, -0.03076299979556908);
     AssertAlmostEqual(&test, rTM, 0.08535777765360518);
 
-    userdata[0] = 1000/CAPS_hbar_eV; /* 1000eV */
-    userdata[1] = 0.1/CAPS_hbar_eV; /* 0.1eV */
+    userdata[0] = 1000/CAPS_HBAR_EV; /* 1000eV */
+    userdata[1] = 0.1/CAPS_HBAR_EV; /* 0.1eV */
     caps_set_epsilonm1(caps, caps_epsilonm1_drude, userdata);
 
     caps_fresnel(caps, 1e-06, 1e-06, &rTE, &rTM);
@@ -72236,8 +72235,8 @@ int test_caps_fresnel()
     AssertAlmostEqual(&test, rTE, -0.03076225953744343);
     AssertAlmostEqual(&test, rTM, 0.08535587635934321);
 
-    userdata[0] = 1000/CAPS_hbar_eV; /* 1000eV */
-    userdata[1] = 0.5/CAPS_hbar_eV; /* 0.5eV */
+    userdata[0] = 1000/CAPS_HBAR_EV; /* 1000eV */
+    userdata[1] = 0.5/CAPS_HBAR_EV; /* 0.5eV */
     caps_set_epsilonm1(caps, caps_epsilonm1_drude, userdata);
 
     caps_fresnel(caps, 1e-06, 1e-06, &rTE, &rTM);
@@ -72864,8 +72863,8 @@ int test_caps_fresnel()
     AssertAlmostEqual(&test, rTE, -0.03075633875594337);
     AssertAlmostEqual(&test, rTM, 0.08534066905972153);
 
-    userdata[0] = 1000/CAPS_hbar_eV; /* 1000eV */
-    userdata[1] = 1/CAPS_hbar_eV; /* 1eV */
+    userdata[0] = 1000/CAPS_HBAR_EV; /* 1000eV */
+    userdata[1] = 1/CAPS_HBAR_EV; /* 1eV */
     caps_set_epsilonm1(caps, caps_epsilonm1_drude, userdata);
 
     caps_fresnel(caps, 1e-06, 1e-06, &rTE, &rTM);

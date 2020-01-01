@@ -17,11 +17,13 @@ extern "C" {
 
 /*! name of compile */
 #if defined(__clang__)
-    #define COMPILER "clang/llvm"
+    #define COMPILER "clang"
 #elif defined(__ICC) || defined(__INTEL_COMPILER)
     #define COMPILER "icc"
 #elif defined(__GNUC__) || defined(__GNUG__)
     #define COMPILER "gcc"
+#elif defined(_MSC_VER)
+    #define COMPILER "msvc"
 #else
     #define COMPILER "unknown"
 #endif
@@ -40,7 +42,6 @@ extern "C" {
 #define xfree(p) do { free(p); p = NULL; } while(0)
 
 double now(void);
-void time_as_string(char *s, size_t len);
 
 void *xmalloc(size_t size);
 void *xrealloc(void *p, size_t size);
@@ -48,8 +49,10 @@ void *xcalloc(size_t nmemb, size_t size);
 
 void disable_buffering(void);
 
+int strcaseequal(const char *s1, const char *s2);
 void strrep(char *s, const char a, const char b);
 void strim(char *str);
+double strtodouble(const char *str);
 
 #ifdef __cplusplus
 }

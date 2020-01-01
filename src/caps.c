@@ -6,10 +6,15 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/time.h>
+#include <time.h>
+
+#ifdef _WIN32
+#include <Windows.h>
+#else
 #include <sys/types.h>
 #include <unistd.h>
-
-#include "caps.h"
+#endif
 
 #include "buf.h"
 #include "fcqs.h"
@@ -20,14 +25,92 @@
 #include "quadpack.h"
 #include "utils.h"
 
+/* preprocessor define */
 #define EPSREL 1e-6 /**< default value for --epsrel */
 #define CUTOFF 1e-9 /**< default value for --cutoff */
 #define LDIM_MIN 20 /**< minimum value for --ldim */
 #define ETA 7.      /**< default value for --eta */
-#define IDLE 25     /**< idle time in ms */
+#define IDLE 1      /**< idle time in ms */
 
 #define STATE_RUNNING 1
 #define STATE_IDLE    0
+
+/* local typedefs */
+
+typedef struct {
+    int index, m;
+    double xi_;
+    double recv;
+    double value;
+    MPI_Request request;
+    int state;
+} caps_task_t;
+
+typedef struct {
+    double L, R, T, omegap, gamma, cutoff, iepsrel, alpha;
+    int ldim, cores;
+    bool verbose;
+    caps_task_t **tasks;
+    int determinants;
+    char filename[512];
+    double cache[4096][2];
+    int cache_elems;
+} caps_mpi_t;
+
+/* prototypes */
+static caps_mpi_t *caps_mpi_init(double L, double R, double T, char *filename, char *resume, double omegap, double gamma_, int ldim, double cutoff, double iepsrel, int cores, bool verbose);
+static void caps_mpi_free(caps_mpi_t *self);
+static int caps_mpi_submit(caps_mpi_t *self, int index, double xi, int m);
+static int caps_mpi_retrieve(caps_mpi_t *self, caps_task_t **task_out);
+static int caps_mpi_get_running(caps_mpi_t *self);
+static int caps_get_determinants(caps_mpi_t *self);
+
+static void usage(FILE *stream);
+
+static void F_HT(caps_mpi_t *caps_mpi, double omegap, double *drude, double *pr, double *plasma);
+static double F_xi(double xi, caps_mpi_t *caps_mpi);
+static void master(int argc, char *argv[], const int cores);
+static void slave(MPI_Comm master_comm, const int rank);
+
+
+/** @brief Write time into string
+ *
+ * Write current time in a human readable format into string s. The output is
+ * similar to "Aug 30 2018 14:37:35".
+ *
+ * @param s string
+ * @param len maximum length of array s
+ */
+static void time_as_string(char *s, size_t len)
+{
+    time_t rawtime;
+    struct tm *info;
+
+    time(&rawtime);
+    info = localtime(&rawtime);
+    strftime(s, len, "%c", info);
+}
+
+
+/* sleep for ms miliseconds */
+static void msleep(unsigned int ms)
+{
+#ifdef _WIN32
+    Sleep(ms);
+#else
+    usleep(ms*1000);
+#endif
+}
+
+static bool is_readable(const char *filename)
+{
+    FILE *f = fopen(filename, "r");
+    if(f == NULL)
+        return false;
+
+    fclose(f);
+    return true;
+}
 
 /* @brief Create caps_mpi object
  *
@@ -45,7 +128,7 @@
  * @param [in] verbose flag if verbose
  * @retval object caps_mpi_t object
  */
-caps_mpi_t *caps_mpi_init(double L, double R, double T, char *filename, char *resume, double omegap, double gamma_, int ldim, double cutoff, double iepsrel, int cores, bool verbose)
+static caps_mpi_t *caps_mpi_init(double L, double R, double T, char *filename, char *resume, double omegap, double gamma_, int ldim, double cutoff, double iepsrel, int cores, bool verbose)
 {
     caps_mpi_t *self = xmalloc(sizeof(caps_mpi_t));
 
@@ -89,13 +172,13 @@ caps_mpi_t *caps_mpi_init(double L, double R, double T, char *filename, char *re
                 p3 = strchr(p1, ',');
                 TERMINATE(p3 == NULL, "%s has wrong format", resume);
                 *p3 = '\0';
-                self->cache[self->cache_elems][0] = atof(p1); /* xi */
+                self->cache[self->cache_elems][0] = strtodouble(p1); /* xi */
 
                 p2 += 8;
                 p3 = strchr(p2, ',');
                 TERMINATE(p3 == NULL, "%s has wrong format", resume);
                 *p3 = '\0';
-                self->cache[self->cache_elems][1] = atof(p2); /* logdetD */
+                self->cache[self->cache_elems][1] = strtodouble(p2); /* logdetD */
 
                 self->cache_elems++;
             }
@@ -131,7 +214,7 @@ static void _mpi_stop(int cores)
  *
  * @param [in] self caps_mpit_t object
  */
-void caps_mpi_free(caps_mpi_t *self)
+static void caps_mpi_free(caps_mpi_t *self)
 {
     _mpi_stop(self->cores);
 
@@ -148,7 +231,7 @@ void caps_mpi_free(caps_mpi_t *self)
  * @param [in] self caps_mpit_t object
  * @retval running number of processes that are running
  */
-int caps_mpi_get_running(caps_mpi_t *self)
+static int caps_mpi_get_running(caps_mpi_t *self)
 {
     int running = 0;
 
@@ -160,7 +243,7 @@ int caps_mpi_get_running(caps_mpi_t *self)
 }
 
 /* xi_ = ξ(L+R)/c */
-int caps_mpi_submit(caps_mpi_t *self, int index, double xi_, int m)
+static int caps_mpi_submit(caps_mpi_t *self, int index, double xi_, int m)
 {
     for(int i = 1; i < self->cores; i++)
     {
@@ -193,12 +276,12 @@ int caps_mpi_submit(caps_mpi_t *self, int index, double xi_, int m)
  * @param [in] self caps_mpit_t object
  * @retval determinants number of computed determinants
  */
-int caps_get_determinants(caps_mpi_t *self)
+static int caps_get_determinants(caps_mpi_t *self)
 {
     return self->determinants;
 }
 
-int caps_mpi_retrieve(caps_mpi_t *self, caps_task_t **task_out)
+static int caps_mpi_retrieve(caps_mpi_t *self, caps_task_t **task_out)
 {
     *task_out = NULL;
 
@@ -267,7 +350,7 @@ static double integrand(double x, void *args)
 }
 
 /* omegap in eV; drude, pr and plasma in units of kB*T */
-void F_HT(caps_mpi_t *caps_mpi, double omegap, double *drude, double *pr, double *plasma)
+static void F_HT(caps_mpi_t *caps_mpi, double omegap, double *drude, double *pr, double *plasma)
 {
     const double omegap_orig = caps_mpi->omegap;
     const double gamma_orig  = caps_mpi->gamma;
@@ -304,7 +387,7 @@ void F_HT(caps_mpi_t *caps_mpi, double omegap, double *drude, double *pr, double
 }
 
 /* xi_ = ξ(L+R)/c */
-double F_xi(double xi_, caps_mpi_t *caps_mpi)
+static double F_xi(double xi_, caps_mpi_t *caps_mpi)
 {
     int m;
     double drude_HT = NAN;
@@ -364,7 +447,7 @@ double F_xi(double xi_, caps_mpi_t *caps_mpi)
                     goto done;
             }
 
-            usleep(IDLE);
+            msleep(IDLE);
         }
     }
 
@@ -384,7 +467,7 @@ double F_xi(double xi_, caps_mpi_t *caps_mpi)
                 fprintf(stderr, "# m=%d, xi_=%.16g, logdetD=%.16g\n", task->m, xi_, task->value);
         }
 
-        usleep(IDLE);
+        msleep(IDLE);
     }
 
     terms[0] /= 2; /* m = 0 */
@@ -416,7 +499,7 @@ int main(int argc, char *argv[])
     return 0;
 }
 
-void master(int argc, char *argv[], const int cores)
+static void master(int argc, char *argv[], const int cores)
 {
     bool verbose = false, fcqs = false, ht = false;
     char filename[512] = { 0 };
@@ -469,34 +552,34 @@ void master(int argc, char *argv[], const int cores)
             case 0:
                 break;
             case 'L':
-                L = atof(optarg);
+                L = strtodouble(optarg);
                 break;
             case 'R':
-                R = atof(optarg);
+                R = strtodouble(optarg);
                 break;
             case 'T':
-                T = atof(optarg);
+                T = strtodouble(optarg);
                 break;
             case 'l':
                 ldim = atoi(optarg);
                 break;
             case 'E':
-                eta = atof(optarg);
+                eta = strtodouble(optarg);
                 break;
             case 'c':
-                cutoff = atof(optarg);
+                cutoff = strtodouble(optarg);
                 break;
             case 'i':
-                iepsrel = atof(optarg);
+                iepsrel = strtodouble(optarg);
                 break;
             case 'e':
-                epsrel = atof(optarg);
+                epsrel = strtodouble(optarg);
                 break;
             case 'w':
-                omegap = atof(optarg);
+                omegap = strtodouble(optarg);
                 break;
             case 'g':
-                gamma_ = atof(optarg);
+                gamma_ = strtodouble(optarg);
                 break;
             case 'F':
                 fcqs = true;
@@ -585,7 +668,7 @@ void master(int argc, char *argv[], const int cores)
             usage(stderr);
             EXIT();
         }
-        if(access(filename, R_OK) != 0)
+        if(!is_readable(filename))
         {
             fprintf(stderr, "file %s does not exist or is not readable.\n\n", filename);
             usage(stderr);
@@ -634,7 +717,7 @@ void master(int argc, char *argv[], const int cores)
 
     if(psd_order < 0)
     {
-        const double Teff = 4*M_PI*CAPS_kB/CAPS_hbar/CAPS_c*T*L;
+        const double Teff = 4*CAPS_PI*CAPS_KB/CAPS_HBAR/CAPS_C*T*L;
         psd_order = ceil( (1-1.5*log10(epsrel))/sqrt(Teff) );
     }
 
@@ -648,7 +731,9 @@ void master(int argc, char *argv[], const int cores)
     time_as_string(time_str, sizeof(time_str)/sizeof(time_str[0]));
 
     caps_build(stdout, "# ");
-    printf("# pid: %d\n", (int)getpid());
+#ifndef _WIN32
+    printf("# pid: %d\n", getpid());
+#endif
     printf("# start time: %s\n", time_str);
     printf("#\n");
 
@@ -744,13 +829,13 @@ void master(int argc, char *argv[], const int cores)
         WARN(ier != 0, "ier=%d", ier);
 
         /* free energy for T=0 */
-        F = integral/caps_mpi->alpha/M_PI;
+        F = integral/caps_mpi->alpha/CAPS_PI;
     }
     else
     {
         /* finite temperature */
         double drude_HT = NAN, plasma_HT = NAN, pr_HT = NAN;
-        const double T_scaled = 2*M_PI*CAPS_kB*(R+L)*T/(CAPS_hbar*CAPS_c);
+        const double T_scaled = 2*CAPS_PI*CAPS_KB*(R+L)*T/(CAPS_HBAR*CAPS_C);
         double *v = NULL;
 
         /* xi = 0 */
@@ -782,8 +867,8 @@ void master(int argc, char *argv[], const int cores)
             {
                 double omegap_low, gamma_low;
                 material_get_extrapolation(material, &omegap_low, &gamma_low, NULL, NULL);
-                omegap_low *= CAPS_hbar_eV; /* convert from rad/s to eV */
-                gamma_low  *= CAPS_hbar_eV; /* convert from rad/s to eV */
+                omegap_low *= CAPS_HBAR_EV; /* convert from rad/s to eV */
+                gamma_low  *= CAPS_HBAR_EV; /* convert from rad/s to eV */
 
                 if(gamma_low == 0)
                 {
@@ -821,7 +906,7 @@ void master(int argc, char *argv[], const int cores)
 
             for(int n = 0; n < psd_order; n++)
             {
-                const double xi = psd_xi[n]*T_scaled/(2*M_PI);
+                const double xi = psd_xi[n]*T_scaled/(2*CAPS_PI);
                 const double t0 = now();
                 buf_push(v, psd_eta[n]*F_xi(xi, caps_mpi));
                 printf("# xi*(L+R)/c=%.16g, logdetD=%.16g, t=%g\n", xi, v[n+1], now()-t0);
@@ -846,7 +931,7 @@ void master(int argc, char *argv[], const int cores)
         }
 
         v[0] /= 2; /* half weight */
-        F = T_scaled/M_PI*kahan_sum(v, buf_size(v));
+        F = T_scaled/CAPS_PI*kahan_sum(v, buf_size(v));
 
         buf_free(v);
     }
@@ -866,14 +951,11 @@ void master(int argc, char *argv[], const int cores)
     caps_mpi_free(caps_mpi);
 }
 
-void slave(MPI_Comm master_comm, int rank)
+static void slave(MPI_Comm master_comm, const int rank)
 {
     char filename[512] = { 0 };
     double userdata[2] = { 0 };
     double buf[8] = { 0 };
-
-    MPI_Status status;
-    MPI_Request request;
 
     while(1)
     {
@@ -886,6 +968,7 @@ void slave(MPI_Comm master_comm, int rank)
         memset(filename, 0, sizeof(filename));
         memset(userdata, 0, sizeof(userdata));
 
+        MPI_Status status;
         MPI_Recv(buf, 8, MPI_DOUBLE, 0, 0, master_comm, &status);
 
         /* Matsubara frequency; xi_ = ξ(L+R)/c */
@@ -900,8 +983,8 @@ void slave(MPI_Comm master_comm, int rank)
         const double R = buf[2]; /* in m */
         const double LbyR = L/R;
 
-        const double omegap = buf[3]/CAPS_hbar_eV; /* plasma frequency in rad/s */
-        const double gamma_ = buf[4]/CAPS_hbar_eV; /* relaxation frequency in rad/s */
+        const double omegap = buf[3]/CAPS_HBAR_EV; /* plasma frequency in rad/s */
+        const double gamma_ = buf[4]/CAPS_HBAR_EV; /* relaxation frequency in rad/s */
 
         const int m          = (int)buf[5];
         const double iepsrel = buf[6];
@@ -947,16 +1030,17 @@ void slave(MPI_Comm master_comm, int rank)
             TERMINATE(isnan(logdet), "L/R=%.16g, xi_=%.16g, m=%d, ldim=%d", LbyR, xi_, m, ldim);
         }
 
-        MPI_Isend(&logdet, 1, MPI_DOUBLE, 0, 0, master_comm, &request);
         caps_free(caps);
-
         if(material != NULL)
             material_free(material);
+
+        MPI_Request request;
+        MPI_Isend(&logdet, 1, MPI_DOUBLE, 0, 0, master_comm, &request);
         MPI_Wait(&request, &status);
     }
 }
 
-void usage(FILE *stream)
+static void usage(FILE *stream)
 {
     fprintf(stream,
 "Usage: caps [OPTIONS]\n\n"

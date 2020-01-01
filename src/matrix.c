@@ -9,7 +9,6 @@
 #include <stdint.h>
 #include <stdio.h>
 #include <string.h>
-#include <strings.h>
 
 #include <hodlr.h>
 
@@ -17,7 +16,16 @@
 #include "misc.h"
 #include "utils.h"
 
-#include "clapack.h"
+#ifndef POW_2
+#define POW_2(x) ((x)*(x))
+#endif
+
+/* prototypes for LAPACK functions */
+double ddot_(int *n, double *dx, int *incx, double *dy, int *incy);
+int dgetrf_(int *m, int *n, double *a, int *lda, int *ipiv, int *info);
+int dpotrf_(char *uplo, int *n, double *a, int *lda, int *info);
+int dgeqrf_(int *m, int *n, double *a, int *lda, double *tau, double *work, int *lwork, int *info);
+int dgemm_(char *transa, char *transb, int *m, int *n, int *k, double *alpha, double *a, int *lda, double *b, int *ldb, double *beta, double *c__, int *ldc);
 
 
 /** @brief Compute \f$\log \det(1-A)\f$
@@ -387,12 +395,14 @@ void matrix_setall(matrix_t *A, double z)
 double matrix_trace(matrix_t *A)
 {
     const size_t dim = A->dim;
-    double array[dim];
+    double *array = xmalloc(dim*sizeof(double));
 
     for(size_t i = 0; i < dim; i++)
         array[i] = matrix_get(A, i,i);
 
-    return kahan_sum(array, dim);
+    double trace = kahan_sum(array, dim);
+    xfree(array);
+    return trace;
 }
 
 /**
@@ -411,16 +421,16 @@ double matrix_trace2(matrix_t *A)
 {
     const size_t dim = A->dim;
     double *M = A->M;
-    double array[dim];
+    double *array = xmalloc(dim*sizeof(double));
 
-    int N = dim;
-    int incx = 1;
-    int incy = N;
+    int N = dim, incx = 1, incy = N;
 
     for(size_t i = 0; i < dim; i++)
         array[i] = ddot_(&N, &M[dim*i], &incx, &M[i], &incy);
 
-    return kahan_sum(array, dim);
+    double trace2 = kahan_sum(array, dim);
+    xfree(array);
+    return trace2;
 }
 
 /**
@@ -435,7 +445,7 @@ double matrix_norm_frobenius(matrix_t *A)
     double *M = A->M;
 
     for(size_t i = 0; i < A->dim2; i++)
-        norm += pow_2(M[i]);
+        norm += POW_2(M[i]);
 
     return sqrt(norm);
 }
@@ -457,12 +467,14 @@ double matrix_norm_frobenius(matrix_t *A)
 double matrix_logdet_triangular(matrix_t *A)
 {
     size_t dim = A->dim;
-    double logdet[dim];
+    double *array = xmalloc(dim*sizeof(double));
 
     for(size_t i = 0; i < dim; i++)
-        logdet[i] = log(fabs(matrix_get(A, i, i)));
+        array[i] = log(fabs(matrix_get(A, i, i)));
 
-    return kahan_sum(logdet, dim);
+    double logdet = kahan_sum(array, dim);
+    xfree(array);
+    return logdet;
 }
 
 /**
@@ -490,9 +502,9 @@ double matrix_logdet_dense(matrix_t *A, double z, detalg_t detalg)
     {
         /* log(det(Id+zA)) ≈ z*tr(A) - z²/2 tr(A²) + ... */
         const double trA  = z*matrix_trace(A);
-        const double trA2 = pow_2(z)*matrix_trace2(A);
+        const double trA2 = POW_2(z)*matrix_trace2(A);
         const double mercator = trA-trA2/2;
-        const double error = fabs(pow_2(norm)/2+norm+log1p(-norm));
+        const double error = fabs(POW_2(norm)/2+norm+log1p(-norm));
         const double rel_error = fabs(error/mercator);
 
         if(rel_error < 1e-8)
@@ -554,7 +566,7 @@ double matrix_logdet_lu(matrix_t *A)
     if(dim <= 0)
         return NAN;
     int lda = (int)A->lda;
-    int ipiv[dim];
+    int *ipiv = xmalloc(dim*sizeof(int));
     double *a = A->M;
 
     dgetrf_(
@@ -567,7 +579,7 @@ double matrix_logdet_lu(matrix_t *A)
     );
 
     TERMINATE(info != 0, "dgetrf returned %d", info);
-
+    xfree(ipiv);
     return matrix_logdet_triangular(A);
 }
 
@@ -623,7 +635,7 @@ double matrix_logdet_cholesky(matrix_t *A, char uplo)
 double matrix_logdet_qr(matrix_t *A)
 {
     int dim = (int)A->dim;
-    double tau[dim];
+    double *tau = xmalloc(dim*sizeof(double));
     int lda = A->lda;
     int info = 0;
     int lwork = -1;
@@ -658,6 +670,7 @@ double matrix_logdet_qr(matrix_t *A)
         &info
     );
 
+    xfree(tau);
     xfree(work);
 
     TERMINATE(info != 0, "dgeqrf returned %d", info);

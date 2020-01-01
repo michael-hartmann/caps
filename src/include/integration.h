@@ -25,8 +25,6 @@ integration_plasma_t *caps_integrate_plasma_init(caps_t *caps, double omegap, do
 double caps_integrate_plasma(integration_plasma_t *self, int l1, int l2, int m, double *ratio1, double *ratio2);
 void caps_integrate_plasma_free(integration_plasma_t *self);
 
-double K_estimate(int nu, int m, double alpha, double eps, double *a, double *b, double *approx);
-
 #ifdef __cplusplus
 }
 #endif

@@ -32,6 +32,8 @@ if __name__ == "__main__":
 extern "C" {
 #endif
 
+#include "attributes.h"
+
 double lfac(unsigned int n) __attribute__ ((pure));
 double logi(unsigned int x) __attribute__ ((pure));
 

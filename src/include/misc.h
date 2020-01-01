@@ -5,10 +5,8 @@
 extern "C" {
 #endif
 
-#include <stdlib.h>
-#include <math.h>
-
-#include "constants.h"
+#include "attributes.h"
+#include "libcaps.h"
 
 /** represent number \f$v\f$ by its sign and \f$\log|v|\f$ */
 typedef struct

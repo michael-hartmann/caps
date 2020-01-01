@@ -11,7 +11,6 @@
 #include <string.h>
 #include <stdlib.h>
 
-#include "constants.h"
 #include "material.h"
 #include "utils.h"
 #include "misc.h"
@@ -37,7 +36,7 @@ static bool _parse(const char *line, const char *key, const char separator, doub
         p = strchr(p+strlen(key), separator); /* find separator */
         if(p != NULL)
         {
-            *value = atof(p+1);
+            *value = strtodouble(p+1);
             return true;
         }
     }
@@ -62,12 +61,8 @@ static bool _parse(const char *line, const char *key, const char separator, doub
  */
 material_t *material_init(const char *filename, double calL)
 {
-    /* prototype for setenv to avoid gcc warning */
-    int setenv(const char *name, const char *value, int overwrite);
-
-    char backup_lc_numeric[512] = { 0 };
     size_t points = 0;
-    size_t size = 128; /* max number of elems of array */
+    size_t size = 128; /* number of elems of array */
     char line[2048];
     FILE *f = fopen(filename, "r");
 
@@ -90,16 +85,6 @@ material_t *material_init(const char *filename, double calL)
     material->xi    = xmalloc(size*sizeof(double));
     material->epsm1 = xmalloc(size*sizeof(double));
 
-    /* copy environment value of LC_NUMERIC */
-    {
-        const char *p = getenv("LC_NUMERIC");
-        if(p != NULL)
-        {
-            strncpy(backup_lc_numeric, p, sizeof(backup_lc_numeric)-sizeof(char));
-            setenv("LC_NUMERIC", "C", 1);
-        }
-    }
-
     while(fgets(line, sizeof(line)/sizeof(char), f) != NULL)
     {
         /* remove whitespace at beginning and end of line */
@@ -121,7 +106,7 @@ material_t *material_init(const char *filename, double calL)
         const char *p = strchr(line, ' ');
         if(p != NULL)
         {
-            double xi = atof(line), epsm1 = atof(p)-1;
+            double xi = strtodouble(line), epsm1 = strtodouble(p)-1;
 
             /* increase buffer */
             if(points >= size)
@@ -151,16 +136,12 @@ material_t *material_init(const char *filename, double calL)
     material->points = points;
 
     /* convert from eV to rad/s */
-    material->omegap_low  /= CAPS_hbar_eV;
-    material->omegap_high /= CAPS_hbar_eV;
-    material->gamma_low   /= CAPS_hbar_eV;
-    material->gamma_high  /= CAPS_hbar_eV;
+    material->omegap_low  /= CAPS_HBAR_EV;
+    material->omegap_high /= CAPS_HBAR_EV;
+    material->gamma_low   /= CAPS_HBAR_EV;
+    material->gamma_high  /= CAPS_HBAR_EV;
 
 out:
-    /* restore environment value of LC_NUMERIC */
-    if(strlen(backup_lc_numeric))
-        setenv("LC_NUMERIC", backup_lc_numeric, 1);
-
     if(f != NULL)
         fclose(f);
 
@@ -232,10 +213,10 @@ void material_info(material_t *material, FILE *stream, const char *prefix)
     fprintf(stream, "%scalL        = %gm\n",   prefix, material->calL);
     fprintf(stream, "%sxi_min      = %g/m\n",  prefix, material->xi_min);
     fprintf(stream, "%sxi_max      = %g/m\n",  prefix, material->xi_max);
-    fprintf(stream, "%somegap_high = %geV\n",  prefix, CAPS_hbar_eV*material->omegap_high);
-    fprintf(stream, "%sgamma_high  = %geV\n",  prefix, CAPS_hbar_eV*material->gamma_high);
-    fprintf(stream, "%sgamma_low   = %geV\n",  prefix, CAPS_hbar_eV*material->gamma_low);
-    fprintf(stream, "%somegap_low  = %geV\n",  prefix, CAPS_hbar_eV*material->omegap_low);
+    fprintf(stream, "%somegap_high = %geV\n",  prefix, CAPS_HBAR_EV*material->omegap_high);
+    fprintf(stream, "%sgamma_high  = %geV\n",  prefix, CAPS_HBAR_EV*material->gamma_high);
+    fprintf(stream, "%sgamma_low   = %geV\n",  prefix, CAPS_HBAR_EV*material->gamma_low);
+    fprintf(stream, "%somegap_low  = %geV\n",  prefix, CAPS_HBAR_EV*material->omegap_low);
 }
 
 /** @brief Dielectric function for material
@@ -260,7 +241,7 @@ double material_epsilonm1(double xi, void *args)
         double omegap = self->omegap_low;
         double gamma_ = self->gamma_low;
 
-        return pow_2(omegap)/(xi*(xi+gamma_));
+        return POW_2(omegap)/(xi*(xi+gamma_));
     }
     else if(xi > xi_max)
     {
@@ -268,7 +249,7 @@ double material_epsilonm1(double xi, void *args)
         double omegap = self->omegap_high;
         double gamma_ = self->gamma_high;
 
-        return pow_2(omegap)/(xi*(xi+gamma_));
+        return POW_2(omegap)/(xi*(xi+gamma_));
     }
 
     /* do binary search */

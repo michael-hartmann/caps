@@ -5,6 +5,8 @@
 extern "C" {
 #endif
 
+#include "attributes.h"
+
 double lnPlm(int l, int m, double x) __attribute__ ((pure));
 double lnPlm_upwards(int l, int m, double x) __attribute__ ((pure));
 double lnPlm_downwards(int l, int m, double x) __attribute__ ((pure));

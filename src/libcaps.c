@@ -10,10 +10,8 @@
 #include <stdbool.h>
 #include <stdio.h>
 #include <string.h>
-#include <unistd.h>
 
 #include "quadpack.h"
-#include "constants.h"
 #include "bessel.h"
 #include "integration.h"
 #include "libcaps.h"
@@ -103,7 +101,7 @@ int caps_estimate_lminmax(caps_t *self, int m, size_t *lmin_p, size_t *lmax_p)
  */
 double caps_epsilonm1_plate(caps_t *self, double xi_)
 {
-    double xi = xi_*CAPS_c/self->calL;
+    double xi = xi_*CAPS_C/self->calL;
     return self->epsilonm1_plate(xi, self->userdata_plate);
 }
 
@@ -115,7 +113,7 @@ double caps_epsilonm1_plate(caps_t *self, double xi_)
  */
 double caps_epsilonm1_sphere(caps_t *self, double xi_)
 {
-    double xi = xi_*CAPS_c/self->calL;
+    double xi = xi_*CAPS_C/self->calL;
     return self->epsilonm1_sphere(xi, self->userdata_sphere);
 }
 
@@ -152,7 +150,7 @@ double caps_epsilonm1_drude(double xi, void *userdata)
     double *ptr = (double *)userdata;
     double omegap = ptr[0], gamma_ = ptr[1];
 
-    return pow_2(omegap)/(xi*(xi+gamma_));
+    return POW_2(omegap)/(xi*(xi+gamma_));
 }
 
 /*@}*/
@@ -193,7 +191,7 @@ caps_t *caps_init(double R, double L)
     self->L    = L;
     self->R    = R;
     self->calL = L+R;
-    self->y = -M_LOG2-log1p(LbyR); /* log( (R/(L+R))/2 ) */
+    self->y = -CAPS_LOG2-log1p(LbyR); /* log( (R/(L+R))/2 ) */
 
     /* dimension of vector space */
     self->ldim = ceil(MAX(CAPS_MINIMUM_LDIM, CAPS_FACTOR_LDIM/LbyR));
@@ -496,7 +494,7 @@ void caps_mie_perf(caps_t *self, double xi_, int l, double *lna, double *lnb)
     bessel_logInKn_half(l,   chi, &logIlp, &logKlp);
 
     /* Calculate b_l(chi), i.e. lnb */
-    *lnb = M_LOGPI-M_LOG2+logIlp-logKlp;
+    *lnb = CAPS_LOGPI-CAPS_LOG2+logIlp-logKlp;
 
     /* We want to calculate
      *
@@ -513,7 +511,7 @@ void caps_mie_perf(caps_t *self, double xi_, int l, double *lna, double *lnb)
 
     /* numerator and denominator to calculate al */
     double ratio = bessel_ratioI(l-0.5, chi);
-    double numerator = M_LOGPI-M_LOG2 + logIlp + log(chi*ratio - l);
+    double numerator = CAPS_LOGPI-CAPS_LOG2 + logIlp + log(chi*ratio - l);
     double denominator = logadd(logi(l)+logKlp, log_chi+logKlm);
 
     *lna = numerator-denominator;
@@ -597,8 +595,8 @@ void caps_mie(caps_t *self, double xi_, int l, double *lna, double *lnb)
     /* ln_gammaA - ln_gammba_B */
     double num = logIlp_nchi + logIlp + log( -l*epsilonm1 + n*chi*( n*ratio - ratio_n ) );
 
-    *lnb = M_LOGPI-M_LOG2 + ln_gammaB-ln_gammaD;
-    *lna = M_LOGPI-M_LOG2 + num - logadd(ln_gammaC, ln_gammaD);
+    *lnb = CAPS_LOGPI-CAPS_LOG2 + ln_gammaB-ln_gammaD;
+    *lna = CAPS_LOGPI-CAPS_LOG2 + num - logadd(ln_gammaC, ln_gammaD);
 }
 
 /**
@@ -638,7 +636,7 @@ void caps_fresnel(caps_t *self, double xi_, double k_, double *r_TE, double *r_T
      * when calculating 1-β. For this reason we use sqrtpm1 which calculates
      * β-1.
      */
-    const double x = pow_2(xi_)/(pow_2(xi_)+pow_2(k_))*epsilonm1;
+    const double x = POW_2(xi_)/(POW_2(xi_)+POW_2(k_))*epsilonm1;
     const double betam1 = sqrtpm1(x); /* β-1 */
     *r_TE = -betam1/(2+betam1);
     *r_TM = (epsilonm1-betam1)/(epsilonm1+2+betam1);
@@ -1043,7 +1041,7 @@ void caps_logdetD0(caps_t *self, int m, double omegap, double *EE, double *MM, d
 double caps_ht_drude(caps_t *caps)
 {
     const double x  = caps->LbyR; /* L/R */
-    const double x2 = pow_2(x);      /* (L/R)² */
+    const double x2 = POW_2(x);      /* (L/R)² */
     const double Z  = (1+x)*(1-sqrt((x2+2*x)/(x2+2*x+1)));
 
     double sum1 = 0, sum2 = 0;
@@ -1061,7 +1059,7 @@ double caps_ht_drude(caps_t *caps)
             break;
     }
 
-    return 0.5*(sum1 + log1p(-(1-pow_2(Z))*sum2));
+    return 0.5*(sum1 + log1p(-(1-POW_2(Z))*sum2));
 }
 
 /** @brief Compute free energy in the high-temperature limit for perfect reflectors

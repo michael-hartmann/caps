@@ -5,9 +5,7 @@
 extern "C" {
 #endif
 
-#ifndef M_PI
-#define M_PI 3.14159265358979323846
-#endif
+#include "attributes.h"
 
 double bessel_I0(double x) __attribute__ ((pure));
 double bessel_I1(double x) __attribute__ ((pure));

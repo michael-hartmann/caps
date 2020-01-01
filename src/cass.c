@@ -4,7 +4,6 @@
 #include "argparse.h"
 #include "cquadpack.h"
 
-#include "constants.h"
 #include "libcaps.h"
 #include "misc.h"
 
@@ -217,7 +216,7 @@ int main(int argc, const char *argv[])
     printf("# ier = %d, neval = %d\n", ier, neval);
     printf("#\n");
 
-    double E_ = integral/(2*M_PI);
+    double E_ = integral/(2*CAPS_PI);
 
     printf("# R1, R2, L, E*d/(hbar*c), relative error (due to integration)\n");
     printf("%.12g, %.12g, %.12g, %.12g, %g\n", R, R, d, E_, fabs(abserr/integral));

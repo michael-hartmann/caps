@@ -15,7 +15,7 @@ int test_caps_mie(void)
 
     double R = 100e-6, L = 100e-6;
     caps = caps_init(R, L);
-    userdata[0] = 50000.*CAPS_c/(L+R); userdata[1] = CAPS_c/(L+R);
+    userdata[0] = 50000.*CAPS_C/(L+R); userdata[1] = CAPS_C/(L+R);
     caps_set_epsilonm1(caps, caps_epsilonm1_drude, userdata);
 
     caps_mie(caps, 0.0001, 1, &lna, &lnb);
@@ -470,7 +470,7 @@ int test_caps_mie(void)
 */
 
 
-    userdata[0] = 5000*CAPS_c/(L+R); userdata[1] = CAPS_c/(L+R);
+    userdata[0] = 5000*CAPS_C/(L+R); userdata[1] = CAPS_C/(L+R);
     caps_set_epsilonm1(caps, caps_epsilonm1_drude, userdata);
 
     caps_mie(caps, 0.0001, 1, &lna, &lnb);
@@ -910,7 +910,7 @@ int test_caps_mie(void)
 */
 
 
-    userdata[0] = 500*CAPS_c/(L+R); userdata[1] = CAPS_c/(L+R);
+    userdata[0] = 500*CAPS_C/(L+R); userdata[1] = CAPS_C/(L+R);
     caps_set_epsilonm1(caps, caps_epsilonm1_drude, userdata);
 
     caps_mie(caps, 0.0001, 1, &lna, &lnb);
@@ -1350,7 +1350,7 @@ int test_caps_mie(void)
 */
 
 
-    userdata[0] = 100*CAPS_c/(L+R); userdata[1] = CAPS_c/(L+R);
+    userdata[0] = 100*CAPS_C/(L+R); userdata[1] = CAPS_C/(L+R);
     caps_set_epsilonm1(caps, caps_epsilonm1_drude, userdata);
 
     caps_mie(caps, 0.0001, 1, &lna, &lnb);

@@ -1,25 +1,42 @@
-cmake_minimum_required (VERSION 3.0)
+cmake_minimum_required (VERSION 3.6)
 project (CaPS)
 
+# git is optional
+find_package(Git)
+
+# required packages: mpi, blas, and lapack
 find_package(MPI REQUIRED)
 find_package(BLAS REQUIRED)
 find_package(LAPACK REQUIRED)
+
+# check if we need to link against libm
+check_library_exists(m sqrt "" LIBM)
 
 include_directories(${MPI_INCLUDE_PATH})
 include_directories("src/include/")
 include_directories("src/cquadpack/include/")
 include_directories("src/libhodlr/include/")
 
-# set standard optimization -O3
-if(NOT DEFINED OPT)
-    set(OPT "-O3")
+if(NOT CMAKE_BUILD_TYPE)
+  set(CMAKE_BUILD_TYPE Release)
 endif()
 
-# set CFLAGS
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=c99 ${OPT} -Wall -Wextra -Wmissing-prototypes -Wshadow -Wpointer-arith -Wcast-qual -Wwrite-strings -Wno-unused-parameter -fstrict-aliasing")
+if(MSVC)
+    set(CMAKE_C_FLAGS_RELEASE "/O3")
+    set(CMAKE_C_FLAGS_DEBUG "/g")
+else()
+    set(CMAKE_C_FLAGS_RELEASE "-O3")
+    set(CMAKE_C_FLAGS_DEBUG "-g")
+endif()
 
-# set CXXFLAGS
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 ${OPT} -Wall")
+# set warnings
+if(MSVC)
+    set(CMAKE_C_FLAGS "/W2")
+    set(CMAKE_CXX_FLAGS "/W2")
+else()
+    set(CMAKE_C_FLAGS "-std=c99 -Wall -Wextra -Wmissing-prototypes -Wshadow -Wpointer-arith -Wcast-qual -Wwrite-strings -Wno-unused-parameter -fstrict-aliasing")
+    set(CMAKE_CXX_FLAGS "-std=c++11 -Wall")
+endif()
 
 # By default, icc violates strict IEEE floating point behaviour - similar to
 # GCC's --fast-math option. The code, however, relies on strict IEEE floating
@@ -36,83 +53,103 @@ endif()
 # libhodlr
 add_library(hodlr SHARED src/libhodlr/src/hodlr.cpp src/libhodlr/src/HODLR_Matrix.cpp src/libhodlr/src/HODLR_Node.cpp src/libhodlr/src/HODLR_Tree.cpp src/libhodlr/src/HODLR_Tree_NonSPD.cpp src/libhodlr/src/HODLR_Tree_SPD.cpp src/libhodlr/src/KDTree.cpp)
 target_compile_definitions(hodlr PRIVATE -DUSE_DOUBLE)
-set_target_properties(hodlr PROPERTIES COMPILE_FLAGS "-Wno-unknown-pragmas")
+if(NOT MSVC)
+    set_target_properties(hodlr PROPERTIES COMPILE_FLAGS "-Wno-unknown-pragmas")
+endif()
 
 # libcaps
 add_library(caps SHARED src/bessel.c src/cache.c src/fcqs.c src/integration.c src/libcaps.c src/logfac.c src/material.c src/matrix.c src/misc.c src/plm.c src/psd.c src/utils.c src/cquadpack/src/dqage.c src/cquadpack/src/dqagi.c src/cquadpack/src/dqags.c src/cquadpack/src/dqext.c src/cquadpack/src/dqk15.c src/cquadpack/src/dqk15i.c src/cquadpack/src/dqk21.c src/cquadpack/src/dqk31.c src/cquadpack/src/dqk41.c src/cquadpack/src/dqk51.c src/cquadpack/src/dqk61.c src/cquadpack/src/dqsort.c)
 
 target_compile_definitions(caps PRIVATE LIBCAPS_VERSION="0.5")
 
-# get machine name
-execute_process(
-  COMMAND uname -smnr
-  WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
-  OUTPUT_VARIABLE MACHINE
-  OUTPUT_STRIP_TRAILING_WHITESPACE
-)
-target_compile_definitions(caps PRIVATE -DMACHINE="${MACHINE}")
+# get information about host
+cmake_host_system_information(RESULT hostname QUERY HOSTNAME)
+cmake_host_system_information(RESULT processor_description QUERY PROCESSOR_DESCRIPTION)
+cmake_host_system_information(RESULT os_name QUERY OS_NAME)
+cmake_host_system_information(RESULT os_release QUERY OS_RELEASE)
+cmake_host_system_information(RESULT os_version QUERY OS_VERSION)
+cmake_host_system_information(RESULT os_platform QUERY OS_PLATFORM)
+set(host_info_raw "${hostname}, ${processor_description}, ${os_name} ${os_version} (${os_platform})")
+string(REPLACE "#" "" host_info ${host_info_raw})
+target_compile_definitions(caps PRIVATE -DMACHINE="${host_info}")
 
 # get GIT head and branch
-if(EXISTS "${CMAKE_SOURCE_DIR}/.git")
+if(EXISTS "${CMAKE_SOURCE_DIR}/.git" AND ${GIT_FOUND})
   execute_process(
-    COMMAND git rev-parse --abbrev-ref HEAD
+    COMMAND ${GIT_EXECUTABLE} rev-parse --abbrev-ref HEAD
     WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
     OUTPUT_VARIABLE GIT_BRANCH
     OUTPUT_STRIP_TRAILING_WHITESPACE
   )
 
   execute_process(
-    COMMAND git log -1 --format=%h
+    COMMAND ${GIT_EXECUTABLE} log -1 --format=%h
     WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
     OUTPUT_VARIABLE GIT_COMMIT_HASH
     OUTPUT_STRIP_TRAILING_WHITESPACE
   )
 
   target_compile_definitions(caps PRIVATE -DGIT_HEAD="${GIT_COMMIT_HASH}" -DGIT_BRANCH="${GIT_BRANCH}")
-endif(EXISTS "${CMAKE_SOURCE_DIR}/.git")
+endif()
+
+if(${LIBM})
+    target_link_libraries(caps m)
+endif()
+target_link_libraries(caps ${BLAS_LIBRARIES})
+target_link_libraries(caps ${LAPACK_LIBRARIES})
+target_link_libraries(caps hodlr)
 
 
 # caps frontend exectuable
 add_executable(caps_frontend src/caps.c)
 set_target_properties(caps_frontend PROPERTIES OUTPUT_NAME "caps")
 
-target_link_libraries(caps_frontend m)
+if(${LIBM})
+    target_link_libraries(caps_frontend m)
+endif()
 target_link_libraries(caps_frontend ${MPI_LIBRARIES})
 target_link_libraries(caps_frontend ${BLAS_LIBRARIES})
 target_link_libraries(caps_frontend ${LAPACK_LIBRARIES})
-target_link_libraries(caps_frontend ${CMAKE_BINARY_DIR}/libcaps.so)
-target_link_libraries(caps_frontend ${CMAKE_BINARY_DIR}/libhodlr.so)
+target_link_libraries(caps_frontend caps)
+target_link_libraries(caps_frontend hodlr)
 
 
 # caps_logdetD
 add_executable(caps_logdetD src/caps_logdetD.c)
 
-target_link_libraries(caps_logdetD m)
+if(${LIBM})
+    target_link_libraries(caps_logdetD m)
+endif()
 target_link_libraries(caps_logdetD ${BLAS_LIBRARIES})
 target_link_libraries(caps_logdetD ${LAPACK_LIBRARIES})
-target_link_libraries(caps_logdetD ${CMAKE_BINARY_DIR}/libcaps.so)
-target_link_libraries(caps_logdetD ${CMAKE_BINARY_DIR}/libhodlr.so)
+target_link_libraries(caps_logdetD caps)
+target_link_libraries(caps_logdetD hodlr)
 
 
 # capc
 add_executable(capc src/capc.cpp src/argparse.c)
 set_target_properties(capc PROPERTIES EXCLUDE_FROM_ALL 1)
 
+if(${LIBM})
+    target_link_libraries(capc m)
+endif()
 target_link_libraries(capc ${BLAS_LIBRARIES})
 target_link_libraries(capc ${LAPACK_LIBRARIES})
-target_link_libraries(capc ${CMAKE_BINARY_DIR}/libcaps.so)
-target_link_libraries(capc ${CMAKE_BINARY_DIR}/libhodlr.so)
+target_link_libraries(capc caps)
+target_link_libraries(capc hodlr)
 
 
 # cass
 add_executable(cass src/cass.c src/argparse.c)
 set_target_properties(cass PROPERTIES EXCLUDE_FROM_ALL 1)
-target_link_libraries(cass m)
 
+if(${LIBM})
+    target_link_libraries(cass m)
+endif()
 target_link_libraries(cass ${BLAS_LIBRARIES})
 target_link_libraries(cass ${LAPACK_LIBRARIES})
-target_link_libraries(cass ${CMAKE_BINARY_DIR}/libcaps.so)
-target_link_libraries(cass ${CMAKE_BINARY_DIR}/libhodlr.so)
+target_link_libraries(cass caps)
+target_link_libraries(cass hodlr)
 
 
 # tests
@@ -120,11 +157,13 @@ add_executable(tests src/tests/test_bessels.c src/tests/test_fresnel.c src/tests
 set_target_properties(tests PROPERTIES EXCLUDE_FROM_ALL 1)
 set_target_properties(tests PROPERTIES OUTPUT_NAME "caps_tests")
 
-target_link_libraries(tests m)
+if(${LIBM})
+    target_link_libraries(tests m)
+endif()
 target_link_libraries(tests ${BLAS_LIBRARIES})
 target_link_libraries(tests ${LAPACK_LIBRARIES})
-target_link_libraries(tests ${CMAKE_BINARY_DIR}/libcaps.so)
-target_link_libraries(tests ${CMAKE_BINARY_DIR}/libhodlr.so)
+target_link_libraries(tests caps)
+target_link_libraries(tests hodlr)
 
 
 # examples
@@ -132,17 +171,19 @@ target_link_libraries(tests ${CMAKE_BINARY_DIR}/libhodlr.so)
 add_executable(AuAl examples/AuAl.c)
 set_target_properties(AuAl PROPERTIES EXCLUDE_FROM_ALL 1)
 
+if(${LIBM})
+    target_link_libraries(AuAl m)
+endif()
 target_link_libraries(AuAl ${BLAS_LIBRARIES})
 target_link_libraries(AuAl ${LAPACK_LIBRARIES})
-target_link_libraries(AuAl ${CMAKE_BINARY_DIR}/libcaps.so)
-target_link_libraries(AuAl ${CMAKE_BINARY_DIR}/libhodlr.so)
+target_link_libraries(AuAl caps)
+target_link_libraries(AuAl hodlr)
 
 message("")
 message("#################")
 message("# Build options #")
 message("#################")
 message("")
-message("optimization:      " ${OPT})
 message("C compiler:        " ${CMAKE_C_COMPILER})
 message("C flags:           " ${CMAKE_C_FLAGS})
 message("C++ compiler:      " ${CMAKE_CXX_COMPILER})
@@ -151,6 +192,6 @@ message("blas libraries:    " ${BLAS_LIBRARIES})
 message("lapack libraries:  " ${LAPACK_LIBRARIES})
 message("latest git commit: " ${GIT_COMMIT_HASH})
 message("git branch:        " ${GIT_BRANCH})
-message("machine:           " ${MACHINE})
+message("machine:           " ${host_info})
 message("build directory:   " ${CMAKE_BINARY_DIR})
 message("")

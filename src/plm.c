@@ -8,7 +8,6 @@
 #include <math.h>
 #include <stdbool.h>
 
-#include "constants.h"
 #include "plm.h"
 #include "logfac.h"
 #include "misc.h"
@@ -71,18 +70,21 @@ double lnPlm(int l, int m, double x)
  */
 double lnPlm_upwards(int l, int m, double x)
 {
-    double array[l-m+1];
     /* P_m^m = (2m)!/(2^m*m!) (x²-1)^(m/2), http://dlmf.nist.gov/14.7.E15 */
     double log_prefactor = lfac(2*m)-m*log(2)-lfac(m) + m/2.*log((x+1)*(x-1));
 
     if(l == m)
         return log_prefactor;
 
+    double *array = xmalloc((l-m+1)*sizeof(double));
     array[0] = 1;
     array[1] = x*(2*m+1)*array[0];
 
     if(array[1] == 0)
+    {
+        xfree(array);
         return -INFINITY;
+    }
 
     for(int ll = 2; ll < l+1-m; ll++)
     {
@@ -105,10 +107,13 @@ double lnPlm_upwards(int l, int m, double x)
         }
     }
 
-    if(isnan(array[l-m]))
+    const double v = array[l-m];
+    xfree(array);
+
+    if(isnan(v))
         return NAN;
 
-    return log_prefactor+log(fabs(array[l-m]));
+    return log_prefactor+log(fabs(v));
 }
 
 
@@ -158,11 +163,11 @@ static double _Pl1(int l, double x, double sinhxi)
 
         sinhxi_m *= sinhxi;
         expxi_m  *= expxi;
-        Clm *= pow_2(m+0.5)/((2*m+2)*(l+1.5+m));
+        Clm *= POW_2(m+0.5)/((2*m+2)*(l+1.5+m));
     }
     sum += Clm*(expxi_m+exp(-(2*l+M-1+1)*xi))/sinhxi_m; /* m=M-1 */
 
-    return -(M_LOG2+M_LOGPI)/2 - log(sinhxi)/2 + log(sum) + (l+0.5)*xi;
+    return -(CAPS_LOG2+CAPS_LOGPI)/2 - log(sinhxi)/2 + log(sum) + (l+0.5)*xi;
 }
 
 /** see equations (3.27)-(3.31) */
