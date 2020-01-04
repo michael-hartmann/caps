@@ -8,7 +8,7 @@
 static double epsm1_gold(double xi, void *args)
 {
     /* plasma frequency and relaxation frequency in rad/s */
-    double omegap = 9/CAPS_hbar_eV, gamma = 0.035/CAPS_hbar_eV;
+    double omegap = 9/CAPS_HBAR_EV, gamma = 0.035/CAPS_HBAR_EV;
 
     /* epsilon-1 = omegap²/(xi*(xi+gamma)) */
     return omegap*omegap/(xi*(xi+gamma));
@@ -20,7 +20,7 @@ static double epsm1_gold(double xi, void *args)
 static double epsm1_aluminium(double xi, void *args)
 {
     /* plasma frequency and relaxation frequency in rad/s */
-    double omegap = 11.5/CAPS_hbar_eV, gamma = 0.05/CAPS_hbar_eV;
+    double omegap = 11.5/CAPS_HBAR_EV, gamma = 0.05/CAPS_HBAR_EV;
 
     /* epsilon-1 = omegap²/(xi*(xi+gamma)) */
     return omegap*omegap/(xi*(xi+gamma));
@@ -63,9 +63,9 @@ int main(int argc, char *argv[])
     for(int n = 1; 1; n++)
     {
         /* n-th Matsubara frequency */
-        double xi_n = 2*M_PI*n*CAPS_kB*T/CAPS_hbar;
+        double xi_n = 2*CAPS_PI*n*CAPS_KB*T/CAPS_HBAR;
 
-        double calLbyc = (L+R)/CAPS_c; /* (L+R)c */
+        double calLbyc = (L+R)/CAPS_C; /* (L+R)c */
 
         /* compute the sum over m */
         double sum_m = 0;
