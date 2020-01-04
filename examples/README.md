@@ -12,7 +12,6 @@ Compile the program as:
 ```
 mkdir bin/
 cmake ..
-make
 make AuAl
 ```
 
