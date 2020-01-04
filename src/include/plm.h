@@ -1,5 +1,5 @@
-#ifndef __PLM_H
-#define __PLM_H
+#ifndef PLM_H
+#define PLM_H
 
 #ifdef __cplusplus
 extern "C" {
