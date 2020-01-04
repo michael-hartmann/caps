@@ -1,6 +1,8 @@
 cmake_minimum_required (VERSION 3.6)
 project (CaPS)
 
+option(BUILD_SHARED "Build libcaps as shared library" OFF)
+
 # git is optional
 find_package(Git)
 
@@ -9,24 +11,33 @@ find_package(MPI REQUIRED)
 find_package(BLAS REQUIRED)
 find_package(LAPACK REQUIRED)
 
+# generate position independent code for all targets
+set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+
 # check if we need to link against libm
 check_library_exists(m sqrt "" LIBM)
 
+# add necessary include directories
 include_directories(${MPI_INCLUDE_PATH})
 include_directories("src/include/")
 include_directories("src/cquadpack/include/")
 include_directories("src/libhodlr/include/")
 
+# set release to default build type
 if(NOT CMAKE_BUILD_TYPE)
   set(CMAKE_BUILD_TYPE Release)
 endif()
 
 if(MSVC)
-    set(CMAKE_C_FLAGS_RELEASE "/O3")
+    set(CMAKE_C_FLAGS_RELEASE "/O2")
+    set(CMAKE_CXX_FLAGS_RELEASE "/O2")
     set(CMAKE_C_FLAGS_DEBUG "/g")
+    set(CMAKE_CXX_FLAGS_DEBUG "/g")
 else()
     set(CMAKE_C_FLAGS_RELEASE "-O3")
+    set(CMAKE_CXX_FLAGS_RELEASE "-O3")
     set(CMAKE_C_FLAGS_DEBUG "-g")
+    set(CMAKE_CXX_FLAGS_DEBUG "-g")
 endif()
 
 # set warnings
@@ -51,14 +62,25 @@ if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Intel")
 endif()
 
 # libhodlr
-add_library(hodlr SHARED src/libhodlr/src/hodlr.cpp src/libhodlr/src/HODLR_Matrix.cpp src/libhodlr/src/HODLR_Node.cpp src/libhodlr/src/HODLR_Tree.cpp src/libhodlr/src/HODLR_Tree_NonSPD.cpp src/libhodlr/src/HODLR_Tree_SPD.cpp src/libhodlr/src/KDTree.cpp)
+add_library(hodlr STATIC src/libhodlr/src/hodlr.cpp src/libhodlr/src/HODLR_Matrix.cpp src/libhodlr/src/HODLR_Node.cpp src/libhodlr/src/HODLR_Tree.cpp src/libhodlr/src/HODLR_Tree_NonSPD.cpp src/libhodlr/src/HODLR_Tree_SPD.cpp src/libhodlr/src/KDTree.cpp)
 target_compile_definitions(hodlr PRIVATE -DUSE_DOUBLE)
 if(NOT MSVC)
     set_target_properties(hodlr PROPERTIES COMPILE_FLAGS "-Wno-unknown-pragmas")
 endif()
 
+# cquadpack
+add_library(cquadpack STATIC src/cquadpack/src/dqage.c src/cquadpack/src/dqagi.c src/cquadpack/src/dqags.c src/cquadpack/src/dqext.c src/cquadpack/src/dqk15.c src/cquadpack/src/dqk15i.c src/cquadpack/src/dqk21.c src/cquadpack/src/dqk31.c src/cquadpack/src/dqk41.c src/cquadpack/src/dqk51.c src/cquadpack/src/dqk61.c src/cquadpack/src/dqsort.c)
+
+# argparse
+add_library(argparse STATIC src/argparse.c)
+
 # libcaps
-add_library(caps SHARED src/bessel.c src/cache.c src/fcqs.c src/integration.c src/libcaps.c src/logfac.c src/material.c src/matrix.c src/misc.c src/plm.c src/psd.c src/utils.c src/cquadpack/src/dqage.c src/cquadpack/src/dqagi.c src/cquadpack/src/dqags.c src/cquadpack/src/dqext.c src/cquadpack/src/dqk15.c src/cquadpack/src/dqk15i.c src/cquadpack/src/dqk21.c src/cquadpack/src/dqk31.c src/cquadpack/src/dqk41.c src/cquadpack/src/dqk51.c src/cquadpack/src/dqk61.c src/cquadpack/src/dqsort.c)
+set(caps_src src/bessel.c src/cache.c src/fcqs.c src/integration.c src/libcaps.c src/logfac.c src/material.c src/matrix.c src/misc.c src/plm.c src/psd.c src/utils.c)
+if(BUILD_SHARED)
+    add_library(caps SHARED ${caps_src})
+else()
+    add_library(caps SHARED ${caps_src})
+endif()
 
 target_compile_definitions(caps PRIVATE LIBCAPS_VERSION="0.5")
 
@@ -97,6 +119,7 @@ if(${LIBM})
 endif()
 target_link_libraries(caps ${BLAS_LIBRARIES})
 target_link_libraries(caps ${LAPACK_LIBRARIES})
+target_link_libraries(caps cquadpack)
 target_link_libraries(caps hodlr)
 
 
@@ -111,7 +134,6 @@ target_link_libraries(caps_frontend ${MPI_LIBRARIES})
 target_link_libraries(caps_frontend ${BLAS_LIBRARIES})
 target_link_libraries(caps_frontend ${LAPACK_LIBRARIES})
 target_link_libraries(caps_frontend caps)
-target_link_libraries(caps_frontend hodlr)
 
 
 # caps_logdetD
@@ -123,12 +145,10 @@ endif()
 target_link_libraries(caps_logdetD ${BLAS_LIBRARIES})
 target_link_libraries(caps_logdetD ${LAPACK_LIBRARIES})
 target_link_libraries(caps_logdetD caps)
-target_link_libraries(caps_logdetD hodlr)
 
 
 # capc
-add_executable(capc src/capc.cpp src/argparse.c)
-set_target_properties(capc PROPERTIES EXCLUDE_FROM_ALL 1)
+add_executable(capc src/capc.cpp)
 
 if(${LIBM})
     target_link_libraries(capc m)
@@ -136,12 +156,11 @@ endif()
 target_link_libraries(capc ${BLAS_LIBRARIES})
 target_link_libraries(capc ${LAPACK_LIBRARIES})
 target_link_libraries(capc caps)
-target_link_libraries(capc hodlr)
+target_link_libraries(capc argparse)
 
 
 # cass
-add_executable(cass src/cass.c src/argparse.c)
-set_target_properties(cass PROPERTIES EXCLUDE_FROM_ALL 1)
+add_executable(cass src/cass.c)
 
 if(${LIBM})
     target_link_libraries(cass m)
@@ -149,7 +168,7 @@ endif()
 target_link_libraries(cass ${BLAS_LIBRARIES})
 target_link_libraries(cass ${LAPACK_LIBRARIES})
 target_link_libraries(cass caps)
-target_link_libraries(cass hodlr)
+target_link_libraries(cass argparse)
 
 
 # tests
@@ -163,7 +182,6 @@ endif()
 target_link_libraries(tests ${BLAS_LIBRARIES})
 target_link_libraries(tests ${LAPACK_LIBRARIES})
 target_link_libraries(tests caps)
-target_link_libraries(tests hodlr)
 
 
 # examples
@@ -177,7 +195,6 @@ endif()
 target_link_libraries(AuAl ${BLAS_LIBRARIES})
 target_link_libraries(AuAl ${LAPACK_LIBRARIES})
 target_link_libraries(AuAl caps)
-target_link_libraries(AuAl hodlr)
 
 message("")
 message("#################")
@@ -185,13 +202,10 @@ message("# Build options #")
 message("#################")
 message("")
 message("C compiler:        " ${CMAKE_C_COMPILER})
-message("C flags:           " ${CMAKE_C_FLAGS})
 message("C++ compiler:      " ${CMAKE_CXX_COMPILER})
-message("C++ flags:         " ${CMAKE_CXX_FLAGS})
 message("blas libraries:    " ${BLAS_LIBRARIES})
 message("lapack libraries:  " ${LAPACK_LIBRARIES})
 message("latest git commit: " ${GIT_COMMIT_HASH})
 message("git branch:        " ${GIT_BRANCH})
 message("machine:           " ${host_info})
-message("build directory:   " ${CMAKE_BINARY_DIR})
 message("")
