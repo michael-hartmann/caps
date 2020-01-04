@@ -1,5 +1,5 @@
-#ifndef __MATRIX_H
-#define __MATRIX_H
+#ifndef MATRIX_H
+#define MATRIX_H
 
 #ifdef __cplusplus
 extern "C" {

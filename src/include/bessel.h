@@ -1,5 +1,5 @@
-#ifndef __BESSEL_H
-#define __BESSEL_H
+#ifndef BESSEL_H
+#define BESSEL_H
 
 #ifdef __cplusplus
 extern "C" {
