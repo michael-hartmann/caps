@@ -13,6 +13,7 @@
 extern "C" {
 #endif
 
+#include <stdio.h>
 #include <stdint.h>
 
 struct argparse;
@@ -124,6 +125,7 @@ void argparse_describe(struct argparse *self, const char *description,
                        const char *epilog);
 int argparse_parse(struct argparse *self, int argc, const char **argv);
 void argparse_usage(struct argparse *self);
+void argparse_usage_stream(struct argparse *self, FILE *stream);
 
 #ifdef __cplusplus
 }

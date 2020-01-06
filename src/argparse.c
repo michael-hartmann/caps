@@ -305,19 +305,25 @@ end:
 void
 argparse_usage(struct argparse *self)
 {
+    argparse_usage_stream(self, stdout);
+}
+
+void
+argparse_usage_stream(struct argparse *self, FILE *stream)
+{
     if (self->usages) {
-        fprintf(stdout, "Usage: %s\n", *self->usages++);
+        fprintf(stream, "Usage: %s\n", *self->usages++);
         while (*self->usages && **self->usages)
-            fprintf(stdout, "   or: %s\n", *self->usages++);
+            fprintf(stream, "   or: %s\n", *self->usages++);
     } else {
-        fprintf(stdout, "Usage:\n");
+        fprintf(stream, "Usage:\n");
     }
 
     // print description
     if (self->description)
-        fprintf(stdout, "%s\n", self->description);
+        fprintf(stream, "%s\n", self->description);
 
-    fputc('\n', stdout);
+    fputc('\n', stream);
 
     const struct argparse_option *options;
 
@@ -359,44 +365,44 @@ argparse_usage(struct argparse *self)
         size_t pos = 0;
         int pad    = 0;
         if (options->type == ARGPARSE_OPT_GROUP) {
-            fputc('\n', stdout);
-            fprintf(stdout, "%s", options->help);
-            fputc('\n', stdout);
+            fputc('\n', stream);
+            fprintf(stream, "%s", options->help);
+            fputc('\n', stream);
             continue;
         }
-        pos = fprintf(stdout, "    ");
+        pos = fprintf(stream, "    ");
         if (options->short_name) {
-            pos += fprintf(stdout, "-%c", options->short_name);
+            pos += fprintf(stream, "-%c", options->short_name);
         }
         if (options->long_name && options->short_name) {
-            pos += fprintf(stdout, ", ");
+            pos += fprintf(stream, ", ");
         }
         if (options->long_name) {
-            pos += fprintf(stdout, "--%s", options->long_name);
+            pos += fprintf(stream, "--%s", options->long_name);
         }
         if (options->type == ARGPARSE_OPT_INTEGER) {
-            pos += fprintf(stdout, "=<int>");
+            pos += fprintf(stream, "=<int>");
         }
         if (options->type == ARGPARSE_OPT_FLOAT) {
-            pos += fprintf(stdout, "=<flt>");
+            pos += fprintf(stream, "=<flt>");
         }
         if (options->type == ARGPARSE_OPT_DOUBLE) {
-            pos += fprintf(stdout, "=<dbl>");
+            pos += fprintf(stream, "=<dbl>");
         } else if (options->type == ARGPARSE_OPT_STRING) {
-            pos += fprintf(stdout, "=<str>");
+            pos += fprintf(stream, "=<str>");
         }
         if (pos <= usage_opts_width) {
             pad = usage_opts_width - pos;
         } else {
-            fputc('\n', stdout);
+            fputc('\n', stream);
             pad = usage_opts_width;
         }
-        fprintf(stdout, "%*s%s\n", pad + 2, "", options->help);
+        fprintf(stream, "%*s%s\n", pad + 2, "", options->help);
     }
 
     // print epilog
     if (self->epilog)
-        fprintf(stdout, "%s\n", self->epilog);
+        fprintf(stream, "%s\n", self->epilog);
 }
 
 int
