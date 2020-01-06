@@ -274,14 +274,7 @@ void caps_info(caps_t *self, FILE *stream, const char *prefix)
     if(prefix == NULL)
         prefix = "";
 
-    switch(self->detalg)
-    {
-        case DETALG_HODLR:    detalg_str = "HODLR";    break;
-        case DETALG_LU:       detalg_str = "LU";       break;
-        case DETALG_QR:       detalg_str = "QR";       break;
-        case DETALG_CHOLESKY: detalg_str = "CHOLESKY"; break;
-        default:              detalg_str = "unknown";
-    }
+    caps_detalg_to_string(self->detalg, &detalg_str);
 
     fprintf(stream, "%sL/R    = %.16g\n", prefix, self->LbyR);
     fprintf(stream, "%sL      = %.16g\n", prefix, self->L);
@@ -381,7 +374,79 @@ void caps_set_epsilonm1_sphere(caps_t *self, double (*epsilonm1)(double xi_, voi
 }
 
 /**
- * @brief Set algorithm to calculate deterimant
+ * @brief Get detalg from string
+ *
+ * Given the string str, find the corresponding detalg_t value and write it to
+ * detalg.
+ *
+ * If detalg is NULL, no value will be written to detalg.
+ *
+ * @param [in] str    string
+ * @param [in] detalg determinant algorithm
+ * @retval 1          if determinant algorithm was found
+ * @retval 0          if determinant algorithm was not found
+ */
+int caps_detalg_from_string(const char *str, detalg_t *detalg)
+{
+    if(str == NULL)
+        return 0;
+
+    if(strcaseequal(str, "HODLR"))
+    {
+        if(detalg != NULL)
+            *detalg = DETALG_HODLR;
+        return 1;
+    }
+    else if(strcaseequal(str, "Cholesky"))
+    {
+        if(detalg != NULL)
+            *detalg = DETALG_CHOLESKY;
+        return 1;
+    }
+    else if(strcaseequal(str, "LU"))
+    {
+        if(detalg != NULL)
+            *detalg = DETALG_LU;
+        return 1;
+    }
+    else if(strcaseequal(str, "QR"))
+    {
+        if(detalg != NULL)
+            *detalg = DETALG_QR;
+        return 1;
+    }
+
+    return 0;
+}
+
+/**
+ * @brief Get string description of detalg
+ *
+ * Given a detalg, return a string description of the algorithm.
+ *
+ * @param [in] detalg determinant algorithm
+ * @param [in] str    pointer to a constant string
+ * @retval 1          if determinant algorithm was found
+ * @retval 0          if determinant algorithm was not found
+ */
+int caps_detalg_to_string(detalg_t detalg, const char **str)
+{
+    static const char *detalg_str[] = {
+        "HODLR", "Cholesky", "LU", "QR", "unknown"
+    };
+
+    switch(detalg)
+    {
+        case DETALG_HODLR:    *str = detalg_str[0]; return 1;
+        case DETALG_CHOLESKY: *str = detalg_str[1]; return 1;
+        case DETALG_LU:       *str = detalg_str[2]; return 1;
+        case DETALG_QR:       *str = detalg_str[3]; return 1;
+        default:              *str = detalg_str[4]; return 0;
+    }
+}
+
+/**
+ * @brief Set algorithm to calculate determinant
  *
  * The algorithm is given by detalg. Usually you don't want to change the
  * algorithm to compute the determinant.
@@ -393,18 +458,10 @@ void caps_set_epsilonm1_sphere(caps_t *self, double (*epsilonm1)(double xi_, voi
  *
  * @param [in,out] self CaPS object
  * @param [in] detalg algorithm to compute determinant
- * @retval success 1 if successful, 0 if not successful
  */
-int caps_set_detalg(caps_t *self, detalg_t detalg)
+void caps_set_detalg(caps_t *self, detalg_t detalg)
 {
-    if(detalg == DETALG_HODLR)
-    {
-        self->detalg = detalg;
-        return 1;
-    }
-
     self->detalg = detalg;
-    return 1;
 }
 
 /**

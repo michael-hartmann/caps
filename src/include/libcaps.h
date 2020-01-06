@@ -158,8 +158,10 @@ void caps_set_epsilonm1_sphere(caps_t *self, double (*epsilonm1)(double xi_, voi
 int caps_get_ldim(caps_t *self);
 int caps_set_ldim(caps_t *self, int ldim);
 
+int caps_detalg_from_string(const char *str, detalg_t *detalg);
+int caps_detalg_to_string(detalg_t detalg, const char **str);
 detalg_t caps_get_detalg(caps_t *self);
-int caps_set_detalg(caps_t *self, detalg_t detalg);
+void caps_set_detalg(caps_t *self, detalg_t detalg);
 
 double caps_get_epsrel(caps_t *self);
 int    caps_set_epsrel(caps_t *self, double epsrel);
