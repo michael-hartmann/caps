@@ -145,6 +145,7 @@ endif()
 target_link_libraries(caps_logdetD ${BLAS_LIBRARIES})
 target_link_libraries(caps_logdetD ${LAPACK_LIBRARIES})
 target_link_libraries(caps_logdetD caps)
+target_link_libraries(caps_logdetD argparse)
 
 
 # capc
