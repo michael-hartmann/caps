@@ -148,7 +148,7 @@ void HODLR_Matrix::rookPiv(int n_row_start, int n_col_start,
             {
                 if(eval_at_end)
                 {
-                    new_row_ind = *remaining_row_ind.end();
+                    new_row_ind = *--remaining_row_ind.end();
                 }
 
                 else
