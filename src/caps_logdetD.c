@@ -1,46 +1,11 @@
-#include <getopt.h>
-#include <math.h>
 #include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
 
+#include "argparse.h"
 #include "material.h"
 #include "libcaps.h"
-#include "misc.h"
-#include "utils.h"
 
-
-/* print usage */
-static void usage(FILE *stream)
-{
-    fprintf(stream,
-"Usage: capc_logdetD [OPTIONS]\n\n"
-"This program will calculate the free Casimir energy for the plane-sphere\n"
-"geometry for given n,m,T,L/R.\n"
-"\n"
-"Mandatory options:\n"
-"    -L     separation L\n"
-"    -R     radius R\n"
-"    --xi   imaginary frequency ξ in units of (L+R)/c\n"
-"    -m     value of m\n"
-"\n"
-"Further options:\n"
-"    -l, --ldim LDIM\n"
-"        Set ldim to LDIM.\n"
-"\n"
-"    -f, --material FILENAME\n"
-"        Use material described by FILENAME.\n"
-"\n"
-"    -d, --detalg DETALG\n"
-"        Compute the matrix using DETALG (LU, QR, CHOLESKY, HODLR)\n"
-"\n"
-"    -i, --iepsrel IEPSREL\n"
-"        Relative accuracy to evaluate integrals\n"
-"\n"
-"    -h,--help\n"
-"        Show this help.\n"
-"\n"
-"\n"
+static const char *usage_epilog =
+"\n\n"
 "Environment variables:\n"
 "   CAPS_DUMP:\n"
 "        If this variable is set, the round-trip matrix will be dumped in numpy\n"
@@ -48,100 +13,47 @@ static void usage(FILE *stream)
 "        round-trip matrix will only be dumped if detalg is QR, LU or CHOLESKY.\n"
 "\n"
 "   CAPS_CACHE_ELEMS:\n"
-"        Determines the size of the cache for the integrals I."
-"\n");
-}
+"        Determines the size of the cache for the integrals I.";
 
-int main(int argc, char *argv[])
+int main(int argc, const char **argv)
 {
-    double iepsrel = 0;
     double start_time = now();
-    detalg_t detalg = DETALG_HODLR;
 
-    char filename[512] = { 0 };
-
-    /* geometry, Matsubara frequency */
+    /* geometry, Matsubara frequency, filename */
     double L = 0, R = 0, xi_ = -1;
     int m = -1;
+    char *filename = NULL;
 
     /* numerical parameters */
     int ldim = 0;
+    double iepsrel = 0;
+    detalg_t detalg = DETALG_HODLR;
+    char *detalg_str = NULL;
 
-    while(1)
-    {
-        struct option long_options[] = {
-            { "help",      no_argument,       0, 'h' },
+    const char *const usage[] = {
+        "caps_logetD -L separation -R radius --xi frequency -m M [further options]",
+        NULL,
+    };
 
-            { "iepsrel",   required_argument, 0, 'i' },
-            { "detalg",    required_argument, 0, 'd' },
-            { "material",  required_argument, 0, 'f' },
-            { "xi",        required_argument, 0, 'x' },
-            { "ldim",      required_argument, 0, 'l' },
+    struct argparse_option options[] = {
+        OPT_HELP(),
+        OPT_GROUP("Mandatory options"),
+        OPT_DOUBLE('L', "separation", &L, "smallest seperation between plane and spheres in m", NULL, 0, 0),
+        OPT_DOUBLE('R', "radius", &R, "radius of the sphere in m", NULL, 0, 0),
+        OPT_DOUBLE('x', "xi", &xi_, "imaginary frequency ξ in units of (L+R)/c", NULL, 0, 0),
+        OPT_INTEGER('m', NULL, &m, "value of m", NULL, 0, 0),
+        OPT_GROUP("Further options"),
+        OPT_INTEGER('l', "ldim", &ldim, "dimension of vector space", NULL, 0, 0),
+        OPT_STRING('f', "material", &filename, "use material described by file", NULL, 0, 0),
+        OPT_STRING('d', "detalg", &detalg_str, "relative error for internal integration", NULL, 0, 0),
+        OPT_DOUBLE('i', "iepsrel", &iepsrel, "relative accuracy for evaluation of integrals", NULL, 0, 0),
+        OPT_END(),
+    };
 
-            { 0, 0, 0, 0 }
-        };
-
-        /* getopt_long stores the option index here. */
-        int option_index = 0;
-        int c = getopt_long(argc, argv, "L:R:T:m:l:f:d:i:bh", long_options, &option_index);
-
-        /* Detect the end of the options. */
-        if(c == -1)
-            break;
-
-        switch(c)
-        {
-            case 0:
-                break;
-            case 'L':
-                L = strtodouble(optarg);
-                break;
-            case 'R':
-                R = strtodouble(optarg);
-                break;
-            case 'x':
-                xi_ = strtodouble(optarg);
-                break;
-            case 'l':
-                ldim = atoi(optarg);
-                break;
-            case 'm':
-                m = atoi(optarg);
-                break;
-            case 'f':
-                strncpy(filename, optarg, sizeof(filename)-sizeof(char));
-                break;
-            case 'd':
-                if(strcaseequal(optarg, "HODLR"))
-                    detalg = DETALG_HODLR;
-                else if(strcaseequal(optarg, "LU"))
-                    detalg = DETALG_LU;
-                else if(strcaseequal(optarg, "QR"))
-                    detalg = DETALG_QR;
-                else if(strcaseequal(optarg, "CHOLESKY"))
-                    detalg = DETALG_CHOLESKY;
-                else
-                {
-                    fprintf(stderr, "Unknown algorithm: %s\n\n", optarg);
-                    usage(stderr);
-                    exit(1);
-                }
-                break;
-            case 'i':
-                iepsrel = strtodouble(optarg);
-                break;
-            case 'h':
-                usage(stdout);
-                exit(0);
-
-            case '?':
-                /* getopt_long already printed an error message. */
-                break;
-
-            default:
-                abort();
-        }
-    }
+    struct argparse argparse;
+    argparse_init(&argparse, options, usage, 0);
+    argparse_describe(&argparse, "\nCompute log det(Id-M^m(xi)) in the plane-sphere geometry", usage_epilog);
+    argc = argparse_parse(&argparse, argc, argv);
 
     /* disable buffering */
     disable_buffering();
@@ -149,54 +61,51 @@ int main(int argc, char *argv[])
     /* check parameters */
     do {
         if(L <= 0)
-            fprintf(stderr, "-L must be positive.");
-        if(R <= 0)
-            fprintf(stderr, "-R must be positive.");
+            fprintf(stderr, "separation L must be positive");
+        else if(R <= 0)
+            fprintf(stderr, "radius R must be positive");
         else if(xi_ < 0)
-            fprintf(stderr, "--xi must be non-negative value.");
+            fprintf(stderr, "xi must be non-negative value");
         else if(m < 0)
-            fprintf(stderr, "m >= 0\n\n");
+            fprintf(stderr, "m must be non-negative integer");
+        else if(ldim < 0)
+            fprintf(stderr, "ldim must be positive integer");
+        else if(detalg_str && (caps_detalg_from_string(detalg_str, &detalg) != 1))
+            fprintf(stderr, "invalid value for detalg");
         else
             /* everything ok */
             break;
 
         /* error occured: print usage and exit */
         fprintf(stderr, "\n\n");
-        usage(stderr);
-        exit(1);
+        argparse_usage_stream(&argparse, stderr);
+        return 1;
     } while(0);
 
-    /* print command line options to stdout */
-    printf("# %s", argv[0]);
-    for(int i = 1; i < argc; i++)
-        printf(", %s", argv[i]);
-    printf("\n");
-
-    caps_t *caps;
-    caps = caps_init(R,L);
+    caps_t *caps = caps_init(R,L);
 
     if(iepsrel > 0)
         caps_set_epsrel(caps, iepsrel);
 
+    caps_set_detalg(caps, detalg);
+
+    /* set dimension of vector space */
+    if(ldim > 0)
+        caps_set_ldim(caps, ldim);
+
+
     material_t *material = NULL;
-    if(strlen(filename) > 0)
+    if(filename != NULL)
     {
-        material = material_init(filename, L+R);
-        if(material == NULL)
+        if((material = material_init(filename, L+R)) == NULL)
         {
             fprintf(stderr, "Can't read %s or invalid format\n", filename);
-            usage(stderr);
-            exit(1);
+            argparse_usage(&argparse);
+            return 1;
         }
 
         caps_set_epsilonm1(caps, material_epsilonm1, material);
     }
-
-    /* set dimension of vector space */
-    if(ldim)
-        caps_set_ldim(caps, ldim);
-
-    caps_set_detalg(caps, detalg);
 
     caps_info(caps, stdout, "# ");
     printf("#\n");
