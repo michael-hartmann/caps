@@ -134,6 +134,7 @@ target_link_libraries(caps_frontend ${MPI_LIBRARIES})
 target_link_libraries(caps_frontend ${BLAS_LIBRARIES})
 target_link_libraries(caps_frontend ${LAPACK_LIBRARIES})
 target_link_libraries(caps_frontend caps)
+target_link_libraries(caps_frontend argparse)
 
 
 # caps_logdetD

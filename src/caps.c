@@ -1,6 +1,5 @@
 #define _DEFAULT_SOURCE /* make usleep work */
 
-#include <getopt.h>
 #include <mpi.h>
 #include <stdbool.h>
 #include <stdio.h>
@@ -16,6 +15,7 @@
 #include <unistd.h>
 #endif
 
+#include "argparse.h"
 #include "buf.h"
 #include "fcqs.h"
 #include "libcaps.h"
@@ -65,13 +65,30 @@ static int caps_mpi_retrieve(caps_mpi_t *self, caps_task_t **task_out);
 static int caps_mpi_get_running(caps_mpi_t *self);
 static int caps_get_determinants(caps_mpi_t *self);
 
-static void usage(FILE *stream);
-
 static void F_HT(caps_mpi_t *caps_mpi, double omegap, double *drude, double *pr, double *plasma);
 static double F_xi(double xi, caps_mpi_t *caps_mpi);
-static void master(int argc, char *argv[], const int cores);
+static void master(int argc, char **argv, const int cores);
 static void slave(MPI_Comm master_comm, const int rank);
 
+static const char *usage_epilog =
+"\n"
+"This program computes the free Casimir energy E(T,L,R) for the plane-sphere\n"
+"geometry. L denotes the smallest separation between sphere and plane, R is the\n"
+"radius of the sphere, and T is the temperature.\n"
+"\n"
+"This program uses MPI for parallization and needs at least two cores to run.\n"
+"\n"
+"The free energy at T=0 is calculated using integration:\n"
+"   E(L,R,T=0) = ∫dξ log det(1-M(ξ)),  ξ=0...∞,\n"
+"where M denotes the round-trip operator. The integration is performed either\n"
+"using an adaptive Gauß-Kronrod quadrature or a Fourier-Chebshev quadrature\n"
+"scheme.\n"
+"\n"
+"References:\n"
+"  [1] Hartmann, The Casimir effect in the plane-sphere geometry and the\n"
+"      Proximity Force Approximation, phd thesis, 2018\n"
+"  [2] Hartmann, Ingold, Maia Neto, Advancing numerics for the Casimir effect\n"
+"      to experimentally relevant aspect ratios, Phys. Scr. 93, 114003 (2018)";
 
 /** @brief Write time into string
  *
@@ -148,9 +165,12 @@ static caps_mpi_t *caps_mpi_init(double L, double R, double T, char *filename, c
     /* number of determinants we have computed */
     self->determinants = 0;
 
-    TERMINATE(strlen(filename) > 511, "filename too long: %s", filename);
     memset(self->filename, '\0', sizeof(self->filename));
-    strncpy(self->filename, filename, sizeof(self->filename)-sizeof(char));
+    if(filename != NULL)
+    {
+        TERMINATE(strlen(filename) > 511, "filename too long: %s", filename);
+        strncpy(self->filename, filename, sizeof(self->filename)-sizeof(char));
+    }
 
     /* cache for resume */
     self->cache_elems = 0;
@@ -499,11 +519,10 @@ int main(int argc, char *argv[])
     return 0;
 }
 
-static void master(int argc, char *argv[], const int cores)
+static void master(int argc, char **argv, const int cores)
 {
-    bool verbose = false, fcqs = false, ht = false;
-    char filename[512] = { 0 };
-	char resume[512] = { 0 };
+    bool verbose = false, fcqs = false, ht = false, psd_ = false, version = false;
+    char *filename = NULL, *resume = NULL;
     int ldim = 0;
     double L = 0, R = 0, T = 0, omegap = INFINITY, gamma_ = 0;
     double cutoff = CUTOFF, epsrel = EPSREL, eta = ETA;
@@ -512,173 +531,104 @@ static void master(int argc, char *argv[], const int cores)
     char time_str[128];
     int psd_order = 0;
 
+    const char *const usage[] = {
+        "caps -L separation -R radius [further options]",
+        NULL,
+    };
+
+    struct argparse_option options[] = {
+        OPT_HELP(),
+        OPT_GROUP("Mandatory options"),
+        OPT_DOUBLE('L', "separation", &L, "smallest seperation between plane and spheres in m", NULL, 0, 0),
+        OPT_DOUBLE('R', "radius", &R, "radius of the sphere in m", NULL, 0, 0),
+        OPT_GROUP("Further options"),
+        OPT_DOUBLE('T', "temperature", &T, "tempereture in K", NULL, 0, 0),
+        OPT_INTEGER('l', "ldim", &ldim, "truncation of vector space", NULL, 0, 0),
+        OPT_DOUBLE('n', "--eta", &eta, "set ldim via parameter eta (used if ldim if not set)", NULL, 0, 0),
+        OPT_DOUBLE('c', "--cutoff", &cutoff, "stop summation over m for a given value of ξ if logdet(1-M^m(ξ))/logdet(1-M^0(ξ) < CUTOFF", NULL, 0, 0),
+        OPT_DOUBLE('e', "--epsrel", &epsrel, "relative accuracy for integration over xi (T=0) or stop criterion logdetD(n)/logdetD(n=0) < EPSREL (T>0)", NULL, 0, 0),
+        OPT_DOUBLE('i', "--iepsrel", &iepsrel, "relative accuracy of integration over k for the matrix elements", NULL, 0, 0),
+        OPT_BOOLEAN('F', "--fcqs", &fcqs, "Use Fourier-Chebshev quadrature scheme to compute integral over xi. This is usually faster than using Gauss-Kronrod. (only for T=0; experimental)", NULL, 0, 0),
+        OPT_STRING('f', "--material", &filename, "Filename of the material description file; if set, --omegap and --gamma will be ignored", NULL, 0, 0),
+        OPT_STRING('r', "--resume", &resume, "Resume the computation from a partial output file. (experimental)", NULL, 0, 0),
+        OPT_DOUBLE('o', "--omegap", &omegap, "Plasma frequency of Drude/Plasma model in eV", NULL, 0, 0),
+        OPT_DOUBLE('g', "--gamma", &gamma, "Dissipation frequency of Drude model in eV; ignored if no value for --omegap is given", NULL, 0, 0),
+        OPT_BOOLEAN('H', "--high-temperature", &ht, "Compute Casimir free energy in the high-temperature limit", NULL, 0, 0),
+        OPT_BOOLEAN('p', "--psd", &psd_, "Instead of the Matsubara spectrum decomposition, use the Pade spectrum decomposition (PSD) of order N. N is chosen automatically. The PSD converges faster than the MSD. (experimental)", NULL, 0, 0),
+        OPT_INTEGER('P', "--psd-order", &psd_order, "use Pade spectrum decomposition (PSD) of order N (experimental)", NULL, 0, 0),
+        OPT_BOOLEAN('v', "--verbose", &verbose, "also print results for each m", NULL, 0, 0),
+        OPT_BOOLEAN('V', "--version", &version, "Print information about build to stdout and exit.", NULL, 0, 0),
+        OPT_END(),
+    };
+
+    struct argparse argparse;
+    argparse_init(&argparse, options, usage, 0);
+    argparse_describe(&argparse, "\nCompute log det(Id-M^m(xi)) in the plane-sphere geometry", usage_epilog);
+    argc = argparse_parse(&argparse, argc, argv);
+
     #define EXIT() do { _mpi_stop(cores); return; } while(0)
 
-    /* parse command line options */
-    while (1)
+    if(version)
     {
-        struct option long_options[] = {
-            { "help",        no_argument,       0, 'h' },
-            { "verbose",     no_argument,       0, 'v' },
-            { "fcqs",        no_argument,       0, 'F' },
-            { "version",     no_argument,       0, 'V' },
-            { "ht",          no_argument,       0, 'H' },
-            { "psd",         no_argument,       0, 'p' },
-            { "temperature", required_argument, 0, 'T' },
-            { "eta",         required_argument, 0, 'E' },
-            { "ldim",        required_argument, 0, 'l' },
-            { "cutoff",      required_argument, 0, 'c' },
-            { "epsrel",      required_argument, 0, 'e' },
-            { "iepsrel",     required_argument, 0, 'i' },
-            { "material",    required_argument, 0, 'f' },
-			{ "resume",      required_argument, 0, 'r' },
-            { "omegap",      required_argument, 0, 'w' },
-            { "gamma",       required_argument, 0, 'g' },
-            { "psd-order",   required_argument, 0, 'P' },
-            { 0, 0, 0, 0 }
-        };
-
-        /* getopt_long stores the option index here. */
-        int option_index = 0;
-
-        int c = getopt_long(argc, argv, "R:L:T:l:c:e:E:f:r:i:w:g:P:pFvVHh", long_options, &option_index);
-
-        /* Detect the end of the options. */
-        if(c == -1)
-            break;
-
-        switch (c)
-        {
-            case 0:
-                break;
-            case 'L':
-                L = strtodouble(optarg);
-                break;
-            case 'R':
-                R = strtodouble(optarg);
-                break;
-            case 'T':
-                T = strtodouble(optarg);
-                break;
-            case 'l':
-                ldim = atoi(optarg);
-                break;
-            case 'E':
-                eta = strtodouble(optarg);
-                break;
-            case 'c':
-                cutoff = strtodouble(optarg);
-                break;
-            case 'i':
-                iepsrel = strtodouble(optarg);
-                break;
-            case 'e':
-                epsrel = strtodouble(optarg);
-                break;
-            case 'w':
-                omegap = strtodouble(optarg);
-                break;
-            case 'g':
-                gamma_ = strtodouble(optarg);
-                break;
-            case 'F':
-                fcqs = true;
-                break;
-            case 'H':
-                ht = true;
-                break;
-            case 'v':
-                verbose = true;
-                break;
-            case 'f':
-                strncpy(filename, optarg, sizeof(filename)-sizeof(char));
-                break;
-            case 'r':
-                strncpy(resume, optarg, sizeof(resume)-sizeof(char));
-                break;
-            case 'p':
-                psd_order = -1; /* auto */
-                break;
-            case 'P':
-                psd_order = atoi(optarg);
-                break;
-            case 'V':
-                caps_build(stdout, NULL);
-                exit(0);
-            case 'h':
-                usage(stdout);
-                EXIT();
-
-            case '?':
-                /* getopt_long already printed an error message. */
-                break;
-
-            default:
-                abort();
-        }
+        caps_build(stdout, NULL);
+        EXIT();
     }
 
     if(L <= 0)
     {
         fprintf(stderr, "separation must be positive.\n\n");
-        usage(stderr);
+        argparse_usage_stream(&argparse, stderr);
         EXIT();
     }
     if(R <= 0)
     {
         fprintf(stderr, "radius of sphere must be positive.\n\n");
-        usage(stderr);
+        argparse_usage_stream(&argparse, stderr);
         EXIT();
     }
     if(T < 0)
     {
         fprintf(stderr, "temperature must be non-negative.\n\n");
-        usage(stderr);
+        argparse_usage_stream(&argparse, stderr);
         EXIT();
     }
     if(cutoff <= 0)
     {
         fprintf(stderr, "cutoff must be positive.\n\n");
-        usage(stderr);
+        argparse_usage_stream(&argparse, stderr);
         EXIT();
     }
     if(epsrel <= 0)
     {
         fprintf(stderr, "epsrel must be positive.\n\n");
-        usage(stderr);
+        argparse_usage_stream(&argparse, stderr);
         EXIT();
     }
     if(iepsrel < 0)
     {
         fprintf(stderr, "iepsrel must be non-negative.\n\n");
-        usage(stderr);
+        argparse_usage_stream(&argparse, stderr);
         EXIT();
     }
     if(eta <= 0)
     {
         fprintf(stderr, "eta must be positive.\n\n");
-        usage(stderr);
+        argparse_usage_stream(&argparse, stderr);
         EXIT();
     }
-    if(strlen(filename))
+    if(filename != NULL)
     {
-        if(strlen(filename) > 511)
-        {
-            fprintf(stderr, "filename %s must not be longer than 511 characters.\n\n", filename);
-            usage(stderr);
-            EXIT();
-        }
         if(!is_readable(filename))
         {
             fprintf(stderr, "file %s does not exist or is not readable.\n\n", filename);
-            usage(stderr);
+            argparse_usage_stream(&argparse, stderr);
             EXIT();
         }
         material = material_init(filename, L+R);
         if(material == NULL)
         {
             fprintf(stderr, "file %s has wrong format.\n\n", filename);
-            usage(stderr);
+            argparse_usage_stream(&argparse, stderr);
             EXIT();
         }
     }
@@ -687,20 +637,26 @@ static void master(int argc, char *argv[], const int cores)
         if(omegap <= 0)
         {
             fprintf(stderr, "omegap must be positive\n\n");
-            usage(stderr);
+            argparse_usage_stream(&argparse, stderr);
             EXIT();
         }
         if(gamma_ < 0)
         {
             fprintf(stderr, "gamma must be non-negative\n\n");
-            usage(stderr);
+            argparse_usage_stream(&argparse, stderr);
             EXIT();
         }
     }
     if(fcqs && (ht || T > 0))
     {
         fprintf(stderr, "flag --fcqs can only be used when T=0\n\n");
-        usage(stderr);
+        argparse_usage_stream(&argparse, stderr);
+        EXIT();
+    }
+    if(psd_order < 0)
+    {
+        fprintf(stderr, "flag --psd-order must be positive\n\n");
+        argparse_usage_stream(&argparse, stderr);
         EXIT();
     }
 
@@ -715,7 +671,7 @@ static void master(int argc, char *argv[], const int cores)
 
     const double LbyR = L/R;
 
-    if(psd_order < 0)
+    if(psd_)
     {
         const double Teff = 4*CAPS_PI*CAPS_KB/CAPS_HBAR/CAPS_C*T*L;
         psd_order = ceil( (1-1.5*log10(epsrel))/sqrt(Teff) );
@@ -759,14 +715,14 @@ static void master(int argc, char *argv[], const int cores)
     printf("# iepsrel = %g\n", iepsrel);
     printf("# ldim = %d\n", ldim);
     printf("# cores = %d\n", cores);
-    if(strlen(filename))
+    if(filename)
         printf("# filename = %s\n", filename);
     else if(!isinf(omegap))
     {
         printf("# omegap = %.16g\n", omegap);
         printf("# gamma = %.16g\n", gamma_);
     }
-	if(strlen(resume))
+	if(resume != NULL)
         printf("# resume = %s\n", resume);
 
     caps_mpi_t *caps_mpi = caps_mpi_init(L, R, T, filename, resume, omegap, gamma_, ldim, cutoff, iepsrel, cores, verbose);
@@ -1038,102 +994,4 @@ static void slave(MPI_Comm master_comm, const int rank)
         MPI_Isend(&logdet, 1, MPI_DOUBLE, 0, 0, master_comm, &request);
         MPI_Wait(&request, &status);
     }
-}
-
-static void usage(FILE *stream)
-{
-    fprintf(stream,
-"Usage: caps [OPTIONS]\n\n"
-"This program computes the free Casimir energy E(T,L,R) for the plane-sphere\n"
-"geometry. L denotes the smallest separation between sphere and plane, R is the\n"
-"radius of the sphere, and T is the temperature.\n"
-"\n"
-"This program uses MPI for parallization and needs at least two cores to run.\n"
-"\n"
-"The free energy at T=0 is calculated using integration:\n"
-"   E(L,R,T=0) = ∫dξ log det(1-M(ξ)),  ξ=0...∞,\n"
-"where M denotes the round-trip operator. The integration is performed either\n"
-"using an adaptive Gauß-Kronrod quadrature or a Fourier-Chebshev quadrature\n"
-"scheme.\n"
-"\n"
-"References:\n"
-"  [1] Hartmann, The Casimir effect in the plane-sphere geometry and the\n"
-"      Proximity Force Approximation, phd thesis, 2018\n"
-"  [2] Hartmann, Ingold, Maia Neto, Advancing numerics for the Casimir effect\n"
-"      to experimentally relevant aspect ratios, Phys. Scr. 93, 114003 (2018)\n"
-"\n"
-"Mandatory options:\n"
-"    -L L\n"
-"        Separation L between sphere and plane, L>0 (in m).\n"
-"\n"
-"    -R R\n"
-"        Radius R of the sphere, R>0 (in m).\n"
-"\n"
-"Further options:\n"
-"    -T, --temperature TEMPERATURE\n"
-"        Set temperature to TEMPERATURE. (default: 0; in K)\n"
-"\n"
-"    -l, --ldim LDIM\n"
-"        Set ldim to the value LDIM. (default: ldim=max(%d, ceil(eta*R/L)))\n"
-"\n"
-"    --eta ETA\n"
-"        Set eta to the value ETA. eta is used to determine ldim if not set by\n"
-"        --ldim. (default: eta=%g)\n"
-"\n"
-"    -c, --cutoff CUTOFF\n"
-"        Stop summation over m for a given value of ξ if\n"
-"            logdet(1-M^m(ξ))/logdet(1-M^0(ξ) < CUTOFF.\n"
-"        (default: %g)\n"
-"\n"
-"    -e, --epsrel EPSREL\n"
-"       Request relative accuracy of EPSREL for integration over xi if T=0, or\n"
-"       stop criterion logdetD(n)/logdetD(n=0) < EPSREL for T>0.\n"
-"       (default: %g)\n"
-"\n"
-"    -i, --iepsrel IEPSREL\n"
-"       Set relative accuracy of integration over k for the matrix elements to\n"
-"       IEPSREL. (default: %g)\n"
-"\n"
-"    -F, --fcqs\n"
-"      Use Fourier-Chebshev quadrature scheme to compute integral over xi. This\n"
-"      is usually faster than using Gauss-Kronrod. (only for T=0; experimental)\n"
-"\n"
-"    -f, --material FILENAME\n"
-"        Filename of the material description file. If set, --omegap and\n"
-"        --gamma will be ignored.\n"
-"\n"
-"    -r, --resume FILENAME\n"
-"        Resume the computation from a partial output file. (experimental)\n"
-"\n"
-"    --omegap OMEGAP\n"
-"        Model the metals using the Drude/Plasma model and set plasma\n"
-"        frequency to OMEGAP. (DEFAULT: perfect conductors; in eV)\n"
-"\n"
-"    --gamma GAMMA\n"
-"        Set dissipation of Drude model to GAMMA. Ignored if no value for\n"
-"        --omegap is given. (DEFAULT: perfect conductors; in eV)\n"
-"\n"
-"    -H, --ht\n"
-"        Compute the Casimir free energy in the high-temperature limit for\n"
-"        perfect reflectors, Drude and plasma model. The value for the plasma\n"
-"        model is only computed if a plasma frequency is given by --omegap.\n"
-"\n"
-"    -p, --psd\n"
-"        Instead of the Matsubara spectrum decomposition, use the Pade spectrum\n"
-"        decomposition (PSD) of order N. N is chosen automatically. The PSD\n"
-"        converges faster than the MSD. (experimental)\n"
-"\n"
-"    -P, --psd-order N\n"
-"        Use Pade spectrum decomposition (PSD) of order N. In contrast to the\n"
-"        option --psd, you can chose the order N of the PSD. (experimental)\n"
-"\n"
-"    -v, --verbose\n"
-"        Also print results for each m.\n"
-"\n"
-"    -V, --version\n"
-"        Print information about build to stdout and exit.\n"
-"\n"
-"    -h, --help\n"
-"        Show this help.\n",
-    LDIM_MIN, ETA, CUTOFF, EPSREL, CAPS_EPSREL);
 }
