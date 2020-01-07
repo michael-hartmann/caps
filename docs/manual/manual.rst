@@ -153,8 +153,8 @@ You can also compile libcaps as a shared library by passing the option
     $ make
 
 If you build libcaps as shared library, the system must be able to find
-``libhodlr.so`` and ``libcaps.so``. As the corresponding directories are not in
-the default search path, they need to be added to ``LD_LIBRARY_PATH``
+``libcaps.so``. As the corresponding directory is not in the default search
+path, is needs to be added to ``LD_LIBRARY_PATH``
 
 .. code-block:: none
 
