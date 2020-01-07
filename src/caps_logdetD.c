@@ -15,7 +15,7 @@ static const char *usage_epilog =
 "   CAPS_CACHE_ELEMS:\n"
 "        Determines the size of the cache for the integrals I.";
 
-int main(int argc, const char **argv)
+int main(int argc, char *argv[])
 {
     double start_time = now();
 

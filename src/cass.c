@@ -88,7 +88,7 @@ static double integrand(double xidbyc, void *args_)
     return logdet;
 }
 
-int main(int argc, const char *argv[])
+int main(int argc, char *argv[])
 {
     double R = NAN, d = NAN;
     double cutoff = 1e-10;

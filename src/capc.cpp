@@ -188,7 +188,7 @@ static double __integrand_neumann(double x, void *args)
     return q*capc->logdet_neumann(q);
 }
 
-int main(int argc, const char *argv[]) {
+int main(int argc, char *argv[]) {
     const double T = 0;
     double epsrel = 1e-8, eta = 6, R = NAN, d = NAN;
     const char *detalg = NULL;
