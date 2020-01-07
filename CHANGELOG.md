@@ -14,6 +14,7 @@ version 0.5
 * Documented errors when linking again OpenBLAS
 * fixed a wrong reference in overview.svg/overview.pdf
 * removed method plotTree in the HODLRlib
+* Improvements to the cmake build script
 
 
 version 0.4.2

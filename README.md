@@ -52,25 +52,17 @@ $ cd bin
 $ cmake ..
 $ make
 ```
-This will build the shared objects `libhodlr.so` and `libcaps.so`, and the
-executables `caps` and `caps_logdetD`. If you get errors building the package,
-please read the [user
-manual](https://www.speicherleck.de/michael/caps/manual/manual.html).
-
-If you want to run the programs, make sure that `libcaps.so` and `libhodlr.so`
-are in the search path or you will get an error similar to:
-```
-./caps_logdetD: error while loading shared libraries: libcaps.so: cannot open shared object file: No such file or directory
-```
-If the shared libraries are not in the search path, you can run the programs by
-specifying the directory that contains the shared libraries in
-`LD_LIBRARY_PATH`:
-```
-$ export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/path/to/caps/bin
-```
-
+This will build the executables `caps`, `caps_logdetD`, `capc`, and `cass`.
 You can find more information about building the software in the [user
 manual](https://www.speicherleck.de/michael/caps/manual/manual.html).
+
+You can run compile and run the tests with:
+```
+$ make tests
+$ ./caps_tests
+```
+Compilation may take about a minute, running the tests takes about 9 minutes
+(depending on your hardware). All tests should pass.
 
 ## Usage
 

@@ -132,8 +132,8 @@ directory and run ``cmake`` followed by ``make``:
 
 The last command compiles the `HODLR library
 <https://github.com/sivaramambikasaran/HODLR/>`_, the libcaps library, and
-builds the shared objects ``libhodlr.so`` and ``libcaps.so``. Then, the
-programs ``caps`` and ``caps_logdetD`` are built.
+builds the static libraries ``libhodlr.a`` and ``libcaps.a``. Then, the
+programs ``caps``, ``caps_logdetD``, ``capc``, and ``cass`` are built.
 
 Note that alternative compilers can be specified by setting the variables
 ``CC`` and ``CXX``. For the Intel C and C++ compilers, the last two commands
@@ -144,7 +144,15 @@ above should be replaced by:
     $ CC=icc CXX=icpc cmake ..
     $ make
 
-In order to run the programs, the system must be able to find the libraries
+You can also compile libcaps as a shared library by passing the option
+`BUILD_SHARED` to cmake:
+
+.. code-block:: none
+
+    $ cmake -DBUILD_SHARED=1 ..
+    $ make
+
+If you build libcaps as shared library, the system must be able to find
 ``libhodlr.so`` and ``libcaps.so``. As the corresponding directories are not in
 the default search path, they need to be added to ``LD_LIBRARY_PATH``
 
@@ -154,15 +162,6 @@ the default search path, they need to be added to ``LD_LIBRARY_PATH``
 
 where we have assumed that the CaPS repository is in the directory
 ``/home/hendrik`` [#hendrik]_ .
-
-After the previous steps, the programs ``capc`` (plane-cylinder geometry) and
-``cass`` (sphere-sphere geometry with equal radii) to compute the Casimir free
-energy for perfect reflectors at :math:`T=0` can be built with:
-
-.. code-block:: none
-
-    $ make capc
-    $ make cass
 
 Under Ubuntu 18.10 we encountered problems linking to `OpenBLAS
 <https://www.openblas.net/>`_ resulting in error messages similar to:
@@ -177,8 +176,8 @@ Under Ubuntu 18.10 we encountered problems linking to `OpenBLAS
     undefined reference to 'dgeqrf_'
     undefined reference to 'ddot_'
 
-In this case, we recommend using `Atlas <http://math-atlas.sourceforge.net/>`_
-as a `BLAS <https://en.wikipedia.org/wiki/Basic_Linear_Algebra_Subprograms>`_
+In general, we recommend using `Atlas <http://math-atlas.sourceforge.net/>`_ as
+a `BLAS <https://en.wikipedia.org/wiki/Basic_Linear_Algebra_Subprograms>`_
 implementation. Make sure that Atlas is installed
 
 .. code-block:: none
@@ -207,31 +206,8 @@ the unit tests in ``bin/``:
     $ make tests
     $ ./caps_tests
 
-All tests should pass. Running the tests takes (depending on your hardware)
-about 9 minutes. We noticed that compiling the tests with `clang` took several
-minutes.
-
-
-Improving performance
----------------------
-
-In order to improve performance, it might be necessary to tweak some compiler
-options. By default, the optimization level is ``-O3`` which usually yields
-reasonable performance.
-
-If you either run and compile the code on the same machine, or the target
-machine supports the same instruction set, the option ``-march=native`` may
-increase performance. On an Intel Core i7-2600 machine, a performance boost
-of about 5% was found. To compile the code with this option, run:
-
-.. code-block:: none
-
-    $ cmake .. -DOPT="-O3 -march=native"
-
-
-Similarly, link time optimization ``-flto`` might also increase performance.
-However, a test on an Intel Core i7-2600 machine showed basically no
-performance gain.
+Compilation of the tests may take about a minute of time. All tests should
+pass. Running the tests takes (depending on your hardware) about 9 minutes.
 
 
 Programs
