@@ -42,7 +42,7 @@ geometry at zero temperature for perfect reflectors.
 If you use Linux or Unix, you need the gcc and development libraries and header
 files for the standard C library, and MPI. On a Debian-like Linux the command
 ```
-$ sudo apt-get install gcc g++ libc6-dev libc++-dev cmake make libopenmpi-dev openmpi-bin liblapack-dev
+$ sudo apt-get install gcc g++ libc-dev libc++-dev cmake make libopenmpi-dev openmpi-bin liblapack-dev
 ```
 will install all dependencies. Here, the dollar sign indicates the shell
 prompt. You can compile the sources with:
@@ -52,23 +52,7 @@ $ cd bin
 $ cmake ..
 $ make
 ```
-This will build the shared objects `libhodlr.so` and `libcaps.so`, and the
-executables `caps` and `caps_logdetD`. If you get errors building the package,
-please read the [user
-manual](https://www.speicherleck.de/michael/caps/manual/manual.html).
-
-If you want to run the programs, make sure that `libcaps.so` and `libhodlr.so`
-are in the search path or you will get an error similar to:
-```
-./caps_logdetD: error while loading shared libraries: libcaps.so: cannot open shared object file: No such file or directory
-```
-If the shared libraries are not in the search path, you can run the programs by
-specifying the directory that contains the shared libraries in
-`LD_LIBRARY_PATH`:
-```
-$ export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/path/to/caps/bin
-```
-
+This will build the executables `caps`, `caps_logdetD`, `capc`, and `cass`.
 You can find more information about building the software in the [user
 manual](https://www.speicherleck.de/michael/caps/manual/manual.html).
 
