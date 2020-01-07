@@ -56,6 +56,14 @@ This will build the executables `caps`, `caps_logdetD`, `capc`, and `cass`.
 You can find more information about building the software in the [user
 manual](https://www.speicherleck.de/michael/caps/manual/manual.html).
 
+You can run compile and run the tests with:
+```
+$ make tests
+$ ./caps_tests
+```
+Compilation may take about a minute, running the tests takes about 9 minutes
+(depending on your hardware). All tests should pass.
+
 ## Usage
 
 To compute the Casimir free energy between a sphere of radius R=150µm and a

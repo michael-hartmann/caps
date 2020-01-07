@@ -1,5 +1,5 @@
-#ifndef __INTEGRATION_H
-#define __INTEGRATION_H
+#ifndef INTEGRATION_H
+#define INTEGRATION_H
 
 #ifdef __cplusplus
 extern "C" {

@@ -1,5 +1,5 @@
-#ifndef __CACHE_H
-#define __CACHE_H
+#ifndef CACHE_H
+#define CACHE_H
 
 #ifdef __cplusplus
 extern "C" {

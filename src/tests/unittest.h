@@ -1,5 +1,5 @@
-#ifndef UNITTESTS__
-#define UNITTESTS__
+#ifndef UNITTESTS_H
+#define UNITTESTS_H
 
 #include <stdio.h>
 
@@ -31,4 +31,4 @@ int _Assert(int line, unittest_t *test, int boolean);
 int _AssertAlmostEqual(int line, unittest_t *test, double x, double y, double eps);
 int _AssertEqual(int line, unittest_t *test, int x, int y);
 
-#endif
+#endif // UNITTESTS_H

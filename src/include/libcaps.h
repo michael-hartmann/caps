@@ -4,8 +4,8 @@
  * @date   February, 2019
  */
 
-#ifndef __LIBCAPS_H
-#define __LIBCAPS_H
+#ifndef LIBCAPS_H
+#define LIBCAPS_H
 
 #ifdef __cplusplus
 extern "C" {
