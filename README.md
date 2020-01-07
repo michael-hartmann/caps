@@ -56,7 +56,7 @@ This will build the executables `caps`, `caps_logdetD`, `capc`, and `cass`.
 You can find more information about building the software in the [user
 manual](https://www.speicherleck.de/michael/caps/manual/manual.html).
 
-You can run compile and run the tests with:
+You can compile and run the tests with:
 ```
 $ make tests
 $ ./caps_tests
