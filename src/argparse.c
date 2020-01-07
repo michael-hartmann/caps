@@ -236,7 +236,7 @@ argparse_describe(struct argparse *self, const char *description,
 }
 
 int
-argparse_parse(struct argparse *self, int argc, const char **argv)
+argparse_parse(struct argparse *self, int argc, char **argv)
 {
     self->argc = argc - 1;
     self->argv = argv + 1;
