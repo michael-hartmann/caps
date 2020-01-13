@@ -119,14 +119,14 @@ These dependencies can be installed with:
     $ sudo apt install gcc g++ libc-dev libc++-dev cmake make libopenmpi-dev openmpi-bin liblapack-dev
 
 
-In order to compile the code, create a directory ``bin`` in the ``caps/``
+In order to compile the code, create a directory ``build`` in the ``caps/``
 directory and run ``cmake`` followed by ``make``:
 
 .. code-block:: none
 
     $ cd caps/
-    $ mkdir bin
-    $ cd bin/
+    $ mkdir build
+    $ cd build/
     $ cmake ..
     $ make
 
@@ -158,7 +158,7 @@ path, is needs to be added to ``LD_LIBRARY_PATH``
 
 .. code-block:: none
 
-    $ export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/home/hendrik/caps/bin
+    $ export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/home/hendrik/caps/build
 
 where we have assumed that the CaPS repository is in the directory
 ``/home/hendrik`` [#hendrik]_ .
@@ -189,8 +189,8 @@ and compile the code using:
 .. code-block:: none
 
     $ cd caps/
-    $ mkdir bin
-    $ cd bin/
+    $ mkdir build
+    $ cd build/
     $ cmake .. -DBLA_VENDOR=ATLAS
     $ make
 
@@ -199,7 +199,7 @@ Testing
 -------
 
 In order to verify that the compilation was successful, build and run
-the unit tests in ``bin/``:
+the unit tests in ``build/``:
 
 .. code-block:: none
 
