@@ -38,16 +38,16 @@
 double dqagi(dq_function_type f,double bound,int inf,double epsabs,
     double epsrel,double *abserr,int *neval,int *ier, void* user_data)
 {
-    double abseps,area,area1,area12,area2,a1,a2,b1,b2;
-    double boun,correc,defabs,defab1,defab2,dres,erlarg;
-    double erlast,errbnd,errmax,error1,error2,erro12;
-    double errsum,ertest,resabs,reseps,result,res3la[3];
-    double alist[LIMIT],blist[LIMIT],elist[LIMIT],rlist[LIMIT];
-    double rlist2[52],small = 0; /* small will be initialized in _80 */
+    double abseps = 0, area = 0, area1 = 0, area12 = 0, area2 = 0, a1 = 0, a2 = 0, b1 = 0, b2 = 0;
+    double boun = 0, correc = 0, defabs = 0, defab1 = 0, defab2 = 0, dres = 0, erlarg = 0;
+    double erlast = 0, errbnd = 0, errmax = 0, error1 = 0, error2 = 0, erro12 = 0;
+    double errsum = 0, ertest = 0, resabs = 0, reseps = 0, result = 0, res3la[3] = { 0 };
+    double alist[LIMIT] = { 0 }, blist[LIMIT] = { 0 }, elist[LIMIT] = { 0 }, rlist[LIMIT] = { 0 };
+    double rlist2[52] = { 0 }, small = 0;
 
-    int id,ierro,iord[LIMIT],iroff1,iroff2,iroff3,jupbnd,k,ksgn;
-    int ktmin,last,maxerr,nres,nrmax,numrl2;
-    int limit,extrap,noext;
+    int id = 0, ierro = 0, iord[LIMIT] = { 0 }, iroff1 = 0, iroff2 = 0, iroff3 = 0, jupbnd = 0, k = 0, ksgn = 0;
+    int ktmin = 0, last = 0, maxerr = 0, nres = 0, nrmax = 0, numrl2 = 0;
+    int limit = 0, extrap = 0, noext = 0;
 
     limit = LIMIT - 1;
 /* Test validity of parameters. */
