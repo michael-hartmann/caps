@@ -47,8 +47,8 @@ $ sudo apt-get install gcc g++ libc-dev libc++-dev cmake make libopenmpi-dev ope
 will install all dependencies. Here, the dollar sign indicates the shell
 prompt. You can compile the sources with:
 ```
-$ mkdir bin
-$ cd bin
+$ mkdir build
+$ cd build
 $ cmake ..
 $ make
 ```
