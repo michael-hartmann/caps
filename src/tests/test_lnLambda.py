@@ -18,7 +18,7 @@ if __name__ == "__main__":
 #include "libcaps.h"
 #include "unittest.h"
 
-#include "test_Lambda.h"
+#include "test_lnLambda.h"
 
 int test_caps_lnLambda(void)
 {

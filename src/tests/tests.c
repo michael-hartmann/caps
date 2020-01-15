@@ -6,7 +6,7 @@
 #include "test_logi.h"
 #include "test_bessels.h"
 #include "test_fresnel.h"
-#include "test_Lambda.h"
+#include "test_lnLambda.h"
 #include "test_mie.h"
 #include "test_mie_drude.h"
 #include "test_Plm.h"
