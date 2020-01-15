@@ -1,3 +1,7 @@
+/*
+ * The reference data was obtained using Mathematica.
+ */
+
 #include "misc.h"
 #include "libcaps.h"
 #include "unittest.h"
