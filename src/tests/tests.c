@@ -9,7 +9,7 @@
 #include "test_lnLambda.h"
 #include "test_mie.h"
 #include "test_mie_drude.h"
-#include "test_Plm.h"
+#include "test_lnPlm.h"
 #include "test_logdetD.h"
 
 int main(int argc, char *argv[])

@@ -3,7 +3,7 @@
 #include "plm.h"
 #include "libcaps.h"
 
-#include "test_Plm.h"
+#include "test_lnPlm.h"
 
 int test_lnPlm()
 {
