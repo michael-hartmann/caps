@@ -160,7 +160,7 @@ target_link_libraries(cass argparse)
 
 
 # tests
-add_executable(tests src/tests/test_bessels.c src/tests/test_fresnel.c src/tests/test_Lambda.c src/tests/test_lfac.c src/tests/test_logdetD.c src/tests/test_logi.c src/tests/test_mie.c src/tests/test_mie_drude.c src/tests/test_Plm.c src/tests/tests.c src/tests/unittest.c)
+add_executable(tests src/tests/test_bessels.c src/tests/test_fresnel.c src/tests/test_lnLambda.c src/tests/test_lfac.c src/tests/test_logdetD.c src/tests/test_logi.c src/tests/test_mie.c src/tests/test_mie_drude.c src/tests/test_lnPlm.c src/tests/tests.c src/tests/unittest.c)
 set_target_properties(tests PROPERTIES EXCLUDE_FROM_ALL 1)
 set_target_properties(tests PROPERTIES OUTPUT_NAME "caps_tests")
 
