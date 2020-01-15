@@ -19,12 +19,18 @@ def lgamma(i,digits=19):
     return mp.nstr(mp.loggamma(i), digits)
 
 if __name__ == "__main__":
+    import os, sys
+
+    # change to the directory where this script is
+    path = os.path.dirname(sys.argv[0])
+    os.chdir(path)
+
     max_logi = 2**16
     max_lfac = 2**10
 
     assert max_lfac > 1023
 
-    header = """/* created by logfac.py */
+    header = """/* this file was automatically created by src/python/logfac.py */
 #ifndef LOGFAC_H
 #define LOGFAC_H
 
@@ -44,7 +50,7 @@ double lfac2(unsigned int n) __attribute__ ((pure));
 #endif"""
 
     month,year = date()
-    includes = """/* created by logfac.py */
+    includes = """/* this file was automatically created by src/python/logfac.py */
 
 /**
  * @file   logfac.c

@@ -1,9 +1,9 @@
-/* created by logfac.py */
+/* this file was automatically created by src/python/logfac.py */
 
 /**
  * @file   logfac.c
  * @author Michael Hartmann <caps@speicherleck.de>
- * @date   January, 2019
+ * @date   January, 2020
  * @brief  computation of logarithm and factorial for integer arguments; created by logfac.py
  */
 
