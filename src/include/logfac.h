@@ -1,4 +1,4 @@
-/* created by logfac.py */
+/* this file was automatically created by src/python/logfac.py */
 #ifndef LOGFAC_H
 #define LOGFAC_H
 
