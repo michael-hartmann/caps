@@ -5,10 +5,8 @@
  * to provide results.
  */
 
-#include <math.h>
 #include "unittest.h"
 #include "plm.h"
-#include "libcaps.h"
 
 #include "test_lnPlm.h"
 
