@@ -1,5 +1,3 @@
-#include <stdio.h>
-
 #include "unittest.h"
 
 #include "test_lfac.h"
