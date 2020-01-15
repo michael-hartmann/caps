@@ -65,7 +65,7 @@ set(caps_src src/bessel.c src/cache.c src/fcqs.c src/integration.c src/libcaps.c
 if(BUILD_SHARED)
     add_library(caps SHARED ${caps_src})
 else()
-    add_library(caps SHARED ${caps_src})
+    add_library(caps STATIC ${caps_src})
 endif()
 
 target_compile_definitions(caps PRIVATE LIBCAPS_VERSION="0.5")
