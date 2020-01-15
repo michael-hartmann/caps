@@ -1,4 +1,6 @@
-#include <stdlib.h>
+/*
+ * The reference data was produced using scipy functions or Mathematica.
+ */
 
 #include "bessel.h"
 #include "unittest.h"
