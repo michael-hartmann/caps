@@ -1,7 +1,6 @@
 /*
  * The reference data was produced using scipy functions or Mathematica.
  */
-#include <stdlib.h>
 
 #include "bessel.h"
 #include "unittest.h"
