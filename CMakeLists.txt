@@ -184,6 +184,10 @@ target_link_libraries(AuAl ${BLAS_LIBRARIES})
 target_link_libraries(AuAl ${LAPACK_LIBRARIES})
 target_link_libraries(AuAl caps)
 
+# install
+install(TARGETS caps_frontend cass capc caps_logdetD DESTINATION "bin")
+install(TARGETS caps DESTINATION "lib")
+
 message("")
 message("#################")
 message("# Build options #")
