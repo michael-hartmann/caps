@@ -13,21 +13,36 @@ CaPS user manual
 Overview and Features
 =====================
 
-CaPS provides software to describe the Casimir effect in the plane-sphere
-geometry for arbitrary temperatures and arbitrary non-magnetic materials
-constituting sphere and plate. Both objects are assumed to be in vacuum. The
-plane-sphere geometry is sketched in the inset of :numref:`aspect_ratios` and is
-characterized by the sphere radius :math:`R` and the distance :math:`L` between
-sphere and infinite plane.
 
-The main goal of the library and the associated programs is to compute the free
-energy :math:`\mathcal{F}` as a function of the radius :math:`R` of the sphere,
-the separation :math:`L` between sphere and plate, the temperature :math:`T`,
-and the dielectric properties of the sphere and the plane. The code is highly
-optimized and -- depending on parameters and the available resources -- allows
-to compute the free energy for aspect ratios up to :math:`R/L\sim 5\,000`.
-An idea of typical aspect ratios used in Casimir experiments in the plane-sphere
-geometry can be obtained from :numref:`aspect_ratios`.
+CaPS is a package for the analysis of the Casimir effect in the plane-sphere
+geometry. The Casimir force arises due to quantum and thermal fluctuations of
+the electromagnetic field and is closely related to the van der Waals force. It
+is the dominant force between neutral non-magnetic materials in the nanometre
+to micrometre range and plays an important role in colloidal systems. Of
+technological relevance are applications to micro- and nano-electromechanical
+systems where the Casimir force can lead to stiction and thus constitute a
+failure mechanism. On a more fundamental level, the Casimir effect is linked to
+the zero-point energy and the cosmological constant problem. A precise
+knowledge of the Casimir force is crucial for the search for possible
+deviations from Newton's law of gravitation which could arise from a fifth
+fundamental interaction.
+
+CaPS allows to compute the Casimir interaction in the plane-sphere geometry as
+shown in the inset of :numref:`aspect_ratios`. The plane-sphere geometry is
+most commonly used in precision measurements of the Casimir force.
+Specifically, CaPS allows to compute the Casimir free energy and thus the
+Casimir force as a function of the sphere radius :math:`R`, the minimal
+separation :math:`L` between sphere and plane, the temperature :math:`T`, and
+the material properties of plane and sphere. It is assumed that both objects
+are non-magnetic and placed in vacuum.
+
+The main goal of this package is to make aspect ratios as large as
+:math:`R/L\sim5\,000` accessible. Higher aspect ratios are usually well covered
+by the proximity force approximation. The code is highly optimized and --
+depending on parameters and the available resources -- allows to compute the
+free energy for aspect ratios up to :math:`R/L\sim 5\,000`. An idea of typical
+aspect ratios used in Casimir experiments in the plane-sphere geometry can be
+obtained from :numref:`aspect_ratios`.
 
 .. _aspect_ratios:
 .. figure:: images/overview.*
