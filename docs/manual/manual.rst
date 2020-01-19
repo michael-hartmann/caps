@@ -134,6 +134,15 @@ The last command compiles the `HODLR library
 <https://github.com/sivaramambikasaran/HODLR/>`_, the libcaps library, and
 builds the static libraries ``libhodlr.a`` and ``libcaps.a``. Then, the
 programs ``caps``, ``caps_logdetD``, ``capc``, and ``cass`` are built.
+You can either run the programs directly from the build directory, or you
+can install them using:
+
+.. code-block:: none
+
+    $ sudo make install
+
+This command will copy the executables and the library to the appropriate
+system directories.
 
 Note that alternative compilers can be specified by setting the variables
 ``CC`` and ``CXX``. For the Intel C and C++ compilers, the last two commands
@@ -145,7 +154,7 @@ above should be replaced by:
     $ make
 
 You can also compile libcaps as a shared library by passing the option
-`BUILD_SHARED` to cmake:
+``BUILD_SHARED`` to cmake:
 
 .. code-block:: none
 
@@ -153,8 +162,22 @@ You can also compile libcaps as a shared library by passing the option
     $ make
 
 If you build libcaps as shared library, the system must be able to find
-``libcaps.so``. As the corresponding directory is not in the default search
-path, is needs to be added to ``LD_LIBRARY_PATH``
+``libcaps.so`` or otherwise you will see an error similar to
+
+.. code-block:: none
+
+    error while loading shared libraries: libcaps.so: cannot open shared object file: No such file or directory
+
+If you have installed the programs, you can fix the problem by updating the
+library cache:
+
+.. code-block:: none
+
+    $ sudo ldconfig
+
+If you have not installed the programs, make sure that the corresponding
+directory that contains ``libcaps.so`` is in the default search path. If
+necessary, add the directory to ``LD_LIBRARY_PATH``
 
 .. code-block:: none
 
@@ -206,8 +229,8 @@ the unit tests in ``build/``:
     $ make tests
     $ ./caps_tests
 
-Compilation of the tests may take about a minute of time. All tests should
-pass. Running the tests takes (depending on your hardware) about 9 minutes.
+All tests should pass. Running the tests takes (depending on your hardware)
+about 9 minutes.
 
 
 Programs

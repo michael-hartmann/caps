@@ -53,6 +53,11 @@ $ cmake ..
 $ make
 ```
 This will build the executables `caps`, `caps_logdetD`, `capc`, and `cass`.
+The executables can be run either directly from the build directory or you can
+install them using:
+```
+$ sudo make install
+```
 You can find more information about building the software in the [user
 manual](https://www.speicherleck.de/michael/caps/manual/manual.html).
 
@@ -61,8 +66,8 @@ You can compile and run the tests with:
 $ make tests
 $ ./caps_tests
 ```
-Compilation may take about a minute, running the tests takes about 9 minutes
-(depending on your hardware). All tests should pass.
+Running the tests takes about 9 minutes (depending on your hardware). All tests
+should pass.
 
 ## Usage
 
