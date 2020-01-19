@@ -15,8 +15,8 @@ CaPS allows to compute the Casimir interaction in the plane-sphere geometry as
 a function of the sphere radius R, the minimal separation L between sphere and
 plane, the temperature T, and the material properties of plane and sphere. It
 is assumed that both objects are non-magnetic and placed in vacuum. The code is
-highly optimized and allows you - depending on parameters and the available
-resources - to compute the free energy for aspect ratios up to R/L~5'000 (in
+highly optimized and allows - depending on parameters and the available
+resources - to compute the free energy for aspect ratios up to R/L~5,000 (in
 some cases even higher!).
 
 <img src="images/overview.svg" align="left" height="100%" width="100%" >
