@@ -2,6 +2,7 @@
 
 [![version 0.5](images/version.svg)](https://github.com/michael-hartmann/caps/releases/tag/v0.5)
 [![manual](https://readthedocs.org/projects/caps/badge/?version=latest)](https://caps.readthedocs.io/en/latest/?badge=latest)
+[![status](https://joss.theoj.org/papers/62338dfc973364495fd30be48361f678/status.svg)](https://joss.theoj.org/papers/62338dfc973364495fd30be48361f678)
 [![arXiv:1803.05791](images/arxiv.svg)](https://arxiv.org/abs/1803.05791)
 [![license: GPLv2](images/license.svg)](https://www.gnu.org/licenses/old-licenses/gpl-2.0.html)
 
