@@ -1,6 +1,7 @@
 # CaPS
 
-[![Version 0.5](images/version.svg)](https://github.com/michael-hartmann/caps/releases/tag/v0.5)
+[![version 0.5](images/version.svg)](https://github.com/michael-hartmann/caps/releases/tag/v0.5)
+[![manual](https://readthedocs.org/projects/caps/badge/?version=latest)](https://caps.readthedocs.io/en/latest/?badge=latest)
 [![arXiv:1803.05791](images/arxiv.svg)](https://arxiv.org/abs/1803.05791)
 [![license: GPLv2](images/license.svg)](https://www.gnu.org/licenses/old-licenses/gpl-2.0.html)
 
@@ -62,7 +63,7 @@ install them using:
 $ sudo make install
 ```
 You can find more information about building the software in the [user
-manual](https://www.speicherleck.de/michael/caps/manual/manual.html).
+manual](https://caps.readthedocs.io/).
 
 You can compile and run the tests with:
 ```
@@ -126,10 +127,8 @@ the free energy.
 CaPS is documented by a user manual and an API documentation.
 
 The user manual describes how to build and use the programs that come with
-CaPS. The user manual is available online as
-[html](https://www.speicherleck.de/michael/caps/manual/manual.html) or
-[PDF](https://www.speicherleck.de/michael/caps/manual.pdf). You can also build
-the user manual using Makefile provided in `docs/manual`.
+CaPS. The user manual is available [online](https://caps.readthedocs.io/). You
+can also build the user manual using Makefile provided in `docs/manual`.
 
 The API of CaPS are documented using doxygen. The API documentation is
 available online as
