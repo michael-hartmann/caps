@@ -98,6 +98,13 @@ temperature and perfect reflectors:
 
 The implementation for the plane-cylinder geometry is based on [@emig_prl_2006].
 
+Other packages that allow to compute the Casimir free energy are ``SCUFF-EM``
+[@reid_ieee_2015] and ``Meep`` [@oskooi_cpc_2010]. Both packages support
+arbitrary geometries and ``SCUFF-EM`` also has support for non-equilibrium
+Casimir forces. In contrast, ``CaPS`` targets the plane-sphere geometry where
+it allows to cover the aspect ratios of the vast majority of existing
+experiments.
+
 ``CaPS`` has been used to analyze negative Casimir entropies [@ingold_pre_2015;
 @umrath_pre_2015], and to study corrections to the widely used proximity force
 approximation for experimentally relevant parameters [@hartmann_prl_2017]. In
