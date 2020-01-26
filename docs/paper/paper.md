@@ -28,19 +28,19 @@ CaPS is a package for the analysis of the Casimir effect in the plane-sphere
 geometry. The Casimir force arises due to quantum and thermal fluctuations of
 the electromagnetic field and is closely related to the van der Waals force
 [@bordag_advances]. It is the dominant force between neutral non-magnetic
-materials in the nanometre to micrometre range and plays an important role in
+materials in the nanometer to micrometer range and plays an important role in
 colloidal systems. Of technological relevance are applications to micro- and
 nano-electromechanical systems where the Casimir force can lead to stiction and
 thus constitute a failure mechanism [@chan_prl_2001; @buks_prb_2001]. On a more
 fundamental level, the Casimir effect is linked to the zero-point energy and
 the cosmological constant problem [@martin_crp_2012]. A precise knowledge of
 the Casimir force is crucial for the search for possible deviations from
-Newton's law of gravitation which could arise from a fifth fundamental
+Newton's law of gravitation that could arise from a fifth fundamental
 interaction [@antoniadis_crp_2011].
 
-CaPS allows to compute the Casimir interaction in the plane-sphere geometry as
+CaPS allows one to compute the Casimir interaction in the plane-sphere geometry as
 shown in Fig. 1. The plane-sphere geometry is most commonly used in precision
-measurements of the Casimir force. Specifically, CaPS allows to compute the
+measurements of the Casimir force. Specifically, CaPS allows one to compute the
 Casimir free energy and thus the Casimir force as a function of the sphere
 radius $R$, the minimal separation $L$ between sphere and plane, the
 temperature $T$, and the material properties of plane and sphere. It is assumed
@@ -65,7 +65,7 @@ plane. Commonly, the round-trip operator is expanded in the multipole basis.
 The numerical evaluation of the determinants demands a truncation of the
 originally infinite vector space. For a fixed accuracy, the required dimension
 scales linearly with the aspect ration $R/L$ and can become of the order of
-$10^4$ or larger. Moreover, the matrices are ill-conditioned rendering a
+$10^4$ or larger. Moreover, the matrices are ill-conditioned, making a
 numerical evaluation difficult. These problems limit the aspect ratios
 accessible in standard implementations to $R/L\lesssim100$ [@Durand_phd].
 
@@ -73,7 +73,7 @@ CaPS addresses these issues by using a symmetrized version of the round-trip
 operator $\mathcal{M}$ as described in [@hartmann_prl_2017;
 @hartmann_phscr_2018; @hartmann_phd_2018]. The matrix representation of the
 symmetrized round-trip operator yields hierarchical off-diagonal low-rank
-(HODLR) matrices which allow for a fast computation of determinants
+(HODLR) matrices that allow for a fast computation of determinants
 [@ambikasaran_josc_2013; @ambikasaran_arxiv_2014]. Specifically, we use
 HODLRlib [@ambikasaran_joss_2019] for this purpose. Further information
 including explicit expressions for the matrix elements of the symmetrized
@@ -98,18 +98,18 @@ temperature and perfect reflectors:
 
 The implementation for the plane-cylinder geometry is based on [@emig_prl_2006].
 
-Other packages that allow to compute the Casimir free energy are ``SCUFF-EM``
+Other packages that allow one to compute the Casimir free energy are ``SCUFF-EM``
 [@reid_ieee_2015] and ``Meep`` [@oskooi_cpc_2010]. Both packages support
 arbitrary geometries and ``SCUFF-EM`` also has support for non-equilibrium
 Casimir forces. In contrast, ``CaPS`` targets the plane-sphere geometry where
-it allows to cover the aspect ratios of the vast majority of existing
+it allows one to cover the aspect ratios of the vast majority of existing
 experiments.
 
 ``CaPS`` has been used to analyze negative Casimir entropies [@ingold_pre_2015;
 @umrath_pre_2015], and to study corrections to the widely used proximity force
 approximation for experimentally relevant parameters [@hartmann_prl_2017]. In
 addition, data generated using ``CaPS`` were used to analyze the experiments in
-Ref. [@liu_prb_2019] and Ref. [@liu_pra_2019]. The package is released under
+@liu_prb_2019 and @liu_pra_2019. The package is released under
 the GPLv2 license.
 
 # Acknowledgements
